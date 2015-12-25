@@ -503,19 +503,20 @@ function generatePlayerAnalysis(match, player_match)
             var delta = Number.MAX_VALUE;
             var interval = 5;
             var start = 0;
-            for (var i =0;i<pm.gold_t.length-interval;i++){
-                var diff = pm.gold_t[i+interval] - pm.gold_t[i];
+            for (var i = 0; i < pm.gold_t.length - interval; i++)
+            {
+                var diff = pm.gold_t[i + interval] - pm.gold_t[i];
                 delta = diff < delta ? diff : delta;
                 start = diff < delta ? i : start;
             }
             return {
                 abbr: "DROUGHT",
                 template: "GPM starting at minute <b>%s</b>: <b>%s</b>",
-                value: [start, delta/interval],
+                value: [start, delta / interval],
                 advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
                 category: "warning",
                 icon: "fa-usd",
-                condition: Boolean(start) && delta < (isSupport(pm) ? 100*interval : 200*interval)
+                condition: Boolean(start) && delta < (isSupport(pm) ? 100 * interval : 200 * interval)
             };
         },
         //Flaming in all chat
@@ -530,9 +531,10 @@ function generatePlayerAnalysis(match, player_match)
             {
                 for (var key in pm.my_word_counts)
                 {
-                    if (words.some(function(w){
-                        return key.indexOf(w) !== -1;
-                    }))
+                    if (words.some(function(w)
+                        {
+                            return key.indexOf(w) !== -1;
+                        }))
                     {
                         flames += pm.my_word_counts[key];
                     }
@@ -563,17 +565,53 @@ function generatePlayerAnalysis(match, player_match)
         },
         //low ability accuracy (custom list of skillshots)
         skillshot: function(m, pm)
+        {
+            var acc = 0;
+            if (pm.ability_uses && pm.hero_hits)
             {
-                if (pm.ability_uses)
-                {}
+                for (var key in pm.ability_uses)
+                {
+                    if (key in constants.skillshots)
+                    {
+                        acc = Number(pm.hero_hits[key]) / pm.ability_uses[key];
+                    }
+                }
             }
-            //courier buy delay (3 minute flying)
-            //roshan opportunities (specific heroes)
-            //rune control (mid player)
-            //attack move
-            //stop command
-            //low obs wards/min
-            //unused item actives (multiple results?)
+            return {
+                abbr: "SKILLSHOT",
+                template: "Skillshots landed: <b>%s</b>",
+                value: [acc.toFixed(0) + "%"],
+                advice: "Practicing your skillshots can improve your match performance.",
+                category: "info",
+                icon: "fa-bullseye",
+                condition: acc && acc > 0.4
+            };
+        },
+        //courier buy delay (3 minute flying)
+        late_courier: function(m, pm)
+        {
+            var time = 0;
+            if (pm.purchase && pm.purchase.flying_courier)
+            {
+                time = pm.purchase_time.flying_courier;
+            }
+            return {
+                abbr: "FCOURIER",
+                template: "Courier upgraded at: <b>%s</b> seconds",
+                value: time,
+                advice: "Upgrade your team's courier as soon as possible to speed up item delivery.",
+                category: "info",
+                icon: "fa-level-up",
+                condition: time && time > 195
+            };
+        },
+        //roshan opportunities (specific heroes)
+        //rune control (mid player)
+        //attack move
+        //stop command
+        //low obs wards/min
+        //unused item actives (multiple results?)
+        unused_item: function(m, pm) {}
     };
     for (var key in checks)
     {
