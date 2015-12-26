@@ -515,7 +515,7 @@ function generatePlayerAnalysis(match, player_match)
                 value: [start, delta / interval],
                 advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
                 category: "warning",
-                icon: "fa-usd",
+                icon: "fa-line-chart",
                 condition: Boolean(start) && delta < (isSupport(pm) ? 100 * interval : 200 * interval)
             };
         },
@@ -573,14 +573,14 @@ function generatePlayerAnalysis(match, player_match)
                 {
                     if (key in constants.skillshots)
                     {
-                        acc = Number(pm.hero_hits[key]) / pm.ability_uses[key];
+                        acc = pm.hero_hits[key] / pm.ability_uses[key];
                     }
                 }
             }
             return {
                 abbr: "SKILLSHOT",
-                template: "Skillshots landed: <b>%s</b>",
-                value: [acc.toFixed(0) + "%"],
+                template: "Skillshots landed: <b>%s</b>%",
+                value: [(acc * 100).toFixed(0)],
                 advice: "Practicing your skillshots can improve your match performance.",
                 category: "info",
                 icon: "fa-bullseye",
@@ -606,12 +606,102 @@ function generatePlayerAnalysis(match, player_match)
             };
         },
         //roshan opportunities (specific heroes)
+        roshan: function(m, pm)
+        {
+            var rosh_heroes = {
+                "npc_dota_hero_lycan": 1,
+                "npc_dota_hero_ursa": 1,
+                "npc_dota_hero_troll_warlord": 1
+            };
+            //TODO
+            var rosh_taken = false;
+            if ((constants.heroes[pm.hero_id].name in rosh_heroes) && m.objectives)
+            {
+                for (var i = 0; i < m.objectives.length; i++)
+                {
+                    if (m.objectives[i].time > 60 * 20)
+                    {
+                        break;
+                    }
+                    if (m.objectives[i].type === "CHAT_MESSAGE_ROSHAN_KILL" && m.objectives[i].team === Number(isRadiant(pm)))
+                    {
+                        rosh_taken = true;
+                    }
+                }
+            }
+            return {
+                abbr: "ROSHAN",
+                template: "Roshan taken early: <b>%s</b>",
+                value: rosh_taken,
+                advice: "Certain heroes can take Roshan early for an early-game advantage.",
+                category: "info",
+                icon: "fa-shield",
+                condition: rosh_taken && (constants.heroes[pm.hero_id].name in rosh_heroes)
+            };
+        },
         //rune control (mid player)
-        //attack move
-        //stop command
+        rune_control: function(m, pm)
+        {
+            var runes = 0;
+            if (pm.runes)
+            {
+                for (var key in pm.runes)
+                {
+                    runes += pm.runes[key];
+                }
+            }
+            return {
+                abbr: "RUNES",
+                template: "Runes obtained: <b>%s</b>",
+                value: runes,
+                advice: "Maintain rune control in order to give your team an advantage.",
+                category: "info",
+                icon: "fa-thumbs-o-up",
+                condition: runes && pm.lane_role === 2 && runes < 5
+            };
+        },
         //low obs wards/min
+        wards: function(m, pm)
+        {
+            var ward_cooldown = 60 * 7;
+            var wards = pm.obs_log ? pm.obs_log.length : 0;
+            var max_placed = m.duration / ward_cooldown * 2;
+            var uptime = wards / max_placed;
+            return {
+                abbr: "OBS",
+                template: "Wards placed: <b>%s</b>",
+                value: wards.toFixed(0),
+                advice: "Keep wards placed constantly to give your team vision.",
+                category: "primary",
+                icon: "fa-eye",
+                condition: isSupport(pm) && uptime < 0.8
+            };
+        },
         //unused item actives (multiple results?)
-        unused_item: function(m, pm) {}
+        unused_item: function(m, pm)
+        {
+            var result = [];
+            if (pm.purchase)
+            {
+                for (var key in pm.purchase)
+                {
+                    if (pm.item_uses[key] <= 1 && constants.items[key].cd)
+                    {
+                        //if item has cooldown, consider it usable
+                        result.push(constants.items[key].dname);
+                    }
+                }
+            }
+            return {
+                abbr: "ITEMUSE",
+                template: "Active items with low usage:<br><b>%s</b>",
+                value: result.join("<br>"),
+                advice: "Make sure to use your item actives in order to fully utilize your investment.",
+                category: "success",
+                icon: "fa-bolt",
+                condition: result.length
+            };
+        }
     };
     for (var key in checks)
     {

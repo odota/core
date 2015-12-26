@@ -8,18 +8,20 @@ block match_content
           +data_table_header(i, match)
             tr
               th: abbr(title=tooltips.hero_id) Hero
-              //th Analysis
-              each val, key in player.analysis
-                th=key
+              th Analysis
+              //-
+                each val, key in player.analysis
+                  th=key
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
-            each val, key in player.analysis
-              td
-                =val && val.condition ? "y" : "n"
             //-
-              td
-                each val, key in player.analysis
-                  if val && val.condition
-                    span.btn(class="btn-"+val.category)
-                      span: abbr(title=util.format.apply(null, [val.template].concat(val.value))+"<br>"+val.advice) !{val.abbr}
-                      //span.fa(style="margin:3px;", class=val.icon)
+              each val, key in player.analysis
+                td
+                  =val && val.condition ? val.value : "n"
+            //-
+            td
+              each val, key in player.analysis
+                if val && val.condition
+                  span.btn(class="btn-"+val.category)
+                    span: abbr(title=util.format.apply(null, [val.template].concat(val.value))+"<br>"+val.advice)
+                      span.fa(style="margin:3px;", class=val.icon)
