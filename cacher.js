@@ -27,7 +27,7 @@ function readCache(account_id, cb)
                 cache.data = arr;
             }
             console.timeEnd('readcache');
-            return (err, cache);
+            return cb(err, cache);
         });
     }
     else

@@ -460,7 +460,7 @@ module.exports = function(db, redis)
         }
         if (!isNaN(account_id))
         {
-            console.time("count");
+            console.time("validate");
             db('player_matches').count().where(
             {
                 account_id: Number(account_id)
@@ -471,7 +471,7 @@ module.exports = function(db, redis)
                     return cb(err);
                 }
                 count = Number(count[0].count);
-                console.timeEnd("count");
+                console.timeEnd("validate");
                 var cacheValid = cache && cache.data && cache.data.length && cache.data.length === count;
                 return cb(err, cacheValid);
             });
@@ -642,7 +642,7 @@ module.exports = function(db, redis)
                         player.abandons += player.aggData.leaver_status.counts[key];
                     }
                 }
-                cb(err);
+                cb(err, player);
             }
         });
     }
