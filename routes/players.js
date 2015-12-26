@@ -12,9 +12,9 @@ var preprocessQuery = utility.preprocessQuery;
 var filter = require('../filter');
 var querystring = require('querystring');
 var moment = require('moment');
-var cacher = require('../cacher');
-var readCache = cacher.readCache;
-var writeCache = cacher.writeCache;
+var playerCache = require('../playerCache');
+var readCache = playerCache.readCache;
+var writeCache = playerCache.writeCache;
 var subkeys = {
     "kills": 1,
     "deaths": 1,

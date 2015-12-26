@@ -120,6 +120,9 @@ function updateCache(player_match, options, cb)
             }
         });
     }
+    else {
+        return cb();
+    }
 }
 module.exports = {
     readCache: readCache,
