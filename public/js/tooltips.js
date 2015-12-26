@@ -13,7 +13,7 @@ window.tooltips = function tooltips() {
                 }).then(function(data) {
                     var content = $("<div/>")
                     content.append(data.cost ? $("<div/>", {
-                        html: '<img alt="Gold Cost" title="Gold Cost" class="goldImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/gold.png" width="16" height="16" border="0" />' + data.cost
+                        html: '<img alt="Gold Cost" title="Gold Cost" class="goldImg" src="/apps/dota2/images/tooltips/gold.png" width="16" height="16" border="0" />' + data.cost
                     }) : "")
                     content.append(data.desc ? $("<div/>", {
                         html: data.desc
@@ -25,10 +25,10 @@ window.tooltips = function tooltips() {
                         html: data.attrib
                     }) : "")
                     content.append(data.mc ? $("<div/>", {
-                        html: '<img alt="Mana Cost" title="Mana Cost" class="manaImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/mana.png" width="16" height="16" border="0" />' + data.mc
+                        html: '<img alt="Mana Cost" title="Mana Cost" class="manaImg" src="/apps/dota2/images/tooltips/mana.png" width="16" height="16" border="0" />' + data.mc
                     }) : "")
                     content.append(data.cd ? $("<div/>", {
-                        html: '<img alt="Cooldown" title="Cooldown" class="cooldownImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/cooldown.png" width="16" height="16" border="0" />' + data.cd
+                        html: '<img alt="Cooldown" title="Cooldown" class="cooldownImg" src="/apps/dota2/images/tooltips/cooldown.png" width="16" height="16" border="0" />' + data.cd
                     }) : "")
                     content.append(data.lore ? $("<div/>", {
                         html: data.lore
