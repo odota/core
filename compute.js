@@ -338,10 +338,13 @@ function renderMatch(m)
                 player_match.objective_damage[identifier] = player_match.objective_damage[identifier] ? player_match.objective_damage[identifier] + player_match.damage[key] : player_match.damage[key];
             }
         }
-        console.time("generating player analysis");
-        player_match.analysis = generatePlayerAnalysis(m, player_match);
-        console.timeEnd("generating player analysis");
     });
+    console.time("generating player analysis");
+    m.players.forEach(function(player_match, i)
+    {
+        player_match.analysis = generatePlayerAnalysis(m, player_match);
+    });
+    console.timeEnd("generating player analysis");
     if (m.chat)
     {
         //make a list of messages and join them all together for sentiment analysis
@@ -506,17 +509,20 @@ function generatePlayerAnalysis(match, player_match)
             for (var i = 0; i < pm.gold_t.length - interval; i++)
             {
                 var diff = pm.gold_t[i + interval] - pm.gold_t[i];
-                delta = diff < delta ? diff : delta;
-                start = diff < delta ? i : start;
+                if (i > 5 && diff < delta)
+                {
+                    delta = diff;
+                    start = i;
+                }
             }
             return {
                 abbr: "DROUGHT",
-                template: "GPM starting at minute <b>%s</b>: <b>%s</b>",
-                value: [start, delta / interval],
+                template: "Lowest GPM: <b>%s</b> at <b>%s</b> minutes",
+                value: [(delta / interval).toFixed(0), start],
                 advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
                 category: "warning",
                 icon: "fa-line-chart",
-                condition: Boolean(start) && delta < (isSupport(pm) ? 100 * interval : 200 * interval)
+                condition: Boolean(start) && (delta / interval) < (isSupport(pm) ? 110 : 220)
             };
         },
         //Flaming in all chat
@@ -547,7 +553,7 @@ function generatePlayerAnalysis(match, player_match)
                 advice: "Keep calm in all chat in order to improve the overall game experience.",
                 category: "danger",
                 icon: "fa-fire",
-                condition: flames > 3
+                condition: flames > 0
             };
         },
         //Courier feeding
@@ -556,7 +562,7 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "CFEED",
                 template: "Couriers bought: <b>%s</b>",
-                value: pm.purchase.courier,
+                value: pm.purchase && pm.purchase.courier ? pm.purchase.courier : 0,
                 advice: "Try not to make your team's situation worse by buying and feeding couriers.  Comebacks are always possible!",
                 category: "danger",
                 icon: "fa-cutlery",
@@ -584,7 +590,7 @@ function generatePlayerAnalysis(match, player_match)
                 advice: "Practicing your skillshots can improve your match performance.",
                 category: "info",
                 icon: "fa-bullseye",
-                condition: acc && acc > 0.4
+                condition: acc && acc < 0.4
             };
         },
         //courier buy delay (3 minute flying)
@@ -605,6 +611,23 @@ function generatePlayerAnalysis(match, player_match)
                 condition: time && time > 195
             };
         },
+        //low obs wards/min
+        wards: function(m, pm)
+        {
+            var ward_cooldown = 60 * 7;
+            var wards = pm.obs_log ? pm.obs_log.length : 0;
+            var max_placed = m.duration / ward_cooldown * 2 / 2;
+            var uptime = wards / max_placed;
+            return {
+                abbr: "OBS",
+                template: "Wards placed: <b>%s</b>",
+                value: wards.toFixed(0),
+                advice: "Keep wards placed constantly to give your team vision.",
+                category: "info",
+                icon: "fa-eye",
+                condition: isSupport(pm) && uptime < 0.8
+            };
+        },
         //roshan opportunities (specific heroes)
         roshan: function(m, pm)
         {
@@ -623,7 +646,7 @@ function generatePlayerAnalysis(match, player_match)
                     {
                         break;
                     }
-                    if (m.objectives[i].type === "CHAT_MESSAGE_ROSHAN_KILL" && m.objectives[i].team === Number(isRadiant(pm)))
+                    if (m.objectives[i].type === "CHAT_MESSAGE_ROSHAN_KILL" && m.objectives[i].team === (isRadiant(pm) ? 2 : 3))
                     {
                         rosh_taken = true;
                     }
@@ -634,9 +657,9 @@ function generatePlayerAnalysis(match, player_match)
                 template: "Roshan taken early: <b>%s</b>",
                 value: rosh_taken,
                 advice: "Certain heroes can take Roshan early for an early-game advantage.",
-                category: "info",
+                category: "primary",
                 icon: "fa-shield",
-                condition: rosh_taken && (constants.heroes[pm.hero_id].name in rosh_heroes)
+                condition: !rosh_taken && (constants.heroes[pm.hero_id].name in rosh_heroes)
             };
         },
         //rune control (mid player)
@@ -655,26 +678,9 @@ function generatePlayerAnalysis(match, player_match)
                 template: "Runes obtained: <b>%s</b>",
                 value: runes,
                 advice: "Maintain rune control in order to give your team an advantage.",
-                category: "info",
+                category: "primary",
                 icon: "fa-thumbs-o-up",
                 condition: runes && pm.lane_role === 2 && runes < 5
-            };
-        },
-        //low obs wards/min
-        wards: function(m, pm)
-        {
-            var ward_cooldown = 60 * 7;
-            var wards = pm.obs_log ? pm.obs_log.length : 0;
-            var max_placed = m.duration / ward_cooldown * 2;
-            var uptime = wards / max_placed;
-            return {
-                abbr: "OBS",
-                template: "Wards placed: <b>%s</b>",
-                value: wards.toFixed(0),
-                advice: "Keep wards placed constantly to give your team vision.",
-                category: "primary",
-                icon: "fa-eye",
-                condition: isSupport(pm) && uptime < 0.8
             };
         },
         //unused item actives (multiple results?)
@@ -695,7 +701,7 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "ITEMUSE",
                 template: "Active items with low usage:<br><b>%s</b>",
-                value: result.join("<br>"),
+                value: result.length ? result.join("<br>") : "N/A",
                 advice: "Make sure to use your item actives in order to fully utilize your investment.",
                 category: "success",
                 icon: "fa-bolt",
