@@ -63,7 +63,7 @@
     "pg-query-stream": "^1.0.0",
     "pm2": "^0.15.10",
     "poet": "~2.0.1",
-    "qTip2": "3.0.2",
+    "qtip2": "3.0.2",
     "redis": "2.4.2",
     "request": "~2.67.0",
     "request-progress": "^0.4.0",
