@@ -495,7 +495,7 @@ module.exports = function(db, redis)
         options.queryObj = preprocessQuery(options.queryObj, constants);
         var filter_exists = Object.keys(options.queryObj.js_select).length;
         //try to find player in db
-        getPlayer(orig_account_id, function(err, player)
+        getPlayer(account_id, function(err, player)
         {
             if (err)
             {
