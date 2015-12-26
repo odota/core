@@ -5,16 +5,17 @@ var queueReq = utility.queueReq;
 var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
-var zlib = require('zlib');
 var aggregator = require('./aggregator');
-var reduceMatch = utility.reduceMatch;
-var config = require('./config');
 var constants = require('./constants');
 var filter = require('./filter');
+var cacher = require('./cacher');
+var updateCache = cacher.updateCache;
 var columnInfo = null;
 
-function getSets(redis, cb) {
-    async.parallel({
+function getSets(redis, cb)
+{
+    async.parallel(
+    {
         /*
         "bots": function(cb) {
             redis.get("bots", function(err, bots) {
@@ -45,57 +46,76 @@ function getSets(redis, cb) {
             });
         },
         */
-        "trackedPlayers": function(cb) {
-            redis.get("trackedPlayers", function(err, tps) {
+        "trackedPlayers": function(cb)
+        {
+            redis.get("trackedPlayers", function(err, tps)
+            {
                 cb(err, JSON.parse(tps || "{}"));
             });
         },
-        "userPlayers": function(cb) {
-            redis.get("userPlayers", function(err, ups) {
+        "userPlayers": function(cb)
+        {
+            redis.get("userPlayers", function(err, ups)
+            {
                 cb(err, JSON.parse(ups || "{}"));
             });
         },
-        "donators": function(cb) {
-            redis.get("donators", function(err, ds) {
+        "donators": function(cb)
+        {
+            redis.get("donators", function(err, ds)
+            {
                 cb(err, JSON.parse(ds || "{}"));
             });
         }
-    }, function(err, results) {
+    }, function(err, results)
+    {
         cb(err, results);
     });
 }
 
-function getColumnInfo(db, cb) {
-    if (columnInfo) {
+function getColumnInfo(db, cb)
+{
+    if (columnInfo)
+    {
         return cb();
     }
-    else {
-        async.parallel({
-            "matches": function(cb) {
+    else
+    {
+        async.parallel(
+        {
+            "matches": function(cb)
+            {
                 db('matches').columnInfo().asCallback(cb);
             },
-            "player_matches": function(cb) {
+            "player_matches": function(cb)
+            {
                 db('player_matches').columnInfo().asCallback(cb);
             },
-            "players": function(cb) {
+            "players": function(cb)
+            {
                 db('players').columnInfo().asCallback(cb);
             },
-            "player_ratings": function(cb) {
+            "player_ratings": function(cb)
+            {
                 db('player_ratings').columnInfo().asCallback(cb);
             }
-        }, function(err, results) {
+        }, function(err, results)
+        {
             columnInfo = results;
             cb(err);
         });
     }
 }
 
-function insertMatch(db, redis, queue, match, options, cb) {
+function insertMatch(db, redis, queue, match, options, cb)
+{
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
-    if (players && !match.pgroup) {
+    if (players && !match.pgroup)
+    {
         match.pgroup = {};
-        players.forEach(function(p, i) {
+        players.forEach(function(p, i)
+        {
             match.pgroup[p.player_slot] = {
                 account_id: p.account_id,
                 hero_id: p.hero_id,
@@ -107,7 +127,8 @@ function insertMatch(db, redis, queue, match, options, cb) {
     //we want to insert into matches, then insert into player_matches for each entry in players
     //db.transaction(function(trx) {
     async.series([
-        function(cb) {
+        function(cb)
+        {
             getColumnInfo(db, cb);
         },
         insertMatchTable,
@@ -117,10 +138,13 @@ function insertMatch(db, redis, queue, match, options, cb) {
         clearMatchCache
         ], decideParse);
 
-    function insertMatchTable(cb) {
+    function insertMatchTable(cb)
+    {
         var row = match;
-        for (var key in row) {
-            if (!(key in columnInfo.matches)) {
+        for (var key in row)
+        {
+            if (!(key in columnInfo.matches))
+            {
                 delete row[key];
                 //console.error(key);
             }
@@ -128,34 +152,46 @@ function insertMatch(db, redis, queue, match, options, cb) {
         //TODO use psql upsert when available
         //TODO this breaks transactions, transaction will refuse to complete if error occurred during insert
         //upsert on api, update only otherwise
-        if (options.type === "api") {
-            db('matches').insert(row).where({
+        if (options.type === "api")
+        {
+            db('matches').insert(row).where(
+            {
                 match_id: row.match_id
-            }).asCallback(function(err) {
-                if (err && err.detail.indexOf("already exists") !== -1) {
+            }).asCallback(function(err)
+            {
+                if (err && err.detail.indexOf("already exists") !== -1)
+                {
                     //try update
-                    db('matches').update(row).where({
+                    db('matches').update(row).where(
+                    {
                         match_id: row.match_id
                     }).asCallback(cb);
                 }
-                else {
+                else
+                {
                     cb(err);
                 }
             });
         }
-        else {
-            db('matches').update(row).where({
+        else
+        {
+            db('matches').update(row).where(
+            {
                 match_id: row.match_id
             }).asCallback(cb);
         }
     }
 
-    function insertPlayerMatchesTable(cb) {
+    function insertPlayerMatchesTable(cb)
+    {
         //we can skip this if we have no players (skill case)
-        async.each(players || [], function(pm, cb) {
+        async.each(players || [], function(pm, cb)
+        {
             var row = pm;
-            for (var key in row) {
-                if (!(key in columnInfo.player_matches)) {
+            for (var key in row)
+            {
+                if (!(key in columnInfo.player_matches))
+                {
                     delete row[key];
                     //console.error(key);
                 }
@@ -163,24 +199,32 @@ function insertMatch(db, redis, queue, match, options, cb) {
             row.match_id = match.match_id;
             //TODO upsert
             //upsert on api, update only otherwise
-            if (options.type === "api") {
-                db('player_matches').insert(row).where({
+            if (options.type === "api")
+            {
+                db('player_matches').insert(row).where(
+                {
                     match_id: row.match_id,
                     player_slot: row.player_slot
-                }).asCallback(function(err) {
-                    if (err && err.detail.indexOf("already exists") !== -1) {
-                        db('player_matches').update(row).where({
+                }).asCallback(function(err)
+                {
+                    if (err && err.detail.indexOf("already exists") !== -1)
+                    {
+                        db('player_matches').update(row).where(
+                        {
                             match_id: row.match_id,
                             player_slot: row.player_slot
                         }).asCallback(cb);
                     }
-                    else {
+                    else
+                    {
                         cb(err);
                     }
                 });
             }
-            else {
-                db('player_matches').update(row).where({
+            else
+            {
+                db('player_matches').update(row).where(
+                {
                     match_id: row.match_id,
                     player_slot: row.player_slot
                 }).asCallback(cb);
@@ -190,107 +234,71 @@ function insertMatch(db, redis, queue, match, options, cb) {
     /**
      * Inserts a placeholder player into db with just account ID for each player in this match
      **/
-    function ensurePlayers(cb) {
-        async.each(players || [], function(p, cb) {
-            insertPlayer(db, {
+    function ensurePlayers(cb)
+    {
+        async.each(players || [], function(p, cb)
+        {
+            insertPlayer(db,
+            {
                 account_id: p.account_id
             }, cb);
         }, cb);
     }
 
-    function updatePlayerCaches(cb) {
-        if (!config.ENABLE_PLAYER_CACHE) {
-            return cb();
-        }
-        if (match.pgroup && players) {
-            players.forEach(function(p) {
+    function updatePlayerCaches(cb)
+    {
+        if (match.pgroup && players)
+        {
+            players.forEach(function(p)
+            {
                 //add account id to each player so we know what caches to update
                 p.account_id = match.pgroup[p.player_slot].account_id;
                 //add hero_id to each player so we update records with hero played
                 p.hero_id = match.pgroup[p.player_slot].hero_id;
             });
         }
-        async.eachSeries(players || options.players, function(player_match, cb) {
-            //join player with match to form player_match
-            for (var key in match) {
-                player_match[key] = match[key];
+        async.eachSeries(players || options.players, function(player_match, cb)
+        {
+            if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
+            {
+                //join player with match to form player_match
+                for (var key in match)
+                {
+                    player_match[key] = match[key];
+                }
+                updateCache(player_match, options, cb);
             }
-            if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id) {
-                /*
-                db.from('player_caches').first('cache').where({
-                    account_id: player_match.account_id
-                }).asCallback(function(err, result) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    var cache = result ? result.cache : null;
-                */
-                redis.get(new Buffer("player:" + player_match.account_id), function(err, result) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-                    //if player cache doesn't exist, skip
-                    if (cache) {
-                        if (options.type !== "skill") {
-                            var reInsert = player_match.match_id in cache.aggData.match_ids && options.type === "api";
-                            var reParse = player_match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
-                            if (!reInsert && !reParse) {
-                                computePlayerMatchData(player_match);
-                                cache.aggData = aggregator([player_match], options.type, cache.aggData);
-                            }
-                        }
-                        //reduce match to save cache space--we only need basic data per match for matches tab
-                        var reduced_player_match = reduceMatch(player_match);
-                        var identifier = [player_match.match_id, player_match.player_slot].join(':');
-                        var orig = cache.data[identifier];
-                        if (!orig) {
-                            cache.data[identifier] = reduced_player_match;
-                        }
-                        else {
-                            //iterate instead of setting directly to avoid clobbering existing data
-                            for (var key in reduced_player_match) {
-                                orig[key] = reduced_player_match[key] || orig[key];
-                            }
-                        }
-                        //insertPlayerCache(db, player_match, cache, cb);
-                        redis.ttl("player:" + player_match.account_id, function(err, ttl) {
-                            if (err) {
-                                return cb(err);
-                            }
-                            redis.setex(new Buffer("player:" + player_match.account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
-                            cb(err);
-                        });
-                    }
-                    else {
-                        return cb();
-                    }
-                });
-            }
-            else {
+            else
+            {
                 return cb();
             }
         }, cb);
     }
 
-    function clearMatchCache(cb) {
+    function clearMatchCache(cb)
+    {
         redis.del("match:" + match.match_id, cb);
     }
 
-    function decideParse(err) {
-        if (err) {
+    function decideParse(err)
+    {
+        if (err)
+        {
             //trx.rollback(err);
             return cb(err);
         }
         //trx.commit();
-        if (match.parse_status !== 0) {
+        if (match.parse_status !== 0)
+        {
             //not parsing this match
             //this isn't a error, although we want to report that we refused to parse back to user if it was a request
             return cb();
         }
-        else {
+        else
+        {
             //queue it and finish, callback with the queued parse job
-            return queueReq(queue, "parse", match, options, function(err, job2) {
+            return queueReq(queue, "parse", match, options, function(err, job2)
+            {
                 cb(err, job2);
             });
         }
@@ -303,97 +311,132 @@ function insertMatch(db, redis, queue, match, options, cb) {
     */
 }
 
-function insertPlayer(db, player, cb) {
-    if (player.steamid) {
+function insertPlayer(db, player, cb)
+{
+    if (player.steamid)
+    {
         //this is a login, compute the account_id from steamid
         player.account_id = Number(convert64to32(player.steamid));
     }
-    if (!player.account_id || player.account_id === constants.anonymous_account_id) {
+    if (!player.account_id || player.account_id === constants.anonymous_account_id)
+    {
         return cb();
     }
-    getColumnInfo(db, function(err) {
-        if (err) {
+    getColumnInfo(db, function(err)
+    {
+        if (err)
+        {
             return cb(err);
         }
         var row = player;
-        for (var key in row) {
-            if (!(key in columnInfo.players)) {
+        for (var key in row)
+        {
+            if (!(key in columnInfo.players))
+            {
                 delete row[key];
                 //console.error(key);
             }
         }
         //TODO upsert
-        db('players').insert(row).asCallback(function(err) {
-            if (err && err.detail.indexOf("already exists") !== -1) {
-                db('players').update(row).where({
+        db('players').insert(row).asCallback(function(err)
+        {
+            if (err && err.detail.indexOf("already exists") !== -1)
+            {
+                db('players').update(row).where(
+                {
                     account_id: row.account_id
                 }).asCallback(cb);
             }
-            else {
+            else
+            {
                 return cb(err);
             }
         });
     });
 }
 
-function insertPlayerRating(db, row, cb) {
+function insertPlayerRating(db, row, cb)
+{
     db('player_ratings').insert(row).asCallback(cb);
 }
 
-function insertPlayerCache(db, player, cache, cb) {
+function insertPlayerCache(db, player, cache, cb)
+{
     //TODO upsert
-    db('player_caches').insert({
+    db('player_caches').insert(
+    {
         account_id: player.account_id,
         cache: cache
-    }).asCallback(function(err) {
-        if (err && err.detail.indexOf("already exists") !== -1) {
-            db('player_caches').update({
+    }).asCallback(function(err)
+    {
+        if (err && err.detail.indexOf("already exists") !== -1)
+        {
+            db('player_caches').update(
+            {
                 cache: cache
-            }).where({
+            }).where(
+            {
                 account_id: player.account_id
-            }).asCallback(function(err) {
+            }).asCallback(function(err)
+            {
                 return cb(err, player);
             });
         }
-        else {
+        else
+        {
             return cb(err, player);
         }
     });
 }
 
-function insertMatchSkill(db, row, cb) {
+function insertMatchSkill(db, row, cb)
+{
     //TODO upsert
-    db('match_skill').insert(row).asCallback(function(err) {
-        if (err && err.detail.indexOf("already exists") !== -1) {
-            db('match_skill').update(row).where({
+    db('match_skill').insert(row).asCallback(function(err)
+    {
+        if (err && err.detail.indexOf("already exists") !== -1)
+        {
+            db('match_skill').update(row).where(
+            {
                 match_id: row.match_id
             }).asCallback(cb);
         }
-        else {
+        else
+        {
             return cb(err);
         }
     });
 }
 
-function getMatch(db, match_id, cb) {
-    db.first().from('matches').where({
+function getMatch(db, match_id, cb)
+{
+    db.first().from('matches').where(
+    {
         match_id: Number(match_id)
-    }).asCallback(function(err, match) {
-        if (err) {
+    }).asCallback(function(err, match)
+    {
+        if (err)
+        {
             return cb(err);
         }
-        else if (!match) {
+        else if (!match)
+        {
             return cb("match not found");
         }
-        else {
+        else
+        {
             //join to get personaname, last_login, avatar
-            db.select().from('player_matches').where({
+            db.select().from('player_matches').where(
+            {
                 "player_matches.match_id": Number(match_id)
-            }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(function(err, players) {
-                if (err) {
+            }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(function(err, players)
+            {
+                if (err)
+                {
                     return cb(err);
                 }
-                players.forEach(function(p) {
+                players.forEach(function(p)
+                {
                     computePlayerMatchData(p);
                 });
                 match.players = players;
@@ -404,17 +447,21 @@ function getMatch(db, match_id, cb) {
     });
 }
 
-function getPlayerMatches(db, query, cb) {
+function getPlayerMatches(db, query, cb)
+{
     console.log(query);
     console.time('getting player_matches');
-    db.select(query.project).from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').asCallback(function(err, player_matches) {
-        if (err) {
+    db.select(query.project).from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').asCallback(function(err, player_matches)
+    {
+        if (err)
+        {
             return cb(err);
         }
         console.timeEnd('getting player_matches');
         console.time('computing aggregations');
         //compute, filter, agg should act on player_matches joined with matches
-        player_matches.forEach(function(m) {
+        player_matches.forEach(function(m)
+        {
             //post-process the match to get additional stats
             computePlayerMatchData(m);
         });
@@ -432,13 +479,17 @@ function getPlayerMatches(db, query, cb) {
     });
 }
 
-function getPlayerRatings(db, account_id, cb) {
-    if (!isNaN(account_id)) {
-        db.from('player_ratings').where({
+function getPlayerRatings(db, account_id, cb)
+{
+    if (!isNaN(account_id))
+    {
+        db.from('player_ratings').where(
+        {
             account_id: Number(account_id)
         }).orderBy('time', 'asc').asCallback(cb);
     }
-    else {
+    else
+    {
         cb();
     }
 }
