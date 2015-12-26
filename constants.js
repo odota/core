@@ -39,6 +39,7 @@ constants.items = items;
 var abilities = constants.abilities.abilitydata;
 for (var key2 in abilities) {
     abilities[key2].img = "/apps/dota2/images/abilities/" + key2 + "_md.png";
+    abilities[key2].cmb = abilities[key2].cmb.replace("http://cdn.dota2.com","");
 }
 abilities.nevermore_shadowraze2 = abilities.nevermore_shadowraze1;
 abilities.nevermore_shadowraze3 = abilities.nevermore_shadowraze1;
