@@ -8,22 +8,35 @@ block match_content
           +data_table_header(i, match)
             tr
               th: abbr(title=tooltips.hero_id) Hero
+              each val, key in player.analysis
+                th: abbr(title=val.name)
+                  i.fa.fa-fw(class=val.icon)
               th Analysis
-              //-
-                each val, key in player.analysis
-                  th=key
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             //-
-              each val, key in player.analysis
-                td
-                  =val && val.condition ? val.value : "n"
-            //-
-            td.text-left
-              each val, key in player.analysis
-                if val && val.condition
-                  - var cl = val.condition ? "text-danger" : "text-success"
-                  div(class=cl)
-                    span(style="margin:3px;"): abbr(title=(val.condition ? val.advice : ""))
-                      i.fa.fa-fw(class=val.icon)
-                    span(style="display:inline;") !{util.format.apply(null, [val.template].concat(val.value))}
+            each val, key in player.analysis
+              td 
+                if val.valid
+                  - var pct = val.score / val.top
+                  if pct >= 1
+                    span.text-success="A"
+                  else if pct >= 0.8
+                    span.text-info="B"
+                  else if pct >= 0.6
+                    span.text-primary="C"
+                  else if pct >= 0.4
+                    span.text-warning="D"
+                  else
+                    span.text-danger="F"
+                else
+                  ="-"
+            each cond in [false]
+              td.text-left
+                each val, key in player.analysis
+                  if val.valid && (cond ? val.score/val.top > 1.1 : val.score/val.top < 1)
+                    div(class=cond ? "text-success" : "text-danger")
+                      span(style="margin:3px;"): abbr(title=(val.advice))
+                        i.fa.fa-fw(class=val.icon)
+                      span(style="display:inline;") !{val.name}: !{util.format.apply(null, [val.template].concat(val.value))}
+//add expected

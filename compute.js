@@ -490,14 +490,18 @@ function generatePlayerAnalysis(match, player_match)
         //LH@10
         lh: function(m, pm)
         {
+            var lh = pm.lh_t ? pm.lh_t[10] : undefined;
             return {
                 abbr: "LH",
-                template: "Last hits at 10 minutes: <b>%s</b>",
-                value: pm.lh_t[10],
+                name: "Last hits at 10 minutes",
+                template: "<b>%s</b>",
+                value: lh,
                 advice: "Consider practicing your last-hitting in order to improve your farm.  If you're struggling in lane, consider asking for a rotation from your team.",
                 category: "warning",
                 icon: "fa-usd",
-                condition: pm.lh_t[10] && pm.lh_t[10] < (isSupport(pm) ? 0 : 30)
+                valid: lh !== undefined && !isSupport(pm),
+                score: lh || 0,
+                top: 50
             };
         },
         //farming drought (low gold earned delta over an interval)
@@ -506,23 +510,29 @@ function generatePlayerAnalysis(match, player_match)
             var delta = Number.MAX_VALUE;
             var interval = 5;
             var start = 0;
-            for (var i = 0; i < pm.gold_t.length - interval; i++)
+            if (pm.gold_t)
             {
-                var diff = pm.gold_t[i + interval] - pm.gold_t[i];
-                if (i > 5 && diff < delta)
+                for (var i = 0; i < pm.gold_t.length - interval; i++)
                 {
-                    delta = diff;
-                    start = i;
+                    var diff = pm.gold_t[i + interval] - pm.gold_t[i];
+                    if (i > 5 && diff < delta)
+                    {
+                        delta = diff;
+                        start = i;
+                    }
                 }
             }
             return {
                 abbr: "DROUGHT",
-                template: "Low GPM: <b>%s</b> at <b>%s</b> minutes",
+                name: "Worst GPM",
+                template: "<b>%s</b> at <b>%s</b> minutes",
                 value: [(delta / interval).toFixed(0), start],
                 advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
                 category: "warning",
                 icon: "fa-line-chart",
-                condition: Boolean(start) && (delta / interval) < (isSupport(pm) ? 110 : 220)
+                valid: Boolean(start),
+                score: delta / interval,
+                top: isSupport(pm) ? 150 : 300
             };
         },
         //Flaming in all chat
@@ -548,31 +558,38 @@ function generatePlayerAnalysis(match, player_match)
             }
             return {
                 abbr: "FLAME",
-                template: "Profanities used: <b>%s</b>",
+                name: "Profanities used",
+                template: "<b>%s</b>",
                 value: flames,
                 advice: "Keep calm in all chat in order to improve the overall game experience.",
                 category: "danger",
                 icon: "fa-fire",
-                condition: flames > 0
+                valid: Boolean(pm.my_word_counts),
+                score: 5 - flames,
+                top: 5
             };
         },
         //Courier feeding
         courier_feeding: function(m, pm)
         {
+            var couriers = pm.purchase && pm.purchase.courier ? pm.purchase.courier : 0;
             return {
                 abbr: "CFEED",
-                template: "Couriers bought: <b>%s</b>",
+                name: "Couriers fed",
+                template: "<b>%s</b>",
                 value: pm.purchase && pm.purchase.courier ? pm.purchase.courier : 0,
                 advice: "Try not to make your team's situation worse by buying and feeding couriers.  Comebacks are always possible!",
                 category: "danger",
                 icon: "fa-cutlery",
-                condition: pm.purchase && pm.purchase.courier > 2
+                valid: Boolean(pm.purchase),
+                score: couriers > 1 ? 0 : 1,
+                top: 1
             };
         },
         //low ability accuracy (custom list of skillshots)
         skillshot: function(m, pm)
         {
-            var acc = 0;
+            var acc;
             if (pm.ability_uses && pm.hero_hits)
             {
                 for (var key in pm.ability_uses)
@@ -585,30 +602,37 @@ function generatePlayerAnalysis(match, player_match)
             }
             return {
                 abbr: "SKILLSHOT",
-                template: "Skillshots landed: <b>%s</b>%",
+                name: "Skillshots landed",
+                template: "<b>%s</b>%",
                 value: [(acc * 100).toFixed(0)],
                 advice: "Practicing your skillshots can improve your match performance.",
                 category: "info",
                 icon: "fa-bullseye",
-                condition: acc && acc < 0.4
+                valid: acc !== undefined,
+                score: acc || 0,
+                top: 0.5
             };
         },
         //courier buy delay (3 minute flying)
         late_courier: function(m, pm)
         {
-            var time = 0;
+            var flying_available = 180;
+            var time;
             if (pm.purchase && pm.purchase.flying_courier)
             {
                 time = pm.purchase_time.flying_courier;
             }
             return {
                 abbr: "FCOURIER",
-                template: "Courier upgraded at: <b>%s</b> seconds",
-                value: time,
+                name: "Courier upgrade delay",
+                template: "<b>%s</b> seconds",
+                value: time - flying_available,
                 advice: "Upgrade your team's courier as soon as possible to speed up item delivery.",
                 category: "info",
                 icon: "fa-level-up",
-                condition: time && time > 195
+                valid: time !== undefined,
+                score: 60 - (time - flying_available),
+                top: 55
             };
         },
         //low obs wards/min
@@ -616,29 +640,29 @@ function generatePlayerAnalysis(match, player_match)
         {
             var ward_cooldown = 60 * 7;
             var wards = pm.obs_log ? pm.obs_log.length : 0;
+            //divide game length by ward cooldown
+            //2 wards respawn every interval
+            //split responsibility between 2 supports
             var max_placed = m.duration / ward_cooldown * 2 / 2;
             var uptime = wards / max_placed;
             return {
                 abbr: "OBS",
-                template: "Wards placed: <b>%s</b>",
+                name: "Wards placed",
+                template: "<b>%s</b>",
                 value: wards.toFixed(0),
                 advice: "Keep wards placed constantly to give your team vision.",
                 category: "info",
                 icon: "fa-eye",
-                condition: isSupport(pm) && uptime < 0.8
+                valid: isSupport(pm),
+                score: uptime,
+                top: 1
             };
         },
         //roshan opportunities (specific heroes)
         roshan: function(m, pm)
         {
-            var rosh_heroes = {
-                "npc_dota_hero_lycan": 1,
-                "npc_dota_hero_ursa": 1,
-                "npc_dota_hero_troll_warlord": 1
-            };
-            //TODO
             var rosh_taken = false;
-            if ((constants.heroes[pm.hero_id].name in rosh_heroes) && m.objectives)
+            if (isRoshHero(pm) && m.objectives)
             {
                 for (var i = 0; i < m.objectives.length; i++)
                 {
@@ -654,20 +678,24 @@ function generatePlayerAnalysis(match, player_match)
             }
             return {
                 abbr: "ROSHAN",
-                template: "Roshan taken early: <b>%s</b>",
+                name: "Roshan taken early",
+                template: "<b>%s</b>",
                 value: rosh_taken,
                 advice: "Certain heroes can take Roshan early for an early-game advantage.",
                 category: "primary",
                 icon: "fa-shield",
-                condition: !rosh_taken && (constants.heroes[pm.hero_id].name in rosh_heroes)
+                valid: isRoshHero(pm),
+                score: Number(rosh_taken),
+                top: 1
             };
         },
         //rune control (mid player)
         rune_control: function(m, pm)
         {
-            var runes = 0;
+            var runes;
             if (pm.runes)
             {
+                runes = 0;
                 for (var key in pm.runes)
                 {
                     runes += pm.runes[key];
@@ -675,12 +703,15 @@ function generatePlayerAnalysis(match, player_match)
             }
             return {
                 abbr: "RUNES",
-                template: "Runes obtained: <b>%s</b>",
+                name: "Runes obtained",
+                template: "<b>%s</b>",
                 value: runes,
                 advice: "Maintain rune control in order to give your team an advantage.",
                 category: "primary",
                 icon: "fa-battery-4",
-                condition: runes && pm.lane_role === 2 && runes < 5
+                valid: runes !== undefined && pm.lane_role === 2,
+                score: runes,
+                top: 10
             };
         },
         //unused item actives (multiple results?)
@@ -691,21 +722,24 @@ function generatePlayerAnalysis(match, player_match)
             {
                 for (var key in pm.purchase)
                 {
-                    if (pm.purchase[key] && (pm.item_uses[key] || 0) < 1 && constants.items[key] && (constants.items[key].desc.substring(0, "Active".length) === "Active" || constants.items[key].desc.substring(0, "Use:".length) === "Use:"))
+                    if (pm.purchase[key] && (pm.item_uses[key] || 0) < 1 && constants.items[key] && isActiveItem(key))
                     {
                         //if item has cooldown, consider it usable
-                        result.push("<img title='"+key+"' class='item img-sm' src='"+constants.items[key].img+"' />");
+                        result.push("<img title='" + key + "' class='item img-sm' src='" + constants.items[key].img + "' />");
                     }
                 }
             }
             return {
                 abbr: "ITEMUSE",
-                template: "Active items with low usage: %s",
-                value: result.length ? result.join("") : "N/A",
+                name: "Unused active items",
+                template: "%s",
+                value: result.length ? result.join("") : "None",
                 advice: "Make sure to use your item actives in order to fully utilize your investment.",
                 category: "success",
                 icon: "fa-bolt",
-                condition: result.length
+                valid: pm.purchase,
+                score: 5 - result.length,
+                top: 5
             };
         }
     };
@@ -719,6 +753,20 @@ function generatePlayerAnalysis(match, player_match)
     {
         //if wards bought, consider as support
         return pm.purchase && pm.purchase.ward_observer >= 2;
+    }
+
+    function isRoshHero(pm)
+    {
+        var rosh_heroes = {
+            "npc_dota_hero_lycan": 1,
+            "npc_dota_hero_ursa": 1,
+            "npc_dota_hero_troll_warlord": 1
+        };
+        return (constants.heroes[pm.hero_id].name in rosh_heroes);
+    }
+    
+    function isActiveItem(key){
+        return (constants.items[key].desc.substring(0, "Active".length) === "Active" || constants.items[key].desc.substring(0, "Use:".length) === "Use:");
     }
 }
 /**
