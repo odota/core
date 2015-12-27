@@ -517,7 +517,7 @@ function generatePlayerAnalysis(match, player_match)
             }
             return {
                 abbr: "DROUGHT",
-                template: "Lowest GPM: <b>%s</b> at <b>%s</b> minutes",
+                template: "Low GPM: <b>%s</b> at <b>%s</b> minutes",
                 value: [(delta / interval).toFixed(0), start],
                 advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
                 category: "warning",
@@ -679,7 +679,7 @@ function generatePlayerAnalysis(match, player_match)
                 value: runes,
                 advice: "Maintain rune control in order to give your team an advantage.",
                 category: "primary",
-                icon: "fa-thumbs-o-up",
+                icon: "fa-battery-4",
                 condition: runes && pm.lane_role === 2 && runes < 5
             };
         },
@@ -691,17 +691,17 @@ function generatePlayerAnalysis(match, player_match)
             {
                 for (var key in pm.purchase)
                 {
-                    if (pm.item_uses[key] <= 1 && constants.items[key].cd)
+                    if (pm.purchase[key] && (pm.item_uses[key] || 0) < 1 && constants.items[key] && (constants.items[key].desc.substring(0, "Active".length) === "Active" || constants.items[key].desc.substring(0, "Use:".length) === "Use:"))
                     {
                         //if item has cooldown, consider it usable
-                        result.push(constants.items[key].dname);
+                        result.push("<img title='"+key+"' class='item img-sm' src='"+constants.items[key].img+"' />");
                     }
                 }
             }
             return {
                 abbr: "ITEMUSE",
-                template: "Active items with low usage:<br><b>%s</b>",
-                value: result.length ? result.join("<br>") : "N/A",
+                template: "Active items with low usage: %s",
+                value: result.length ? result.join("") : "N/A",
                 advice: "Make sure to use your item actives in order to fully utilize your investment.",
                 category: "success",
                 icon: "fa-bolt",

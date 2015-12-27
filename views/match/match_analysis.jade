@@ -19,9 +19,11 @@ block match_content
                 td
                   =val && val.condition ? val.value : "n"
             //-
-            td
+            td.text-left
               each val, key in player.analysis
-                if val
-                  span.btn(class=!val.condition ? "btn-"+val.category : "")
-                    span: abbr(title=util.format.apply(null, [val.template].concat(val.value))+"<br>"+val.advice)
-                      span.fa(style="margin:3px;", class=val.icon)
+                if val && val.condition
+                  - var cl = val.condition ? "text-danger" : "text-success"
+                  div(class=cl)
+                    span(style="margin:3px;"): abbr(title=(val.condition ? val.advice : ""))
+                      i.fa.fa-fw(class=val.icon)
+                    span(style="display:inline;") !{util.format.apply(null, [val.template].concat(val.value))}
