@@ -61,6 +61,7 @@ function computePlayerMatchData(player_match)
         player_match.hero_kills = 0;
         player_match.observer_kills = 0;
         player_match.sentry_kills = 0;
+        player_match.necronomicon_kills = 0;
         for (var key in player_match.killed)
         {
             if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1)
@@ -93,6 +94,9 @@ function computePlayerMatchData(player_match)
             if (key.indexOf("courier") !== -1)
             {
                 player_match.courier_kills += player_match.killed[key];
+            }
+            if (key.indexOf("necronomicon") !== -1){
+                player_match.necronomicon_kills += player_match.killed[key];
             }
         }
     }
@@ -671,7 +675,10 @@ function generatePlayerAnalysis(match, pm)
                 category: "info",
                 icon: "fa-eye",
                 valid: isSupport(pm),
-                score: function(raw){return raw / max_placed},
+                score: function(raw)
+                {
+                    return raw / max_placed
+                },
                 top: max_placed
             };
         },
@@ -703,7 +710,10 @@ function generatePlayerAnalysis(match, pm)
                 category: "primary",
                 icon: "fa-shield",
                 valid: isRoshHero(pm),
-                score: function(raw){return raw;},
+                score: function(raw)
+                {
+                    return raw;
+                },
                 top: 1
             };
         },
@@ -728,7 +738,10 @@ function generatePlayerAnalysis(match, pm)
                 category: "primary",
                 icon: "fa-battery-4",
                 valid: runes !== undefined && pm.lane_role === 2,
-                score: function(raw){return raw;},
+                score: function(raw)
+                {
+                    return raw;
+                },
                 top: 10
             };
         },
@@ -756,7 +769,10 @@ function generatePlayerAnalysis(match, pm)
                 category: "success",
                 icon: "fa-bolt",
                 valid: pm.purchase,
-                score: function(raw){ return 5 - raw;},
+                score: function(raw)
+                {
+                    return 5 - raw;
+                },
                 top: 0
             };
         }
