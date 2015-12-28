@@ -789,7 +789,7 @@ function generatePlayerAnalysis(match, pm)
     function isSupport(pm)
     {
         //if wards bought, consider as support
-        return pm.purchase && pm.purchase.ward_observer >= 2;
+        return pm.obs_log && pm.obs_log.length >= 2;
     }
 
     function isRoshHero(pm)
