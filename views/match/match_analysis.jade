@@ -17,7 +17,7 @@ block match_content
             //-
             each val, key in player.analysis
               td
-                if val.valid
+                if val.valid && val.score
                   div: abbr(title=val.display)
                     - var pct = val.score(val.value) / val.score(val.top)
                     if pct >= 1
@@ -35,9 +35,10 @@ block match_content
             each cond in [false]
               td.text-left.small
                 each val, key in player.analysis
-                  - var pct = val.score(val.value) / val.score(val.top)
-                  if val.valid && (cond ? pct > 1.1 : pct < 1)
-                    div(class="")
-                      span(style="margin:3px;"): abbr(title=(val.advice))
-                        i.fa.fa-fw(class=val.icon)
-                      span(style="display:inline;") !{val.display}
+                  if val.valid && val.score
+                    - var pct = val.score(val.value) / val.score(val.top)
+                    if (cond ? pct > 1.1 : pct < 1)
+                      div(class="")
+                        span(style="margin:3px;"): abbr(title=(val.advice))
+                          i.fa.fa-fw(class=val.icon)
+                        span(style="display:inline;") !{val.display}
