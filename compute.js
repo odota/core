@@ -482,7 +482,7 @@ function renderMatch(m)
  * Generates a player analysis for a player_match
  * Returns an analysis object
  **/
-function generatePlayerAnalysis(match, player_match)
+function generatePlayerAnalysis(match, pm)
 {
     //define condition check for each advice point
     var advice = {};
@@ -494,13 +494,16 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "LH",
                 name: "Last hits at 10 minutes",
-                template: "<b>%s</b>",
+                template: util.format("<b>%s</b>", lh),
                 value: lh,
                 advice: "Consider practicing your last-hitting in order to improve your farm.  If you're struggling in lane, consider asking for a rotation from your team.",
                 category: "warning",
                 icon: "fa-usd",
                 valid: lh !== undefined && !isSupport(pm),
-                score: lh || 0,
+                score: function(raw)
+                {
+                    return raw;
+                },
                 top: 50
             };
         },
@@ -525,13 +528,16 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "DROUGHT",
                 name: "Worst GPM",
-                template: "<b>%s</b> at <b>%s</b> minutes",
-                value: [(delta / interval).toFixed(0), start],
+                template: util.format("<b>%s</b> at <b>%s</b> minutes", (delta / interval).toFixed(0), start),
+                value: delta / interval,
                 advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
                 category: "warning",
                 icon: "fa-line-chart",
                 valid: Boolean(start),
-                score: delta / interval,
+                score: function(raw)
+                {
+                    return raw;
+                },
                 top: isSupport(pm) ? 150 : 300
             };
         },
@@ -559,14 +565,17 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "FLAME",
                 name: "Profanities used",
-                template: "<b>%s</b>",
+                template: util.format("<b>%s</b>", flames),
                 value: flames,
                 advice: "Keep calm in all chat in order to improve the overall game experience.",
                 category: "danger",
                 icon: "fa-fire",
                 valid: Boolean(pm.my_word_counts),
-                score: 5 - flames,
-                top: 5
+                score: function(raw)
+                {
+                    return 5 - raw;
+                },
+                top: 0
             };
         },
         //Courier feeding
@@ -576,14 +585,17 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "CFEED",
                 name: "Couriers fed",
-                template: "<b>%s</b>",
-                value: pm.purchase && pm.purchase.courier ? pm.purchase.courier : 0,
+                template: util.format("<b>%s</b>", couriers),
+                value: couriers,
                 advice: "Try not to make your team's situation worse by buying and feeding couriers.  Comebacks are always possible!",
                 category: "danger",
                 icon: "fa-cutlery",
                 valid: Boolean(pm.purchase),
-                score: couriers > 1 ? 0 : 1,
-                top: 1
+                score: function(raw)
+                {
+                    return raw > 2 ? 0 : 1;
+                },
+                top: 0
             };
         },
         //low ability accuracy (custom list of skillshots)
@@ -603,13 +615,16 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "SKILLSHOT",
                 name: "Skillshots landed",
-                template: "<b>%s</b>%",
-                value: [(acc * 100).toFixed(0)],
+                template: util.format("<b>%s</b>", acc ? acc.toFixed(2) : ""),
+                value: acc,
                 advice: "Practicing your skillshots can improve your match performance.",
                 category: "info",
                 icon: "fa-bullseye",
                 valid: acc !== undefined,
-                score: acc || 0,
+                score: function(raw)
+                {
+                    return raw || 0;
+                },
                 top: 0.5
             };
         },
@@ -625,14 +640,17 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "FCOURIER",
                 name: "Courier upgrade delay",
-                template: "<b>%s</b> seconds",
+                template: util.format("<b>%s</b> seconds", time - flying_available),
                 value: time - flying_available,
                 advice: "Upgrade your team's courier as soon as possible to speed up item delivery.",
                 category: "info",
                 icon: "fa-level-up",
                 valid: time !== undefined,
-                score: 60 - (time - flying_available),
-                top: 55
+                score: function(raw)
+                {
+                    return 60 - raw;
+                },
+                top: 10
             };
         },
         //low obs wards/min
@@ -644,48 +662,48 @@ function generatePlayerAnalysis(match, player_match)
             //2 wards respawn every interval
             //split responsibility between 2 supports
             var max_placed = m.duration / ward_cooldown * 2 / 2;
-            var uptime = wards / max_placed;
             return {
                 abbr: "OBS",
                 name: "Wards placed",
-                template: "<b>%s</b>",
-                value: wards.toFixed(0),
+                template: util.format("<b>%s</b>", wards),
+                value: wards,
                 advice: "Keep wards placed constantly to give your team vision.",
                 category: "info",
                 icon: "fa-eye",
                 valid: isSupport(pm),
-                score: uptime,
-                top: 1
+                score: function(raw){return raw / max_placed},
+                top: max_placed
             };
         },
         //roshan opportunities (specific heroes)
         roshan: function(m, pm)
         {
-            var rosh_taken = false;
+            var rosh_taken = 0;
             if (isRoshHero(pm) && m.objectives)
             {
                 for (var i = 0; i < m.objectives.length; i++)
                 {
+                    //first 20 minutes
                     if (m.objectives[i].time > 60 * 20)
                     {
                         break;
                     }
                     if (m.objectives[i].type === "CHAT_MESSAGE_ROSHAN_KILL" && m.objectives[i].team === (isRadiant(pm) ? 2 : 3))
                     {
-                        rosh_taken = true;
+                        rosh_taken += 1;
                     }
                 }
             }
             return {
                 abbr: "ROSHAN",
                 name: "Roshan taken early",
-                template: "<b>%s</b>",
+                template: util.format("<b>%s</b>", rosh_taken),
                 value: rosh_taken,
                 advice: "Certain heroes can take Roshan early for an early-game advantage.",
                 category: "primary",
                 icon: "fa-shield",
                 valid: isRoshHero(pm),
-                score: Number(rosh_taken),
+                score: function(raw){return raw;},
                 top: 1
             };
         },
@@ -704,13 +722,13 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "RUNES",
                 name: "Runes obtained",
-                template: "<b>%s</b>",
+                template: util.format("<b>%s</b>", runes),
                 value: runes,
                 advice: "Maintain rune control in order to give your team an advantage.",
                 category: "primary",
                 icon: "fa-battery-4",
                 valid: runes !== undefined && pm.lane_role === 2,
-                score: runes,
+                score: function(raw){return raw;},
                 top: 10
             };
         },
@@ -732,20 +750,23 @@ function generatePlayerAnalysis(match, player_match)
             return {
                 abbr: "ITEMUSE",
                 name: "Unused active items",
-                template: "%s",
-                value: result.length ? result.join("") : "None",
+                template: util.format("%s", result.length ? result.join("") : 0),
+                value: result.length,
                 advice: "Make sure to use your item actives in order to fully utilize your investment.",
                 category: "success",
                 icon: "fa-bolt",
                 valid: pm.purchase,
-                score: 5 - result.length,
-                top: 5
+                score: function(raw){ return 5 - raw;},
+                top: 0
             };
         }
     };
     for (var key in checks)
     {
-        advice[key] = checks[key](match, player_match);
+        advice[key] = checks[key](match, pm);
+        var val = advice[key];
+        val.display = util.format("%s: %s, expected <b>%s</b>", val.name, val.template, Number(val.top.toFixed(2)));
+        pm.desc = [constants.lane_role[pm.lane_role], isSupport(pm) ? "Support" : "Core"].join("/");
     }
     return advice;
 
@@ -764,9 +785,10 @@ function generatePlayerAnalysis(match, player_match)
         };
         return (constants.heroes[pm.hero_id].name in rosh_heroes);
     }
-    
-    function isActiveItem(key){
-        return (constants.items[key].desc.substring(0, "Active".length) === "Active" || constants.items[key].desc.substring(0, "Use:".length) === "Use:");
+
+    function isActiveItem(key)
+    {
+        return (constants.items[key].desc.substring(0, "Active".length) === "Active" && key !== "branches");
     }
 }
 /**

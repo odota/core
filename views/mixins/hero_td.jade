@@ -1,4 +1,4 @@
-mixin hero_td(player)
+mixin hero_td(player, metadata)
   - var hero = constants.heroes[player.hero_id]
   - var slot_color = constants.player_colors[player.player_slot]
   td(style="padding:1px")
@@ -18,3 +18,5 @@ mixin hero_td(player)
           ="Unknown"
         else
           =player.personaname
+      div
+         =metadata
