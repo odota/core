@@ -28,7 +28,10 @@ memwatch.on('stats', function(stats) {
     console.log(stats);
 });
 */
-setTimeout(function(){process.exit(0);}, 120*60*1000);
+setTimeout(function()
+{
+    process.exit(0);
+}, 120 * 60 * 1000);
 buildSets(db, redis, function(err)
 {
     if (err)
@@ -57,6 +60,8 @@ buildSets(db, redis, function(err)
             console.log(JSON.stringify(counts));
             */
             redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
+            redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
+            redis.ltrim("parse_delay", 0, 10000);
             delete parsed_data.key;
             delete parsed_data.jobId;
             delete parsed_data.hostname;
@@ -70,7 +75,8 @@ buildSets(db, redis, function(err)
             return insertMatch(db, redis, queue, match,
             {
                 type: "parsed"
-            }, function(err){
+            }, function(err)
+            {
                 cb(err);
                 job.exit(err, cb);
             });
@@ -136,7 +142,7 @@ function start()
         job.expire = setTimeout(function()
         {
             console.log('job %s expired', job.jobId);
-            return job.exit("timeout", function(){});
+            return job.exit("timeout", function() {});
         }, 120 * 1000);
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
@@ -168,8 +174,10 @@ function start()
         if (active_jobs[req.body.jobId])
         {
             var job = active_jobs[req.body.jobId];
-            job.submitWork(req.body, function(){
-                if (!res.headersSent) {
+            job.submitWork(req.body, function()
+            {
+                if (!res.headersSent)
+                {
                     return res.json(
                     {
                         error: null

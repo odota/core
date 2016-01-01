@@ -41,7 +41,7 @@ block content
               td: a(href="/matches/"+match.match_id)= match.match_id
               td=moment.unix(match.start_time + match.duration).fromNow()
   .row
-    .col-md-3
+    .col-md-4
       h3 Queue
       //pre=JSON.stringify(result.queue)
       table.table.table-condensed
@@ -56,7 +56,7 @@ block content
               td=key
               each val2, key2 in val
                 td(id=["queue",key, key2].join('_'))=val2
-    .col-md-3
+    .col-md-4
       h3 Parsers
       table.table.table-condensed
         thead
@@ -89,7 +89,7 @@ block content
                 if entry.hostname.indexOf(group) === 0
                   td=entry.hostname
                   td=entry.count
-    .col-md-3
+    .col-md-4
       h3 Retrievers
       table.table.table-condensed
         thead
@@ -101,15 +101,29 @@ block content
             tr
               td=entry.hostname
               td=entry.count
-    .col-md-3
+  .row
+    .col-md-12
       h3 Load Times
+      #chart-histogram-load_times
       //pre=JSON.stringify(result.load_times)
-      pre #{(result.load_times.map(function(a){return Number(a);}).reduce(function(a, b) { return a + b; }, 0)/result.load_times.length).toFixed(2)}ms
+      //pre #{(result.load_times.map(function(a){return Number(a);}).reduce(function(a, b) { return a + b; }, 0)/result.load_times.length).toFixed(2)}ms
       h3 Parse Delay
+      #chart-histogram-parse_delay
       //pre=JSON.stringify(result.parse_delay)
-      pre #{(result.parse_delay.map(function(a){return Number(a);}).reduce(function(a, b) { return a + b; }, 0)/result.parse_delay.length).toFixed(2)}ms
+      //pre #{(result.parse_delay.map(function(a){return Number(a);}).reduce(function(a, b) { return a + b; }, 0)/result.parse_delay.length).toFixed(2)}ms
 
 append footer_assets
+  script.
+    createHistogram(generateCounts(!{JSON.stringify(result.load_times)}), null, "load_times");
+    createHistogram(generateCounts(!{JSON.stringify(result.parse_delay)}), null, "parse_delay");
+    
+    function generateCounts(arr){
+      var res = {};
+      arr.forEach(function(e){
+        res[e] = res[e] ? res[e] + 1 : 1;
+      });
+      return res;
+    }
   //-
     script(src="/socket.io/socket.io.js")
     script.

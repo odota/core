@@ -811,6 +811,7 @@ module.exports = function runParse(match, cb)
         }
         parsed_data.teamfights = teamfights;
     }
+    /*
     // associate kill streaks with multi kills and team fights
     function processMultiKillStreaks()
     {
@@ -957,6 +958,7 @@ module.exports = function runParse(match, cb)
             }
         }
     }
+    */
     //strips off "item_" from strings
     function translate(input)
     {
