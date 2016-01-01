@@ -531,7 +531,7 @@ function generatePlayerAnalysis(match, pm)
             }
             return {
                 abbr: "DROUGHT",
-                name: "Worst GPM",
+                name: "Worst GPM over 5 minutes",
                 template: util.format("<b>%s</b> at <b>%s</b> minutes", (delta / interval).toFixed(0), start),
                 value: delta / interval,
                 advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
