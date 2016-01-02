@@ -27,16 +27,21 @@ spec:
           secretName: postgres-config
       containers:
       - name: postgres
-        image: postgres:9
-        # pass args to run as user postgres and with config file
-        args: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+        image: postgres:9.4
+        env:
+          - name: PGDATA
+            value: /var/lib/postgresql/data/pgdata
+        args: ["postgres", "--config_file=/etc/postgresql/postgresql.conf"]
         imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "12G"
         ports:
         - containerPort: 5432
           name: postgres
         volumeMounts:
         - name: postgres
-          mountPath: /var/lib/postgresql
+          mountPath: /var/lib/postgresql/data
         - name: postgres-config
           mountPath: /etc/postgresql
       dnsPolicy: ClusterFirst

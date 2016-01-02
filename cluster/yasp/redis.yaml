@@ -27,9 +27,12 @@ spec:
           secretName: redis-config
       containers:
       - name: redis
-        image: redis:3
+        image: redis:3.0
         command: [ "sh", "-c", "redis-server /etc/redis/redis.conf" ]
         imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "12G"
         ports:
         - containerPort: 6379
           name: redis
