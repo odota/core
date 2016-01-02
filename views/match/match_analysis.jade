@@ -17,7 +17,7 @@ block match_content
             //-
             each val, key in player.analysis
               td
-                if val.valid && val.score
+                if val.valid
                   div: abbr(title=val.display)
                     - var pct = val.pct
                     if pct >= 1
@@ -35,7 +35,7 @@ block match_content
             each cond in [false]
               td.text-left.small
                 each val, key in player.analysis
-                  if val.valid && val.score
+                  if val.valid
                     - var pct = val.pct
                     if (cond ? pct > 1.1 : pct < 1)
                       div(class="")
