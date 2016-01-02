@@ -29,6 +29,10 @@
   "actions": {
     "name": "Actions"
   },
+  "analysis": {
+    "name": "Analysis",
+    "new": true
+  },
   "chat": {
     "name": "Chat"
   }

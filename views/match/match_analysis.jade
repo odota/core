@@ -1,0 +1,44 @@
+extend match
+
+block match_content
+  .row
+    .col-md-12
+      +data_table({id:"analysis", heading: "Analysis"})
+        each player, i in match.players
+          +data_table_header(i, match)
+            tr
+              th: abbr(title=tooltips.hero_id) Hero
+              each val, key in player.analysis
+                th: abbr(title=val.name)
+                  i.fa.fa-fw(class=val.icon)
+              th Analysis
+          tr(class = player.isRadiant ? "radiant" : "dire")
+            +hero_td(player, player.desc)
+            //-
+            each val, key in player.analysis
+              td
+                if val.valid && val.score
+                  div: abbr(title=val.display)
+                    - var pct = val.score(val.value) / val.score(val.top)
+                    if pct >= 1
+                      span.text-success="A"
+                    else if pct >= 0.8
+                      span.text-info="B"
+                    else if pct >= 0.6
+                      span.text-primary="C"
+                    else if pct >= 0.4
+                      span.text-warning="D"
+                    else
+                      span.text-danger="F"
+                else
+                  ="-"
+            each cond in [false]
+              td.text-left.small
+                each val, key in player.analysis
+                  if val.valid && val.score
+                    - var pct = val.score(val.value) / val.score(val.top)
+                    if (cond ? pct > 1.1 : pct < 1)
+                      div(class="")
+                        span(style="margin:3px;"): abbr(title=(val.advice))
+                          i.fa.fa-fw(class=val.icon)
+                        span(style="display:inline;") !{val.display}

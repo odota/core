@@ -13,6 +13,7 @@ block match_content
               th: abbr(title=tooltips.farm_neutrals) Neutrals
               th: abbr(title=tooltips.farm_towers) Towers
               th: abbr(title=tooltips.farm_couriers) Couriers
+              th: abbr(title=tooltips.farm_necronomicon) Necronomicon
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             +hero_td(player)
@@ -21,6 +22,7 @@ block match_content
             td.rankable #{player.neutral_kills || "-"}
             td.rankable #{player.tower_kills || "-"}
             td.rankable #{player.courier_kills || "-"}
+            td.rankable #{player.necronomicon_kills || "-"}
   .row
     .col-md-12
       +data_table({id:"last_hits", summable:true, heading:"Last Hits", rankable: true})
