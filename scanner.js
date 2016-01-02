@@ -85,7 +85,7 @@ function scanApi(seq_num) {
         userPlayers = result.userPlayers;
         getData({
             url: container.url,
-            delay: config.DELAY_SCANNER
+            delay: Number('config.DEFAULT_DELAY')
         }, function(err, data) {
             if (err) {
                 return scanApi(seq_num);
