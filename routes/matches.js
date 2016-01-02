@@ -29,6 +29,16 @@ module.exports = function(db, redis)
             var info = matchPages[req.params.info] ? req.params.info : "index";
             if (req.query.json)
             {
+                //remove some columns from match.players to reduce JSON size and duplication
+                if (match.players)
+                {
+                    match.players.forEach(function(p)
+                    {
+                        delete p.chat;
+                        delete p.objectives;
+                        delete p.teamfights;
+                    });
+                }
                 return res.json(match);
             }
             res.render("match/match_" + info,
@@ -86,7 +96,7 @@ module.exports = function(db, redis)
             {
                 console.log("Cache hit for match " + match_id);
                 var match = JSON.parse(reply);
-                return done(err, match);
+                return cb(err, match);
             }
             else
             {
@@ -97,33 +107,14 @@ module.exports = function(db, redis)
                     {
                         return cb(err);
                     }
+                    renderMatch(match);
                     if (match.version && config.ENABLE_MATCH_CACHE)
                     {
                         redis.setex(key, 3600, JSON.stringify(match));
                     }
-                    return done(err, match);
+                    return cb(err, match);
                 });
             }
         });
-
-        function done(err, match)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            renderMatch(match);
-            //remove some columns from match.players to reduce JSON size and duplication
-            if (match.players)
-            {
-                match.players.forEach(function(p)
-                {
-                    delete p.chat;
-                    delete p.objectives;
-                    delete p.teamfights;
-                });
-            }
-            return cb(err, match);
-        }
     }
 };
