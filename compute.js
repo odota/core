@@ -805,7 +805,8 @@ function generatePlayerAnalysis(match, pm)
 
     function isActiveItem(key)
     {
-        return (constants.items[key].desc.substring(0, "Active".length) === "Active" && key !== "branches");
+        var whitelist = {"branches":1,"bloodstone":1,"radiance":1};
+        return (constants.items[key].desc.substring(0, "Active".length) === "Active" && !(key in whitelist));
     }
 }
 /**
