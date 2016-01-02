@@ -129,7 +129,7 @@ function generateJob(type, payload) {
 
 function getData(url, cb) {
     var u;
-    var delay = 1000;
+    var delay = config.DELAY_UTILITY;
     if (url.constructor === Array) {
         //select a random element if array
         u = url[Math.floor(Math.random() * url.length)];
