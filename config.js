@@ -39,6 +39,8 @@ var defaults = {
     "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches
     "ENABLE_PLAYER_CACHE": "", // set to enable caching players
+    "DELAY_UTILITY": "1000", // delay between API requests - utility.js (default: 1000)
+    "DELAY_SCANNER": "1000", // delay between API requests - scanner.js (default: 1000)
     //the following are deprecated
     "PARSER_HOST": "localhost:5200",
     "MONGO_URL": "mongodb://localhost/dota",
