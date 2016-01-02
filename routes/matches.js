@@ -9,28 +9,35 @@ var constants = require('../constants.js');
 var matchPages = constants.match_pages;
 var queries = require('../queries');
 var getMatch = queries.getMatch;
-module.exports = function(db, redis) {
-    matches.get('/:match_id/:info?', function(req, res, next) {
+module.exports = function(db, redis)
+{
+    matches.get('/:match_id/:info?', function(req, res, next)
+    {
         /*
         if (req.query.json) {
             return res.status(500).json({error: "currently disabled"});
         }
         */
         console.time("match page");
-        prepareMatch(req.params.match_id, function(err, match) {
-            if (err) {
+        prepareMatch(req.params.match_id, function(err, match)
+        {
+            if (err)
+            {
                 return next(err);
             }
             console.timeEnd("match page");
             var info = matchPages[req.params.info] ? req.params.info : "index";
-            if (req.query.json) {
+            if (req.query.json)
+            {
                 return res.json(match);
             }
-            res.render("match/match_" + info, {
+            res.render("match/match_" + info,
+            {
                 route: info,
                 match: match,
                 tabs: matchPages,
-                display_types: {
+                display_types:
+                {
                     "DOTA_UNIT_ORDER_MOVE_TO_POSITION": "Move (P)",
                     "DOTA_UNIT_ORDER_MOVE_TO_TARGET": "Move (T)",
                     "DOTA_UNIT_ORDER_ATTACK_MOVE": "Attack (M)",
@@ -66,38 +73,57 @@ module.exports = function(db, redis) {
     });
     return matches;
 
-    function prepareMatch(match_id, cb) {
+    function prepareMatch(match_id, cb)
+    {
         var key = "match:" + match_id;
-        redis.get(key, function(err, reply) {
-            if (err) {
+        redis.get(key, function(err, reply)
+        {
+            if (err)
+            {
                 return cb(err);
             }
-            else if (reply) {
+            else if (reply)
+            {
                 console.log("Cache hit for match " + match_id);
                 var match = JSON.parse(reply);
-                return cb(err, match);
+                return done(err, match);
             }
-            else {
+            else
+            {
                 console.log("Cache miss for match " + match_id);
-                getMatch(db, match_id, function(err, match) {
-                    if (err) {
+                getMatch(db, match_id, function(err, match)
+                {
+                    if (err)
+                    {
                         return cb(err);
                     }
-                    renderMatch(match);
-                    //remove some columns from match.players to reduce JSON size and duplication
-                    if (match.players) {
-                        match.players.forEach(function(p) {
-                            delete p.chat;
-                            delete p.objectives;
-                            delete p.teamfights;
-                        });
-                    }
-                    if (match.version && config.ENABLE_MATCH_CACHE) {
+                    if (match.version && config.ENABLE_MATCH_CACHE)
+                    {
                         redis.setex(key, 3600, JSON.stringify(match));
                     }
-                    return cb(err, match);
+                    return done(err, match);
                 });
             }
         });
+
+        function done(err, match)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            renderMatch(match);
+            //remove some columns from match.players to reduce JSON size and duplication
+            if (match.players)
+            {
+                match.players.forEach(function(p)
+                {
+                    delete p.chat;
+                    delete p.objectives;
+                    delete p.teamfights;
+                });
+            }
+            return cb(err, match);
+        }
     }
 };
