@@ -782,6 +782,8 @@ function generatePlayerAnalysis(match, pm)
         advice[key] = checks[key](match, pm);
         var val = advice[key];
         val.display = util.format("%s: %s, expected <b>%s</b>", val.name, val.template, Number(val.top.toFixed(2)));
+        val.pct = val.score(val.value)/val.score(val.top);
+        delete val.score;
         pm.desc = [constants.lane_role[pm.lane_role], isSupport(pm) ? "Support" : "Core"].join("/");
     }
     return advice;
