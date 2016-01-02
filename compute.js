@@ -788,8 +788,7 @@ function generatePlayerAnalysis(match, pm)
 
     function isSupport(pm)
     {
-        //if wards bought, consider as support
-        return pm.obs_log && pm.obs_log.length >= 2;
+        return pm.obs_log && pm.obs_log.length >= 2 && pm.lh_t && pm.lh_t[10] < 20;
     }
 
     function isRoshHero(pm)
@@ -799,7 +798,7 @@ function generatePlayerAnalysis(match, pm)
             "npc_dota_hero_ursa": 1,
             "npc_dota_hero_troll_warlord": 1
         };
-        return (constants.heroes[pm.hero_id].name in rosh_heroes);
+        return constants.heroes[pm.hero_id] && (constants.heroes[pm.hero_id].name in rosh_heroes);
     }
 
     function isActiveItem(key)
