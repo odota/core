@@ -1,7 +1,8 @@
 var redis = require('redis');
 var config = require('./config');
 var client = redis.createClient(config.REDIS_URL, {
-    detect_buffers: true
+    detect_buffers: true,
+    no_ready_check: true
 });
 client.on('error', function(err) {
     console.error(err);

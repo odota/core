@@ -28,7 +28,7 @@ spec:
       containers:
       - name: redis
         image: redis:3.0
-        command: [ "sh", "-c", "redis-server /etc/redis/redis.conf" ]
+        command: ["redis-server", "/etc/redis/redis.conf"]
         imagePullPolicy: Always
         resources:
           requests:
