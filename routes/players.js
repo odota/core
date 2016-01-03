@@ -3,20 +3,18 @@ var players = express.Router();
 var async = require('async');
 var constants = require('../constants.js');
 var queries = require("../queries");
-var insertPlayerCache = queries.insertPlayerCache;
 var getPlayerMatches = queries.getPlayerMatches;
 var utility = require('../utility');
 var generatePositionData = utility.generatePositionData;
 var reduceMatch = utility.reduceMatch;
 var config = require('../config');
-var zlib = require('zlib');
 var preprocessQuery = utility.preprocessQuery;
 var filter = require('../filter');
-var aggregator = require('../aggregator');
-var compute = require('../compute');
 var querystring = require('querystring');
 var moment = require('moment');
-var computePlayerMatchData = compute.computePlayerMatchData;
+var playerCache = require('../playerCache');
+var readCache = playerCache.readCache;
+var writeCache = playerCache.writeCache;
 var subkeys = {
     "kills": 1,
     "deaths": 1,
@@ -450,15 +448,19 @@ module.exports = function(db, redis)
         }
         else
         {
-            cb(null);
+            cb();
         }
     }
 
-    function countPlayer(account_id, cb)
+    function validateCache(account_id, cache, cb)
     {
+        if (!cache)
+        {
+            return cb();
+        }
         if (!isNaN(account_id))
         {
-            console.time("count");
+            console.time("validate");
             db('player_matches').count().where(
             {
                 account_id: Number(account_id)
@@ -469,15 +471,16 @@ module.exports = function(db, redis)
                     return cb(err);
                 }
                 count = Number(count[0].count);
-                console.timeEnd("count");
-                return cb(err, count);
+                console.timeEnd("validate");
+                var cacheValid = cache && cache.data && cache.data.length && cache.data.length === count;
+                return cb(err, cacheValid);
             });
         }
         else
         {
             //non-integer account_id (all/professional)
-            //don't return a count (always valid)
-            cb(null);
+            //skip validation (always valid)
+            cb(null, true);
         }
     }
 
@@ -485,8 +488,8 @@ module.exports = function(db, redis)
     {
         //options.info, the tab the player is on
         //options.queryObj, the query object to use
-        var cache;
-        var cacheValid = false;
+        var orig_account_id = account_id;
+        account_id = Number(account_id);
         //select player_matches with this account_id
         options.queryObj.select.account_id = account_id;
         options.queryObj = preprocessQuery(options.queryObj, constants);
@@ -503,97 +506,59 @@ module.exports = function(db, redis)
                 account_id: account_id,
                 personaname: account_id
             };
-            console.time('readcache');
-            if (config.ENABLE_PLAYER_CACHE)
+            readCache(orig_account_id, function(err, cache)
             {
-                getCache();
-            }
-            else
-            {
-                cacheMiss();
-            }
-
-            function getCache()
-            {
-                redis.get(new Buffer("player:" + account_id), function(err, result)
+                if (err)
+                {
+                    return cb(err);
+                }
+                //check count of matches in db to validate cache
+                validateCache(account_id, cache, function(err, valid)
                 {
                     if (err)
                     {
-                        console.log(err);
+                        return cb(err);
                     }
-                    cache = result && config.ENABLE_PLAYER_CACHE ? JSON.parse(zlib.inflateSync(result)) : null;
-                    console.timeEnd('readcache');
-                    account_id = Number(account_id);
-                    //unpack cache.data into an array
-                    if (cache && cache.data)
+                    if (!valid)
                     {
-                        var arr = [];
-                        for (var key in cache.data)
-                        {
-                            arr.push(cache.data[key]);
-                        }
-                        cache.data = arr;
-                        //check count of matches to validate cache
-                        countPlayer(account_id, function(err, count)
-                        {
-                            if (err)
-                            {
-                                return cb(err);
-                            }
-                            //we return undefined count if the account_id is string (all/professional)
-                            cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined);
-                            //var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
-                            if (cacheValid && !filter_exists)
-                            {
-                                console.log("player cache hit %s", player.account_id);
-                                //fill in skill data from table since it is not cached
-                                console.time('fillskill');
-                                //get skill data for matches within cache expiry (might not have skill data)
-                                var recents = cache.data.filter(function(m)
-                                {
-                                    return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
-                                });
-                                var skillMap = {};
-                                async.each(recents, function(match, cb)
-                                {
-                                    db.first(['match_id', 'skill']).from('match_skill').where(
-                                    {
-                                        match_id: match.match_id
-                                    }).asCallback(function(err, row)
-                                    {
-                                        if (row && row.skill)
-                                        {
-                                            skillMap[match.match_id] = row.skill;
-                                        }
-                                        return cb(err);
-                                    });
-                                }, function(err)
-                                {
-                                    cache.data.forEach(function(m)
-                                    {
-                                        m.skill = m.skill || skillMap[m.match_id];
-                                    });
-                                    console.timeEnd('fillskill');
-                                    processResults(err,
-                                    {
-                                        data: cache.data,
-                                        aggData: cache.aggData,
-                                        unfiltered: cache.data
-                                    });
-                                });
-                            }
-                            else
-                            {
-                                cacheMiss();
-                            }
-                        });
+                        return cacheMiss();
                     }
                     else
                     {
-                        cacheMiss();
+                        console.log("player cache hit %s", player.account_id);
+                        //fill in skill data from table since it is not cached
+                        console.time('fillskill');
+                        //get skill data for matches within cache expiry (might not have skill data)
+                        var recents = cache.data.filter(function(m)
+                        {
+                            return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+                        });
+                        var skillMap = {};
+                        async.each(recents, function(match, cb)
+                        {
+                            db.first(['match_id', 'skill']).from('match_skill').where(
+                            {
+                                match_id: match.match_id
+                            }).asCallback(function(err, row)
+                            {
+                                if (row && row.skill)
+                                {
+                                    skillMap[match.match_id] = row.skill;
+                                }
+                                return cb(err);
+                            });
+                        }, function(err)
+                        {
+                            cache.data.forEach(function(m)
+                            {
+                                m.skill = m.skill || skillMap[m.match_id];
+                            });
+                            console.timeEnd('fillskill');
+                            processResults(err, cache);
+                        });
                     }
                 });
-            }
+            });
 
             function cacheMiss()
             {
@@ -601,7 +566,27 @@ module.exports = function(db, redis)
                 //we need to project everything to build a new cache, otherwise optimize and do a subset
                 options.queryObj.project = config.ENABLE_PLAYER_CACHE ? everything : projections[options.info];
                 options.queryObj.project = options.queryObj.project.concat(filter_exists ? filter : []);
-                getPlayerMatches(db, options.queryObj, processResults);
+                getPlayerMatches(db, options.queryObj, function(err, results)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    //reduce matches to only required data for display
+                    results.data = results.data.map(reduceMatch);
+                    //save the cache
+                    if (!filter_exists && player.account_id !== constants.anonymous_account_id)
+                    {
+                        writeCache(player.account_id, results.data, results.aggData, function()
+                        {
+                            processResults(err, results);
+                        });
+                    }
+                    else
+                    {
+                        processResults(err, results);
+                    }
+                });
             }
 
             function processResults(err, results)
@@ -616,10 +601,8 @@ module.exports = function(db, redis)
                 {
                     return Number(b.match_id) - Number(a.match_id);
                 });
-                //reduce matches to only required data for display
-                player.data = results.data.map(reduceMatch);
+                player.data = results.data;
                 player.aggData = results.aggData;
-                //player.all_teammates = cachedTeammates;
                 //convert heroes hash to array and sort
                 var aggData = player.aggData;
                 if (aggData.heroes)
@@ -659,37 +642,7 @@ module.exports = function(db, redis)
                         player.abandons += player.aggData.leaver_status.counts[key];
                     }
                 }
-                saveCache(cb);
-            }
-
-            function saveCache(cb)
-            {
-                if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE)
-                {
-                    //pack data into hash for cache
-                    var match_ids = {};
-                    player.data.forEach(function(m)
-                    {
-                        var identifier = [m.match_id, m.player_slot].join(':');
-                        match_ids[identifier] = m;
-                    });
-                    cache = {
-                        data: match_ids,
-                        aggData: player.aggData
-                    };
-                    //console.log(Object.keys(cache.data).length);
-                    console.log("saving player cache %s", player.account_id);
-                    console.time("writecache");
-                    redis.setex(new Buffer("player:" + player.account_id), 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
-                    //insertPlayerCache(db, player, cache, function(err, player) {
-                    console.timeEnd("writecache");
-                    return cb(err, player);
-                    //});
-                }
-                else
-                {
-                    return cb(null, player);
-                }
+                cb(err, player);
             }
         });
     }
