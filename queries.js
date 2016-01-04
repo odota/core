@@ -245,33 +245,10 @@ function insertMatch(db, redis, queue, match, options, cb)
 
     function updatePlayerCaches(cb)
     {
-        if (match.pgroup && players)
-        {
-            players.forEach(function(p)
-            {
-                //add account id to each player so we know what caches to update
-                p.account_id = match.pgroup[p.player_slot].account_id;
-                //add hero_id to each player so we update records with hero played
-                p.hero_id = match.pgroup[p.player_slot].hero_id;
-            });
-        }
-        async.eachSeries(players || options.players, function(player_match, cb)
-        {
-            if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
-            {
-                //join player with match to form player_match
-                for (var key in match)
-                {
-                    player_match[key] = match[key];
-                }
-                player_match.insert_type = options.type;
-                queueReq(queue, "cache", player_match, {}, cb);
-            }
-            else
-            {
-                return cb();
-            }
-        }, cb);
+        match.players = players;
+        match.insert_type = options.type;
+        queueReq(queue, "cache", match,
+        {}, cb);
     }
 
     function clearMatchCache(cb)
