@@ -506,6 +506,9 @@ module.exports = function(db, redis)
                 account_id: account_id,
                 personaname: account_id
             };
+            if (filter_exists){
+                return cacheMiss();
+            }
             readCache(orig_account_id, function(err, cache)
             {
                 if (err)
