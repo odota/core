@@ -13,7 +13,8 @@ spec:
   - nodePort: 30246
     port: 80
     targetPort: web
-  type: NodePort
+  #type: NodePort
+  type: LoadBalancer
 ----
 apiVersion: v1
 kind: ReplicationController

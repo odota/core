@@ -7,7 +7,7 @@ queue.cache.on('completed', function(job){
 });
 function processCache(job, cb)
 {
-    console.log('match: %s, account: %s', job.data.payload.match_id, job.data.payload.account_id);
+    console.log('match: %s', job.data.payload.match_id);
     updateCache(job.data.payload, function(err)
     {
         if (err)
