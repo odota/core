@@ -15,7 +15,7 @@ wget -q -O - https://get.k8s.io | bash
 #put redis data in GCE disk "disk-redis"
 gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-f" --type "pd-ssd"
 #put postgres data in GCE disk "disk-postgres"
-gcloud compute disks create "disk-postgres" --size "50" --zone "us-central1-f" --type "pd-ssd"
+gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-f" --type "pd-ssd"
 
 #create namespace
 kubectl create -f ./cluster/setup/namespace.yaml
@@ -30,19 +30,14 @@ bash ./cluster/scripts/create-redis-config.sh | kubectl create -f -
 kubectl create -f ./cluster/yasp
 
 #set up db on postgres node
-kubectl exec postgres-ltm1a "bash" -it
+kubectl exec -it postgres-ltm1a "bash"
 su postgres 
 bash
 createuser yasp
 psql -c "ALTER USER yasp WITH PASSWORD 'yasp';"
 createdb yasp --owner yasp
-psql postgres://yasp:yasp@postgres/yasp
-#create_tables.sql
+cat "sql/create_tables.sql" | kubectl exec postgres-cxo7r -i -- psql postgresql://yasp:yasp@postgres/yasp
 
-#copy old data
-rsync -rav --info=progress2 /var/lib/redis/ /newdisk/var/lib/redis
-rsync -rav --info=progress2 /var/lib/postgresql/9.4/main/ /var/lib/postgres/data/pgdata
- 
 #secure remote connections to redis/postgres
 #set up redis password
 #redis-cli config set requirepass yasp
@@ -51,3 +46,10 @@ rsync -rav --info=progress2 /var/lib/postgresql/9.4/main/ /var/lib/postgres/data
 
 #to update the cluster
 #npm run deploy
+
+#backup/restore
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f yasp.sql --format=c
+#pg_restore -d postgres://yasp:yasp@localhost/yasp yasp.sql
+cat "yasp.sql" | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
+#mount disk-redis to /newdisk
+cp /var/lib/redis/dump.rdb /newdisk/dump.rdb'

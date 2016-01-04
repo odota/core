@@ -103,27 +103,20 @@ block content
               td=entry.count
   .row
     .col-md-12
-      h3 Load Times
+      h3 Load Times (ms)
       #chart-histogram-load_times
       //pre=JSON.stringify(result.load_times)
       //pre #{(result.load_times.map(function(a){return Number(a);}).reduce(function(a, b) { return a + b; }, 0)/result.load_times.length).toFixed(2)}ms
-      h3 Parse Delay
+      h3 Parse Delay (ms)
       #chart-histogram-parse_delay
       //pre=JSON.stringify(result.parse_delay)
       //pre #{(result.parse_delay.map(function(a){return Number(a);}).reduce(function(a, b) { return a + b; }, 0)/result.parse_delay.length).toFixed(2)}ms
 
 append footer_assets
   script.
-    createHistogram(generateCounts(!{JSON.stringify(result.load_times)}), null, "load_times");
-    createHistogram(generateCounts(!{JSON.stringify(result.parse_delay)}), null, "parse_delay");
+    createHistogram(!{JSON.stringify(result.load_times)}, null, "load_times");
+    createHistogram(!{JSON.stringify(result.parse_delay)}, null, "parse_delay");
     
-    function generateCounts(arr){
-      var res = {};
-      arr.forEach(function(e){
-        res[e] = res[e] ? res[e] + 1 : 1;
-      });
-      return res;
-    }
   //-
     script(src="/socket.io/socket.io.js")
     script.
