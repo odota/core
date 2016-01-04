@@ -245,9 +245,10 @@ function insertMatch(db, redis, queue, match, options, cb)
 
     function updatePlayerCaches(cb)
     {
-        match.players = players;
-        match.insert_type = options.type;
-        queueReq(queue, "cache", match,
+        var copy = JSON.parse(JSON.stringify(match));
+        copy.players = players;
+        copy.insert_type = options.type;
+        queueReq(queue, "cache", copy,
         {}, cb);
     }
 

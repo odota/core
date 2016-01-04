@@ -42,7 +42,7 @@ spec:
           secretName: postgres-config
       containers:
       - name: postgres
-        image: postgres:9.4
+        image: postgres:9.5
         env:
           - name: PGDATA
             value: /var/lib/postgresql/data/pgdata
