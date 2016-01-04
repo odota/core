@@ -22,3 +22,4 @@ secret.yaml
 redis-config.yaml
 postgres-config.yaml
 dependency-reduced-pom.xml
+kubernetes

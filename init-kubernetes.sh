@@ -10,7 +10,7 @@ source ./cluster/setup/gce.env
 #set up kubernetes cluster
 wget -q -O - https://get.k8s.io | bash
 
-#copy k8s-yasp-minion-template, use hm-4, make new instance group
+#copy k8s-yasp-minion-template, use hm, make new instance(s) for postgres/redis
 
 #put redis data in GCE disk "disk-redis"
 gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-f" --type "pd-ssd"
