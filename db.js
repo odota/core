@@ -9,11 +9,6 @@ console.log('connecting %s', config.POSTGRES_URL);
 var db = require('knex')(
 {
   client: 'pg',
-  connection: config.POSTGRES_URL,
-  pool:
-  {
-    min: 0,
-    max: 2
-  }
+  connection: config.POSTGRES_URL
 });
 module.exports = db;
