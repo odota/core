@@ -484,6 +484,7 @@ module.exports = function aggregator(matches, fields, existing) {
         }
     };
     if (typeof fields === "string") {
+        //do aggregations for only basic or only parsed data
         console.log("aggregating %s", fields);
         var t = {};
         for (var key in types) {

@@ -3,7 +3,6 @@ var redis = require('./redis');
 var zlib = require('zlib');
 var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
-var computeMatchData = compute.computeMatchData;
 var aggregator = require('./aggregator');
 var utility = require('./utility');
 var reduceMatch = utility.reduceMatch;
@@ -64,7 +63,7 @@ function writeCache(account_id, data, aggData, cb)
     }
 }
 
-function updateCache(player_match, options, cb)
+function updateCache(player_match, cb)
 {
     if (config.ENABLE_PLAYER_CACHE)
     {
@@ -78,15 +77,12 @@ function updateCache(player_match, options, cb)
             //if player cache doesn't exist, skip
             if (cache)
             {
-                if (options.type !== "skill")
+                var reInsert = player_match.match_id in cache.aggData.match_ids && player_match.insert_type === "api";
+                var reParse = player_match.match_id in cache.aggData.parsed_match_ids && player_match.insert_type === "parsed";
+                if (!reInsert && !reParse)
                 {
-                    var reInsert = player_match.match_id in cache.aggData.match_ids && options.type === "api";
-                    var reParse = player_match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
-                    if (!reInsert && !reParse)
-                    {
-                        computePlayerMatchData(player_match);
-                        cache.aggData = aggregator([player_match], options.type, cache.aggData);
-                    }
+                    computePlayerMatchData(player_match);
+                    cache.aggData = aggregator([player_match], player_match.insert_type, cache.aggData);
                 }
                 //reduce match to save cache space--we only need basic data per match for matches tab
                 var reduced_player_match = reduceMatch(player_match);
@@ -120,7 +116,8 @@ function updateCache(player_match, options, cb)
             }
         });
     }
-    else {
+    else
+    {
         return cb();
     }
 }

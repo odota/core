@@ -2,7 +2,6 @@ var utility = require('./utility');
 var async = require('async');
 var constants = require("./constants.js");
 var db = require('./db');
-//var redis = require('./redis');
 //var queue = require('./queue');
 var queries = require('./queries');
 //var insertMatch = queries.insertMatch;
@@ -58,25 +57,6 @@ function getPageData(start, options, cb) {
         var matches = data.result.matches;
         async.eachSeries(matches, function(m, cb) {
             insertMatchSkill(db, {match_id: m.match_id, skill: options.skill}, cb);
-            /*
-            var data = {
-                match_id: m.match_id,
-                players: m.players,
-                skill: options.skill
-            };
-            //results[m.match_id] = 1;
-            insertMatch(db, redis, queue, {
-                match_id: data.match_id,
-                skill: data.skill
-            }, {
-                type: "skill",
-                //pass players in options since we don't want to insert skill players (overwrites details)
-                players: data.players
-            }, function(err) {
-                //delete results[data.match_id];
-                return cb(err);
-            });
-            */
         }, function(err) {
             if (err) {
                 return cb(err);

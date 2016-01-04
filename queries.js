@@ -8,8 +8,6 @@ var computeMatchData = compute.computeMatchData;
 var aggregator = require('./aggregator');
 var constants = require('./constants');
 var filter = require('./filter');
-var playerCache = require('./playerCache');
-var updateCache = playerCache.updateCache;
 var columnInfo = null;
 
 function getSets(redis, cb)
@@ -266,7 +264,8 @@ function insertMatch(db, redis, queue, match, options, cb)
                 {
                     player_match[key] = match[key];
                 }
-                updateCache(player_match, options, cb);
+                player_match.insert_type = options.type;
+                queueReq(queue, "cache", player_match, {}, cb);
             }
             else
             {

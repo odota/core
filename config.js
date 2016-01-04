@@ -1,9 +1,6 @@
-try {
-    require('dotenv').load();
-}
-catch(e){
-    console.log("[WARNING] error occurred when loading .env: %s", e);
-}
+var dotenv = require('dotenv');
+dotenv.config({silent: true});
+dotenv.load();
 var defaults = {
     "STEAM_API_KEY": "", //for API reqs, in worker
     "STEAM_USER": "", //for getting replay salt/profile data, in retriever

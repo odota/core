@@ -20,4 +20,5 @@ module.exports = {
     request: bull('request', options.port, options.host),
     fullhistory: bull('fullhistory', options.port, options.host),
     mmr: bull('mmr', options.port, options.host),
+    cache: bull('cache', options.port, options.host),
 };

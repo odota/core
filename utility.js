@@ -5,10 +5,12 @@ var config = require('./config');
 var BigNumber = require('big-number').n;
 var urllib = require('url');
 var transports = [];
-transports.push(new(winston.transports.Console)({
+transports.push(new(winston.transports.Console)(
+{
     'timestamp': true
 }));
-var logger = new(winston.Logger)({
+var logger = new(winston.Logger)(
+{
     transports: transports
 });
 /**
@@ -18,15 +20,18 @@ var logger = new(winston.Logger)({
  *
  * @return {Array}
  */
-function tokenize(input) {
+function tokenize(input)
+{
     return input.replace(/[^a-zA-Z- ]+/g, '').replace('/ {2,}/', ' ').toLowerCase().split(' ');
 }
 
-function generateJob(type, payload) {
+function generateJob(type, payload)
+{
     var api_url = "http://api.steampowered.com";
     var api_key;
     var opts = {
-        "api_details": function() {
+        "api_details": function()
+        {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
                 title: [type, payload.match_id].join(),
@@ -34,7 +39,8 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "api_history": function() {
+        "api_history": function()
+        {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : "") + (payload.leagueid ? "&league_id=" + payload.leagueid : ""),
                 title: [type, payload.account_id].join(),
@@ -42,9 +48,11 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "api_summaries": function() {
+        "api_summaries": function()
+        {
             return {
-                url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.players.map(function(p) {
+                url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.players.map(function(p)
+                {
                     return convert32to64(p.account_id).toString();
                 }).join(),
                 title: [type, payload.summaries_id].join(),
@@ -52,14 +60,16 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "api_sequence": function() {
+        "api_sequence": function()
+        {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + api_key + "&start_at_match_seq_num=" + payload.start_at_match_seq_num,
                 title: [type, payload.seq_num].join(),
                 type: "api"
             };
         },
-        "api_heroes": function() {
+        "api_heroes": function()
+        {
             return {
                 url: api_url + "/IEconDOTA2_570/GetHeroes/v0001/?key=" + api_key + "&language=" + payload.language,
                 title: [type, payload.language].join(),
@@ -67,7 +77,8 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "api_leagues": function() {
+        "api_leagues": function()
+        {
             return {
                 url: api_url + "/IDOTA2Match_570/GetLeagueListing/v0001/?key=" + api_key,
                 title: [type].join(),
@@ -75,7 +86,8 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "api_skill": function() {
+        "api_skill": function()
+        {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistory/v0001/?key=" + api_key + "&start_at_match_id=" + payload.start_at_match_id + "&skill=" + payload.skill + "&hero_id=" + payload.hero_id + "&min_players=10",
                 title: [type, payload.skill].join(),
@@ -83,7 +95,8 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "api_live": function() {
+        "api_live": function()
+        {
             return {
                 url: api_url + "/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=" + api_key,
                 title: [type].join(),
@@ -91,7 +104,8 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "parse": function() {
+        "parse": function()
+        {
             return {
                 title: [type, payload.match_id].join(),
                 type: type,
@@ -99,7 +113,8 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "request": function() {
+        "request": function()
+        {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
                 title: [type, payload.match_id].join(),
@@ -108,18 +123,28 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
-        "fullhistory": function() {
+        "fullhistory": function()
+        {
             return {
                 title: [type, payload.account_id].join(),
                 type: type,
                 payload: payload
             };
         },
-        "mmr": function() {
+        "mmr": function()
+        {
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
                 type: type,
                 url: payload.url,
+                payload: payload
+            };
+        },
+        "cache": function()
+        {
+            return {
+                title: [type, payload.match_id, payload.account_id].join(),
+                type: type,
                 payload: payload
             };
         }
@@ -127,25 +152,30 @@ function generateJob(type, payload) {
     return opts[type]();
 }
 
-function getData(url, cb) {
+function getData(url, cb)
+{
     var u;
     var delay = Number(config.DEFAULT_DELAY);
-    if (url.constructor === Array) {
+    if (url.constructor === Array)
+    {
         //select a random element if array
         u = url[Math.floor(Math.random() * url.length)];
     }
-    else if (typeof url === "object") {
+    else if (typeof url === "object")
+    {
         //options object
         u = url.url;
         delay = url.delay || delay;
     }
-    else {
+    else
+    {
         u = url;
     }
     var parse = urllib.parse(u, true);
     var proxy;
     var steam_api = false;
-    if (parse.host === "api.steampowered.com") {
+    if (parse.host === "api.steampowered.com")
+    {
         steam_api = true;
         //choose an api key to use
         var api_keys = config.STEAM_API_KEY.split(",");
@@ -165,47 +195,60 @@ function getData(url, cb) {
     }
     var target = urllib.format(parse);
     logger.info("getData: %s", target);
-    return setTimeout(function() {
-        request({
+    return setTimeout(function()
+    {
+        request(
+        {
             proxy: proxy,
             url: target,
             json: true,
             timeout: 30000
-        }, function(err, res, body) {
-            if (body && body.error) {
+        }, function(err, res, body)
+        {
+            if (body && body.error)
+            {
                 //body contained specific error (probably from retriever)
                 //non-retryable
                 return cb(body);
             }
-            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response)) {
+            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response))
+            {
                 //invalid response
-                if (url.noRetry) {
+                if (url.noRetry)
+                {
                     return cb(err || "invalid response");
                 }
-                else {
+                else
+                {
                     logger.info("invalid response, retrying: %s", target);
                     return getData(url, cb);
                 }
             }
-            else if (body.result) {
+            else if (body.result)
+            {
                 //steam api usually returns data with body.result, getplayersummaries has body.response
-                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
+                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found")
+                {
                     //user does not have stats enabled or attempting to get private match/invalid id, don't retry
                     //non-retryable
                     return cb(body);
                 }
-                else if (body.result.error || body.result.status === 2) {
+                else if (body.result.error || body.result.status === 2)
+                {
                     //valid response, but invalid data, retry
-                    if (url.noRetry) {
+                    if (url.noRetry)
+                    {
                         return cb(err || "invalid data");
                     }
-                    else {
+                    else
+                    {
                         logger.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
                         return getData(url, cb);
                     }
                 }
             }
-            return cb(null, body, {
+            return cb(null, body,
+            {
                 hostname: parse.host
             });
         });
@@ -216,7 +259,8 @@ function getData(url, cb) {
  *
  * Returns a BigNumber
  */
-function convert64to32(id) {
+function convert64to32(id)
+{
     return new BigNumber(id).minus('76561197960265728');
 }
 /*
@@ -224,46 +268,58 @@ function convert64to32(id) {
  *
  * Returns a BigNumber
  */
-function convert32to64(id) {
+function convert32to64(id)
+{
     return new BigNumber('76561197960265728').plus(id);
 }
 
-function isRadiant(player) {
+function isRadiant(player)
+{
     return player.player_slot < 128;
 }
 
-function mergeObjects(merge, val) {
-    for (var attr in val) {
+function mergeObjects(merge, val)
+{
+    for (var attr in val)
+    {
         //NaN test
-        if (Number.isNaN(val[attr])) {
+        if (Number.isNaN(val[attr]))
+        {
             val[attr] = 0;
         }
         //does property exist?
-        if (!merge[attr]) {
+        if (!merge[attr])
+        {
             merge[attr] = val[attr];
         }
-        else if (val[attr].constructor === Array) {
+        else if (val[attr].constructor === Array)
+        {
             merge[attr] = merge[attr].concat(val[attr]);
         }
-        else if (typeof val[attr] === "object") {
+        else if (typeof val[attr] === "object")
+        {
             mergeObjects(merge[attr], val[attr]);
         }
-        else {
+        else
+        {
             merge[attr] += Number(val[attr]);
         }
     }
 }
 
-function mode(array) {
+function mode(array)
+{
     if (array.length == 0) return null;
     var modeMap = {};
     var maxEl = array[0],
         maxCount = 1;
-    for (var i = 0; i < array.length; i++) {
+    for (var i = 0; i < array.length; i++)
+    {
         var el = array[i];
         if (modeMap[el] == null) modeMap[el] = 1;
         else modeMap[el]++;
-        if (modeMap[el] > maxCount) {
+        if (modeMap[el] > maxCount)
+        {
             maxEl = el;
             maxCount = modeMap[el];
         }
@@ -271,7 +327,8 @@ function mode(array) {
     return maxEl;
 }
 
-function getParseSchema() {
+function getParseSchema()
+{
     return {
         "version": 15,
         "match_id": 0,
@@ -280,11 +337,13 @@ function getParseSchema() {
         "chat": [],
         "radiant_gold_adv": [],
         "radiant_xp_adv": [],
-        "players": Array.apply(null, new Array(10)).map(function() {
+        "players": Array.apply(null, new Array(10)).map(function()
+        {
             return {
                 "player_slot": 0,
                 "stuns": 0,
-                "max_hero_hit": {
+                "max_hero_hit":
+                {
                     value: 0
                 },
                 "times": [],
@@ -297,27 +356,48 @@ function getParseSchema() {
                 "kills_log": [],
                 "buyback_log": [],
                 //"pos": {},
-                "lane_pos": {},
-                "obs": {},
-                "sen": {},
-                "actions": {},
-                "pings": {},
-                "purchase": {},
-                "gold_reasons": {},
-                "xp_reasons": {},
-                "killed": {},
-                "item_uses": {},
-                "ability_uses": {},
-                "hero_hits": {},
-                "damage": {},
-                "damage_taken": {},
-                "damage_inflictor": {},
-                "runes": {},
-                "killed_by": {},
-                "modifier_applied": {},
-                "kill_streaks": {},
-                "multi_kills": {},
-                "healing": {},
+                "lane_pos":
+                {},
+                "obs":
+                {},
+                "sen":
+                {},
+                "actions":
+                {},
+                "pings":
+                {},
+                "purchase":
+                {},
+                "gold_reasons":
+                {},
+                "xp_reasons":
+                {},
+                "killed":
+                {},
+                "item_uses":
+                {},
+                "ability_uses":
+                {},
+                "hero_hits":
+                {},
+                "damage":
+                {},
+                "damage_taken":
+                {},
+                "damage_inflictor":
+                {},
+                "runes":
+                {},
+                "killed_by":
+                {},
+                "modifier_applied":
+                {},
+                "kill_streaks":
+                {},
+                "multi_kills":
+                {},
+                "healing":
+                {},
                 /*
                 "kill_streaks_log": [], // an array of kill streak values
                 //     where each kill streak is an array of kills where
@@ -333,17 +413,22 @@ function getParseSchema() {
     };
 }
 
-function generatePositionData(d, p) {
+function generatePositionData(d, p)
+{
     //d, a hash of keys to process
     //p, a player containing keys with values as position hashes
     //stores the resulting arrays in the keys of d
     //64 is the offset of x and y values
     //subtracting y from 127 inverts from bottom/left origin to top/left origin
-    for (var key in d) {
+    for (var key in d)
+    {
         var t = [];
-        for (var x in p[key]) {
-            for (var y in p[key][x]) {
-                t.push({
+        for (var x in p[key])
+        {
+            for (var y in p[key][x])
+            {
+                t.push(
+                {
                     x: Number(x) - 64,
                     y: 127 - (Number(y) - 64),
                     value: p[key][x][y]
@@ -355,11 +440,13 @@ function generatePositionData(d, p) {
     return d;
 }
 
-function isSignificant(constants, m) {
+function isSignificant(constants, m)
+{
     return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined && m.duration > 60 * 5);
 }
 
-function reduceMatch(player_match) {
+function reduceMatch(player_match)
+{
     //trim down the size of a player_match so cache.data isn't so big
     player_match = {
         match_id: player_match.match_id,
@@ -380,20 +467,26 @@ function reduceMatch(player_match) {
     return player_match;
 }
 
-function max(array) {
+function max(array)
+{
     return Math.max.apply(null, array);
 }
 
-function min(array) {
+function min(array)
+{
     return Math.min.apply(null, array);
 }
 
-function invokeInterval(func, delay) {
+function invokeInterval(func, delay)
+{
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
-    (function invoker() {
+    (function invoker()
+    {
         console.log("running %s", func.name);
-        func(function(err) {
-            if (err) {
+        func(function(err)
+        {
+            if (err)
+            {
                 //log the error, but wait until next interval to retry
                 console.error(err);
             }
@@ -402,23 +495,29 @@ function invokeInterval(func, delay) {
     })();
 }
 
-function queueReq(queue, type, payload, options, cb) {
+function queueReq(queue, type, payload, options, cb)
+{
     var job = generateJob(type, payload);
-    queue[job.type].add(job, {
+    queue[job.type].add(job,
+    {
         attempts: options.attempts || 15,
-        backoff: {
+        backoff:
+        {
             delay: 60 * 1000,
             type: 'exponential'
         }
-    }).then(function(queuejob) {
+    }).then(function(queuejob)
+    {
         console.log("created jobId: %s", queuejob.jobId);
         cb(null, queuejob);
     }).catch(cb);
 }
 
-function preprocessQuery(query, constants) {
+function preprocessQuery(query, constants)
+{
     //check if we already processed to ensure idempotence
-    if (query.processed) {
+    if (query.processed)
+    {
         return;
     }
     //select,the query received, build the mongo query and the js filter based on this
@@ -436,31 +535,40 @@ function preprocessQuery(query, constants) {
     var whitelist = {
         "all": 5000
     };
-    for (var key in query.select) {
+    for (var key in query.select)
+    {
         //arrayify the element
-        query.select[key] = [].concat(query.select[key]).map(function(e) {
-            if (typeof e === "object") {
+        query.select[key] = [].concat(query.select[key]).map(function(e)
+        {
+            if (typeof e === "object")
+            {
                 //just return the object if it's an array or object
                 return e;
             }
             //numberify this element if not keyword
-            if (e in whitelist) {
+            if (e in whitelist)
+            {
                 return e;
             }
-            else {
+            else
+            {
                 return Number(e);
             }
         });
-        if (dbAble[key]) {
+        if (dbAble[key])
+        {
             //get the first element
-            if (query.select[key][0] in whitelist) {
+            if (query.select[key][0] in whitelist)
+            {
                 query.limit = whitelist[query.select[key][0]];
             }
-            else {
+            else
+            {
                 query.db_select[key] = query.select[key][0];
             }
         }
-        else if (!exceptions[key]) {
+        else if (!exceptions[key])
+        {
             query.js_select[key] = query.select[key];
         }
     }

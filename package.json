@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node deploy",
     "dev": "nf -j Procfile.dev start",
-    "dev2": "pm2-dev deploy.json",
     "test": "test/run.sh",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "update": "npm-check-updates -u",
@@ -16,11 +15,8 @@
     "mocha": "mocha",
     "maven": "mvn -q -f java_parser/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack",
-    "startup": "sudo pm2 startup ubuntu -u yasp",
     "create": "bash sql/create.sh",
-    "psql": "psql -d postgresql://yasp:yasp@localhost/yasp",
-    "deploy-core": "git pull origin master && npm run build && node deploy core",
-    "deploy-parser": "git pull origin master && npm install && npm run maven && node deploy parser"
+    "psql": "psql -d postgresql://yasp:yasp@localhost/yasp"
   },
   "repository": {
     "type": "git",
