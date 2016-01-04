@@ -28,8 +28,16 @@ footer {
     bottom: 0;
     background-color: #000;
     width: 100%;
-    padding: 1.3em 0 0 1em;
+    padding: 1.3em;
 }
+
+@media (max-width: 991px) {
+    footer ul{
+        text-align: center;
+        list-style-type: none;
+        padding: 0;
+    }
+} 
 
 h3 img {
     padding-right: 1em;
