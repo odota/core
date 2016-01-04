@@ -5,8 +5,8 @@ queue.cache.process(1, processCache);
 
 function processCache(job, cb)
 {
-    console.log('match: %s, account: %s', job.payload.match_id, job.payload.account_id);
-    updateCache(job.payload, function(err)
+    console.log('match: %s, account: %s', job.data.payload.match_id, job.data.payload.account_id);
+    updateCache(job.data.payload, function(err)
     {
         if (err)
         {

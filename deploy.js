@@ -33,14 +33,6 @@ var services = {
             "instances": 0
       },
         {
-            "script": "retriever.js",
-            "role": "retriever"
-      },
-        {
-            "script": "proxy.js",
-            "role": "proxy"
-      },
-        {
             "script": "web.js",
             "role": "core",
             "exec_mode": "cluster",
