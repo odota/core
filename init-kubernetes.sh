@@ -33,7 +33,10 @@ kubectl create -f ./cluster/yasp
 kubectl exec postgres-ltm1a "bash" -it
 su postgres 
 bash
-createuser yasp && psql -c "ALTER USER yasp WITH PASSWORD 'yasp';" && createdb yasp --owner yasp && psql yasp
+createuser yasp
+psql -c "ALTER USER yasp WITH PASSWORD 'yasp';"
+createdb yasp --owner yasp
+psql postgres://yasp:yasp@postgres/yasp
 #create_tables.sql
 
 #copy old data

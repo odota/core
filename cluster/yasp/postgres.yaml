@@ -8,10 +8,10 @@ metadata:
 spec:
   selector:
     app: postgres
-    tier: backend
+    tier: infra
   ports:
   - port: 5432
-    targetPort: postgres
+    targetPort: 5432
 ----
 apiVersion: v1
 kind: ReplicationController
@@ -51,9 +51,6 @@ spec:
         resources:
           requests:
             memory: "12G"
-        ports:
-        - containerPort: 5432
-          name: postgres
         volumeMounts:
         - name: postgres
           mountPath: /var/lib/postgresql/data

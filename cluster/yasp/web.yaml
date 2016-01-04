@@ -1,4 +1,21 @@
 apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web
+    tier: backend
+  name: web
+spec:
+  selector:
+    app: web
+    tier: backend
+  ports:
+  - nodePort: 30246
+    port: 80
+    targetPort: web
+  type: NodePort
+----
+apiVersion: v1
 kind: ReplicationController
 metadata:
   labels:
@@ -35,19 +52,3 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
-----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    tier: infra
-  name: web
-spec:
-  selector:
-    app: web
-    tier: backend
-  ports:
-  - nodePort: 30246
-    port: 80
-    targetPort: web
-  type: NodePort
