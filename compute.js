@@ -95,7 +95,8 @@ function computePlayerMatchData(player_match)
             {
                 player_match.courier_kills += player_match.killed[key];
             }
-            if (key.indexOf("necronomicon") !== -1){
+            if (key.indexOf("necronomicon") !== -1)
+            {
                 player_match.necronomicon_kills += player_match.killed[key];
             }
         }
@@ -491,24 +492,23 @@ function generatePlayerAnalysis(match, pm)
     //define condition check for each advice point
     var advice = {};
     var checks = {
-        //LH@10
-        lh: function(m, pm)
+        //EFF@10
+        eff: function(m, pm)
         {
-            var lh = pm.lh_t ? pm.lh_t[10] : undefined;
+            var eff = pm.lane_efficiency ? pm.lane_efficiency : undefined;
             return {
-                abbr: "LH",
-                name: "Last hits at 10 minutes",
-                template: util.format("<b>%s</b>", lh),
-                value: lh,
-                advice: "Consider practicing your last-hitting in order to improve your farm.  If you're struggling in lane, consider asking for a rotation from your team.",
+                grade: true,
+                name: "Lane efficiency at 10 minutes",
+                value: eff,
+                top: isSupport(pm) ? 0.3 : pm.lane_role === 3 ? 0.4 : 0.6,
+                advice: "Consider practicing your last-hitting in order to improve your farm.  If you're struggling in lane, consider asking for a rotation from your team.  If playing a support, stack and pull to obtain farm.",
                 category: "warning",
                 icon: "fa-usd",
-                valid: lh !== undefined && !isSupport(pm),
+                valid: eff !== undefined,
                 score: function(raw)
                 {
                     return raw;
                 },
-                top: 50
             };
         },
         //farming drought (low gold earned delta over an interval)
@@ -530,10 +530,11 @@ function generatePlayerAnalysis(match, pm)
                 }
             }
             return {
-                abbr: "DROUGHT",
-                name: "Worst GPM over 5 minutes",
-                template: util.format("<b>%s</b> at <b>%s</b> minutes", (delta / interval).toFixed(0), start),
+                grade: true,
+                name: "Lowest GPM in 5 minute interval",
+                suffix: util.format("(<b>%s</b> minutes)", start),
                 value: delta / interval,
+                top: isSupport(pm) ? 150 : 300,
                 advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
                 category: "warning",
                 icon: "fa-line-chart",
@@ -541,8 +542,7 @@ function generatePlayerAnalysis(match, pm)
                 score: function(raw)
                 {
                     return raw;
-                },
-                top: isSupport(pm) ? 150 : 300
+                }
             };
         },
         //Flaming in all chat
@@ -567,9 +567,7 @@ function generatePlayerAnalysis(match, pm)
                 }
             }
             return {
-                abbr: "FLAME",
                 name: "Profanities used",
-                template: util.format("<b>%s</b>", flames),
                 value: flames,
                 advice: "Keep calm in all chat in order to improve the overall game experience.",
                 category: "danger",
@@ -585,11 +583,9 @@ function generatePlayerAnalysis(match, pm)
         //Courier feeding
         courier_feeding: function(m, pm)
         {
-            var couriers = pm.purchase && pm.purchase.courier ? pm.purchase.courier : 0;
+            var couriers = pm.purchase && pm.purchase.courier ? Math.max(pm.purchase.courier - 2, 0) : 0;
             return {
-                abbr: "CFEED",
-                name: "Couriers fed",
-                template: util.format("<b>%s</b>", couriers),
+                name: "Couriers bought and fed",
                 value: couriers,
                 advice: "Try not to make your team's situation worse by buying and feeding couriers.  Comebacks are always possible!",
                 category: "danger",
@@ -597,7 +593,7 @@ function generatePlayerAnalysis(match, pm)
                 valid: Boolean(pm.purchase),
                 score: function(raw)
                 {
-                    return raw > 2 ? 0 : 1;
+                    return raw ? 0 : 1;
                 },
                 top: 0
             };
@@ -617,9 +613,9 @@ function generatePlayerAnalysis(match, pm)
                 }
             }
             return {
+                grade: true,
                 abbr: "SKILLSHOT",
                 name: "Skillshots landed",
-                template: util.format("<b>%s</b>", acc ? acc.toFixed(2) : ""),
                 value: acc,
                 advice: "Practicing your skillshots can improve your match performance.",
                 category: "info",
@@ -642,9 +638,8 @@ function generatePlayerAnalysis(match, pm)
                 time = pm.purchase_time.flying_courier;
             }
             return {
-                abbr: "FCOURIER",
+                grade: true,
                 name: "Courier upgrade delay",
-                template: util.format("<b>%s</b> seconds", time - flying_available),
                 value: time - flying_available,
                 advice: "Upgrade your team's courier as soon as possible to speed up item delivery.",
                 category: "info",
@@ -667,9 +662,8 @@ function generatePlayerAnalysis(match, pm)
             //split responsibility between 2 supports
             var max_placed = m.duration / ward_cooldown * 2 / 2;
             return {
-                abbr: "OBS",
+                grade: true,
                 name: "Wards placed",
-                template: util.format("<b>%s</b>", wards),
                 value: wards,
                 advice: "Keep wards placed constantly to give your team vision.",
                 category: "info",
@@ -677,7 +671,7 @@ function generatePlayerAnalysis(match, pm)
                 valid: isSupport(pm),
                 score: function(raw)
                 {
-                    return raw / max_placed
+                    return raw / max_placed;
                 },
                 top: max_placed
             };
@@ -702,9 +696,7 @@ function generatePlayerAnalysis(match, pm)
                 }
             }
             return {
-                abbr: "ROSHAN",
                 name: "Roshan taken early",
-                template: util.format("<b>%s</b>", rosh_taken),
                 value: rosh_taken,
                 advice: "Certain heroes can take Roshan early for an early-game advantage.",
                 category: "primary",
@@ -729,10 +721,10 @@ function generatePlayerAnalysis(match, pm)
                     runes += pm.runes[key];
                 }
             }
+            var target = match.duration / 60 / 4;
             return {
-                abbr: "RUNES",
+                grade: true,
                 name: "Runes obtained",
-                template: util.format("<b>%s</b>", runes),
                 value: runes,
                 advice: "Maintain rune control in order to give your team an advantage.",
                 category: "primary",
@@ -740,9 +732,9 @@ function generatePlayerAnalysis(match, pm)
                 valid: runes !== undefined && pm.lane_role === 2,
                 score: function(raw)
                 {
-                    return raw;
+                    return raw / target;
                 },
-                top: 10
+                top: target
             };
         },
         //unused item actives (multiple results?)
@@ -753,17 +745,30 @@ function generatePlayerAnalysis(match, pm)
             {
                 for (var key in pm.purchase)
                 {
-                    if (pm.purchase[key] && (pm.item_uses[key] || 0) < 1 && constants.items[key] && isActiveItem(key))
+                    if (pm.purchase[key] && getGroupedItemUses(key) < 1 && constants.items[key] && isActiveItem(key))
                     {
                         //if item has cooldown, consider it usable
                         result.push("<img title='" + key + "' class='item img-sm' src='" + constants.items[key].img + "' />");
                     }
                 }
             }
+
+            function getGroupedItemUses(key)
+            {
+                var total = 0;
+                for (var key2 in pm.item_uses)
+                {
+                    if (key === key2 || constants.item_groups.some(function(g){return (key in g) && (key2 in g);}))
+                    {
+                        total += pm.item_uses[key];
+                    }
+                }
+                return total;
+            }
             return {
                 abbr: "ITEMUSE",
                 name: "Unused active items",
-                template: util.format("%s", result.length ? result.join("") : 0),
+                suffix: util.format("%s", result.length ? result.join("") : 0),
                 value: result.length,
                 advice: "Make sure to use your item actives in order to fully utilize your investment.",
                 category: "success",
@@ -781,8 +786,9 @@ function generatePlayerAnalysis(match, pm)
     {
         advice[key] = checks[key](match, pm);
         var val = advice[key];
-        val.display = util.format("%s: %s, expected <b>%s</b>", val.name, val.template, Number(val.top.toFixed(2)));
-        val.pct = val.score(val.value)/val.score(val.top);
+        val.display = util.format("%s: <b>%s</b>, expected <b>%s</b>", val.name, Number(val.value ? val.value.toFixed(2) : ""), Number(val.top.toFixed(2)));
+        val.display += (val.suffix ? " " + val.suffix : "");
+        val.pct = val.score(val.value) / val.score(val.top);
         delete val.score;
         pm.desc = [constants.lane_role[pm.lane_role], isSupport(pm) ? "Support" : "Core"].join("/");
     }
@@ -805,7 +811,11 @@ function generatePlayerAnalysis(match, pm)
 
     function isActiveItem(key)
     {
-        var whitelist = {"branches":1,"bloodstone":1,"radiance":1};
+        var whitelist = {
+            "branches": 1,
+            "bloodstone": 1,
+            "radiance": 1
+        };
         return (constants.items[key].desc.substring(0, "Active".length) === "Active" && !(key in whitelist));
     }
 }

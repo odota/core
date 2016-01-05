@@ -9,29 +9,31 @@ block match_content
             tr
               th: abbr(title=tooltips.hero_id) Hero
               each val, key in player.analysis
-                th: abbr(title=val.name)
-                  i.fa.fa-fw(class=val.icon)
+                if val.grade
+                  th: abbr(title=val.name)
+                    i.fa.fa-fw(class=val.icon)
               th Analysis
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player, player.desc)
             //-
             each val, key in player.analysis
-              td
-                if val.valid
-                  div: abbr(title=val.display)
-                    - var pct = val.pct
-                    if pct >= 1
-                      span.text-success="A"
-                    else if pct >= 0.8
-                      span.text-info="B"
-                    else if pct >= 0.6
-                      span.text-primary="C"
-                    else if pct >= 0.4
-                      span.text-warning="D"
-                    else
-                      span.text-danger="F"
-                else
-                  ="-"
+              if val.grade
+                td
+                  if val.valid
+                    div: abbr(title=val.display)
+                      - var pct = val.pct
+                      if pct >= 1
+                        span.text-success="A"
+                      else if pct >= 0.8
+                        span.text-info="B"
+                      else if pct >= 0.6
+                        span.text-primary="C"
+                      else if pct >= 0.4
+                        span.text-warning="D"
+                      else
+                        span.text-danger="F"
+                  else
+                    ="-"
             each cond in [false]
               td.text-left.small
                 each val, key in player.analysis
