@@ -7,12 +7,11 @@ block playercontent
         small To display MMR, share it on your in-game Dota profile.
       div.btn.btn-info.btn-sm(onclick='toggle()') Toggle Timeseries
       #ratings
-      
 
 append footer_assets
   script.
     var ratings = !{JSON.stringify(player.ratings)};
-    var indexBased = false;
+    var indexBased = true;
     var toggle = function(){
       indexBased = !indexBased;
       ratingsChart(ratings, indexBased);
