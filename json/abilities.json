@@ -270,7 +270,7 @@
       "desc": "Drow's experiences in battle improve her accuracy and effectiveness in combat, providing a passive bonus to Agility. Grants no bonus if there are enemy heroes within 400 range.\r\n\r\nUpgradable by Aghanim's Scepter.",
       "notes": "",
       "dmg": "",
-      "attrib": "BONUS AGILITY: <span class=\"attribVal\">40 / 60 / 80</span>",
+      "attrib": "BONUS AGILITY: <span class=\"attribVal\">40 / 60 / 80</span><br />\nSEARCH RANGE: <span class=\"attribVal\">375</span>",
       "cmb": "",
       "lore": "The Drow Ranger is the epitome of archery prowess.",
       "hurl": "Drow_Ranger"
@@ -630,10 +630,10 @@
     "pudge_meat_hook": {
       "dname": "Meat Hook",
       "affects": "ABILITY: <span class=\"attribVal\">Point Target</span><br />DAMAGE TYPE: <span class=\"attribVal\"><font color=\"#d61107\">Pure</font></span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Launches a bloody hook toward a unit or location. The hook will snag the first unit it encounters, dragging the unit back to Pudge and dealing damage if it is an enemy.\r\n\r\nUpgradable by Aghanim's Scepter, reducing the cooldown.",
+      "desc": "Launches a bloody hook toward a unit or location. The hook will snag the first unit it encounters, dragging the unit back to Pudge and dealing damage if it is an enemy.\r\n\r\nUpgradable by Aghanim's Scepter, reducing the cooldown and increasing the damage.",
       "notes": "Interrupts channeling spells of the primary target if it's an enemy.<br />Meat Hook hits invisible units.<br />Meat Hook can go through trees, cliffs, buildings, and mechanical units.<br />Meat Hook can drag friendly units, but they won't be damaged.",
       "dmg": "DAMAGE: <span class=\"attribVal\">90 / 180 / 270 / 360</span><br />",
-      "attrib": "RANGE: <span class=\"attribVal\">1000 / 1100 / 1200 / 1300</span><br />\n<span class=\"scepterVal\">SCEPTER COOLDOWN:</span> <span class=\"attribVal\">4</span>",
+      "attrib": "RANGE: <span class=\"attribVal\">1000 / 1100 / 1200 / 1300</span><br />\n<span class=\"scepterVal\">SCEPTER COOLDOWN:</span> <span class=\"attribVal\">4</span><br />\n<span class=\"scepterVal\">SCEPTER DAMAGE:</span> <span class=\"attribVal\">175 / 275 / 375 / 475</span>",
       "cmb": "<div class=\"cooldownMana\"><div class=\"mana\"><img alt=\"Mana Cost\" title=\"Mana Cost\" class=\"manaImg\" src=\"http://cdn.dota2.com/apps/dota2/images/tooltips/mana.png\" width=\"16\" height=\"16\" border=\"0\" /> 110/120/130/140</div><div class=\"cooldown\"><img alt=\"Cooldown\" title=\"Cooldown\" class=\"cooldownImg\" src=\"http://cdn.dota2.com/apps/dota2/images/tooltips/cooldown.png\" width=\"16\" height=\"16\" border=\"0\" /> 14/13/12/11</div><br clear=\"left\" /></div>",
       "lore": "The Butcher's hook is a symbolic nightmare, its curved blade a frightening reminder of his slaughterous intent.",
       "hurl": "Pudge"
@@ -663,7 +663,7 @@
     "pudge_dismember": {
       "dname": "Dismember",
       "affects": "ABILITY: <span class=\"attribVal\">Channeled, Unit Target</span><br />AFFECTS: <span class=\"attribVal\">Enemy Units</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "CHANNELED - Pudge chows down on an enemy unit, disabling it and dealing damage over time. Pudge gets healed for the same amount he damages. Lasts 3 seconds on Heroes, 6 seconds on creeps.\r\n\r\nUpgradable by Aghanim's Scepter.",
+      "desc": "CHANNELED - Pudge chows down on an enemy unit, disabling it and dealing damage over time. Pudge gets healed for the same amount he damages. Lasts 3 seconds on Heroes, 6 seconds on creeps.",
       "notes": "Dismember will disable Spell Immune units, but not damage them.<br />If a unit becomes invisible while Dismembered, it will still be under the effects of Dismember.",
       "dmg": "",
       "attrib": "DAMAGE PER SECOND: <span class=\"attribVal\">60 / 90 / 120</span><br />\nSTRENGTH MULTIPLIER: <span class=\"attribVal\">0.3 / 0.4 / 0.5</span>",
@@ -718,7 +718,7 @@
     "sandking_burrowstrike": {
       "dname": "Burrowstrike",
       "affects": "ABILITY: <span class=\"attribVal\">Unit Target, Point Target</span><br />AFFECTS: <span class=\"attribVal\">Enemy Units</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Sand King burrows into the ground and tunnels forward, damaging and stunning enemy units above him as he resurfaces.\r\n\r\nUpgradable by Aghanim's Scepter, increasing the range and applies Caustic Finale to every heroes hit by Burrowstrike.",
+      "desc": "Sand King burrows into the ground and tunnels forward, damaging and stunning enemy units above him as he resurfaces.\r\n\r\nUpgradable by Aghanim's Scepter, increasing the range and applies Caustic Finale to every heroes hit by Burrowstrike.\r\n\r\nUpgradable by Aghanim's Scepter.",
       "notes": "",
       "dmg": "DAMAGE: <span class=\"attribVal\">100 / 160 / 220 / 280</span><br />",
       "attrib": "STUN DURATION: <span class=\"attribVal\">2.17</span><br />\nRANGE: <span class=\"attribVal\">350 / 450 / 550 / 650</span><br />\n<span class=\"scepterVal\">SCEPTER RANGE:</span> <span class=\"attribVal\">700 / 900 / 1100 / 1300</span>",
@@ -751,7 +751,7 @@
     "sandking_epicenter": {
       "dname": "Epicenter",
       "affects": "ABILITY: <span class=\"attribVal\">No Target, Channeled</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "CHANNELED - After channeling for 2 seconds, Sand King sends a disturbance into the earth, causing it to shudder violently. All enemies caught within range will take damage and become slowed. Each subsequent pulse increases the radius of damage dealt.\r\n\r\nUpgradable by Aghanim's Scepter.",
+      "desc": "CHANNELED - After channeling for 2 seconds, Sand King sends a disturbance into the earth, causing it to shudder violently. All enemies caught within range will take damage and become slowed. Each subsequent pulse increases the radius of damage dealt.",
       "notes": "The pulses are centered on Sand King, not where he first casted the spell.<br />The pulses have gradually inreasing radius: 275 / 325 / 375 / 425 / 475 / 525 / 575 / 650 / 675 / 700.",
       "dmg": "",
       "attrib": "PULSES: <span class=\"attribVal\">6 / 8 / 10</span><br />\nDAMAGE PER PULSE: <span class=\"attribVal\">110 / 110 / 110</span><br />\nMOVEMENT SLOW: <span class=\"attribVal\">30% / 30% / 30%</span><br />\nATTACK SLOW: <span class=\"attribVal\">30</span><br />\nSLOW DURATION: <span class=\"attribVal\">3</span>",
@@ -1389,7 +1389,7 @@
     "riki_smoke_screen": {
       "dname": "Smoke Screen",
       "affects": "ABILITY: <span class=\"attribVal\">Point Target</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Throws down a smoke bomb, silencing enemies, causing causing them to miss most attacks, as well as slowing movement.",
+      "desc": "Throws down a smoke bomb, silencing enemies, and causing them to miss most attacks, as well as slowing movement.",
       "notes": "Doesn't prevent the use of active items.",
       "dmg": "",
       "attrib": "RADIUS: <span class=\"attribVal\">250 / 275 / 300 / 325</span><br />\nMISS RATE: <span class=\"attribVal\">40% / 50% / 60% / 70%</span><br />\nMOVEMENT SLOW: <span class=\"attribVal\">25%</span><br />\nDURATION: <span class=\"attribVal\">6</span>",
@@ -1409,7 +1409,7 @@
       "hurl": "Riki"
     },
     "riki_permanent_invisibility": {
-      "dname": "Permanent Invisibility",
+      "dname": "Cloak and Dagger",
       "affects": "ABILITY: <span class=\"attribVal\">Passive</span><br />DAMAGE TYPE: <span class=\"attribVal\"><font color=\"#71a9ea\">Physical</font></span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
       "desc": "Riki fades into the shadows, becoming invisible. Every time Riki strikes his enemy from behind, he deals bonus damage based on his Agility. When Riki attacks, he becomes visible.",
       "notes": "Riki won't auto attack enemies while invisible.<br />Illusions of Riki will play Backstab animations, but not deal any bonus damage.<br />Bonus damage from Backstab can't be evaded.",
@@ -1906,10 +1906,10 @@
     "death_prophet_spirit_siphon": {
       "dname": "Spirit Siphon",
       "affects": "ABILITY: <span class=\"attribVal\">Unit Target</span><br />AFFECTS: <span class=\"attribVal\">Enemy Units</span><br />DAMAGE TYPE: <span class=\"attribVal\"><font color=\"#d61107\">Pure</font></span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Creates a spirit link between Death Prophet and an enemy unit, draining 20 + 1% Max HP per second and slowing the enemy's movement speed by 6%. Lasts 4 seconds.",
+      "desc": "Creates a spirit link between Death Prophet and an enemy unit, draining 20 + 1% Max HP per second and slowing the enemy's movement speed by 6%.",
       "notes": "Cannot cast multiple on same target.",
       "dmg": "",
-      "attrib": "BASE DAMAGE: <span class=\"attribVal\">20</span><br />\nMAX HP AS DAMAGE: <span class=\"attribVal\">1% / 1.8% / 2.6% / 3.4%</span><br />\nENEMY SLOW: <span class=\"attribVal\">6% / 10% / 14% / 18%</span><br />\nMAX CHARGES: <span class=\"attribVal\">1 / 2 / 3 / 4</span><br />\nCHARGE RESTORE TIME: <span class=\"attribVal\">45</span>",
+      "attrib": "BASE DAMAGE: <span class=\"attribVal\">20</span><br />\nMAX HP AS DAMAGE: <span class=\"attribVal\">1% / 1.8% / 2.6% / 3.4%</span><br />\nDURATION: <span class=\"attribVal\">4</span><br />\nENEMY SLOW: <span class=\"attribVal\">6% / 10% / 14% / 18%</span><br />\nMAX CHARGES: <span class=\"attribVal\">1 / 2 / 3 / 4</span><br />\nCHARGE RESTORE TIME: <span class=\"attribVal\">45</span>",
       "cmb": "<div class=\"cooldownMana\"><div class=\"mana\"><img alt=\"Mana Cost\" title=\"Mana Cost\" class=\"manaImg\" src=\"http://cdn.dota2.com/apps/dota2/images/tooltips/mana.png\" width=\"16\" height=\"16\" border=\"0\" /> 70/65/60/55</div><br clear=\"left\" /></div>",
       "lore": "",
       "hurl": "Death_Prophet"
@@ -1917,7 +1917,7 @@
     "death_prophet_exorcism": {
       "dname": "Exorcism",
       "affects": "ABILITY: <span class=\"attribVal\">No Target</span><br />DAMAGE TYPE: <span class=\"attribVal\"><font color=\"#71a9ea\">Physical</font></span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Unleashes evil spirits to drain the life of nearby enemy units and structures. At the end of the spell's duration, Death Prophet is healed in proportion to the damage dealt.  Lasts 30 seconds.",
+      "desc": "Unleashes evil spirits to drain the life of nearby enemy units and structures. At the end of the spell's duration, Death Prophet is healed in proportion to the damage dealt.  Lasts 35 seconds.",
       "notes": "Radius represents the area in which the spirits will acquire targets around Death Prophet.<br />Spirit damage isn't reduced by damage block abilities.",
       "dmg": "",
       "attrib": "RADIUS: <span class=\"attribVal\">700 / 700 / 700</span><br />\nSPIRITS: <span class=\"attribVal\">8 / 16 / 24</span><br />\nLIFE DRAIN: <span class=\"attribVal\">25% / 25% / 25%</span><br />\nSPIRIT DAMAGE: <span class=\"attribVal\">55 / 55 / 55</span>",
@@ -3083,7 +3083,7 @@
     "doom_bringer_infernal_blade": {
       "dname": "Infernal Blade",
       "affects": "ABILITY: <span class=\"attribVal\">Auto-Cast, Unit Target</span><br />AFFECTS: <span class=\"attribVal\">Enemy Units</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Doom swings his burning sword, igniting the enemy. Stuns for %ministun_durations% seconds and applies a 4 second burn that deals 40 + 1.25% of the target's Max HP as damage per second.",
+      "desc": "Doom swings his burning sword, igniting the enemy. Stuns for 0.3 seconds and applies a 4 second burn that deals 40 + 1.25% of the target's Max HP as damage per second.",
       "notes": "Interrupts channeling abilities.",
       "dmg": "",
       "attrib": "BASE BURN DAMAGE: <span class=\"attribVal\">40</span><br />\nMAX HP AS DAMAGE: <span class=\"attribVal\">1.25% / 2.5% / 3.75% / 5%</span><br />\nBURN DURATION: <span class=\"attribVal\">4</span><br />\nSTUN DURATION: <span class=\"attribVal\">0.3</span>",
