@@ -170,14 +170,14 @@ module.exports = function getStatus(db, redis, queue, cb)
         {
             redis.lrange("load_times", 0, -1, function(err, arr)
             {
-                cb(err, generateCounts(arr, 5000));
+                cb(err, generateCounts(arr, 2000));
             });
         },
         parse_delay: function(cb)
         {
             redis.lrange("parse_delay", 0, -1, function(err, arr)
             {
-                cb(err, generateCounts(arr, 86400 * 1000));
+                cb(err, generateCounts(arr, 86400 * 1000 / 4));
             });
         }
     }, function(err, results)
