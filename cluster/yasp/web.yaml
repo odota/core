@@ -43,6 +43,9 @@ spec:
         image: yasp/yasp:latest
         args: [ "node", "web.js" ]
         imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "1G"
         ports:
         - containerPort: 5000
           name: web

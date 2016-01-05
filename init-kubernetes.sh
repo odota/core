@@ -52,4 +52,8 @@ pg_dump -d postgres://yasp:yasp@localhost/yasp -f yasp.sql --format=c
 #pg_restore -d postgres://yasp:yasp@localhost/yasp yasp.sql
 cat "yasp.sql" | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
 #mount disk-redis to /newdisk
-cp /var/lib/redis/dump.rdb /newdisk/dump.rdb'
+cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
+
+#teardown cluster
+source ./cluster/setup/gce.env
+bash ./kubernetes/cluster/kube-down.sh
