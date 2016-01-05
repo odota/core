@@ -50,7 +50,7 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            memory: "12G"
+            memory: "24G"
         volumeMounts:
         - name: postgres
           mountPath: /var/lib/postgresql/data

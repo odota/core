@@ -24,6 +24,7 @@ var defaults = {
     "SCANNER_PORT": "5500",
     "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
+    "CASSANDRA_URL": "localhost/yasp",
     "RETRIEVER_HOST": "localhost:5100",
     "UNTRACK_DAYS": 7,
     "GOAL": 5,

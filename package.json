@@ -33,6 +33,7 @@
     "bull": "yasp-dota/bull",
     "c3": "^0.4.11-rc4",
     "cal-heatmap": "^3.5.4",
+    "cassandra-driver": "^3.0.0",
     "compression": "^1.6.0",
     "connect-redis": "^3.0.1",
     "cookie-session": "^2.0.0-alpha",

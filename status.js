@@ -1,5 +1,6 @@
 var async = require('async');
-var moment = require('moment');
+var playerCache = require('./playerCache');
+var countPlayerCaches = playerCache.countPlayerCaches;
 module.exports = function getStatus(db, redis, queue, cb)
 {
     console.time('status');
@@ -53,10 +54,7 @@ module.exports = function getStatus(db, redis, queue, cb)
         },
         cached_players: function(cb)
         {
-            redis.keys("player:*", function(err, result)
-            {
-                cb(err, result.length);
-            });
+            countPlayerCaches(cb);
         },
         error_500: function(cb)
         {

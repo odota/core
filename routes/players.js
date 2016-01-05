@@ -580,7 +580,7 @@ module.exports = function(db, redis)
                     //save the cache
                     if (!filter_exists && player.account_id !== constants.anonymous_account_id)
                     {
-                        writeCache(player.account_id, results.data, results.aggData, function()
+                        writeCache(player.account_id, {data: results.data, aggData: results.aggData}, function(err)
                         {
                             processResults(err, results);
                         });

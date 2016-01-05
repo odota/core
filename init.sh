@@ -1,7 +1,9 @@
 #STANDALONE
 sudo add-apt-repository ppa:openjdk-r/ppa
+echo "deb http://debian.datastax.com/community stable main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -
 sudo apt-get update && sudo apt-get upgrade
-sudo apt-get -y install make g++ build-essential redis-server postgresql-9.5 openjdk-8-jdk nodejs-legacy npm curl git maven
+sudo apt-get -y install make g++ build-essential redis-server postgresql-9.5 openjdk-8-jdk nodejs-legacy npm curl git maven cassandra
 sudo npm install -g n && sudo n latest
 sudo npm install -g npm
 sudo npm run create

@@ -32,6 +32,12 @@ Quickstart
 * Run `npm test` to make sure your install works correctly
 * Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`. You can also start individual services: `npm run dev web,parser`
 
+Maintenance
+----
+* `node runner updateconstants` pulls latest constants data and saves to `json` directory
+* `node runner fullhistory` queues a full history request for all players in DB who don't have it yet
+* `npm run update` updates all deps to latest versions
+* `npm run deploy` deploys application to Kubernetes cluster
 
 Sample Data
 ----
