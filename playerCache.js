@@ -3,8 +3,6 @@ var zlib = require('zlib');
 var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var aggregator = require('./aggregator');
-var utility = require('./utility');
-var reduceMatch = utility.reduceMatch;
 var async = require('async');
 var constants = require('./constants');
 var enabled = config.ENABLE_PLAYER_CACHE;
@@ -136,26 +134,6 @@ function updateCache(match, cb)
                         {
                             computePlayerMatchData(player_match);
                             cache.aggData = aggregator([player_match], player_match.insert_type, cache.aggData);
-                        }
-                        //reduce match to save cache space--we only need basic data per match for matches tab
-                        var reduced_player_match = reduceMatch(player_match);
-                        var identifier = [player_match.match_id, player_match.player_slot].join(':');
-                        var found = false;
-                        cache.data.forEach(function(m)
-                        {
-                            if (identifier === [m.match_id, m.player_slot].join(':'))
-                            {
-                                found = true;
-                                //iterate instead of setting directly to avoid clobbering existing data
-                                for (var key in reduced_player_match)
-                                {
-                                    m[key] = reduced_player_match[key] || m[key];
-                                }
-                            }
-                        });
-                        if (!found)
-                        {
-                            cache.data.push(reduced_player_match);
                         }
                         writeCache(player_match.account_id, cache, cb);
                     }

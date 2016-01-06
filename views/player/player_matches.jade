@@ -4,7 +4,7 @@ include /mixins/match_table
 block playercontent
   .row
     .col-md-12.table-responsive
-      +match_table(player.data)
+      +match_table(player.aggData.matches)
 
 append footer_assets
   script.

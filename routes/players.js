@@ -472,7 +472,8 @@ module.exports = function(db, redis)
                 }
                 count = Number(count[0].count);
                 console.timeEnd("validate");
-                var cacheValid = cache && cache.data && cache.data.length && cache.data.length === count;
+                console.log(cache.aggData.matches.length, count);
+                var cacheValid = cache && cache.aggData && cache.aggData.matches && cache.aggData.matches.length && cache.aggData.matches.length === count;
                 return cb(err, cacheValid);
             });
         }
@@ -532,7 +533,7 @@ module.exports = function(db, redis)
                         //fill in skill data from table since it is not cached
                         console.time('fillskill');
                         //get skill data for matches within cache expiry (might not have skill data)
-                        var recents = cache.data.filter(function(m)
+                        var recents = cache.aggData.matches.filter(function(m)
                         {
                             return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
                         });
@@ -552,7 +553,7 @@ module.exports = function(db, redis)
                             });
                         }, function(err)
                         {
-                            cache.data.forEach(function(m)
+                            cache.aggData.matches.forEach(function(m)
                             {
                                 m.skill = m.skill || skillMap[m.match_id];
                             });
@@ -575,12 +576,11 @@ module.exports = function(db, redis)
                     {
                         return cb(err);
                     }
-                    //reduce matches to only required data for display
-                    results.data = results.data.map(reduceMatch);
                     //save the cache
                     if (!filter_exists && player.account_id !== constants.anonymous_account_id)
                     {
-                        writeCache(player.account_id, {data: results.data, aggData: results.aggData}, function(err)
+                        console.log(results.aggData.matches.length);
+                        writeCache(player.account_id, {aggData: results.aggData}, function(err)
                         {
                             processResults(err, results);
                         });
@@ -592,20 +592,18 @@ module.exports = function(db, redis)
                 });
             }
 
-            function processResults(err, results)
+            function processResults(err, cache)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                console.log("results: %s", results.data.length);
                 //sort matches by descending match id for display
-                results.data.sort(function(a, b)
+                cache.aggData.matches.sort(function(a, b)
                 {
                     return Number(b.match_id) - Number(a.match_id);
                 });
-                player.data = results.data;
-                player.aggData = results.aggData;
+                player.aggData = cache.aggData;
                 //convert heroes hash to array and sort
                 var aggData = player.aggData;
                 if (aggData.heroes)
