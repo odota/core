@@ -680,25 +680,14 @@ function generatePlayerAnalysis(match, pm)
         roshan: function(m, pm)
         {
             var rosh_taken = 0;
-            if (isRoshHero(pm) && m.objectives)
+            if (isRoshHero(pm) && pm.killed)
             {
-                for (var i = 0; i < m.objectives.length; i++)
-                {
-                    //first 20 minutes
-                    if (m.objectives[i].time > 60 * 20)
-                    {
-                        break;
-                    }
-                    if (m.objectives[i].type === "CHAT_MESSAGE_ROSHAN_KILL" && m.objectives[i].team === (isRadiant(pm) ? 2 : 3))
-                    {
-                        rosh_taken += 1;
-                    }
-                }
+                rosh_taken = pm.killed.npc_dota_roshan || 0;
             }
             return {
-                name: "Roshan taken early",
+                name: "Roshans killed",
                 value: rosh_taken,
-                advice: "Certain heroes can take Roshan early for an early-game advantage.",
+                advice: "Certain heroes can take Roshan for an early-game advantage.",
                 category: "primary",
                 icon: "fa-shield",
                 valid: isRoshHero(pm),
