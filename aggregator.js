@@ -425,7 +425,7 @@ module.exports = function aggregator(matches, fields, existing) {
         "purchase_ward_sentry": {
             type: "parsed",
             agg: function(key, m) {
-                standardAgg(key, m.purchase ? (m.purchase.ward_sentry * 2 || 0) : undefined, m);
+                standardAgg(key, m.purchase ? (m.purchase.ward_sentry || 0) : undefined, m);
             }
         },
         "purchase_gem": {
