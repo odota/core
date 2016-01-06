@@ -10,12 +10,12 @@ source ./cluster/setup/gce.env
 #set up kubernetes cluster
 wget -q -O - https://get.k8s.io | bash
 
-#copy k8s-yasp-minion-template, use hm, make new instance(s) for postgres/redis
+#copy k8s-yasp-minion-template, use hm-4, make new instance(s) for dbs
 
-#put redis data in GCE disk "disk-redis"
+#persistent disks
 gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-f" --type "pd-ssd"
-#put postgres data in GCE disk "disk-postgres"
 gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-f" --type "pd-ssd"
+#gcloud compute disks create "disk-cassandra" --size "100" --zone "us-central1-f" --type "pd-ssd"
 
 #create namespace
 kubectl create -f ./cluster/setup/namespace.yaml
@@ -36,7 +36,7 @@ bash
 createuser yasp
 psql -c "ALTER USER yasp WITH PASSWORD 'yasp';"
 createdb yasp --owner yasp
-cat "sql/create_tables.sql" | kubectl exec postgres-cxo7r -i -- psql postgresql://yasp:yasp@postgres/yasp
+#cat "sql/create_tables.sql" | kubectl exec postgres-cxo7r -i -- psql postgresql://yasp:yasp@postgres/yasp
 
 #secure remote connections to redis/postgres
 #set up redis password
@@ -48,9 +48,9 @@ cat "sql/create_tables.sql" | kubectl exec postgres-cxo7r -i -- psql postgresql:
 #npm run deploy
 
 #backup/restore
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f yasp.sql --format=c
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
+#pg_dump -d postgres://yasp:yasp@localhost/yasp -f yasp.sql --format=c
 #pg_restore -d postgres://yasp:yasp@localhost/yasp yasp.sql
-cat "yasp.sql" | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
 
