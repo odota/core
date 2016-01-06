@@ -629,26 +629,18 @@ module.exports = function aggregator(matches, fields, existing)
                 //reduce match to save cache space--we only need basic data per match for matches tab
                 var reduced_player_match = reduceMatch(m);
                 var identifier = [m.match_id, m.player_slot].join(':');
-                var found = false;
-                if (existing)
+                var orig = aggData.matches[identifier];
+                if (orig)
                 {
-                    //don't need to check for existing match if this is a fresh cache build
-                    aggData.matches.forEach(function(m)
+                    //iterate instead of setting directly to avoid clobbering existing data
+                    for (var key in reduced_player_match)
                     {
-                        if (identifier === [m.match_id, m.player_slot].join(':'))
-                        {
-                            found = true;
-                            //iterate instead of setting directly to avoid clobbering existing data
-                            for (var key in reduced_player_match)
-                            {
-                                m[key] = reduced_player_match[key] || m[key];
-                            }
-                        }
-                    });
+                        orig[key] = reduced_player_match[key] || orig[key];
+                    }
                 }
-                if (!found)
+                else
                 {
-                    aggData.matches.push(reduced_player_match);
+                    aggData.matches[identifier] = reduced_player_match;
                 }
             }
         }
@@ -687,13 +679,9 @@ module.exports = function aggregator(matches, fields, existing)
                 aggData[key] = 0;
             }
             //track unique ids
-            else if (key === "teammates" || key === "heroes" || key === "match_ids" || key === "parsed_match_ids")
+            else if (key === "teammates" || key === "heroes" || key === "match_ids" || key === "parsed_match_ids" || key === "matches")
             {
                 aggData[key] = {};
-            }
-            else if (key === "matches")
-            {
-                aggData[key] = [];
             }
             //standard aggregation
             else if (types[key])
@@ -722,7 +710,9 @@ module.exports = function aggregator(matches, fields, existing)
     for (var i = 0; i < matches.length; i++)
     {
         var m = matches[i];
-        if (isSignificant(constants, m))
+        var reInsert = existing && m.match_id in aggData.match_ids && fields === "api";
+        var reParse = existing && m.match_id in aggData.parsed_match_ids && fields === "parsed";
+        if (isSignificant(constants, m) && !reInsert && !reParse)
         {
             for (var key in fields)
             {

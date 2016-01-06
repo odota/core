@@ -472,8 +472,8 @@ module.exports = function(db, redis)
                 }
                 count = Number(count[0].count);
                 console.timeEnd("validate");
-                console.log(cache.aggData.matches.length, count);
-                var cacheValid = cache && cache.aggData && cache.aggData.matches && cache.aggData.matches.length && cache.aggData.matches.length === count;
+                console.log(Object.keys(cache.aggData.matches).length, count);
+                var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
                 return cb(err, cacheValid);
             });
         }
@@ -507,7 +507,8 @@ module.exports = function(db, redis)
                 account_id: account_id,
                 personaname: account_id
             };
-            if (filter_exists){
+            if (filter_exists)
+            {
                 return cacheMiss();
             }
             readCache(orig_account_id, function(err, cache)
@@ -530,36 +531,7 @@ module.exports = function(db, redis)
                     else
                     {
                         console.log("player cache hit %s", player.account_id);
-                        //fill in skill data from table since it is not cached
-                        console.time('fillskill');
-                        //get skill data for matches within cache expiry (might not have skill data)
-                        var recents = cache.aggData.matches.filter(function(m)
-                        {
-                            return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
-                        });
-                        var skillMap = {};
-                        async.each(recents, function(match, cb)
-                        {
-                            db.first(['match_id', 'skill']).from('match_skill').where(
-                            {
-                                match_id: match.match_id
-                            }).asCallback(function(err, row)
-                            {
-                                if (row && row.skill)
-                                {
-                                    skillMap[match.match_id] = row.skill;
-                                }
-                                return cb(err);
-                            });
-                        }, function(err)
-                        {
-                            cache.aggData.matches.forEach(function(m)
-                            {
-                                m.skill = m.skill || skillMap[m.match_id];
-                            });
-                            console.timeEnd('fillskill');
-                            processResults(err, cache);
-                        });
+                        processResults(err, cache);
                     }
                 });
             });
@@ -580,7 +552,10 @@ module.exports = function(db, redis)
                     if (!filter_exists && player.account_id !== constants.anonymous_account_id)
                     {
                         console.log(results.aggData.matches.length);
-                        writeCache(player.account_id, {aggData: results.aggData}, function(err)
+                        writeCache(player.account_id,
+                        {
+                            aggData: results.aggData
+                        }, function(err)
                         {
                             processResults(err, results);
                         });
@@ -598,6 +573,13 @@ module.exports = function(db, redis)
                 {
                     return cb(err);
                 }
+                //unpack hash into array
+                var arr = [];
+                for (var key in cache.aggData.matches)
+                {
+                    arr.push(cache.aggData.matches[key]);
+                }
+                cache.aggData.matches = arr;
                 //sort matches by descending match id for display
                 cache.aggData.matches.sort(function(a, b)
                 {
@@ -643,7 +625,36 @@ module.exports = function(db, redis)
                         player.abandons += player.aggData.leaver_status.counts[key];
                     }
                 }
-                cb(err, player);
+                //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
+                console.time('fillskill');
+                //get skill data for matches within cache expiry (might not have skill data)
+                var recents = cache.aggData.matches.filter(function(m)
+                {
+                    return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+                });
+                var skillMap = {};
+                async.each(recents, function(match, cb)
+                {
+                    db.first(['match_id', 'skill']).from('match_skill').where(
+                    {
+                        match_id: match.match_id
+                    }).asCallback(function(err, row)
+                    {
+                        if (row && row.skill)
+                        {
+                            skillMap[match.match_id] = row.skill;
+                        }
+                        return cb(err);
+                    });
+                }, function(err)
+                {
+                    cache.aggData.matches.forEach(function(m)
+                    {
+                        m.skill = m.skill || skillMap[m.match_id];
+                    });
+                    console.timeEnd('fillskill');
+                    cb(err, player);
+                });
             }
         });
     }

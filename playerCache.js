@@ -128,13 +128,8 @@ function updateCache(match, cb)
                     //if player cache doesn't exist, skip
                     if (cache)
                     {
-                        var reInsert = player_match.match_id in cache.aggData.match_ids && player_match.insert_type === "api";
-                        var reParse = player_match.match_id in cache.aggData.parsed_match_ids && player_match.insert_type === "parsed";
-                        if (!reInsert && !reParse)
-                        {
-                            computePlayerMatchData(player_match);
-                            cache.aggData = aggregator([player_match], player_match.insert_type, cache.aggData);
-                        }
+                        computePlayerMatchData(player_match);
+                        cache.aggData = aggregator([player_match], player_match.insert_type, cache.aggData);
                         writeCache(player_match.account_id, cache, cb);
                     }
                     else
