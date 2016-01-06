@@ -472,7 +472,7 @@ module.exports = function(db, redis)
                 }
                 count = Number(count[0].count);
                 console.timeEnd("validate");
-                console.log(Object.keys(cache.aggData.matches).length, count);
+                //console.log(Object.keys(cache.aggData.matches).length, count);
                 var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
                 return cb(err, cacheValid);
             });
@@ -551,7 +551,6 @@ module.exports = function(db, redis)
                     //save the cache
                     if (!filter_exists && player.account_id !== constants.anonymous_account_id)
                     {
-                        console.log(results.aggData.matches.length);
                         writeCache(player.account_id,
                         {
                             aggData: results.aggData
