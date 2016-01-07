@@ -20,11 +20,11 @@ function readCache(account_id, cb)
     if (enabled)
     {
         console.time('readcache');
-        redis.get(new Buffer("player:" + account_id), function (err, result)
+        redis.get(new Buffer("player:" + account_id), function(err, result)
         {
             var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
             console.timeEnd('readcache');
-            console.log(result ? result.length : 0, JSON.stringify(cache).length);
+            //console.log(result ? result.length : 0, JSON.stringify(cache).length);
             return cb(err, cache);
         });
         /*
@@ -59,14 +59,16 @@ function writeCache(account_id, cache, cb)
     {
         console.time("writecache");
         console.log("saving player cache %s", account_id);
-        redis.ttl("player:" + account_id, function (err, ttl)
+        redis.ttl("player:" + account_id, function(err, ttl)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache = cache.aggData;
-            redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function (err)
+            cache = {
+                aggData: cache.aggData
+            };
+            redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function(err)
             {
                 console.timeEnd("writecache");
                 cb(err);
@@ -114,7 +116,7 @@ function updateCache(match, cb)
         var players = match.players;
         if (match.pgroup && players)
         {
-            players.forEach(function (p)
+            players.forEach(function(p)
             {
                 //add account id to each player so we know what caches to update
                 p.account_id = match.pgroup[p.player_slot].account_id;
@@ -122,11 +124,11 @@ function updateCache(match, cb)
                 p.hero_id = match.pgroup[p.player_slot].hero_id;
             });
         }
-        async.eachSeries(players, function (player_match, cb)
+        async.eachSeries(players, function(player_match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
-                readCache(player_match.account_id, function (err, cache)
+                readCache(player_match.account_id, function(err, cache)
                 {
                     if (err)
                     {
@@ -167,7 +169,7 @@ function countPlayerCaches(cb)
 {
     if (enabled)
     {
-        redis.keys("player:*", function (err, result)
+        redis.keys("player:*", function(err, result)
         {
             cb(err, result.length);
         });

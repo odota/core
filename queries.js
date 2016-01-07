@@ -435,22 +435,24 @@ function getPlayerMatches(db, query, cb)
             return cb(err);
         }
         console.timeEnd('getting player_matches');
-        console.time('computing aggregations');
         //compute, filter, agg should act on player_matches joined with matches
+        console.time('computing additional data');
         player_matches.forEach(function(m)
         {
             //post-process the match to get additional stats
             computePlayerMatchData(m);
         });
+        console.timeEnd('computing additional data');
         var filtered = filter(player_matches, query.js_select);
+        console.time('computing aggregations');
         var aggData = aggregator(filtered, query.js_agg);
+        console.timeEnd('computing aggregations');
         var result = {
             aggData: aggData,
-            page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
-            data: filtered,
-            raw: player_matches
+            //page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
+            //data: filtered,
+            raw: player_matches,
         };
-        console.timeEnd('computing aggregations');
         cb(err, result);
     });
 }

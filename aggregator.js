@@ -46,14 +46,14 @@ module.exports = function aggregator(matches, fields, existing)
     });
     for (var i = 0; i < matches.length; i++)
     {
-        var m = reduceAggregable(matches[i]);
-        for (var key in fields)
+        var m = matches[i];
+        var reApi = (m.match_id in aggData.match_ids) && getAggs()[key] === "api";
+        var reParse = (m.match_id in aggData.parsed_match_ids) && getAggs()[key] === "parsed";
+        if (isSignificant(constants, m) && !reApi && !reParse)
         {
-            var reApi = (m.match_id in aggData.match_ids) && getAggs()[key] === "api";
-            var reParse = (m.match_id in aggData.parsed_match_ids) && getAggs()[key] === "parsed";
-            //execute the aggregation function for each specified field
-            if (isSignificant(constants, m) && !reApi && !reParse)
+            for (var key in fields)
             {
+                //execute the aggregation function for each specified field
                 standardAgg(key, m[key], m);
             }
         }
@@ -340,7 +340,8 @@ function getAggs()
 function reduceAggregable(pm)
 {
     var result = {};
-    for (var key in getAggs()){
+    for (var key in getAggs())
+    {
         result[key] = pm[key];
     }
     return result;
