@@ -445,28 +445,6 @@ function isSignificant(constants, m)
     return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined && m.duration > 60 * 5);
 }
 
-function reduceMatch(player_match)
-{
-    //trim down the size of a player_match
-    player_match = {
-        match_id: player_match.match_id,
-        player_slot: player_match.player_slot,
-        hero_id: player_match.hero_id,
-        game_mode: player_match.game_mode,
-        kills: player_match.kills,
-        deaths: player_match.deaths,
-        assists: player_match.assists,
-        last_hits: player_match.last_hits,
-        gold_per_min: player_match.gold_per_min,
-        parse_status: player_match.parse_status,
-        skill: player_match.skill,
-        player_win: player_match.player_win,
-        start_time: player_match.start_time,
-        duration: player_match.duration
-    };
-    return player_match;
-}
-
 function max(array)
 {
     return Math.max.apply(null, array);
@@ -590,7 +568,6 @@ module.exports = {
     generatePositionData: generatePositionData,
     getParseSchema: getParseSchema,
     isSignificant: isSignificant,
-    reduceMatch: reduceMatch,
     max: max,
     min: min,
     invokeInterval: invokeInterval,

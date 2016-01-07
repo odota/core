@@ -443,13 +443,12 @@ function getPlayerMatches(db, query, cb)
             computePlayerMatchData(m);
         });
         var filtered = filter(player_matches, query.js_select);
-        //filtered = sort(filtered, options.js_sort);
         var aggData = aggregator(filtered, query.js_agg);
         var result = {
             aggData: aggData,
             page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
             data: filtered,
-            unfiltered: player_matches
+            raw: player_matches
         };
         console.timeEnd('computing aggregations');
         cb(err, result);
@@ -470,6 +469,21 @@ function getPlayerRatings(db, account_id, cb)
         cb();
     }
 }
+
+function getPlayer(db, account_id, cb)
+{
+    if (!isNaN(account_id))
+    {
+        db.first().from('players').where(
+        {
+            account_id: Number(account_id)
+        }).asCallback(cb);
+    }
+    else
+    {
+        cb();
+    }
+}
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
@@ -479,5 +493,6 @@ module.exports = {
     insertMatchSkill: insertMatchSkill,
     getMatch: getMatch,
     getPlayerMatches: getPlayerMatches,
-    getPlayerRatings: getPlayerRatings
+    getPlayerRatings: getPlayerRatings,
+    getPlayer: getPlayer,
 };

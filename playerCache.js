@@ -20,12 +20,18 @@ function readCache(account_id, cb)
     if (enabled)
     {
         console.time('readcache');
-        redis.get(new Buffer("player:" + account_id), function(err, result)
+        redis.get(new Buffer("player:" + account_id), function (err, result)
         {
             var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
             console.timeEnd('readcache');
+            console.log(result ? result.length : 0, JSON.stringify(cache).length);
             return cb(err, cache);
         });
+        /*
+        //TODO
+        //get array of matches, agg and return results
+        cb(null, {aggData: aggregator([])});
+        */
         /*
         var query = 'SELECT cache FROM player_caches WHERE account_id=?';
         cassandra.execute(query, [account_id],
@@ -53,18 +59,24 @@ function writeCache(account_id, cache, cb)
     {
         console.time("writecache");
         console.log("saving player cache %s", account_id);
-        redis.ttl("player:" + account_id, function(err, ttl)
+        redis.ttl("player:" + account_id, function (err, ttl)
         {
             if (err)
             {
                 return cb(err);
             }
-            redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function(err)
+            cache = cache.aggData;
+            redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function (err)
             {
                 console.timeEnd("writecache");
                 cb(err);
             });
         });
+        /*
+            //TODO
+            var arr = cache.raw.map(function(m){return reduceAggregable(m)});
+            //upsert matches into store
+            */
         /*
         cassandra.execute('SELECT TTL(cache) FROM player_caches WHERE account_id = ?', [account_id],
         {
@@ -102,7 +114,7 @@ function updateCache(match, cb)
         var players = match.players;
         if (match.pgroup && players)
         {
-            players.forEach(function(p)
+            players.forEach(function (p)
             {
                 //add account id to each player so we know what caches to update
                 p.account_id = match.pgroup[p.player_slot].account_id;
@@ -110,16 +122,11 @@ function updateCache(match, cb)
                 p.hero_id = match.pgroup[p.player_slot].hero_id;
             });
         }
-        async.eachSeries(players, function(player_match, cb)
+        async.eachSeries(players, function (player_match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
-                //join player with match to form player_match
-                for (var key in match)
-                {
-                    player_match[key] = match[key];
-                }
-                readCache(player_match.account_id, function(err, cache)
+                readCache(player_match.account_id, function (err, cache)
                 {
                     if (err)
                     {
@@ -128,8 +135,14 @@ function updateCache(match, cb)
                     //if player cache doesn't exist, skip
                     if (cache)
                     {
+                        //join player with match to form player_match
+                        for (var key in match)
+                        {
+                            player_match[key] = match[key];
+                        }
                         computePlayerMatchData(player_match);
-                        cache.aggData = aggregator([player_match], player_match.insert_type, cache.aggData);
+                        //writeCache(player_match.account_id, {raw:[player_match]}, cb);
+                        cache.aggData = aggregator([player_match], null, cache.aggData);
                         writeCache(player_match.account_id, cache, cb);
                     }
                     else
@@ -154,7 +167,7 @@ function countPlayerCaches(cb)
 {
     if (enabled)
     {
-        redis.keys("player:*", function(err, result)
+        redis.keys("player:*", function (err, result)
         {
             cb(err, result.length);
         });
