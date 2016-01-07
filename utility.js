@@ -447,7 +447,7 @@ function isSignificant(constants, m)
 
 function reduceMatch(player_match)
 {
-    //trim down the size of a player_match so cache.data isn't so big
+    //trim down the size of a player_match
     player_match = {
         match_id: player_match.match_id,
         player_slot: player_match.player_slot,

@@ -8,7 +8,7 @@ block playercontent
   //pre=JSON.stringify(player.aggData)
   .row
     .col-md-8
-      +match_table(player.data.slice(0,20))
+      +match_table(player.aggData.matches.slice(0,20))
     .col-md-4
       +hero_table(player.heroes_list.slice(0,20), true)
       //+teammate_table(player.teammate_list.slice(0,10), true)

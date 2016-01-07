@@ -29,16 +29,6 @@ module.exports = function(db, redis)
             var info = matchPages[req.params.info] ? req.params.info : "index";
             if (req.query.json)
             {
-                //remove some columns from match.players to reduce JSON size and duplication
-                if (match.players)
-                {
-                    match.players.forEach(function(p)
-                    {
-                        delete p.chat;
-                        delete p.objectives;
-                        delete p.teamfights;
-                    });
-                }
                 return res.json(match);
             }
             res.render("match/match_" + info,
@@ -108,6 +98,16 @@ module.exports = function(db, redis)
                         return cb(err);
                     }
                     renderMatch(match);
+                    //remove some duplicated columns from match.players to reduce saved size
+                    if (match.players)
+                    {
+                        match.players.forEach(function(p)
+                        {
+                            delete p.chat;
+                            delete p.objectives;
+                            delete p.teamfights;
+                        });
+                    }
                     if (match.version && config.ENABLE_MATCH_CACHE)
                     {
                         redis.setex(key, 3600, JSON.stringify(match));

@@ -13,18 +13,24 @@ var services = {
             "role": "core"
       },
         {
-            "script": "parser.js",
-            "role": "core",
-            "exec_mode": "cluster",
-            "instances": 0
-      },
-        {
             "script": "scanner.js",
             "role": "core"
       },
         {
             "script": "worker.js",
             "role": "core"
+      },
+        {
+            "script": "parser.js",
+            "role": "core",
+            "exec_mode": "cluster",
+            "instances": 0
+      },
+        {
+            "script": "cacher.js",
+            "role": "core",
+            "exec_mode": "cluster",
+            "instances": 0
       },
         {
             "script": "fullhistory.js",
