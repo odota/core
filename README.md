@@ -24,9 +24,7 @@ Quickstart
 ----
 * Install dependencies for Ubuntu: `sudo bash init.sh`. For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
-  * Note: If you have Steam Guard activated on your account you will
-    either have to deactivate it or create a new account for use with
-    the retriever (recommended).
+  * Note: If you have Steam Guard activated on your account you will either have to deactivate it or create a new account for use with the retriever (recommended).
 * Set up the database `sudo npm run create`
 * Build `npm run build`
 * Run `npm test` to make sure your install works correctly

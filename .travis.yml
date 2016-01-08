@@ -4,9 +4,9 @@ services:
 - docker
 - redis-server
 node_js:
-- 'stable'
+- '5.1'
 addons:
-  postgresql: "9.4"
+  postgresql: '9.5'
 install: true
 notifications:
   email:
@@ -14,7 +14,6 @@ notifications:
   - christian@paral.in
   - aqc2109@columbia.edu
 before_script:
-#- npm install -g npm
 - docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
 script:
 #run test outside container
