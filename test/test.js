@@ -15,6 +15,7 @@ var moment = require('moment');
 var assert = require('assert');
 var request = require('request');
 var constants = require('../constants.js');
+var init_db = config.CI ? "postgres://postgres:postgres@localhost:5433/postgres" : "postgres://postgres:postgres@localhost/postgres";
 /*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
@@ -61,7 +62,7 @@ before(function(done) {
     async.series([
         function(cb) {
             console.log('removing old test database');
-            pg.connect("postgres://postgres:postgres@localhost/postgres", function(err, client) {
+            pg.connect(init_db, function(err, client) {
                 if (err) {
                     return cb(err);
                 }
@@ -76,7 +77,7 @@ before(function(done) {
         },
         function(cb) {
             console.log('creating test database');
-            pg.connect("postgres://postgres:postgres@localhost/postgres", function(err, client) {
+            pg.connect(init_db, function(err, client) {
                 if (err) {
                     return cb(err);
                 }
