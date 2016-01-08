@@ -1,4 +1,4 @@
 {
   "verbose": true,
-  "ignore": ["public","views","node_modules","output*.json",".git", "testfiles", "java_parser"]
+  "ignore": ["public","views","node_modules","output*.json",".git", "testfiles", "java_parser","kubernetes"]
 }

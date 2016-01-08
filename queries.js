@@ -8,42 +8,13 @@ var computeMatchData = compute.computeMatchData;
 var aggregator = require('./aggregator');
 var constants = require('./constants');
 var filter = require('./filter');
+var util = require('util');
 var columnInfo = null;
 
 function getSets(redis, cb)
 {
     async.parallel(
     {
-        /*
-        "bots": function(cb) {
-            redis.get("bots", function(err, bots) {
-                bots = JSON.parse(bots || "[]");
-                //sort list of bots descending, but full bots go to end (concentrates load)
-
-                // bots.sort(function(a, b) {
-                //     var threshold = 50;
-                //     if (a.friends > threshold) {
-                //         return 1;
-                //     }
-                //     if (b.friends > threshold) {
-                //         return -1;
-                //     }
-                //     return (b.friends - a.friends);
-                // });
-
-                //sort ascending (distributes load)
-                bots.sort(function(a, b) {
-                    return a.friends - b.friends;
-                });
-                cb(err, bots);
-            });
-        },
-        "ratingPlayers": function(cb) {
-            redis.get("ratingPlayers", function(err, rps) {
-                cb(err, JSON.parse(rps || "{}"));
-            });
-        },
-        */
         "trackedPlayers": function(cb)
         {
             redis.get("trackedPlayers", function(err, tps)
@@ -148,36 +119,46 @@ function insertMatch(db, redis, queue, match, options, cb)
             }
         }
         //TODO use psql upsert when available
-        //TODO this breaks transactions, transaction will refuse to complete if error occurred during insert
-        //upsert on api, update only otherwise
-        if (options.type === "api")
+        //TODO insert/err/update breaks transactions, transaction will refuse to complete if error occurred during insert
+       /*
+        var query = util.format("insert into matches (%s) values (%s) on conflict on constraint matches_pkey do update set %s", Object.keys(row).join(','), Object.keys(row).map(function(key)
         {
-            db('matches').insert(row).where(
+            console.log(row[key]);
+            return "'" + (row[key].constructor === Array ? "{" + row[key].map(function(e)
             {
-                match_id: row.match_id
-            }).asCallback(function(err)
-            {
-                if (err && err.detail.indexOf("already exists") !== -1)
-                {
-                    //try update
-                    db('matches').update(row).where(
-                    {
-                        match_id: row.match_id
-                    }).asCallback(cb);
-                }
-                else
-                {
-                    cb(err);
-                }
-            });
-        }
-        else
+                return "'" + JSON.stringify(e) + "'";
+            }).join(',') + "}" : JSON.stringify(row[key])) + "'";
+        }).join(','), Object.keys(row).map(function(key)
         {
-            db('matches').update(row).where(
+            return key + "=" + "'" + (row[key].constructor === Array ? "{" + row[key].map(function(e)
             {
-                match_id: row.match_id
-            }).asCallback(cb);
-        }
+                return "'" + JSON.stringify(e) + "'";
+            }).join(',') + "}" : JSON.stringify(row[key])) + "'";
+        }).join(','));
+        var fs = require('fs');
+        fs.writeFileSync('output.json', query);
+        db.raw(query).asCallback(cb);
+        */
+        
+        db('matches').insert(row).where(
+        {
+            match_id: row.match_id
+        }).asCallback(function(err)
+        {
+            if (err && err.detail.indexOf("already exists") !== -1)
+            {
+                //try update
+                db('matches').update(row).where(
+                {
+                    match_id: row.match_id
+                }).asCallback(cb);
+            }
+            else
+            {
+                cb(err);
+            }
+        });
+        
     }
 
     function insertPlayerMatchesTable(cb)
@@ -435,23 +416,24 @@ function getPlayerMatches(db, query, cb)
             return cb(err);
         }
         console.timeEnd('getting player_matches');
-        console.time('computing aggregations');
         //compute, filter, agg should act on player_matches joined with matches
+        console.time('computing additional data');
         player_matches.forEach(function(m)
         {
             //post-process the match to get additional stats
             computePlayerMatchData(m);
         });
+        console.timeEnd('computing additional data');
         var filtered = filter(player_matches, query.js_select);
-        //filtered = sort(filtered, options.js_sort);
+        console.time('computing aggregations');
         var aggData = aggregator(filtered, query.js_agg);
+        console.timeEnd('computing aggregations');
         var result = {
             aggData: aggData,
-            page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
-            data: filtered,
-            unfiltered: player_matches
+            //page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
+            //data: filtered,
+            raw: player_matches,
         };
-        console.timeEnd('computing aggregations');
         cb(err, result);
     });
 }
@@ -470,6 +452,21 @@ function getPlayerRatings(db, account_id, cb)
         cb();
     }
 }
+
+function getPlayer(db, account_id, cb)
+{
+    if (!isNaN(account_id))
+    {
+        db.first().from('players').where(
+        {
+            account_id: Number(account_id)
+        }).asCallback(cb);
+    }
+    else
+    {
+        cb();
+    }
+}
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
@@ -479,5 +476,6 @@ module.exports = {
     insertMatchSkill: insertMatchSkill,
     getMatch: getMatch,
     getPlayerMatches: getPlayerMatches,
-    getPlayerRatings: getPlayerRatings
+    getPlayerRatings: getPlayerRatings,
+    getPlayer: getPlayer,
 };

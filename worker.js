@@ -77,6 +77,9 @@ function processApi(job, cb) {
                 type: "api",
                 attempts: job.data.request ? 1 : undefined
             }, function(err, job2) {
+                if (err){
+                    return cb(err);
+                }
                 //job2 is the parse job
                 if (job.data.request && job2) {
                     var poll = setInterval(function() {

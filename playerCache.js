@@ -24,8 +24,16 @@ function readCache(account_id, cb)
         {
             var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
             console.timeEnd('readcache');
+            //console.log(result ? result.length : 0, JSON.stringify(cache).length);
             return cb(err, cache);
         });
+        /*
+        //TODO
+        //get array of matches, filter, agg and return results
+        //var results = getArray();
+        //var filtered = filter(results, options.js_agg);
+        //cb(null, {aggData: aggregator(filtered)});
+        */
         /*
         var query = 'SELECT cache FROM player_caches WHERE account_id=?';
         cassandra.execute(query, [account_id],
@@ -59,12 +67,20 @@ function writeCache(account_id, cache, cb)
             {
                 return cb(err);
             }
+            cache = {
+                aggData: cache.aggData
+            };
             redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function(err)
             {
                 console.timeEnd("writecache");
                 cb(err);
             });
         });
+        /*
+        //TODO
+        var arr = cache.raw.map(function(m){return reduceAggregable(m)});
+        //upsert matches into store
+        */
         /*
         cassandra.execute('SELECT TTL(cache) FROM player_caches WHERE account_id = ?', [account_id],
         {
@@ -114,11 +130,6 @@ function updateCache(match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
-                //join player with match to form player_match
-                for (var key in match)
-                {
-                    player_match[key] = match[key];
-                }
                 readCache(player_match.account_id, function(err, cache)
                 {
                     if (err)
@@ -128,8 +139,14 @@ function updateCache(match, cb)
                     //if player cache doesn't exist, skip
                     if (cache)
                     {
+                        //join player with match to form player_match
+                        for (var key in match)
+                        {
+                            player_match[key] = match[key];
+                        }
                         computePlayerMatchData(player_match);
-                        cache.aggData = aggregator([player_match], player_match.insert_type, cache.aggData);
+                        //writeCache(player_match.account_id, {raw:[player_match]}, cb);
+                        cache.aggData = aggregator([player_match], null, cache.aggData);
                         writeCache(player_match.account_id, cache, cb);
                     }
                     else

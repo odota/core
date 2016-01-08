@@ -4,14 +4,16 @@ var async = require('async');
 var constants = require('../constants.js');
 var queries = require("../queries");
 var getPlayerMatches = queries.getPlayerMatches;
+var getPlayer = queries.getPlayer;
 var utility = require('../utility');
 var generatePositionData = utility.generatePositionData;
-var reduceMatch = utility.reduceMatch;
+var isRadiant = utility.isRadiant;
 var config = require('../config');
 var preprocessQuery = utility.preprocessQuery;
 var filter = require('../filter');
 var querystring = require('querystring');
 var moment = require('moment');
+var util = require('util');
 var playerCache = require('../playerCache');
 var readCache = playerCache.readCache;
 var writeCache = playerCache.writeCache;
@@ -24,7 +26,7 @@ var subkeys = {
     "xp_per_min": 1,
     "last_hits": 1,
     "denies": 1,
-    "lane_efficiency": 1,
+    "lane_efficiency_pct": 1,
     "duration": 1,
     "first_blood_time": 1,
     "level": 1,
@@ -70,108 +72,142 @@ var projections = {
     wordcloud: basic.concat('chat'),
     rating: basic
 };
+var sigModes = [];
+for (var key in constants.game_mode)
+{
+    if (constants.game_mode[key].balanced)
+    {
+        sigModes.push(Number(key));
+    }
+}
+var sigLobbies = [];
+for (var key in constants.lobby_type)
+{
+    if (constants.lobby_type[key].balanced)
+    {
+        sigLobbies.push(Number(key));
+    }
+}
 var playerPages = constants.player_pages;
 module.exports = function(db, redis)
 {
     players.get('/sql/:account_id/:info?/:subkey?', function(req, res, next)
     {
+        var significant = util.format("game_mode in (%s) and lobby_type in (%s) and radiant_win is not null and duration > 300", sigModes.join(","), sigLobbies.join(","));
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
-        var query = req.query;
         if (Number(account_id) === constants.anonymous_account_id)
         {
             return next("cannot generate profile for anonymous account_id");
         }
         //TODO
-        //last played
-        //significance check
-        //result for matches table
-        //make team/against filters work
-        //disable filters, purchases, lane, patch, region
-        //ag -i "aggData" views for more dependencies that need to be replaced
+        //disable special filters: with/against/included, purchased_item, lane_role, patch, region, faction, win
         //make histograms/records/trends work
-        //get player db object
-        async.parallel(
-        {
-            players_with: function(cb)
-            {
-                //db.raw("select js2.value as account_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id, json_each(pgroup) AS js, json_each_text(value) js2 where account_id = ? and js2.key = 'account_id' group by js2.value order by games desc", [account_id]).asCallback(cb);
-                db.raw("select personaname, res.account_id, with_games, with_win from (select player_matches.account_id, count(*) as with_games, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (select player_matches.match_id, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where player_matches.account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by player_matches.account_id order by with_games desc limit 100) res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
-            },
-            players_against: function(cb)
-            {
-                db.raw("select personaname, res.account_id, against_games, against_win from (select player_matches.account_id, count(*) as against_games, sum(case when player_win then 1 else 0 end) as against_win from player_matches join (select player_matches.match_id, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where player_matches.account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by player_matches.account_id order by against_games desc limit 100) res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
-            },
-            heroes: function(cb)
-            {
-                db.raw("select hero_id, count(*) as games, sum(case when radiant_win = player_slot < 64 then 1 else 0 end) as win from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ? group by hero_id order by games desc", [account_id]).asCallback(cb);
-            },
-            heroes_with: function(cb)
-            {
-                db.raw("select hero_id, count(*) as with_games, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (select player_matches.match_id, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by hero_id order by with_games desc", [account_id]).asCallback(cb);
-            },
-            heroes_against: function(cb)
-            {
-                db.raw("select hero_id, count(*) as against_games, sum(case when player_win then 1 else 0 end) as against_win from player_matches join (select player_matches.match_id, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by hero_id order by against_games desc", [account_id]).asCallback(cb);
-            },
-            matches: function(cb)
-            {
-                db.select(basic).from('player_matches').join('matches', 'matches.match_id', 'player_matches.match_id').leftJoin('match_skill', 'player_matches.match_id', "match_skill.match_id").where(
-                {
-                    account_id: account_id
-                }).orderBy('match_id', 'desc').limit(20).asCallback(cb);
-            },
-            counts: function(cb)
-            {
-                db.raw("select sum(case when radiant_win = player_slot < 64 then 1 else 0 end) as win, sum(case when radiant_win = player_slot < 64 then 0 else 1 end) as lose, sum(case when leaver_status > 1 then 1 else 0 end) as abandon_count, count(*) as match_count, sum(case when version > 0 then 1 else 0 end) as parsed_match_count from player_matches join matches on player_matches.match_id = matches.match_id where account_id = ?", [account_id]).asCallback(cb);
-            },
-            sets: function(cb)
-            {
-                queries.getSets(redis, cb);
-            },
-            ratings: function(cb)
-            {
-                queries.getPlayerRatings(db, account_id, cb);
-            }
-        }, function(err, result)
+        //add significance check to all
+        getPlayer(db, account_id, function(err, player)
         {
             if (err)
             {
                 return next(err);
             }
-            //console.log(result)
-            var player = {
-                account_id: account_id,
-                ratings: result.ratings,
-                data: result.matches,
-                counts: result.counts.rows[0],
-                heroes_list: result.heroes.rows,
-                heroes_with: result.heroes_with.rows,
-                heroes_against: result.heroes_against.rows,
-                players_with: result.players_with.rows,
-                players_against: result.players_against.rows
-            };
-            if (req.query.json)
+            async.parallel(
             {
-                return res.json(player);
-            }
-            res.render("player/player_" + info,
-            {
-                q: req.query,
-                querystring: Object.keys(req.query).length ? "?" + querystring.stringify(req.query) : "",
-                route: info,
-                tabs: playerPages,
-                player: player,
-                trackedPlayers: result.sets.trackedPlayers,
-                histograms: subkeys,
-                subkey: req.params.subkey || "kills",
-                times:
+                matches: function(cb)
                 {
-                    "duration": 1,
-                    "first_blood_time": 1
+                    db.select(basic).from('player_matches').join('matches', 'matches.match_id', 'player_matches.match_id').leftJoin('match_skill', 'player_matches.match_id', "match_skill.match_id").where(
+                    {
+                        account_id: account_id
+                    }).orderBy('match_id', 'desc').limit(20).asCallback(function(err, matches)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        matches.forEach(function(m)
+                        {
+                            m.player_win = isRadiant(m) === m.radiant_win;
+                        });
+                        cb(err, matches);
+                    });
                 },
-                teammate_ids: player.players_with,
-                title: (player.personaname || player.account_id) + " - YASP"
+                heroes: function(cb)
+                {
+                    db('player_matches').select(db.raw("hero_id, max(start_time) as last_played, count(*) as games, sum(case when radiant_win = player_slot < 64 then 1 else 0 end) as win")).join(db.raw("matches on matches.match_id = player_matches.match_id")).whereRaw(significant).where(db.raw("account_id = ?", [account_id])).groupBy("hero_id").orderBy("games", "desc").where(req.query).asCallback(cb);
+                },
+                counts: function(cb)
+                {
+                    db('player_matches').select(db.raw("sum(case when radiant_win = player_slot < 64 then 1 else 0 end) as win, sum(case when radiant_win = player_slot < 64 then 0 else 1 end) as lose, sum(case when leaver_status > 1 then 1 else 0 end) as abandon_count, count(*) as match_count, sum(case when version > 0 then 1 else 0 end) as parsed_match_count")).join(db.raw("matches on player_matches.match_id = matches.match_id")).whereRaw(significant).where(db.raw("account_id = ?", [account_id])).where(req.query).asCallback(cb);
+                },
+                sets: function(cb)
+                {
+                    queries.getSets(redis, cb);
+                },
+                //players_with: function(cb)
+                //{
+                //    //db.raw("select js2.value as account_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id, json_each(pgroup) AS js, json_each_text(value) js2 where account_id = ? and js2.key = 'account_id' group by js2.value order by games desc", [account_id]).asCallback(cb);
+                //    var inner2 = "select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where player_matches.account_id = ?";
+                //    var inner = "select player_matches.account_id, max(start_time) as last_played, count(*) as with_games, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (" + inner2 + ") pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by player_matches.account_id order by with_games desc limit 100";
+                //    db.raw("select * from (" + inner + ") res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
+                //},
+                //players_against: function(cb)
+                //{
+                //    var inner2 = "SELECT player_matches.match_id, start_time, (player_slot < 64 = radiant_win) AS player_win, (player_slot < 64) AS player_radiant FROM   player_matches JOIN   matches ON     matches.match_id = player_matches.match_id WHERE  player_matches.account_id = ?";
+                //    var inner = "SELECT player_matches.account_id, Max(start_time) AS last_played, Count(*) AS against_games,  Sum( CASE WHEN player_win THEN 1 ELSE 0  END) AS against_win from player_matches join (" + inner2 + ") pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by player_matches.account_id order by against_games desc limit 100";
+                //    db.raw("SELECT * FROM (" + inner + ") res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
+                //},
+                //heroes_with: function(cb)
+                //{
+                //    db.raw("select hero_id, count(*) as with_games, max(start_time) as last_played, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by hero_id order by with_games desc", [account_id]).asCallback(cb);
+                //},
+                //heroes_against: function(cb)
+                //{
+                //    db.raw("select hero_id, count(*) as against_games, max(start_time) as last_played, sum(case when player_win then 1 else 0 end) as against_win from player_matches join (select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by hero_id order by against_games desc", [account_id]).asCallback(cb);
+                //},
+                ratings: function(cb)
+                {
+                    queries.getPlayerRatings(db, account_id, cb);
+                }
+            }, function(err, result)
+            {
+                if (err)
+                {
+                    return next(err);
+                }
+                player.aggData = {
+                    matches: result.matches
+                };
+                player.win = result.counts[0].win;
+                player.lose = result.counts[0].lose;
+                player.abandon_count = result.counts[0].abandon_count;
+                player.match_count = result.counts[0].match_count;
+                player.parsed_match_count = result.counts[0].parsed_match_count;
+                player.heroes_list = result.heroes;
+                //player.heroes_with = result.heroes_with.rows;
+                //player.heroes_against = result.heroes_against.rows;
+                //player.players_with = result.players_with.rows;
+                //player.players_against = result.players_against.rows;
+                player.ratings = result.ratings;
+                if (req.query.json)
+                {
+                    return res.json(player);
+                }
+                res.render("player/player_" + info,
+                {
+                    q: req.query,
+                    querystring: Object.keys(req.query).length ? "?" + querystring.stringify(req.query) : "",
+                    route: info,
+                    tabs: playerPages,
+                    player: player,
+                    trackedPlayers: result.sets.trackedPlayers,
+                    histograms: subkeys,
+                    subkey: req.params.subkey || "kills",
+                    times:
+                    {
+                        "duration": 1,
+                        "first_blood_time": 1
+                    },
+                    title: (player.personaname || player.account_id) + " - YASP"
+                });
             });
         });
     });
@@ -180,15 +216,12 @@ module.exports = function(db, redis)
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
-        var query = req.query;
         var compare_data;
         if (Number(account_id) === constants.anonymous_account_id)
         {
             return next("cannot generate profile for anonymous account_id");
         }
-        //copy the query in case we need the original for compare passing
-        var qCopy = JSON.parse(JSON.stringify(query));
-        async.series(
+        async.parallel(
         {
             "player": function(cb)
             {
@@ -216,112 +249,39 @@ module.exports = function(db, redis)
                 return next(err);
             }
             var player = result.player;
-            var aggData = player.aggData;
-            async.parallel(
+            console.timeEnd("player " + req.params.account_id);
+            if (req.query.json)
             {
-                //the array of teammates under the filter condition
-                teammate_list: function(cb)
+                return res.json(result.player);
+            }
+            var ratings = result.ratings || [];
+            player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
+            player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
+            player.ratings = ratings;
+            player.match_count = player.aggData.match_id.n;
+            player.parsed_match_count = player.aggData.version.n;
+            player.abandon_count = player.aggData.abandons.sum;
+            player.win = player.aggData.win.sum;
+            player.lose = player.aggData.lose.sum;
+            delete req.query.account_id;
+            res.render("player/player_" + info,
+            {
+                q: req.query,
+                querystring: Object.keys(req.query).length ? "?" + querystring.stringify(req.query) : "",
+                route: info,
+                tabs: playerPages,
+                player: player,
+                trackedPlayers: result.sets.trackedPlayers,
+                histograms: subkeys,
+                subkey: req.params.subkey || "kills",
+                times:
                 {
-                    generateTeammateArrayFromHash(aggData.teammates, player, cb);
+                    "duration": 1,
+                    "first_blood_time": 1
                 },
-                /*
-                all_teammate_list: function(cb) {
-                    generateTeammateArrayFromHash(player.all_teammates, player, cb);
-                }
-                */
-            }, function(err, lists)
-            {
-                if (err)
-                {
-                    return next(err);
-                }
-                player.teammate_list = lists.teammate_list;
-                var teammate_ids = JSON.parse(JSON.stringify(lists.all_teammate_list || lists.teammate_list));
-                //remove self account id from query
-                delete req.query.account_id;
-                //add custom tagged elements to teammate_ids so they show up in field, but ensure there are no duplicates.
-                var ids = {};
-                teammate_ids.forEach(function(t)
-                {
-                    ids[t.account_id] = 1;
-                });
-                for (var key in req.query)
-                {
-                    if (key.indexOf("account_id") !== -1 && req.query[key].constructor === Array)
-                    {
-                        req.query[key].forEach(function(id)
-                        {
-                            //iterate through array
-                            //check for duplicates
-                            //append to teammate_ids
-                            if (!ids[id])
-                            {
-                                teammate_ids.unshift(
-                                {
-                                    account_id: Number(id),
-                                    personaname: id
-                                });
-                            }
-                            ids[id] = 1;
-                        });
-                    }
-                }
-                render();
-                /*
-                if (info === "compare") {
-                    doCompare(qCopy, req.params.account_id.toString(), function(err, results) {
-                        if (err) {
-                            return next(err);
-                        }
-                        compare_data = results;
-                        render();
-                    });
-                }
-                else {
-                    render();
-                }
-                */
-                function render()
-                {
-                    console.timeEnd("player " + req.params.account_id);
-                    if (req.query.json)
-                    {
-                        return res.json(result.player);
-                    }
-                    var ratings = result.ratings || [];
-                    player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
-                    player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
-                    player.ratings = ratings;
-                    player.counts = {
-                        match_count: Object.keys(player.aggData.match_ids).length,
-                        parsed_match_count: Object.keys(player.aggData.parsed_match_ids).length,
-                        abandon_count: player.abandons,
-                        win: player.aggData.win,
-                        lose: player.aggData.lose
-                    };
-                    res.render("player/player_" + info,
-                    {
-                        q: req.query,
-                        querystring: Object.keys(req.query).length ? "?" + querystring.stringify(req.query) : "",
-                        route: info,
-                        tabs: playerPages,
-                        player: player,
-                        trackedPlayers: result.sets.trackedPlayers,
-                        //bots: result.sets.bots,
-                        //ratingPlayers: result.sets.ratingPlayers,
-                        histograms: subkeys,
-                        subkey: req.params.subkey || "kills",
-                        times:
-                        {
-                            "duration": 1,
-                            "first_blood_time": 1
-                        },
-                        teammate_ids: teammate_ids,
-                        compare_data: compare_data,
-                        compare: info === "compare",
-                        title: (player.personaname || player.account_id) + " - YASP"
-                    });
-                }
+                compare_data: compare_data,
+                compare: info === "compare",
+                title: (player.personaname || player.account_id) + " - YASP"
             });
         });
     });
@@ -437,21 +397,6 @@ module.exports = function(db, redis)
         });
     }
 
-    function getPlayer(account_id, cb)
-    {
-        if (!isNaN(account_id))
-        {
-            db.first().from('players').where(
-            {
-                account_id: Number(account_id)
-            }).asCallback(cb);
-        }
-        else
-        {
-            cb();
-        }
-    }
-
     function validateCache(account_id, cache, cb)
     {
         if (!cache)
@@ -479,8 +424,7 @@ module.exports = function(db, redis)
         }
         else
         {
-            //non-integer account_id (all/professional)
-            //skip validation (always valid)
+            //non-integer account_id (all/professional), skip validation (always valid)
             cb(null, true);
         }
     }
@@ -496,7 +440,7 @@ module.exports = function(db, redis)
         options.queryObj = preprocessQuery(options.queryObj, constants);
         var filter_exists = Object.keys(options.queryObj.js_select).length;
         //try to find player in db
-        getPlayer(account_id, function(err, player)
+        getPlayer(db, account_id, function(err, player)
         {
             if (err)
             {
@@ -551,10 +495,7 @@ module.exports = function(db, redis)
                     //save the cache
                     if (!filter_exists && player.account_id !== constants.anonymous_account_id)
                     {
-                        writeCache(player.account_id,
-                        {
-                            aggData: results.aggData
-                        }, function(err)
+                        writeCache(player.account_id, results, function(err)
                         {
                             processResults(err, results);
                         });
@@ -615,43 +556,66 @@ module.exports = function(db, redis)
                     generatePositionData(d, player);
                     player.posData = [d];
                 }
-                //compute abandons
-                player.abandons = 0;
-                for (var key in player.aggData.leaver_status.counts)
+                async.parallel(
                 {
-                    if (Number(key) >= 2)
+                    //the array of teammates under the filter condition
+                    teammate_list: function(cb)
                     {
-                        player.abandons += player.aggData.leaver_status.counts[key];
-                    }
-                }
-                //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
-                console.time('fillskill');
-                //get skill data for matches within cache expiry (might not have skill data)
-                var recents = cache.aggData.matches.filter(function(m)
-                {
-                    return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
-                });
-                var skillMap = {};
-                async.each(recents, function(match, cb)
-                {
-                    db.first(['match_id', 'skill']).from('match_skill').where(
-                    {
-                        match_id: match.match_id
-                    }).asCallback(function(err, row)
-                    {
-                        if (row && row.skill)
+                        if (options.info === "peers")
                         {
-                            skillMap[match.match_id] = row.skill;
+                            generateTeammateArrayFromHash(aggData.teammates, player, function(err, result)
+                            {
+                                player.teammate_list = result;
+                                return cb(err);
+                            });
                         }
-                        return cb(err);
-                    });
+                        else
+                        {
+                            return cb();
+                        }
+                    },
+                    fill_skill: function(cb)
+                    {
+                        if (options.info === "index" || options.info === "matches")
+                        {
+                            //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
+                            console.time('fillskill');
+                            //get skill data for matches within cache expiry (might not have skill data)
+                            var recents = player.aggData.matches.filter(function(m)
+                            {
+                                return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+                            });
+                            var skillMap = {};
+                            async.each(recents, function(match, cb)
+                            {
+                                db.first(['match_id', 'skill']).from('match_skill').where(
+                                {
+                                    match_id: match.match_id
+                                }).asCallback(function(err, row)
+                                {
+                                    if (row && row.skill)
+                                    {
+                                        skillMap[match.match_id] = row.skill;
+                                    }
+                                    return cb(err);
+                                });
+                            }, function(err)
+                            {
+                                player.aggData.matches.forEach(function(m)
+                                {
+                                    m.skill = m.skill || skillMap[m.match_id];
+                                });
+                                console.timeEnd('fillskill');
+                                cb(err);
+                            });
+                        }
+                        else
+                        {
+                            return cb();
+                        }
+                    }
                 }, function(err)
                 {
-                    cache.aggData.matches.forEach(function(m)
-                    {
-                        m.skill = m.skill || skillMap[m.match_id];
-                    });
-                    console.timeEnd('fillskill');
                     cb(err, player);
                 });
             }

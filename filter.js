@@ -1,6 +1,5 @@
 var constants = require('./constants.js');
 var utility = require('./utility');
-var isSignificant = utility.isSignificant;
 var isRadiant = utility.isRadiant;
 module.exports = function filter(matches, filters) {
     //accept a hash of filters, run all the filters in the hash in series
@@ -8,7 +7,7 @@ module.exports = function filter(matches, filters) {
     var conditions = {
         //filter: significant, remove unbalanced game modes/lobbies
         significant: function(m, key) {
-            return Number(isSignificant(constants, m)) === key;
+            return Number(m.isSignificant) === key;
         },
         //filter: player won
         win: function(m, key) {
