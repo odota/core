@@ -2,7 +2,7 @@
 # For possible NODE_VERSION values,
 # install nvm and run "nvm ls-remote"
 FROM phusion/baseimage:0.9.17
-ENV NODE_VERSION 5.1.0
+ENV NODE_VERSION 5.4.0
 # install git/java
 # if building, need jdk and maven
 RUN add-apt-repository ppa:openjdk-r/ppa && \
