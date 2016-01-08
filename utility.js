@@ -503,15 +503,16 @@ function preprocessQuery(query, constants)
     query.js_select = {};
     var dbAble = {
         "account_id": 1,
-        "leagueid": 1
+        "leagueid": 1,
+        "hero_id": 1,
+        "game_mode": 1,
+        "lobby_type": 1
     };
     //reserved keywords, don't treat these as filters
     var exceptions = {
         "json": 1,
-        "compare_account_id": 1
-    };
-    var whitelist = {
-        "all": 5000
+        "compare_account_id": 1,
+        "sql": 1
     };
     for (var key in query.select)
     {
@@ -523,36 +524,21 @@ function preprocessQuery(query, constants)
                 //just return the object if it's an array or object
                 return e;
             }
-            //numberify this element if not keyword
-            if (e in whitelist)
-            {
-                return e;
-            }
-            else
-            {
-                return Number(e);
-            }
+            //numberify this element
+            return Number(e);
         });
         if (dbAble[key])
         {
-            //get the first element
-            if (query.select[key][0] in whitelist)
-            {
-                query.limit = whitelist[query.select[key][0]];
-            }
-            else
-            {
-                query.db_select[key] = query.select[key][0];
-            }
+            query.db_select[key] = query.select[key][0];
         }
         else if (!exceptions[key])
         {
             query.js_select[key] = query.select[key];
         }
     }
+    query.limit = 20000;
     //mark this query processed
     query.processed = true;
-    console.log(query);
     return query;
 }
 module.exports = {

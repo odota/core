@@ -88,129 +88,10 @@ for (var key in constants.lobby_type)
         sigLobbies.push(Number(key));
     }
 }
+var significant = util.format("game_mode in (%s) and lobby_type in (%s) and radiant_win is not null and duration > 300", sigModes.join(","), sigLobbies.join(","));
 var playerPages = constants.player_pages;
 module.exports = function(db, redis)
 {
-    players.get('/sql/:account_id/:info?/:subkey?', function(req, res, next)
-    {
-        var significant = util.format("game_mode in (%s) and lobby_type in (%s) and radiant_win is not null and duration > 300", sigModes.join(","), sigLobbies.join(","));
-        var info = playerPages[req.params.info] ? req.params.info : "index";
-        var account_id = req.params.account_id;
-        if (Number(account_id) === constants.anonymous_account_id)
-        {
-            return next("cannot generate profile for anonymous account_id");
-        }
-        //TODO
-        //disable special filters: with/against/included, purchased_item, lane_role, patch, region, faction, win
-        //make histograms/records/trends work
-        //add significance check to all
-        getPlayer(db, account_id, function(err, player)
-        {
-            if (err)
-            {
-                return next(err);
-            }
-            async.parallel(
-            {
-                matches: function(cb)
-                {
-                    db.select(basic).from('player_matches').join('matches', 'matches.match_id', 'player_matches.match_id').leftJoin('match_skill', 'player_matches.match_id', "match_skill.match_id").where(
-                    {
-                        account_id: account_id
-                    }).orderBy('match_id', 'desc').limit(20).asCallback(function(err, matches)
-                    {
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        matches.forEach(function(m)
-                        {
-                            m.player_win = isRadiant(m) === m.radiant_win;
-                        });
-                        cb(err, matches);
-                    });
-                },
-                heroes: function(cb)
-                {
-                    db('player_matches').select(db.raw("hero_id, max(start_time) as last_played, count(*) as games, sum(case when radiant_win = player_slot < 64 then 1 else 0 end) as win")).join(db.raw("matches on matches.match_id = player_matches.match_id")).whereRaw(significant).where(db.raw("account_id = ?", [account_id])).groupBy("hero_id").orderBy("games", "desc").where(req.query).asCallback(cb);
-                },
-                counts: function(cb)
-                {
-                    db('player_matches').select(db.raw("sum(case when radiant_win = player_slot < 64 then 1 else 0 end) as win, sum(case when radiant_win = player_slot < 64 then 0 else 1 end) as lose, sum(case when leaver_status > 1 then 1 else 0 end) as abandon_count, count(*) as match_count, sum(case when version > 0 then 1 else 0 end) as parsed_match_count")).join(db.raw("matches on player_matches.match_id = matches.match_id")).whereRaw(significant).where(db.raw("account_id = ?", [account_id])).where(req.query).asCallback(cb);
-                },
-                sets: function(cb)
-                {
-                    queries.getSets(redis, cb);
-                },
-                //players_with: function(cb)
-                //{
-                //    //db.raw("select js2.value as account_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id, json_each(pgroup) AS js, json_each_text(value) js2 where account_id = ? and js2.key = 'account_id' group by js2.value order by games desc", [account_id]).asCallback(cb);
-                //    var inner2 = "select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where player_matches.account_id = ?";
-                //    var inner = "select player_matches.account_id, max(start_time) as last_played, count(*) as with_games, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (" + inner2 + ") pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by player_matches.account_id order by with_games desc limit 100";
-                //    db.raw("select * from (" + inner + ") res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
-                //},
-                //players_against: function(cb)
-                //{
-                //    var inner2 = "SELECT player_matches.match_id, start_time, (player_slot < 64 = radiant_win) AS player_win, (player_slot < 64) AS player_radiant FROM   player_matches JOIN   matches ON     matches.match_id = player_matches.match_id WHERE  player_matches.account_id = ?";
-                //    var inner = "SELECT player_matches.account_id, Max(start_time) AS last_played, Count(*) AS against_games,  Sum( CASE WHEN player_win THEN 1 ELSE 0  END) AS against_win from player_matches join (" + inner2 + ") pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by player_matches.account_id order by against_games desc limit 100";
-                //    db.raw("SELECT * FROM (" + inner + ") res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
-                //},
-                //heroes_with: function(cb)
-                //{
-                //    db.raw("select hero_id, count(*) as with_games, max(start_time) as last_played, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by hero_id order by with_games desc", [account_id]).asCallback(cb);
-                //},
-                //heroes_against: function(cb)
-                //{
-                //    db.raw("select hero_id, count(*) as against_games, max(start_time) as last_played, sum(case when player_win then 1 else 0 end) as against_win from player_matches join (select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by hero_id order by against_games desc", [account_id]).asCallback(cb);
-                //},
-                ratings: function(cb)
-                {
-                    queries.getPlayerRatings(db, account_id, cb);
-                }
-            }, function(err, result)
-            {
-                if (err)
-                {
-                    return next(err);
-                }
-                player.aggData = {
-                    matches: result.matches
-                };
-                player.win = result.counts[0].win;
-                player.lose = result.counts[0].lose;
-                player.abandon_count = result.counts[0].abandon_count;
-                player.match_count = result.counts[0].match_count;
-                player.parsed_match_count = result.counts[0].parsed_match_count;
-                player.heroes_list = result.heroes;
-                //player.heroes_with = result.heroes_with.rows;
-                //player.heroes_against = result.heroes_against.rows;
-                //player.players_with = result.players_with.rows;
-                //player.players_against = result.players_against.rows;
-                player.ratings = result.ratings;
-                if (req.query.json)
-                {
-                    return res.json(player);
-                }
-                res.render("player/player_" + info,
-                {
-                    q: req.query,
-                    querystring: Object.keys(req.query).length ? "?" + querystring.stringify(req.query) : "",
-                    route: info,
-                    tabs: playerPages,
-                    player: player,
-                    trackedPlayers: result.sets.trackedPlayers,
-                    histograms: subkeys,
-                    subkey: req.params.subkey || "kills",
-                    times:
-                    {
-                        "duration": 1,
-                        "first_blood_time": 1
-                    },
-                    title: (player.personaname || player.account_id) + " - YASP"
-                });
-            });
-        });
-    });
     players.get('/:account_id/:info?/:subkey?', function(req, res, next)
     {
         console.time("player " + req.params.account_id);
@@ -231,7 +112,8 @@ module.exports = function(db, redis)
                     queryObj:
                     {
                         select: req.query
-                    }
+                    },
+                    sql: req.query.sql
                 }, cb);
             },
             "sets": function(cb)
@@ -249,21 +131,16 @@ module.exports = function(db, redis)
                 return next(err);
             }
             var player = result.player;
+            var ratings = result.ratings || [];
+            player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
+            player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
+            player.ratings = ratings;
+            delete req.query.account_id;
             console.timeEnd("player " + req.params.account_id);
             if (req.query.json)
             {
                 return res.json(result.player);
             }
-            var ratings = result.ratings || [];
-            player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
-            player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
-            player.ratings = ratings;
-            player.match_count = player.aggData.match_id.n;
-            player.parsed_match_count = player.aggData.version.n;
-            player.abandon_count = player.aggData.abandons.sum;
-            player.win = player.aggData.win.sum;
-            player.lose = player.aggData.lose.sum;
-            delete req.query.account_id;
             res.render("player/player_" + info,
             {
                 q: req.query,
@@ -287,68 +164,7 @@ module.exports = function(db, redis)
     });
     //return router
     return players;
-    /*
-        function doCompare(query, account_id, cb) {
-            var account_ids = ["all", account_id];
-            //var compareIds = query.compare_account_id;
-            //compareIds = compareIds ? [].concat(compareIds) : [];
-            //account_ids = account_ids.concat(compareIds).slice(0, 6);
-            async.map(account_ids, function(account_id, cb) {
-                //pass a copy of the original query, saved from before
-                fillPlayerData(account_id, {
-                    query: {
-                        select: JSON.parse(JSON.stringify(query))
-                    }
-                }, function(err, player) {
-                    console.log("computing averages %s", player.account_id);
-                    //create array of results.aggData for each account_id
-                    for (var key in histograms) {
-                        //mean
-                        //if (player.aggData[key].sum && player.aggData[key].n) {
-                        //    player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
-                        //}
-                        //median
-                        var arr = [];
-                        for (var value in player.aggData[key].counts) {
-                            for (var i = 0; i < player.aggData[key].counts[value]; i++) {
-                                arr.push(Number(value));
-                            }
-                        }
-                        arr.sort(function(a, b) {
-                            return a - b;
-                        });
-                        player.aggData[key].avg = arr[Math.floor(arr.length / 2)];
-                    }
-                    cb(err, player);
-                });
-            }, function(err, results) {
-                if (err) {
-                    return cb(err);
-                }
-                console.time("computing percentiles");
-                //compute percentile for each stat
-                //for each stat average in each player's aggdata, iterate through all's stat counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
-                results.forEach(function(r, i) {
-                    for (var key in histograms) {
-                        var avg = results[i].aggData[key].avg;
-                        var allCounts = results[0].aggData[key].counts;
-                        var gt = 0;
-                        var total = 0;
-                        for (var value in allCounts) {
-                            var valueCount = allCounts[value];
-                            if (avg >= Number(value)) {
-                                gt += valueCount;
-                            }
-                            total += valueCount;
-                        }
-                        results[i].aggData[key].percentile = total ? (gt / total) : 0;
-                    }
-                });
-                console.timeEnd("computing percentiles");
-                return cb(err, results);
-            });
-        }
-    */
+
     function generateTeammateArrayFromHash(input, player, cb)
     {
         if (!input)
@@ -429,10 +245,86 @@ module.exports = function(db, redis)
         }
     }
 
+    function doSqlAgg(player, query, cb)
+    {
+        //TODO
+        //disable or fix special filters: with/against/included, purchased_item, lane_role, patch, region, faction, win
+        //make histograms/records/trends work
+        //add significance check to all queries
+        //get 20k matches if info is matches, else 20
+        console.log(query);
+        async.parallel(
+        {
+            matches: function(cb)
+            {
+                console.time('t');
+                db.select(basic).select(db.raw('(player_slot < 64) = radiant_win as player_win')).from('player_matches').join('matches', 'matches.match_id', 'player_matches.match_id').leftJoin('match_skill', 'player_matches.match_id', "match_skill.match_id").where(query).orderBy('match_id', 'desc').limit(20).asCallback(function(err, matches)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    console.timeEnd('t');
+                    cb(err, matches);
+                });
+            },
+            heroes: function(cb)
+            {
+                db('player_matches').select(db.raw("hero_id, max(start_time) as last_played, count(*) as games, sum(case when radiant_win = (player_slot < 64) then 1 else 0 end) as win")).join(db.raw("matches on matches.match_id = player_matches.match_id")).whereRaw(significant).where(query).groupBy("hero_id").orderBy("games", "desc").asCallback(cb);
+            },
+            counts: function(cb)
+            {
+                db('player_matches').select(db.raw("sum(case when radiant_win = (player_slot < 64) then 1 else 0 end) as win, sum(case when radiant_win = (player_slot < 64) then 0 else 1 end) as lose, sum(case when leaver_status > 1 then 1 else 0 end) as abandon_count, count(*) as match_count, sum(case when version > 0 then 1 else 0 end) as parsed_match_count")).join(db.raw("matches on player_matches.match_id = matches.match_id")).whereRaw(significant).where(query).asCallback(cb);
+            },
+            //players_with: function(cb)
+            //{
+            //    //db.raw("select js2.value as account_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id, json_each(pgroup) AS js, json_each_text(value) js2 where account_id = ? and js2.key = 'account_id' group by js2.value order by games desc", [account_id]).asCallback(cb);
+            //    var inner2 = "select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where player_matches.account_id = ?";
+            //    var inner = "select player_matches.account_id, max(start_time) as last_played, count(*) as with_games, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (" + inner2 + ") pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by player_matches.account_id order by with_games desc limit 100";
+            //    db.raw("select * from (" + inner + ") res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
+            //},
+            //players_against: function(cb)
+            //{
+            //    var inner2 = "SELECT player_matches.match_id, start_time, (player_slot < 64 = radiant_win) AS player_win, (player_slot < 64) AS player_radiant FROM   player_matches JOIN   matches ON     matches.match_id = player_matches.match_id WHERE  player_matches.account_id = ?";
+            //    var inner = "SELECT player_matches.account_id, Max(start_time) AS last_played, Count(*) AS against_games,  Sum( CASE WHEN player_win THEN 1 ELSE 0  END) AS against_win from player_matches join (" + inner2 + ") pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by player_matches.account_id order by against_games desc limit 100";
+            //    db.raw("SELECT * FROM (" + inner + ") res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
+            //},
+            //heroes_with: function(cb)
+            //{
+            //    db.raw("select hero_id, count(*) as with_games, max(start_time) as last_played, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by hero_id order by with_games desc", [account_id]).asCallback(cb);
+            //},
+            //heroes_against: function(cb)
+            //{
+            //    db.raw("select hero_id, count(*) as against_games, max(start_time) as last_played, sum(case when player_win then 1 else 0 end) as against_win from player_matches join (select player_matches.match_id, start_time, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by hero_id order by against_games desc", [account_id]).asCallback(cb);
+            //},
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            player.aggData = {
+                matches: result.matches
+            };
+            player.match_count = result.counts[0].match_count;
+            player.parsed_match_count = result.counts[0].parsed_match_count;
+            player.abandon_count = result.counts[0].abandon_count;
+            player.win = result.counts[0].win;
+            player.lose = result.counts[0].lose;
+            player.heroes_list = result.heroes;
+            //player.heroes_with = result.heroes_with.rows;
+            //player.heroes_against = result.heroes_against.rows;
+            //player.players_with = result.players_with.rows;
+            //player.players_against = result.players_against.rows;
+            cb(err, player);
+        });
+    }
+
     function fillPlayerData(account_id, options, cb)
     {
         //options.info, the tab the player is on
         //options.queryObj, the query object to use
+        //options.sql, use sql aggregation
         var orig_account_id = account_id;
         account_id = Number(account_id);
         //select player_matches with this account_id
@@ -451,34 +343,41 @@ module.exports = function(db, redis)
                 account_id: account_id,
                 personaname: account_id
             };
-            if (filter_exists)
+            if (options.sql)
             {
-                return cacheMiss();
+                doSqlAgg(player, options.queryObj.db_select, cb);
             }
-            readCache(orig_account_id, function(err, cache)
+            else
             {
-                if (err)
+                if (filter_exists)
                 {
-                    return cb(err);
+                    return cacheMiss();
                 }
-                //check count of matches in db to validate cache
-                validateCache(account_id, cache, function(err, valid)
+                readCache(orig_account_id, function(err, cache)
                 {
                     if (err)
                     {
                         return cb(err);
                     }
-                    if (!valid)
+                    //check count of matches in db to validate cache
+                    validateCache(account_id, cache, function(err, valid)
                     {
-                        return cacheMiss();
-                    }
-                    else
-                    {
-                        console.log("player cache hit %s", player.account_id);
-                        processResults(err, cache);
-                    }
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        if (!valid)
+                        {
+                            return cacheMiss();
+                        }
+                        else
+                        {
+                            console.log("player cache hit %s", player.account_id);
+                            processResults(err, cache);
+                        }
+                    });
                 });
-            });
+            }
 
             function cacheMiss()
             {
@@ -616,6 +515,11 @@ module.exports = function(db, redis)
                     }
                 }, function(err)
                 {
+                    player.match_count = player.aggData.match_id.n;
+                    player.parsed_match_count = player.aggData.version.n;
+                    player.abandon_count = player.aggData.abandons.sum;
+                    player.win = player.aggData.win.sum;
+                    player.lose = player.aggData.lose.sum;
                     cb(err, player);
                 });
             }

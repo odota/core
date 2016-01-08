@@ -5,10 +5,6 @@ module.exports = function filter(matches, filters) {
     //accept a hash of filters, run all the filters in the hash in series
     //console.log(filters);
     var conditions = {
-        //filter: significant, remove unbalanced game modes/lobbies
-        significant: function(m, key) {
-            return Number(m.isSignificant) === key;
-        },
         //filter: player won
         win: function(m, key) {
             return Number(m.player_win) === key;

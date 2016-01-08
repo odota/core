@@ -667,7 +667,7 @@ function generatePlayerAnalysis(match, pm)
                 {
                     return 60 - raw;
                 },
-                top: 10
+                top: 20
             };
         },
         //low obs wards/min
