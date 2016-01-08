@@ -147,37 +147,46 @@ function insertMatch(db, redis, queue, match, options, cb)
                 //console.error(key);
             }
         }
+        /*
         //TODO use psql upsert when available
         //TODO this breaks transactions, transaction will refuse to complete if error occurred during insert
         //upsert on api, update only otherwise
-        if (options.type === "api")
+        console.log(        db.raw("insert into matches (?) values (?) on conflict do update set ?", [Object.keys(row).join(','), Object.keys(row).map(function(key)
         {
-            db('matches').insert(row).where(
-            {
-                match_id: row.match_id
-            }).asCallback(function(err)
-            {
-                if (err && err.detail.indexOf("already exists") !== -1)
-                {
-                    //try update
-                    db('matches').update(row).where(
-                    {
-                        match_id: row.match_id
-                    }).asCallback(cb);
-                }
-                else
-                {
-                    cb(err);
-                }
-            });
-        }
-        else
+            return row[key];
+        }).join(','), Object.keys(row).map(function(key)
         {
-            db('matches').update(row).where(
+            return key + " = " + JSON.stringify(row[key]);
+        }).join(',')]).toString());
+        db.raw("insert into matches (?) values (?) on conflict do update set ?", [Object.keys(row).join(','), Object.keys(row).map(function(key)
+        {
+            return row[key];
+        }).join(','), Object.keys(row).map(function(key)
+        {
+            return key + " = " + JSON.stringify(row[key]);
+        }).join(',')]).asCallback(function(err){
+            console.error(err);
+            cb(err);
+        });
+        */
+        db('matches').insert(row).where(
+        {
+            match_id: row.match_id
+        }).asCallback(function(err)
+        {
+            if (err && err.detail.indexOf("already exists") !== -1)
             {
-                match_id: row.match_id
-            }).asCallback(cb);
-        }
+                //try update
+                db('matches').update(row).where(
+                {
+                    match_id: row.match_id
+                }).asCallback(cb);
+            }
+            else
+            {
+                cb(err);
+            }
+        });
     }
 
     function insertPlayerMatchesTable(cb)
