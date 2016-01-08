@@ -19,11 +19,10 @@ h2.inline-header
             each entry in constants.heroes
               option(value=entry.id, selected=q.against_hero_id && q.against_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
-          abbr(title="Select a teammate or enter an account ID")
-            label The Players Included
+          label The Players Included
           select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player")#included_account_id
-            each entry in teammate_ids
-              option(value=entry.account_id, selected=q.included_account_id && q.included_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
+            each entry in q.included_account_id || []
+              option(value=entry, selected=q.included_account_id && q.included_account_id.indexOf(entry)!==-1)=entry
               
       .col-md-4
         h4 Personal Parameters
@@ -37,7 +36,7 @@ h2.inline-header
           select.form-control(multiple name="isRadiant" placeholder="Any Faction")#isRadiant
             option(value="1", selected=(q["isRadiant"] && q["isRadiant"][0]===1)) Radiant
             option(value="0", selected=(q["isRadiant"] && q["isRadiant"][0]===0)) Dire
-        .form-group  
+        .form-group
           label Result
           select.form-control(multiple name="win" placeholder="Any Result")#win
             option(value="1", selected=(q["win"] && q["win"][0]===1)) Wins
@@ -83,21 +82,10 @@ h2.inline-header
           select.form-control(multiple name="region" placeholder="Any Region")#region
             each name, id in constants.region
               option(value=id, selected=(q.region && q.region[0]===Number(id)))=name
-    //-
-      if compare
-        .row
-          .col-md-12
-            .form-group
-              abbr(title="Select a teammate or enter an account ID")
-                label Compare With
-              select.form-control(name="compare_account_id", multiple)#compare_account_id
-                each entry in teammate_ids
-                  option(value=entry.account_id, selected=q.compare_account_id && q.compare_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
 
     .row
-      .col-md-6.text-center
+      .col-md-4.col-md-offset-4.text-center
         span: button.btn.btn-query(type="submit") Do the Thing
-      .col-md-6.text-center
-        span: a.btn.btn-danger(href="./"+player.account_id) Reset the Thing
+        span: a.btn.btn-danger(href="./"+route) Reset the Thing
 
   hr

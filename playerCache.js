@@ -29,8 +29,10 @@ function readCache(account_id, cb)
         });
         /*
         //TODO
-        //get array of matches, agg and return results
-        cb(null, {aggData: aggregator([])});
+        //get array of matches, filter, agg and return results
+        //var results = getArray();
+        //var filtered = filter(results, options.js_agg);
+        //cb(null, {aggData: aggregator(filtered)});
         */
         /*
         var query = 'SELECT cache FROM player_caches WHERE account_id=?';
@@ -75,10 +77,10 @@ function writeCache(account_id, cache, cb)
             });
         });
         /*
-            //TODO
-            var arr = cache.raw.map(function(m){return reduceAggregable(m)});
-            //upsert matches into store
-            */
+        //TODO
+        var arr = cache.raw.map(function(m){return reduceAggregable(m)});
+        //upsert matches into store
+        */
         /*
         cassandra.execute('SELECT TTL(cache) FROM player_caches WHERE account_id = ?', [account_id],
         {

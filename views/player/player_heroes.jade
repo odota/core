@@ -5,6 +5,13 @@ block playercontent
   .row
     .col-md-12.table-responsive
       +hero_table(player.heroes_list)
-
+      
+  if player.heroes_with
+    .row
+      .col-md-6.table-responsive
+        +hero_table(player.heroes_with)
+      .col-md-6.table-responsive
+        +hero_table(player.heroes_against)
+        
 append footer_assets
   script.

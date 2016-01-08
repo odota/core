@@ -103,7 +103,7 @@ module.exports = function aggregator(matches, fields, existing)
         }
         else
         {
-            value = ~~Number(value);
+            value = ~~value;
             if (!aggObj.counts[value])
             {
                 aggObj.counts[value] = 0;

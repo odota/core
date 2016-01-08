@@ -5,11 +5,13 @@ block playercontent
   .row
     .col-md-12.table-responsive
       +teammate_table(player.teammate_list)
-  //-
+  
+  if player.played_with
     .row
       .col-md-6.table-responsive
-        +teammate_table(player.peers)
+        +teammate_table(player.played_with)
       .col-md-6.table-responsive
-        +teammate_table(player.opponents)
+        +teammate_table(player.played_against)
+      
 append footer_assets
   script.
