@@ -8,6 +8,7 @@ var computeMatchData = compute.computeMatchData;
 var aggregator = require('./aggregator');
 var constants = require('./constants');
 var filter = require('./filter');
+var util = require('util');
 var columnInfo = null;
 
 function getSets(redis, cb)
@@ -117,28 +118,28 @@ function insertMatch(db, redis, queue, match, options, cb)
                 //console.error(key);
             }
         }
-        /*
         //TODO use psql upsert when available
-        //TODO this breaks transactions, transaction will refuse to complete if error occurred during insert
-        //upsert on api, update only otherwise
-        console.log(        db.raw("insert into matches (?) values (?) on conflict do update set ?", [Object.keys(row).join(','), Object.keys(row).map(function(key)
+        //TODO insert/err/update breaks transactions, transaction will refuse to complete if error occurred during insert
+       /*
+        var query = util.format("insert into matches (%s) values (%s) on conflict on constraint matches_pkey do update set %s", Object.keys(row).join(','), Object.keys(row).map(function(key)
         {
-            return row[key];
+            console.log(row[key]);
+            return "'" + (row[key].constructor === Array ? "{" + row[key].map(function(e)
+            {
+                return "'" + JSON.stringify(e) + "'";
+            }).join(',') + "}" : JSON.stringify(row[key])) + "'";
         }).join(','), Object.keys(row).map(function(key)
         {
-            return key + " = " + JSON.stringify(row[key]);
-        }).join(',')]).toString());
-        db.raw("insert into matches (?) values (?) on conflict do update set ?", [Object.keys(row).join(','), Object.keys(row).map(function(key)
-        {
-            return row[key];
-        }).join(','), Object.keys(row).map(function(key)
-        {
-            return key + " = " + JSON.stringify(row[key]);
-        }).join(',')]).asCallback(function(err){
-            console.error(err);
-            cb(err);
-        });
+            return key + "=" + "'" + (row[key].constructor === Array ? "{" + row[key].map(function(e)
+            {
+                return "'" + JSON.stringify(e) + "'";
+            }).join(',') + "}" : JSON.stringify(row[key])) + "'";
+        }).join(','));
+        var fs = require('fs');
+        fs.writeFileSync('output.json', query);
+        db.raw(query).asCallback(cb);
         */
+        
         db('matches').insert(row).where(
         {
             match_id: row.match_id
@@ -157,6 +158,7 @@ function insertMatch(db, redis, queue, match, options, cb)
                 cb(err);
             }
         });
+        
     }
 
     function insertPlayerMatchesTable(cb)
