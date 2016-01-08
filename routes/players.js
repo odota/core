@@ -263,6 +263,7 @@ module.exports = function(db, redis)
             player.abandon_count = player.aggData.abandons.sum;
             player.win = player.aggData.win.sum;
             player.lose = player.aggData.lose.sum;
+            delete req.query.account_id;
             res.render("player/player_" + info,
             {
                 q: req.query,

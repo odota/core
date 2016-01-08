@@ -48,9 +48,9 @@ createdb yasp --owner yasp
 #npm run deploy
 
 #backup/restore
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean
 #pg_dump -d postgres://yasp:yasp@localhost/yasp -f yasp.sql --format=c
-#pg_restore -d postgres://yasp:yasp@localhost/yasp yasp.sql
+#pg_restore -d postgres://yasp:yasp@localhost/yasp yasp.sql --clean
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
 
