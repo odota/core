@@ -14,36 +14,6 @@ function getSets(redis, cb)
 {
     async.parallel(
     {
-        /*
-        "bots": function(cb) {
-            redis.get("bots", function(err, bots) {
-                bots = JSON.parse(bots || "[]");
-                //sort list of bots descending, but full bots go to end (concentrates load)
-
-                // bots.sort(function(a, b) {
-                //     var threshold = 50;
-                //     if (a.friends > threshold) {
-                //         return 1;
-                //     }
-                //     if (b.friends > threshold) {
-                //         return -1;
-                //     }
-                //     return (b.friends - a.friends);
-                // });
-
-                //sort ascending (distributes load)
-                bots.sort(function(a, b) {
-                    return a.friends - b.friends;
-                });
-                cb(err, bots);
-            });
-        },
-        "ratingPlayers": function(cb) {
-            redis.get("ratingPlayers", function(err, rps) {
-                cb(err, JSON.parse(rps || "{}"));
-            });
-        },
-        */
         "trackedPlayers": function(cb)
         {
             redis.get("trackedPlayers", function(err, tps)
