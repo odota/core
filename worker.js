@@ -58,7 +58,6 @@ function processApi(job, cb) {
     var payload = job.data.payload;
     getData(job.data.url, function(err, body) {
         if (err) {
-            console.log(err);
             //couldn't get data from api, non-retryable
             return cb(JSON.stringify(err));
         }
@@ -79,7 +78,6 @@ function processApi(job, cb) {
                 attempts: job.data.request ? 1 : undefined
             }, function(err, job2) {
                 if (err){
-                    console.error(err);
                     return cb(err);
                 }
                 //job2 is the parse job
