@@ -26,23 +26,68 @@ import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_Locati
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_SpectatorPlayerUnitOrders;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
+    
 public class Main {
     private final Logger log = LoggerFactory.getLogger(Main.class.getPackage().getClass());
     float INTERVAL = 1;
     float nextInterval = 0;
     Integer time = 0;
     int numPlayers = 10;
-    EventStream es = new EventStream();
     int[] validIndices = new int[numPlayers];
     boolean init = false;
     int gameStartTime = 0;
+    private Gson g = new Gson();
     //Set<Integer> seenEntities = new HashSet<Integer>();
 
+    private class Entry {
+        public Integer time;
+        public String type;
+        public Integer team;
+        public String unit;
+        public String key;
+        public Integer value;
+        public Integer slot;
+        //chat event fields
+        public Integer player1;
+        public Integer player2;
+        //combat log fields
+        public String attackername;
+        public String targetname;
+        public String sourcename;
+        public String targetsourcename;
+        public Boolean attackerhero;
+        public Boolean targethero;
+        public Boolean attackerillusion;
+        public Boolean targetillusion;
+        public String inflictor;
+        public Integer gold_reason;
+        public Integer xp_reason;
+        public String valuename;
+        //entity fields
+        public Integer gold;
+        public Integer lh;
+        public Integer xp;
+        public Integer x;
+        public Integer y;
+        public Float stuns;
+        public Integer hero_id;
+        //public Boolean hasPredictedVictory;
+    
+        public Entry() {
+        }
+        
+        public Entry(Integer time) {
+            this.time = time;
+        }
+    }
+
+    public void output(Entry e) {
+        System.out.print(g.toJson(e) + "\n");
+    }
+    
     //@OnMessage(GeneratedMessage.class)
     public void onMessage(Context ctx, GeneratedMessage message) {
         System.err.println(message.getClass().getName());
@@ -57,7 +102,7 @@ public class Main {
         //need to get the entity by index
         entry.key = String.valueOf(message.getOrderType());
         //theres also target_index
-        es.output(entry);
+        output(entry);
     }
     */
 
@@ -74,7 +119,7 @@ public class Main {
         //break actions into types?
         entry.key = String.valueOf(message.getOrderType());
         //System.err.println(message);
-        es.output(entry);
+        output(entry);
     }
 
 
@@ -96,7 +141,7 @@ public class Main {
         */
         //we could get the ping coordinates/type if we cared
         //entry.key = String.valueOf(message.getOrderType());
-        es.output(entry);
+        output(entry);
     }
 
     @OnMessage(CDOTAUserMsg_ChatEvent.class)
@@ -110,7 +155,7 @@ public class Main {
         entry.player1 = player1;
         entry.player2 = player2;
         entry.value = value;
-        es.output(entry);
+        output(entry);
     }
 
     /*
@@ -120,7 +165,7 @@ public class Main {
         entry.unit =  String.valueOf(message.getPrefix());
         entry.key =  String.valueOf(message.getText());
         entry.type = "chat";
-        es.output(entry);
+        output(entry);
     }
     */
 
@@ -132,7 +177,7 @@ public class Main {
         Entity e = ctx.getProcessor(Entities.class).getByIndex(message.getEntityindex());
         entry.slot = getEntityProperty(e, "m_iPlayerID", null);
         entry.type = "chat";
-        es.output(entry);
+        output(entry);
     }
 
     @OnMessage(CDemoFileInfo.class)
@@ -141,13 +186,13 @@ public class Main {
         Entry matchIdEntry = new Entry();
         matchIdEntry.type = "match_id";
         matchIdEntry.value = message.getGameInfo().getDota().getMatchId();
-        es.output(matchIdEntry);
+        output(matchIdEntry);
 
         //emit epilogue event to mark finish
         Entry epilogueEntry = new Entry();
         epilogueEntry.type = "epilogue";
         epilogueEntry.key = new Gson().toJson(message);
-        es.output(epilogueEntry);
+        output(epilogueEntry);
     }
 
     @OnCombatLogEntry
@@ -173,7 +218,7 @@ public class Main {
         if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_PURCHASE) {
             combatLogEntry.valuename = cle.getValueName();
         }
-        es.output(combatLogEntry);
+        output(combatLogEntry);
         
         if (cle.getType().ordinal() > 19) {
             System.err.println(cle);
@@ -202,7 +247,7 @@ public class Main {
             entry.slot = ownerEntity != null ? (Integer) getEntityProperty(ownerEntity, "m_iPlayerID", null) : null;
             //2/3 radiant/dire
             //entry.team = e.getProperty("m_iTeamNum");
-            es.output(entry);
+            output(entry);
         }
     }
 
@@ -251,7 +296,7 @@ public class Main {
                         entry.type = "player_slot";
                         entry.key = String.valueOf(added);
                         entry.value = (playerTeam == 2 ? 0 : 128) + teamSlot;
-                        es.output(entry);
+                        output(entry);
                         //add it to validIndices, add 1 to added
                         validIndices[added] = i;
                         added += 1;
@@ -302,7 +347,7 @@ public class Main {
                         entry.unit = e.getDtClass().getDtName();
                         entry.hero_id = hero;
                     }
-                    es.output(entry);
+                    output(entry);
 
                 }
                 nextInterval += INTERVAL;
