@@ -8,16 +8,16 @@ curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -
 sudo add-apt-repository -y ppa:openjdk-r/ppa
 sudo add-apt-repository -y ppa:chris-lea/redis-server
 sudo apt-get update && sudo apt-get upgrade
-sudo apt-get -y install make g++ build-essential redis-server postgresql-9.5 openjdk-8-jdk url git maven cassandra
+sudo apt-get -y install make g++ build-essential redis-server postgresql-9.5 openjdk-8-jdk git maven cassandra
 NODE_VERSION=5.4.0
 echo "" > /root/.bashrc && \
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
-    . /root/.bashrc && \
-    source ~/.bashrc && \
-    nvm install $NODE_VERSION && \
-    nvm alias default $NODE_VERSION && \
-    nvm use $NODE_VERSION && \
-    npm install -g npm
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
+. /root/.bashrc && \
+source ~/.bashrc && \
+nvm install $NODE_VERSION && \
+nvm alias default $NODE_VERSION && \
+nvm use $NODE_VERSION && \
+npm install -g npm
 sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/java-8-openjdk-amd64/bin/java" 1
 sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
 sudo apt-get remove maven2

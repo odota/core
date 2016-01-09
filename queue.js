@@ -16,7 +16,6 @@ if (conn_info.auth) {
 }
 module.exports = {
     parse: bull('parse', options.port, options.host),
-    api: bull('api', options.port, options.host),
     request: bull('request', options.port, options.host),
     fullhistory: bull('fullhistory', options.port, options.host),
     mmr: bull('mmr', options.port, options.host),

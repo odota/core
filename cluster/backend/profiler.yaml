@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    app: profiler
+    tier: backend
+  name: profiler
+  namespace: yasp
+spec:
+  replicas: 1
+  selector:
+    app: profiler
+    tier: backend
+  template:
+    metadata:
+      labels:
+        app: profiler
+        tier: backend
+    spec:
+      volumes:
+      - name: api-keys
+        secret:
+          secretName: api-keys
+      containers:
+      - name: yasp
+        image: yasp/yasp:latest
+        args: [ "node", "profiler.js" ]
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: api-keys
+          readOnly: true
+          mountPath: /etc/yasp-api-keys
+      restartPolicy: Always

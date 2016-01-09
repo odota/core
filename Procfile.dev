@@ -8,3 +8,5 @@ mmr: nodemon mmr.js
 fullhistory: nodemon fullhistory.js
 parser: nodemon parser.js
 cacher: nodemon cacher.js
+requests: nodemon requests.js
+profiler: nodemon profiler.js

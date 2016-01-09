@@ -20,7 +20,6 @@ var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
 */
-//var updateNames = require('../tasks/updateNames');
 var queueReq = require('../utility').queueReq;
 var supertest = require('supertest');
 var replay_dir = "./test/testfiles/";

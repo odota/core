@@ -23,7 +23,6 @@ var express = require('express');
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/frontpage.json'));
 var passport = require('passport');
-var config = require('./config');
 var api_key = config.STEAM_API_KEY.split(",")[0];
 var db = require('./db');
 var SteamStrategy = require('passport-steam').Strategy;

@@ -51,12 +51,12 @@ CREATE TABLE players (
   last_login timestamp with time zone,
   full_history_time timestamp with time zone,
   cheese integer DEFAULT 0,
-  fh_unavailable boolean
+  fh_unavailable boolean,
+  loccountrycode varchar(2)
   /*
     "communityvisibilitystate" : 3,
     "lastlogoff" : 1426020853,
     "loccityid" : 44807,
-    "loccountrycode" : "TR",
     "locstatecode" : "16",
     "personastate" : 0,
     "personastateflags" : 0,
