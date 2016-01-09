@@ -40,7 +40,8 @@ public class Main {
     boolean init = false;
     int gameStartTime = 0;
     private Gson g = new Gson();
-    //Set<Integer> seenEntities = new HashSet<Integer>();
+    HashMap<String, Integer> name_to_slot = new HashMap<String, Integer>();
+    HashMap<Integer, Integer> slot_to_playerslot = new HashMap<Integer, Integer>();
 
     private class Entry {
         public Integer time;
@@ -50,6 +51,7 @@ public class Main {
         public String key;
         public Integer value;
         public Integer slot;
+        public Integer player_slot;
         //chat event fields
         public Integer player1;
         public Integer player2;
@@ -300,6 +302,7 @@ public class Main {
                         //add it to validIndices, add 1 to added
                         validIndices[added] = i;
                         added += 1;
+                        slot_to_playerslot.put(added, entry.value);
                     }
 
                     i += 1;
@@ -332,8 +335,7 @@ public class Main {
                     //https://github.com/yasp-dota/yasp/issues/333
                     //need to dump inventory items for each player and possibly keep track of item entity handles
 
-                    //time dead, count number of intervals where this value is >0?
-                    //m_iRespawnSeconds.0000
+                    //m.iLifeState for time dead?
 
                     //get the player's hero entity
                     Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
@@ -346,6 +348,22 @@ public class Main {
                         //get the hero's entity name, ex: CDOTA_Hero_Zuus
                         entry.unit = e.getDtClass().getDtName();
                         entry.hero_id = hero;
+                        //check if hero has been assigned to entity
+                        if (hero > 0) {
+                            //get the hero's entity name, ex: CDOTA_Hero_Zuus
+                            String unit = e.getDtClass().getDtName();
+                            //grab the end of the name, lowercase it
+                            String ending = unit.substring("CDOTA_Unit_Hero_".length());
+                            //valve is bad at consistency and the combat log name could involve replacing camelCase with _ or not!
+                            //double map it so we can look up both cases
+                            String combatLogName = "npc_dota_hero_" + ending.toLowerCase();
+                            //don't include final underscore here since the first letter is always capitalized and will be converted to underscore
+                            String combatLogName2 = "npc_dota_hero" + ending.replaceAll("([A-Z])", "_$1").toLowerCase();
+                            //System.err.format("%s, %s, %s\n", unit, combatLogName, combatLogName2);
+                            //populate for combat log mapping
+                            name_to_slot.put(combatLogName, entry.slot);
+                            name_to_slot.put(combatLogName2, entry.slot);
+                        }
                     }
                     output(entry);
 
