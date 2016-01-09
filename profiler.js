@@ -37,14 +37,11 @@ function getSummaries(cb)
                 //couldn't get data from api, non-retryable
                 return cb(JSON.stringify(err));
             }
-            else if (body.response)
+            //player summaries response
+            async.each(body.response.players, function(player, cb)
             {
-                //player summaries response
-                async.each(body.response.players, function(player, cb)
-                {
-                    insertPlayer(db, player, cb);
-                }, cb);
-            }
+                insertPlayer(db, player, cb);
+            }, cb);
         });
     });
 }
