@@ -1,7 +1,7 @@
 var config = require('../config');
 config.PORT = ""; //use service defaults
 config.MONGO_URL = "mongodb://localhost/test";
-config.POSTGRES_URL = config.CI ? "postgres://yasp_test:yasp_test@localhost:5433/yasp_test" : "postgres://yasp_test:yasp_test@localhost/yasp_test";
+config.POSTGRES_URL = config.TRAVIS ? "postgres://yasp_test:yasp_test@localhost:5433/yasp_test" : "postgres://yasp_test:yasp_test@localhost/yasp_test";
 config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
@@ -13,9 +13,8 @@ var queue = require('../queue');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
-var request = require('request');
 var constants = require('../constants.js');
-var init_db = config.CI ? "postgres://postgres:postgres@localhost:5433/postgres" : "postgres://postgres:postgres@localhost/postgres";
+var init_db = config.TRAVIS ? "postgres://postgres:postgres@localhost:5433/postgres" : "postgres://postgres:postgres@localhost/postgres";
 /*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
@@ -31,7 +30,7 @@ var wait = 90000;
 // these are loaded later, as the database needs to be created when these are required
 var db;
 var app;
-var queries;
+var queries = require('../queries');
 //nock.disableNetConnect();
 //nock.enableNetConnect();
 //fake api response
@@ -111,7 +110,7 @@ before(function(done) {
         function(cb) {
             db = require('../db');
             app = require('../web');
-            queries = require('../queries');
+            require('../parser');
             console.log("loading matches");
             async.mapSeries([require('./details_api.json').result], function(m, cb) {
                 queries.insertMatch(db, redis, queue, m, {
@@ -124,10 +123,7 @@ before(function(done) {
             async.mapSeries(require('./summaries_api').response.players, function(p, cb) {
                 queries.insertPlayer(db, p, cb);
             }, cb);
-        }], function(err) {
-        require('../parser');
-        done(err);
-    });
+        }], done);
 });
 describe("worker", function() {
     this.timeout(wait);
