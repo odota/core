@@ -1,6 +1,8 @@
 var config = require('../config');
 config.PORT = ""; //use service defaults
 config.MONGO_URL = "mongodb://localhost/test";
+console.log(config.TRAVIS);
+config.TRAVIS = true;
 config.POSTGRES_URL = config.TRAVIS ? "postgres://yasp_test:yasp_test@localhost:5433/yasp_test" : "postgres://yasp_test:yasp_test@localhost/yasp_test";
 config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
