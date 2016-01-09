@@ -4,7 +4,6 @@ var utility = require('./utility');
 var ndjson = require('ndjson');
 var spawn = cp.spawn;
 var progress = require('request-progress');
-
 module.exports = function runParse(match, cb)
 {
     var print_multi_kill_streak_debugging = false;
@@ -16,14 +15,8 @@ module.exports = function runParse(match, cb)
     //parse state
     var entries = [];
     var hero_to_slot = {};
-    var hero_to_id = {};
     var slot_to_playerslot = {};
-    //var curr_player_hero = {};
     var game_zero = 0;
-    var curr_teamfight;
-    var teamfights = [];
-    var intervalState = {};
-    var teamfight_cooldown = 15;
     var parsed_data = null;
     inStream = progress(request(
     {
@@ -276,35 +269,6 @@ module.exports = function runParse(match, cb)
                         type: "killed_by"
                     };
                     populate(r);
-                    //check teamfight state
-                    curr_teamfight = curr_teamfight ||
-                    {
-                        start: e.time - teamfight_cooldown,
-                        end: null,
-                        last_death: e.time,
-                        deaths: 0,
-                        players: Array.apply(null, new Array(parsed_data.players.length)).map(function()
-                        {
-                            return {
-                                deaths_pos:
-                                {},
-                                ability_uses:
-                                {},
-                                item_uses:
-                                {},
-                                killed:
-                                {},
-                                deaths: 0,
-                                buybacks: 0,
-                                damage: 0,
-                                gold_delta: 0,
-                                xp_delta: 0
-                            };
-                        })
-                    };
-                    //update the last_death time of the current fight
-                    curr_teamfight.last_death = e.time;
-                    curr_teamfight.deaths += 1;
                 }
             },
             "DOTA_COMBATLOG_ABILITY": function(e)
@@ -552,22 +516,6 @@ module.exports = function runParse(match, cb)
             },
             "interval": function(e)
             {
-                //store hero state at each interval for teamfight lookup
-                if (!intervalState[e.time])
-                {
-                    intervalState[e.time] = {};
-                }
-                intervalState[e.time][e.slot] = e;
-                //check curr_teamfight status
-                if (curr_teamfight && e.time - curr_teamfight.last_death >= teamfight_cooldown)
-                {
-                    //close it
-                    curr_teamfight.end = e.time;
-                    //push a copy for post-processing
-                    teamfights.push(JSON.parse(JSON.stringify(curr_teamfight)));
-                    //clear existing teamfight
-                    curr_teamfight = null;
-                }
                 if (e.time >= 0)
                 {
                     var e2 = JSON.parse(JSON.stringify(e));
@@ -673,7 +621,6 @@ module.exports = function runParse(match, cb)
         }
         console.log(reduceMap);
     }
-    
     //Compute data requiring all players in a match for storage in match table
     function processAllPlayers()
     {
@@ -709,6 +656,65 @@ module.exports = function runParse(match, cb)
     //Compute teamfights that occurred
     function processTeamfights()
     {
+        var curr_teamfight;
+        var teamfights = [];
+        var intervalState = {};
+        var teamfight_cooldown = 15;
+        for (var i = 0; i < entries.length; i++)
+        {
+            var e = entries[i];
+            if (e.type === "killed" && e.targethero && !e.targetillusion)
+            {
+                //check teamfight state
+                curr_teamfight = curr_teamfight ||
+                {
+                    start: e.time - teamfight_cooldown,
+                    end: null,
+                    last_death: e.time,
+                    deaths: 0,
+                    players: Array.apply(null, new Array(parsed_data.players.length)).map(function()
+                    {
+                        return {
+                            deaths_pos:
+                            {},
+                            ability_uses:
+                            {},
+                            item_uses:
+                            {},
+                            killed:
+                            {},
+                            deaths: 0,
+                            buybacks: 0,
+                            damage: 0,
+                            gold_delta: 0,
+                            xp_delta: 0
+                        };
+                    })
+                };
+                //update the last_death time of the current fight
+                curr_teamfight.last_death = e.time;
+                curr_teamfight.deaths += 1;
+            }
+            else if (e.type === "interval")
+            {
+                //store hero state at each interval for teamfight lookup
+                if (!intervalState[e.time])
+                {
+                    intervalState[e.time] = {};
+                }
+                intervalState[e.time][e.slot] = e;
+                //check curr_teamfight status
+                if (curr_teamfight && e.time - curr_teamfight.last_death >= teamfight_cooldown)
+                {
+                    //close it
+                    curr_teamfight.end = e.time;
+                    //push a copy for post-processing
+                    teamfights.push(JSON.parse(JSON.stringify(curr_teamfight)));
+                    //clear existing teamfight
+                    curr_teamfight = null;
+                }
+            }
+        }
         //fights that didnt end wont be pushed to teamfights array (endgame case)
         //filter only fights where 3+ heroes died
         teamfights = teamfights.filter(function(tf)
