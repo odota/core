@@ -1,9 +1,7 @@
 var config = require('../config');
 config.PORT = ""; //use service defaults
 config.MONGO_URL = "mongodb://localhost/test";
-console.log(config.TRAVIS);
-config.TRAVIS = true;
-config.POSTGRES_URL = config.TRAVIS ? "postgres://yasp_test:yasp_test@localhost:5433/yasp_test" : "postgres://yasp_test:yasp_test@localhost/yasp_test";
+config.POSTGRES_URL = "postgres://yasp_test:yasp_test@localhost/yasp_test";
 config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
@@ -16,7 +14,7 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var constants = require('../constants.js');
-var init_db = config.TRAVIS ? "postgres://postgres:postgres@localhost:5433/postgres" : "postgres://postgres:postgres@localhost/postgres";
+var init_db = "postgres://postgres:postgres@localhost/postgres";
 /*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
