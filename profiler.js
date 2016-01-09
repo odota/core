@@ -14,7 +14,7 @@ function start()
         {
             console.error(err);
         }
-        return start();
+        return setTimeout(start, 1000);
     });
 }
 
