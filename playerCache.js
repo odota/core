@@ -82,27 +82,14 @@ function writeCache(account_id, cache, cb)
         //upsert matches into store
         */
         /*
-        cassandra.execute('SELECT TTL(cache) FROM player_caches WHERE account_id = ?', [account_id],
+        var query = 'INSERT INTO player_caches (account_id, cache) VALUES (?, ?) USING TTL ?';
+        cassandra.execute(query, [account_id, zlib.deflateSync(JSON.stringify(cache)), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS],
         {
             prepare: true
         }, function(err, result)
         {
-            if (err)
-            {
-                return cb(err);
-            }
-            var ttl = result = result && result.rows && result.rows[0] ? result.rows[0]["TTL(cache)"] : null;
-            console.log(result);
-            var query = 'INSERT INTO player_caches (account_id, cache) VALUES (?, ?) USING TTL ?';
-            cassandra.execute(query, [account_id, zlib.deflateSync(JSON.stringify(cache)), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS],
-            {
-                prepare: true
-            }, function(err, result)
-            {
-                console.timeEnd("writecache");
-                return cb(err);
-            });
-        });
+            console.timeEnd("writecache");
+            return cb(err);
         */
     }
     else
@@ -176,7 +163,7 @@ function countPlayerCaches(cb)
             cb(err, result.length);
         });
         /*
-        cassandra.execute('SELECT COUNT(*) FROM player_caches', [],
+        cassandra.execute('SELECT DISTINCT COUNT(account_id) FROM player_caches', [],
         {
             prepare: true
         }, function(err, result)
