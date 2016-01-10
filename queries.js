@@ -407,7 +407,7 @@ function getMatch(db, match_id, cb)
 function getPlayerMatches(db, queryObj, cb)
 {
     var result = {
-        aggData: aggregator([], queryObj.js_agg, result.aggData),
+        aggData: aggregator([], queryObj.js_agg),
         raw: []
     };
     var stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
