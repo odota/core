@@ -39,7 +39,7 @@ Maintenance
 
 Sample Data
 ----
-* Postgres: `wget -qO- https://github.com/yasp-dota/testfiles/raw/master/yasp.zip | gzip | psql -U yasp` to import a development database dump (after creating db)
+* Postgres: `wget -qO- https://github.com/yasp-dota/testfiles/raw/master/yasp.zip | gzip | psql postgresql://yasp:yasp@localhost/yasp` to import a development database dump (after creating db)
 
 Developer's Guide
 ----
