@@ -7,10 +7,8 @@ var getPlayerMatches = queries.getPlayerMatches;
 var getPlayer = queries.getPlayer;
 var utility = require('../utility');
 var generatePositionData = utility.generatePositionData;
-var isRadiant = utility.isRadiant;
 var config = require('../config');
 var preprocessQuery = utility.preprocessQuery;
-var filter = require('../filter');
 var querystring = require('querystring');
 var moment = require('moment');
 var util = require('util');
@@ -330,7 +328,7 @@ module.exports = function(db, redis)
         //select player_matches with this account_id
         options.queryObj.select.account_id = account_id;
         options.queryObj = preprocessQuery(options.queryObj, constants);
-        var filter_exists = Object.keys(options.queryObj.js_select).length;
+        var filter_exists = options.queryObj.filter_count > 1;
         //try to find player in db
         getPlayer(db, account_id, function(err, player)
         {
@@ -385,8 +383,10 @@ module.exports = function(db, redis)
                 //we need to project everything to build a new cache, otherwise optimize and do a subset
                 options.queryObj.project = config.ENABLE_PLAYER_CACHE ? everything : projections[options.info];
                 options.queryObj.project = options.queryObj.project.concat(filter_exists ? filter : []);
+                console.time('getting player_matches');
                 getPlayerMatches(db, options.queryObj, function(err, results)
                 {
+                    console.timeEnd('getting player_matches');
                     if (err)
                     {
                         return cb(err);
