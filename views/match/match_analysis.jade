@@ -24,11 +24,11 @@ block match_content
                       - var pct = val.pct
                       if pct >= 1
                         span.text-success="A"
-                      else if pct >= 0.8
+                      else if pct >= 0.75
                         span.text-info="B"
-                      else if pct >= 0.6
+                      else if pct >= 0.5
                         span.text-primary="C"
-                      else if pct >= 0.4
+                      else if pct >= 0.25
                         span.text-warning="D"
                       else
                         span.text-danger="F"
