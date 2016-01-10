@@ -9,6 +9,7 @@ var aggregator = require('./aggregator');
 var constants = require('./constants');
 var filter = require('./filter');
 var util = require('util');
+var JSONStream = require('JSONStream')
 var columnInfo = null;
 
 function getSets(redis, cb)
@@ -120,26 +121,25 @@ function insertMatch(db, redis, queue, match, options, cb)
         }
         //TODO use psql upsert when available
         //TODO insert/err/update breaks transactions, transaction will refuse to complete if error occurred during insert
-       /*
-        var query = util.format("insert into matches (%s) values (%s) on conflict on constraint matches_pkey do update set %s", Object.keys(row).join(','), Object.keys(row).map(function(key)
-        {
-            console.log(row[key]);
-            return "'" + (row[key].constructor === Array ? "{" + row[key].map(function(e)
-            {
-                return "'" + JSON.stringify(e) + "'";
-            }).join(',') + "}" : JSON.stringify(row[key])) + "'";
-        }).join(','), Object.keys(row).map(function(key)
-        {
-            return key + "=" + "'" + (row[key].constructor === Array ? "{" + row[key].map(function(e)
-            {
-                return "'" + JSON.stringify(e) + "'";
-            }).join(',') + "}" : JSON.stringify(row[key])) + "'";
-        }).join(','));
-        var fs = require('fs');
-        fs.writeFileSync('output.json', query);
-        db.raw(query).asCallback(cb);
-        */
-        
+        /*
+         var query = util.format("insert into matches (%s) values (%s) on conflict on constraint matches_pkey do update set %s", Object.keys(row).join(','), Object.keys(row).map(function(key)
+         {
+             console.log(row[key]);
+             return "'" + (row[key].constructor === Array ? "{" + row[key].map(function(e)
+             {
+                 return "'" + JSON.stringify(e) + "'";
+             }).join(',') + "}" : JSON.stringify(row[key])) + "'";
+         }).join(','), Object.keys(row).map(function(key)
+         {
+             return key + "=" + "'" + (row[key].constructor === Array ? "{" + row[key].map(function(e)
+             {
+                 return "'" + JSON.stringify(e) + "'";
+             }).join(',') + "}" : JSON.stringify(row[key])) + "'";
+         }).join(','));
+         var fs = require('fs');
+         fs.writeFileSync('output.json', query);
+         db.raw(query).asCallback(cb);
+         */
         db('matches').insert(row).where(
         {
             match_id: row.match_id
@@ -158,7 +158,6 @@ function insertMatch(db, redis, queue, match, options, cb)
                 cb(err);
             }
         });
-        
     }
 
     function insertPlayerMatchesTable(cb)
@@ -405,36 +404,26 @@ function getMatch(db, match_id, cb)
     });
 }
 
-function getPlayerMatches(db, query, cb)
+function getPlayerMatches(db, queryObj, cb)
 {
-    console.log(query);
-    console.time('getting player_matches');
-    db.select(query.project).from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').asCallback(function(err, player_matches)
+    var result = {
+        aggData: null,
+        raw: []
+    };
+    var stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
+    stream.on('end', function(err)
     {
-        if (err)
-        {
-            return cb(err);
-        }
-        console.timeEnd('getting player_matches');
-        //compute, filter, agg should act on player_matches joined with matches
-        console.time('computing additional data');
-        player_matches.forEach(function(m)
-        {
-            //post-process the match to get additional stats
-            computePlayerMatchData(m);
-        });
-        console.timeEnd('computing additional data');
-        var filtered = filter(player_matches, query.js_select);
-        console.time('computing aggregations');
-        var aggData = aggregator(filtered, query.js_agg);
-        console.timeEnd('computing aggregations');
-        var result = {
-            aggData: aggData,
-            //page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
-            //data: filtered,
-            raw: player_matches,
-        };
         cb(err, result);
+    });
+    stream.on('error', cb);
+    stream.on('data', function(m)
+    {
+        computePlayerMatchData(m);
+        if (filter([m], queryObj.js_select).length)
+        {
+            result.aggData = aggregator([m], queryObj.js_agg, result.aggData);
+            result.raw.push(m);
+        }
     });
 }
 

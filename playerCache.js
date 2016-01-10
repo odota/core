@@ -14,7 +14,7 @@ if (enabled)
     //cassandra = require('./cassandra');
 }
 //CREATE KEYSPACE yasp WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1': 1 };
-//CREATE TABLE yasp.player_caches (account_id bigint PRIMARY KEY, cache blob);
+//CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match blob, PRIMARY KEY(account_id, match_id));
 function readCache(account_id, cb)
 {
     if (enabled)
@@ -29,21 +29,15 @@ function readCache(account_id, cb)
         });
         /*
         //TODO
-        //get array of matches, filter, agg and return results
-        //var results = getArray();
-        //var filtered = filter(results, options.js_agg);
-        //cb(null, {aggData: aggregator(filtered)});
-        */
-        /*
-        var query = 'SELECT cache FROM player_caches WHERE account_id=?';
+        var query = 'SELECT match FROM player_caches WHERE account_id=?';
         cassandra.execute(query, [account_id],
         {
             prepare: true
-        }, function(err, result)
+        }, function(err, results)
         {
-            result = result && result.rows && result.rows[0] ? result.rows[0].cache : null;
-            
-            var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
+                //get array of matches, filter, agg and return results
+        //var filtered = filter(results, options.js_agg);
+        //cb(null, {aggData: aggregator(filtered)});
             console.timeEnd('readcache');
             return cb(err, cache);
         });
@@ -82,8 +76,8 @@ function writeCache(account_id, cache, cb)
         //upsert matches into store
         */
         /*
-        var query = 'INSERT INTO player_caches (account_id, cache) VALUES (?, ?) USING TTL ?';
-        cassandra.execute(query, [account_id, zlib.deflateSync(JSON.stringify(cache)), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS],
+        var query = 'INSERT INTO player_caches (account_id, match_id, match) VALUES (?, ?, ?)';
+        cassandra.execute(query, [account_id, match_id, m],
         {
             prepare: true
         }, function(err, result)

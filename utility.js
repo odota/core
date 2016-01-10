@@ -503,6 +503,7 @@ function preprocessQuery(query, constants)
     //select,the query received, build the mongo query and the js filter based on this
     query.db_select = {};
     query.js_select = {};
+    query.filter_count = 0;
     var dbAble = {
         "account_id": 1,
         "leagueid": 1,
@@ -533,14 +534,16 @@ function preprocessQuery(query, constants)
         {
             query.db_select[key] = query.select[key][0];
         }
-        else if (!exceptions[key])
+        query.js_select[key] = query.select[key];
+        if (!exceptions[key])
         {
-            query.js_select[key] = query.select[key];
+            query.filter_count += 1;
         }
     }
     query.limit = 20000;
     //mark this query processed
     query.processed = true;
+    console.log(query);
     return query;
 }
 module.exports = {

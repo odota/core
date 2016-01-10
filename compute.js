@@ -668,7 +668,7 @@ function generatePlayerAnalysis(match, pm)
                 valid: time !== undefined,
                 score: function (raw)
                 {
-                    return 60 - raw;
+                    return 120 - raw;
                 },
                 top: 20
             };
