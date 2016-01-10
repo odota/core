@@ -236,6 +236,9 @@ function computePlayerMatchData(pm)
     {
         pm.pings = pm.pings[0];
     }
+    if (pm.life_state){
+        pm.life_state_dead = (pm.life_state[1] || 0) + (pm.life_state[2] || 0);
+    }
 }
 /**
  * Count the words that occur in a set of messages
