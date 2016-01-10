@@ -407,7 +407,7 @@ function getMatch(db, match_id, cb)
 function getPlayerMatches(db, queryObj, cb)
 {
     var result = {
-        aggData: null,
+        aggData: aggregator([], queryObj.js_agg, result.aggData),
         raw: []
     };
     var stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
@@ -419,13 +419,11 @@ function getPlayerMatches(db, queryObj, cb)
     stream.on('data', function(m)
     {
         computePlayerMatchData(m);
-        var arr = [];
         if (filter([m], queryObj.js_select).length)
         {
-            arr.push(m);
+            result.aggData = aggregator([m], queryObj.js_agg, result.aggData);
             result.raw.push(m);
         }
-        result.aggData = aggregator(arr, queryObj.js_agg, result.aggData);
     });
 }
 
