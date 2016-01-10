@@ -419,11 +419,13 @@ function getPlayerMatches(db, queryObj, cb)
     stream.on('data', function(m)
     {
         computePlayerMatchData(m);
+        var arr = [];
         if (filter([m], queryObj.js_select).length)
         {
-            result.aggData = aggregator([m], queryObj.js_agg, result.aggData);
+            arr.push(m);
             result.raw.push(m);
         }
+        result.aggData = aggregator(arr, queryObj.js_agg, result.aggData);
     });
 }
 

@@ -54,6 +54,7 @@
     "knex": "^0.9.0",
     "moment": "^2.11.0",
     "ndjson": "^1.4.3",
+    "npm-check-updates": "^2.5.6",
     "numeral": "^1.5.3",
     "passport": "0.3.2",
     "passport-steam": "0.1.6",
