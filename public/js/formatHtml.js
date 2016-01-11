@@ -65,7 +65,7 @@ window.formatHtml = function formatHtml() {
             //first pass, get the max
             $trs.each(function(index, element) {
                 var $td = $(element).find("td:eq(" + columnIndex + ")");
-                currentValue = parseFloat($td.text());
+                currentValue = parseFloat($td.text() || $td.attr("data-format-seconds") || $td.attr("data-value"));
                 if (currentValue > maxValue && $td.hasClass("rankable")) {
                     maxValue = currentValue;
                 }
@@ -73,8 +73,9 @@ window.formatHtml = function formatHtml() {
             //second pass, create the bars
             $trs.each(function(index, element) {
                 var $td = $(element).find("td:eq(" + columnIndex + ")");
-                currentValue = parseFloat($td.text());
+                currentValue = parseFloat($td.text() || $td.attr("data-format-seconds") || $td.attr("data-value"));
                 if ($td.hasClass("rankable")) {
+                    console.log(currentValue, maxValue);
                     var pct = currentValue / maxValue * 100;
                     var bar = document.createElement("div");
                     bar.className = "progress progress-short";
@@ -85,8 +86,8 @@ window.formatHtml = function formatHtml() {
                     //create a new child div with format class name preserved
                     var textdiv = document.createElement("div");
                     textdiv.innerHTML = $td.text();
-                    textdiv.className += $td.hasClass('format') ? "format" : "";
-                    $td.removeClass("format");
+                    textdiv.className = $td.attr('class');
+                    $td.removeClass();
                     $td.html(textdiv.outerHTML + bar.outerHTML);
                 }
             });
@@ -101,7 +102,7 @@ window.formatHtml = function formatHtml() {
     });
     $('.format-seconds').each(function() {
         //format the data attribute rather than the text so we don't lose the original value if we want to reformat (like when paging in datatables)
-        $(this).text(formatSeconds($(this).attr('data-format-seconds')));
+        $(this).text(formatSeconds($(this).attr('data-format-seconds') || $(this).text()));
     });
     //disable clicks on disabled elements
     $('.disabled').click(function() {

@@ -1,5 +1,6 @@
 var fs = require('fs');
 var cfs = fs.readdirSync('./json');
+var countries = require('world-countries');
 var constants = {};
 cfs.forEach(function(f)
 {
@@ -67,6 +68,10 @@ function expandItemGroup(key)
         return base;
     }
 }
+constants.countries = {};
+countries.forEach(function(c){
+    constants.countries[c.cca2] = c;
+});
 //console.log(constants.item_groups);
 constants.items = items;
 //abilities, already keyed by name

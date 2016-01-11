@@ -357,6 +357,10 @@ module.exports = function processCreateParsedData(entries, meta, populate)
                 //e5.key = [e5.x, e5.y];
                 //expand(e5);
                 //if on minute, add to lh/gold/xp
+                var e6 = JSON.parse(JSON.stringify(e));
+                e6.type = "life_state";
+                e6.key = e6.life_state;
+                expand(e6);
                 if (e.time % 60 === 0)
                 {
                     var e3 = JSON.parse(JSON.stringify(e));

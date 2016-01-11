@@ -330,7 +330,7 @@ function mode(array)
 function getParseSchema()
 {
     return {
-        "version": 15,
+        "version": 16,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -397,6 +397,8 @@ function getParseSchema()
                 "multi_kills":
                 {},
                 "healing":
+                {},
+                "life_state":
                 {},
                 /*
                 "kill_streaks_log": [], // an array of kill streak values

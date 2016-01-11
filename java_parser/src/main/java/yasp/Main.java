@@ -76,6 +76,7 @@ public class Main {
         public Integer y;
         public Float stuns;
         public Integer hero_id;
+        public Integer life_state;
         //public Boolean hasPredictedVictory;
     
         public Entry() {
@@ -348,6 +349,8 @@ public class Main {
                         //get the hero's entity name, ex: CDOTA_Hero_Zuus
                         entry.unit = e.getDtClass().getDtName();
                         entry.hero_id = hero;
+                        entry.life_state = getEntityProperty(e, "m_lifeState", null);
+                        //System.err.format("%s: %s\n", entry.unit, entry.life_state);
                         //check if hero has been assigned to entity
                         if (hero > 0) {
                             //get the hero's entity name, ex: CDOTA_Hero_Zuus

@@ -5,9 +5,11 @@ block content
   .row.match-top
     .col-xs-3
       div
-        a(href=player.profileurl || "#", target="_blank", style="display:inline-block; margin-right:10px;")
-          if player.avatar
-            img(src='#{player.avatar}').img-thumbnail
+        if player.avatar
+          a(href=player.profileurl || "#", target="_blank")
+            img(style="display:inline-block; margin-right:5px;" src='#{player.avatar}').img-thumbnail
+        if player.loccountrycode
+          span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())
         h4(style="word-wrap:break-word;") #{player.personaname || player.account_id}
         h4
           if player.cheese
