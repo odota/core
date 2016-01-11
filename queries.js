@@ -109,25 +109,26 @@ function insertMatch(db, redis, queue, match, options, cb)
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
     //db.transaction(function(trx) {
-    async.series([
-        function(cb)
+    async.series(
+    {
+        "columnInfo": function(cb)
         {
             getColumnInfo(db, cb);
         },
-        insertMatchTable,
-        insertPlayerMatchesTable,
-        ensurePlayers,
-        updatePlayerCaches,
-        clearMatchCache,
-        decideParse
-        ], function(err)
+        "imt": insertMatchTable,
+        "ipmt": insertPlayerMatchesTable,
+        "ep": ensurePlayers,
+        "player_caches": updatePlayerCaches,
+        "cmc": clearMatchCache,
+        "dp": decideParse
+    }, function(err, results)
     {
         if (err)
         {
             //trx.rollback(err);
         }
         //trx.commit();
-        return cb(err);
+        return cb(err, results.dp);
     });
     //}).catch(cb);
     function insertMatchTable(cb)
