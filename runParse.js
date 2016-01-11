@@ -76,7 +76,7 @@ module.exports = function runParse(match, cb)
             var message = "time spent on post-processing match ";
             console.time(message);
             var meta = processMetadata(entries);
-            var res = processExpand(entries, meta);
+            var res = processExpand(entries, meta, populate);
             //var expanded = res.expanded;
             var parsed_data = res.parsed_data;
             parsed_data.teamfights = processTeamfights(res.tf_data, meta, populate);
