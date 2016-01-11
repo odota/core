@@ -5,7 +5,6 @@ var spawn = cp.spawn;
 var progress = require('request-progress');
 var processAllPlayers = require('./processAllPlayers');
 var processTeamfights = require('./processTeamfights');
-var processCreateParsedData = require('./processCreateParsedData');
 var processReduce = require('./processReduce');
 var processMetadata = require('./processMetadata');
 var processExpand = require('./processExpand');
