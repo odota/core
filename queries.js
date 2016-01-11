@@ -99,10 +99,10 @@ function insertMatch(db, redis, queue, match, options, cb)
         var ability_upgrades = {};
         players.forEach(function(p)
         {
-            ability_upgrades[p.player_slot] = p.ability_upgrades.map(function(au)
+            ability_upgrades[p.player_slot] = p.ability_upgrades ? p.ability_upgrades.map(function(au)
             {
                 return au.ability;
-            });
+            }) : null;
         });
         redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 7, JSON.stringify(ability_upgrades));
     }

@@ -86,7 +86,7 @@ block match_content
   .row
     .col-md-8
       +data_table({id:"skills", heading: "Skill Builds"})
-        if match.players[0].ability_upgrades_arr
+        if match.players[0].ability_upgrades_arr || []
           each player, i in match.players
             +data_table_header(i, match)
               tr
