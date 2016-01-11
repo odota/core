@@ -76,10 +76,11 @@ module.exports = function runParse(match, cb)
             var message = "time spent on post-processing match ";
             console.time(message);
             var meta = processMetadata(entries);
-            var expanded = processExpand(entries, meta);
-            var parsed_data = processCreateParsedData(expanded, populate);
-            parsed_data.teamfights = processTeamfights(expanded, meta, populate);
-            var ap = processAllPlayers(expanded);
+            var res = processExpand(entries, meta);
+            //var expanded = res.expanded;
+            var parsed_data = res.parsed_data;
+            parsed_data.teamfights = processTeamfights(res.tf_data, meta, populate);
+            var ap = processAllPlayers(res.int_data);
             parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
             parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
             //processMultiKillStreaks();
