@@ -77,14 +77,13 @@ module.exports = function runParse(match, cb)
             console.time(message);
             var meta = processMetadata(entries);
             var res = processExpand(entries, meta, populate);
-            //var expanded = res.expanded;
             var parsed_data = res.parsed_data;
             parsed_data.teamfights = processTeamfights(res.tf_data, meta, populate);
             var ap = processAllPlayers(res.int_data);
             parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
             parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
             //processMultiKillStreaks();
-            //processReduce(expanded);
+            //processReduce(res.expanded);
             console.timeEnd(message);
         }
         return cb(err, parsed_data);
