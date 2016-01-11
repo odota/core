@@ -10,9 +10,13 @@ var redis = require('../redis');
 var args = process.argv.slice(2);
 var match_seq_num = args[0] || 0;
 getPage();
-//match seq num 59622 has a MAXINT32 in one of the player's tower damage
+//match seq num 59622 has a 32-bit unsigned int max (4294967295) in one of the players' tower damage
 //match seq num 239190 for hero_healing
 //match seq num 542284 for hero_healing
+//may need to cap values down to 2.1b if we encounter them
+//postgres int type only supports up to 2.1b (signed int)
+//patch scanner to add all matches
+//delete fullhistory from sign-in flow
 function getPage() {
     var job = generateJob("api_sequence", {
         start_at_match_seq_num: match_seq_num
@@ -26,7 +30,9 @@ function getPage() {
             var matches = body.result.matches;
             async.each(matches, function(m, cb) {
                 insertMatch(db, redis, queue, m, {
-                    type: "api"
+                    type: "api",
+                    skipCacheUpdate: true,
+                    skipAbilityUpgrades: true
                 }, cb);
             }, function(err) {
                 if (err) {

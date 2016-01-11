@@ -93,7 +93,7 @@ CREATE TABLE player_matches (
   tower_damage bigint,
   hero_healing bigint,
   level integer,
-  ability_upgrades json[],
+  --ability_upgrades json[],
   additional_units json[],
   --parsed fields below
   stuns real,

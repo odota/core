@@ -86,25 +86,28 @@ block match_content
   .row
     .col-md-8
       +data_table({id:"skills", heading: "Skill Builds"})
-        each player, i in match.players
-          +data_table_header(i, match)
+        if match.players[0].ability_upgrades_arr
+          each player, i in match.players
+            +data_table_header(i, match)
+              tr
+                th Hero
+                - for (var lv = 1; lv < 26; lv++)
+                  th(style="padding:0px")= lv
             tr
-              th Hero
-              - for (var lv = 1; lv < 26; lv++)
-                th(style="padding:0px")= lv
-          tr
-            +hero_td(player)
-            each ability in player.ability_upgrades || {}
-              td(style="padding:0px;")
-                span.img-text
-                  - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
-                  if abilityData
-                    img.img-sm.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
-                  else
-                    =ability.ability
-                  //div #{moment().startOf('day').seconds(ability.time).format("mm:ss")}
-                  //div #{(ability.time/60).toFixed(0)}'
-                            
+              +hero_td(player)
+              each ability_id in player.ability_upgrades_arr
+                td(style="padding:0px;")
+                  span.img-text
+                    - var abilityData = constants.abilities[constants.ability_ids[ability_id]]
+                    if abilityData
+                      img.img-sm.ability(src=abilityData.img, title=constants.ability_ids[ability_id])
+                    else
+                      =ability_id
+        else
+          h3.text-center: small
+            div="Ability upgrade data has expired for this match."
+            div="Use the request form to reload data."
+
     .col-md-4
       h3 Buildings
       #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)

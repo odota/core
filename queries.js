@@ -93,6 +93,19 @@ function insertMatch(db, redis, queue, match, options, cb)
             };
         });
     }
+    //put ability_upgrades data in redis
+    if (players && !options.skipAbilityUpgrades)
+    {
+        var ability_upgrades = {};
+        players.forEach(function(p)
+        {
+            ability_upgrades[p.player_slot] = p.ability_upgrades.map(function(au)
+            {
+                return au.ability;
+            });
+        });
+        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 7, JSON.stringify(ability_upgrades));
+    }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
     //db.transaction(function(trx) {
@@ -105,9 +118,18 @@ function insertMatch(db, redis, queue, match, options, cb)
         insertPlayerMatchesTable,
         ensurePlayers,
         updatePlayerCaches,
-        clearMatchCache
-        ], decideParse);
-
+        clearMatchCache,
+        decideParse
+        ], function(err)
+    {
+        if (err)
+        {
+            //trx.rollback(err);
+        }
+        //trx.commit();
+        return cb(err);
+    });
+    //}).catch(cb);
     function insertMatchTable(cb)
     {
         var row = match;
@@ -214,6 +236,10 @@ function insertMatch(db, redis, queue, match, options, cb)
      **/
     function ensurePlayers(cb)
     {
+        if (options.skipInsertPlayers)
+        {
+            return cb();
+        }
         async.each(players || [], function(p, cb)
         {
             insertPlayer(db,
@@ -225,6 +251,10 @@ function insertMatch(db, redis, queue, match, options, cb)
 
     function updatePlayerCaches(cb)
     {
+        if (options.skipCacheUpdate)
+        {
+            return cb();
+        }
         var copy = JSON.parse(JSON.stringify(match));
         copy.players = players;
         copy.insert_type = options.type;
@@ -237,14 +267,8 @@ function insertMatch(db, redis, queue, match, options, cb)
         redis.del("match:" + match.match_id, cb);
     }
 
-    function decideParse(err)
+    function decideParse(cb)
     {
-        if (err)
-        {
-            //trx.rollback(err);
-            return cb(err);
-        }
-        //trx.commit();
         if (match.parse_status !== 0)
         {
             //not parsing this match
@@ -260,12 +284,6 @@ function insertMatch(db, redis, queue, match, options, cb)
             });
         }
     }
-    /*
-    });
-    .catch(function(err){
-        console.error(err);
-    });
-    */
 }
 
 function insertPlayer(db, player, cb)
