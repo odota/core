@@ -86,7 +86,7 @@ block match_content
   .row
     .col-md-8
       +data_table({id:"skills", heading: "Skill Builds"})
-        if match.players[0].ability_upgrades_arr || []
+        if match.players[0].ability_upgrades_arr
           each player, i in match.players
             +data_table_header(i, match)
               tr
@@ -95,7 +95,7 @@ block match_content
                   th(style="padding:0px")= lv
             tr
               +hero_td(player)
-              each ability_id in player.ability_upgrades_arr
+              each ability_id in player.ability_upgrades_arr || []
                 td(style="padding:0px;")
                   span.img-text
                     - var abilityData = constants.abilities[constants.ability_ids[ability_id]]
