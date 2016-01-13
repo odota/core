@@ -37,10 +37,6 @@ Maintenance
 * `npm run update` updates all deps to latest versions
 * `npm run deploy` deploys application to Kubernetes cluster
 
-Sample Data
-----
-* Postgres: `wget -qO- https://github.com/yasp-dota/testfiles/raw/master/yasp.zip | gzip | psql postgresql://yasp:yasp@localhost/yasp` to import a development database dump (after creating db)
-
 Developer's Guide
 ----
 See the [wiki](https://github.com/yasp-dota/yasp/wiki/Developer's-Guide).
