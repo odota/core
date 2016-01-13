@@ -4,7 +4,23 @@ var utility = require('./utility');
 var getData = utility.getData;
 var async = require('async');
 var db = require('./db');
+var count;
 start();
+doCount();
+
+function doCount()
+{
+    db.raw("select count(*) from players").asCallback(function(err, result)
+    {
+        if (err)
+        {
+            throw err;
+        }
+        count = Number(result.rows[0].count);
+        console.log("recomputed count: %s", count);
+        return setTimeout(doCount, 60 * 10 * 1000);
+    });
+}
 
 function start()
 {
@@ -12,7 +28,7 @@ function start()
     {
         if (err)
         {
-            console.error(err);
+            throw err;
         }
         return setTimeout(start, 1000);
     });
@@ -20,7 +36,12 @@ function start()
 
 function getSummaries(cb)
 {
-    db.raw("select account_id from players offset random() * (select count(*) from players) limit 100").asCallback(function(err, results)
+    if (!count)
+    {
+        console.log('waiting for count');
+        return cb();
+    }
+    db.raw("select account_id from players offset random() * ? limit 100", [count]).asCallback(function(err, results)
     {
         if (err)
         {
