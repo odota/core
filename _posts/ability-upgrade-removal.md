@@ -23,7 +23,7 @@ we have to spend more on hard drive space each month.
 
 We currently have 100 million matches in our database. Each match's ability upgrade information takes 9 KB of data.
 In our opinion, this isn't entirely useful information a few hours after a match and especially between patches when
-heros are reworked. We're also not currently doing any aggregations over ability data (which would be very expensive).
+heroes are reworked. We're also not currently doing any aggregations over ability data (which would be very expensive).
 By cutting these from our database, we're saving a huge chunk of space.
 
 Happy Dota!
