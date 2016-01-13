@@ -114,7 +114,6 @@ module.exports = function runParse(match, cb)
             case 'CHAT_MESSAGE_BARRACKS_KILL':
             case 'CHAT_MESSAGE_FIRSTBLOOD':
             case 'CHAT_MESSAGE_AEGIS':
-            case 'CHAT_MESSAGE_AEGIS':
             case 'CHAT_MESSAGE_AEGIS_STOLEN':
             case 'CHAT_MESSAGE_AEGIS_DENIED':
             case 'CHAT_MESSAGE_ROSHAN_KILL':
