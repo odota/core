@@ -485,27 +485,26 @@ module.exports = function(db, redis)
                                 return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
                             });
                             var skillMap = {};
-                            async.each(recents, function(match, cb)
+                            db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
                             {
-                                db.first(['match_id', 'skill']).from('match_skill').where(
+                                return m.match_id;
+                            })).asCallback(function(err, rows)
+                            {
+                                if (err)
                                 {
-                                    match_id: match.match_id
-                                }).asCallback(function(err, row)
-                                {
-                                    if (row && row.skill)
-                                    {
-                                        skillMap[match.match_id] = row.skill;
-                                    }
                                     return cb(err);
+                                }
+                                console.log("fillskill recents: %s, results: %s", recents.length, rows.length);
+                                rows.forEach(function(match)
+                                {
+                                    skillMap[match.match_id] = match.skill;
                                 });
-                            }, function(err)
-                            {
                                 player.aggData.matches.forEach(function(m)
                                 {
                                     m.skill = m.skill || skillMap[m.match_id];
                                 });
                                 console.timeEnd('fillskill');
-                                cb(err);
+                                return cb(err);
                             });
                         }
                         else
