@@ -111,14 +111,14 @@ function insertMatch(db, redis, queue, match, options, cb)
     //db.transaction(function(trx) {
     async.series(
     {
-        "columnInfo": function(cb)
+        "ci": function(cb)
         {
             getColumnInfo(db, cb);
         },
         "imt": insertMatchTable,
         "ipmt": insertPlayerMatchesTable,
         "ep": ensurePlayers,
-        "player_caches": updatePlayerCaches,
+        "pc": updatePlayerCaches,
         "cmc": clearMatchCache,
         "dp": decideParse
     }, function(err, results)
