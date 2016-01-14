@@ -166,29 +166,8 @@ CREATE TABLE match_logs (
   player_slot integer,
   time integer,
   type varchar(50),
-  unit varchar(50),
   key varchar(50),
-  value integer,
-  player1 integer,
-  player2 integer,
-  attackername varchar(50),
-  targetname varchar(50),
-  sourcename varchar(50),
-  targetsourcename varchar(50),
-  attackerhero boolean,
-  targethero boolean,
-  attackerillusion boolean,
-  targetillusion boolean,
-  inflictor varchar(50),
-  gold_reason int,
-  xp_reason int,
-  valuename varchar(50),
-  gold int,
-  lh int,
-  xp int,
-  x int,
-  y int,
-  stuns real
+  value integer
 );
 
 CREATE INDEX on player_matches(account_id);
@@ -198,3 +177,5 @@ CREATE INDEX on players(last_login);
 CREATE INDEX on players(cheese);
 CREATE INDEX on subscriptions(account_id);
 CREATE INDEX on subscriptions(customer_id);
+CREATE INDEX on match_logs(match_id, player_slot);
+CREATE INDEX on match_logs(player_slot);
