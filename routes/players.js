@@ -412,37 +412,43 @@ module.exports = function(db, redis)
                 {
                     return cb(err);
                 }
-                //unpack hash into array
-                var arr = [];
-                for (var key in cache.aggData.matches)
-                {
-                    arr.push(cache.aggData.matches[key]);
-                }
-                cache.aggData.matches = arr;
-                //sort matches by descending match id for display
-                cache.aggData.matches.sort(function(a, b)
-                {
-                    return Number(b.match_id) - Number(a.match_id);
-                });
                 player.aggData = cache.aggData;
-                //convert heroes hash to array and sort
                 var aggData = player.aggData;
-                if (aggData.heroes)
+                if (options.info === "index" || options.info === "matches")
                 {
-                    var heroes_arr = [];
-                    var heroes = aggData.heroes;
-                    for (var id in heroes)
+                    //unpack hash into array
+                    var arr = [];
+                    for (var key in cache.aggData.matches)
                     {
-                        var h = heroes[id];
-                        heroes_arr.push(h);
+                        arr.push(cache.aggData.matches[key]);
                     }
-                    heroes_arr.sort(function(a, b)
+                    cache.aggData.matches = arr;
+                    //sort matches by descending match id for display
+                    cache.aggData.matches.sort(function(a, b)
                     {
-                        return b.games - a.games;
+                        return Number(b.match_id) - Number(a.match_id);
                     });
-                    player.heroes_list = heroes_arr;
                 }
-                if (aggData.obs)
+                if (options.info === "heroes")
+                {
+                    //convert heroes hash to array and sort
+                    if (aggData.heroes)
+                    {
+                        var heroes_arr = [];
+                        var heroes = aggData.heroes;
+                        for (var id in heroes)
+                        {
+                            var h = heroes[id];
+                            heroes_arr.push(h);
+                        }
+                        heroes_arr.sort(function(a, b)
+                        {
+                            return b.games - a.games;
+                        });
+                        player.heroes_list = heroes_arr;
+                    }
+                }
+                if (aggData.obs && options.info === "wardmap")
                 {
                     //generally position data function is used to generate heatmap data for each player in a natch
                     //we use it here to generate a single heatmap for aggregated counts
