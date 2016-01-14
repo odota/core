@@ -429,7 +429,7 @@ module.exports = function(db, redis)
                         return Number(b.match_id) - Number(a.match_id);
                     });
                 }
-                if (options.info === "heroes")
+                if (options.info === "index" || options.info === "heroes")
                 {
                     //convert heroes hash to array and sort
                     if (aggData.heroes)
