@@ -290,132 +290,41 @@ app.use('/names/:vanityUrl', function(req, res, cb)
         res.redirect('/players/' + Number(result));
     });
 });
-var mmrDistQuery = fs.readFileSync('./sql/mmrDist.sql', 'utf8');
-var gameModeQuery = fs.readFileSync('./sql/gameModeDist.sql', 'utf8');
-var lobbyTypeQuery = fs.readFileSync('./sql/lobbyTypeDist.sql', 'utf8');
 app.use('/distributions', function(req, res, next)
 {
-    var expire = 86400;
-    async.parallel(
-    {
-        "game_mode": function(cb)
-        {
-            redis.get('distribution:game_mode', function(err, result)
-            {
-                if (err)
-                {
-                    return next(err);
-                }
-                if (result && config.NODE_ENV === "production")
-                {
-                    result = JSON.parse(result);
-                    return cb(err, result);
-                }
-                db.raw(gameModeQuery).asCallback(function(err, results)
-                {
-                    if (err)
-                    {
-                        return next(err);
-                    }
-                    results.rows.map(function(r)
-                    {
-                        r.display_name = constants.game_mode[r.game_mode] ? constants.game_mode[r.game_mode].name : r.game_mode;
-                        return r;
-                    });
-                    redis.setex('distribution:game_mode', expire, JSON.stringify(results));
-                    cb(err, results);
-                });
-            });
-        },
-        "lobby_type": function(cb)
-        {
-            redis.get('distribution:lobby_type', function(err, result)
-            {
-                if (err)
-                {
-                    return next(err);
-                }
-                if (result && config.NODE_ENV === "production")
-                {
-                    result = JSON.parse(result);
-                    return cb(err, result);
-                }
-                db.raw(lobbyTypeQuery).asCallback(function(err, results)
-                {
-                    if (err)
-                    {
-                        return next(err);
-                    }
-                    results.rows.map(function(r)
-                    {
-                        r.display_name = constants.lobby_type ? constants.lobby_type[r.lobby_type].name : r.lobby_type;
-                        return r;
-                    });
-                    redis.setex('distribution:lobby_type', expire, JSON.stringify(results));
-                    cb(err, results);
-                });
-            });
-        },
-        "mmr": function(cb)
-        {
-            redis.get('distribution:mmr', function(err, result)
-            {
-                if (err)
-                {
-                    return next(err);
-                }
-                if (result && config.NODE_ENV === "production")
-                {
-                    result = JSON.parse(result);
-                    return cb(err, result);
-                }
-                db.raw(mmrDistQuery).asCallback(function(err, results)
-                {
-                    if (err)
-                    {
-                        return next(err);
-                    }
-                    var sum = results.rows.reduce(function(prev, current)
-                    {
-                        return {
-                            count: prev.count + current.count
-                        };
-                    },
-                    {
-                        count: 0
-                    });
-                    results.rows = results.rows.map(function(r, i)
-                    {
-                        r.cumulative_sum = results.rows.slice(0, i + 1).reduce(function(prev, current)
-                        {
-                            return {
-                                count: prev.count + current.count
-                            };
-                        },
-                        {
-                            count: 0
-                        }).count;
-                        return r;
-                    });
-                    results.sum = sum;
-                    redis.setex('distribution:mmr', expire, JSON.stringify(results));
-                    cb(err, results);
-                });
-            });
-        }
-    }, function(err, result)
+    redis.keys('distribution:*', function(err, results)
     {
         if (err)
         {
             return next(err);
         }
-        res.render('distributions', result);
+        var result = {};
+        async.each(results, function(r, cb)
+        {
+            redis.get(r, function(err, blob)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                result[r.split(':')[1]] = JSON.parse(blob);
+                cb(err);
+            });
+        }, function(err)
+        {
+            if (err)
+            {
+                return next(err);
+            }
+            console.log(result);
+            res.render('distributions', result);
+        });
     });
 });
 app.use('/api', api);
 app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));
-app.route('/request_job').post(function(req, res)
+app.route('/request_job').post(function(req, res, next)
 {
     request.post("https://www.google.com/recaptcha/api/siteverify",
     {
@@ -426,6 +335,10 @@ app.route('/request_job').post(function(req, res)
         }
     }, function(err, resp, body)
     {
+        if (err)
+        {
+            return next(err);
+        }
         try
         {
             body = JSON.parse(body);

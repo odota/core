@@ -48,7 +48,7 @@ queue.parse.process(function(job, cb)
                 match[key] = match[key] || parsed_data[key];
             }
             match.parse_status = 2;
-            fs.writeFileSync('output.json', JSON.stringify(match));
+            //fs.writeFileSync('output.json', JSON.stringify(match));
             return insertMatch(db, redis, queue, match,
             {
                 type: "parsed"

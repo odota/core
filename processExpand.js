@@ -1,4 +1,5 @@
-module.exports = function processCreateParsedData(entries, meta)
+var utility = require('./utility');
+module.exports = function processCreateParsedData(entries, meta, populate)
 {
     var types = {
         "DOTA_COMBATLOG_DAMAGE": function(e)
@@ -355,6 +356,10 @@ module.exports = function processCreateParsedData(entries, meta)
                 //e5.type = "pos";
                 //e5.key = [e5.x, e5.y];
                 //expand(e5);
+                var e6 = JSON.parse(JSON.stringify(e));
+                e6.type = "life_state";
+                e6.key = e6.life_state;
+                expand(e6);
                 //if on minute, add to lh/gold/xp
                 if (e.time % 60 === 0)
                 {
@@ -404,7 +409,28 @@ module.exports = function processCreateParsedData(entries, meta)
             expand(e);
         }
     };
-    var expanded = [];
+    var reqs = {
+        parsed_data: null,
+        //expanded: null,
+        "tf_data":
+        {
+            killed: 1,
+            interval: 1,
+            buyback_log: 1,
+            damage: 1,
+            gold_reasons: 1,
+            xp_reasons: 1,
+            ability_uses: 1,
+            item_uses: 1
+        },
+        "int_data":
+        {
+            interval: 1
+        }
+    };
+    var res = {
+        parsed_data: utility.getParseSchema()
+    };
     for (var i = 0; i < entries.length; i++)
     {
         var e = entries[i];
@@ -417,7 +443,7 @@ module.exports = function processCreateParsedData(entries, meta)
             expand(e);
         }
     }
-    return expanded;
+    return res;
     //strips off "item_" from strings
     function translate(input)
     {
@@ -441,6 +467,23 @@ module.exports = function processCreateParsedData(entries, meta)
         //set slot and player_slot
         e.slot = ("slot" in e) ? e.slot : meta.hero_to_slot[e.unit];
         e.player_slot = meta.slot_to_playerslot[e.slot];
-        expanded.push(JSON.parse(JSON.stringify(e)));
+        for (var key in reqs)
+        {
+            if (key === "parsed_data")
+            {
+                populate(e, res.parsed_data);
+            }
+            else
+            {
+                if (!res[key])
+                {
+                    res[key] = [];
+                }
+                if (!reqs[key] || (e.type in reqs[key]))
+                {
+                    res[key].push(e);
+                }
+            }
+        }
     }
 };

@@ -14,6 +14,7 @@ block match_content
               th: abbr(title=tooltips.lane_efficiency) EFF@10
               th: abbr(title=tooltips.lhten) LH@10
               th: abbr(title=tooltips.stuns) Stuns
+              th: abbr(title=tooltips.time_dead) Dead
           tr.activate(data-index=i, data-type="lane_pos", class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             td #{constants.lane_ids[player.lane] || "-"} (#{constants.lane_role[player.lane_role] || "-"})
@@ -22,6 +23,7 @@ block match_content
             td.rankable #{(Number(player.lane_efficiency)*100).toFixed(2)}
             td.rankable #{player.lh_t[10]}
             td.rankable #{Number(player.stuns).toFixed(2)}
+            td.rankable.negative.format-seconds(data-format-seconds=player.life_state_dead) #{player.life_state_dead || "-"}
     .col-md-6
       h3 Laning Map
       #map.table-responsive

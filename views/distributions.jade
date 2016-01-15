@@ -15,6 +15,23 @@ block content
     .col-md-6
       h3 Lobby Type 
       #lobby_type
+  .row
+    .col-md-12
+      h3 Average MMR by Country
+      table.table.table-striped.table-condensed
+        tr
+          th #
+          th Country
+          th Players
+          th MMR
+        each row, i in country_mmr.rows
+          tr
+            td=i+1
+            td
+              span.flag-icon(class="flag-icon-"+row.loccountrycode.toLowerCase())            
+              =row.common
+            td=row.count
+            td=row.avg
 
 append footer_assets
   script.

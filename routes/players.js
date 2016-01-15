@@ -231,6 +231,7 @@ module.exports = function(db, redis)
                 }
                 count = Number(count[0].count);
                 console.timeEnd("validate");
+                //console.log(cache);
                 //console.log(Object.keys(cache.aggData.matches).length, count);
                 var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
                 return cb(err, cacheValid);
@@ -245,7 +246,7 @@ module.exports = function(db, redis)
 
     function doSqlAgg(player, query, cb)
     {
-        //TODO
+        //TODO fully sql aggs
         //disable or fix special filters: with/against/included, purchased_item, lane_role, patch, region, faction, win
         //make histograms/records/trends work
         //add significance check to all queries
@@ -347,11 +348,12 @@ module.exports = function(db, redis)
             }
             else
             {
-                if (filter_exists)
+                if (filter_exists && !config.CASSANDRA_PLAYER_CACHE)
                 {
+                    console.log("filter exists");
                     return cacheMiss();
                 }
-                readCache(orig_account_id, function(err, cache)
+                readCache(orig_account_id, options.queryObj, function(err, cache)
                 {
                     if (err)
                     {
@@ -412,37 +414,43 @@ module.exports = function(db, redis)
                 {
                     return cb(err);
                 }
-                //unpack hash into array
-                var arr = [];
-                for (var key in cache.aggData.matches)
-                {
-                    arr.push(cache.aggData.matches[key]);
-                }
-                cache.aggData.matches = arr;
-                //sort matches by descending match id for display
-                cache.aggData.matches.sort(function(a, b)
-                {
-                    return Number(b.match_id) - Number(a.match_id);
-                });
                 player.aggData = cache.aggData;
-                //convert heroes hash to array and sort
                 var aggData = player.aggData;
-                if (aggData.heroes)
+                if (options.info === "index" || options.info === "matches")
                 {
-                    var heroes_arr = [];
-                    var heroes = aggData.heroes;
-                    for (var id in heroes)
+                    //unpack hash into array
+                    var arr = [];
+                    for (var key in cache.aggData.matches)
                     {
-                        var h = heroes[id];
-                        heroes_arr.push(h);
+                        arr.push(cache.aggData.matches[key]);
                     }
-                    heroes_arr.sort(function(a, b)
+                    cache.aggData.matches = arr;
+                    //sort matches by descending match id for display
+                    cache.aggData.matches.sort(function(a, b)
                     {
-                        return b.games - a.games;
+                        return Number(b.match_id) - Number(a.match_id);
                     });
-                    player.heroes_list = heroes_arr;
                 }
-                if (aggData.obs)
+                if (options.info === "index" || options.info === "heroes")
+                {
+                    //convert heroes hash to array and sort
+                    if (aggData.heroes)
+                    {
+                        var heroes_arr = [];
+                        var heroes = aggData.heroes;
+                        for (var id in heroes)
+                        {
+                            var h = heroes[id];
+                            heroes_arr.push(h);
+                        }
+                        heroes_arr.sort(function(a, b)
+                        {
+                            return b.games - a.games;
+                        });
+                        player.heroes_list = heroes_arr;
+                    }
+                }
+                if (aggData.obs && options.info === "wardmap")
                 {
                     //generally position data function is used to generate heatmap data for each player in a natch
                     //we use it here to generate a single heatmap for aggregated counts
@@ -485,27 +493,26 @@ module.exports = function(db, redis)
                                 return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
                             });
                             var skillMap = {};
-                            async.each(recents, function(match, cb)
+                            db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
                             {
-                                db.first(['match_id', 'skill']).from('match_skill').where(
+                                return m.match_id;
+                            })).asCallback(function(err, rows)
+                            {
+                                if (err)
                                 {
-                                    match_id: match.match_id
-                                }).asCallback(function(err, row)
-                                {
-                                    if (row && row.skill)
-                                    {
-                                        skillMap[match.match_id] = row.skill;
-                                    }
                                     return cb(err);
+                                }
+                                console.log("fillskill recents: %s, results: %s", recents.length, rows.length);
+                                rows.forEach(function(match)
+                                {
+                                    skillMap[match.match_id] = match.skill;
                                 });
-                            }, function(err)
-                            {
                                 player.aggData.matches.forEach(function(m)
                                 {
                                     m.skill = m.skill || skillMap[m.match_id];
                                 });
                                 console.timeEnd('fillskill');
-                                cb(err);
+                                return cb(err);
                             });
                         }
                         else

@@ -13,14 +13,8 @@ module.exports = function processAllPlayers(entries)
         var e = entries[i];
         if (e.type === "interval" && e.time % 60 === 0)
         {
-            var g = utility.isRadiant(
-            {
-                player_slot: e.player_slot
-            }) ? e.gold : -e.gold;
-            var x = utility.isRadiant(
-            {
-                player_slot: e.player_slot
-            }) ? e.xp : -e.xp;
+            var g = utility.isRadiant(e) ? e.gold : -e.gold;
+            var x = utility.isRadiant(e) ? e.xp : -e.xp;
             goldAdvTime[e.time] = goldAdvTime[e.time] ? goldAdvTime[e.time] + g : g;
             xpAdvTime[e.time] = xpAdvTime[e.time] ? xpAdvTime[e.time] + x : x;
         }

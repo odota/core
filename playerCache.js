@@ -5,46 +5,74 @@ var computePlayerMatchData = compute.computePlayerMatchData;
 var aggregator = require('./aggregator');
 var async = require('async');
 var constants = require('./constants');
+var utility = require('./utility');
+var filter = require('./filter');
+var reduceAggregable = utility.reduceAggregable;
 var enabled = config.ENABLE_PLAYER_CACHE;
+var cEnabled = config.CASSANDRA_PLAYER_CACHE;
 var redis;
 var cassandra;
 if (enabled)
 {
     redis = require('./redis');
-    //cassandra = require('./cassandra');
+    if (cEnabled)
+    {
+        cassandra = require('./cassandra');
+    }
 }
 //CREATE KEYSPACE yasp WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1': 1 };
-//CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match blob, PRIMARY KEY(account_id, match_id));
-function readCache(account_id, cb)
+//CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match text, PRIMARY KEY(account_id, match_id));
+function readCache(account_id, options, cb)
 {
     if (enabled)
     {
-        console.time('readcache');
-        redis.get(new Buffer("player:" + account_id), function(err, result)
+        if (cEnabled)
         {
-            var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-            console.timeEnd('readcache');
-            //console.log(result ? result.length : 0, JSON.stringify(cache).length);
-            return cb(err, cache);
-        });
-        /*
-        //TODO
-        var query = 'SELECT match FROM player_caches WHERE account_id=?';
-        cassandra.execute(query, [account_id],
-        {
-            prepare: true
-        }, function(err, results)
-        {
+            console.time('readcache');
+            var query = 'SELECT match FROM player_caches WHERE account_id = ?';
+            return cassandra.execute(query, [account_id],
+            {
+                prepare: true
+            }, function(err, results)
+            {
+                if (err)
+                {
+                    console.log(err);
+                    return cb(err);
+                }
+                if (!results.rows || !results.rows.length)
+                {
+                    return cb();
+                }
+                var matches = results.rows.map(function(m)
+                {
+                    return JSON.parse(m.match);
+                });
                 //get array of matches, filter, agg and return results
-        //var filtered = filter(results, options.js_agg);
-        //cb(null, {aggData: aggregator(filtered)});
-            console.timeEnd('readcache');
-            return cb(err, cache);
-        });
-        */
+                var filtered = filter(matches, options.js_select);
+                var aggData = aggregator(filtered, options.js_agg);
+                console.timeEnd('readcache');
+                cb(err,
+                {
+                    aggData: aggData
+                });
+            });
+        }
+        else
+        {
+            console.time('readcache');
+            redis.get(new Buffer("player:" + account_id), function(err, result)
+            {
+                var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
+                console.timeEnd('readcache');
+                //console.log(result ? result.length : 0, JSON.stringify(cache).length);
+                return cb(err, cache);
+            });
+        }
     }
     else
     {
+        console.log("cache disabled");
         return cb();
     }
 }
@@ -53,38 +81,48 @@ function writeCache(account_id, cache, cb)
 {
     if (enabled)
     {
-        console.time("writecache");
-        console.log("saving player cache %s", account_id);
-        redis.ttl("player:" + account_id, function(err, ttl)
+        if (cEnabled)
         {
-            if (err)
+            console.time("writecache");
+            console.log("saving player cache to cassandra %s", account_id);
+            var arr = cache.raw.map(function(m)
             {
-                return cb(err);
-            }
-            cache = {
-                aggData: cache.aggData
-            };
-            redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function(err)
+                return reduceAggregable(m);
+            });
+            //upsert matches into store
+            return async.each(arr, function(m, cb)
+            {
+                var query = 'INSERT INTO player_caches (account_id, match_id, match) VALUES (?, ?, ?)';
+                cassandra.execute(query, [m.account_id, m.match_id, JSON.stringify(m)],
+                {
+                    prepare: true
+                }, cb);
+            }, function(err)
             {
                 console.timeEnd("writecache");
-                cb(err);
+                return cb(err);
             });
-        });
-        /*
-        //TODO
-        var arr = cache.raw.map(function(m){return reduceAggregable(m)});
-        //upsert matches into store
-        */
-        /*
-        var query = 'INSERT INTO player_caches (account_id, match_id, match) VALUES (?, ?, ?)';
-        cassandra.execute(query, [account_id, match_id, m],
+        }
+        else
         {
-            prepare: true
-        }, function(err, result)
-        {
-            console.timeEnd("writecache");
-            return cb(err);
-        */
+            console.time("writecache");
+            console.log("saving player cache to redis %s", account_id);
+            redis.ttl("player:" + account_id, function(err, ttl)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                cache = {
+                    aggData: cache.aggData
+                };
+                redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function(err)
+                {
+                    console.timeEnd("writecache");
+                    cb(err);
+                });
+            });
+        }
     }
     else
     {
@@ -111,7 +149,8 @@ function updateCache(match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
-                readCache(player_match.account_id, function(err, cache)
+                readCache(player_match.account_id,
+                {}, function(err, cache)
                 {
                     if (err)
                     {
@@ -126,9 +165,18 @@ function updateCache(match, cb)
                             player_match[key] = match[key];
                         }
                         computePlayerMatchData(player_match);
-                        //writeCache(player_match.account_id, {raw:[player_match]}, cb);
-                        cache.aggData = aggregator([player_match], null, cache.aggData);
-                        writeCache(player_match.account_id, cache, cb);
+                        if (cEnabled)
+                        {
+                            writeCache(player_match.account_id,
+                            {
+                                raw: [player_match]
+                            }, cb);
+                        }
+                        else
+                        {
+                            cache.aggData = aggregator([player_match], null, cache.aggData);
+                            writeCache(player_match.account_id, cache, cb);
+                        }
                     }
                     else
                     {
@@ -152,20 +200,24 @@ function countPlayerCaches(cb)
 {
     if (enabled)
     {
-        redis.keys("player:*", function(err, result)
+        if (cEnabled)
         {
-            cb(err, result.length);
-        });
-        /*
-        cassandra.execute('SELECT DISTINCT COUNT(account_id) FROM player_caches', [],
+            cassandra.execute('SELECT DISTINCT COUNT(account_id) FROM player_caches', [],
+            {
+                prepare: true
+            }, function(err, result)
+            {
+                result = result && result.rows && result.rows[0] ? result.rows[0].count : 0;
+                return cb(err, result.toNumber());
+            });
+        }
+        else
         {
-            prepare: true
-        }, function(err, result)
-        {
-            result = result && result.rows && result.rows[0] ? result.rows[0].count : 0;
-            return cb(err, result.toNumber());
-        });
-        */
+            redis.keys("player:*", function(err, result)
+            {
+                cb(err, result.length);
+            });
+        }
     }
     else
     {

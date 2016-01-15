@@ -55,6 +55,7 @@
   "first_blood_time": "The time first blood occurred",
   "kda": "(Kills+Assists)/(Deaths+1)",
   "stuns": "Seconds of disable on heroes",
+  "time_dead": "Seconds dead",
   "tower_kills": "Number of towers killed",
   "neutral_kills": "Number of neutral creeps killed",
   "courier_kills": "Number of couriers killed",

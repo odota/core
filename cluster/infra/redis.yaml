@@ -48,7 +48,7 @@ spec:
         resources:
           requests:
             cpu: "2000m"
-            memory: "12G"
+            memory: "6G"
         volumeMounts:
         - name: redis
           mountPath: /var/lib/redis

@@ -3,6 +3,8 @@ var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var isSignificant = utility.isSignificant;
+var getAggs = utility.getAggs;
+var reduceMinimal = utility.reduceMinimal;
 module.exports = function aggregator(matches, fields, existing)
 {
     fields = fields || getAggs();
@@ -234,106 +236,4 @@ function aggTeammates(aggData, m)
             teammates[tm.account_id].against_win += player_win ? 1 : 0;
         }
     }
-}
-//reduce match to only fields needed for basic display
-function reduceMinimal(pm)
-{
-    return {
-        match_id: pm.match_id,
-        player_slot: pm.player_slot,
-        hero_id: pm.hero_id,
-        game_mode: pm.game_mode,
-        kills: pm.kills,
-        deaths: pm.deaths,
-        assists: pm.assists,
-        last_hits: pm.last_hits,
-        gold_per_min: pm.gold_per_min,
-        parse_status: pm.parse_status,
-        skill: pm.skill,
-        player_win: pm.player_win,
-        start_time: pm.start_time,
-        duration: pm.duration
-    };
-}
-
-function getAggs()
-{
-    return {
-        match_id: "api",
-        player_slot: "api",
-        account_id: "api",
-        heroes: "api",
-        teammates: "api",
-        win: "api",
-        lose: "api",
-        radiant_win: "api",
-        player_win: "api",
-        abandons: "api",
-        start_time: "api",
-        duration: "api",
-        cluster: "api",
-        region: "api",
-        patch: "api",
-        first_blood_time: "api",
-        lobby_type: "api",
-        game_mode: "api",
-        level: "api",
-        kills: "api",
-        deaths: "api",
-        assists: "api",
-        kda: "api",
-        last_hits: "api",
-        denies: "api",
-        hero_damage: "api",
-        tower_damage: "api",
-        hero_healing: "api",
-        //kills_per_min: "api",
-        gold_per_min: "api",
-        xp_per_min: "api",
-        hero_id: "api",
-        leaver_status: "api",
-        isRadiant: "api",
-        version: "parsed",
-        courier_kills: "parsed",
-        tower_kills: "parsed",
-        neutral_kills: "parsed",
-        lane: "parsed",
-        lane_role: "parsed",
-        obs: "parsed",
-        sen: "parsed",
-        item_uses: "parsed",
-        purchase_time: "parsed",
-        item_usage: "parsed",
-        item_win: "parsed",
-        purchase: "parsed",
-        ability_uses: "parsed",
-        hero_hits: "parsed",
-        multi_kills: "parsed",
-        kill_streaks: "parsed",
-        all_word_counts: "parsed",
-        my_word_counts: "parsed",
-        "throw": "parsed",
-        comeback: "parsed",
-        stomp: "parsed",
-        loss: "parsed",
-        actions_per_min: "parsed",
-        purchase_ward_observer: "parsed",
-        purchase_ward_sentry: "parsed",
-        purchase_tpscroll: "parsed",
-        purchase_rapier: "parsed",
-        purchase_gem: "parsed",
-        pings: "parsed",
-        stuns: "parsed",
-        lane_efficiency_pct: "parsed"
-    };
-}
-//reduce match to only fields needed for aggregation/filtering
-function reduceAggregable(pm)
-{
-    var result = {};
-    for (var key in getAggs())
-    {
-        result[key] = pm[key];
-    }
-    return result;
 }
