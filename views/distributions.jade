@@ -4,7 +4,7 @@ block content
   .row
     .col-md-12
       h3 Solo MMR Distribution 
-        small (#{mmr.sum.count} players)
+        small (#{mmr ? mmr.sum.count : 0} players)
         br
         small Includes players displaying MMR on profile and sharing public match data (Sign-in not required)
       #mmr
