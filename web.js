@@ -290,121 +290,35 @@ app.use('/names/:vanityUrl', function(req, res, cb)
         res.redirect('/players/' + Number(result));
     });
 });
-var sql = {};
-var sqlq = fs.readdirSync('./sql');
-sqlq.forEach(function(f)
-{
-    sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
-});
 app.use('/distributions', function(req, res, next)
 {
-    var expire = 86400;
-
-    function loadData(key, mapFunc, cb)
-    {
-        redis.get('distribution:' + key, function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            if (result && config.NODE_ENV === "production")
-            {
-                result = JSON.parse(result);
-                return cb(err, result);
-            }
-            db.raw(sql[key]).asCallback(function(err, results)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                mapFunc(results);
-                return cb(err, results);
-            });
-        });
-    }
-    async.parallel(
-    {
-        "game_mode": function(cb)
-        {
-            var mapFunc = function(results)
-            {
-                results.rows = results.rows.map(function(r)
-                {
-                    r.display_name = constants.game_mode[r.game_mode] ? constants.game_mode[r.game_mode].name : r.game_mode;
-                    return r;
-                });
-            }
-            loadData("game_mode", mapFunc, cb);
-        },
-        "lobby_type": function(cb)
-        {
-            var mapFunc = function(results)
-            {
-                results.rows = results.rows.map(function(r)
-                {
-                    r.display_name = constants.lobby_type ? constants.lobby_type[r.lobby_type].name : r.lobby_type;
-                    return r;
-                });
-            }
-            loadData("lobby_type", mapFunc, cb);
-        },
-        "country_mmr": function(cb)
-        {
-            var mapFunc = function(results)
-            {
-                results.rows = results.rows.map(function(r)
-                {
-                    console.log(r);
-                    var ref = constants.countries[r.loccountrycode];
-                    r.common = ref ? ref.name.common : r.loccountrycode;
-                    return r;
-                });
-            }
-            loadData("country_mmr", mapFunc, cb);
-        },
-        "mmr": function(cb)
-        {
-            var mapFunc = function(results)
-            {
-                var sum = results.rows.reduce(function(prev, current)
-                {
-                    return {
-                        count: prev.count + current.count
-                    };
-                },
-                {
-                    count: 0
-                });
-                results.rows = results.rows.map(function(r, i)
-                {
-                    r.cumulative_sum = results.rows.slice(0, i + 1).reduce(function(prev, current)
-                    {
-                        return {
-                            count: prev.count + current.count
-                        };
-                    },
-                    {
-                        count: 0
-                    }).count;
-                    return r;
-                });
-                results.sum = sum;
-            }
-            loadData("mmr", mapFunc, cb);
-        }
-    }, function(err, result)
+    redis.keys('distribution:*', function(err, results)
     {
         if (err)
         {
             return next(err);
         }
-        for (var key in result)
+        var result = {};
+        async.each(results, function(r, cb)
         {
-            redis.setex('distribution:' + key, expire, JSON.stringify(result[key]));
-        }
-        res.render('distributions', result);
+            redis.get(r, function(err, blob)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                result[r.split(':')[1]] = JSON.parse(blob);
+                cb(err);
+            });
+        }, function(err)
+        {
+            if (err)
+            {
+                return next(err);
+            }
+            console.log(result);
+            res.render('distributions', result);
+        });
     });
 });
 app.use('/api', api);

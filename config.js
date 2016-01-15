@@ -37,6 +37,7 @@ var defaults = {
     "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches
     "ENABLE_PLAYER_CACHE": "", // set to enable caching players
+    "CASSANDRA_PLAYER_CACHE": "",
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     //the following are deprecated
     "PARSER_HOST": "localhost:5200",

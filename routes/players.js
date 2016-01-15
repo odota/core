@@ -231,6 +231,7 @@ module.exports = function(db, redis)
                 }
                 count = Number(count[0].count);
                 console.timeEnd("validate");
+                //console.log(cache);
                 //console.log(Object.keys(cache.aggData.matches).length, count);
                 var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
                 return cb(err, cacheValid);
@@ -245,7 +246,7 @@ module.exports = function(db, redis)
 
     function doSqlAgg(player, query, cb)
     {
-        //TODO
+        //TODO fully sql aggs
         //disable or fix special filters: with/against/included, purchased_item, lane_role, patch, region, faction, win
         //make histograms/records/trends work
         //add significance check to all queries
@@ -347,11 +348,12 @@ module.exports = function(db, redis)
             }
             else
             {
-                if (filter_exists)
+                if (filter_exists && !config.CASSANDRA_PLAYER_CACHE)
                 {
+                    console.log("filter exists");
                     return cacheMiss();
                 }
-                readCache(orig_account_id, function(err, cache)
+                readCache(orig_account_id, options.queryObj, function(err, cache)
                 {
                     if (err)
                     {
