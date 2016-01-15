@@ -4,7 +4,7 @@ block content
   .row
     .col-md-12
       h3 Solo MMR Distribution 
-        small (#{mmr.sum.count} players)
+        small (#{mmr ? mmr.sum.count : 0} players)
         br
         small Includes players displaying MMR on profile and sharing public match data (Sign-in not required)
       #mmr
@@ -24,19 +24,20 @@ block content
           th Country
           th Players
           th MMR
-        each row, i in country_mmr.rows
-          tr
-            td=i+1
-            td
-              span.flag-icon(class="flag-icon-"+row.loccountrycode.toLowerCase())            
-              =row.common
-            td=row.count
-            td=row.avg
+        if country_mmr
+          each row, i in country_mmr.rows
+            tr
+              td=i+1
+              td
+                span.flag-icon(class="flag-icon-"+row.loccountrycode.toLowerCase())            
+                =row.common
+              td=row.count
+              td=row.avg
 
 append footer_assets
   script.
-    var mmr = !{JSON.stringify(mmr.rows)};
-    var count = !{mmr.sum.count};
+    var mmr = !{JSON.stringify(mmr ? mmr.rows : [])};
+    var count = !{mmr ? mmr.sum.count : 0};
     var counts = mmr.map(function(d){return d.count;});
     var names = mmr.map(function(d){return d.bin_name});
     var pcts = mmr.map(function(d){return d.cumulative_sum/count*100;});
@@ -93,12 +94,12 @@ append footer_assets
         }
     };
     c3.generate(options);
-    var game_mode = !{JSON.stringify(game_mode)};
-    var lobby_type = !{JSON.stringify(lobby_type)};
+    var game_mode = !{JSON.stringify(game_mode ? game_mode.rows : [])};
+    var lobby_type = !{JSON.stringify(lobby_type ? lobby_type.rows : [])};
     c3.generate({
         bindto: "#game_mode",
         data: {
-            columns: game_mode.rows.map(function(r){
+            columns: game_mode.map(function(r){
                 return [r.display_name, r.count];
             }),
             type: 'pie'
@@ -110,7 +111,7 @@ append footer_assets
     c3.generate({
         bindto: "#lobby_type",
         data: {
-            columns: lobby_type.rows.map(function(r){
+            columns: lobby_type.map(function(r){
                 return [r.display_name, r.count];
             }),
             type: 'pie'
