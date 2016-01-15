@@ -5,18 +5,49 @@ var computePlayerMatchData = compute.computePlayerMatchData;
 var aggregator = require('./aggregator');
 var async = require('async');
 var constants = require('./constants');
+var utility = require('./utility');
+var reduceAggregable = utility.reduceAggregable;
 var enabled = config.ENABLE_PLAYER_CACHE;
+var cEnabled = config.CASSANDRA_PLAYER_CACHE;
 var redis;
 var cassandra;
 if (enabled)
 {
     redis = require('./redis');
-    //cassandra = require('./cassandra');
+}
+if (cEnabled)
+{
+    cassandra = require('./cassandra');
 }
 //CREATE KEYSPACE yasp WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1': 1 };
 //CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match blob, PRIMARY KEY(account_id, match_id));
 function readCache(account_id, cb)
 {
+    if (cEnabled)
+    {
+        var query = 'SELECT match FROM player_caches WHERE account_id=?';
+        return cassandra.execute(query, [account_id],
+        {
+            prepare: true
+        }, function(err, results)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            if (!results.length)
+            {
+                return cb();
+            }
+            //get array of matches, filter, agg and return results
+            var filtered = filter(results, options.js_agg);
+            console.timeEnd('readcache');
+            cb(err,
+            {
+                aggData: aggregator(filtered)
+            });
+        });
+    }
     if (enabled)
     {
         console.time('readcache');
@@ -27,21 +58,6 @@ function readCache(account_id, cb)
             //console.log(result ? result.length : 0, JSON.stringify(cache).length);
             return cb(err, cache);
         });
-        /*
-        //TODO
-        var query = 'SELECT match FROM player_caches WHERE account_id=?';
-        cassandra.execute(query, [account_id],
-        {
-            prepare: true
-        }, function(err, results)
-        {
-                //get array of matches, filter, agg and return results
-        //var filtered = filter(results, options.js_agg);
-        //cb(null, {aggData: aggregator(filtered)});
-            console.timeEnd('readcache');
-            return cb(err, cache);
-        });
-        */
     }
     else
     {
@@ -51,6 +67,26 @@ function readCache(account_id, cb)
 
 function writeCache(account_id, cache, cb)
 {
+    if (cEnabled)
+    {
+        var arr = cache.raw.map(function(m)
+        {
+            return reduceAggregable(m);
+        });
+        //upsert matches into store
+        return async.each(arr, function(m)
+        {
+            var query = 'INSERT INTO player_caches (account_id, match_id, match) VALUES (?, ?, ?)';
+            cassandra.execute(query, [account_id, m.match_id, m],
+            {
+                prepare: true
+            }, cb);
+        }, function(err)
+        {
+            console.timeEnd("writecache");
+            return cb(err);
+        });
+    }
     if (enabled)
     {
         console.time("writecache");
@@ -70,21 +106,6 @@ function writeCache(account_id, cache, cb)
                 cb(err);
             });
         });
-        /*
-        //TODO
-        var arr = cache.raw.map(function(m){return reduceAggregable(m)});
-        //upsert matches into store
-        */
-        /*
-        var query = 'INSERT INTO player_caches (account_id, match_id, match) VALUES (?, ?, ?)';
-        cassandra.execute(query, [account_id, match_id, m],
-        {
-            prepare: true
-        }, function(err, result)
-        {
-            console.timeEnd("writecache");
-            return cb(err);
-        */
     }
     else
     {
@@ -126,9 +147,18 @@ function updateCache(match, cb)
                             player_match[key] = match[key];
                         }
                         computePlayerMatchData(player_match);
-                        //writeCache(player_match.account_id, {raw:[player_match]}, cb);
-                        cache.aggData = aggregator([player_match], null, cache.aggData);
-                        writeCache(player_match.account_id, cache, cb);
+                        if (cEnabled)
+                        {
+                            writeCache(player_match.account_id,
+                            {
+                                raw: [player_match]
+                            }, cb);
+                        }
+                        else
+                        {
+                            cache.aggData = aggregator([player_match], null, cache.aggData);
+                            writeCache(player_match.account_id, cache, cb);
+                        }
                     }
                     else
                     {
