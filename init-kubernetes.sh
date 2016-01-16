@@ -49,7 +49,7 @@ psql -c "ALTER USER yasp WITH PASSWORD 'yasp';"
 #npm run deploy
 
 #backup/restore
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c --jobs=4 | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
 
