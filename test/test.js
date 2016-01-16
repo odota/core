@@ -35,14 +35,17 @@ var queries = require('../queries');
 //fake api response
 nock('http://api.steampowered.com')
     //500 error
-    .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).reply(500, {})
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).reply(500,
+    {})
     //fake match details
     .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).times(10).reply(200, require('./details_api.json'))
     //fake player summaries
     .get('/ISteamUser/GetPlayerSummaries/v0002/').query(true).reply(200, require('./summaries_api.json'))
     //non-retryable error
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, {
-        result: {
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200,
+    {
+        result:
+        {
             error: "error"
         }
     })
@@ -55,76 +58,98 @@ nock('http://api.steampowered.com')
 //.get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, require('./leagues_api.json'));
 //fake mmr response
 nock("http://" + config.RETRIEVER_HOST).get('/?account_id=88367253').reply(200, require('./retriever_player.json'));
-before(function(done) {
+before(function(done)
+{
     this.timeout(wait);
     async.series([
-        function(cb) {
+        function(cb)
+        {
             console.log('removing old test database');
-            pg.connect(init_db, function(err, client) {
-                if (err) {
+            pg.connect(init_db, function(err, client)
+            {
+                if (err)
+                {
                     return cb(err);
                 }
-                client.query('DROP ROLE IF EXISTS yasp_test;', function(err, result) {
+                client.query('DROP ROLE IF EXISTS yasp_test;', function(err, result)
+                {
                     console.log('cleaning database role for testing');
                 });
-                client.query('DROP DATABASE IF EXISTS yasp_test;', function(err, result) {
+                client.query('DROP DATABASE IF EXISTS yasp_test;', function(err, result)
+                {
                     console.log('cleaning test database', config.POSTGRES_URL);
                     cb(err);
                 });
             });
         },
-        function(cb) {
+        function(cb)
+        {
             console.log('creating test database');
-            pg.connect(init_db, function(err, client) {
-                if (err) {
+            pg.connect(init_db, function(err, client)
+            {
+                if (err)
+                {
                     return cb(err);
                 }
-                client.query('CREATE ROLE yasp_test WITH LOGIN PASSWORD \'yasp_test\';', function(err, result) {
+                client.query('CREATE ROLE yasp_test WITH LOGIN PASSWORD \'yasp_test\';', function(err, result)
+                {
                     console.log('creation of database role for testing');
                 });
-                client.query('CREATE DATABASE yasp_test OWNER yasp_test;', function(err, result) {
+                client.query('CREATE DATABASE yasp_test OWNER yasp_test;', function(err, result)
+                {
                     console.log('creation of test database', config.POSTGRES_URL);
                     cb(err);
                 });
             });
         },
-        function(cb) {
+        function(cb)
+        {
             console.log('connecting to test database and creating tables');
-            pg.connect(config.POSTGRES_URL, function(err, client) {
-                if (err) {
+            pg.connect(config.POSTGRES_URL, function(err, client)
+            {
+                if (err)
+                {
                     return cb(err);
                 }
                 // create tables
                 var query = fs.readFileSync("./sql/create_tables.sql", "utf8");
-                client.query(query, function(err, result) {
+                client.query(query, function(err, result)
+                {
                     console.log('set up %s', config.POSTGRES_URL);
                     cb(err);
                 });
             });
         },
-        function(cb) {
+        function(cb)
+        {
             console.log("wiping redis");
             redis.flushdb(cb);
         },
-        function(cb) {
+        function(cb)
+        {
             db = require('../db');
             app = require('../web');
             require('../parser');
             console.log("loading matches");
-            async.mapSeries([require('./details_api.json').result], function(m, cb) {
-                queries.insertMatch(db, redis, queue, m, {
+            async.mapSeries([require('./details_api.json').result], function(m, cb)
+            {
+                queries.insertMatch(db, redis, queue, m,
+                {
                     type: "api"
                 }, cb);
             }, cb);
         },
-        function(cb) {
+        function(cb)
+        {
             console.log("loading players");
-            async.mapSeries(require('./summaries_api').response.players, function(p, cb) {
+            async.mapSeries(require('./summaries_api').response.players, function(p, cb)
+            {
                 queries.insertPlayer(db, p, cb);
             }, cb);
         }], done);
 });
-describe("worker", function() {
+describe("worker", function()
+{
     this.timeout(wait);
     //TODO fix match/account_ids
     /*
@@ -178,15 +203,20 @@ describe("worker", function() {
     });
     */
 });
-describe("parser", function() {
+describe("parser", function()
+{
     this.timeout(wait);
     var tests = {
         '1781962623_source2.dem': 1781962623
     };
-    for (var key in tests) {
-        it('parse replay', function(done) {
-            nock("http://" + config.RETRIEVER_HOST).get('/').query(true).reply(200, {
-                match: {
+    for (var key in tests)
+    {
+        it('parse replay', function(done)
+        {
+            nock("http://" + config.RETRIEVER_HOST).get('/').query(true).reply(200,
+            {
+                match:
+                {
                     cluster: 1,
                     replay_salt: key.split(".")[0].split("_")[1]
                 }
@@ -196,112 +226,157 @@ describe("parser", function() {
             var match = {
                 match_id: tests[key],
                 start_time: moment().format('X'),
-                slot_to_id: {}
+                slot_to_id:
+                {}
             };
-            queueReq(queue, "parse", match, {}, function(err, job) {
+            queueReq(queue, "parse", match,
+            {}, function(err, job)
+            {
                 assert(job && !err);
-                queue.parse.once('completed', function(job2) {
-                    if (job.jobId === job2.jobId) {
-                        return done();
+                queue.parse.once('completed', function(job2)
+                {
+                    if (job.jobId === job2.jobId)
+                    {
+                        //ensure parse data got inserted
+                        queries.getMatch(db, tests[key], function(err, match)
+                        {
+                            if (err)
+                            {
+                                return done(err);
+                            }
+                            assert(match.version);
+                            assert(match.players && match.players[0] && match.players[0].lh_t);
+                            return done();
+                        });
                     }
                 });
             });
         });
     }
 });
-describe("web", function() {
+describe("web", function()
+{
     //this.timeout(wait);
-    describe("main page tests", function() {
-        it('/', function(done) {
+    describe("main page tests", function()
+    {
+        it('/', function(done)
+        {
             supertest(app).get('/')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
-                .expect(200).end(function(err, res) {
+                .expect(200).end(function(err, res)
+                {
                     done(err);
                 });
         });
-        it('/distributions', function(done) {
-            supertest(app).get('/distributions')
-                .expect(200).end(function(err, res) {
-                    done(err);
-                });
+        it('/distributions', function(done)
+        {
+            supertest(app).get('/distributions').expect(200).end(function(err, res)
+            {
+                done(err);
+            });
         });
-        it('/mmstats', function(done) {
-            supertest(app).get('/mmstats')
-                .expect(200).end(function(err, res) {
-                    done(err);
-                });
+        it('/mmstats', function(done)
+        {
+            supertest(app).get('/mmstats').expect(200).end(function(err, res)
+            {
+                done(err);
+            });
         });
-        it('/status', function(done) {
-            supertest(app).get('/status')
-                .expect(200).expect(/Status/).end(function(err, res) {
-                    done(err);
-                });
+        it('/status', function(done)
+        {
+            supertest(app).get('/status').expect(200).expect(/Status/).end(function(err, res)
+            {
+                done(err);
+            });
         });
-        it('/faq', function(done) {
-            supertest(app).get('/faq')
-                .expect(200).expect(/FAQ/).end(function(err, res) {
-                    done(err);
-                });
+        it('/faq', function(done)
+        {
+            supertest(app).get('/faq').expect(200).expect(/FAQ/).end(function(err, res)
+            {
+                done(err);
+            });
         });
-        it('/carry', function(done) {
-            supertest(app).get('/carry')
-                .expect(200).expect(/Carry/).end(function(err, res) {
-                    done(err);
-                });
+        it('/carry', function(done)
+        {
+            supertest(app).get('/carry').expect(200).expect(/Carry/).end(function(err, res)
+            {
+                done(err);
+            });
         });
-        it('/:invalid', function(done) {
-            supertest(app).get('/asdf')
-                .expect(404).end(function(err, res) {
-                    done(err);
-                });
+        it('/:invalid', function(done)
+        {
+            supertest(app).get('/asdf').expect(404).end(function(err, res)
+            {
+                done(err);
+            });
         });
     });
-    describe("player page tests", function() {
+    describe("player page tests", function()
+    {
         var tests = Object.keys(constants.player_pages);
-        tests.forEach(function(t) {
-            it('/players/:valid/' + t, function(done) {
-                supertest(app).get('/players/120269134/' + t).expect(200).end(function(err, res) {
+        tests.forEach(function(t)
+        {
+            it('/players/:valid/' + t, function(done)
+            {
+                supertest(app).get('/players/120269134/' + t).expect(200).end(function(err, res)
+                {
                     done(err);
                 });
             });
         });
     });
-    describe("basic match page tests", function() {
-        it('/matches/:invalid', function(done) {
-            supertest(app).get('/matches/1').expect(500).end(function(err, res) {
+    describe("basic match page tests", function()
+    {
+        it('/matches/:invalid', function(done)
+        {
+            supertest(app).get('/matches/1').expect(500).end(function(err, res)
+            {
                 done(err);
             });
         });
-        it('/matches/:valid', function(done) {
-            supertest(app).get('/matches/1781962623').expect(200).end(function(err, res) {
+        it('/matches/:valid', function(done)
+        {
+            supertest(app).get('/matches/1781962623').expect(200).end(function(err, res)
+            {
                 done(err);
             });
         });
     });
-    describe("parsed match page tests", function() {
+    describe("parsed match page tests", function()
+    {
         var tests = Object.keys(constants.match_pages);
-        tests.forEach(function(t) {
-            it('/matches/:valid_parsed/' + t, function(done) {
+        tests.forEach(function(t)
+        {
+            it('/matches/:valid_parsed/' + t, function(done)
+            {
                 //new RegExp(t, "i")
-                supertest(app).get('/matches/1781962623/' + t).expect(200).expect(/1781962623/).end(function(err, res) {
+                supertest(app).get('/matches/1781962623/' + t).expect(200).expect(/1781962623/).end(function(err, res)
+                {
                     done(err);
                 });
             });
         });
     });
 });
-describe("api tests", function() {
-    describe("/api/items", function() {
-        it('should 200', function(done) {
-            supertest(app).get('/api/items').expect(200).end(function(err, res) {
+describe("api tests", function()
+{
+    describe("/api/items", function()
+    {
+        it('should 200', function(done)
+        {
+            supertest(app).get('/api/items').expect(200).end(function(err, res)
+            {
                 done(err);
             });
         });
     });
-    describe("/api/abilities", function() {
-        it('should 200', function(done) {
-            supertest(app).get('/api/abilities').expect(200).end(function(err, res) {
+    describe("/api/abilities", function()
+    {
+        it('should 200', function(done)
+        {
+            supertest(app).get('/api/abilities').expect(200).end(function(err, res)
+            {
                 done(err);
             });
         });

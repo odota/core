@@ -615,7 +615,9 @@ function getAggs()
         purchase_gem: "parsed",
         pings: "parsed",
         stuns: "parsed",
-        lane_efficiency_pct: "parsed"
+        lane_efficiency_pct: "parsed",
+        parse_status: "parsed",
+        skill: "skill"
     };
 }
 //reduce match to only fields needed for aggregation/filtering

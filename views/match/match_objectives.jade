@@ -33,7 +33,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             each val, key in constants.runes
-              td.rankable #{player.runes[key] || "-"}
+              td.rankable #{player.runes && player.runes[key] ? player.runes[key] : "-"}
       +ad("skyscraper")
       
   .row
