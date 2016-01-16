@@ -490,7 +490,7 @@ module.exports = function(db, redis)
                             //get skill data for matches within cache expiry (might not have skill data)
                             var recents = player.aggData.matches.filter(function(m)
                             {
-                                return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+                                return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS * 4;
                             });
                             var skillMap = {};
                             db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)

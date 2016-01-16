@@ -1,9 +1,11 @@
 var cass = require('cassandra-driver');
 var config = require('./config');
-var split = config.CASSANDRA_URL.split('/');
+var url = require('url');
+var u = url.parse(config.CASSANDRA_URL);
+console.log('connecting %s', config.CASSANDRA_URL);
 var cassandra = new cass.Client(
 {
-    contactPoints: [split[0]],
-    keyspace: split[1]
+    contactPoints: [u.host],
+    keyspace: u.path.substring(1)
 });
 module.exports = cassandra;

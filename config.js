@@ -24,7 +24,7 @@ var defaults = {
     "SCANNER_PORT": "5500",
     "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
-    "CASSANDRA_URL": "localhost/yasp",
+    "CASSANDRA_URL": "cassandra://localhost/yasp",
     "RETRIEVER_HOST": "localhost:5100",
     "UNTRACK_DAYS": 7,
     "GOAL": 5,
@@ -32,13 +32,15 @@ var defaults = {
     "STEAM_API_HOST": "api.steampowered.com",
     "ROLE": "", //for specifying a node type
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
+    "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches
     "ENABLE_PLAYER_CACHE": "", // set to enable caching players
-    "CASSANDRA_PLAYER_CACHE": "",
-    "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
+    "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
+    "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
+    "ENABLE_CASSANDRA_PLAYER_CACHE": "", //set to use cassandra for player caches
     //the following are deprecated
     "PARSER_HOST": "localhost:5200",
     "MONGO_URL": "mongodb://localhost/dota",
