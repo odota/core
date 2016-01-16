@@ -25,6 +25,7 @@ function processRequest(job, cb) {
                 attempts: job.data.request ? 1 : undefined
             }, function(err, job2) {
                 if (err){
+                    console.error(err.stack || err);
                     return cb(err);
                 }
                 //job2 is the parse job

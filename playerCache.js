@@ -207,8 +207,8 @@ function countPlayerCaches(cb)
                 prepare: true
             }, function(err, result)
             {
-                result = result && result.rows && result.rows[0] ? result.rows[0].count : 0;
-                return cb(err, result.toNumber());
+                result = result && result.rows && result.rows[0] && result.rows[0].count ? result.rows[0].count.toNumber() : 0;
+                return cb(err, result);
             });
         }
         else
