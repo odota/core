@@ -185,7 +185,7 @@ function insertMatch(db, redis, queue, match, options, cb)
             upsert(db, 'player_matches', pm,
             {
                 match_id: pm.match_id,
-                account_id: pm.account_id
+                player_slot: pm.player_slot
             }, cb);
         }, cb);
     }
