@@ -74,6 +74,7 @@ function upsert(db, table, row, conflict, cb)
                 //console.error(key);
             }
         }
+        /*
         var query1 = db(table).insert(row);
         var query2 = db(table).update(row).where(conflict);
         query1.asCallback(function(err)
@@ -87,29 +88,43 @@ function upsert(db, table, row, conflict, cb)
                 cb(err);
             }
         });
-        /*
+        */
         var values = Object.keys(row).map(function(key)
         {
             return genValue(row, key);
         }).join(',');
         var update = Object.keys(row).map(function(key)
         {
-            return util.format("%s = %s", key, genValue(row, key));
+            return util.format("%s=%s", key, "EXCLUDED." + key);
         }).join(',');
-        var query = util.format("insert into %s (%s) values (%s) on conflict() do update set %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), table, update);
+        var query = util.format("insert into %s (%s) values (%s) on conflict(%s) do update set %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update);
         require('fs').writeFileSync('output.json', query);
         db.raw(query).asCallback(cb);
-        */
     });
 }
 
 function genValue(row, key)
 {
-    return row[key] && row[key].constructor === Array ? util.format("ARRAY[%s]", row[key].map(function(e)
+    if (row[key] && row[key].constructor === Array)
     {
-        //no string arrays or nested arrays!
-        return util.format("'%s'%s", JSON.stringify(e), typeof(e) === "object" ? "::json" : "::integer");
-    }).join(',')) : util.format("'%s'", JSON.stringify(row[key]));
+        return util.format("'{%s}'", row[key].map(function(e)
+        {
+            return JSON.stringify(JSON.stringify(e));
+        }).join(','));
+    }
+    else if (typeof(row[key]) === "object")
+    {
+        return util.format("'%s'", JSON.stringify(row[key]));
+    }
+    else if (typeof(row[key] === "string"))
+    {
+        return util.format("'%s'", row[key]);
+    }
+    else
+    {
+        console.log(row[key]);
+        return row[key];
+    }
 }
 
 function insertMatch(db, redis, queue, match, options, cb)

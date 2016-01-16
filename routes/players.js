@@ -96,6 +96,10 @@ module.exports = function(db, redis)
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
         var compare_data;
+        if (isNaN(Number(account_id)))
+        {
+            return next("non-numeric account_id");
+        }
         if (Number(account_id) === constants.anonymous_account_id)
         {
             return next("cannot generate profile for anonymous account_id");
