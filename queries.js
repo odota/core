@@ -94,7 +94,7 @@ function insertMatch(db, redis, queue, match, options, cb)
         });
     }
     //put ability_upgrades data in redis
-    if (players && !options.skipAbilityUpgrades)
+    if (players && players[0] && players[0].ability_upgrades && !options.skipAbilityUpgrades)
     {
         var ability_upgrades = {};
         players.forEach(function(p)
