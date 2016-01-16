@@ -58,7 +58,7 @@ function getColumnInfo(db, table, cb)
     }
 }
 
-function upsert(db, table, row, cb)
+function upsert(db, table, row, conflict, cb)
 {
     getColumnInfo(db, table, function(err)
     {
@@ -74,6 +74,20 @@ function upsert(db, table, row, cb)
                 //console.error(key);
             }
         }
+        var query1 = db(table).insert(row);
+        var query2 = db(table).update(row).where(conflict);
+        query1.asCallback(function(err)
+        {
+            if (err && err.detail.indexOf("already exists") !== -1)
+            {
+                query2.asCallback(cb);
+            }
+            else
+            {
+                cb(err);
+            }
+        });
+        /*
         var values = Object.keys(row).map(function(key)
         {
             return genValue(row, key);
@@ -82,9 +96,10 @@ function upsert(db, table, row, cb)
         {
             return util.format("%s = %s", key, genValue(row, key));
         }).join(',');
-        var query = util.format("insert into %s (%s) values (%s) on conflict on constraint %s_pkey do update set %s", table, Object.keys(row).join(','), values, table, update);
+        var query = util.format("insert into %s (%s) values (%s) on conflict() do update set %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), table, update);
         require('fs').writeFileSync('output.json', query);
         db.raw(query).asCallback(cb);
+        */
     });
 }
 
@@ -155,7 +170,10 @@ function insertMatch(db, redis, queue, match, options, cb)
     function insertMatchTable(cb)
     {
         var row = match;
-        upsert(db, 'matches', row, cb);
+        upsert(db, 'matches', row,
+        {
+            match_id: match.match_id
+        }, cb);
     }
 
     function insertPlayerMatchesTable(cb)
@@ -164,7 +182,11 @@ function insertMatch(db, redis, queue, match, options, cb)
         async.each(players || [], function(pm, cb)
         {
             pm.match_id = match.match_id;
-            upsert(db, 'player_matches', pm, cb);
+            upsert(db, 'player_matches', pm,
+            {
+                match_id: pm.match_id,
+                account_id: pm.account_id
+            }, cb);
         }, cb);
     }
     /**
@@ -233,7 +255,10 @@ function insertPlayer(db, player, cb)
     {
         return cb();
     }
-    upsert(db, 'players', player, cb);
+    upsert(db, 'players', player,
+    {
+        account_id: player.account_id
+    }, cb);
 }
 
 function insertPlayerRating(db, row, cb)
@@ -243,7 +268,10 @@ function insertPlayerRating(db, row, cb)
 
 function insertMatchSkill(db, row, cb)
 {
-    upsert(db, 'match_skill', row, cb);
+    upsert(db, 'match_skill', row,
+    {
+        match_id: row.match_id
+    }, cb);
 }
 
 function getMatch(db, match_id, cb)
