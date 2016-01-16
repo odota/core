@@ -245,7 +245,7 @@ describe("parser", function()
                                 return done(err);
                             }
                             assert(match.version);
-                            assert(match.players && match.players[0] && match.players.lh_t);
+                            assert(match.players && match.players[0] && match.players[0].lh_t);
                             return done();
                         });
                     }
