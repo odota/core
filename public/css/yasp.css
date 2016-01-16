@@ -253,6 +253,12 @@ div .dataTables_processing {
     margin-bottom: 0px;
 }
 
+.blog-panel img {
+    margin: 0 auto;
+    display: block;
+    max-width: 100%;
+}
+
 .label-info {
     margin-right: 5px;
 }
