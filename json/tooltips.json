@@ -35,6 +35,7 @@
   "farm_couriers": "Couriers killed",
   "farm_observers": "Observers killed",
   "farm_sentries": "Sentries killed",
+  "farm_roshan": "Roshans killed",
   "farm_necronomicon": "Necronomicon units killed",
   "actions_per_min": "Number of actions the player performed per minute",
   "pings": "Number of times the player pinged the map",

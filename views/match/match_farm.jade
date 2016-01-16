@@ -1,5 +1,5 @@
 extend match
-    
+
 block match_content
   .row
     .col-md-12
@@ -13,6 +13,7 @@ block match_content
               th: abbr(title=tooltips.farm_neutrals) Neutrals
               th: abbr(title=tooltips.farm_towers) Towers
               th: abbr(title=tooltips.farm_couriers) Couriers
+              th: abbr(title=tooltips.farm_roshan) Roshan
               th: abbr(title=tooltips.farm_necronomicon) Necronomicon
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
@@ -22,6 +23,7 @@ block match_content
             td.rankable #{player.neutral_kills || "-"}
             td.rankable #{player.tower_kills || "-"}
             td.rankable #{player.courier_kills || "-"}
+            td.rankable #{player.roshan_kills || "-"}
             td.rankable #{player.necronomicon_kills || "-"}
   .row
     .col-md-12
@@ -37,9 +39,9 @@ block match_content
             +hero_td(player)
             - for (var i = 0; i <= match.duration + bucket; i+=bucket)
               td.rankable #{player.lh_t ? player.lh_t[i/60] : "-"}
-              
+
   +ad("banner2")
-  
+
   .row
     .col-md-8
       +data_table({id:"gold", summable:true, heading:"Gold", rankable: true})

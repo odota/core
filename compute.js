@@ -69,6 +69,7 @@ function computePlayerMatchData(pm)
         pm.hero_kills = 0;
         pm.observer_kills = 0;
         pm.sentry_kills = 0;
+        pm.roshan_kills = 0;
         pm.necronomicon_kills = 0;
         for (var key in pm.killed)
         {
@@ -102,6 +103,10 @@ function computePlayerMatchData(pm)
             if (key.indexOf("courier") !== -1)
             {
                 pm.courier_kills += pm.killed[key];
+            }
+            if (key.indexOf("roshan") !== -1)
+            {
+                pm.roshan_kills += pm.killed[key];
             }
             if (key.indexOf("necronomicon") !== -1)
             {
