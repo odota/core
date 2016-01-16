@@ -11,9 +11,9 @@ rewriting a ton of code to handle the influx of users and games.
 Since that storied day, YASP has grown leaps and bounds. Some YASP stats (ha):
 * 30,000+ games parsed per day, peaking to 45,000+ on weekends
 * 90,000 matches added per day
-* 26,000 tracked users (currently)
+* 26,000 current tracked users, 53,000 peak
 * 85,000 signed in users
-* 100 million matches in our database
+* 100 million matches in our database, with 4.5+ million parsed
 * 830 donators
 * 15+ servers
 
@@ -27,11 +27,11 @@ And over the year, we’ve continually made improvements to YASP. To name a few:
  and [actions](https://yasp.co/matches/2053267901/actions)
 * Dramatic [infrustructure improvements](https://yasp.co/blog/32)
 * Individual [performance analysis](https://yasp.co/blog/34)
-* [Data dumps(https://yasp.co/blog/33) for those machine learning enthusiasts out there
+* [Data dumps](https://yasp.co/blog/33) for those machine learning enthusiasts out there
 
 In this year, we’ve remained completely [open source](https://github.com/yasp-dota/yasp) and free. We even [removed all ads](https://yasp.co/blog/28)!
 We’re supported completely through the generous Dota 2 community through [Cheese](https://yasp.co/carry).
 
-We hope to supply you with Dota 2 stats for many years to come!
+We hope to supply you and the Dota 2 community with free stats for many years to come!
 
 Happy Dota!
