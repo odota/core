@@ -143,7 +143,7 @@ function insertMatch(db, redis, queue, match, options, cb)
     }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
-    db.transaction(function(trx)
+    //db.transaction(function(trx)
     {
         async.series(
         {
@@ -155,6 +155,7 @@ function insertMatch(db, redis, queue, match, options, cb)
             "dp": decideParse
         }, function(err, results)
         {
+            /*
             if (err)
             {
                 trx.rollback(err);
@@ -163,9 +164,10 @@ function insertMatch(db, redis, queue, match, options, cb)
             {
                 trx.commit();
             }
+            */
             return cb(err, results.dp);
         });
-    }).catch(cb);
+    //}).catch(cb);
 
     function insertMatchTable(cb)
     {
