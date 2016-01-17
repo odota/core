@@ -71,14 +71,14 @@ before(function(done)
                 {
                     return cb(err);
                 }
+                console.log('cleaning database role for testing');
                 client.query('DROP ROLE IF EXISTS yasp_test;', function(err, result)
                 {
-                    console.log('cleaning database role for testing');
-                });
-                client.query('DROP DATABASE IF EXISTS yasp_test;', function(err, result)
-                {
                     console.log('cleaning test database', config.POSTGRES_URL);
-                    cb(err);
+                    client.query('DROP DATABASE IF EXISTS yasp_test;', function(err, result)
+                    {
+                        cb(err);
+                    });
                 });
             });
         },
@@ -91,14 +91,18 @@ before(function(done)
                 {
                     return cb(err);
                 }
+                console.log('creation of database role for testing');
                 client.query('CREATE ROLE yasp_test WITH LOGIN PASSWORD \'yasp_test\';', function(err, result)
                 {
-                    console.log('creation of database role for testing');
-                });
-                client.query('CREATE DATABASE yasp_test OWNER yasp_test;', function(err, result)
-                {
                     console.log('creation of test database', config.POSTGRES_URL);
-                    cb(err);
+                    client.query('CREATE DATABASE yasp_test OWNER yasp_test;', function(err, result)
+                    {
+                        console.log('creation of extension');
+                        client.query('CREATE EXTENSION pg_trgm;', function(err, result)
+                        {
+                            cb(err);
+                        });
+                    });
                 });
             });
         },
