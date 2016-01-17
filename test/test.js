@@ -97,11 +97,7 @@ before(function(done)
                     console.log('creation of test database', config.POSTGRES_URL);
                     client.query('CREATE DATABASE yasp_test OWNER yasp_test;', function(err, result)
                     {
-                        console.log('creation of extension');
-                        client.query('CREATE EXTENSION pg_trgm;', function(err, result)
-                        {
-                            cb(err);
-                        });
+                        cb(err);
                     });
                 });
             });
@@ -120,6 +116,22 @@ before(function(done)
                 client.query(query, function(err, result)
                 {
                     console.log('set up %s', config.POSTGRES_URL);
+                    cb(err);
+                });
+            });
+        },
+                function(cb)
+        {
+            console.log('create extension');
+            pg.connect("postgres://postgres:postgres@localhost/yasp_test", function(err, client)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                var query = fs.readFileSync("./sql/trgm.sql", "utf8");
+                client.query(query, function(err, result)
+                {
                     cb(err);
                 });
             });
