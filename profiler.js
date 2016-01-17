@@ -4,21 +4,21 @@ var utility = require('./utility');
 var getData = utility.getData;
 var async = require('async');
 var db = require('./db');
-var count;
+var max;
 start();
-doCount();
+doMax();
 
-function doCount()
+function doMax()
 {
-    db.raw("select count(*) from players").asCallback(function(err, result)
+    db.raw("select max(account_id) from players").asCallback(function(err, result)
     {
         if (err)
         {
             throw err;
         }
-        count = Number(result.rows[0].count);
-        console.log("recomputed count: %s", count);
-        return setTimeout(doCount, 60 * 10 * 1000);
+        max = Number(result.rows[0].max);
+        console.log("recomputed max: %s", max);
+        return setTimeout(doMax, 60 * 10 * 1000);
     });
 }
 
@@ -36,12 +36,13 @@ function start()
 
 function getSummaries(cb)
 {
-    if (!count)
+    if (!max)
     {
         console.log('waiting for count');
         return cb();
     }
-    db.raw("select account_id from players offset random() * ? limit 100", [count]).asCallback(function(err, results)
+    var random = Math.floor((Math.random()*max)); 
+    db.raw("select account_id from players where account_id > ? limit 100", [random]).asCallback(function(err, results)
     {
         if (err)
         {

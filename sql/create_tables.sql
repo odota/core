@@ -170,6 +170,8 @@ CREATE TABLE match_logs (
   value integer
 );
 
+CREATE EXTENSION pg_trgm;
+CREATE INDEX on players USING GIN(personaname gin_trgm_ops);
 CREATE INDEX on player_matches(account_id);
 CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);
