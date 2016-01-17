@@ -38,7 +38,7 @@ function getSummaries(cb)
 {
     if (!max)
     {
-        console.log('waiting for count');
+        console.log('waiting for max');
         return cb();
     }
     var random = Math.floor((Math.random()*max)); 

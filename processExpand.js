@@ -447,7 +447,7 @@ module.exports = function processCreateParsedData(entries, meta, populate)
     //strips off "item_" from strings
     function translate(input)
     {
-        if (input != null)
+        if (input !== null)
         {
             if (input.indexOf("item_") === 0)
             {

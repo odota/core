@@ -84,6 +84,7 @@
   "items": "Items built",
   "lane": "Lane based on early game position",
   "lane_efficiency": "Percentage of lane gold (creeps+passive+starting) obtained at 10 minutes",
+  "lane_efficiency_pct": "Percentage of lane gold (creeps+passive+starting) obtained at 10 minutes",
   "lhten": "Last hits at 10 minutes",
   "max_hero_hit": "Largest instance of damage on a hero",
   "ability_uses": "Skills used (Number of damage instances on enemy heroes)",

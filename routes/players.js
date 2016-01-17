@@ -248,6 +248,39 @@ module.exports = function(db, redis)
         }
     }
 
+    function fillSkill(matches, options, cb)
+    {
+        //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
+        console.time('fillskill');
+        //get skill data for matches within cache expiry (might not have skill data)
+        var recents = matches.filter(function(m)
+        {
+            return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+        });
+        var skillMap = {};
+        db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
+        {
+            return m.match_id;
+        })).asCallback(function(err, rows)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            console.log("fillskill recents: %s, results: %s", recents.length, rows.length);
+            rows.forEach(function(match)
+            {
+                skillMap[match.match_id] = match.skill;
+            });
+            matches.forEach(function(m)
+            {
+                m.skill = m.skill || skillMap[m.match_id];
+            });
+            console.timeEnd('fillskill');
+            return cb(err);
+        });
+    }
+
     function doSqlAgg(player, query, cb)
     {
         //TODO fully sql aggs
@@ -328,6 +361,7 @@ module.exports = function(db, redis)
         //options.info, the tab the player is on
         //options.queryObj, the query object to use
         //options.sql, use sql aggregation
+        //options.cache, using cache
         var orig_account_id = account_id;
         account_id = Number(account_id);
         //select player_matches with this account_id
@@ -377,6 +411,7 @@ module.exports = function(db, redis)
                         else
                         {
                             console.log("player cache hit %s", player.account_id);
+                            options.cache = true;
                             processResults(err, cache);
                         }
                     });
@@ -420,55 +455,75 @@ module.exports = function(db, redis)
                 }
                 player.aggData = cache.aggData;
                 var aggData = player.aggData;
-                if (options.info === "index" || options.info === "matches")
-                {
-                    //unpack hash into array
-                    var arr = [];
-                    for (var key in cache.aggData.matches)
-                    {
-                        arr.push(cache.aggData.matches[key]);
-                    }
-                    cache.aggData.matches = arr;
-                    //sort matches by descending match id for display
-                    cache.aggData.matches.sort(function(a, b)
-                    {
-                        return Number(b.match_id) - Number(a.match_id);
-                    });
-                }
-                if (options.info === "index" || options.info === "heroes")
-                {
-                    //convert heroes hash to array and sort
-                    if (aggData.heroes)
-                    {
-                        var heroes_arr = [];
-                        var heroes = aggData.heroes;
-                        for (var id in heroes)
-                        {
-                            var h = heroes[id];
-                            heroes_arr.push(h);
-                        }
-                        heroes_arr.sort(function(a, b)
-                        {
-                            return b.games - a.games;
-                        });
-                        player.heroes_list = heroes_arr;
-                    }
-                }
-                if (aggData.obs && options.info === "wardmap")
-                {
-                    //generally position data function is used to generate heatmap data for each player in a natch
-                    //we use it here to generate a single heatmap for aggregated counts
-                    player.obs = aggData.obs.counts;
-                    player.sen = aggData.sen.counts;
-                    var d = {
-                        "obs": true,
-                        "sen": true
-                    };
-                    generatePositionData(d, player);
-                    player.posData = [d];
-                }
                 async.parallel(
                 {
+                    unpack: function(cb)
+                    {
+                        if (options.info === "index" || options.info === "matches")
+                        {
+                            var matches = aggData.matches;
+                            //unpack hash into array
+                            var arr = [];
+                            for (var key in matches)
+                            {
+                                arr.push(matches[key]);
+                            }
+                            aggData.matches = arr;
+                            //sort matches by descending match id for display
+                            aggData.matches.sort(function(a, b)
+                            {
+                                return Number(b.match_id) - Number(a.match_id);
+                            });
+                            if (options.cache)
+                            {
+                                fillSkill(aggData.matches, options, cb);
+                            }
+                            else
+                            {
+                                cb();
+                            }
+                        }
+                        else
+                        {
+                            cb();
+                        }
+                    },
+                    others: function(cb)
+                    {
+                        if (options.info === "index" || options.info === "heroes")
+                        {
+                            //convert heroes hash to array and sort
+                            if (aggData.heroes)
+                            {
+                                var heroes_arr = [];
+                                var heroes = aggData.heroes;
+                                for (var id in heroes)
+                                {
+                                    var h = heroes[id];
+                                    heroes_arr.push(h);
+                                }
+                                heroes_arr.sort(function(a, b)
+                                {
+                                    return b.games - a.games;
+                                });
+                                player.heroes_list = heroes_arr;
+                            }
+                        }
+                        if (aggData.obs && options.info === "wardmap")
+                        {
+                            //generally position data function is used to generate heatmap data for each player in a natch
+                            //we use it here to generate a single heatmap for aggregated counts
+                            player.obs = aggData.obs.counts;
+                            player.sen = aggData.sen.counts;
+                            var d = {
+                                "obs": true,
+                                "sen": true
+                            };
+                            generatePositionData(d, player);
+                            player.posData = [d];
+                        }
+                        cb();
+                    },
                     //the array of teammates under the filter condition
                     teammate_list: function(cb)
                     {
@@ -477,45 +532,6 @@ module.exports = function(db, redis)
                             generateTeammateArrayFromHash(aggData.teammates, player, function(err, result)
                             {
                                 player.teammate_list = result;
-                                return cb(err);
-                            });
-                        }
-                        else
-                        {
-                            return cb();
-                        }
-                    },
-                    fill_skill: function(cb)
-                    {
-                        if (options.info === "index" || options.info === "matches")
-                        {
-                            //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
-                            console.time('fillskill');
-                            //get skill data for matches within cache expiry (might not have skill data)
-                            var recents = player.aggData.matches.filter(function(m)
-                            {
-                                return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS * 4;
-                            });
-                            var skillMap = {};
-                            db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
-                            {
-                                return m.match_id;
-                            })).asCallback(function(err, rows)
-                            {
-                                if (err)
-                                {
-                                    return cb(err);
-                                }
-                                console.log("fillskill recents: %s, results: %s", recents.length, rows.length);
-                                rows.forEach(function(match)
-                                {
-                                    skillMap[match.match_id] = match.skill;
-                                });
-                                player.aggData.matches.forEach(function(m)
-                                {
-                                    m.skill = m.skill || skillMap[m.match_id];
-                                });
-                                console.timeEnd('fillskill');
                                 return cb(err);
                             });
                         }

@@ -179,3 +179,5 @@ CREATE INDEX on subscriptions(account_id);
 CREATE INDEX on subscriptions(customer_id);
 CREATE INDEX on match_logs(match_id, player_slot);
 CREATE INDEX on match_logs(player_slot);
+
+CLUSTER player_matches USING player_matches_account_id_idx;

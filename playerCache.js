@@ -72,7 +72,6 @@ function readCache(account_id, options, cb)
     }
     else
     {
-        console.log("cache disabled");
         return cb();
     }
 }
