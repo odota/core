@@ -36,6 +36,7 @@ su postgres
 bash
 createuser yasp
 psql -c "ALTER USER yasp WITH PASSWORD 'yasp';"
+psql -c "CREATE EXTENSION pg_trgm;"
 #createdb yasp --owner yasp
 #cat "sql/create_tables.sql" | kubectl exec postgres-cxo7r -i -- psql postgresql://yasp:yasp@postgres/yasp
 
