@@ -9,9 +9,9 @@ That was a big and ugly day for us. We quickly shot up to 2,000+ users, and we w
 rewriting a ton of code to handle the influx of users and games.
 
 Since that storied day, YASP has grown leaps and bounds. Some YASP stats (ha):
-* 30,000+ games parsed per day, peaking to 45,000+ on weekends
-* 90,000 matches added per day
-* 26,000 current tracked users, 53,000 peak
+* 30,000+ games parsed per day, peaking at over 53,000
+* 90,000+ matches added per day
+* 26,000 currently tracked users
 * 85,000 signed in users
 * 100 million matches in our database, with 4.5+ million parsed
 * 830 donators
