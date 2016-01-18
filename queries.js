@@ -89,16 +89,46 @@ function upsert(db, table, row, conflict, cb)
             }
         });
         /*
-        var query1 = db(table).insert(row);
+        var values = Object.keys(row).map(function(key)
+        {
+            return genValue(row, key);
+        }).join(',');
         var update = Object.keys(row).map(function(key)
         {
             return util.format("%s=%s", key, "EXCLUDED." + key);
         }).join(',');
-        var query = util.format("%s on conflict(%s) do update set %s", query1, Object.keys(conflict).join(','), update);
+        var query = util.format("insert into %s(%s) VALUES (%s) on conflict(%s) do update set %s", table, Object.keys(row), values, Object.keys(conflict).join(','), update);
         require('fs').writeFileSync('output.json', query);
         db.raw(query).asCallback(cb);
         */
     });
+}
+
+function genValue(row, key)
+{
+    if (row[key] && row[key].constructor === Array)
+    {
+        return util.format("'{%s}'", row[key].map(function(e)
+        {
+            return JSON.stringify(JSON.stringify(e));
+        }).join(','));
+    }
+    else if (row[key] && typeof(row[key]) === "object")
+    {
+        return util.format("'%s'", JSON.stringify(row[key]));
+    }
+    else if (typeof(row[key]) === "string")
+    {
+        return util.format("'%s'", row[key]);
+    }
+    else if (row[key] === null)
+    {
+        return "NULL";
+    }
+    else
+    {
+        return row[key];
+    }
 }
 
 function insertMatch(db, redis, queue, match, options, cb)
@@ -168,7 +198,7 @@ function insertMatch(db, redis, queue, match, options, cb)
     function insertPlayerMatchesTable(cb)
     {
         //we can skip this if we have no players (skill case)
-        async.each(players || [], function(pm, cb)
+        async.eachSeries(players || [], function(pm, cb)
         {
             pm.match_id = match.match_id;
             upsert(db, 'player_matches', pm,
