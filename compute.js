@@ -55,7 +55,7 @@ function computePlayerMatchData(pm)
     if (pm.kills_log && self_hero)
     {
         //remove self kills
-        pm.kills_log = pm.kills_log.filter(function (k)
+        pm.kills_log = pm.kills_log.filter(function(k)
         {
             return k.key !== self_hero.name;
         });
@@ -71,6 +71,19 @@ function computePlayerMatchData(pm)
         pm.sentry_kills = 0;
         pm.roshan_kills = 0;
         pm.necronomicon_kills = 0;
+        pm.ancient_kills = 0;
+        var ancients = {
+            npc_dota_neutral_black_drake: 1,
+            npc_dota_neutral_black_dragon: 1,
+            npc_dota_neutral_blue_dragonspawn_sorcerer: 1,
+            npc_dota_neutral_blue_dragonspawn_overseer: 1,
+            npc_dota_neutral_granite_golem: 1,
+            npc_dota_neutral_elder_jungle_stalker: 1,
+            npc_dota_neutral_rock_golem: 1,
+            npc_dota_neutral_small_thunder_lizard: 1,
+            npc_dota_neutral_jungle_stalker: 1,
+            npc_dota_neutral_big_thunder_lizard: 1,
+        };
         for (var key in pm.killed)
         {
             if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1)
@@ -95,6 +108,10 @@ function computePlayerMatchData(pm)
             if (key.indexOf("npc_dota_neutral") === 0)
             {
                 pm.neutral_kills += pm.killed[key];
+            }
+            if ((key in ancients))
+            {
+                pm.ancient_kills += pm.killed[key];
             }
             if (key.indexOf("_tower") !== -1)
             {
@@ -156,27 +173,27 @@ function computePlayerMatchData(pm)
         pm.lane = mode(lanes);
         var radiant = pm.isRadiant;
         var lane_roles = {
-            "1": function ()
+            "1": function()
             {
                 //bot
                 return radiant ? 1 : 3;
             },
-            "2": function ()
+            "2": function()
             {
                 //mid
                 return 2;
             },
-            "3": function ()
+            "3": function()
             {
                 //top
                 return radiant ? 3 : 1;
             },
-            "4": function ()
+            "4": function()
             {
                 //rjung
                 return 4;
             },
-            "5": function ()
+            "5": function()
             {
                 //djung
                 return 4;
@@ -188,7 +205,7 @@ function computePlayerMatchData(pm)
     if (pm.purchase_log)
     {
         //remove ward dispenser and recipes
-        pm.purchase_log = pm.purchase_log.filter(function (purchase)
+        pm.purchase_log = pm.purchase_log.filter(function(purchase)
         {
             return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
         });
@@ -241,7 +258,8 @@ function computePlayerMatchData(pm)
     {
         pm.pings = pm.pings[0];
     }
-    if (pm.life_state){
+    if (pm.life_state)
+    {
         pm.life_state_dead = (pm.life_state[1] || 0) + (pm.life_state[2] || 0);
     }
 }
@@ -256,7 +274,7 @@ function count_words(player_match, player_filter)
     // extract the message strings from the message objects
     // extract individual words from the message strings
     var chat_words = [];
-    messages.forEach(function (message)
+    messages.forEach(function(message)
     {
         // if there is no player_filter, or if the passed player's player_slot matches this message's parseSlot converted to player_slot, log it
         var messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
@@ -290,11 +308,11 @@ function count_words(player_match, player_filter)
 function renderMatch(m)
 {
     //do render-only processing (not needed for aggregation, only for match display)
-    m.players.forEach(function (player_match, i)
+    m.players.forEach(function(player_match, i)
     {
         //converts hashes to arrays and sorts them
         var targets = ["ability_uses", "item_uses", "damage_inflictor"];
-        targets.forEach(function (target)
+        targets.forEach(function(target)
         {
             if (player_match[target])
             {
@@ -319,7 +337,7 @@ function renderMatch(m)
                     }
                     t.push(result);
                 }
-                t.sort(function (a, b)
+                t.sort(function(a, b)
                 {
                     return b.val - a.val;
                 });
@@ -330,9 +348,9 @@ function renderMatch(m)
         if (player_match.times)
         {
             var intervals = ["lh_t", "gold_t", "xp_t", "times"];
-            intervals.forEach(function (key)
+            intervals.forEach(function(key)
             {
-                player_match[key] = player_match[key].filter(function (el, i)
+                player_match[key] = player_match[key].filter(function(el, i)
                 {
                     return player_match.times[i] >= 0;
                 });
@@ -371,7 +389,7 @@ function renderMatch(m)
         }
     });
     console.time("generating player analysis");
-    m.players.forEach(function (player_match, i)
+    m.players.forEach(function(player_match, i)
     {
         player_match.analysis = generatePlayerAnalysis(m, player_match);
     });
@@ -379,7 +397,7 @@ function renderMatch(m)
     if (m.chat)
     {
         //make a list of messages and join them all together for sentiment analysis
-        var chat_words = m.chat.map(function (message)
+        var chat_words = m.chat.map(function(message)
         {
             return message.key;
         }).join(' ');
@@ -415,14 +433,14 @@ function renderMatch(m)
         m.graphData = generateGraphData(m);
     }
     //create heatmap data
-    m.posData = m.players.map(function (p)
+    m.posData = m.players.map(function(p)
     {
         return p.posData;
     });
     //process objectives
     if (m.objectives)
     {
-        m.objectives.forEach(function (entry)
+        m.objectives.forEach(function(entry)
         {
             entry.objective = constants.objectives[entry.subtype] || entry.subtype;
             var p = m.players[entry.slot];
@@ -436,7 +454,7 @@ function renderMatch(m)
     //process teamfight data
     if (m.teamfights)
     {
-        m.teamfights.forEach(function (tf)
+        m.teamfights.forEach(function(tf)
         {
             tf.posData = [];
             tf.radiant_gold_delta = 0;
@@ -445,7 +463,7 @@ function renderMatch(m)
             tf.radiant_deaths = 0;
             tf.dire_participation = 0;
             tf.dire_deaths = 0;
-            tf.players.forEach(function (p)
+            tf.players.forEach(function(p)
             {
                 //lookup starting, ending level
                 p.level_start = getLevelFromXp(p.xp_start);
@@ -464,7 +482,7 @@ function renderMatch(m)
                 }
             });
             //add player's hero_id to each teamfight participant
-            m.players.forEach(function (p, i)
+            m.players.forEach(function(p, i)
             {
                 var tfplayer = tf.players[p.player_slot % (128 - 5)];
                 tfplayer.hero_id = p.hero_id;
@@ -500,7 +518,7 @@ function renderMatch(m)
                 }, tfplayer);
                 //console.log(player);
                 //add player hero id to each death, push into teamfight death position array
-                tfplayer.posData.deaths_pos.forEach(function (pt)
+                tfplayer.posData.deaths_pos.forEach(function(pt)
                 {
                     pt.hero_id = tfplayer.hero_id;
                     tf.posData.push(pt);
@@ -519,7 +537,7 @@ function generatePlayerAnalysis(match, pm)
     var advice = {};
     var checks = {
         //EFF@10
-        eff: function (m, pm)
+        eff: function(m, pm)
         {
             var eff = pm.lane_efficiency ? pm.lane_efficiency : undefined;
             return {
@@ -531,14 +549,14 @@ function generatePlayerAnalysis(match, pm)
                 category: "warning",
                 icon: "fa-usd",
                 valid: eff !== undefined,
-                score: function (raw)
+                score: function(raw)
                 {
                     return raw;
                 },
             };
         },
         //farming drought (low gold earned delta over an interval)
-        farm_drought: function (m, pm)
+        farm_drought: function(m, pm)
         {
             var delta = Number.MAX_VALUE;
             var interval = 5;
@@ -565,14 +583,14 @@ function generatePlayerAnalysis(match, pm)
                 category: "warning",
                 icon: "fa-line-chart",
                 valid: Boolean(start),
-                score: function (raw)
+                score: function(raw)
                 {
                     return raw;
                 }
             };
         },
         //Flaming in all chat
-        flaming: function (m, pm)
+        flaming: function(m, pm)
         {
             var flames = 0;
             var words = [
@@ -583,7 +601,7 @@ function generatePlayerAnalysis(match, pm)
             {
                 for (var key in pm.my_word_counts)
                 {
-                    if (words.some(function (w)
+                    if (words.some(function(w)
                         {
                             return key.indexOf(w) !== -1;
                         }))
@@ -599,7 +617,7 @@ function generatePlayerAnalysis(match, pm)
                 category: "danger",
                 icon: "fa-fire",
                 valid: Boolean(pm.my_word_counts),
-                score: function (raw)
+                score: function(raw)
                 {
                     return 5 - raw;
                 },
@@ -607,7 +625,7 @@ function generatePlayerAnalysis(match, pm)
             };
         },
         //Courier feeding
-        courier_feeding: function (m, pm)
+        courier_feeding: function(m, pm)
         {
             var couriers = pm.purchase && pm.purchase.courier ? Math.max(pm.purchase.courier - 2, 0) : 0;
             return {
@@ -617,7 +635,7 @@ function generatePlayerAnalysis(match, pm)
                 category: "danger",
                 icon: "fa-cutlery",
                 valid: Boolean(pm.purchase),
-                score: function (raw)
+                score: function(raw)
                 {
                     return raw ? 0 : 1;
                 },
@@ -625,7 +643,7 @@ function generatePlayerAnalysis(match, pm)
             };
         },
         //low ability accuracy (custom list of skillshots)
-        skillshot: function (m, pm)
+        skillshot: function(m, pm)
         {
             var acc;
             if (pm.ability_uses && pm.hero_hits)
@@ -647,7 +665,7 @@ function generatePlayerAnalysis(match, pm)
                 category: "info",
                 icon: "fa-bullseye",
                 valid: acc !== undefined,
-                score: function (raw)
+                score: function(raw)
                 {
                     return raw || 0;
                 },
@@ -655,7 +673,7 @@ function generatePlayerAnalysis(match, pm)
             };
         },
         //courier buy delay (3 minute flying)
-        late_courier: function (m, pm)
+        late_courier: function(m, pm)
         {
             var flying_available = 180;
             var time;
@@ -671,7 +689,7 @@ function generatePlayerAnalysis(match, pm)
                 category: "info",
                 icon: "fa-level-up",
                 valid: time !== undefined,
-                score: function (raw)
+                score: function(raw)
                 {
                     return 120 - raw;
                 },
@@ -679,7 +697,7 @@ function generatePlayerAnalysis(match, pm)
             };
         },
         //low obs wards/min
-        wards: function (m, pm)
+        wards: function(m, pm)
         {
             var ward_cooldown = 60 * 7;
             var wards = pm.obs_log ? pm.obs_log.length : 0;
@@ -695,7 +713,7 @@ function generatePlayerAnalysis(match, pm)
                 category: "info",
                 icon: "fa-eye",
                 valid: isSupport(pm),
-                score: function (raw)
+                score: function(raw)
                 {
                     return raw / max_placed;
                 },
@@ -703,7 +721,7 @@ function generatePlayerAnalysis(match, pm)
             };
         },
         //roshan opportunities (specific heroes)
-        roshan: function (m, pm)
+        roshan: function(m, pm)
         {
             var rosh_taken = 0;
             if (isRoshHero(pm) && pm.killed)
@@ -717,7 +735,7 @@ function generatePlayerAnalysis(match, pm)
                 category: "primary",
                 icon: "fa-shield",
                 valid: isRoshHero(pm),
-                score: function (raw)
+                score: function(raw)
                 {
                     return raw;
                 },
@@ -725,7 +743,7 @@ function generatePlayerAnalysis(match, pm)
             };
         },
         //rune control (mid player)
-        rune_control: function (m, pm)
+        rune_control: function(m, pm)
         {
             var runes;
             if (pm.runes)
@@ -745,7 +763,7 @@ function generatePlayerAnalysis(match, pm)
                 category: "primary",
                 icon: "fa-battery-4",
                 valid: runes !== undefined && pm.lane_role === 2,
-                score: function (raw)
+                score: function(raw)
                 {
                     return raw / target;
                 },
@@ -753,7 +771,7 @@ function generatePlayerAnalysis(match, pm)
             };
         },
         //unused item actives (multiple results?)
-        unused_item: function (m, pm)
+        unused_item: function(m, pm)
         {
             var result = [];
             if (pm.purchase)
@@ -773,7 +791,7 @@ function generatePlayerAnalysis(match, pm)
                 var total = 0;
                 for (var key2 in pm.item_uses)
                 {
-                    if (key === key2 || constants.item_groups.some(function (g)
+                    if (key === key2 || constants.item_groups.some(function(g)
                         {
                             return (key in g) && (key2 in g);
                         }))
@@ -792,7 +810,7 @@ function generatePlayerAnalysis(match, pm)
                 category: "success",
                 icon: "fa-bolt",
                 valid: pm.purchase,
-                score: function (raw)
+                score: function(raw)
                 {
                     return 5 - raw;
                 },
@@ -854,7 +872,7 @@ function generateGraphData(match)
         xp: [time],
         lh: [time]
     };
-    match.players.forEach(function (p, i)
+    match.players.forEach(function(p, i)
     {
         var hero = constants.heroes[p.hero_id] ||
         {};
@@ -874,11 +892,11 @@ function generateIncomeData(match)
     var categories = [];
     var imgs = [];
     var orderedPlayers = match.players.slice(0);
-    orderedPlayers.sort(function (a, b)
+    orderedPlayers.sort(function(a, b)
     {
         return b.gold_per_min - a.gold_per_min;
     });
-    orderedPlayers.forEach(function (player)
+    orderedPlayers.forEach(function(player)
     {
         var hero = constants.heroes[player.hero_id] ||
         {};
@@ -890,7 +908,7 @@ function generateIncomeData(match)
         var reason = constants.gold_reasons[key].name;
         gold_reasons.push(reason);
         var col = [reason];
-        orderedPlayers.forEach(function (player)
+        orderedPlayers.forEach(function(player)
         {
             var g = player.gold_reasons;
             col.push(g ? g[key] : 0);
@@ -908,7 +926,7 @@ function generateIncomeData(match)
 function generateTreemapData(match)
 {
     var data = [];
-    match.players.forEach(function (player)
+    match.players.forEach(function(player)
     {
         var hero = constants.heroes[player.hero_id] ||
         {};
@@ -922,7 +940,7 @@ function generateTreemapData(match)
     for (var key in constants.gold_reasons)
     {
         var reason = constants.gold_reasons[key].name;
-        match.players.forEach(function (player)
+        match.players.forEach(function(player)
         {
             var g = player.gold_reasons;
             data.push(
