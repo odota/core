@@ -88,7 +88,11 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             e.key = computeIllusionString(e.targetname, e.targetillusion);
             //count kill by this unit
             e.type = "killed";
-            expand(e);
+            //don't count denies/expires
+            if (e.attackername !== e.key)
+            {
+                expand(e);
+            }
             //killed unit was a real hero
             if (e.targethero && !e.targetillusion)
             {

@@ -97,6 +97,16 @@ module.exports = function runParse(match, cb)
     {
         switch (e.type)
         {
+            case 'epilogue':
+                //var dota = JSON.parse(e.key).gameInfo_.dota_;
+                //container.match_id = dota.matchId_;
+                //container.game_mode = dota.gameMode_;
+                //container.radiant_win = dota.gameWinner_ === 2;
+                //following needs some extraction/transformation
+                //container.picks_bans = dota.picksBans_; 
+                //require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
+                //TODO hero_id from interval?
+                break;
             case 'interval':
                 //don't need to store interval objects (broken into subtypes)
                 break;

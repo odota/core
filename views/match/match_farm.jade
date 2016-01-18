@@ -16,6 +16,7 @@ block match_content
               th: abbr(title=tooltips.farm_couriers) Couriers
               th: abbr(title=tooltips.farm_roshan) Roshan
               th: abbr(title=tooltips.farm_necronomicon) Necronomicon
+              th Other
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             +hero_td(player)
@@ -27,6 +28,9 @@ block match_content
             td.rankable #{player.courier_kills || "-"}
             td.rankable #{player.roshan_kills || "-"}
             td.rankable #{player.necronomicon_kills || "-"}
+            td.small
+              each val, key in player.specific
+                div #{val} #{key}
   .row
     .col-md-12
       +data_table({id:"last_hits", summable:true, heading:"Last Hits", rankable: true})

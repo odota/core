@@ -1110,19 +1110,18 @@
       ]
     },
     "India": {
-      "code": "del",
+      "code": "bom",
       "region": "16",
       "matchgroup": "16",
-      "latitude": "25.16517",
-      "longitude": "77.2089",
+      "latitude": "18.58",
+      "longitude": "72.49",
       "display_name": "#dota_region_india",
       "division": "se_asia",
       "alert_at_capacity": "0",
       "alert_at_capacity_s2": "0",
       "proxy_allow": "leagueonly",
       "ip_range": [
-        "180.149.41.107/32",
-        "180.149.41.108/32"
+        "45.113.191.128/27"
       ],
       "clusters": [
         "261"
