@@ -8,6 +8,8 @@ var processTeamfights = require('./processTeamfights');
 var processReduce = require('./processReduce');
 var processMetadata = require('./processMetadata');
 var processExpand = require('./processExpand');
+var stream = require('stream');
+var redis = require('redis');
 module.exports = function runParse(match, cb)
 {
     var url = match.url;
@@ -16,57 +18,77 @@ module.exports = function runParse(match, cb)
     var bz;
     var parser;
     var entries = [];
-    inStream = progress(request(
+    createInputStream();
+
+    function createInputStream()
     {
-        url: url,
-        encoding: null,
-        timeout: 30000
-    })).on('progress', function(state)
-    {
-        console.log(JSON.stringify(
+        if (match.replay_blob)
         {
-            url: url,
-            state: state
-        }));
-    }).on('response', function(response)
-    {
-        if (response.statusCode === 200)
-        {
-            //TODO replace domain with something that can handle exceptions with context
-            parser = spawn("java", ["-jar",
-                    "-Xmx64m",
-                    "java_parser/target/stats-0.1.0.jar"
-                ],
+            inStream = new stream.PassThrough();
+            redis.get(new Buffer(match.replay_blob), function(err, buf)
             {
-                //we may want to ignore stderr so the child doesn't stay open
-                stdio: ['pipe', 'pipe', 'pipe'],
-                encoding: 'utf8'
+                if (err){
+                    return cb(err);
+                }
+                inStream.end(buf);
+                forwardInput(inStream);
             });
-            parseStream = ndjson.parse();
-            if (url.slice(-3) === "bz2")
-            {
-                bz = spawn("bunzip2");
-                inStream.pipe(bz.stdin);
-                bz.stdout.pipe(parser.stdin);
-            }
-            else
-            {
-                inStream.pipe(parser.stdin);
-            }
-            parser.stdout.pipe(parseStream);
-            parser.stderr.on('data', function(data)
-            {
-                console.log(data.toString());
-            });
-            parseStream.on('data', handleStream);
-            parseStream.on('end', exit);
-            parseStream.on('error', exit);
         }
         else
         {
-            exit(response.statusCode.toString());
+            inStream = progress(request(
+            {
+                url: url,
+                encoding: null,
+                timeout: 30000
+            })).on('progress', function(state)
+            {
+                console.log(JSON.stringify(
+                {
+                    url: url,
+                    state: state
+                }));
+            }).on('response', function(response)
+            {
+                if (response.statusCode === 200)
+                {
+                    forwardInput(inStream);
+                }
+                else
+                {
+                    exit(response.statusCode.toString());
+                }
+            }).on('error', exit);
         }
-    }).on('error', exit);
+    }
+
+    function forwardInput(inStream)
+    {
+        parser = spawn("java", ["-jar",
+                    "-Xmx64m",
+                    "java_parser/target/stats-0.1.0.jar"
+                ],
+        {
+            //we may want to ignore stderr so the child doesn't stay open
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
+        parseStream = ndjson.parse();
+        bz = url.slice(-3) === "bz2" ? spawn("bunzip2") : stream.PassThrough();
+        inStream.pipe(bz.stdin);
+        bz.stdout.pipe(parser.stdin);
+        parser.stdout.pipe(parseStream);
+        parser.stderr.on('data', function printStdErr(data)
+        {
+            console.log(data.toString());
+        });
+        parseStream.on('data', function handleStream(e)
+        {
+            entries.push(e);
+        });
+        parseStream.on('end', exit);
+        parseStream.on('error', exit);
+    }
 
     function exit(err)
     {
@@ -86,11 +108,6 @@ module.exports = function runParse(match, cb)
             console.timeEnd(message);
         }
         return cb(err, parsed_data);
-    }
-    //callback when the JSON stream encounters a JSON object (event)
-    function handleStream(e)
-    {
-        entries.push(e);
     }
 
     function populate(e, container)
