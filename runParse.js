@@ -9,7 +9,6 @@ var processReduce = require('./processReduce');
 var processMetadata = require('./processMetadata');
 var processExpand = require('./processExpand');
 var stream = require('stream');
-var redis = require('redis');
 module.exports = function runParse(match, cb)
 {
     var url = match.url;
@@ -24,10 +23,12 @@ module.exports = function runParse(match, cb)
     {
         if (match.replay_blob)
         {
+            var redis = require('redis');
             inStream = new stream.PassThrough();
             redis.get(new Buffer(match.replay_blob), function(err, buf)
             {
-                if (err){
+                if (err)
+                {
                     return cb(err);
                 }
                 inStream.end(buf);
@@ -74,7 +75,18 @@ module.exports = function runParse(match, cb)
             encoding: 'utf8'
         });
         parseStream = ndjson.parse();
-        bz = url.slice(-3) === "bz2" ? spawn("bunzip2") : stream.PassThrough();
+        if (url.slice(-3) === "bz2")
+        {
+            bz = spawn("bunzip2");
+        }
+        else
+        {
+            var str = stream.PassThrough();
+            bz = {
+                stdin: str,
+                stdout: str
+            };
+        }
         inStream.pipe(bz.stdin);
         bz.stdout.pipe(parser.stdin);
         parser.stdout.pipe(parseStream);
