@@ -1,6 +1,4 @@
 var config = require('./config');
-var rc_public = config.RECAPTCHA_PUBLIC_KEY;
-var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var utility = require('./utility');
 var request = require('request');
 var queueReq = utility.queueReq;
@@ -34,6 +32,7 @@ var players = require('./routes/players');
 var api = require('./routes/api');
 var donate = require('./routes/donate');
 var mmstats = require('./routes/mmstats');
+var requestRouter = require('./routes/request');
 var querystring = require('querystring');
 var util = require('util');
 //PASSPORT config
@@ -232,13 +231,6 @@ app.route('/healthz').get(function(req, res)
 {
     res.send("ok");
 });
-app.route('/request').get(function(req, res)
-{
-    res.render('request',
-    {
-        rc_public: rc_public
-    });
-});
 app.route('/status').get(function(req, res, next)
 {
     status(db, redis, queue, function(err, result)
@@ -324,148 +316,7 @@ app.use('/distributions', function(req, res, next)
 app.use('/api', api);
 app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));
-app.route('/request_job').post(function(req, res, next)
-{
-    request.post("https://www.google.com/recaptcha/api/siteverify",
-    {
-        form:
-        {
-            secret: rc_secret,
-            response: req.body.response
-        }
-    }, function(err, resp, body)
-    {
-        if (err)
-        {
-            return next(err);
-        }
-        try
-        {
-            body = JSON.parse(body);
-        }
-        catch (err)
-        {
-            return res.render(
-            {
-                error: err
-            });
-        }
-        var match_id = req.body.match_id;
-        match_id = Number(match_id);
-        if (!body.success && config.ENABLE_RECAPTCHA)
-        {
-            console.log('failed recaptcha');
-            res.json(
-            {
-                error: "Recaptcha Failed!"
-            });
-        }
-        else if (false)
-        {
-            //handle upload, upload to GCS, place public url in match.url, then queue request as normal
-            var multer = require('multer')(
-            {
-                inMemory: true,
-                fileSize: 100 * 1024 * 1024, // no larger than 100mb
-                rename: function(fieldname, filename)
-                {
-                    // generate a unique filename
-                    return filename.replace(/\W+/g, '-').toLowerCase() + Date.now();
-                }
-            });
-            var gcloud = require('gcloud');
-            // This is the id of your project in the Google Developers Console.
-            var gcloudConfig = {
-                projectId: 'your-project-id'
-            };
-            // Typically, you will create a bucket with the same name as your project ID.
-            var cloudStorageBucket = 'your-cloud-storage-bucket';
-            var storage = gcloud.storage(gcloudConfig);
-            var bucket = storage.bucket(cloudStorageBucket);
-
-            function getPublicUrl(filename)
-            {
-                return 'https://storage.googleapis.com/' + cloudStorageBucket + '/' + filename;
-            }
-
-            function sendUploadToGCS(req, res, next)
-            {
-                if (!req.file)
-                {
-                    return next();
-                }
-                var gcsname = Date.now() + req.file.originalname;
-                var file = bucket.file(gcsname);
-                var stream = file.createWriteStream();
-                stream.on('error', function(err)
-                {
-                    req.file.cloudStorageError = err;
-                    next(err);
-                });
-                stream.on('finish', function()
-                {
-                    req.file.cloudStorageObject = gcsname;
-                    req.file.cloudStoragePublicUrl = getPublicUrl(gcsname);
-                    next();
-                });
-                stream.end(req.file.buffer);
-            }
-        }
-        else if (!match_id)
-        {
-            console.log("invalid match id");
-            res.json(
-            {
-                error: "Invalid Match ID!"
-            });
-        }
-        else
-        {
-            queueReq(queue, "request",
-            {
-                match_id: match_id
-            },
-            {
-                attempts: 1
-            }, function(err, job)
-            {
-                res.json(
-                {
-                    error: err,
-                    job:
-                    {
-                        jobId: job.jobId,
-                        data: job.data
-                    }
-                });
-            });
-        }
-    });
-}).get(function(req, res, next)
-{
-    queue.request.getJob(req.query.id).then(function(job)
-    {
-        if (job)
-        {
-            job.getState().then(function(state)
-            {
-                return res.json(
-                {
-                    jobId: job.jobId,
-                    data: job.data,
-                    state: state
-                });
-            }).catch(next);
-        }
-        else
-        {
-            res.json(
-            {
-                state: "failed"
-            });
-        }
-    }).catch(next);
-});
+app.use('/', requestRouter(db, redis));
 app.use(function(req, res, next)
 {
     var err = new Error("Not Found");

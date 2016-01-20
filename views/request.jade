@@ -24,6 +24,11 @@ block content
           .progress-bar.progress-bar-info.progress-bar-striped.active#bar
         #messages
 
+  <form id="file-form" action="/request_job" method="POST">
+  <input type="file" id="file-select" name="replay_blob" />
+  <button type="submit" id="upload-button">Upload</button>
+  </form>
+
 append footer_assets
   script(src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit",async,defer)
   //script(src="/socket.io/socket.io.js")
@@ -39,7 +44,6 @@ append footer_assets
       $("#loading").css("display", "block");
       var field = document.getElementById("match_id");
       match_id = field.value;
-      //field.value = "";    
       $.ajax({
       method: "POST",
       url: "/request_job",
@@ -91,44 +95,46 @@ append footer_assets
             }
           });
       }
-  //old socket.io code
-  //-
-    script.
-      /*
-      function submit(response){
-        var field = document.getElementById("match_id");
-        match_id = field.value;
-        field.value = "";
-        if (!socket){
-          //set up the handlers
-          socket = io.connect();
-          socket.on('err', function(data){
-            $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
-            $("#loading").css("display", "none");
-            document.getElementById("bar").style.width = "0%";
-            $("#request").show('slow');
-            grecaptcha.reset();
-          });
-          socket.on('log', function(data){
-            $("#messages").append("<div class='alert alert-info' role='alert'>" + data + "</div>");
-            $("#loading").css("display", "block");
-          });
-          socket.on('prog', function(prog){
-            document.getElementById("bar").style.width = prog + "%";
-            document.getElementById("bar").innerHTML = prog + "%";
-            $("#loading").css("display", "block");
-          });
-          socket.on('complete', function(){
-            // redir to match page (?)
-            window.location.assign("/matches/"+match_id);
-          });
-          }
-          socket.emit('request', {
-            match_id: match_id,
-            response: response
-          });
-          $("#request").hide('slow');
-          $("#messages").empty();
-          $("#progContainer").show('slow');
+      
+    var form = document.getElementById('file-form');
+    var fileSelect = document.getElementById('file-select');
+    var uploadButton = document.getElementById('upload-button');
+    form.onsubmit = function(event) {
+      event.preventDefault();
+    
+      // Update button text.
+      uploadButton.innerHTML = 'Uploading...';
+      // The rest of the code will go here...
+      // Get the selected files from the input.
+      var file = fileSelect.files[0];
+      console.log(file);
+      // Create a new FormData object.
+      var formData = new FormData();
+      formData.append('replay_blob', file, file.name);
+      console.log(formData);
+      // Set up the request.
+      var xhr = new XMLHttpRequest();
+      xhr.upload.addEventListener("progress", updateProgress);
+      // Open the connection.
+      xhr.open('POST', '/request_job', true);
+      // Set up a handler for when the request finishes.
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          // File(s) uploaded.
+          uploadButton.innerHTML = 'Upload';
+        } else {
+          alert('An error occurred!');
+        }
+      };
+      // Send the Data.
+      xhr.send(formData);
+      //xhr.send(file);
+      function updateProgress (oEvent) {
+        if (oEvent.lengthComputable) {
+          var percentComplete = oEvent.loaded / oEvent.total;
+          console.log(percentComplete);
+        } else {
+          // Unable to compute progress information since the total size is unknown
+        }
       }
-      */
+    }

@@ -48,7 +48,6 @@
     "flag-icon-css": "^1.0.0",
     "font-awesome": "^4.5.0",
     "foreman": "~1.4.1",
-    "gcloud": "^0.27.0",
     "heatmap.js": "~2.0.1",
     "http-proxy": "^1.12.0",
     "jade": "~1.11.0",
