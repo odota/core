@@ -23,7 +23,6 @@ module.exports = function(db, redis)
     });
     router.route('/request_job').post(multer.single("replay_blob"), function(req, res, next)
     {
-        console.log(req.body, req.file);
         request.post("https://www.google.com/recaptcha/api/siteverify",
         {
             form:

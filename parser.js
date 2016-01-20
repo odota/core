@@ -25,6 +25,10 @@ var moment = require('moment');
 var queries = require('./queries');
 var insertMatch = queries.insertMatch;
 var async = require('async');
+var compute = require('./compute');
+var renderMatch = compute.renderMatch;
+var computeMatchData = compute.computeMatchData;
+var computePlayerMatchData = compute.computePlayerMatchData;
 queue.parse.process(function(job, cb)
 {
     var match = job.data.payload;
@@ -45,7 +49,7 @@ queue.parse.process(function(job, cb)
                 {
                     return cb(err);
                 }
-                //extend match object with parsed data, keep existing data if key conflict (match_id)
+                //extend match object with parsed data, keep existing data if key conflict
                 //match.players was deleted earlier during insertion of api data
                 for (var key in parsed_data)
                 {
@@ -57,8 +61,15 @@ queue.parse.process(function(job, cb)
         },
         "insertMatch": match.replay_blob_key ? function(cb)
         {
+            delete match.replay_blob;
             //save uploaded replay parse in redis
-            redis.setex('upload_parse:' + match.replay_blob_key, 60 * 60 * 24 * 7, match, cb);
+            match.players.forEach(function(p)
+            {
+                computePlayerMatchData(p);
+            });
+            computeMatchData(match);
+            renderMatch(match);
+            redis.setex('match:' + match.match_id, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
         } : function(cb)
         {
             //fs.writeFileSync('output.json', JSON.stringify(match));
@@ -84,7 +95,7 @@ queue.parse.process(function(job, cb)
 
 function getReplayBlob(redis, match, cb)
 {
-    redis.get(new Buffer('upload_blob' + match.replay_blob_key), function(err, result)
+    redis.get(new Buffer('upload_blob:' + match.replay_blob_key), function(err, result)
     {
         if (err)
         {

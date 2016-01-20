@@ -67,7 +67,7 @@ module.exports = function runParse(match, cb)
             encoding: 'utf8'
         });
         parseStream = ndjson.parse();
-        if (url.slice(-3) === "bz2")
+        if (url && url.slice(-3) === "bz2")
         {
             bz = spawn("bunzip2");
         }
@@ -107,6 +107,7 @@ module.exports = function runParse(match, cb)
             var ap = processAllPlayers(res.int_data);
             parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
             parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
+            parsed_data.duration = meta.game_end - meta.game_zero;
             //processMultiKillStreaks();
             //processReduce(res.expanded);
             console.timeEnd(message);
@@ -119,17 +120,16 @@ module.exports = function runParse(match, cb)
         switch (e.type)
         {
             case 'epilogue':
-                //var dota = JSON.parse(e.key).gameInfo_.dota_;
+                var dota = JSON.parse(e.key).gameInfo_.dota_;
                 //container.match_id = dota.matchId_;
-                //container.game_mode = dota.gameMode_;
-                //container.radiant_win = dota.gameWinner_ === 2;
+                container.game_mode = dota.gameMode_;
+                container.radiant_win = dota.gameWinner_ === 2;
                 //following needs some extraction/transformation
                 //container.picks_bans = dota.picksBans_; 
                 //require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
-                //TODO hero_id from interval?
                 break;
             case 'interval':
-                //don't need to store interval objects (broken into subtypes)
+                container.players[e.slot].hero_id = e.hero_id;
                 break;
             case 'player_slot':
                 container.players[e.key].player_slot = e.value;
