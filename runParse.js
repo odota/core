@@ -23,17 +23,9 @@ module.exports = function runParse(match, cb)
     {
         if (match.replay_blob)
         {
-            var redis = require('redis');
             inStream = new stream.PassThrough();
-            redis.get(new Buffer(match.replay_blob), function(err, buf)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                inStream.end(buf);
-                forwardInput(inStream);
-            });
+            inStream.end(match.replay_blob);
+            forwardInput(inStream);
         }
         else
         {
