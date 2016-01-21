@@ -1,140 +1,52 @@
 extend layout
 
 block content
-  .row
-    .col-md-8
+  .row.text-center
+    .col-md-12
       h1 Request a Parse
-      h3
-        small We can only parse replays of public matches within the last 7 days.
-      ol
-        li Enter a match ID.
-        li Prove your humanity.
-        li We'll try to parse it for you!
+      img.img-responsive(src='../public/images/curlycue.png', style='margin: auto;')
+      br
+      br
       div#request
         .form-group
-          input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
+          .row
+            .col-md-5
+              input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
+              ul.small
+                li Only works for public matches within the last 7 days
+            .col-md-2
+              p.lead OR
+            .col-md-5
+              span.btn.btn-block.btn-primary.btn-file#file-select-button
+                span#file-select-text Select Replay File
+                input#file-select.form-control(type='file' name='replay_blob')
+              ul.small
+                li Uploads have incomplete data and eventually expire
+                li Uploads do not count toward player statistics
         .form-group
           if config.ENABLE_RECAPTCHA
-            .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="submit")
+            .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="requestSubmit")
           else
-            button.btn.btn-default(onclick="submit()") Request Parse
+            button.btn.btn-default#submit(onclick="requestSubmit()") Request Parse
       #progContainer(style="display:none")
         img(src="/public/images/loading.gif", style="display:none")#loading
-        .progress(style="display:none;")
-          .progress-bar.progress-bar-info.progress-bar-striped.active#bar
+        .progress
+          .progress-bar.progress-bar-info.progress-bar-striped.active#upload-bar
+        .progress
+          .progress-bar.progress-bar-success.progress-bar-striped.active#parsed-bar
         #messages
-
-  <form id="file-form" action="/request_job" method="POST">
-  <input type="file" id="file-select" name="replay_blob" />
-  <button type="submit" id="upload-button">Upload</button>
-  </form>
 
 append footer_assets
   script(src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit",async,defer)
   //script(src="/socket.io/socket.io.js")
   script.
-    var match_id;
-    var socket;
-    var checker;
-    var onloadCallback = function() {
-        grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
+    requestForm(); 
+    var onloadCallback = function()
+    {
+        grecaptcha.render('recaptcha',
+        {
+            sitekey: $('#recaptcha').attr('data-sitekey'),
+            theme: "dark",
+            callback: submit
+        });
     };
-    document.getElementById("match_id").value = window.location.hash.slice(1);
-    function submit(response){
-      $("#loading").css("display", "block");
-      var field = document.getElementById("match_id");
-      match_id = field.value;
-      $.ajax({
-      method: "POST",
-      url: "/request_job",
-      data: { match_id: match_id, response:response }
-      })
-      .done(function( msg ) {
-        console.log(msg);
-        if (msg.error){
-          showError(msg.error);
-        }
-        else{
-        checker = setInterval(function(){poll(msg.job.jobId)}, 2000);
-      }
-      });
-      $("#request").hide('slow');
-      $("#messages").empty();
-      $("#progContainer").show('slow');
-    }
-    function showError(data){
-          $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
-          $("#loading").css("display", "none");
-          document.getElementById("bar").style.width = "0%";
-          $("#request").show('slow');
-          console.log("clearing interval %s", checker);
-          clearInterval(checker);
-          grecaptcha.reset();
-    }
-    function poll(job_id){
-          $.ajax({
-            url: "/request_job?id="+job_id
-          })
-          .done(function(msg) {
-          console.log(msg);
-            if (msg.state==="completed"){
-            //job done
-            window.location.assign("/matches/"+match_id);
-            }
-            else if(msg.error){
-              showError(msg.error);
-            }
-            else if (msg.state==="failed") {
-              showError("Failed to parse replay.  Please make sure the replay is available in client and has not expired.");
-            }
-            else if (msg.progress){
-              var prog = msg.progress;
-              console.log(prog);
-              document.getElementById("bar").style.width = prog + "%";
-              document.getElementById("bar").innerHTML = prog + "%";
-            }
-          });
-      }
-      
-    var form = document.getElementById('file-form');
-    var fileSelect = document.getElementById('file-select');
-    var uploadButton = document.getElementById('upload-button');
-    form.onsubmit = function(event) {
-      event.preventDefault();
-    
-      // Update button text.
-      uploadButton.innerHTML = 'Uploading...';
-      // The rest of the code will go here...
-      // Get the selected files from the input.
-      var file = fileSelect.files[0];
-      console.log(file);
-      // Create a new FormData object.
-      var formData = new FormData();
-      formData.append('replay_blob', file, file.name);
-      console.log(formData);
-      // Set up the request.
-      var xhr = new XMLHttpRequest();
-      xhr.upload.addEventListener("progress", updateProgress);
-      // Open the connection.
-      xhr.open('POST', '/request_job', true);
-      // Set up a handler for when the request finishes.
-      xhr.onload = function () {
-        if (xhr.status === 200) {
-          // File(s) uploaded.
-          uploadButton.innerHTML = 'Upload';
-        } else {
-          alert('An error occurred!');
-        }
-      };
-      // Send the Data.
-      xhr.send(formData);
-      //xhr.send(file);
-      function updateProgress (oEvent) {
-        if (oEvent.lengthComputable) {
-          var percentComplete = oEvent.loaded / oEvent.total;
-          console.log(percentComplete);
-        } else {
-          // Unable to compute progress information since the total size is unknown
-        }
-      }
-    }

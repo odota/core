@@ -60,7 +60,8 @@ module.exports = function(db, redis)
             else if (req.file)
             {
                 console.log(req.file);
-                var key = req.file.originalname + Date.now();
+                //var key = req.file.originalname + Date.now();
+                var key = Math.random().toString(16).slice(2);
                 redis.setex(new Buffer('upload_blob:' + key), 60 * 60, req.file.buffer);
                 match = {
                     replay_blob_key: key

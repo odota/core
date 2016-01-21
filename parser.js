@@ -69,7 +69,7 @@ queue.parse.process(function(job, cb)
             });
             computeMatchData(match);
             renderMatch(match);
-            redis.setex('match:' + match.match_id, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
+            redis.setex('match:' + match.replay_blob_key, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
         } : function(cb)
         {
             //fs.writeFileSync('output.json', JSON.stringify(match));
@@ -89,7 +89,7 @@ queue.parse.process(function(job, cb)
         redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
         redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
         redis.ltrim("parse_delay", 0, 10000);
-        return cb(err);
+        return cb(err, match.match_id);
     });
 });
 
