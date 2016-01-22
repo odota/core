@@ -12,7 +12,7 @@ block content
           .row
             .col-md-5
               input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
-              ul.small
+              ul.small.text-left
                 li Only works for public matches within the last 7 days
             .col-md-2
               p.lead OR
@@ -20,7 +20,7 @@ block content
               span.btn.btn-block.btn-primary.btn-file#file-select-button
                 span#file-select-text Select Replay File
                 input#file-select.form-control(type='file' name='replay_blob')
-              ul.small
+              ul.small.text-left
                 li Uploads have incomplete data and eventually expire
                 li Uploads do not count toward player statistics
         .form-group
@@ -33,7 +33,7 @@ block content
         .progress
           .progress-bar.progress-bar-info.progress-bar-striped.active#upload-bar
         .progress
-          .progress-bar.progress-bar-success.progress-bar-striped.active#parsed-bar
+          .progress-bar.progress-bar-success.progress-bar-striped.active#parse-bar
         #messages
 
 append footer_assets

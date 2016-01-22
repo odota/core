@@ -73,7 +73,7 @@ function getJob()
         if (!err && resp.statusCode === 200 && job && job.jobId && job.data && job.data.payload && job.data.payload.url)
         {
             console.log("got work from server, jobid: %s, url: %s", job.jobId, job.data.payload.url);
-            runParse(job.data.payload, function(err, parsed_data)
+            runParse(job.data.payload, null, function(err, parsed_data)
             {
                 if (err)
                 {

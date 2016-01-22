@@ -43,7 +43,7 @@ queue.parse.process(function(job, cb)
         },
         "runParse": function(cb)
         {
-            runParse(match, function(err, parsed_data)
+            runParse(match, job, function(err, parsed_data)
             {
                 if (err)
                 {

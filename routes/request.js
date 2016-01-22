@@ -112,7 +112,8 @@ module.exports = function(db, redis)
                     {
                         jobId: job.jobId,
                         data: job.data,
-                        state: state
+                        state: state,
+                        progress: job.progress()
                     });
                 }).catch(next);
             }

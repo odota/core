@@ -52,11 +52,12 @@ function processRequest(job, cb)
         {
             var poll = setInterval(function()
             {
-                queue.parse.getJob(job2.jobId).then(function(job)
+                queue.parse.getJob(job2.jobId).then(function(job2)
                 {
-                    job.getState().then(function(state)
+                    job.progress(job2.progress());
+                    job2.getState().then(function(state)
                     {
-                        console.log("waiting for parse job %s, currently in %s", job.jobId, state);
+                        console.log("waiting for parse job %s, currently in %s", job2.jobId, state);
                         if (state === "completed")
                         {
                             clearInterval(poll);

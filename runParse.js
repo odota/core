@@ -9,7 +9,7 @@ var processReduce = require('./processReduce');
 var processMetadata = require('./processMetadata');
 var processExpand = require('./processExpand');
 var stream = require('stream');
-module.exports = function runParse(match, cb)
+module.exports = function runParse(match, job, cb)
 {
     var url = match.url;
     var inStream;
@@ -41,6 +41,9 @@ module.exports = function runParse(match, cb)
                     url: url,
                     state: state
                 }));
+                if (job){
+                    job.progress(state.percentage * 100);
+                }
             }).on('response', function(response)
             {
                 if (response.statusCode === 200)
