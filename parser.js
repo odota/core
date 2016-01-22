@@ -76,7 +76,6 @@ queue.parse.process(function(job, cb)
         },
         "insertMatch": match.replay_blob_key ? function(cb)
         {
-            delete match.replay_blob;
             //save uploaded replay parse in redis
             match.players.forEach(function(p)
             {
@@ -107,16 +106,3 @@ queue.parse.process(function(job, cb)
         return cb(err, match.match_id);
     });
 });
-
-function getReplayBlob(redis, match, cb)
-{
-    redis.get(new Buffer('upload_blob:' + match.replay_blob_key), function(err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        match.replay_blob = result;
-        cb(err);
-    });
-}

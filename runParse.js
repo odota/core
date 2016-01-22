@@ -21,41 +21,33 @@ module.exports = function runParse(match, job, cb)
 
     function createInputStream()
     {
-        if (match.replay_blob)
+        inStream = progress(request(
         {
-            inStream = new stream.PassThrough();
-            inStream.end(match.replay_blob);
-            forwardInput(inStream);
-        }
-        else
+            url: url,
+            encoding: null,
+            timeout: 30000
+        })).on('progress', function(state)
         {
-            inStream = progress(request(
+            console.log(JSON.stringify(
             {
                 url: url,
-                encoding: null,
-                timeout: 30000
-            })).on('progress', function(state)
+                state: state
+            }));
+            if (job)
             {
-                console.log(JSON.stringify(
-                {
-                    url: url,
-                    state: state
-                }));
-                if (job){
-                    job.progress(state.percentage * 100);
-                }
-            }).on('response', function(response)
+                job.progress(state.percentage * 100);
+            }
+        }).on('response', function(response)
+        {
+            if (response.statusCode === 200)
             {
-                if (response.statusCode === 200)
-                {
-                    forwardInput(inStream);
-                }
-                else
-                {
-                    exit(response.statusCode.toString());
-                }
-            }).on('error', exit);
-        }
+                forwardInput(inStream);
+            }
+            else
+            {
+                exit(response.statusCode.toString());
+            }
+        }).on('error', exit);
     }
 
     function forwardInput(inStream)
