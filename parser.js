@@ -7,6 +7,7 @@ var capacity = require('os').cpus().length;
 var startedAt = new Date();
 var os = require('os');
 var fs = require('fs');
+var config = require('./config');
 app.use(bodyParser.json());
 app.get('/', function(req, res)
 {
@@ -17,6 +18,18 @@ app.get('/', function(req, res)
         started_at: startedAt
     });
 });
+app.get('/redis/:key', function(req, res, cb)
+{
+    redis.get(new Buffer('upload_blob:' + req.params.key), function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        res.send(result);
+    });
+});
+app.listen(config.PARSER_PORT);
 var queue = require('./queue');
 var getReplayUrl = require('./getReplayUrl');
 var db = require('./db');
@@ -36,7 +49,9 @@ queue.parse.process(function(job, cb)
     {
         "getDataSource": match.replay_blob_key ? function(cb)
         {
-            getReplayBlob(redis, match, cb);
+            //getReplayBlob(redis, match, cb);
+            match.url = "http://localhost:" + config.PARSER_PORT + "/redis/" + match.replay_blob_key;
+            cb();
         } : function(cb)
         {
             getReplayUrl(db, redis, match, cb);
