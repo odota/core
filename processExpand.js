@@ -69,9 +69,12 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             //gain buff/debuff
             e.unit = e.attackername; //unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
             e.key = translate(e.inflictor); //the buff
-            //e.targetname is target of buff (possibly illusion)
-            e.type = "modifier_applied";
-            expand(e);
+            e.targetname = computeIllusionString(e.targetname, e.targetillusion); //target of buff (possibly illusion)
+            if (e.targethero && !e.targetillusion)
+            {
+                e.type = "modifier_applied";
+                expand(e);
+            }
         },
         "DOTA_COMBATLOG_MODIFIER_REMOVE": function(e)
         {
@@ -86,11 +89,11 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             //kill
             e.unit = e.sourcename; //killer (a hero)
             e.key = computeIllusionString(e.targetname, e.targetillusion);
-            //count kill by this unit
-            e.type = "killed";
             //don't count denies/expires
             if (e.attackername !== e.key)
             {
+                //count kill by this unit
+                e.type = "killed";
                 expand(e);
             }
             //killed unit was a real hero
