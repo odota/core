@@ -476,7 +476,12 @@ function renderMatch(m)
             "throw": -1,
             "salt": -1,
             "ez": -1,
-            "mad": -1
+            "mad": -1,
+            "hero": 0,
+            "gg": 1,
+            "salty": -1,
+            "autist": -1,
+            "autism": -1
         });
     }
     //create gold breakdown data
