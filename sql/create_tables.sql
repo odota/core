@@ -124,7 +124,6 @@ CREATE TABLE player_matches (
   damage_inflictor json,
   runes json,
   killed_by json,
-  modifier_applied json,
   kill_streaks json,
   multi_kills json,
   healing json,
