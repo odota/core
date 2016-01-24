@@ -22,7 +22,7 @@ cassandra.execute('SELECT TTL(cache) FROM player_caches WHERE account_id = ?', [
     console.log(res);
 });
 */
-/*
+
 var input = require('../output2.json');
 var sizes = {};
 input.players.forEach(function(p)
@@ -37,7 +37,7 @@ for (var key in input){
     sizes[key] = JSON.stringify(input[key]).length;
 }
 console.log(sizes);
-*/
+/*
 var test = [];
 var props = 5;
 for (var i = 0; i < 1000000; i++)
@@ -62,3 +62,4 @@ test.forEach(function(e)
     {}, e);
 });
 console.timeEnd('Object');
+*/

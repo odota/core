@@ -50,6 +50,8 @@ psql -c "CREATE EXTENSION pg_trgm;"
 #npm run deploy
 
 #backup/restore
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -t players | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -T players | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
 pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
