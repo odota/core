@@ -72,9 +72,12 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             e.targetname = computeIllusionString(e.targetname, e.targetillusion); //target of buff (possibly illusion)
             if (e.targethero && !e.targetillusion)
             {
-                //TODO only include a whitelist of modifiers
-                e.type = "modifier_applied";
-                expand(e);
+                var whitelist = {"modifier_item_ultimate_scepter_consumed":1};
+                if (e.key in whitelist)
+                {
+                    e.type = "modifier_applied";
+                    expand(e);
+                }
             }
         },
         "DOTA_COMBATLOG_MODIFIER_REMOVE": function(e)
