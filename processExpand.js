@@ -72,6 +72,7 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             e.targetname = computeIllusionString(e.targetname, e.targetillusion); //target of buff (possibly illusion)
             if (e.targethero && !e.targetillusion)
             {
+                //TODO only include a whitelist of modifiers
                 e.type = "modifier_applied";
                 expand(e);
             }
