@@ -478,7 +478,6 @@ function renderMatch(m)
             "ez": -1,
             "mad": -1,
             "hero": 0,
-            "gg": 1,
             "salty": -1,
             "autist": -1,
             "autism": -1
