@@ -127,7 +127,8 @@ CREATE TABLE player_matches (
   kill_streaks json,
   multi_kills json,
   healing json,
-  life_state json
+  life_state json,
+  modifier_applied json
   --disabled due to incompatibility
   --kill_streaks_log json[][], --an array of kill streak values
   --multi_kill_id_vals integer[] --an array of multi kill values (the length of each multi kill)

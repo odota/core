@@ -390,8 +390,6 @@ function getParseSchema()
                 {},
                 "killed_by":
                 {},
-                "modifier_applied":
-                {},
                 "kill_streaks":
                 {},
                 "multi_kills":
@@ -399,6 +397,8 @@ function getParseSchema()
                 "healing":
                 {},
                 "life_state":
+                {},
+                "modifier_applied":
                 {},
                 /*
                 "kill_streaks_log": [], // an array of kill streak values
