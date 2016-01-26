@@ -416,7 +416,6 @@ module.exports = function processCreateParsedData(entries, meta, populate)
     var reqs = {
         parsed_data: null,
         //expanded: null,
-        /*
         "tf_data":
         {
             killed: 1,
@@ -432,7 +431,6 @@ module.exports = function processCreateParsedData(entries, meta, populate)
         {
             interval: 1
         }
-        */
     };
     var res = {
         parsed_data: utility.getParseSchema()
