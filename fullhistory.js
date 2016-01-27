@@ -71,7 +71,8 @@ function processFullHistory(job, cb) {
                         var match = body.result;
                         insertMatch(db, redis, queue, match, {
                             type: "api",
-                            skipCacheUpdate: true
+                            skipCacheUpdate: true,
+                            skipAbilityUpgrades: true
                         }, cb);
                     });
                 }, function(err) {
