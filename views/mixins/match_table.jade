@@ -1,4 +1,4 @@
-mixin match_table(matches)
+mixin match_table(matches, extended)
   h3 Matches
   table.table.table-condensed#matches.table-striped.rankable(style="border:1px solid #666;")
     thead
@@ -13,9 +13,9 @@ mixin match_table(matches)
         th: abbr(title=tooltips.kills) K
         th: abbr(title=tooltips.deaths) D
         th: abbr(title=tooltips.assists) A
-        //th: abbr(title=tooltips.last_hits) LH
-        //th: abbr(title=tooltips.gold_per_min) GPM
-        //th: abbr(title=tooltips.status) Status
+        if extended
+          th: abbr(title=tooltips.last_hits) LH
+          th: abbr(title=tooltips.gold_per_min) GPM
         th
 
     tbody.small
@@ -36,14 +36,14 @@ mixin match_table(matches)
           td.rankable=match.kills
           td.rankable=match.deaths
           td.rankable=match.assists
-          //td=match.last_hits
-          //td=match.gold_per_min
-          //td=constants.parse_status[match.parse_status] || match.parse_status
+          if extended
+            td.rankable=match.last_hits
+            td.rankable=match.gold_per_min
           td
             abbr(title=constants.tooltips["status_"+match.parse_status])
               if match.parse_status===0
                 i.fa.fa-cog.fa-spin
-              if match.parse_status===2
+              else if match.parse_status===2
                 i.fa.fa-bar-chart
-              if match.parse_status===3
+              else if match.parse_status===3
                 i.fa.fa-eye-slash
