@@ -12,6 +12,7 @@ var multer = require('multer')(
 var utility = require('../utility');
 var queueReq = utility.queueReq;
 var queue = require('../queue');
+const crypto = require('crypto');
 module.exports = function(db, redis)
 {
     router.route('/request').get(function(req, res)
@@ -61,7 +62,10 @@ module.exports = function(db, redis)
             {
                 console.log(req.file);
                 //var key = req.file.originalname + Date.now();
-                var key = Math.random().toString(16).slice(2);
+                //var key = Math.random().toString(16).slice(2);
+                const hash = crypto.createHash('md5');
+                hash.update(req.file.buffer);
+                var key = hash.digest('hex');
                 redis.setex(new Buffer('upload_blob:' + key), 60 * 60, req.file.buffer);
                 match = {
                     replay_blob_key: key
