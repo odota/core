@@ -1,0 +1,33 @@
+extend layout
+
+block content
+  .row(style="margin-top:1em;")
+    .col-md-12.table-responsive
+      ul.nav.nav-tabs
+        each val, key in tabs
+          li(class=(n === key ? 'active' : ''))
+              a(href="/picks/" + key)= val
+
+  .row
+    .col-md-12
+      h3 Picks
+      table.table.table-striped.table-condensed
+        tr
+          th Name
+          th Games
+          th Win%
+        each entry in picks[n] || []
+          tr
+            td
+              +renderName(entry.key)
+            td=entry.games
+            td #{(entry.wins/entry.games*100).toFixed(2)}%
+
+mixin renderName(key)
+  - var arr = key.split(',')
+  each k in arr
+    - var hero = constants.heroes[k]
+    if hero
+      span
+        img.img-sm(src=hero.img)
+        =hero.localized_name

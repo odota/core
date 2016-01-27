@@ -313,6 +313,29 @@ app.use('/distributions', function(req, res, next)
         });
     });
 });
+app.get('/picks/:n?', function(req, res, next)
+{
+    redis.get('picks', function(err, result)
+    {
+        if (err)
+        {
+            return next(err);
+        }
+        result = JSON.parse(result);
+        res.render('picks',
+        {
+            picks: result,
+            n: req.params.n || 1,
+            tabs: {
+                1: "Singles",
+                2: "Dyads",
+                3: "Triads",
+                4: "Quads",
+                5: "Teams"
+            }
+        });
+    });
+});
 app.use('/api', api);
 app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));

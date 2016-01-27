@@ -12,6 +12,9 @@ var fs = require('fs');
 var constants = require('./constants');
 var sql = {};
 var sqlq = fs.readdirSync('./sql');
+const cp = require('child_process');
+const exec = cp.exec;
+var composition = require('./composition');
 sqlq.forEach(function(f)
 {
     sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
@@ -47,7 +50,7 @@ invokeInterval(function buildDistributions(cb)
             {
                 results.rows = results.rows.map(function(r)
                 {
-                    r.display_name = constants.lobby_type ? constants.lobby_type[r.lobby_type].name : r.lobby_type;
+                    r.display_name = constants.lobby_type[r.lobby_type] ? constants.lobby_type[r.lobby_type].name : r.lobby_type;
                     return r;
                 });
             }
@@ -159,4 +162,16 @@ invokeInterval(function cleanup(cb)
         });
     });
     return cb();
+}, 60 * 60 * 1000);
+invokeInterval(function buildPicks(cb)
+{
+    composition(function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        redis.set("picks", JSON.stringify(result));
+        cb(err);
+    });
 }, 60 * 60 * 1000);
