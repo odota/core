@@ -54,6 +54,9 @@ window.requestSubmit = function submit(response)
             }, 2000);
         }
     };
+    xhr.onerror = function(){
+        submit();
+    };
     // Send the Data.
     xhr.send(formData);
     //xhr.send(file);
