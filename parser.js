@@ -79,6 +79,7 @@ queue.parse.process(function(job, cb)
             //save uploaded replay parse in redis
             match.players.forEach(function(p)
             {
+                p.duration = match.duration;
                 computePlayerMatchData(p);
             });
             computeMatchData(match);
