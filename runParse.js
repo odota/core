@@ -125,6 +125,14 @@ module.exports = function runParse(match, job, cb)
                 break;
             case 'interval':
                 container.players[e.slot].hero_id = e.hero_id;
+                container.players[e.slot].level = e.level;
+                container.players[e.slot].kills = e.kills;
+                container.players[e.slot].deaths = e.deaths;
+                container.players[e.slot].assists = e.assists;
+                container.players[e.slot].denies = e.denies;
+                container.players[e.slot].last_hits = e.lh;
+                container.players[e.slot].gold = e.gold;
+                container.players[e.slot].xp = e.xp;
                 break;
             case 'player_slot':
                 container.players[e.key].player_slot = e.value;
