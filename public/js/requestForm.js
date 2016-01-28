@@ -75,8 +75,7 @@ window.requestSubmit = function submit(response)
     function showError(data)
     {
         $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
-        $("#loading").css("display", "none");
-        document.getElementById("bar").style.width = "0%";
+        $("#progContainer").hide('slow');
         $("#request").show('slow');
         console.log("clearing interval %s", checker);
         clearInterval(checker);
