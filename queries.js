@@ -158,7 +158,7 @@ function insertMatch(db, redis, queue, match, options, cb)
                 return au.ability;
             }) : null;
         });
-        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 7, JSON.stringify(ability_upgrades));
+        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 3, JSON.stringify(ability_upgrades));
     }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
