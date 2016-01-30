@@ -13,8 +13,8 @@ wget -q -O - https://get.k8s.io | bash
 #copy k8s-yasp-minion-template, use hm, make new reliable instance(s) for dbs, preemptible for cassandra?
 
 #persistent disks
-gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-f" --type "pd-ssd"
-gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-f" --type "pd-ssd"
+gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-b" --type "pd-ssd"
+gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-b" --type "pd-ssd"
 
 #create namespace
 kubectl create -f ./cluster/setup/namespace.yaml
