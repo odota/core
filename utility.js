@@ -22,7 +22,7 @@ var logger = new(winston.Logger)(
  */
 function tokenize(input)
 {
-    return input.replace(/[,\./?!'":;[\]{}<>|]+/g, '').toLowerCase().split(' ');
+    return input.replace(/[^a-zA-Z- ]+/g, '').replace('/ {2,}/', ' ').toLowerCase().split(' ');
 }
 
 function generateJob(type, payload)
