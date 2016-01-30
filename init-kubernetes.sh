@@ -4,6 +4,8 @@ curl https://sdk.cloud.google.com | bash
 #attach gcloud to project
 gcloud init
 
+gcloud components install kubectl
+
 #source cluster config to env
 source ./cluster/setup/gce.env
 
@@ -18,6 +20,8 @@ gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-b"
 
 #create namespace
 kubectl create -f ./cluster/setup/namespace.yaml
+
+kubectl config set-context peaceful-parity-87002_k8s-yasp --namespace=yasp
 
 #put secrets in prod.env (KEY=VALUE, one per line)
 #write secrets/config to kubernetes secret resource

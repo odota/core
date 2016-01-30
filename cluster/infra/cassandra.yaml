@@ -19,6 +19,7 @@ metadata:
     app: cassandra
     tier: infra
   name: cassandra
+  namespace: yasp
 spec:
   replicas: 0
   template:
