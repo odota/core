@@ -308,7 +308,7 @@ public class Main {
                         }
                     }
                     catch(Exception e) {
-                        //swallow the exception when unexpected number of players
+                        //swallow the exception when an unexpected number of players (!=10)
                         //System.err.println(e);
                     }
 
@@ -332,18 +332,18 @@ public class Main {
                     Entry entry = new Entry(time);
                     entry.type = "interval";
                     entry.slot = i;
-
-                    entry.gold = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
-                    entry.lh = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
-                    entry.xp = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);
-                    entry.stuns = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
+                    
+                    if (teamSlot >= 0) {
+                        entry.gold = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
+                        entry.lh = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
+                        entry.xp = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);
+                        entry.stuns = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
+                    }
 
                     //TODO: gem, rapier time?
                     //https://github.com/yasp-dota/yasp/issues/333
                     //need to dump inventory items for each player and possibly keep track of item entity handles
-
-                    //m.iLifeState for time dead?
-
+                    
                     //get the player's hero entity
                     Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
                     //get the hero's coordinates
