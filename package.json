@@ -30,7 +30,7 @@
     "body-parser": "1.14.2",
     "bootstrap": "^3.3.6",
     "bootswatch": "^3.3.6",
-    "bull": "0.7.0",
+    "bull": "yasp-dota/bull",
     "c3": "^0.4.11-rc4",
     "cal-heatmap": "^3.5.4",
     "cassandra-driver": "^3.0.0",
