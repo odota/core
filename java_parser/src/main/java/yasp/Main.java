@@ -288,22 +288,28 @@ public class Main {
                 //according to @Decoud Valve seems to have fixed this issue and players should be in first 10 slots again
                 //sanity check of i to prevent infinite loop when <10 players?
                 while (added < numPlayers && i < 100) {
-                    //check each m_vecPlayerData to ensure the player's team is radiant or dire
-                    int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
-                    int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", i);
-                    Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
-                    //System.err.format("%s %s %s: %s\n", i, playerTeam, teamSlot, steamid);
-                    if (playerTeam == 2 || playerTeam == 3) {
-                        //output the player_slot based on team and teamslot
-                        Entry entry = new Entry(time);
-                        entry.type = "player_slot";
-                        entry.key = String.valueOf(added);
-                        entry.value = (playerTeam == 2 ? 0 : 128) + teamSlot;
-                        output(entry);
-                        //add it to validIndices, add 1 to added
-                        validIndices[added] = i;
-                        added += 1;
-                        slot_to_playerslot.put(added, entry.value);
+                    try {
+                        //check each m_vecPlayerData to ensure the player's team is radiant or dire
+                        int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
+                        int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", i);
+                        Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
+                        //System.err.format("%s %s %s: %s\n", i, playerTeam, teamSlot, steamid);
+                        if (playerTeam == 2 || playerTeam == 3) {
+                            //output the player_slot based on team and teamslot
+                            Entry entry = new Entry(time);
+                            entry.type = "player_slot";
+                            entry.key = String.valueOf(added);
+                            entry.value = (playerTeam == 2 ? 0 : 128) + teamSlot;
+                            output(entry);
+                            //add it to validIndices, add 1 to added
+                            validIndices[added] = i;
+                            added += 1;
+                            slot_to_playerslot.put(added, entry.value);
+                        }
+                    }
+                    catch(Exception e) {
+                        //swallow the exception when unexpected number of players
+                        //System.err.println(e);
                     }
 
                     i += 1;
