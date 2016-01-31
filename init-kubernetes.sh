@@ -56,7 +56,8 @@ cat "sql/create_tables.sql" | kubectl exec postgres-q4s59 -i -- psql postgresql:
 
 #backup/restore
 pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -t players | kubectl exec postgres-i1f5k -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -T players | kubectl exec postgres-i1f5k -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -T players | kubectl exec postgres-rairo -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
+cat yasp.sql | kubectl exec postgres-rairo -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
 #pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-i1f5k -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
