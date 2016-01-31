@@ -35,14 +35,15 @@ kubectl create -f ./cluster/infra
 kubectl create -f ./cluster/backend
 
 #set up db on postgres node
-kubectl exec -it postgres-ltm1a "bash"
+kubectl exec -it postgres-q4s59 "bash"
 su postgres 
 bash
 createuser yasp
 psql -c "ALTER USER yasp WITH PASSWORD 'yasp';"
 psql -c "CREATE EXTENSION pg_trgm;"
-#createdb yasp --owner yasp
-#cat "sql/create_tables.sql" | kubectl exec postgres-cxo7r -i -- psql postgresql://yasp:yasp@postgres/yasp
+createdb yasp --owner yasp
+#exit remote shell
+cat "sql/create_tables.sql" | kubectl exec postgres-q4s59 -i -- psql postgresql://yasp:yasp@postgres/yasp
 
 #secure remote connections to redis/postgres
 #set up redis password
@@ -54,9 +55,9 @@ psql -c "CREATE EXTENSION pg_trgm;"
 #npm run deploy
 
 #backup/restore
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -t players | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -T players | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-cxo7r -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -t players | kubectl exec postgres-i1f5k -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -T players | kubectl exec postgres-i1f5k -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp
+#pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-i1f5k -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --clean --create
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
 
