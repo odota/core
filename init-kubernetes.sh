@@ -61,6 +61,8 @@ pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c -T players | kube
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
 
+#set nodeselector on monitoring-influxdb-grafana-v2 to reliable instance
+
 #teardown cluster
 source ./cluster/setup/gce.env
 bash ./kubernetes/cluster/kube-down.sh
