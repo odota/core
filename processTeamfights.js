@@ -97,7 +97,7 @@ module.exports = function processTeamfights(entries, meta, populate)
                         time: e.time,
                         slot: hero_to_slot[e.key]
                     };
-                    if (intervalState[r.time][r.slot])
+                    if (intervalState[r.time] && intervalState[r.time][r.slot])
                     {
                         //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
                         var x = intervalState[r.time][r.slot].x;

@@ -47,8 +47,8 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "2000m"
-            memory: "6G"
+            cpu: "1000m"
+            memory: "8G"
         volumeMounts:
         - name: redis
           mountPath: /var/lib/redis

@@ -26,6 +26,10 @@ spec:
         image: yasp/yasp:latest
         args: [ "node", "parser.js" ]
         imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "750m"
+            memory: "200M"
         volumeMounts:
         - name: api-keys
           readOnly: true

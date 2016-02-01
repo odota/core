@@ -42,18 +42,26 @@ module.exports = function aggregator(matches, fields, existing)
         }
     }
     //sort ascending to support trends
-    matches.sort(function (a, b)
+    matches.sort(function(a, b)
     {
         return Number(a.match_id) - Number(b.match_id);
     });
     for (var i = 0; i < matches.length; i++)
     {
         var m = matches[i];
-        var reApi = (m.match_id in aggData.match_ids) && getAggs()[key] === "api";
-        var reParse = (m.match_id in aggData.parsed_match_ids) && getAggs()[key] === "parsed";
-        if (isSignificant(constants, m) && !reApi && !reParse)
+        var significant = isSignificant(constants, m);
+        for (var key in fields)
         {
-            for (var key in fields)
+            var isDup = false;
+            if (getAggs()[key] === "api")
+            {
+                isDup = isDup || (m.match_id in aggData.match_ids);
+            }
+            else if (getAggs()[key] === "parsed")
+            {
+                isDup = isDup || (m.match_id in aggData.parsed_match_ids);
+            }
+            if (significant && !isDup)
             {
                 //execute the aggregation function for each specified field
                 standardAgg(key, m[key], m);
