@@ -22,11 +22,6 @@ module.exports = function getReplayUrl(db, redis, match, cb) {
             match.url = doc.url;
             return cb(err);
         }
-        //TODO non-valve urls don't expire, we can try using them
-        if (match.start_time < moment().subtract(7, 'days').format('X') && !(match.leagueid > 0)) {
-            console.log('replay %s expired', match.match_id);
-            return cb("Replay expired");
-        }
         else {
             var retrievers = retrieverConfig.split(",").map(function(r) {
                 return "http://" + r + "?key=" + secret;
