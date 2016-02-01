@@ -23,6 +23,7 @@ metadata:
     app: web
     tier: backend
   name: web
+  namespace: yasp
 spec:
   replicas: 1
   selector:
@@ -45,6 +46,7 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
+            cpu: "1000m"
             memory: "1G"
         ports:
         - containerPort: 5000

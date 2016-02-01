@@ -293,22 +293,28 @@ public class Main {
                 //according to @Decoud Valve seems to have fixed this issue and players should be in first 10 slots again
                 //sanity check of i to prevent infinite loop when <10 players?
                 while (added < numPlayers && i < 100) {
-                    //check each m_vecPlayerData to ensure the player's team is radiant or dire
-                    int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
-                    int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", i);
-                    Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
-                    //System.err.format("%s %s %s: %s\n", i, playerTeam, teamSlot, steamid);
-                    if (playerTeam == 2 || playerTeam == 3) {
-                        //output the player_slot based on team and teamslot
-                        Entry entry = new Entry(time);
-                        entry.type = "player_slot";
-                        entry.key = String.valueOf(added);
-                        entry.value = (playerTeam == 2 ? 0 : 128) + teamSlot;
-                        output(entry);
-                        //add it to validIndices, add 1 to added
-                        validIndices[added] = i;
-                        added += 1;
-                        slot_to_playerslot.put(added, entry.value);
+                    try {
+                        //check each m_vecPlayerData to ensure the player's team is radiant or dire
+                        int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
+                        int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", i);
+                        Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
+                        //System.err.format("%s %s %s: %s\n", i, playerTeam, teamSlot, steamid);
+                        if (playerTeam == 2 || playerTeam == 3) {
+                            //output the player_slot based on team and teamslot
+                            Entry entry = new Entry(time);
+                            entry.type = "player_slot";
+                            entry.key = String.valueOf(added);
+                            entry.value = (playerTeam == 2 ? 0 : 128) + teamSlot;
+                            output(entry);
+                            //add it to validIndices, add 1 to added
+                            validIndices[added] = i;
+                            added += 1;
+                            slot_to_playerslot.put(added, entry.value);
+                        }
+                    }
+                    catch(Exception e) {
+                        //swallow the exception when an unexpected number of players (!=10)
+                        //System.err.println(e);
                     }
 
                     i += 1;
@@ -331,11 +337,13 @@ public class Main {
                     Entry entry = new Entry(time);
                     entry.type = "interval";
                     entry.slot = i;
-
-                    entry.gold = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
-                    entry.lh = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
-                    entry.xp = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);
-                    entry.stuns = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
+                    
+                    if (teamSlot >= 0) {
+                        entry.gold = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
+                        entry.lh = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
+                        entry.xp = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);
+                        entry.stuns = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
+                    }
 
                     entry.level = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iLevel", validIndices[i]);
                     entry.kills = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iKills", validIndices[i]);
@@ -346,9 +354,7 @@ public class Main {
                     //TODO: gem, rapier time?
                     //https://github.com/yasp-dota/yasp/issues/333
                     //need to dump inventory items for each player and possibly keep track of item entity handles
-
-                    //m.iLifeState for time dead?
-
+                    
                     //get the player's hero entity
                     Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
                     //get the hero's coordinates
