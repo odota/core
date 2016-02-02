@@ -12,19 +12,19 @@ Overview
 
 We provide free, open source replay parsing for the Dota 2 Community. This includes item timelines, gold/LH graphs, ward positions, and position heatmaps.
 
-See [here](http://yasp.co/matches/1912366402) for an example of our match analysis. For a full list of our features, see the [wiki](https://github.com/yasp-dota/yasp/wiki/Features).
+See [here](http://yasp.co/matches/1912366402) for an example of our match analysis.
 
 Tech
 ----
-* Web: Node.js/Express
-* Storage: PostgreSQL/Redis
+* Web/Services: Node.js
+* Storage: PostgreSQL/Redis/Cassandra
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
 Quickstart
 ----
 * Install dependencies for Ubuntu: `sudo bash init.sh`. For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
-  * Note: If you have Steam Guard activated on your account you will either have to deactivate it or create a new account for use with the retriever (recommended).
+  * Note: If you have Steam Guard activated on your account you will either have to deactivate it or (recommended) create a new account for use with the retriever.
 * Set up the database `sudo npm run create`
 * Build `npm run build`
 * Run `npm test` to make sure your install works correctly
@@ -44,10 +44,4 @@ See the [wiki](https://github.com/yasp-dota/yasp/wiki/Developer's-Guide).
 History
 ----
 * Project started in August 2014
-* Originally forked from Rjacksonm1/matchurls, started in July 2013
-
-Core Development
-----
-* howardchung
-* albertcui
-* nickhh
+* Forked from https://github.com/RJacksonm1/matchurls, created in July 2013
