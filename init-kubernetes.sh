@@ -12,7 +12,6 @@ export NODE_SIZE=n1-highcpu-2
 export NODE_DISK_SIZE=10GB
 export PREEMPTIBLE_NODE=true
 export KUBE_GCE_NETWORK=k8s
-export ENABLE_CLUSTER_MONITORING=googleinfluxdb
 export ENABLE_NODE_AUTOSCALER=true
 export ENABLE_DAEMONSETS=true
 export ENABLE_DEPLOYMENTS=true
