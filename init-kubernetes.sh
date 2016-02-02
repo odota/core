@@ -4,8 +4,7 @@ curl https://sdk.cloud.google.com | bash
 #attach gcloud to project
 gcloud init
 
-gcloud components install kubectl
-
+#set up config for cluster
 export KUBERNETES_PROVIDER=gce
 export KUBE_GCE_ZONE=us-central1-b
 export MASTER_SIZE=n1-highmem-8
@@ -13,17 +12,22 @@ export NODE_SIZE=n1-highcpu-2
 export NODE_DISK_SIZE=10GB
 export PREEMPTIBLE_NODE=true
 export KUBE_GCE_NETWORK=k8s
-
 export ENABLE_CLUSTER_MONITORING=googleinfluxdb
 export ENABLE_NODE_AUTOSCALER=true
 export ENABLE_DAEMONSETS=true
 export ENABLE_DEPLOYMENTS=true
-
 export KUBE_UP_AUTOMATIC_CLEANUP=true
 
+#download kubernetes release
 curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.6/kubernetes.tar.gz | tar xvz
 
+#start the cluster
 bash ./kubernetes/cluster/kube-up.sh
+
+#get kubectl
+gcloud components install kubectl
+#or use kubectl packaged with release
+#./kubernetes/platforms/linux/amd64/kubectl
 
 #persistent disks
 gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-b" --type "pd-ssd"
@@ -31,9 +35,8 @@ gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-b"
 #use persistent volumes/claims for cassandra storage?
 #gcloud compute disks create "disk-cassandra-1" --size "200" --zone "us-central1-b" --type "pd-ssd"
 
-#create namespace
+#create, use namespace
 kubectl create -f ./cluster/setup/namespace.yaml
-
 kubectl config set-context peaceful-parity-87002_kubernetes --namespace=yasp
 
 #put secrets in prod.env (KEY=VALUE, one per line)
