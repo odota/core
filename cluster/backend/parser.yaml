@@ -36,3 +36,18 @@ spec:
           mountPath: /etc/yasp-api-keys
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
+----
+apiVersion: extensions/v1beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: parser
+  namespace: yasp
+spec:
+  scaleRef:
+    kind: ReplicationController
+    name: parser
+    namespace: yasp
+  minReplicas: 1
+  maxReplicas: 100
+  cpuUtilization:
+    targetPercentage: 75
