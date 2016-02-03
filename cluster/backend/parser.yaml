@@ -46,7 +46,7 @@ spec:
   scaleRef:
     kind: ReplicationController
     name: parser
-    namespace: yasp
+    subresource: scale
   minReplicas: 1
   maxReplicas: 100
   cpuUtilization:

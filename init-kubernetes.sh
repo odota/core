@@ -7,15 +7,15 @@ gcloud init
 #set up config for cluster
 export KUBERNETES_PROVIDER=gce
 export KUBE_GCE_ZONE=us-central1-b
-export MASTER_SIZE=n1-highmem-8
+export MASTER_SIZE=n1-standard-1
 export NODE_SIZE=n1-highcpu-2
 export NODE_DISK_SIZE=10GB
 export PREEMPTIBLE_NODE=true
 export KUBE_GCE_NETWORK=k8s
-export ENABLE_NODE_AUTOSCALER=true
-export ENABLE_DAEMONSETS=true
-export ENABLE_DEPLOYMENTS=true
-export KUBE_UP_AUTOMATIC_CLEANUP=true
+export KUBE_ENABLE_NODE_AUTOSCALER=true
+export KUBE_ENABLE_DAEMONSETS=true
+export KUBE_ENABLE_DEPLOYMENTS=true
+export REGISTER_MASTER=false
 
 #download kubernetes release
 curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.6/kubernetes.tar.gz | tar xvz
@@ -24,9 +24,12 @@ curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.
 bash ./kubernetes/cluster/kube-up.sh
 
 #get kubectl
-gcloud components install kubectl
+#gcloud components install kubectl
 #or use kubectl packaged with release
-#./kubernetes/platforms/linux/amd64/kubectl
+export PATH=./kubernetes/platforms/linux/amd64:$PATH
+
+#make master schedulable
+#kubectl edit no kubernetes-master
 
 #persistent disks
 gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-b" --type "pd-ssd"
@@ -49,26 +52,25 @@ kubectl create -f ./cluster/infra
 #add yasp services
 kubectl create -f ./cluster/backend
 
+#clone node template for custom nodes (hm-2, etc)
+
 #set up db on postgres node
-kubectl exec -it postgres-q4s59 "bash"
+kubectl exec -it postgres-0hu0e "bash"
 su postgres 
 bash
 createuser yasp
 psql -c "ALTER USER yasp WITH PASSWORD 'yasp';"
 createdb yasp --owner yasp
-psql yasp -c "CREATE EXTENSION pg_trgm;"
-#exit remote shell
-cat "sql/create_tables.sql" | kubectl exec postgres-q4s59 -i -- psql postgresql://yasp:yasp@postgres/yasp
+#exit remote shell, create tables
+#cat "sql/trgm.sql" | kubectl exec postgres-q4s59 -i -- psql postgresql://yasp:yasp@postgres/yasp
+#cat "sql/create_tables.sql" | kubectl exec postgres-q4s59 -i -- psql postgresql://yasp:yasp@postgres/yasp
 
 #backup/restore
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-rairo -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --verbose
+pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-v368o -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --verbose --clean --create
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
 
 #teardown cluster
-#old prefix for teardown!
-export INSTANCE_PREFIX=k8s-yasp
-export KUBE_GCE_NETWORK=k8s
 bash ./kubernetes/cluster/kube-down.sh
 
 #deploy latest yasp to cluster with rolling update
