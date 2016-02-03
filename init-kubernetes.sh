@@ -66,7 +66,9 @@ createdb yasp --owner yasp
 #cat "sql/create_tables.sql" | kubectl exec postgres-q4s59 -i -- psql postgresql://yasp:yasp@postgres/yasp
 
 #backup/restore
-pg_dump -d postgres://yasp:yasp@localhost/yasp -f - --format=c | kubectl exec postgres-v368o -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --verbose --clean --create
+pg_dump -d postgres://yasp:yasp@localhost/yasp | kubectl exec postgres-v368o -i -- psql -d postgres://yasp:yasp@localhost/yasp
+#pg_dump -d postgres://yasp:yasp@localhost/yasp --format=c -f yasp.sql
+#cat yasp.sql | kubectl exec postgres-v368o -i -- pg_restore -d postgres://yasp:yasp@localhost/yasp --verbose --clean --create
 #mount disk-redis to /newdisk
 cp /var/lib/redis/dump.rdb /newdisk/dump.rdb
 
@@ -77,4 +79,4 @@ bash ./kubernetes/cluster/kube-down.sh
 #npm run deploy
 
 #update kubernetes on cluster
-#bash ./kubernetes/cluster/gce/upgrade.sh
+#bash ./kubernetes/cluster/gce/upgrade.sh release-stable
