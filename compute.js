@@ -484,13 +484,13 @@ function renderMatch(m)
         });
     }
     //create gold breakdown data
-    if (m.players[0].gold_reasons)
+    if (m.players[0] && m.players[0].gold_reasons)
     {
         m.incomeData = generateIncomeData(m);
         //m.treeMapData = generateTreemapData(m);
     }
     //create graph data
-    if (m.players[0].gold_t)
+    if (m.players[0] && m.players[0].gold_t)
     {
         m.graphData = generateGraphData(m);
     }

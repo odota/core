@@ -32,5 +32,5 @@ if [ -n "$KUBECONFIGDATA" ]; then
   wget https://github.com/yasp-dota/testfiles/raw/master/kubectl
   chmod +x kubectl
   export PATH="$PATH:$TRAVIS_BUILD_DIR"
-  #npm run deploy
+  npm run deploy
 fi
