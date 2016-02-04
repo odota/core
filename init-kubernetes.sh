@@ -4,6 +4,14 @@ curl https://sdk.cloud.google.com | bash
 #attach gcloud to project
 gcloud init
 
+#persistent disks
+gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-b" --type "pd-ssd"
+gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-b" --type "pd-ssd"
+#use persistent volumes/claims for cassandra storage
+gcloud compute disks create "disk-cassandra-1" --size "100" --zone "us-central1-b" --type "pd-ssd"
+gcloud compute disks create "disk-cassandra-2" --size "100" --zone "us-central1-b" --type "pd-ssd"
+gcloud compute disks create "disk-cassandra-3" --size "100" --zone "us-central1-b" --type "pd-ssd"
+
 #download kubernetes release
 curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.6/kubernetes.tar.gz | tar xvz
 
@@ -30,14 +38,6 @@ bash ./kubernetes/cluster/kube-up.sh
 
 #make master schedulable
 #kubectl edit no kubernetes-master
-
-#persistent disks
-gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-b" --type "pd-ssd"
-gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-b" --type "pd-ssd"
-#use persistent volumes/claims for cassandra storage
-gcloud compute disks create "disk-cassandra-1" --size "100" --zone "us-central1-b" --type "pd-ssd"
-gcloud compute disks create "disk-cassandra-2" --size "100" --zone "us-central1-b" --type "pd-ssd"
-gcloud compute disks create "disk-cassandra-3" --size "100" --zone "us-central1-b" --type "pd-ssd"
 
 #create, use namespace
 kubectl create -f ./cluster/setup/namespace.yaml
