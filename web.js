@@ -325,7 +325,7 @@ app.get('/picks/:n?', function(req, res, next)
         res.render('picks',
         {
             picks: result || {},
-            n: req.params.n || 1,
+            n: req.params.n || "1",
             tabs: {
                 1: "Monads",
                 2: "Dyads",

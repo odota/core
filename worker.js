@@ -62,7 +62,6 @@ invokeInterval(function buildDistributions(cb)
             {
                 results.rows = results.rows.map(function(r)
                 {
-                    console.log(r);
                     var ref = constants.countries[r.loccountrycode];
                     r.common = ref ? ref.name.common : r.loccountrycode;
                     return r;

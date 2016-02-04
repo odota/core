@@ -1,6 +1,8 @@
 var db = require('./db');
 var JSONStream = require('JSONStream');
 var utility = require('./utility');
+var constants = require('./constants');
+var numHeroes = Object.keys(constants.heroes).length;
 var args = process.argv.slice(2);
 var start_id = Number(args[0]) || 0;
 //var end_id = Number(args[1]) || Number.MAX_VALUE;
@@ -11,7 +13,32 @@ module.exports = function(cb)
     stream.pipe(JSONStream.parse());
     var result = {};
     var wins = {};
+    var count = 0;
     var sorted = {};
+    //do something with these?  invert?
+    var sSpace = {
+        1: binomial(numHeroes, 1) / binomial(5, 1) / 2,
+        2: binomial(numHeroes, 2) / binomial(5, 2) / 2,
+        3: binomial(numHeroes, 3) / binomial(5, 3) / 2,
+        4: binomial(numHeroes, 4) / binomial(5, 4) / 2,
+        5: binomial(numHeroes, 5) / binomial(5, 5) / 2,
+    };
+    var sSpace = {
+        1: 0.001,
+        2: 0.0039,
+        3: 0.0015,
+        4: 0.00015,
+        5: 0.00002
+    };
+    //console.log(sSpace);
+    function binomial(n, k)
+    {
+        if ((typeof n !== 'number') || (typeof k !== 'number')) return false;
+        var coeff = 1;
+        for (var x = n - k + 1; x <= n; x++) coeff *= x;
+        for (x = 1; x <= k; x++) coeff /= x;
+        return coeff;
+    }
 
     function done(err)
     {
@@ -24,12 +51,13 @@ module.exports = function(cb)
         {
             for (var key2 in result[key])
             {
-                if (result[key][key2] > 5)
+                if (result[key][key2] > sSpace[key] * count)
                 {
                     var obj = {
                         key: key2,
                         games: result[key][key2],
-                        wins: wins[key][key2]
+                        wins: wins[key][key2],
+                        total: count
                     };
                     if (!sorted[key])
                     {
@@ -45,11 +73,13 @@ module.exports = function(cb)
             {
                 return b.games - a.games;
             });
+            console.log(key, sorted[key].length);
         }
         cb(err, sorted);
     }
     stream.on('data', function(m)
     {
+        count += 1;
         var radiant = [];
         var dire = [];
         //extract teams
