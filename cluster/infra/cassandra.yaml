@@ -56,3 +56,47 @@ spec:
           #gcePersistentDisk:
             #pdName: disk-cassandra
             #fsType: ext4
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: myclaim-1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3
+----
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv0001
+spec:
+  capacity:
+    storage: 100
+  persistentDisk:
+    pdName: "cassandra-1"
+    fsType: "ext4"
+----
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv0001
+spec:
+  capacity:
+    storage: 100
+  persistentDisk:
+    pdName: "cassandra-2"
+    fsType: "ext4"
+----
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv0001
+spec:
+  capacity:
+    storage: 100
+  persistentDisk:
+    pdName: "cassandra-3"
+    fsType: "ext4"
