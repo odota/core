@@ -327,11 +327,11 @@ app.get('/picks/:n?', function(req, res, next)
             picks: result,
             n: req.params.n || 1,
             tabs: {
-                1: "Singles",
+                1: "Monads",
                 2: "Dyads",
                 3: "Triads",
-                4: "Quads",
-                5: "Teams"
+                4: "Tetrads",
+                5: "Pentads"
             }
         });
     });
