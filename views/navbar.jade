@@ -9,13 +9,8 @@
           span.icon-bar
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav
-        li: a(href="/request") Request
-        li: a(href='/distributions') Distributions
-        li: a(href='/mmstats') MM Stats
-        li: a(href='/faq') FAQ
-        li: a(href='/blog') Blog
-        li: a(href='/status') Status
-        li: a(href='/carry') Carry
+        each val, key in constants.navbar_pages
+          li: a(href="/"+key, class=val["new-feature"] ? "new-feature" : "")=val.name
 
       ul.nav.navbar-nav.navbar-right
         if user

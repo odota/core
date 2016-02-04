@@ -1,0 +1,27 @@
+{
+  "request": {
+    "name": "Request"
+  },
+  "distributions": {
+    "name": "Distributions"
+  },
+  "picks": {
+    "name": "Picks",
+    "new-feature": true
+  },
+  "mmstats": {
+    "name": "MMStats"
+  },
+  "faq": {
+    "name": "FAQ"
+  },
+  "blog": {
+    "name": "Blog"
+  },
+  "status": {
+    "name": "Status"
+  },
+  "carry": {
+    "name": "Carry"
+  }
+}
