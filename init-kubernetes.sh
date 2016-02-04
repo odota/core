@@ -4,6 +4,14 @@ curl https://sdk.cloud.google.com | bash
 #attach gcloud to project
 gcloud init
 
+#download kubernetes release
+curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.6/kubernetes.tar.gz | tar xvz
+
+#get kubectl
+#gcloud components install kubectl
+#or use kubectl packaged with release
+export PATH=./kubernetes/platforms/linux/amd64:$PATH
+
 #set up config for cluster
 export KUBERNETES_PROVIDER=gce
 export KUBE_GCE_ZONE=us-central1-b
@@ -17,16 +25,8 @@ export KUBE_ENABLE_DAEMONSETS=true
 export KUBE_ENABLE_DEPLOYMENTS=true
 export REGISTER_MASTER=false
 
-#download kubernetes release
-curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.6/kubernetes.tar.gz | tar xvz
-
 #start the cluster
 bash ./kubernetes/cluster/kube-up.sh
-
-#get kubectl
-#gcloud components install kubectl
-#or use kubectl packaged with release
-export PATH=./kubernetes/platforms/linux/amd64:$PATH
 
 #make master schedulable
 #kubectl edit no kubernetes-master
