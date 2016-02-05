@@ -79,7 +79,7 @@ function upsert(db, table, row, conflict, cb)
         var query2 = db(table).update(row).where(conflict);
         query1.asCallback(function(err)
         {
-            if (err && err.detail.indexOf("already exists") !== -1)
+            if (err && err.detail && err.detail.indexOf("already exists") !== -1)
             {
                 query2.asCallback(cb);
             }

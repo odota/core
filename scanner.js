@@ -177,6 +177,10 @@ function scanApi(seq_num)
                         {
                             console.error("failed to insert match from scanApi %s", match.match_id);
                         }
+                        else
+                        {
+                            redis.set("match_seq_num", match.match_seq_num);
+                        }
                         return cb(err);
                     }
                 });
@@ -190,7 +194,6 @@ function scanApi(seq_num)
                 }
                 else
                 {
-                    redis.set("match_seq_num", next_seq_num);
                     //completed inserting matches
                     return scanApi(next_seq_num);
                 }

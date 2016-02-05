@@ -46,6 +46,7 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
+            cpu: "1000m"
             memory: "1G"
         ports:
         - containerPort: 5000
@@ -57,3 +58,18 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
+----
+apiVersion: extensions/v1beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web
+  namespace: yasp
+spec:
+  scaleRef:
+    kind: ReplicationController
+    name: web
+    subresource: scale
+  minReplicas: 2
+  maxReplicas: 10
+  cpuUtilization:
+    targetPercentage: 60

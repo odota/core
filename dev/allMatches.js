@@ -15,37 +15,52 @@ getPage();
 //match seq num 542284 for hero_healing
 //may need to cap values down to 2.1b if we encounter them
 //postgres int type only supports up to 2.1b (signed int)
-//patch scanner to add all matches
+//enable add all matches
 //delete fullhistory from sign-in flow
-function getPage() {
-    var job = generateJob("api_sequence", {
+//track all matches start seq num
+//run script to backfill matches
+//update FAQ
+function getPage()
+{
+    var job = generateJob("api_sequence",
+    {
         start_at_match_seq_num: match_seq_num
     });
     var url = job.url;
-    getData({url: url, delay: 1}, function(err, body) {
-        if (err) {
+    getData(
+    {
+        url: url,
+        delay: 1
+    }, function(err, body)
+    {
+        if (err)
+        {
             throw err;
         }
-        if (body.result) {
+        if (body.result)
+        {
             var matches = body.result.matches;
-            async.each(matches, function(m, cb) {
-                insertMatch(db, redis, queue, m, {
+            async.each(matches, function(m, cb)
+            {
+                insertMatch(db, redis, queue, m,
+                {
                     type: "api",
                     skipCacheUpdate: true,
                     skipAbilityUpgrades: true
                 }, cb);
-            }, function(err) {
-                if (err) {
+            }, function(err)
+            {
+                if (err)
+                {
                     throw err;
                 }
                 console.log(match_seq_num);
                 match_seq_num = matches[matches.length - 1].match_seq_num + 1;
-                process.nextTick(function() {
-                    return getPage();
-                });
+                return getPage();
             });
         }
-        else {
+        else
+        {
             throw body;
         }
     });

@@ -26,9 +26,28 @@ spec:
         image: yasp/yasp:latest
         args: [ "node", "parser.js" ]
         imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "750m"
+            memory: "200M"
         volumeMounts:
         - name: api-keys
           readOnly: true
           mountPath: /etc/yasp-api-keys
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
+----
+apiVersion: extensions/v1beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: parser
+  namespace: yasp
+spec:
+  scaleRef:
+    kind: ReplicationController
+    name: parser
+    subresource: scale
+  minReplicas: 1
+  maxReplicas: 100
+  cpuUtilization:
+    targetPercentage: 75

@@ -215,7 +215,7 @@ function getMMStats(idx, cb)
     steamObj[idx].Dota2.requestMatchmakingStats();
     steamObj[idx].Dota2.once('matchmakingStatsData', function(waitTimes, searchingPlayers, disabledGroups, raw)
     {
-        cb(null, raw.searching_players_by_group_source2);
+        cb(null, raw ? raw.searching_players_by_group_source2 : raw);
     });
 }
 

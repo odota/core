@@ -8,8 +8,8 @@ curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -
 sudo add-apt-repository -y ppa:openjdk-r/ppa
 sudo add-apt-repository -y ppa:chris-lea/redis-server
 sudo apt-get update && sudo apt-get upgrade
-sudo apt-get -y install make g++ build-essential redis-server postgresql-9.5 openjdk-8-jdk git maven cassandra
-NODE_VERSION=5.4.0
+sudo apt-get -y install make g++ build-essential redis-server postgresql-9.5 openjdk-8-jdk git maven cassandra jq
+NODE_VERSION=`jq '.engines.node' package.json`
 echo "" > /root/.bashrc && \
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
 . /root/.bashrc && \

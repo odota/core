@@ -4,7 +4,7 @@ services:
 - docker
 - redis-server
 node_js:
-- '5.4'
+- 'node'
 addons:
   postgresql: '9.4'
 install: true
