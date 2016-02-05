@@ -26,6 +26,7 @@ var queries = require('./queries');
 var insertMatch = queries.insertMatch;
 queue.parse.process(function(job, cb)
 {
+    console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
     getReplayUrl(db, redis, match, function(err)
     {
