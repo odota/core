@@ -54,7 +54,7 @@ function getPage(match_seq_num, bucket)
     getData(
     {
         url: url,
-        delay: 1
+        delay: 100
     }, function(err, body)
     {
         if (err)
