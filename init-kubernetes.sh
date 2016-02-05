@@ -8,12 +8,12 @@ gcloud init
 gcloud compute disks create "disk-redis" --size "50" --zone "us-central1-b" --type "pd-ssd"
 gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-b" --type "pd-ssd"
 #use persistent volumes/claims for cassandra storage
-gcloud compute disks create "disk-cassandra-1" --size "100" --zone "us-central1-b" --type "pd-ssd"
-gcloud compute disks create "disk-cassandra-2" --size "100" --zone "us-central1-b" --type "pd-ssd"
-gcloud compute disks create "disk-cassandra-3" --size "100" --zone "us-central1-b" --type "pd-ssd"
+#gcloud compute disks create "disk-cassandra-1" --size "100" --zone "us-central1-b" --type "pd-ssd"
+#gcloud compute disks create "disk-cassandra-2" --size "100" --zone "us-central1-b" --type "pd-ssd"
+#gcloud compute disks create "disk-cassandra-3" --size "100" --zone "us-central1-b" --type "pd-ssd"
 
 #download kubernetes release
-curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.6/kubernetes.tar.gz | tar xvz
+curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.7/kubernetes.tar.gz | tar xvz
 
 #get kubectl
 #gcloud components install kubectl
@@ -27,17 +27,10 @@ export MASTER_SIZE=n1-standard-1
 export NODE_SIZE=n1-highcpu-2
 export NODE_DISK_SIZE=10GB
 export PREEMPTIBLE_NODE=true
-export KUBE_GCE_NETWORK=k8s
 export KUBE_ENABLE_NODE_AUTOSCALER=true
-export KUBE_ENABLE_DAEMONSETS=true
-export KUBE_ENABLE_DEPLOYMENTS=true
-export REGISTER_MASTER=false
 
 #start the cluster
 bash ./kubernetes/cluster/kube-up.sh
-
-#make master schedulable
-#kubectl edit no kubernetes-master
 
 #create, use namespace
 kubectl create -f ./cluster/setup/namespace.yaml
@@ -54,7 +47,9 @@ kubectl create -f ./cluster/infra
 #add yasp services
 kubectl create -f ./cluster/backend
 
-#clone node template for custom nodes (hm-2, etc)
+#make master schedulable
+#kubectl edit no kubernetes-master
+#or clone node template for custom nodes (hm-2, etc)
 
 #set up db on postgres node
 kubectl exec -it postgres-0hu0e "bash"
