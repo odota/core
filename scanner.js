@@ -101,7 +101,7 @@ function scanApi(seq_num)
         getData(
         {
             url: container.url,
-            delay: Number(config.DEFAULT_DELAY)
+            delay: 100
         }, function(err, data)
         {
             if (err)
