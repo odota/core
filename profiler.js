@@ -11,7 +11,7 @@ doMax();
 //get the max account_id and save it
 function doMax()
 {
-    db.raw("select max(account_id) from player_matches where account_id < ?", [constants.anonymous_account_id]).asCallback(function(err, result)
+    db.raw("select max(account_id) from players").asCallback(function(err, result)
     {
         if (err)
         {
@@ -43,7 +43,7 @@ function getSummaries(cb)
         return cb();
     }
     var random = Math.floor((Math.random() * max));
-    db.raw("select distinct(account_id) from player_matches where account_id > ? limit 100", [random]).asCallback(function(err, results)
+    db.raw("select account_id from players where account_id > ? limit 100", [random]).asCallback(function(err, results)
     {
         if (err)
         {
