@@ -167,7 +167,6 @@ function insertMatch(db, redis, queue, match, options, cb)
     {
         "imt": insertMatchTable,
         "ipmt": insertPlayerMatchesTable,
-        "ep": ensurePlayers,
         "pc": updatePlayerCaches,
         "cmc": clearMatchCache,
         "dp": decideParse
@@ -205,23 +204,6 @@ function insertMatch(db, redis, queue, match, options, cb)
             {
                 match_id: pm.match_id,
                 player_slot: pm.player_slot
-            }, cb);
-        }, cb);
-    }
-    /**
-     * Inserts a placeholder player into db with just account ID for each player in this match
-     **/
-    function ensurePlayers(cb)
-    {
-        if (options.skipInsertPlayers)
-        {
-            return cb();
-        }
-        async.each(players || [], function(p, cb)
-        {
-            insertPlayer(db,
-            {
-                account_id: p.account_id
             }, cb);
         }, cb);
     }
