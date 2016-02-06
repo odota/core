@@ -4,14 +4,14 @@ var utility = require('./utility');
 var getData = utility.getData;
 var async = require('async');
 var db = require('./db');
+var constants = require('./constants');
 var max;
 start();
 doMax();
-
-//get the max account_id and save for 10 minutes
+//get the max account_id and save it
 function doMax()
 {
-    db.raw("select max(account_id) from player_matches").asCallback(function(err, result)
+    db.raw("select max(account_id) from player_matches where account_id < ?", [constants.anonymous_account_id]).asCallback(function(err, result)
     {
         if (err)
         {
@@ -19,7 +19,7 @@ function doMax()
         }
         max = Number(result.rows[0].max);
         console.log("recomputed max: %s", max);
-        return setTimeout(doMax, 60 * 10 * 1000);
+        return setTimeout(doMax, 60 * 60 * 1000);
     });
 }
 
@@ -42,7 +42,7 @@ function getSummaries(cb)
         console.log('waiting for max');
         return cb();
     }
-    var random = Math.floor((Math.random()*max)); 
+    var random = Math.floor((Math.random() * max));
     db.raw("select distinct(account_id) from player_matches where account_id > ? limit 100", [random]).asCallback(function(err, results)
     {
         if (err)
