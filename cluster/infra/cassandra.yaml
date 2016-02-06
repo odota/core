@@ -33,7 +33,7 @@ spec:
             - /run.sh
           resources:
             requests:
-              cpu: "1000m"
+              cpu: "1m"
               memory: "8G"
           env:
             - name: POD_NAMESPACE

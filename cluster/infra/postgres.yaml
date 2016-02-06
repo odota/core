@@ -50,7 +50,7 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "1000m"
+            cpu: "1m"
             memory: "16G"
         volumeMounts:
         - name: postgres

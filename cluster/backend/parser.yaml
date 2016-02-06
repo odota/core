@@ -28,7 +28,7 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "750m"
+            cpu: "900m"
             memory: "200M"
         volumeMounts:
         - name: api-keys

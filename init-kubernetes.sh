@@ -13,7 +13,7 @@ gcloud compute disks create "disk-postgres" --size "2000" --zone "us-central1-b"
 #gcloud compute disks create "disk-cassandra-3" --size "100" --zone "us-central1-b" --type "pd-ssd"
 
 #download kubernetes release
-curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.2.0-alpha.7/kubernetes.tar.gz | tar xvz
+curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.1.7/kubernetes.tar.gz | tar xvz
 
 #get kubectl
 #gcloud components install kubectl
@@ -24,9 +24,9 @@ export PATH=./kubernetes/platforms/linux/amd64:$PATH
 export KUBERNETES_PROVIDER=gce
 export KUBE_GCE_ZONE=us-central1-b
 export MASTER_SIZE=n1-standard-1
-export NODE_SIZE=n1-highcpu-2
-export NODE_DISK_SIZE=10GB
-export PREEMPTIBLE_NODE=true
+export MINION_SIZE=n1-highcpu-2
+export MINION_DISK_SIZE=10GB
+export PREEMPTIBLE_MINION=true
 export KUBE_ENABLE_NODE_AUTOSCALER=true
 
 #start the cluster
