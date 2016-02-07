@@ -80,7 +80,7 @@ bash ./kubernetes/cluster/kube-down.sh
 #nonkube
 gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 
-gcloud compute instance-templates create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=test-disk-redis --disk name=test-disk-postgres --metadata startup-script='#!/bin/bash
+gcloud compute instance-templates create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --metadata startup-script='#!/bin/bash
 git clone https://github.com/yasp-dota/yasp
 sudo mkdir /var/lib/redis
 sudo mount -o defaults /dev/sdb /var/lib/redis
