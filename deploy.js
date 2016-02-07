@@ -27,10 +27,10 @@ else
                 retriever: null,
                 proxy: null,
             };
-            var n = instances[app] || 1;
-            console.log(app, n);
             if (instances[app] !== null)
             {
+                var n = instances[app] || 1;
+                console.log(app, n);
                 pm2.start(script,
                 {
                     instances: n
