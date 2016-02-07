@@ -5,11 +5,11 @@ mixin match_table(matches, extended)
       tr
         th: abbr(title=tooltips.match_id) ID
         th: abbr(title=tooltips.hero_id) Hero
-        th: abbr(title=tooltips.result) Result
-        th: abbr(title=tooltips.game_mode) Mode
-        th: abbr(title=tooltips.skill) Skill
-        th.fromNow: abbr(title=tooltips.ended) Ended
-        th.seconds: abbr(title=tooltips.duration) Duration
+        th: abbr(title=tooltips.result) R
+        th: abbr(title=tooltips.game_mode) M
+        th: abbr(title=tooltips.skill) S
+        th.fromNow: abbr(title=tooltips.ended) E
+        th.seconds: abbr(title=tooltips.duration) L
         th: abbr(title=tooltips.kills) K
         th: abbr(title=tooltips.deaths) D
         th: abbr(title=tooltips.assists) A
@@ -28,7 +28,7 @@ mixin match_table(matches, extended)
               img.img-sm(src=hero.img, title=hero.localized_name)
             else
               =match.hero_id
-          td(class=match.player_win ? "text-success" : "text-danger")=match.player_win ? "Won" : "Lost"
+          td(class=match.player_win ? "text-success" : "text-danger")=match.player_win ? "W" : "L"
           td=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
           td=constants.skill[match.skill] || match.skill
           td=match.start_time+match.duration

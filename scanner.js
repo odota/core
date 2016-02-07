@@ -101,7 +101,7 @@ function scanApi(seq_num)
         getData(
         {
             url: container.url,
-            delay: Number(config.DEFAULT_DELAY)
+            delay: 100
         }, function(err, data)
         {
             if (err)
@@ -115,7 +115,7 @@ function scanApi(seq_num)
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
             logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
-            async.eachSeries(resp, function(match, cb)
+            async.each(resp, function(match, cb)
             {
                 if (config.ENABLE_PRO_PARSING && match.leagueid)
                 {
@@ -159,7 +159,6 @@ function scanApi(seq_num)
                 {
                     if (match.parse_status === 0 || match.parse_status === 3)
                     {
-                        //redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
                         redis.zadd("added_match", moment().format('X'), match.match_id);
                         insertMatch(db, redis, queue, match,
                         {
@@ -177,10 +176,6 @@ function scanApi(seq_num)
                         {
                             console.error("failed to insert match from scanApi %s", match.match_id);
                         }
-                        else
-                        {
-                            redis.set("match_seq_num", match.match_seq_num);
-                        }
                         return cb(err);
                     }
                 });
@@ -194,7 +189,8 @@ function scanApi(seq_num)
                 }
                 else
                 {
-                    //completed inserting matches
+                    redis.set("match_seq_num", next_seq_num);
+                    //completed inserting matches on this page
                     return scanApi(next_seq_num);
                 }
             });

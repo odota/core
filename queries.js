@@ -74,7 +74,6 @@ function upsert(db, table, row, conflict, cb)
                 //console.error(key);
             }
         }
-        
         var query1 = db(table).insert(row);
         var query2 = db(table).update(row).where(conflict);
         query1.asCallback(function(err)
@@ -167,7 +166,7 @@ function insertMatch(db, redis, queue, match, options, cb)
     {
         "imt": insertMatchTable,
         "ipmt": insertPlayerMatchesTable,
-        "ep": ensurePlayers,
+        "ipl": insertPlayers,
         "pc": updatePlayerCaches,
         "cmc": clearMatchCache,
         "dp": decideParse
@@ -208,10 +207,10 @@ function insertMatch(db, redis, queue, match, options, cb)
             }, cb);
         }, cb);
     }
-    /**
-     * Inserts a placeholder player into db with just account ID for each player in this match
+    /**		
+     * Inserts a placeholder player into db with just account ID for each player in this match		
      **/
-    function ensurePlayers(cb)
+    function insertPlayers(cb)
     {
         if (options.skipInsertPlayers)
         {
