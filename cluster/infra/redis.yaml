@@ -10,8 +10,10 @@ spec:
     app: redis
     tier: infra
   ports:
-  - port: 6379
+  - nodePort: 30247
+    port: 6379
     targetPort: 6379
+  type: NodePort
 ---
 apiVersion: v1
 kind: ReplicationController

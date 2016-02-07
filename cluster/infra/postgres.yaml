@@ -10,8 +10,10 @@ spec:
     app: postgres
     tier: infra
   ports:
-  - port: 5432
+  - nodePort: 30248
+    port: 5432
     targetPort: 5432
+  type: NodePort
 ----
 apiVersion: v1
 kind: ReplicationController
