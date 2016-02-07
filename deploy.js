@@ -19,13 +19,13 @@ else
             var script = app + ".js";
             //manually set number of instances for types
             //0 starts equal to number of cores
+            //null doesn't start any
             var instances = {
                 web: 4,
                 fullhistory: 4,
                 cacher: 2,
                 retriever: null,
                 proxy: null,
-                profiler: 0,
             };
             var n = instances[app] || 1;
             console.log(app, n);
