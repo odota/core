@@ -417,3 +417,7 @@ g
 .lane-position {
   cursor: pointer;
 }
+
+.label {
+    margin: 1px;
+}
