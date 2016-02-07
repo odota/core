@@ -22,7 +22,7 @@ var handler = StripeCheckout.configure({
             token: token
         };
 
-        $.post("/carry", data, function(data) {
+        $.post("/stripe_checkout", data, function(data) {
             if (data == "OK") window.location = "/thanks";
             else {
                 $alert.text(data);
@@ -31,6 +31,33 @@ var handler = StripeCheckout.configure({
         });
     }
 });
+
+$(document).ready(function() {
+    $.get("/brain_tree_client_token", function(token) {
+        braintree.setup(token, "custom", {
+            paypal: {
+                container: "paypal-container",
+            },
+            onPaymentMethodReceived: function(obj) {
+                console.log("GOT HERE");
+                var data = {
+                    amount: $amount.find(":selected").text(),
+                    subscription: document.getElementById("subscription").checked,
+                    nonce: obj.nonce
+                }
+
+                $.post("/brain_tree_checkout", data, function(data) {
+                    if (data == "OK") window.location = "/thanks";
+                    else {
+                        $alert.text(data);
+                        $alert.show();
+                    }
+                });
+            }
+        });
+    })
+})
+
 
 $('#thething').on('click', function(e) {
     // Open Checkout with further options
