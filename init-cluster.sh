@@ -80,21 +80,9 @@ bash ./kubernetes/cluster/kube-down.sh
 #nonkube
 gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 
-gcloud compute instance-templates create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --metadata startup-script='#!/bin/bash
-git clone https://github.com/yasp-dota/yasp
-sudo mkdir /var/lib/redis
-sudo mount -o defaults /dev/sdb /var/lib/redis
-sudo mkdir /var/lib/postgresql/data
-sudo mount -o defaults /dev/sdc /var/lib/postgresql/data
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node deploy.js && sleep infinity"
-sudo docker run -d --restart=always -v /yasp/cluster/setup/redis.conf:/etc/redis/redis.conf -v /var/lib/redis:/var/lib/redis/ --net=host redis:3 -- redis-server /etc/redis/redis.conf
-sudo docker run -d --restart=always -u postgres -e "PGDATA=/var/lib/postgresql/data/pgdata" -v /var/lib/postgresql/data:/var/lib/postgresql/data -v /yasp/cluster/setup/pg_hba.conf:/etc/postgresql/pg_hba.conf -v /yasp/cluster/setup/postgresql.conf:/etc/postgresql/postgresql.conf --net=host postgres:9.5 -- postgres --config_file=/etc/postgresql/postgresql.conf
-'
+gcloud compute instance-templates create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
 gcloud compute --project "peaceful-parity-87002" instance-groups managed create "core-group-1" --zone "us-central1-b" --base-instance-name "core-group-1" --template "core-1" --size "1"
 
-gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2   --image container-vm   --preemptible --metadata startup-script='#!/bin/bash
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
-'
+gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2   --image container-vm   --preemptible --metadata-from-file startup-script=./cluster/scripts/parser.sh
 gcloud compute --project "peaceful-parity-87002" instance-groups managed create "parser-group-1" --zone "us-central1-b" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
 gcloud compute --project "peaceful-parity-87002" instance-groups managed set-autoscaling "parser-group-1" --zone "us-central1-b" --cool-down-period "60" --max-num-replicas "30" --min-num-replicas "1" --target-cpu-utilization "0.8"
