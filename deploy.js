@@ -15,12 +15,35 @@ else
     {
         async.each(lines, function(line, cb)
         {
-            var app = line.split(':')[0] + ".js";
-            console.log(app);
-            pm2.start(app, cb);
+            var app = line.split(':')[0];
+            var script = app + ".js";
+            //manually set number of instances for types
+            //0 starts equal to number of cores
+            //null doesn't start any
+            var instances = {
+                web: 4,
+                fullhistory: 4,
+                cacher: 2,
+                retriever: null,
+                proxy: null,
+            };
+            if (instances[app] !== null)
+            {
+                var n = instances[app] || 1;
+                console.log(app, n);
+                pm2.start(script,
+                {
+                    instances: n
+                }, cb);
+            }
+            else
+            {
+                cb();
+            }
         }, function(err)
         {
-            if (err){
+            if (err)
+            {
                 console.error(err);
             }
             pm2.disconnect();
