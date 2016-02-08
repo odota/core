@@ -9,6 +9,7 @@ var queue = require('../queue');
 var redis = require('../redis');
 var args = process.argv.slice(2);
 var end_seq_num = args[0] || 0;
+const cluster = require('cluster');
 //match seq num 59622 has a 32-bit unsigned int max (4294967295) in one of the players' tower damage
 //match seq num 239190 for hero_healing
 //match seq num 542284 for hero_healing
@@ -18,12 +19,24 @@ var end_seq_num = args[0] || 0;
 //save progress to redis key complete_history:n
 var bucket_size = 100000000;
 var i = 0;
-async.whilst(function()
+if (cluster.isMaster)
 {
-    return i < end_seq_num;
-}, function(cb)
+    // Fork workers.
+    for (var i = 0; i < end_seq_num; i += bucket_size)
+    {
+        cluster.fork(
+        {
+            BUCKET: i
+        });
+    }
+    cluster.on('exit', (worker, code, signal) =>
+    {
+        console.log(`worker ${worker.process.pid} died`);
+    });
+}
+else
 {
-    var bucket = i;
+    var bucket = process.env.BUCKET;
     redis.get('complete_history:' + bucket, function(err, result)
     {
         if (err)
@@ -32,13 +45,8 @@ async.whilst(function()
         }
         result = result ? Number(result) : bucket;
         getPage(result, bucket);
-        cb(err);
     });
-    i += bucket_size;
-}, function(err)
-{
-    console.log("launched all scanners with err: %s", err);
-});
+}
 
 function getPage(match_seq_num, bucket)
 {
@@ -70,7 +78,8 @@ function getPage(match_seq_num, bucket)
                 {
                     type: "api",
                     skipCacheUpdate: true,
-                    skipAbilityUpgrades: true
+                    skipAbilityUpgrades: true,
+                    skipInsertPlayers: true
                 }, cb);
             }, function(err)
             {
