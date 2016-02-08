@@ -10,7 +10,7 @@ var redis = require('../redis');
 var args = process.argv.slice(2);
 var start_seq_num = args[0] || 0;
 var end_seq_num = args[1] || 0;
-var delay = args[2] || 1000;
+var delay = Number(args[2]) || 1000;
 const cluster = require('cluster');
 //match seq num 59622 has a 32-bit unsigned int max (4294967295) in one of the players' tower damage
 //match seq num 239190 for hero_healing
@@ -63,7 +63,7 @@ function getPage(match_seq_num, bucket)
     getData(
     {
         url: url,
-        delay: 500
+        delay: delay
     }, function(err, body)
     {
         if (err)
