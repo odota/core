@@ -8,7 +8,9 @@ var db = require('../db');
 var queue = require('../queue');
 var redis = require('../redis');
 var args = process.argv.slice(2);
-var end_seq_num = args[0] || 0;
+var start_seq_num = args[0] || 0;
+var end_seq_num = args[1] || 0;
+var delay = args[2] || 1000;
 const cluster = require('cluster');
 //match seq num 59622 has a 32-bit unsigned int max (4294967295) in one of the players' tower damage
 //match seq num 239190 for hero_healing
@@ -18,11 +20,10 @@ const cluster = require('cluster');
 //bucket idspace into groups of 100000000
 //save progress to redis key complete_history:n
 var bucket_size = 100000000;
-var i = 0;
 if (cluster.isMaster)
 {
     // Fork workers.
-    for (var i = 0; i < end_seq_num; i += bucket_size)
+    for (var i = start_seq_num; i < end_seq_num; i += bucket_size)
     {
         cluster.fork(
         {
