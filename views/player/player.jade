@@ -33,14 +33,13 @@ block content
               small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
     .col-xs-3
           h4
-            if (!player.full_history_time)
+            if (!player.full_history_time && !config.ENABLE_INSERT_ALL_MATCHES)
               span.text-danger.rating: abbr(title="This player does not have full match history yet.  Some matches may be missing.  (A full history request is automatically queued on login)")
                 i.fa.fa-exclamation-triangle
             else
               span.text-success.rating: abbr(title="Full history has been processed for this player.")
                 i.fa.fa-check
-            small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
-              Players signing in for the first time may not see all matches until their full history has been retrieved.<br>") #{player.match_count} recorded 
+            small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.") #{player.match_count} recorded 
               
           h4
             if !(player.account_id in trackedPlayers)
@@ -50,9 +49,9 @@ block content
               span.text-success.rating: abbr(title="This player has visited in the last #{config.UNTRACK_DAYS} days.  Matches they play are automatically parsed.")
                 i.fa.fa-eye
             small: abbr(title="A parsed match is a match that has had its replay analyzed.<br> \
-              Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
+              Replay parsing is only available for matches with unexpired replays.<br> \
               Many advanced statistics are only available for parsed matches.<br> \
-              Replays of active users and specifically requested matches are parsed.") #{player.parsed_match_count} parsed 
+              Replays of active users are automatically parsed and users can request specific matches individually.") #{player.parsed_match_count} parsed 
 
     .col-xs-3
       h4
