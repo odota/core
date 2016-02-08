@@ -26,6 +26,7 @@ else
                 cacher: 2,
                 retriever: null,
                 proxy: null,
+                parser: null
             };
             if (instances[app] !== null)
             {
