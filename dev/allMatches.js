@@ -62,7 +62,7 @@ function getPage(match_seq_num, bucket)
     getData(
     {
         url: url,
-        delay: 100
+        delay: 500
     }, function(err, body)
     {
         if (err)
