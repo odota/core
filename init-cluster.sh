@@ -88,23 +88,23 @@ gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 gcloud compute instances create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 100GB --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
 
 #parsers
-gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2   --image container-vm --preemptible --metadata-from-file startup-script=./cluster/scripts/parser.sh
-gcloud compute --project "peaceful-parity-87002" instance-groups managed create "parser-group-1" --zone "us-central1-b" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
-gcloud compute --project "peaceful-parity-87002" instance-groups managed set-autoscaling "parser-group-1" --zone "us-central1-b" --cool-down-period "60" --max-num-replicas "30" --min-num-replicas "1" --target-cpu-utilization "0.8"
+gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --metadata-from-file startup-script=./cluster/scripts/parser.sh
+gcloud compute instance-groups managed create "parser-group-1" --zone "us-central1-b" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
+gcloud compute instance-groups managed set-autoscaling "parser-group-1" --zone "us-central1-b" --cool-down-period "60" --max-num-replicas "30" --min-num-replicas "1" --target-cpu-utilization "0.8"
 
 #cassandra test
-gcloud compute instances create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 100GB --boot-disk-type pd-ssd
-gcloud compute instances create cassandra-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 100GB --boot-disk-type pd-ssd
-gcloud compute instances add-metadata cassandra-1 --metadata startup-script='#!/bin/bash
-docker run --name cassandra -d -e CASSANDRA_BROADCAST_ADDRESS=10.240.0.7 -p 7000:7000 cassandra:latest
+gcloud compute instances create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 100GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+docker run --name cassandra -d --net=host cassandra:latest
 '
-gcloud compute instances add-metadata cassandra-2 --metadata startup-script='#!/bin/bash
-docker run --name cassandra -d -e CASSANDRA_BROADCAST_ADDRESS=10.240.0.8 -p 7000:7000 -e CASSANDRA_SEEDS=10.240.0.7 cassandra:latest
+gcloud compute instances create cassandra-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 100GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+docker run --name cassandra -d --net=host -e CASSANDRA_SEEDS=cassandra-1 cassandra:latest
 '
+gcloud compute instances delete -q cassandra-1
+gcloud compute instances delete -q cassandra-2
 
 #importer
 gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 3000"
+sudo docker run -d --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 5000"
 '
 gcloud compute instance-groups managed create "importer-group-1" --zone "us-central1-b" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
 gcloud compute instance-groups managed delete -q "importer-group-1"
