@@ -36,7 +36,7 @@ $(document).ready(function() {
     $.get("/brain_tree_client_token", function(token) {
         braintree.setup(token, "custom", {
             paypal: {
-                container: "paypal-container",
+                container: "paypal-container"
             },
             onPaymentMethodReceived: function(obj) {
                 console.log("GOT HERE");
