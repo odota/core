@@ -34,39 +34,49 @@ queue.parse.process(function(job, cb)
         {
             return cb(err);
         }
-        runParse(match, function(err, parsed_data)
+        try
         {
-            if (err)
-            {
-                console.log(err);
-                return cb(err);
-            }
-            var match = job.data.payload;
-            //extend match object with parsed data, keep existing data if key conflict (match_id)
-            //match.players was deleted earlier during insertion of api data
-            for (var key in parsed_data)
-            {
-                match[key] = match[key] || parsed_data[key];
-            }
-            match.parse_status = 2;
-            //fs.writeFileSync('output.json', JSON.stringify(match));
-            return insertMatch(db, redis, queue, match,
-            {
-                type: "parsed"
-            }, function(err)
+            runParse(match, function(err, parsed_data)
             {
                 if (err)
                 {
                     console.log(err);
                     return cb(err);
                 }
-                var hostname = os.hostname();
-                redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
-                redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
-                redis.ltrim("parse_delay", 0, 10000);
-                return cb(err);
+                var match = job.data.payload;
+                //extend match object with parsed data, keep existing data if key conflict (match_id)
+                //match.players was deleted earlier during insertion of api data
+                for (var key in parsed_data)
+                {
+                    match[key] = match[key] || parsed_data[key];
+                }
+                match.parse_status = 2;
+                //fs.writeFileSync('output.json', JSON.stringify(match));
+                return insertMatch(db, redis, queue, match,
+                {
+                    type: "parsed"
+                }, function(err)
+                {
+                    if (err)
+                    {
+                        console.log(err);
+                        return cb(err);
+                    }
+                    var hostname = os.hostname();
+                    redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
+                    redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
+                    redis.ltrim("parse_delay", 0, 10000);
+                    return cb(err);
+                });
             });
-        });
+        }
+        catch (e)
+        {
+            cb(e);
+            setTimeout(function()
+            {
+                process.exit(Number(e));
+            }, 1000);
+        }
     });
 });
-
