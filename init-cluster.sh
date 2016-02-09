@@ -89,9 +89,10 @@ gcloud compute instances create core-1 --machine-type n1-highmem-8 --image conta
 
 #parsers
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --metadata startup-script='#!/bin/bash
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
+for i in `seq 1 4`;
+do
+    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
+done
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
 gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "1" --target-cpu-utilization "0.9"
