@@ -226,7 +226,15 @@ module.exports = function(db, redis) {
                 res.send(checkErr());
             }
             
-            addCheeseAndRespond(req, res, amount);
+            redis.incrby("cheese_goal", amount, function(err, val) {
+                if (!err && val === Number(amount)) {
+                    // this condition indicates the key is new
+                    // Set TLL to end of the month
+                    redis.expire("cheese_goal", moment().endOf("month").unix() - moment().unix());
+                    
+                    addCheeseAndRespond(req, res, amount);
+                }
+            });
         });
     })
     donate.route('/thanks').get(function(req, res) {

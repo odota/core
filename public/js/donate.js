@@ -39,7 +39,6 @@ $(document).ready(function() {
                 container: "paypal-container"
             },
             onPaymentMethodReceived: function(obj) {
-                console.log("GOT HERE");
                 var data = {
                     amount: $amount.find(":selected").text(),
                     subscription: document.getElementById("subscription").checked,
@@ -57,7 +56,6 @@ $(document).ready(function() {
         });
     })
 })
-
 
 $('#thething').on('click', function(e) {
     // Open Checkout with further options
