@@ -80,7 +80,7 @@ bash ./kubernetes/cluster/kube-down.sh
 #nonkube
 gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 
-gcloud compute instance-templates create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
+gcloud compute instance-templates create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 100GB --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
 gcloud compute --project "peaceful-parity-87002" instance-groups managed create "core-group-1" --zone "us-central1-b" --base-instance-name "core-group-1" --template "core-1" --size "1"
 
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2   --image container-vm --preemptible --metadata-from-file startup-script=./cluster/scripts/parser.sh

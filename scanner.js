@@ -101,7 +101,8 @@ function scanApi(seq_num)
         getData(
         {
             url: container.url,
-            delay: 100
+            delay: 100,
+            doNotProxy: true
         }, function(err, data)
         {
             if (err)

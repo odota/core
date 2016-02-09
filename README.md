@@ -35,7 +35,6 @@ Maintenance
 * `node runner updateconstants` pulls latest constants data and saves to `json` directory
 * `node runner fullhistory` queues a full history request for all players in DB who don't have it yet
 * `npm run update` updates all deps to latest versions
-* `npm run deploy` deploys application to Kubernetes cluster
 
 Developer's Guide
 ----
