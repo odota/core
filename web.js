@@ -277,6 +277,9 @@ app.route('/logout').get(function(req, res)
     req.session = null;
     res.redirect('/');
 });
+app.route('/privacyterms').get(function(req, res) {
+    res.render("privacyterms");
+})
 app.use('/matches', matches(db, redis));
 app.use('/players', players(db, redis));
 app.use('/names/:vanityUrl', function(req, res, cb)
