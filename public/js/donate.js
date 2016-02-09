@@ -23,7 +23,7 @@ var handler = StripeCheckout.configure({
         };
 
         $.post("/stripe_checkout", data, function(data) {
-            if (data == "OK") window.location = "/thanks";
+            if (data === "OK") window.location = "/thanks";
             else {
                 $alert.text(data);
                 $alert.show();
@@ -41,12 +41,11 @@ $(document).ready(function() {
             onPaymentMethodReceived: function(obj) {
                 var data = {
                     amount: $amount.find(":selected").text(),
-                    subscription: document.getElementById("subscription").checked,
                     nonce: obj.nonce
                 }
 
                 $.post("/brain_tree_checkout", data, function(data) {
-                    if (data == "OK") window.location = "/thanks";
+                    if (data === "OK") window.location = "/thanks";
                     else {
                         $alert.text(data);
                         $alert.show();

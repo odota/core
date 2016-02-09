@@ -199,9 +199,7 @@ module.exports = function(db, redis) {
       });
     });
     donate.route("/brain_tree_checkout").post(function(req, res) {
-        console.log("GOT HERE")
         var amount = Number(req.body.amount);
-        var subscription = req.body.subscription !== "false";
         var nonce = req.body.nonce;
         
         if (!nonce || isNaN(amount)) {
@@ -231,9 +229,9 @@ module.exports = function(db, redis) {
                     // this condition indicates the key is new
                     // Set TLL to end of the month
                     redis.expire("cheese_goal", moment().endOf("month").unix() - moment().unix());
-                    
-                    addCheeseAndRespond(req, res, amount);
                 }
+                
+                addCheeseAndRespond(req, res, amount);
             });
         });
     })
