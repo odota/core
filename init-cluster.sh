@@ -88,9 +88,15 @@ gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 gcloud compute instances create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 100GB --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
 
 #parsers
-gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --metadata-from-file startup-script=./cluster/scripts/parser.sh
-gcloud compute instance-groups managed create "parser-group-1" --zone "us-central1-b" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
-gcloud compute instance-groups managed set-autoscaling "parser-group-1" --zone "us-central1-b" --cool-down-period "60" --max-num-replicas "30" --min-num-replicas "1" --target-cpu-utilization "0.8"
+gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --metadata startup-script='#!/bin/bash
+sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
+sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
+sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
+'
+gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
+gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "1" --target-cpu-utilization "0.9"
+gcloud compute instance-groups managed delete -q parser-group-1
+gcloud compute instance-templates delete -q parser-1
 
 #cassandra test
 gcloud compute instances create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 100GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
@@ -107,5 +113,5 @@ gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 
 sudo docker run -d --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 5000"
 '
 gcloud compute instance-groups managed create "importer-group-1" --zone "us-central1-b" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
-gcloud compute instance-groups managed delete -q "importer-group-1"
-gcloud compute instance-templates delete -q "importer-1"
+gcloud compute instance-groups managed delete -q importer-group-1
+gcloud compute instance-templates delete -q importer-1
