@@ -102,7 +102,7 @@ function scanApi(seq_num)
         {
             url: container.url,
             delay: 100,
-            doNotProxy: true
+            proxyAffinityRange: 4
         }, function(err, data)
         {
             if (err)
