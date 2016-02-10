@@ -10,8 +10,10 @@ spec:
     app: postgres
     tier: infra
   ports:
-  - port: 5432
+  - nodePort: 30248
+    port: 5432
     targetPort: 5432
+  type: NodePort
 ----
 apiVersion: v1
 kind: ReplicationController
@@ -50,7 +52,7 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "1000m"
+            cpu: "4000m"
             memory: "16G"
         volumeMounts:
         - name: postgres
