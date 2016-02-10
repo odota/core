@@ -113,6 +113,6 @@ docker run --name cassandra -d --net=host -e CASSANDRA_SEEDS=cassandra-1 cassand
 gcloud compute instance-groups managed delete -q importer-group-1
 gcloud compute instance-templates delete -q importer-1
 gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 5000"
+sudo docker run -d --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 10000"
 '
 gcloud compute instance-groups managed create "importer-group-1" --zone "us-central1-b" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
