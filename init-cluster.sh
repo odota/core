@@ -114,21 +114,14 @@ docker run --name cassandra -d --net=host -e CASSANDRA_SEEDS=cassandra-1 cassand
 gcloud compute instance-groups managed delete -q backend-group-1
 gcloud compute instance-templates delete -q backend-1
 gcloud compute instance-templates create backend-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node worker.js"
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node scanner.js"
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node skill.js"
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node mmr.js"
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node fullhistory.js"
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node cacher.js"
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node requests.js"
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node profiler.js"
+
 '
 gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"
 
 #importer
 gcloud compute instance-groups managed delete -q importer-group-1
 gcloud compute instance-templates delete -q importer-1
-gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-2 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 20000"
+gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
+sudo docker run -d --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 500000000 10000"
 '
 gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
