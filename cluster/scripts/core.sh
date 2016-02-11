@@ -9,9 +9,7 @@ sudo mount -o discard,defaults /dev/sdc /var/lib/postgresql/data
 sudo echo never > /sys/kernel/mm/transparent_hugepage/enabled
 
 sudo docker pull yasp/yasp
-sudo docker rm -f yasp
-sudo docker rm -f redis
-sudo docker rm -f postgres
+docker rm -f $(docker ps -a -q)
 
 sudo docker run -d --name web --restart=always --net=host yasp/yasp:latest "./node_modules/pm2/bin/pm2 start web.js -i 0 && sleep infinity"
 sudo docker run -d --name worker --restart=always --net=host yasp/yasp:latest "node worker.js"

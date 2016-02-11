@@ -86,7 +86,7 @@ gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 
 #core
 gcloud compute instances delete -q core-1
-gcloud compute instances create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 100GB --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
+gcloud compute instances create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
 
 #parsers
 gcloud compute instance-groups managed delete -q parser-group-1
@@ -122,6 +122,6 @@ gcloud compute instance-groups managed create "backend-group-1" --base-instance-
 gcloud compute instance-groups managed delete -q importer-group-1
 gcloud compute instance-templates delete -q importer-1
 gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-sudo docker run -d --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 500000000 10000"
+sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 500000000 1000"
 '
 gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
