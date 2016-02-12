@@ -98,7 +98,7 @@ do
 done
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
-gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "1" --target-cpu-utilization "0.7"
+gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "3" --target-cpu-utilization "0.7"
 
 #cassandra
 gcloud compute instances delete -q cassandra-1
@@ -122,6 +122,6 @@ gcloud compute instance-groups managed create "backend-group-1" --base-instance-
 gcloud compute instance-groups managed delete -q importer-group-1
 gcloud compute instance-templates delete -q importer-1
 gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 500000000 1000"
+sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 5000"
 '
 gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"

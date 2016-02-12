@@ -488,10 +488,11 @@ function queueReq(queue, type, payload, options, cb)
         {
             delay: 60 * 1000,
             type: 'exponential'
-        }
+        },
+        timeout: options.timeout
     }).then(function(queuejob)
     {
-        console.log("created jobId: %s", queuejob.jobId);
+        console.log("created %s jobId: %s", type, queuejob.jobId);
         cb(null, queuejob);
     }).catch(cb);
 }
