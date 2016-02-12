@@ -144,7 +144,6 @@ module.exports = function getStatus(db, redis, cb)
         }
     }, function(err, results)
     {
-        console.timeEnd('status');
         cb(err, results);
     });
 
