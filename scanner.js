@@ -5,7 +5,6 @@ var db = require('./db');
 var redis = require('./redis');
 var queue = require('./queue');
 var mQueue = queue.getQueue('mmr');
-var pQueue = queue.getQueue('parse');
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');

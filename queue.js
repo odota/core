@@ -2,7 +2,7 @@ var bull = require('bull');
 var config = require('./config');
 var url = require('url');
 var async = require('async');
-var generateJob = require('utility').generateJob;
+var generateJob = require('./utility').generateJob;
 // parse the url
 var conn_info = url.parse(config.REDIS_URL, true /* parse query string */ );
 if (conn_info.protocol !== 'redis:')
