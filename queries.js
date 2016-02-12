@@ -159,7 +159,7 @@ function insertMatch(db, redis, match, options, cb)
                 return au.ability;
             }) : null;
         });
-        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 3, JSON.stringify(ability_upgrades));
+        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 1, JSON.stringify(ability_upgrades));
     }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
@@ -256,6 +256,7 @@ function insertMatch(db, redis, match, options, cb)
         else
         {
             //queue it and finish, callback with the queued parse job
+            options.timeout = 180000;
             return queue.addToQueue(pQueue, match, options, function(err, job2)
             {
                 cb(err, job2);

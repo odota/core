@@ -194,23 +194,30 @@ describe("parser", function()
             {}, function(err, job)
             {
                 assert(job && !err);
-                pQueue.once('completed', function(job2)
+                var poll = setInterval(function()
                 {
-                    if (job.jobId === job2.jobId)
+                    pQueue.getJob(job.jobId).then(function(job)
                     {
-                        //ensure parse data got inserted
-                        queries.getMatch(db, tests[key], function(err, match)
+                        job.getState().then(function(state)
                         {
-                            if (err)
+                            if (state === "completed")
                             {
-                                return done(err);
+                                clearInterval(poll);
+                                //ensure parse data got inserted
+                                queries.getMatch(db, tests[key], function(err, match)
+                                {
+                                    if (err)
+                                    {
+                                        return done(err);
+                                    }
+                                    assert(match.version);
+                                    assert(match.players && match.players[0] && match.players[0].lh_t);
+                                    return done();
+                                });
                             }
-                            assert(match.version);
-                            assert(match.players && match.players[0] && match.players[0].lh_t);
-                            return done();
                         });
-                    }
-                });
+                    }).catch(done);
+                }, 1000);
             });
         });
     }

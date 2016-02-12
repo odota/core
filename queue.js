@@ -71,7 +71,6 @@ function getCounts(redis, cb)
             {
                 obj[types[i]] = r;
             });
-            console.timeEnd('queue');
             cb(err, obj);
         });
     });
