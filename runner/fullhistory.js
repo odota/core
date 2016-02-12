@@ -1,6 +1,7 @@
 var db = require('../db');
 var async = require('async');
 var queue = require('../queue');
+var fhQueue = queue.getQueue('fullhistory');
 var queueReq = require('../utility').queueReq;
 /**
  * Get all players who have visited and don't have full history, and queue for full history
@@ -11,7 +12,7 @@ module.exports = function fullhistory(cb) {
             return cb(err);
         }
         async.eachSeries(players, function(player, cb) {
-            queueReq(queue, "fullhistory", player, {
+            queue.addToQueue(fhQueue, player, {
                 attempts: 1
             }, function(err, job) {
                 cb(err);

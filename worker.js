@@ -128,12 +128,7 @@ invokeInterval(function buildDistributions(cb)
 }, 60 * 60 * 1000 * 6);
 invokeInterval(function cleanup(cb)
 {
-    //clean old jobs from queue older than 1 day
-    for (var key in queue)
-    {
-        queue[key].clean(24 * 60 * 60 * 1000, 'completed');
-        queue[key].clean(24 * 60 * 60 * 1000, 'failed');
-    }
+    queue.cleanup(redis);
     redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
     redis.keys("parser:*", function(err, result)

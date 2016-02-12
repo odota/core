@@ -478,24 +478,6 @@ function invokeInterval(func, delay)
     })();
 }
 
-function queueReq(queue, type, payload, options, cb)
-{
-    var job = generateJob(type, payload);
-    queue[job.type].add(job,
-    {
-        attempts: options.attempts || 15,
-        backoff:
-        {
-            delay: 60 * 1000,
-            type: 'exponential'
-        }
-    }).then(function(queuejob)
-    {
-        console.log("created jobId: %s", queuejob.jobId);
-        cb(null, queuejob);
-    }).catch(cb);
-}
-
 function preprocessQuery(query, constants)
 {
     //check if we already processed to ensure idempotence
@@ -669,7 +651,6 @@ module.exports = {
     max: max,
     min: min,
     invokeInterval: invokeInterval,
-    queueReq: queueReq,
     preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,

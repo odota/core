@@ -1,9 +1,7 @@
 var config = require('./config');
 var utility = require('./utility');
 var request = require('request');
-var queueReq = utility.queueReq;
 var redis = require('./redis');
-var queue = require('./queue');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
@@ -35,6 +33,8 @@ var mmstats = require('./routes/mmstats');
 var requestRouter = require('./routes/request');
 var querystring = require('querystring');
 var util = require('util');
+var queue = require('./queue');
+var fhQueue = queue.getQueue('fullhistory');
 //PASSPORT config
 passport.serializeUser(function(user, done)
 {
@@ -78,7 +78,7 @@ passport.use(new SteamStrategy(
             {
                 return cb(err);
             }
-            queueReq(queue, "fullhistory", player,
+            queue.addToQueue(fhQueue, player,
             {}, function(err)
             {
                 return cb(err, player);
@@ -233,7 +233,7 @@ app.route('/healthz').get(function(req, res)
 });
 app.route('/status').get(function(req, res, next)
 {
-    status(db, redis, queue, function(err, result)
+    status(db, redis, function(err, result)
     {
         if (err)
         {

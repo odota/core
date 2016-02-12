@@ -1,7 +1,8 @@
 var async = require('async');
 var playerCache = require('./playerCache');
 var countPlayerCaches = playerCache.countPlayerCaches;
-module.exports = function getStatus(db, redis, queue, cb)
+var queue = require('./queue');
+module.exports = function getStatus(db, redis, cb)
 {
     console.time('status');
     async.series(
@@ -124,45 +125,8 @@ module.exports = function getStatus(db, redis, queue, cb)
         },
         queue: function(cb)
         {
-            console.time('queue');
-            //object with properties as queue types, each mapped to json object mapping state to count
-            async.map(Object.keys(queue), getQueueCounts, function(err, result)
-            {
-                var obj = {};
-                result.forEach(function(r, i)
-                {
-                    obj[Object.keys(queue)[i]] = r;
-                });
-                console.timeEnd('queue');
-                cb(err, obj);
-            });
-
-            function getQueueCounts(type, cb)
-            {
-                async.series(
-                {
-                    "wait": function(cb)
-                    {
-                        redis.llen(queue[type].toKey("wait"), cb);
-                    },
-                    "act": function(cb)
-                    {
-                        redis.llen(queue[type].toKey("active"), cb);
-                    },
-                    "del": function(cb)
-                    {
-                        redis.zcard(queue[type].toKey("delayed"), cb);
-                    },
-                    "comp": function(cb)
-                    {
-                        redis.scard(queue[type].toKey("completed"), cb);
-                    },
-                    "fail": function(cb)
-                    {
-                        redis.scard(queue[type].toKey("failed"), cb);
-                    }
-                }, cb);
-            }
+            //generate object with properties as queue types, each mapped to json object mapping state to count
+            queue.getCounts(redis, cb);
         },
         load_times: function(cb)
         {

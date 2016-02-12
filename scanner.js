@@ -4,11 +4,12 @@ var getData = utility.getData;
 var db = require('./db');
 var redis = require('./redis');
 var queue = require('./queue');
+var mQueue = queue.getQueue('mmr');
+var pQueue = queue.getQueue('parse');
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
 var insertMatch = require('./queries').insertMatch;
-var queueReq = utility.queueReq;
 var queries = require('./queries');
 var buildSets = require('./buildSets');
 var constants = require('./constants');
@@ -138,7 +139,7 @@ function scanApi(seq_num)
                     if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 20 === 0)))
                     {
                         //could possibly pick up MMR change for matches we don't add, this is probably ok
-                        queueReq(queue, "mmr",
+                        queue.addToQueue(mQueue,
                         {
                             match_id: match.match_id,
                             account_id: p.account_id,
@@ -161,7 +162,7 @@ function scanApi(seq_num)
                     if (match.parse_status === 0 || match.parse_status === 3)
                     {
                         redis.zadd("added_match", moment().format('X'), match.match_id);
-                        insertMatch(db, redis, queue, match,
+                        insertMatch(db, redis, match,
                         {
                             type: "api"
                         }, close);

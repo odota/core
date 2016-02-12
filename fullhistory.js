@@ -1,8 +1,8 @@
 var utility = require('./utility');
 var redis = require('./redis');
 var queue = require('./queue');
+var fhQueue = queue.getQueue('fhQueue');
 var config = require('./config');
-var utility = require('./utility');
 var async = require('async');
 var db = require('./db');
 var getData = utility.getData;
@@ -16,7 +16,7 @@ var api_keys = config.STEAM_API_KEY.split(",");
 //number of api requests to send at once
 var parallelism = Math.min(10, api_keys.length);
 
-queue.fullhistory.process(1, processFullHistory);
+fhQueue.process(1, processFullHistory);
 
 function processFullHistory(job, cb) {
     var player = job.data.payload;
@@ -69,7 +69,7 @@ function processFullHistory(job, cb) {
                             return cb(err);
                         }
                         var match = body.result;
-                        insertMatch(db, redis, queue, match, {
+                        insertMatch(db, redis, match, {
                             type: "api",
                             skipCacheUpdate: true,
                             skipAbilityUpgrades: true
