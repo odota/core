@@ -225,7 +225,6 @@ module.exports = function(db, redis) {
             orderId: "Mapped to PayPal Invoice Number",
             options: {
                 paypal: {
-                    customField: "PayPal custom field",
                     description: "YASP - Buying " + amount + " cheese!",
                 },
                 submitForSettlement: true
