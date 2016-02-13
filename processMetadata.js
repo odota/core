@@ -3,6 +3,7 @@ module.exports = function processMetadata(entries)
     var hero_to_slot = {};
     var slot_to_playerslot = {};
     var game_zero = 0;
+    var game_end = 0;
     var metaTypes = {
         "DOTA_COMBATLOG_GAME_STATE": function(e)
         {
@@ -12,6 +13,10 @@ module.exports = function processMetadata(entries)
             if (e.value === 5)
             {
                 game_zero = e.time;
+            }
+            else if (e.value === 6)
+            {
+                game_end = e.time;
             }
         },
         "interval": function(e)
@@ -62,6 +67,7 @@ module.exports = function processMetadata(entries)
     return {
         game_zero: game_zero,
         hero_to_slot: hero_to_slot,
-        slot_to_playerslot: slot_to_playerslot
+        slot_to_playerslot: slot_to_playerslot,
+        game_end: game_end
     };
 };

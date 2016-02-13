@@ -54,6 +54,7 @@
     "jquery": "^2.2.0",
     "knex": "^0.9.0",
     "moment": "^2.11.2",
+    "multer": "^1.1.0",
     "ndjson": "^1.4.3",
     "numeral": "^1.5.3",
     "passport": "0.3.2",

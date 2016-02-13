@@ -8,7 +8,8 @@ var processTeamfights = require('./processTeamfights');
 var processReduce = require('./processReduce');
 var processMetadata = require('./processMetadata');
 var processExpand = require('./processExpand');
-module.exports = function runParse(match, cb)
+var stream = require('stream');
+module.exports = function runParse(match, job, cb)
 {
     var url = match.url;
     var inStream;
@@ -16,57 +17,77 @@ module.exports = function runParse(match, cb)
     var bz;
     var parser;
     var entries = [];
-    inStream = progress(request(
+    createInputStream();
+
+    function createInputStream()
     {
-        url: url,
-        encoding: null,
-        timeout: 30000
-    })).on('progress', function(state)
-    {
-        console.log(JSON.stringify(
+        inStream = progress(request(
         {
             url: url,
-            state: state
-        }));
-    }).on('response', function(response)
-    {
-        if (response.statusCode === 200)
+            encoding: null,
+            timeout: 30000
+        })).on('progress', function(state)
         {
-            //TODO replace domain with something that can handle exceptions with context
-            parser = spawn("java", ["-jar",
-                    "-Xmx64m",
-                    "java_parser/target/stats-0.1.0.jar"
-                ],
+            console.log(JSON.stringify(
             {
-                //we may want to ignore stderr so the child doesn't stay open
-                stdio: ['pipe', 'pipe', 'pipe'],
-                encoding: 'utf8'
-            });
-            parseStream = ndjson.parse();
-            if (url.slice(-3) === "bz2")
+                url: url,
+                state: state
+            }));
+            if (job)
             {
-                bz = spawn("bunzip2");
-                inStream.pipe(bz.stdin);
-                bz.stdout.pipe(parser.stdin);
+                job.progress(state.percentage * 100);
+            }
+        }).on('response', function(response)
+        {
+            if (response.statusCode === 200)
+            {
+                forwardInput(inStream);
             }
             else
             {
-                inStream.pipe(parser.stdin);
+                exit(response.statusCode.toString());
             }
-            parser.stdout.pipe(parseStream);
-            parser.stderr.on('data', function(data)
-            {
-                console.log(data.toString());
-            });
-            parseStream.on('data', handleStream);
-            parseStream.on('end', exit);
-            parseStream.on('error', exit);
+        }).on('error', exit);
+    }
+
+    function forwardInput(inStream)
+    {
+        parser = spawn("java", ["-jar",
+                    "-Xmx64m",
+                    "java_parser/target/stats-0.1.0.jar"
+                ],
+        {
+            //we may want to ignore stderr so the child doesn't stay open
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
+        parseStream = ndjson.parse();
+        if (url && url.slice(-3) === "bz2")
+        {
+            bz = spawn("bunzip2");
         }
         else
         {
-            exit(response.statusCode.toString());
+            var str = stream.PassThrough();
+            bz = {
+                stdin: str,
+                stdout: str
+            };
         }
-    }).on('error', exit);
+        inStream.pipe(bz.stdin);
+        bz.stdout.pipe(parser.stdin);
+        parser.stdout.pipe(parseStream);
+        parser.stderr.on('data', function printStdErr(data)
+        {
+            console.log(data.toString());
+        });
+        parseStream.on('data', function handleStream(e)
+        {
+            entries.push(e);
+        });
+        parseStream.on('end', exit);
+        parseStream.on('error', exit);
+    }
 
     function exit(err)
     {
@@ -81,16 +102,12 @@ module.exports = function runParse(match, cb)
             var ap = processAllPlayers(res.int_data);
             parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
             parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
+            parsed_data.duration = meta.game_end - meta.game_zero;
             //processMultiKillStreaks();
             //processReduce(res.expanded);
             console.timeEnd(message);
         }
         return cb(err, parsed_data);
-    }
-    //callback when the JSON stream encounters a JSON object (event)
-    function handleStream(e)
-    {
-        entries.push(e);
     }
 
     function populate(e, container)
@@ -98,17 +115,24 @@ module.exports = function runParse(match, cb)
         switch (e.type)
         {
             case 'epilogue':
-                //var dota = JSON.parse(e.key).gameInfo_.dota_;
+                var dota = JSON.parse(e.key).gameInfo_.dota_;
                 //container.match_id = dota.matchId_;
-                //container.game_mode = dota.gameMode_;
-                //container.radiant_win = dota.gameWinner_ === 2;
+                container.game_mode = dota.gameMode_;
+                container.radiant_win = dota.gameWinner_ === 2;
                 //following needs some extraction/transformation
                 //container.picks_bans = dota.picksBans_; 
                 //require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
-                //TODO hero_id from interval?
                 break;
             case 'interval':
-                //don't need to store interval objects (broken into subtypes)
+                container.players[e.slot].hero_id = e.hero_id;
+                container.players[e.slot].level = e.level;
+                container.players[e.slot].kills = e.kills;
+                container.players[e.slot].deaths = e.deaths;
+                container.players[e.slot].assists = e.assists;
+                container.players[e.slot].denies = e.denies;
+                container.players[e.slot].last_hits = e.lh;
+                container.players[e.slot].gold = e.gold;
+                container.players[e.slot].xp = e.xp;
                 break;
             case 'player_slot':
                 container.players[e.key].player_slot = e.value;
