@@ -22,13 +22,23 @@ Tech
 
 Quickstart
 ----
-* Install dependencies for Ubuntu (14.04 LTS, this is what we develop on and production uses): `sudo bash init.sh`. For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
+* We recommending using Cloud 9 IDE for fast and easy development, although you are free to develop on your own setup if you want.
+* Create an account on Cloud 9: https://c9.io/dashboard.html
+* Start a new workspace and choose the source GitHub repository as yasp-dota/yasp
+* Open the workspace
+* Install dependencies: `sudo bash init.sh`. The script is designed for Ubuntu 14.04 LTS.  For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
-  * Note: If you have Steam Guard activated on your account you will either have to deactivate it or (recommended) create a new account for use with the retriever.
+  * The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account use for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
 * Set up the database `sudo npm run create`
 * Build `npm run build`
 * Run `npm test` to make sure your install works correctly
-* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`. You can also start individual services: `npm run dev web,parser`
+* Run the application with one of the following: (this will run under nodemon so file changes automatically restart the server): 
+  * `npm run dev` Run one instance of each service.
+  * `npm run dev web` Runs just the web server.  Useful for developing just the frontend CSS/JS.
+  * `npm run dev web,parser,requests,retriever` The minimal setup for being able to open the site in a browser and request parses by ID (which is a useful end-to-end test).
+* Get some starter data: You can request some parses to get some parsed data.  You can also log in through Steam on your own instance to trigger a full history request for that user (requires `fullhistory` service to be running)
+* `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in a separate window in order to automatically rebuild after making changes.
+* `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
 
 Maintenance
 ----
@@ -36,7 +46,7 @@ Maintenance
 * `node runner fullhistory` queues a full history request for all players in DB who don't have it yet
 * `npm run update` updates all deps to latest versions
 
-Developer's Guide
+Architecture and Design
 ----
 See the [wiki](https://github.com/yasp-dota/yasp/wiki/Developer's-Guide).
 
