@@ -79,7 +79,8 @@ queue.parse.process(function(job, cb)
             }
             catch (e)
             {
-                throw e;
+                cb(e);
+                setTimeout(function(){throw e;}, 1000);
             }
         },
         "insertMatch": match.replay_blob_key ? function(cb)
