@@ -6,8 +6,6 @@ ON hero_id = pct.hero_id
 where account_id = ?
 */
 
---begin transaction
---delete table if exists
 START TRANSACTION;
 DROP TABLE IF EXISTS hero_rankings;
 

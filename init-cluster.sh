@@ -81,12 +81,13 @@ bash ./kubernetes/cluster/kube-down.sh
 
 ###
 
-#metadata
+#prod env vars to metadata
 gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 
 #core
 gcloud compute instances delete -q core-1
 gcloud compute instances create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
+gcloud compute instances add-metadata core-1 --metadata-from-file startup-script=./cluster/scripts/core.sh
 
 #parsers
 gcloud compute instance-groups managed delete -q parser-group-1

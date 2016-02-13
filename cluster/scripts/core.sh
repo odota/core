@@ -13,6 +13,7 @@ docker rm -f $(docker ps -a -q)
 
 sudo docker run -d --name postgres --restart=always -u postgres -e "PGDATA=/var/lib/postgresql/data/pgdata" -v /var/lib/postgresql/data:/var/lib/postgresql/data -v /yasp/cluster/setup/pg_hba.conf:/etc/postgresql/pg_hba.conf -v /yasp/cluster/setup/postgresql.conf:/etc/postgresql/postgresql.conf --net=host postgres:9.5 -- postgres --config_file=/etc/postgresql/postgresql.conf
 sudo docker run -d --name redis --restart=always -v /yasp/cluster/setup/redis.conf:/etc/redis/redis.conf -v /var/lib/redis:/var/lib/redis/ --net=host redis:3 -- redis-server /etc/redis/redis.conf
+<<<<<<< Updated upstream
 sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "./node_modules/pm2/bin/pm2 start deploy.json && sleep infinity"
 #sudo docker run -d --name web --restart=always --net=host yasp/yasp:latest "node web.js"
 #sudo docker run -d --name worker --restart=always --net=host yasp/yasp:latest "node worker.js"
@@ -23,3 +24,6 @@ sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "./n
 #sudo docker run -d --name cacher --restart=always --net=host yasp/yasp:latest "node cacher.js"
 #sudo docker run -d --name requests --restart=always --net=host yasp/yasp:latest "node requests.js"
 #sudo docker run -d --name profiler --restart=always --net=host yasp/yasp:latest "node profiler.js"
+=======
+sudo docker run -d --name postgres --restart=always --log-driver=none -u postgres -e "PGDATA=/var/lib/postgresql/data/pgdata" -v /var/lib/postgresql/data:/var/lib/postgresql/data -v /yasp/cluster/setup/pg_hba.conf:/etc/postgresql/pg_hba.conf -v /yasp/cluster/setup/postgresql.conf:/etc/postgresql/postgresql.conf --net=host postgres:9.5 -- postgres --config_file=/etc/postgresql/postgresql.conf
+>>>>>>> Stashed changes
