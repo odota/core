@@ -104,6 +104,15 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
+        "api_notable": function()
+        {
+            return {
+                url: api_url + "/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=" + api_key,
+                title: [type].join(),
+                type: "api",
+                payload: payload
+            };
+        },
         "parse": function()
         {
             return {
@@ -214,7 +223,7 @@ function getData(url, cb)
                 //non-retryable
                 return cb(body);
             }
-            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response))
+            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos))
             {
                 //invalid response
                 if (url.noRetry)

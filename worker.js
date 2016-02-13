@@ -12,8 +12,7 @@ var fs = require('fs');
 var constants = require('./constants');
 var sql = {};
 var sqlq = fs.readdirSync('./sql');
-const cp = require('child_process');
-const exec = cp.exec;
+var queries = require('./queries');
 var composition = require('./composition');
 sqlq.forEach(function(f)
 {
@@ -169,3 +168,22 @@ invokeInterval(function buildPicks(cb)
         cb(err);
     });
 }, 60 * 60 * 1000);
+invokeInterval(function notablePlayers(cb)
+{
+    var container = utility.generateJob("api_notable",
+    {});
+    utility.getData(container.url, function(err, body)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        async.each(body.player_infos, function(p, cb)
+        {
+            queries.upsert(db, 'notable_players', p,
+            {
+                account_id: p.account_id
+            }, cb);
+        }, cb);
+    });
+}, 10 * 60 * 1000);

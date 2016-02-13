@@ -1,0 +1,47 @@
+extend layout
+
+block content
+  .row
+    .col-md-12
+      h3 Pro Players
+    .col-md-12.table-responsive
+      table.table.table-striped.table-condensed#pros
+        thead
+          tr
+            th Name
+            th Role
+            th Team
+        tbody
+          each entry in players
+            tr
+              td
+                span.flag-icon(class="flag-icon-"+entry.country_code.toLowerCase())     
+                a(href="/players/"+entry.account_id)=entry.name
+              td=entry.fantasy_role === 1 ? "Core" : "Support"
+              td=entry.team_name
+
+append footer_assets
+  script.
+    $('#pros').dataTable({
+      info: false,
+      "paging": false,
+      "searching": true,
+      "order": [
+          [2, "desc"]
+      ],
+      "drawCallback":function(){
+          tooltips();
+      },
+      "columnDefs": [{
+          targets: "fromNow",
+          render: function(data, type) {
+              if (type === "display") {
+                  if (!Number(data)){
+                      return "never";
+                  }
+                  return moment.unix(data).fromNow();
+              }
+              return data;
+          }
+      }]
+    });

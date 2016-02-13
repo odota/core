@@ -396,4 +396,5 @@ module.exports = {
     getPlayerMatches: getPlayerMatches,
     getPlayerRatings: getPlayerRatings,
     getPlayer: getPlayer,
+    upsert: upsert
 };

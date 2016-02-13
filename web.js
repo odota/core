@@ -269,7 +269,8 @@ app.route('/logout').get(function(req, res)
     req.session = null;
     res.redirect('/');
 });
-app.route('/privacyterms').get(function(req, res) {
+app.route('/privacyterms').get(function(req, res)
+{
     res.render("privacyterms");
 })
 app.use('/matches', matches(db, redis));
@@ -327,15 +328,31 @@ app.get('/picks/:n?', function(req, res, next)
         result = JSON.parse(result);
         res.render('picks',
         {
-            picks: result || {},
+            picks: result ||
+            {},
             n: req.params.n || "1",
-            tabs: {
+            tabs:
+            {
                 1: "Monads",
                 2: "Dyads",
                 3: "Triads",
                 4: "Tetrads",
                 5: "Pentads"
             }
+        });
+    });
+});
+app.get('/pros', function(req, res, cb)
+{
+    db.select().from('notable_players').asCallback(function(err, results)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        res.render('pros',
+        {
+            players: results
         });
     });
 });
