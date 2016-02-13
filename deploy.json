@@ -1,49 +1,54 @@
 {
-    "apps": [
-        {
-            "script": "skill.js",
-            "exec_mode": "cluster",
-            "instances": 1
+  "apps": [
+    {
+      "script": "skill.js",
+      "exec_mode": "cluster",
+      "instances": 1
       },
-        {
-            "script": "mmr.js",
-            "exec_mode": "cluster",
-            "instances": 1
+    {
+      "script": "mmr.js",
+      "exec_mode": "cluster",
+      "instances": 1
       },
-        {
-            "script": "profiler.js",
-            "exec_mode": "cluster",
-            "instances": 1
+    {
+      "script": "profiler.js",
+      "exec_mode": "cluster",
+      "instances": 1
       },
-        {
-            "script": "scanner.js",
-            "exec_mode": "cluster",
-            "instances": 1
+    {
+      "script": "scanner.js",
+      "exec_mode": "cluster",
+      "instances": 1
       },
-        {
-            "script": "worker.js",
-            "exec_mode": "cluster",
-            "instances": 1
+    {
+      "script": "worker.js",
+      "exec_mode": "cluster",
+      "instances": 1
       },
-        {
-            "script": "fullhistory.js",
-            "exec_mode": "cluster",
-            "instances": 1
+    {
+      "script": "fullhistory.js",
+      "exec_mode": "cluster",
+      "instances": 1
       },
-        {
-            "script": "cacher.js",
-            "script": "requests.js",
-            "exec_mode": "cluster",
-            "instances": 1
+    {
+      "script": "cacher.js",
+      "script": "requests.js",
+      "exec_mode": "cluster",
+      "instances": 1
       },
-        {
-            "script": "requests.js",
-            "exec_mode": "cluster",
-            "instances": 1
+    {
+      "script": "requests.js",
+      "exec_mode": "cluster",
+      "instances": 1
       },
-        {
-            "script": "web.js",
-            "exec_mode": "cluster",
-            "instances": 0
+    {
+      "script": "cacher.js",
+      "exec_mode": "cluster",
+      "instances": 2
+      },
+    {
+      "script": "web.js",
+      "exec_mode": "cluster",
+      "instances": 0
       }]
 }
