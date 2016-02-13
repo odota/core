@@ -11,7 +11,7 @@ spec:
   selector:
     app: cassandra
     tier: infra
----
+----
 apiVersion: v1
 kind: ReplicationController
 metadata:
@@ -52,7 +52,58 @@ spec:
               name: cassandra
       volumes:
         - name: cassandra
-          emptyDir: {}
-          #gcePersistentDisk:
-            #pdName: disk-cassandra
-            #fsType: ext4
+          persistentVolumeClaim:
+            claimName: cassandra
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: cassandra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100
+----
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: cassandra-1
+spec:
+  capacity:
+    storage: 100
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  gcePersistentDisk:
+    pdName: "cassandra-1"
+    fsType: "ext4"
+----
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: cassandra-2
+spec:
+  capacity:
+    storage: 100
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  gcePersistentDisk:
+    pdName: "cassandra-2"
+    fsType: "ext4"
+----
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: cassandra-3
+spec:
+  capacity:
+    storage: 100
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  gcePersistentDisk:
+    pdName: "cassandra-3"
+    fsType: "ext4"

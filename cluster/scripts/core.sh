@@ -1,4 +1,5 @@
 #!/bin/bash
+rm -rf yasp
 git clone https://github.com/yasp-dota/yasp
 sudo mkdir -p /var/lib/redis
 sudo mount -o discard,defaults /dev/sdb /var/lib/redis

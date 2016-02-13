@@ -156,7 +156,7 @@ function getData(url, cb)
 {
     var u;
     var delay = Number(config.DEFAULT_DELAY);
-    var doNotProxy = false;
+    var proxyAffinityRange;
     if (url.constructor === Array)
     {
         //select a random element if array
@@ -167,7 +167,7 @@ function getData(url, cb)
         //options object
         u = url.url;
         delay = url.delay || delay;
-        doNotProxy = url.doNotProxy || doNotProxy;
+        proxyAffinityRange = url.proxyAffinityRange || proxyAffinityRange;
     }
     else
     {
@@ -192,11 +192,9 @@ function getData(url, cb)
         console.log(proxies, proxy);
         */
         //choose a steam api host
-        if (!doNotProxy)
-        {
-            var api_hosts = config.STEAM_API_HOST.split(",");
-            parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
-        }
+        var api_hosts = config.STEAM_API_HOST.split(",");
+        api_hosts = proxyAffinityRange ? api_hosts.slice(0, proxyAffinityRange) : api_hosts;
+        parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
     }
     var target = urllib.format(parse);
     logger.info("getData: %s", target);

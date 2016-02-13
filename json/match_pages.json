@@ -30,8 +30,7 @@
     "name": "Actions"
   },
   "analysis": {
-    "name": "Analysis",
-    "new": true
+    "name": "Analysis"
   },
   "chat": {
     "name": "Chat"

@@ -1,0 +1,62 @@
+extend layout
+
+block content
+  .row
+    .col-md-12
+      h3 Picks 
+        small Recent Matches
+    .col-md-12(style="margin-bottom:5px;")
+      ul.nav.nav-tabs
+        each val, key in tabs
+          li(class=(n === key ? 'active' : ''))
+              a(href="/picks/" + key)= val
+    .col-md-12.table-responsive
+      table.table.table-striped.table-condensed.rankable#picks
+        thead
+          tr
+            th Name
+            th Games
+            th Pick%
+            th Win%
+        tbody
+          each entry in picks[n] || []
+            tr
+              td
+                +renderName(entry.key)
+              td.rankable=entry.games
+              td.rankable #{(entry.games/entry.total*100).toFixed(2)}%
+              td.rankable #{(entry.wins/entry.games*100).toFixed(2)}%
+            
+append footer_assets
+  script.
+    $('#picks').dataTable({
+      info: false,
+      "paging": false,
+      "searching": true,
+      "order": [
+          [1, "desc"]
+      ],
+      "drawCallback":function(){
+          tooltips();
+      },
+      "columnDefs": [{
+          targets: "fromNow",
+          render: function(data, type) {
+              if (type === "display") {
+                  if (!Number(data)){
+                      return "never";
+                  }
+                  return moment.unix(data).fromNow();
+              }
+              return data;
+          }
+      }]
+    });
+
+mixin renderName(key)
+  - var arr = key.split(',')
+  each k in arr
+    - var hero = constants.heroes[k]
+    if hero
+      span: img.img-sm(src=hero.img)
+  span #{arr.map(function(k){return constants.heroes[k] ? constants.heroes[k].localized_name : k;}).join(' / ')}
