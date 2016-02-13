@@ -6,5 +6,5 @@
 }}}
 
 
-* We make no guarantees of avilabiliy for YASP, including for Cheese purchasers or subscribers.
-* All sales are final and no refunds will be provided.
+* We make no guarantees of availability  for YASP, including for Cheese purchasers or subscribers.
+* We are unable to provide refunds. All sales are final.
