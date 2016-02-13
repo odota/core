@@ -22,7 +22,7 @@ Tech Stack
 
 Quickstart
 ----
-* We recommending using Cloud 9 IDE for fast and easy development, although you are free to develop on your own setup if you want.
+* We recommend Cloud 9 IDE for fast and easy setup and development, although you are free to develop on your own setup if you want.
 * Create an account on Cloud 9: https://c9.io/dashboard.html
 * Start a new workspace and choose the source GitHub repository as yasp-dota/yasp, or your own fork of it if you're planning to make changes and submit a pull request.
 * Open the workspace
@@ -38,10 +38,12 @@ Quickstart
 * Other useful commands
   * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in a separate window in order to automatically rebuild after making changes.
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
-  * `node runner updateconstants` pulls latest constants data and saves to `json` directory
-  * `node runner fullhistory` queues a full history request for all players in DB who don't have it yet
-  * `npm run update` updates all deps to latest versions
-* Get some starter data: You can request some parses to get some parsed data.  You can also log in through Steam on your own instance to trigger a full history request for that user (requires `fullhistory` service to be running)
+  * `npm run task updateconstants` pulls latest constants data and saves to `json` directory.
+  * `npm run task fullhistory` queues a full history request for all players in DB who don't have it yet.
+  * `npm run update` updates all deps in `package.json` to latest versions.
+* Get some starter data
+  * You can request some parses by ID to get some parsed data.  
+  * You can also log in through Steam on your own instance to trigger a full history request for that user (requires `fullhistory` service to be running)
 * Make some changes and commit them: `git add --all; git commit -m "My first commit!"`
 * Submit a pull request.  Wait for it to be reviewed and merged.
 * Congratulations!  You're a contributor.
