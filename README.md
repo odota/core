@@ -10,13 +10,13 @@ YASP (Yet Another Stats Page)
 Overview
 ----
 
-We provide free, open source replay parsing for the Dota 2 Community. This includes item timelines, gold/LH graphs, ward positions, and position heatmaps.
+* This project aims to provide free, open source, highly detailed match and player statistics for the Dota 2 community.
+* Data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
+* See [here](http://yasp.co/matches/1912366402) for an example of our match analysis (this match may not have the latest features as we're constantly adding new things).
 
-See [here](http://yasp.co/matches/1912366402) for an example of our match analysis.
-
-Tech
+Tech Stack
 ----
-* Web/Services: Node.js
+* Web/Microservices: Node.js
 * Storage: PostgreSQL/Redis/Cassandra
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
@@ -35,18 +35,16 @@ Quickstart
   * `npm run dev` Run one instance of each service.
   * `npm run dev web` Runs just the web server.  Useful for developing just the frontend CSS/JS.
   * `npm run dev web,parser,requests,retriever` The minimal setup for being able to open the site in a browser and request parses by ID (which is a useful end-to-end test).
+* Other useful commands
+  * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in a separate window in order to automatically rebuild after making changes.
+  * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
+  * `node runner updateconstants` pulls latest constants data and saves to `json` directory
+  * `node runner fullhistory` queues a full history request for all players in DB who don't have it yet
+  * `npm run update` updates all deps to latest versions
 * Get some starter data: You can request some parses to get some parsed data.  You can also log in through Steam on your own instance to trigger a full history request for that user (requires `fullhistory` service to be running)
-* `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in a separate window in order to automatically rebuild after making changes.
-* `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
-* Make some changes, commit them: `git add --all; git commit -m "My first commit!"`
+* Make some changes and commit them: `git add --all; git commit -m "My first commit!"`
 * Submit a pull request.  Wait for it to be reviewed and merged.
 * Congratulations!  You're a contributor.
-
-Maintenance
-----
-* `node runner updateconstants` pulls latest constants data and saves to `json` directory
-* `node runner fullhistory` queues a full history request for all players in DB who don't have it yet
-* `npm run update` updates all deps to latest versions
 
 Architecture and Design
 ----
