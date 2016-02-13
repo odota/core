@@ -5,6 +5,5 @@
   "author": "Admin"
 }}}
 
-
-* We make no guarantees of availability  for YASP, including for Cheese purchasers or subscribers.
-* We are unable to provide refunds. All sales are final.
+* We do our best to keep the site running, but cannot make any guarantees of availability, including for donators.
+* We are unable to provide refunds for donations.
