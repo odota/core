@@ -118,8 +118,8 @@ function cleanup(redis)
         });
         types.forEach(function(key)
         {
-            this.getQueue(key).clean(24 * 60 * 60 * 1000, 'completed');
-            this.getQueue(key).clean(24 * 60 * 60 * 1000, 'failed');
+            getQueue(key).clean(24 * 60 * 60 * 1000, 'completed');
+            getQueue(key).clean(24 * 60 * 60 * 1000, 'failed');
         });
     });
 }

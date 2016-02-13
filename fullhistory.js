@@ -1,7 +1,7 @@
 var utility = require('./utility');
 var redis = require('./redis');
 var queue = require('./queue');
-var fhQueue = queue.getQueue('fhQueue');
+var fhQueue = queue.getQueue('fullhistory');
 var config = require('./config');
 var async = require('async');
 var db = require('./db');
@@ -11,7 +11,6 @@ var insertMatch = queries.insertMatch;
 var constants = require('./constants.js');
 var urllib = require('url');
 var generateJob = utility.generateJob;
-var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
 //number of api requests to send at once
 var parallelism = Math.min(10, api_keys.length);
