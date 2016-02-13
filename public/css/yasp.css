@@ -441,3 +441,8 @@ g
     cursor: inherit;
     display: block;
 }
+
+/* info text on request page*/
+ul.small.text-left {
+    margin-top: 1em;
+}
