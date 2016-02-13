@@ -17,7 +17,8 @@
     "build": "npm install && npm run maven && npm run webpack",
     "create": "bash sql/create.sh",
     "psql": "psql -d postgresql://yasp:yasp@localhost/yasp",
-    "deploy": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest"
+    "task": "node runner",
+    "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest"
   },
   "repository": {
     "type": "git",
