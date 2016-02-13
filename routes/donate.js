@@ -19,7 +19,10 @@ module.exports = function(db, redis) {
     donate.route('/carry').get(function(req, res, next) {
         db.from('players').where('cheese', '>', 0).limit(50).orderBy('cheese', 'desc')
         .asCallback(function(err, results) {
-            if (err) return next(err);
+            if (err) {
+                return next(err);
+            }
+            
             if (req.user) {
                 db.from("subscriptions").where({
                     account_id: req.user.account_id
@@ -57,7 +60,9 @@ module.exports = function(db, redis) {
                 quantity: amount, // Plan is $1/cheese/month
                 email: token.email
             }, function(err, customer) {
-                if (err) return res.send(checkErr(err));
+                if (err) {
+                    return res.send(checkErr(err));
+                }
                 
                 if (req.user) {
                     db('subscriptions').insert({
@@ -91,7 +96,9 @@ module.exports = function(db, redis) {
                 source: token.id,
                 description: "Buying " + amount + " cheese!"
             }, function(err, charge) {
-                if (err) return res.send(checkErr(err));
+                if (err) {
+                    return res.send(checkErr(err));
+                }
                 
                 addCheeseAndRespond(req, res, amount);
             });
@@ -102,7 +109,9 @@ module.exports = function(db, redis) {
         console.log("Got a event from Stripe, id %s", id);
         // Get the event from Stripe to verify
         stripe.events.retrieve(id, function(err, event) {
-            if (err) return res.sendStatus(400);
+            if (err) {
+                return res.sendStatus(400);
+            }
             
             // Only care about charge succeeded or subscription ended
             if (event.type !== "charge.succeeded" && event.type !== "customer.subscription.deleted") {
@@ -133,8 +142,10 @@ module.exports = function(db, redis) {
                     redis.incrby("cheese_goal", amount, function(err, val) {
                         if (!err && val === Number(amount)) {
                             // this condition indicates the key is new
-                            // Set TLL to end of the month
+                            // Set TTL to end of the month
                             redis.expire("cheese_goal", moment().endOf("month").unix() - moment().unix());
+                        } else {
+                            console.log("Failed to increment cheese_goal");
                         }
                         
                         var customer = event.data.object.customer;
@@ -194,7 +205,9 @@ module.exports = function(db, redis) {
     });
     donate.route("/brain_tree_client_token").get(function (req, res) {
       gateway.clientToken.generate({}, function (err, response) {
-        if (err) return res.sendStatus(400);
+        if (err) {
+            return res.sendStatus(400);
+        }
         res.send(response.clientToken);
       });
     });
@@ -221,14 +234,16 @@ module.exports = function(db, redis) {
         
         gateway.transaction.sale(saleRequest, function (err, result) {
             if (err || !result.success) {
-                res.send(checkErr());
+                res.send(checkErr(err));
             }
             
             redis.incrby("cheese_goal", amount, function(err, val) {
                 if (!err && val === Number(amount)) {
                     // this condition indicates the key is new
-                    // Set TLL to end of the month
+                    // Set TTL to end of the month
                     redis.expire("cheese_goal", moment().endOf("month").unix() - moment().unix());
+                } else {
+                    console.log("Failed to increment cheese_goal");
                 }
                 
                 addCheeseAndRespond(req, res, amount);
@@ -270,7 +285,9 @@ module.exports = function(db, redis) {
             account_id: req.user.account_id
         })
         .asCallback(function(err, subs) {
-            if (err) return next(err);
+            if (err) {
+                return next(err);
+            }
             
             async.each(subs, function(sub, cb) {
                 stripe.customers.del(sub.customer_id, function(err, result) {
