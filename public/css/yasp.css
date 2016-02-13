@@ -448,3 +448,11 @@ ul.small.text-left {
 .label {
     margin: 1px;
 }
+
+table img.img-sm {
+    margin: 0 5px;
+}
+
+.center {
+    margin: 0 auto;
+}

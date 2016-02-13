@@ -270,7 +270,7 @@ app.route('/logout').get(function(req, res)
     res.redirect('/');
 });
 app.route('/privacyterms').get(function(req, res) {
-    res.render("privacyterms");
+    res.redirect("/faq");
 })
 app.use('/matches', matches(db, redis));
 app.use('/players', players(db, redis));
