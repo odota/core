@@ -39,6 +39,9 @@ Quickstart
 * Get some starter data: You can request some parses to get some parsed data.  You can also log in through Steam on your own instance to trigger a full history request for that user (requires `fullhistory` service to be running)
 * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in a separate window in order to automatically rebuild after making changes.
 * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
+* Make some changes, commit them: `git add --all;git commit -m "My first commit!"`
+* Submit a pull request, wait for it to be reviewed and merged
+* Congratulations!  You're a contributor.
 
 Maintenance
 ----
