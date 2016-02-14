@@ -95,7 +95,7 @@ gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --metadata startup-script='#!/bin/bash
 for i in `seq 1 3`;
 do
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
+    sudo docker run -d --restart=always yasp/yasp:latest "node parser.js"
 done
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
