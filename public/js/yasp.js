@@ -17,7 +17,7 @@ require('../../node_modules/cal-heatmap/cal-heatmap.css');
 window.CalHeatMap = require('cal-heatmap');
 require('bootstrap');
 require('wordcloud');
-window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
+window.h337 = require('../../node_modules/heatmap.js/heatmap.js');
 window.moment = require('moment');
 window.numeral = require('numeral');
 require('../../node_modules/flag-icon-css/css/flag-icon.css');

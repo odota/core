@@ -2,16 +2,27 @@ var express = require('express');
 var donate = express.Router();
 var config = require('../config');
 var async = require("async");
+var moment = require('moment');
 var stripe_secret = config.STRIPE_SECRET;
 var stripe_public = config.STRIPE_PUBLIC;
 var stripe = require('stripe')(stripe_secret);
-var moment = require('moment');
+var braintree = require("braintree");
+var gateway = braintree.connect({
+  environment: config.NODE_ENV !== "development" ? braintree.Environment.Production 
+                    : braintree.Environment.Sandbox,
+  merchantId: config.BRAIN_TREE_MERCHANT_ID,
+  publicKey: config.BRAIN_TREE_PUBLIC_KEY,
+  privateKey: config.BRAIN_TREE_PRIVATE_KEY
+});
 
 module.exports = function(db, redis) {
     donate.route('/carry').get(function(req, res, next) {
         db.from('players').where('cheese', '>', 0).limit(50).orderBy('cheese', 'desc')
         .asCallback(function(err, results) {
-            if (err) return next(err);
+            if (err) {
+                return next(err);
+            }
+            
             if (req.user) {
                 db.from("subscriptions").where({
                     account_id: req.user.account_id
@@ -30,7 +41,8 @@ module.exports = function(db, redis) {
                 });
             }
         });
-    }).post(function(req, res, next) {
+    })
+    donate.route("/stripe_checkout").post(function(req, res, next) {
         var amount = Number(req.body.amount);
         var subscription = req.body.subscription !== "false";
         var token = req.body.token;
@@ -48,7 +60,9 @@ module.exports = function(db, redis) {
                 quantity: amount, // Plan is $1/cheese/month
                 email: token.email
             }, function(err, customer) {
-                if (err) return res.send(checkErr(err));
+                if (err) {
+                    return res.send(checkErr(err));
+                }
                 
                 if (req.user) {
                     db('subscriptions').insert({
@@ -71,7 +85,7 @@ module.exports = function(db, redis) {
                 } else {
                     req.session.cheeseAmount = amount;
                     req.session.subscription = 2; // Not signed in
-                    return res.sendStatus(200);   
+                    return res.sendStatus(200);
                 }
             });
         
@@ -82,90 +96,22 @@ module.exports = function(db, redis) {
                 source: token.id,
                 description: "Buying " + amount + " cheese!"
             }, function(err, charge) {
-                if (err) return res.send(checkErr(err));
-                
-                if (req.user) {
-                     db('players')
-                    .increment("cheese", amount || 0)
-                    .where({
-                        account_id: req.user.account_id
-                    }).asCallback(function(err) {
-                        if (err) return res.send(
-                            "There was a problem processing your subscription." 
-                            + " Please email support@yasp.co");
-                        
-                        req.session.cheeseAmount = amount;
-                        res.sendStatus(200);
-                    });
-                } else {
-                    req.session.cheeseAmount = amount;
-                    return res.sendStatus(200);
+                if (err) {
+                    return res.send(checkErr(err));
                 }
+                
+                addCheeseAndRespond(req, res, amount);
             });
         }
-    });
-    donate.route('/thanks').get(function(req, res) {
-        var cheeseCount = req.session.cheeseAmount || 0;
-        var cheeseTotal = req.user ? (req.user.cheese || 0) : cheeseCount;
-        var subscription = req.session.subscription;
-        var cancel = req.session.cancel;
-        
-        clearPaymentSessions(req);
-        res.render("thanks", {
-            cheese: cheeseCount,
-            total: cheeseTotal,
-            subscription: subscription,
-            cancel: cancel
-        });
-    });
-    donate.route("/cancel").get(function(req, res, next) {
-        if (!req.user) return res.render("cancel", {
-            sub: false
-        });
-        
-        db("subscriptions")
-        .where({
-            account_id: req.user.account_id
-        })
-        .asCallback(function(err, sub) {
-            if (err) return next(err);
-            res.render("cancel", {
-                sub: sub
-            });
-        });
-    }).post(function(req, res, next) {
-        db("subscriptions")
-        .where({
-            account_id: req.user.account_id
-        })
-        .asCallback(function(err, subs) {
-            if (err) return next(err);
-            
-            async.each(subs, function(sub, cb) {
-                stripe.customers.del(sub.customer_id, function(err, result) {
-                    // Indicates the subscription has already been deleted. 
-                    if (err && err.rawType !== "invalid_request_error") return cb(err);
-                    db("subscriptions")
-                    .where({
-                        customer_id: sub.customer_id
-                    })
-                    .del()
-                    .asCallback(cb);
-                })
-            }, function(err) {
-                if (err) return next(err);
-                
-                req.session.cancel = true;
-                res.redirect("/thanks");
-            });
-        });
     });
     donate.route("/stripe_endpoint").post(function(req, res, next) {
         var id = req.body.id;
         console.log("Got a event from Stripe, id %s", id);
         // Get the event from Stripe to verify
         stripe.events.retrieve(id, function(err, event) {
-            if (err) return res.sendStatus(400);
+            if (err) {
+                return res.sendStatus(400);
+            }
             
             // Only care about charge succeeded or subscription ended
             if (event.type !== "charge.succeeded" && event.type !== "customer.subscription.deleted") {
@@ -196,8 +142,10 @@ module.exports = function(db, redis) {
                     redis.incrby("cheese_goal", amount, function(err, val) {
                         if (!err && val === Number(amount)) {
                             // this condition indicates the key is new
-                            // Set TLL to end of the month
+                            // Set TTL to end of the month
                             redis.expire("cheese_goal", moment().endOf("month").unix() - moment().unix());
+                        } else {
+                            console.log("Failed to increment cheese_goal");
                         }
                         
                         var customer = event.data.object.customer;
@@ -255,7 +203,132 @@ module.exports = function(db, redis) {
             });
         });
     });
+    donate.route("/brain_tree_client_token").get(function (req, res) {
+      gateway.clientToken.generate({}, function (err, response) {
+        if (err) {
+            return res.sendStatus(400);
+        }
+        res.send(response.clientToken);
+      });
+    });
+    donate.route("/brain_tree_checkout").post(function(req, res) {
+        var amount = Number(req.body.amount);
+        var nonce = req.body.nonce;
+        
+        if (!nonce || isNaN(amount)) {
+            return res.sendStatus(500);
+        }
+        
+        var saleRequest = {
+            amount: amount,
+            paymentMethodNonce: nonce,
+            orderId: "Mapped to PayPal Invoice Number",
+            options: {
+                paypal: {
+                    description: "YASP - Buying " + amount + " cheese!",
+                },
+                submitForSettlement: true
+            }
+        };
+        
+        gateway.transaction.sale(saleRequest, function (err, result) {
+            if (err || !result.success) {
+                res.send(checkErr(err));
+            }
+            
+            redis.incrby("cheese_goal", amount, function(err, val) {
+                if (!err && val === Number(amount)) {
+                    // this condition indicates the key is new
+                    // Set TTL to end of the month
+                    redis.expire("cheese_goal", moment().endOf("month").unix() - moment().unix());
+                } else {
+                    console.log("Failed to increment cheese_goal");
+                }
+                
+                addCheeseAndRespond(req, res, amount);
+            });
+        });
+    })
+    donate.route('/thanks').get(function(req, res) {
+        var cheeseCount = req.session.cheeseAmount || 0;
+        var cheeseTotal = req.user ? (req.user.cheese || 0) : cheeseCount;
+        var subscription = req.session.subscription;
+        var cancel = req.session.cancel;
+        
+        clearPaymentSessions(req);
+        res.render("thanks", {
+            cheese: cheeseCount,
+            total: cheeseTotal,
+            subscription: subscription,
+            cancel: cancel
+        });
+    });
+    donate.route("/cancel").get(function(req, res, next) {
+        if (!req.user) return res.render("cancel", {
+            sub: false
+        });
+        
+        db("subscriptions")
+        .where({
+            account_id: req.user.account_id
+        })
+        .asCallback(function(err, sub) {
+            if (err) return next(err);
+            res.render("cancel", {
+                sub: sub
+            });
+        });
+    }).post(function(req, res, next) {
+        db("subscriptions")
+        .where({
+            account_id: req.user.account_id
+        })
+        .asCallback(function(err, subs) {
+            if (err) {
+                return next(err);
+            }
+            
+            async.each(subs, function(sub, cb) {
+                stripe.customers.del(sub.customer_id, function(err, result) {
+                    // Indicates the subscription has already been deleted. 
+                    if (err && err.rawType !== "invalid_request_error") return cb(err);
+                    db("subscriptions")
+                    .where({
+                        customer_id: sub.customer_id
+                    })
+                    .del()
+                    .asCallback(cb);
+                })
+            }, function(err) {
+                if (err) return next(err);
+                
+                req.session.cancel = true;
+                res.redirect("/thanks");
+            });
+        });
+    });
+
     return donate;
+    
+    function addCheeseAndRespond(req, res, amount) {
+        if (req.user) {
+             db('players')
+            .increment("cheese", amount || 0)
+            .where({
+                account_id: req.user.account_id
+            }).asCallback(function(err) {
+                if (err) return res.send(
+                    "There was a problem processing your subscription." 
+                    + " Please email support@yasp.co");
+                
+                req.session.cheeseAmount = amount;
+                res.sendStatus(200);
+            });
+        } else {
+            req.session.cheeseAmount = amount;
+            return res.sendStatus(200);
+        }
+    }
     
     function addEventAndRespond(id, res) {
         redis.lpush("stripe:events", id);

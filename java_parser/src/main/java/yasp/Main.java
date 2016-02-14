@@ -345,12 +345,16 @@ public class Main {
                         entry.stuns = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
                     }
 
+                    try{
                     entry.level = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iLevel", validIndices[i]);
                     entry.kills = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iKills", validIndices[i]);
                     entry.deaths = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iDeaths", validIndices[i]);
                     entry.assists = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iAssists", validIndices[i]);
                     entry.denies = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iDenyCount", teamSlot);
-                    
+                    }
+                    catch(Exception e){
+                        System.err.println(e);
+                    }
                     //TODO: gem, rapier time?
                     //https://github.com/yasp-dota/yasp/issues/333
                     //need to dump inventory items for each player and possibly keep track of item entity handles
