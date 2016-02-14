@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node deploy",
-    "dev": "nf -j Procfile.dev start",
+    "dev": "node genProcfile.js && nf -j Procfile.dev start",
     "test": "test/run.sh",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "update": "npm-check-updates -u",
