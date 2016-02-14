@@ -460,24 +460,6 @@ function min(array)
     return Math.min.apply(null, array);
 }
 
-function invokeInterval(func, delay)
-{
-    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
-    (function invoker()
-    {
-        console.log("running %s", func.name);
-        func(function(err)
-        {
-            if (err)
-            {
-                //log the error, but wait until next interval to retry
-                console.error(err);
-            }
-            setTimeout(invoker, delay);
-        });
-    })();
-}
-
 function preprocessQuery(query, constants)
 {
     //check if we already processed to ensure idempotence
@@ -650,7 +632,6 @@ module.exports = {
     isSignificant: isSignificant,
     max: max,
     min: min,
-    invokeInterval: invokeInterval,
     preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
