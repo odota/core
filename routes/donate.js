@@ -222,7 +222,6 @@ module.exports = function(db, redis) {
         var saleRequest = {
             amount: amount,
             paymentMethodNonce: nonce,
-            orderId: "Mapped to PayPal Invoice Number",
             options: {
                 paypal: {
                     description: "YASP - Buying " + amount + " cheese!",
