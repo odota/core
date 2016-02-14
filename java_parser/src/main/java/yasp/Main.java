@@ -150,6 +150,7 @@ public class Main {
         //we could get the ping coordinates/type if we cared
         //entry.key = String.valueOf(message.getOrderType());
         output(entry);
+        System.err.println(message);
     }
 
     @OnMessage(CDOTAUserMsg_ChatEvent.class)
@@ -346,14 +347,15 @@ public class Main {
                     }
 
                     try{
-                    entry.level = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iLevel", validIndices[i]);
-                    entry.kills = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iKills", validIndices[i]);
-                    entry.deaths = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iDeaths", validIndices[i]);
-                    entry.assists = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iAssists", validIndices[i]);
-                    entry.denies = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iDenyCount", teamSlot);
+                        entry.level = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iLevel", validIndices[i]);
+                        entry.kills = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iKills", validIndices[i]);
+                        entry.deaths = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iDeaths", validIndices[i]);
+                        entry.assists = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iAssists", validIndices[i]);
+                        entry.denies = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iDenyCount", teamSlot);
                     }
                     catch(Exception e){
-                        System.err.println(e);
+                        //swallow exceptions encountered while trying to get these additional values
+                        //System.err.println(e);
                     }
                     //TODO: gem, rapier time?
                     //https://github.com/yasp-dota/yasp/issues/333
