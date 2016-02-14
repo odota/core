@@ -128,4 +128,4 @@ sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest 
 gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
 
 #redeploy yasp container
-sudo docker pull yasp/yasp:latest && sudo docker stop yasp && sudo docker rm yasp && sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "./node_modules/pm2/bin/pm2 start deploy.json && sleep infinity"
+sudo docker pull yasp/yasp:latest && sudo docker stop yasp && sudo docker rm yasp && sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "node deploy.js"

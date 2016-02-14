@@ -2,53 +2,74 @@
   "apps": [
     {
       "script": "skill.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 1
       },
     {
       "script": "mmr.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 1
       },
     {
       "script": "profiler.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 1
       },
     {
       "script": "scanner.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 1
       },
     {
       "script": "worker.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 1
       },
     {
       "script": "fullhistory.js",
-      "exec_mode": "cluster",
-      "instances": 1
-      },
-    {
-      "script": "cacher.js",
-      "script": "requests.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 1
       },
     {
       "script": "requests.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 1
       },
     {
       "script": "cacher.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 2
       },
     {
       "script": "web.js",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 0
+      },
+    {
+      "script": "retriever.js",
+      "role": "retriever",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "proxy.js",
+      "role": "proxy",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "parser.js",
+      "role": "parser",
+      "exec_mode": "cluster",
+      "instances": 1
       }]
 }
