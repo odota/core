@@ -80,7 +80,10 @@ queue.parse.process(function(job, cb)
             catch (e)
             {
                 cb(e);
-                setTimeout(function(){throw e;}, 1000);
+                setTimeout(function()
+                {
+                    throw e;
+                }, 1000);
             }
         },
         "insertMatch": match.replay_blob_key ? function(cb)
@@ -113,8 +116,11 @@ queue.parse.process(function(job, cb)
         }
         var hostname = os.hostname();
         redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
-        redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
-        redis.ltrim("parse_delay", 0, 10000);
+        if (match.start_time)
+        {
+            redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
+            redis.ltrim("parse_delay", 0, 10000);
+        }
         return cb(err, match.match_id);
     });
 });
