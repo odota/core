@@ -11,4 +11,8 @@ var db = require('knex')(
   client: 'pg',
   connection: config.POSTGRES_URL
 });
+db.client.pool.on('error', function(err)
+{
+  throw err;
+});
 module.exports = db;

@@ -269,10 +269,9 @@ app.route('/logout').get(function(req, res)
     req.session = null;
     res.redirect('/');
 });
-app.route('/privacyterms').get(function(req, res)
-{
-    res.render("privacyterms");
-})
+app.route('/privacyterms').get(function(req, res) {
+    res.redirect("/faq");
+});
 app.use('/matches', matches(db, redis));
 app.use('/players', players(db, redis));
 app.use('/names/:vanityUrl', function(req, res, cb)
@@ -339,20 +338,6 @@ app.get('/picks/:n?', function(req, res, next)
                 4: "Tetrads",
                 5: "Pentads"
             }
-        });
-    });
-});
-app.get('/pros', function(req, res, cb)
-{
-    db.select().from('notable_players').asCallback(function(err, results)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        res.render('pros',
-        {
-            players: results
         });
     });
 });

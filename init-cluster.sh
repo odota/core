@@ -81,20 +81,21 @@ bash ./kubernetes/cluster/kube-down.sh
 
 ###
 
-#metadata
+#prod env vars to metadata
 gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 
 #core
 gcloud compute instances delete -q core-1
 gcloud compute instances create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
+gcloud compute instances add-metadata core-1 --metadata-from-file startup-script=./cluster/scripts/core.sh
 
 #parsers
 gcloud compute instance-groups managed delete -q parser-group-1
 gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --metadata startup-script='#!/bin/bash
-for i in `seq 1 2`;
+for i in `seq 1 3`;
 do
-    sudo docker run -d --restart=always --net=host yasp/yasp:latest "node parser.js"
+    sudo docker run -d --restart=always yasp/yasp:latest "node parser.js"
 done
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
@@ -125,3 +126,6 @@ gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 
 sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 5000"
 '
 gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
+
+#redeploy yasp container
+sudo docker pull yasp/yasp:latest && sudo docker stop yasp && sudo docker rm yasp && sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "./node_modules/pm2/bin/pm2 start deploy.json && sleep infinity"

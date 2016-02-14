@@ -88,8 +88,33 @@ for (var key in constants.lobby_type)
 }
 var significant = util.format("game_mode in (%s) and lobby_type in (%s) and radiant_win is not null and duration > 300", sigModes.join(","), sigLobbies.join(","));
 var playerPages = constants.player_pages;
+var fs = require('fs');
+var notables = fs.readFileSync('./sql/notables.sql', 'utf8');
+var leaderboard = fs.readFileSync('./sql/leaderboard.sql', 'utf8');
 module.exports = function(db, redis)
 {
+    players.get('/', function(req, res, cb)
+    {
+        db.raw(notables).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            db.raw(leaderboard).asCallback(function(err, result2)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                res.render('players',
+                {
+                    notables: result.rows,
+                    leaderboard: result2.rows
+                });
+            });
+        });
+    });
     players.get('/:account_id/:info?/:subkey?', function(req, res, next)
     {
         console.time("player " + req.params.account_id);

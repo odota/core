@@ -7,7 +7,7 @@ sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main"
 curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -
 sudo add-apt-repository -y ppa:openjdk-r/ppa
 sudo add-apt-repository -y ppa:chris-lea/redis-server
-sudo apt-get update && sudo apt-get upgrade
+sudo apt-get -y update && sudo apt-get -y upgrade
 sudo apt-get -y install make g++ build-essential redis-server postgresql-9.5 openjdk-8-jdk git maven cassandra jq
 NODE_VERSION=`jq '.engines.node' package.json`
 echo "" > /root/.bashrc && \
@@ -20,6 +20,6 @@ nvm use $NODE_VERSION && \
 npm install -g npm
 sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/java-8-openjdk-amd64/bin/java" 1
 sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
-sudo apt-get remove maven2
+sudo apt-get -y remove maven2
 sudo rm -f /usr/bin/javac
 sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/javac /usr/bin/javac

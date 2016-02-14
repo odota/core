@@ -4424,10 +4424,10 @@
           "nether_swap_cooldown_scepter": 10
         },
         {
-          "illusion_damage_out_pct": 50
+          "illusion_damage_out_pct_scepter": 50
         },
         {
-          "illusion_damage_in_pct": 50
+          "illusion_damage_in_pct_scepter": 150
         }
       ]
     },
@@ -10726,9 +10726,6 @@
           ]
         },
         {
-          "cooldown_scepter": 30
-        },
-        {
           "ancient_creeps_scepter": [
             1,
             2,
@@ -12719,7 +12716,7 @@
       "AbilityCastRange": "1000",
       "AbilityCastPoint": "0",
       "AbilityCooldown": "40",
-      "AbilityManaCost": "200",
+      "AbilityManaCost": "300",
       "AbilityModifierSupportValue": "0.5",
       "AbilitySpecial": [
         {
@@ -13007,7 +13004,7 @@
       "ID": "5684",
       "AbilityBehavior": "DOTA_ABILITY_BEHAVIOR_POINT | DOTA_ABILITY_BEHAVIOR_AOE",
       "SpellImmunityType": "SPELL_IMMUNITY_ENEMIES_NO",
-      "AbilityUnitDamageType": "DAMAGE_TYPE_MAGIC",
+      "AbilityUnitDamageType": "DAMAGE_TYPE_MAGICAL",
       "AbilityCastRange": "800",
       "AbilityCastPoint": "0.2",
       "AbilityCooldown": "16 14 12 10",
@@ -13342,7 +13339,7 @@
       "AbilityBehavior": "DOTA_ABILITY_BEHAVIOR_NO_TARGET",
       "SpellImmunityType": "SPELL_IMMUNITY_ENEMIES_NO",
       "AbilityCastPoint": "0.1",
-      "AbilityCooldown": "28 24 20 16",
+      "AbilityCooldown": "38 32 26 20",
       "AbilityManaCost": "50",
       "AbilitySpecial": [
         {
@@ -13366,7 +13363,7 @@
       "AbilityBehavior": "DOTA_ABILITY_BEHAVIOR_NO_TARGET | DOTA_ABILITY_BEHAVIOR_HIDDEN",
       "SpellImmunityType": "SPELL_IMMUNITY_ENEMIES_NO",
       "AbilityCastPoint": "0.1",
-      "AbilityCooldown": "28 24 20 16",
+      "AbilityCooldown": "38 32 26 20",
       "AbilityManaCost": "50",
       "AbilitySpecial": [
         {
@@ -19024,7 +19021,7 @@
       "MaxLevel": "1",
       "FightRecapLevel": "1",
       "IsGrantedByScepter": "1",
-      "AbilityCastRange": "600",
+      "AbilityCastRange": "125",
       "AbilityCastPoint": "0.2",
       "AbilityCooldown": "45",
       "AbilityManaCost": "150",

@@ -31,7 +31,14 @@ if (cluster.isMaster)
     }
     cluster.on('exit', (worker, code, signal) =>
     {
-        console.log(`worker ${worker.process.pid} died`);
+        if (code !== 0)
+        {
+            throw 'worker died';
+        }
+        else
+        {
+            console.error('worker exited successfully');
+        }
     });
 }
 else
@@ -52,7 +59,7 @@ function getPage(match_seq_num, bucket)
 {
     if (match_seq_num > bucket + bucket_size)
     {
-        return;
+        process.exit(0);
     }
     var job = generateJob("api_sequence",
     {

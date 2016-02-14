@@ -23,11 +23,11 @@ block content
               ul.small.text-left
                 li Uploads have incomplete data and eventually expire
                 li Uploads do not count toward player statistics
-        .form-group
-          if config.ENABLE_RECAPTCHA
-            .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="requestSubmit")
-          else
-            button.btn.btn-default#submit(onclick="requestSubmit()") Request Parse
+          .row
+            if config.ENABLE_RECAPTCHA
+              g-recaptcha#recaptcha(style="display:inline-block;", data-sitekey=rc_public, data-theme="dark", data-callback="requestSubmit")
+            else
+              button.btn.btn-default#submit(onclick="requestSubmit()") Request Parse
       #progContainer(style="display:none")
         img(src="/public/images/loading.gif", style="display:none")#loading
         .progress
@@ -48,6 +48,6 @@ append footer_assets
         {
             sitekey: $('#recaptcha').attr('data-sitekey'),
             theme: "dark",
-            callback: submit
+            callback: requestSubmit
         });
     };

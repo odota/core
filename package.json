@@ -17,7 +17,8 @@
     "build": "npm install && npm run maven && npm run webpack",
     "create": "bash sql/create.sh",
     "psql": "psql -d postgresql://yasp:yasp@localhost/yasp",
-    "deploy": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest"
+    "task": "node runner",
+    "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:`git rev-parse HEAD`"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "body-parser": "1.14.2",
     "bootstrap": "^3.3.6",
     "bootswatch": "^3.3.6",
+    "braintree": "^1.35.0",
     "bull": "yasp-dota/bull",
     "c3": "0.4.11-rc4",
     "cal-heatmap": "3.5.4",
@@ -48,7 +50,7 @@
     "flag-icon-css": "^1.0.0",
     "font-awesome": "^4.5.0",
     "foreman": "^1.4.1",
-    "heatmap.js": "^2.0.1",
+    "heatmap.js": "2.0.0",
     "http-proxy": "^1.13.1",
     "jade": "^1.11.0",
     "jquery": "^2.2.0",
