@@ -67,7 +67,7 @@ block content
           - var group = "parser"
           - var total = 0;
           each entry in result.parser
-            if entry.hostname.indexOf(group) === 0
+            if true || entry.hostname.indexOf(group) === 0
               - total += entry.count
             else
               tr
@@ -86,7 +86,7 @@ block content
           tbody
             each entry in result.parser
               tr
-                if entry.hostname.indexOf(group) === 0
+                if true || entry.hostname.indexOf(group) === 0
                   td=entry.hostname
                   td=entry.count
     .col-md-4
