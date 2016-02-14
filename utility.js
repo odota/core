@@ -156,6 +156,7 @@ function getData(url, cb)
 {
     var u;
     var delay = Number(config.DEFAULT_DELAY);
+    var proxyAffinityRange;
     if (url.constructor === Array)
     {
         //select a random element if array
@@ -166,6 +167,7 @@ function getData(url, cb)
         //options object
         u = url.url;
         delay = url.delay || delay;
+        proxyAffinityRange = url.proxyAffinityRange || proxyAffinityRange;
     }
     else
     {
@@ -191,6 +193,7 @@ function getData(url, cb)
         */
         //choose a steam api host
         var api_hosts = config.STEAM_API_HOST.split(",");
+        api_hosts = proxyAffinityRange ? api_hosts.slice(0, proxyAffinityRange) : api_hosts;
         parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
     }
     var target = urllib.format(parse);
@@ -485,10 +488,11 @@ function queueReq(queue, type, payload, options, cb)
         {
             delay: 60 * 1000,
             type: 'exponential'
-        }
+        },
+        timeout: options.timeout
     }).then(function(queuejob)
     {
-        console.log("created jobId: %s", queuejob.jobId);
+        console.log("created %s jobId: %s", type, queuejob.jobId);
         cb(null, queuejob);
     }).catch(cb);
 }

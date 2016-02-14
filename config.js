@@ -9,6 +9,9 @@ var defaults = {
     "RECAPTCHA_SECRET_KEY": "",
     "STRIPE_SECRET": "", //for donations, in web
     "STRIPE_PUBLIC": "",
+    "BRAIN_TREE_MERCHANT_ID": "",
+    "BRAIN_TREE_PUBLIC_KEY": "",
+    "BRAIN_TREE_PRIVATE_KEY": "",
     "RETRIEVER_SECRET": "", //string to use as shared secret with retriever/parser
     "SESSION_SECRET": "secret to encrypt cookies with", //string to encrypt cookies
     "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login

@@ -74,7 +74,6 @@ function upsert(db, table, row, conflict, cb)
                 //console.error(key);
             }
         }
-        
         var query1 = db(table).insert(row);
         var query2 = db(table).update(row).where(conflict);
         query1.asCallback(function(err)
@@ -158,7 +157,7 @@ function insertMatch(db, redis, queue, match, options, cb)
                 return au.ability;
             }) : null;
         });
-        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 3, JSON.stringify(ability_upgrades));
+        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 1, JSON.stringify(ability_upgrades));
     }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
@@ -167,7 +166,7 @@ function insertMatch(db, redis, queue, match, options, cb)
     {
         "imt": insertMatchTable,
         "ipmt": insertPlayerMatchesTable,
-        "ep": ensurePlayers,
+        "ipl": insertPlayers,
         "pc": updatePlayerCaches,
         "cmc": clearMatchCache,
         "dp": decideParse
@@ -208,10 +207,10 @@ function insertMatch(db, redis, queue, match, options, cb)
             }, cb);
         }, cb);
     }
-    /**
-     * Inserts a placeholder player into db with just account ID for each player in this match
+    /**		
+     * Inserts a placeholder player into db with just account ID for each player in this match		
      **/
-    function ensurePlayers(cb)
+    function insertPlayers(cb)
     {
         if (options.skipInsertPlayers)
         {
@@ -255,6 +254,7 @@ function insertMatch(db, redis, queue, match, options, cb)
         else
         {
             //queue it and finish, callback with the queued parse job
+            options.timeout = 180000;
             return queueReq(queue, "parse", match, options, function(err, job2)
             {
                 cb(err, job2);

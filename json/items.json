@@ -1782,7 +1782,7 @@
       "dname": "Hood of Defiance",
       "qual": "epic",
       "cost": 2100,
-      "desc": "Active: Creastes a spell shield that absorbs up to 325 magical damage.",
+      "desc": "Active: Creates a spell shield that absorbs up to 325 magical damage.",
       "notes": "Stacks multiplicatively with other sources of spell resistance.",
       "attrib": "+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">30%</span> <span class=\"attribValText\">Spell Resistance</span><br />\nBARRIER BLOCK: <span class=\"attribVal\">325</span><br />\nBARRIER DURATION: <span class=\"attribVal\">12.000000</span>",
       "mc": 75,

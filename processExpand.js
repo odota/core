@@ -72,7 +72,9 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             e.targetname = computeIllusionString(e.targetname, e.targetillusion); //target of buff (possibly illusion)
             if (e.targethero && !e.targetillusion)
             {
-                var whitelist = {"modifier_item_ultimate_scepter_consumed":1};
+                var whitelist = {
+                    "modifier_item_ultimate_scepter_consumed": 1
+                };
                 if (e.key in whitelist)
                 {
                     e.type = "modifier_applied";
@@ -209,7 +211,8 @@ module.exports = function processCreateParsedData(entries, meta, populate)
         {
             //multikill
             e.unit = e.attackername;
-            e.key = e.value;
+            //add the "minimum value", as of 2016-02-06
+            e.key = e.value + 2;
             e.value = 1;
             e.type = "multi_kills";
             expand(e);
@@ -218,7 +221,8 @@ module.exports = function processCreateParsedData(entries, meta, populate)
         {
             //killstreak
             e.unit = e.attackername;
-            e.key = e.value;
+            //add the "minimum value", as of 2016-02-06
+            e.key = e.value + 3;
             e.value = 1;
             e.type = "kill_streaks";
             expand(e);

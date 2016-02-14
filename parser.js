@@ -44,6 +44,7 @@ var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
 queue.parse.process(function(job, cb)
 {
+    console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
     async.series(
     {
@@ -58,21 +59,32 @@ queue.parse.process(function(job, cb)
         },
         "runParse": function(cb)
         {
-            runParse(match, job, function(err, parsed_data)
+            try
             {
-                if (err)
+                runParse(match, job, function(err, parsed_data)
                 {
-                    return cb(err);
-                }
-                //extend match object with parsed data, keep existing data if key conflict
-                //match.players was deleted earlier during insertion of api data
-                for (var key in parsed_data)
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    //extend match object with parsed data, keep existing data if key conflict
+                    //match.players was deleted earlier during insertion of api data
+                    for (var key in parsed_data)
+                    {
+                        match[key] = match[key] || parsed_data[key];
+                    }
+                    match.parse_status = 2;
+                    cb(err);
+                });
+            }
+            catch (e)
+            {
+                cb(e);
+                setTimeout(function()
                 {
-                    match[key] = match[key] || parsed_data[key];
-                }
-                match.parse_status = 2;
-                cb(err);
-            });
+                    throw e;
+                }, 1000);
+            }
         },
         "insertMatch": match.replay_blob_key ? function(cb)
         {
@@ -104,8 +116,11 @@ queue.parse.process(function(job, cb)
         }
         var hostname = os.hostname();
         redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
-        redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
-        redis.ltrim("parse_delay", 0, 10000);
+        if (match.start_time)
+        {
+            redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
+            redis.ltrim("parse_delay", 0, 10000);
+        }
         return cb(err, match.match_id);
     });
 });

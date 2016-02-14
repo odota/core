@@ -84,6 +84,7 @@ h3 img {
 
 .user {
     margin: 2px;
+    width: 25px;
 }
 
 .attribVal {
@@ -259,10 +260,6 @@ div .dataTables_processing {
     max-width: 100%;
 }
 
-.label-info {
-    margin-right: 5px;
-}
-
 .theme-blue {
     color: #BBF0FD;
 }
@@ -422,10 +419,12 @@ g
   cursor: pointer;
 }
 
+
 .btn-file {
     position: relative;
     overflow: hidden;
 }
+
 .btn-file input[type=file] {
     position: absolute;
     top: 0;
@@ -440,4 +439,21 @@ g
     background: white;
     cursor: inherit;
     display: block;
+}
+
+/* info text on request page*/
+ul.small.text-left {
+    margin-top: 1em;
+}
+
+.label {
+    margin: 1px;
+}
+
+table img.img-sm {
+    margin: 0 5px;
+}
+
+.center {
+    margin: 0 auto;
 }

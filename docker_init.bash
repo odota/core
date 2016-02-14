@@ -1,10 +1,5 @@
 #!/bin/bash
 echo "Initializing..."
 source /root/.bashrc
-
-if [ -f /etc/yasp-api-keys/secrets.env ]; then
-  echo "Sourcing secrets from kubernetes mount..."
-  source /etc/yasp-api-keys/*.env
-fi
-
+sudo curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env
 eval "$@"
