@@ -50,7 +50,7 @@
     "flag-icon-css": "^1.0.0",
     "font-awesome": "^4.5.0",
     "foreman": "^1.4.1",
-    "heatmap.js": "^2.0.1",
+    "heatmap.js": "2.0.0",
     "http-proxy": "^1.13.1",
     "jade": "^1.11.0",
     "jquery": "^2.2.0",
