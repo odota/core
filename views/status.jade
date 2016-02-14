@@ -77,18 +77,19 @@ block content
             td
               a#collapse.panel-group(data-toggle="collapse", href="#group", aria-expanded="false" aria-controls="group") #{group}
             td= total
-      .collapse#group
-        table.table.table-condensed
-          thead
-            tr
-              th Node
-              th Count
-          tbody
-            each entry in result.parser
+      //-
+        .collapse#group
+          table.table.table-condensed
+            thead
               tr
-                if true || entry.hostname.indexOf(group) === 0
-                  td=entry.hostname
-                  td=entry.count
+                th Node
+                th Count
+            tbody
+              each entry in result.parser
+                tr
+                  if true || entry.hostname.indexOf(group) === 0
+                    td=entry.hostname
+                    td=entry.count
     .col-md-4
       h3 Retrievers
       table.table.table-condensed
