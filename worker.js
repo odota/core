@@ -11,10 +11,7 @@ var fs = require('fs');
 var constants = require('./constants');
 var sql = {};
 var sqlq = fs.readdirSync('./sql');
-<<<<<<< HEAD
 var queries = require('./queries');
-=======
->>>>>>> onequeue
 var composition = require('./composition');
 sqlq.forEach(function(f)
 {
