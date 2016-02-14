@@ -3,7 +3,6 @@ var queue = require('./queue');
 var buildSets = require('./buildSets');
 var utility = require('./utility');
 var getMMStats = require("./getMMStats");
-var invokeInterval = utility.invokeInterval;
 var config = require('./config');
 var async = require('async');
 var db = require('./db');
@@ -12,7 +11,10 @@ var fs = require('fs');
 var constants = require('./constants');
 var sql = {};
 var sqlq = fs.readdirSync('./sql');
+<<<<<<< HEAD
 var queries = require('./queries');
+=======
+>>>>>>> onequeue
 var composition = require('./composition');
 sqlq.forEach(function(f)
 {
@@ -26,7 +28,7 @@ invokeInterval(function doBuildSets(cb)
 invokeInterval(function mmStats(cb)
 {
     getMMStats(redis, cb);
-}, config.MMSTATS_DATA_INTERVAL * 60 * 1000 || 60000); //Sample every 3 minutes
+}, config.MMSTATS_DATA_INTERVAL * 60 * 1000); //Sample every 3 minutes
 invokeInterval(function buildDistributions(cb)
 {
     async.parallel(
@@ -113,7 +115,6 @@ invokeInterval(function buildDistributions(cb)
 
     function loadData(key, mapFunc, cb)
     {
-        //TODO check redis and no-op if still sufficiently fresh?
         db.raw(sql[key]).asCallback(function(err, results)
         {
             if (err)
@@ -187,3 +188,41 @@ invokeInterval(function notablePlayers(cb)
         }, cb);
     });
 }, 10 * 60 * 1000);
+
+function invokeInterval(func, delay)
+{
+    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
+    (function invoker()
+    {
+        redis.get('worker:' + func.name, function(err, fresh)
+        {
+            if (err)
+            {
+                return setTimeout(invoker, delay);
+            }
+            if (fresh && config.NODE_ENV !== "development")
+            {
+                console.log("skipping %s", func.name);
+                return setTimeout(invoker, delay);
+            }
+            else
+            {
+                console.log("running %s", func.name);
+                func(function(err)
+                {
+                    if (err)
+                    {
+                        //log the error, but wait until next interval to retry
+                        console.error(err);
+                    }
+                    else
+                    {
+                        //mark success, don't redo until this key expires
+                        redis.setex('worker:' + func.name, delay / 1000 * 0.9, "1");
+                    }
+                    setTimeout(invoker, delay);
+                });
+            }
+        });
+    })();
+}
