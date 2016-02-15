@@ -2,7 +2,7 @@ var pm2 = require('pm2');
 var async = require('async');
 var config = require('./config');
 var args = process.argv.slice(2);
-var manifest = require('./manifest.json');
+var manifest = require('./package.json');
 if (config.ROLE === "retriever" || config.ROLE == "proxy")
 {
     //don't use pm2 for these roles

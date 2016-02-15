@@ -1,5 +1,5 @@
 var fs = require('fs');
-var manifest = require('./manifest.json');
+var manifest = require('./package.json');
 manifest.apps.forEach(function(app)
 {
     var name = app.script.split('.')[0];

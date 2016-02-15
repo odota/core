@@ -3,8 +3,9 @@
   "description": "Open source Dota 2 replay parsing and statistics",
   "version": "6.0.0",
   "license": "GPL-3.0",
-  "main": "index.js",
-  "scripts": {
+  "main": "deploy.js",
+  "scripts":
+  {
     "start": "node deploy",
     "dev": "node genProcfile.js && nf -j Procfile.dev start",
     "test": "test/run.sh",
@@ -20,11 +21,13 @@
     "task": "node runner",
     "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest"
   },
-  "repository": {
+  "repository":
+  {
     "type": "git",
     "url": "http://github.com/yasp-dota/yasp"
   },
-  "dependencies": {
+  "dependencies":
+  {
     "JSONStream": "^1.0.7",
     "async": "1.5.2",
     "big-number": "0.3.1",
@@ -77,7 +80,8 @@
     "wordcloud": "1.0.1",
     "world-countries": "1.7.7"
   },
-  "devDependencies": {
+  "devDependencies":
+  {
     "coveralls": "2.11.6",
     "css-loader": "^0.23.1",
     "database-cleaner": "^0.11.0",
@@ -94,8 +98,88 @@
     "url-loader": "^0.5.7",
     "webpack": "^1.12.12"
   },
-  "engines": {
+  "engines":
+  {
     "node": "5.5.0",
     "npm": "3.5.0"
-  }
+  },
+  "apps": [
+    {
+      "script": "skill.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "mmr.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "profiler.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "scanner.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "worker.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "fullhistory.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "requests.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "cacher.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 2
+      },
+    {
+      "script": "ranker.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "web.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 0
+      },
+    {
+      "script": "retriever.js",
+      "role": "retriever",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "proxy.js",
+      "role": "proxy",
+      "exec_mode": "cluster",
+      "instances": 1
+      },
+    {
+      "script": "parser.js",
+      "role": "parser",
+      "exec_mode": "cluster",
+      "instances": 1
+      }]
 }
