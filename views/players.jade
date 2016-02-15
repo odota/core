@@ -12,7 +12,7 @@ block content
             th Team
             th Rating
         tbody
-          each player in notables
+          each player in notables || []
             tr
               td
                 if player.country_code && constants.countries[player.country_code.toUpperCase()]
@@ -31,7 +31,7 @@ block content
             th Rating
             th Updated
         tbody
-          each player, i in leaderboard
+          each player, i in leaderboard || []
             tr
               td=i+1
               td
