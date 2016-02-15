@@ -31,6 +31,7 @@ app.get('/redis/:key', function(req, res, cb)
 });
 app.listen(config.PARSER_PORT);
 var queue = require('./queue');
+var pQueue = queue.getQueue('parse');
 var getReplayUrl = require('./getReplayUrl');
 var db = require('./db');
 var redis = require('./redis');
@@ -42,7 +43,7 @@ var compute = require('./compute');
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
-queue.parse.process(function(job, cb)
+pQueue.process(function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
@@ -102,7 +103,7 @@ queue.parse.process(function(job, cb)
         } : function(cb)
         {
             //fs.writeFileSync('output.json', JSON.stringify(match));
-            insertMatch(db, redis, queue, match,
+            insertMatch(db, redis, match,
             {
                 type: "parsed"
             }, cb);

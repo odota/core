@@ -143,11 +143,6 @@ CREATE TABLE player_ratings (
   time timestamp with time zone
 );
 
-CREATE TABLE player_caches (
-  account_id bigint REFERENCES players(account_id) ON DELETE CASCADE PRIMARY KEY,
-  cache json
-);
-
 CREATE TABLE subscriptions (
   PRIMARY KEY(customer_id),
   account_id bigint REFERENCES players(account_id) ON DELETE CASCADE,
@@ -170,6 +165,19 @@ CREATE TABLE match_logs (
   value integer
 );
 
+CREATE TABLE notable_players (
+account_id bigint PRIMARY KEY,
+name varchar(255),
+country_code varchar(2),
+fantasy_role int,
+team_id int,
+team_name varchar(255),
+team_tag varchar(255),
+is_locked boolean,
+is_pro boolean,
+locked_until integer
+);
+
 CREATE INDEX on player_matches(account_id);
 CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);
@@ -177,7 +185,6 @@ CREATE INDEX on players(last_login);
 CREATE INDEX on players(cheese);
 CREATE INDEX on subscriptions(account_id);
 CREATE INDEX on subscriptions(customer_id);
-CREATE INDEX on match_logs(match_id, player_slot);
-CREATE INDEX on match_logs(player_slot);
+CREATE INDEX on match_logs(match_id);
 
 CLUSTER player_matches USING player_matches_account_id_idx;

@@ -1,7 +1,6 @@
 var async = require('async');
 var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
-var queueReq = utility.queueReq;
 var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
@@ -9,6 +8,9 @@ var aggregator = require('./aggregator');
 var constants = require('./constants');
 var filter = require('./filter');
 var util = require('util');
+var queue = require('./queue');
+var cQueue = queue.getQueue('cache');
+var pQueue = queue.getQueue('parse');
 var columnInfo = {};
 
 function getSets(redis, cb)
@@ -130,7 +132,7 @@ function genValue(row, key)
     }
 }
 
-function insertMatch(db, redis, queue, match, options, cb)
+function insertMatch(db, redis, match, options, cb)
 {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
@@ -234,7 +236,7 @@ function insertMatch(db, redis, queue, match, options, cb)
         var copy = JSON.parse(JSON.stringify(match));
         copy.players = players;
         copy.insert_type = options.type;
-        queueReq(queue, "cache", copy,
+        queue.addToQueue(cQueue, copy,
         {}, cb);
     }
 
@@ -255,7 +257,7 @@ function insertMatch(db, redis, queue, match, options, cb)
         {
             //queue it and finish, callback with the queued parse job
             options.timeout = 180000;
-            return queueReq(queue, "parse", match, options, function(err, job2)
+            return queue.addToQueue(pQueue, match, options, function(err, job2)
             {
                 cb(err, job2);
             });
@@ -394,4 +396,5 @@ module.exports = {
     getPlayerMatches: getPlayerMatches,
     getPlayerRatings: getPlayerRatings,
     getPlayer: getPlayer,
+    upsert: upsert
 };

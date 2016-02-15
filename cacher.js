@@ -1,8 +1,9 @@
 var queue = require('./queue');
+var cQueue = queue.getQueue('cache');
 var playerCache = require('./playerCache');
 var updateCache = playerCache.updateCache;
-queue.cache.process(1, processCache);
-queue.cache.on('completed', function(job){
+cQueue.process(1, processCache);
+cQueue.on('completed', function(job){
     job.remove();
 });
 function processCache(job, cb)

@@ -1,12 +1,13 @@
 var utility = require('./utility');
 var queue = require('./queue');
+var pQueue = queue.getQueue('parse');
+var rQueue = queue.getQueue('request');
 var getData = utility.getData;
 var queries = require('./queries');
 var redis = require('./redis');
 var insertMatch = queries.insertMatch;
 var db = require('./db');
-var queueReq = utility.queueReq;
-queue.request.process(100, processRequest);
+rQueue.process(100, processRequest);
 
 function processRequest(job, cb)
 {
@@ -24,7 +25,7 @@ function processRequest(job, cb)
             //match details response
             var match = body.result;
             match.parse_status = 0;
-            insertMatch(db, redis, queue, match,
+            insertMatch(db, redis, match,
             {
                 type: "api",
                 attempts: 1
@@ -34,7 +35,7 @@ function processRequest(job, cb)
     else
     {
         //direct upload
-        queueReq(queue, "parse", payload,
+        queue.addToQueue(pQueue, payload,
         {
             attempts: 1
         }, waitParse);
@@ -52,7 +53,7 @@ function processRequest(job, cb)
         {
             var poll = setInterval(function()
             {
-                queue.parse.getJob(job2.jobId).then(function(job2)
+                pQueue.getJob(job2.jobId).then(function(job2)
                 {
                     job.progress(job2.progress());
                     job2.getState().then(function(state)

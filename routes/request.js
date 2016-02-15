@@ -10,8 +10,8 @@ var multer = require('multer')(
     fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
 var utility = require('../utility');
-var queueReq = utility.queueReq;
 var queue = require('../queue');
+var rQueue = queue.getQueue('request');
 const crypto = require('crypto');
 module.exports = function(db, redis)
 {
@@ -80,7 +80,7 @@ module.exports = function(db, redis)
             if (match)
             {
                 console.log(match);
-                queueReq(queue, "request", match,
+                queue.addToQueue(rQueue, match,
                 {
                     attempts: 1
                 }, function(err, job)
@@ -106,7 +106,7 @@ module.exports = function(db, redis)
         });
     }).get(function(req, res, next)
     {
-        queue.request.getJob(req.query.id).then(function(job)
+        rQueue.getJob(req.query.id).then(function(job)
         {
             if (job)
             {

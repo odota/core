@@ -2,7 +2,6 @@ var utility = require('./utility');
 var async = require('async');
 var constants = require("./constants.js");
 var db = require('./db');
-//var queue = require('./queue');
 var queries = require('./queries');
 //var insertMatch = queries.insertMatch;
 var insertMatchSkill = queries.insertMatchSkill;

@@ -2,12 +2,14 @@
   "request": {
     "name": "Request"
   },
+  "players": {
+    "name": "Players"
+  },
   "distributions": {
     "name": "Distributions"
   },
   "picks": {
-    "name": "Picks",
-    "new-feature": true
+    "name": "Picks"
   },
   "mmstats": {
     "name": "MMStats"
