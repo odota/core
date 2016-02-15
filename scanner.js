@@ -135,14 +135,16 @@ function scanApi(seq_num)
                         //skipped, but only if not already queued
                         match.parse_status = 3;
                     }
-                    if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 20 === 0)))
+                    if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (config.ENABLE_RANKING || p.account_id in userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 20 === 0)))
                     {
                         //could possibly pick up MMR change for matches we don't add, this is probably ok
                         queue.addToQueue(mQueue,
                         {
                             match_id: match.match_id,
                             account_id: p.account_id,
-                            //url: ratingPlayers[p.account_id]
+                            hero_id: p.hero_id,
+                            player_slot: p.player_slot,
+                            radiant_win: p.radiant_win,
                             url: retrieverArr.map(function(r)
                             {
                                 return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id=" + p.account_id;
