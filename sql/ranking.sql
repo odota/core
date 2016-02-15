@@ -32,6 +32,6 @@ WHERE (player_slot < 64) = radiant_win
 GROUP BY player_matches.account_id, hero_id;
 --WHERE hero_id = 53--debug
 --ORDER BY hero_id, score desc;
---index by hero_id, score
---index by account_id
+CREATE INDEX on hero_rankings(hero_id, score);
+CREATE INDEX on hero_rankings(account_id);
 COMMIT;

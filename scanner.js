@@ -135,7 +135,7 @@ function scanApi(seq_num)
                         //skipped, but only if not already queued
                         match.parse_status = 3;
                     }
-                    if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (config.ENABLE_RANKING || p.account_id in userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 20 === 0)))
+                    if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 20 === 0)))
                     {
                         //could possibly pick up MMR change for matches we don't add, this is probably ok
                         queue.addToQueue(mQueue,

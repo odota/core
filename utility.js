@@ -156,6 +156,14 @@ function generateJob(type, payload)
                 type: type,
                 payload: payload
             };
+        },
+        "rank": function()
+        {
+            return {
+                title: [type, payload.account_id, payload.hero_id].join(),
+                type: type,
+                payload: payload
+            };
         }
     };
     return opts[type]();

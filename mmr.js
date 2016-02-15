@@ -30,11 +30,19 @@ function processMmr(job, cb)
             {
                 if (err)
                 {
+                    console.error(err);
                     return cb(err);
                 }
-                job.data.payload.solo_competitive_rank = data.solo_competitive_rank;
-                addToQueue(rankQueue, job.data.payload,
-                {}, cb);
+                if (data.solo_competitive_rank)
+                {
+                    job.data.payload.solo_competitive_rank = data.solo_competitive_rank;
+                    addToQueue(rankQueue, job.data.payload,
+                    {}, cb);
+                }
+                else
+                {
+                    cb(err);
+                }
             });
         }
         else

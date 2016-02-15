@@ -136,7 +136,7 @@ CREATE TABLE player_matches (
 
 CREATE TABLE player_ratings (
   PRIMARY KEY(account_id, time),
-  account_id bigint REFERENCES players(account_id) ON DELETE CASCADE,
+  account_id bigint,
   match_id bigint,
   solo_competitive_rank integer,
   competitive_rank integer,
@@ -178,6 +178,16 @@ is_pro boolean,
 locked_until integer
 );
 
+CREATE TABLE hero_rankings (
+PRIMARY KEY (account_id, hero_id),
+account_id bigint,
+hero_id int,
+games int,
+wins int,
+solo_competitive_rank int,
+score int
+);
+
 CREATE INDEX on player_matches(account_id);
 CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);
@@ -186,5 +196,7 @@ CREATE INDEX on players(cheese);
 CREATE INDEX on subscriptions(account_id);
 CREATE INDEX on subscriptions(customer_id);
 CREATE INDEX on match_logs(match_id);
+CREATE INDEX on hero_rankings(hero_id, score);
+CREATE INDEX on hero_rankings(account_id);
 
 CLUSTER player_matches USING player_matches_account_id_idx;

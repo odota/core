@@ -199,7 +199,7 @@ function insertMatch(db, redis, match, options, cb)
     function insertPlayerMatchesTable(cb)
     {
         //we can skip this if we have no players (skill case)
-        async.eachSeries(players || [], function(pm, cb)
+        async.each(players || [], function(pm, cb)
         {
             pm.match_id = match.match_id;
             upsert(db, 'player_matches', pm,
