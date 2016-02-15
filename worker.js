@@ -185,6 +185,17 @@ invokeInterval(function notablePlayers(cb)
         }, cb);
     });
 }, 10 * 60 * 1000);
+invokeInterval(function buildLeaderboard(cb)
+{
+    db.raw(sqlq["leaderboard"]).asCallback(function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        redis.set(JSON.stringify(result.rows));
+    });
+}, 24 * 60 * 60 * 1000);
 
 function invokeInterval(func, delay)
 {
