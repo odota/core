@@ -14,13 +14,15 @@ block content
       table.table.table-striped.table-condensed.rankable#picks
         thead
           tr
+            th #
             th Name
             th Games
             th Pick%
             th Win%
         tbody
-          each entry in picks[n] || []
+          each entry, i in picks[n] || []
             tr
+              td=i+1
               td
                 +renderName(entry.key)
               td.rankable=entry.games
