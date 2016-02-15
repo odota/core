@@ -1,0 +1,52 @@
+extend player
+
+block playercontent
+  //pre #{JSON.stringify(player.aggData, null, 2)}
+  .row
+    .col-md-12
+      h3 Rankings 
+        small Only ranked matches are considered. The ranking algorithm is open source and available on GitHub.
+      table.table#rankings.table-striped.rankable
+        thead
+          tr
+            th: abbr(title=tooltips.items_name) Hero
+            th Matches
+            th Percentile
+        tbody
+          each entry in player.rankings || []
+            - var hero = constants.heroes[entry.hero_id]
+            tr 
+              td
+                if hero
+                  img.img-sm.hero(src=hero.img, title=hero.localized_name)
+                  =hero.localized_name
+                else
+                  =hero_id
+              td.rankable=entry.games
+              td.rankable=(entry.percent_rank*100).toFixed(2)
+
+append footer_assets
+  script.
+    $('#rankings').dataTable({
+      info: false,
+      "paging": false,
+      "searching": false,
+      "order": [
+          [2, "desc"]
+      ],
+      "drawCallback":function(){
+          tooltips();
+      },
+      "columnDefs": [{
+          targets: "fromNow",
+          render: function(data, type) {
+              if (type === "display") {
+                  if (!Number(data)){
+                      return "never";
+                  }
+                  return moment.unix(data).fromNow();
+              }
+              return data;
+          }
+      }]
+    });

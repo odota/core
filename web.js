@@ -269,7 +269,8 @@ app.route('/logout').get(function(req, res)
     req.session = null;
     res.redirect('/');
 });
-app.route('/privacyterms').get(function(req, res) {
+app.route('/privacyterms').get(function(req, res)
+{
     res.redirect("/faq");
 });
 app.use('/matches', matches(db, redis));
@@ -340,6 +341,31 @@ app.get('/picks/:n?', function(req, res, next)
             }
         });
     });
+});
+app.get('/rankings/:hero_id?', function(req, res, cb)
+{
+    if (!req.params.hero_id)
+    {
+        res.render('rankings');
+    }
+    else
+    {
+        db.select().from('hero_rankings').join('players', 'players.account_id', 'hero_rankings.account_id').where(
+        {
+            hero_id: Number(req.params.hero_id)
+        }).orderBy('score', 'desc').limit(1000).asCallback(function(err, rows)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.render('rankings',
+            {
+                hero_id: Number(req.params.hero_id),
+                rankings: rows
+            });
+        });
+    }
 });
 app.use('/api', api);
 app.use('/', donate(db, redis));

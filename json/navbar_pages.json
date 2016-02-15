@@ -5,6 +5,9 @@
   "players": {
     "name": "Players"
   },
+  "rankings": {
+    "name": "Rankings"
+  },
   "distributions": {
     "name": "Distributions"
   },

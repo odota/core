@@ -1,0 +1,62 @@
+extend layout
+
+block content
+  .row
+    .col-md-12
+      if !rankings
+        //render grid with images of each hero
+        //order alpha?
+        //add text?
+        h3 Rankings
+        each hero, key in constants.heroes
+          //TODO fancy mouseover effect?
+          a(href='/rankings/'+key): img.hero(src=hero.img, title=hero.localized_name)
+      else
+        - var hero = constants.heroes[hero_id]
+        h3 
+          img.hero(src=hero.img, title=hero.localized_name)
+          span #{hero.localized_name} Rankings
+        table.table.table-striped.table-condensed.rankable#picks
+          thead
+            tr
+              th #
+              th Name
+              th Games
+              th Win%
+              th MMR
+              th Score
+          tbody
+            each entry, i in rankings || []
+              tr
+                td=i+1
+                td=entry.personaname
+                td.rankable=entry.games
+                td.rankable #{(entry.wins/entry.games*100).toFixed(2)}%
+                td.rankable=entry.solo_competitive_rank
+                td.rankable=entry.score
+            
+append footer_assets
+  script.
+    $('#rankings').dataTable({
+      info: false,
+      "paging": false,
+      "searching": true,
+      "order": [
+          [1, "desc"]
+      ],
+      "drawCallback":function(){
+          tooltips();
+      },
+      "columnDefs": [{
+          targets: "fromNow",
+          render: function(data, type) {
+              if (type === "display") {
+                  if (!Number(data)){
+                      return "never";
+                  }
+                  return moment.unix(data).fromNow();
+              }
+              return data;
+          }
+      }]
+    });
