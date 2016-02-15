@@ -28,22 +28,16 @@ function processRank(job, cb)
         }
         var player = result.rows[0];
         player.solo_competitive_rank = job.data.payload.solo_competitive_rank;
-        player.score = computeScore(player);
-        console.log(player);
         queries.upsert(db, 'hero_rankings', player,
         {
             account_id: player.account_id,
             hero_id: player.hero_id
         }, cb);
     });
-    //`UPDATE hero_rankings SET games = games + 1, wins = wins + ?, solo_competitive_rank = ?, score = (games + 1) * ((games+1) / (games + 1)-(wins + ?) + 1) * ? WHERE account_id = ? AND hero_id = ?`
+    //TODO may be more performant to do the table for consistency check and use direct update query most of the time?  This requires triggering a job on every ranked match.
+    //`INSERT INTO hero_rankings(account_id, hero_id, games, wins, solo_competitive_rank) VALUES (?, ?, ?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET games = games + 1, wins = wins + ?, solo_competitive_rank = ?
 }
 rankQueue.on('completed', function(job)
 {
     job.remove();
 });
-
-function computeScore(player)
-{
-    return player.games * (player.wins / (player.games - player.wins + 1)) * player.solo_competitive_rank;
-}

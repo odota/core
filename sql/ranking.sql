@@ -20,18 +20,16 @@ AND pr.time = grouped.maxtime
 
 --generate score table
 CREATE TABLE hero_rankings AS
-SELECT player_matches.account_id, hero_id, count(hero_id) as wins, max(solo_competitive_rank), count(hero_id)*pow(1.0005, max(solo_competitive_rank)) as score
+SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins, solo_competitive_rank, (count(hero_id)) * (count(hero_id) / (count(hero_id)-sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end)+1)) * solo_competitive_rank as score
 FROM
 curr_ratings
 JOIN player_matches
 ON player_matches.account_id = curr_ratings.account_id
 JOIN matches
 ON player_matches.match_id = matches.match_id
-WHERE (player_slot < 64) = radiant_win
---AND lobby_type = 7 --ranked only?
-GROUP BY player_matches.account_id, hero_id;
---WHERE hero_id = 53--debug
---ORDER BY hero_id, score desc;
+WHERE lobby_type = 7
+GROUP BY player_matches.account_id, hero_id, solo_competitive_rank;
+
 CREATE INDEX on hero_rankings(hero_id, score);
-CREATE INDEX on hero_rankings(account_id);
+ALTER TABLE hero_rankings ADD PRIMARY KEY(account_id, hero_id);
 COMMIT;

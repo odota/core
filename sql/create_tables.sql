@@ -197,6 +197,20 @@ CREATE INDEX on subscriptions(account_id);
 CREATE INDEX on subscriptions(customer_id);
 CREATE INDEX on match_logs(match_id);
 CREATE INDEX on hero_rankings(hero_id, score);
-CREATE INDEX on hero_rankings(account_id);
+
+CREATE OR REPLACE FUNCTION compute_score()
+RETURNS trigger AS
+$BODY$
+BEGIN
+ UPDATE hero_rankings SET score = NEW.games * (NEW.games / (NEW.games - NEW.wins + 1)) * NEW.solo_competitive_rank;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER update_score
+AFTER UPDATE
+ON hero_rankings
+FOR EACH ROW
+EXECUTE PROCEDURE compute_score();
 
 CLUSTER player_matches USING player_matches_account_id_idx;
