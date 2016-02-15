@@ -159,10 +159,11 @@ module.exports = function(db, redis)
                         SELECT hero_id, games, percent_rank
                         FROM
                         (
-                        SELECT account_id, hero_id, games, percent_rank() OVER (PARTITION BY hero_id ORDER BY score)
-                        FROM hero_rankings
+                        SELECT account_id, hero_id, games, percent_rank() OVER (ORDER BY score)
+                        FROM hero_rankings hr2
+                        WHERE hr2.hero_id = hero_id
                         ) pct
-                        WHERE account_id = ?
+                        WHERE account_id = ?;
                         `, [Number(account_id)]).asCallback(cb);
                 }
                 else

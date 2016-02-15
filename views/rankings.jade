@@ -29,7 +29,7 @@ block content
             each entry, i in rankings || []
               tr
                 td=i+1
-                td=entry.personaname
+                td: a(href='/players/'+entry.account_id)=entry.personaname
                 td.rankable=entry.games
                 td.rankable #{(entry.wins/entry.games*100).toFixed(2)}%
                 td.rankable=entry.solo_competitive_rank

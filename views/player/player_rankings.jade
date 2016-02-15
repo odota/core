@@ -19,7 +19,7 @@ block playercontent
               td
                 if hero
                   img.img-sm.hero(src=hero.img, title=hero.localized_name)
-                  =hero.localized_name
+                  a(href="/rankings/"+hero.id)=hero.localized_name
                 else
                   =hero_id
               td.rankable=entry.games
