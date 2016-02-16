@@ -23,7 +23,7 @@ block content
           each entry, i in picks[n] || []
             tr
               td=i+1
-              td
+              td.text-left
                 +renderName(entry.key)
               td.rankable=entry.games
               td.rankable #{(entry.games/entry.total*100).toFixed(2)}%
@@ -36,7 +36,7 @@ append footer_assets
       "paging": false,
       "searching": true,
       "order": [
-          [1, "desc"]
+          [2, "desc"]
       ],
       "drawCallback":function(){
           tooltips();
