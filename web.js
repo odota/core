@@ -350,19 +350,47 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
     }
     else
     {
-        db.select().from('hero_rankings').join('players', 'players.account_id', 'hero_rankings.account_id').where(
-        {
-            hero_id: Number(req.params.hero_id)
-        }).orderBy('score', 'desc').limit(1000).asCallback(function(err, rows)
+        redis.zrevrangebyscore('hero_rankings:' + req.params.hero_id, "inf", "-inf", "WITHSCORES", "LIMIT", "0", "1000", function(err, rows)
         {
             if (err)
             {
                 return cb(err);
             }
-            res.render('rankings',
+            //get personanames from DB
+            var entries = rows.map(function(r, i)
             {
-                hero_id: Number(req.params.hero_id),
-                rankings: rows
+                return {
+                    account_id: r,
+                    score: rows[i + 1]
+                };
+            }).filter(function(r, i)
+            {
+                return i % 2 === 0;
+            });
+            var account_ids = entries.map(function(r)
+            {
+                return r.account_id;
+            });
+            db.select(['personaname', 'account_id']).from('players').whereIn('account_id', account_ids).asCallback(function(err, names)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                var obj = {};
+                names.forEach(function(n)
+                {
+                    obj[n.account_id] = n.personaname;
+                });
+                entries.forEach(function(e)
+                {
+                    e.personaname = obj[e.account_id];
+                });
+                res.render('rankings',
+                {
+                    hero_id: Number(req.params.hero_id),
+                    rankings: entries
+                });
             });
         });
     }

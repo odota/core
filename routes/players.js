@@ -155,16 +155,25 @@ module.exports = function(db, redis)
             {
                 if (info === "rankings")
                 {
-                    db.raw(`
-                        SELECT hero_id, games, percent_rank
-                        FROM
-                        (
-                        SELECT account_id, hero_id, games, percent_rank() OVER (ORDER BY score)
-                        FROM hero_rankings hr2
-                        WHERE hr2.hero_id = hero_id
-                        ) pct
-                        WHERE account_id = ?;
-                        `, [Number(account_id)]).asCallback(cb);
+                    async.map(Object.keys(constants.heroes), function(hero_id, cb)
+                    {
+                        redis.zcard('hero_rankings:' + hero_id, function(err, card)
+                        {
+                            if (err)
+                            {
+                                return cb(err);
+                            }
+                            redis.zrank('hero_rankings:' + hero_id, account_id, function(err, rank)
+                            {
+                                cb(err,
+                                {
+                                    hero_id: hero_id,
+                                    rank: rank,
+                                    card: card
+                                });
+                            });
+                        });
+                    }, cb);
                 }
                 else
                 {
@@ -182,7 +191,7 @@ module.exports = function(db, redis)
             player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
             player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
             player.ratings = ratings;
-            player.rankings = result.rankings ? result.rankings.rows : null;
+            player.rankings = result.rankings;
             delete req.query.account_id;
             console.timeEnd("player " + req.params.account_id);
             if (req.query.json)

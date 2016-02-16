@@ -3,37 +3,32 @@ extend layout
 block content
   .row
     .col-md-12
+      h3 Rankings 
+        small Data from ranked matches. MMR must be shared on profile in order to compute ranking.
       if !rankings
         //render grid with images of each hero
         //order alpha?
         //add text?
-        h3 Rankings
         each hero, key in constants.heroes
           //TODO fancy mouseover effect?
           a(href='/rankings/'+key): img.hero(src=hero.img, title=hero.localized_name)
       else
         - var hero = constants.heroes[hero_id]
-        h3 
+        h4.text-center
           img.hero(src=hero.img, title=hero.localized_name)
-          span #{hero.localized_name} Rankings
+          span #{hero.localized_name}
         table.table.table-striped.table-condensed.rankable#picks
           thead
             tr
               th #
               th Name
-              th Games
-              th Win%
-              th MMR
               th Score
           tbody
             each entry, i in rankings || []
               tr
                 td=i+1
-                td: a(href='/players/'+entry.account_id)=entry.personaname
-                td.rankable=entry.games
-                td.rankable #{(entry.wins/entry.games*100).toFixed(2)}%
-                td.rankable=entry.solo_competitive_rank
-                td.rankable=entry.score
+                td: a(href='/players/'+entry.account_id)=entry.personaname || entry.account_id
+                td.rankable=Number(entry.score).toFixed(0)
             
 append footer_assets
   script.

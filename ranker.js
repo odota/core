@@ -1,8 +1,9 @@
 var queue = require('./queue');
 var rankQueue = queue.getQueue('rank');
 var db = require('./db');
+var redis = require('./redis');
 var queries = require('./queries');
-rankQueue.process(1, processRank);
+rankQueue.process(10, processRank);
 
 function processRank(job, cb)
 {
@@ -28,23 +29,31 @@ function processRank(job, cb)
         }
         var player = result.rows[0];
         player.solo_competitive_rank = job.data.payload.solo_competitive_rank;
-        if (player.games < 20)
+        //set minimum # of games to be ranked
+        if (player.games < 1)
         {
             return cb();
         }
         else
         {
-            queries.upsert(db, 'hero_rankings', player,
+            var score = computeScore(player);
+            if (!isNaN(score))
             {
-                account_id: player.account_id,
-                hero_id: player.hero_id
-            }, cb);
+                console.log(player.account_id, player.hero_id, score);
+                redis.zadd('hero_rankings:' + player.hero_id, score, player.account_id);
+            }
+            cb();
         }
     });
-    //TODO may be more performant to do the table for consistency check and use direct update query most of the time?
+    //TODO may be more performant to cache the counts somewhere and only do the expensive query for consistency check--use direct update query most of the time?
     //`UPDATE hero_rankings SET games = games + 1, wins = wins + ?, solo_competitive_rank = ?
 }
 rankQueue.on('completed', function(job)
 {
     job.remove();
 });
+
+function computeScore(player)
+{
+    return player.games * (player.wins / (player.games - player.wins + 1)) * player.solo_competitive_rank;
+}

@@ -5,25 +5,26 @@ block playercontent
   .row
     .col-md-12
       h3 Rankings 
-        small Only ranked matches are considered. The ranking algorithm is open source and available on GitHub.
+        small Data from ranked matches. MMR must be shared on profile in order to compute ranking.
       table.table#rankings.table-striped.rankable
         thead
           tr
             th: abbr(title=tooltips.items_name) Hero
-            th Matches
             th Percentile
+            th Rank
         tbody
           each entry in player.rankings || []
             - var hero = constants.heroes[entry.hero_id]
-            tr 
-              td
-                if hero
-                  img.img-sm.hero(src=hero.img, title=hero.localized_name)
-                  a(href="/rankings/"+hero.id)=hero.localized_name
-                else
-                  =hero_id
-              td.rankable=entry.games
-              td.rankable=(entry.percent_rank*100).toFixed(2)
+            if entry.rank
+              tr
+                td
+                  if hero
+                    img.img-sm.hero(src=hero.img, title=hero.localized_name)
+                    a(href="/rankings/"+hero.id)=hero.localized_name
+                  else
+                    =hero_id
+                td.rankable=(entry.rank/entry.card*100).toFixed(2)
+                td="#"+(entry.card - entry.rank)
 
 append footer_assets
   script.
@@ -32,7 +33,7 @@ append footer_assets
       "paging": false,
       "searching": false,
       "order": [
-          [2, "desc"]
+          [1, "desc"]
       ],
       "drawCallback":function(){
           tooltips();
