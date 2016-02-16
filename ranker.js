@@ -10,95 +10,57 @@ rankQueue.process(10, processRank);
 function processRank(job, cb)
 {
     var player = job.data.payload;
-    redis.hgetall(generateRedisKey(), function(err, result)
+    if (player.bootstrap)
     {
-        if (err)
+        //bootstrap mode, we have all the data in the job
+        //redis.hmset(generateRedisKey(), player);
+        console.log(player);
+        if (player.solo_competitive_rank)
         {
-            console.error(err);
-            return cb(err);
+            redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
         }
-        if (player.bootstrap)
+        updateScore(player, cb);
+    }
+    //adjustable random factor to fallback to db for consistency check
+    else if (Math.random() < 1)
+    {
+        //redis/incr mode
+        /*
+        if (player.insertMatch)
         {
-            //bootstrapping mode, we have all the data in the job
-            redis.hmset(generateRedisKey(), player);
-            updateRank(player);
+            redis.hincrby(generateRedisKey(), 'games', 1);
+            redis.hincrby(generateRedisKey(), 'wins', Number(isRadiant(player) === player.radiant_win));
         }
-        //randomly choose to do a full DB query instead of just updating to correct inconsistencies and update MMR occasionally (if we choose not to trigger updates when we update MMR)
-        //can only do if we have existing cached data
-        else if (result && Math.random() < 0.9)
-        {
-            if (player.insertMatch)
-            {
-                redis.hincrby(generateRedisKey(), 'games', 1);
-                redis.hincrby(generateRedisKey(), 'wins', Number(isRadiant(player) === player.radiant_win));
-            }
-            if (player.solo_competitive_rank)
-            {
-                redis.hset(generateRedisKey(), 'solo_competitive_rank', player.solo_competitive_rank);
-            }
-            updateRank();
-        }
-        else
-        {
-            //db mode, lookup of current games, wins, mmr
-            db.raw(`
-            SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins, solo_competitive_rank
+        */
+        player.incr = true;
+        updateScore(player, cb);
+    }
+    else
+    {
+        //db mode, lookup of current games, wins, mmr
+        db.raw(`
+            SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
             FROM player_matches
             JOIN matches
             ON player_matches.match_id = matches.match_id
-            JOIN player_ratings
-            ON player_matches.account_id = player_ratings.account_id
             WHERE player_matches.account_id = ?
             AND hero_id = ?
             AND lobby_type = 7
-            AND time = (SELECT max(time) FROM player_ratings WHERE account_id = player_matches.account_id)
             GROUP BY player_matches.account_id, hero_id, solo_competitive_rank;
             `, [player.account_id, player.hero_id]).asCallback(function(err, result)
-            {
-                if (err)
-                {
-                    console.error(err);
-                    return cb(err);
-                }
-                if (!result.rows || !result.rows[0])
-                {
-                    return cb("no players found");
-                }
-                var dbPlayer = result.rows[0];
-                redis.hmset(generateRedisKey(), dbPlayer);
-                updateRank();
-            });
-        }
-    });
-
-    function generateRedisKey()
-    {
-        return ['hero_rankings', 'meta', player.account_id, player.hero_id].join(':');
-    }
-
-    function updateRank()
-    {
-        redis.hgetall(generateRedisKey(), function(err, result)
         {
             if (err)
             {
+                console.error(err);
                 return cb(err);
             }
-            console.log(result);
-            player.games = Number(result.games);
-            player.wins = Number(result.games);
-            player.solo_competitive_rank = Number(result.solo_competitive_rank);
-            //set minimum # of games to be ranked
-            if (player.games > 0)
+            if (!result.rows || !result.rows[0])
             {
-                var score = computeScore(player);
-                if (!isNaN(score))
-                {
-                    console.log(player.account_id, player.hero_id, score);
-                    redis.zadd('hero_rankings:' + player.hero_id, score, player.account_id);
-                }
+                return cb("no players found");
             }
-            cb();
+            var dbPlayer = result.rows[0];
+            //redis.hmset(generateRedisKey(), dbPlayer);
+            updateScore(dbPlayer, cb);
         });
     }
 }
@@ -106,8 +68,30 @@ rankQueue.on('completed', function(job)
 {
     job.remove();
 });
+var POINTS_PER_WIN = 3;
+var POINTS_PER_LOSS = 1;
 
-function computeScore(player)
+function updateScore(player, cb)
 {
-    return player.games * (player.wins / (player.games - player.wins + 1)) * player.solo_competitive_rank;
+    redis.zscore('solo_competitive_rank', player.account_id, function(err, score)
+    {
+        console.log(player, score);
+        if (err)
+        {
+            return cb(err);
+        }
+        if (!score)
+        {
+            return cb();
+        }
+        if (player.incr)
+        {
+            redis.zincrby('hero_rankings:' + player.hero_id, (isRadiant(player) === player.radiant_win ? POINTS_PER_WIN : POINTS_PER_LOSS) * score, player.account_id);
+        }
+        else
+        {
+            redis.zadd('hero_rankings:' + player.hero_id, (player.wins * POINTS_PER_WIN + (player.games - player.wins) * POINTS_PER_LOSS) * score, player.account_id);
+        }
+        cb(err);
+    });
 }

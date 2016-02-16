@@ -14,6 +14,7 @@ JOIN
 ON pr.account_id = grouped.account_id
 AND pr.time = grouped.maxtime
 WHERE pr.account_id > ?
+AND solo_competitive_rank IS NOT NULL
 `, [start_id]).stream();
 stream.on('end', exit);
 stream.pipe(JSONStream.parse());

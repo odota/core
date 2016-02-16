@@ -350,42 +350,29 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
     }
     else
     {
-        redis.zrevrangebyscore('hero_rankings:' + req.params.hero_id, "inf", "-inf", "WITHSCORES", "LIMIT", "0", "1000", function(err, rows)
+        utility.getLeaderboard(db, redis, 'hero_rankings:' + req.params.hero_id, 250, function(err, entries)
         {
             if (err)
             {
                 return cb(err);
             }
-            //get personanames from DB
-            var entries = rows.map(function(r, i)
+            async.each(entries, function(e, cb)
             {
-                return {
-                    account_id: r,
-                    score: rows[i + 1]
-                };
-            }).filter(function(r, i)
-            {
-                return i % 2 === 0;
-            });
-            var account_ids = entries.map(function(r)
-            {
-                return r.account_id;
-            });
-            db.select(['personaname', 'account_id']).from('players').whereIn('account_id', account_ids).asCallback(function(err, names)
+                redis.zscore('solo_competitive_rank', e.account_id, function(err, score)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    e.solo_competitive_rank = score;
+                    cb(err);
+                });
+            }, function(err)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                var obj = {};
-                names.forEach(function(n)
-                {
-                    obj[n.account_id] = n.personaname;
-                });
-                entries.forEach(function(e)
-                {
-                    e.personaname = obj[e.account_id];
-                });
                 res.render('rankings',
                 {
                     hero_id: Number(req.params.hero_id),

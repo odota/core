@@ -634,6 +634,52 @@ function reduceMinimal(pm)
         duration: pm.duration
     };
 }
+
+function getLeaderboard(db, redis, key, n, cb)
+{
+    redis.zrevrangebyscore(key, "inf", "-inf", "WITHSCORES", "LIMIT", "0", n, function(err, rows)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        //get player data from DB
+        var entries = rows.map(function(r, i)
+        {
+            return {
+                account_id: r,
+                score: rows[i + 1]
+            };
+        }).filter(function(r, i)
+        {
+            return i % 2 === 0;
+        });
+        var account_ids = entries.map(function(r)
+        {
+            return r.account_id;
+        });
+        db.select().from('players').whereIn('account_id', account_ids).asCallback(function(err, names)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var obj = {};
+            names.forEach(function(n)
+            {
+                obj[n.account_id] = n;
+            });
+            entries.forEach(function(e)
+            {
+                for (var key in obj[e.account_id])
+                {
+                    e[key] = e[key] || obj[e.account_id][key];
+                }
+            });
+            cb(err, entries);
+        });
+    });
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -652,5 +698,6 @@ module.exports = {
     preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
-    reduceMinimal: reduceMinimal
+    reduceMinimal: reduceMinimal,
+    getLeaderboard: getLeaderboard
 };

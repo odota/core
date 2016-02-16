@@ -4,6 +4,7 @@ var mQueue = queue.getQueue('mmr');
 var db = require('./db');
 var getData = utility.getData;
 var queries = require('./queries');
+var redis = require('./redis');
 mQueue.process(20, processMmr);
 
 function processMmr(job, cb)
@@ -18,6 +19,14 @@ function processMmr(job, cb)
         {
             console.error(err);
             return cb(err);
+        }
+        if (data.solo_competitive_rank)
+        {
+            redis.zadd('solo_competitive_rank', data.solo_competitive_rank, data.account_id);
+        }
+        if (data.competitive_rank)
+        {
+            redis.zadd('competitive_rank', data.competitive_rank, data.account_id);
         }
         if (data.solo_competitive_rank || data.competitive_rank)
         {

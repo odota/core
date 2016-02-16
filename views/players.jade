@@ -29,7 +29,7 @@ block content
             th #
             th Name
             th Rating
-            th Updated
+            //th Updated
         tbody
           each player, i in leaderboard
             tr
@@ -37,9 +37,9 @@ block content
               td
                 if player.loccountrycode && constants.countries[player.loccountrycode]
                   span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())  
-                a(href="/players/"+player.account_id)=player.personaname
-              td=player.solo_competitive_rank
-              td=moment(player.time).fromNow()
+                a(href="/players/"+player.account_id)=player.personaname || player.account_id
+              td=player.solo_competitive_rank || player.score
+              //td=moment(player.time).fromNow()
 
 append footer_assets
   script.

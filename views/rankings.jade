@@ -15,20 +15,26 @@ block content
       else
         - var hero = constants.heroes[hero_id]
         h4.text-center
-          img.hero(src=hero.img, title=hero.localized_name)
           span #{hero.localized_name}
+        h4.text-center
+          img.hero(src=hero.img, title=hero.localized_name)
         table.table.table-striped.table-condensed.rankable#picks
           thead
             tr
               th #
               th Name
+              th Rating
               th Score
           tbody
-            each entry, i in rankings || []
+            each player, i in rankings || []
               tr
                 td=i+1
-                td: a(href='/players/'+entry.account_id)=entry.personaname || entry.account_id
-                td.rankable=Number(entry.score).toFixed(0)
+                td
+                  if player.loccountrycode && constants.countries[player.loccountrycode]
+                    span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())  
+                  a(href="/players/"+player.account_id)=player.personaname || player.account_id
+                td.rankable=player.solo_competitive_rank
+                td.rankable=player.score
             
 append footer_assets
   script.

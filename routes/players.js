@@ -90,7 +90,6 @@ var significant = util.format("game_mode in (%s) and lobby_type in (%s) and radi
 var playerPages = constants.player_pages;
 var fs = require('fs');
 var notables = fs.readFileSync('./sql/notables.sql', 'utf8');
-var leaderboard = fs.readFileSync('./sql/leaderboard.sql', 'utf8');
 module.exports = function(db, redis)
 {
     players.get('/', function(req, res, cb)
@@ -101,7 +100,7 @@ module.exports = function(db, redis)
             {
                 return cb(err);
             }
-            db.raw(leaderboard).asCallback(function(err, result2)
+            utility.getLeaderboard(db, redis, 'solo_competitive_rank', 1000, function(err, result2)
             {
                 if (err)
                 {
@@ -110,7 +109,7 @@ module.exports = function(db, redis)
                 res.render('players',
                 {
                     notables: result.rows,
-                    leaderboard: result2.rows
+                    leaderboard: result2
                 });
             });
         });
