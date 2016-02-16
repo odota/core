@@ -150,7 +150,6 @@ public class Main {
         //we could get the ping coordinates/type if we cared
         //entry.key = String.valueOf(message.getOrderType());
         output(entry);
-        System.err.println(message);
     }
 
     @OnMessage(CDOTAUserMsg_ChatEvent.class)
