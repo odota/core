@@ -21,7 +21,7 @@ JOIN matches
 ON player_matches.match_id = matches.match_id
 WHERE lobby_type = 7
 GROUP BY player_matches.account_id, hero_id, solo_competitive_rank
-WHERE games >= 20;
+WHERE games >= 10;
 
 CREATE INDEX on hero_rankings(hero_id, score);
 ALTER TABLE hero_rankings ADD PRIMARY KEY(account_id, hero_id);
