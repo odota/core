@@ -106,6 +106,7 @@ module.exports = function(db, redis)
                 {
                     return cb(err);
                 }
+                result2 = result2 ? JSON.parse(result2) : result2;
                 res.render('players',
                 {
                     notables: result.rows,
