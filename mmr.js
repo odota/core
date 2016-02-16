@@ -1,8 +1,6 @@
 var utility = require('./utility');
 var queue = require('./queue');
-var addToQueue = queue.addToQueue;
 var mQueue = queue.getQueue('mmr');
-var rankQueue = queue.getQueue('rank');
 var db = require('./db');
 var getData = utility.getData;
 var queries = require('./queries');
@@ -31,18 +29,8 @@ function processMmr(job, cb)
                 if (err)
                 {
                     console.error(err);
-                    return cb(err);
                 }
-                if (data.solo_competitive_rank)
-                {
-                    job.data.payload.solo_competitive_rank = data.solo_competitive_rank;
-                    addToQueue(rankQueue, job.data.payload,
-                    {}, cb);
-                }
-                else
-                {
-                    cb(err);
-                }
+                return cb(err);
             });
         }
         else

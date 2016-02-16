@@ -36,6 +36,7 @@ GROUP BY account_id, hero_id
         }
         async.each(result.rows, function(player2, cb)
         {
+            player2.bootstrap = true;
             player2.solo_competitive_rank = player.solo_competitive_rank;
             addToQueue(rQueue, player2,
             {}, cb);
