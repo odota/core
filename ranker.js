@@ -22,7 +22,7 @@ function processRank(job, cb)
         updateScore(player, cb);
     }
     //adjustable random factor to fallback to db for consistency check
-    else if (Math.random() < 1)
+    else if (Math.random() < 0.99)
     {
         //redis/incr mode
         /*
