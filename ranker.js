@@ -32,6 +32,7 @@ function processRank(job, cb)
             redis.hincrby(generateRedisKey(), 'wins', Number(isRadiant(player) === player.radiant_win));
         }
         */
+        //make sure score exists?
         player.incr = true;
         updateScore(player, cb);
     }
