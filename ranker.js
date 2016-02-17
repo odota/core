@@ -32,9 +32,16 @@ function processRank(job, cb)
             redis.hincrby(generateRedisKey(), 'wins', Number(isRadiant(player) === player.radiant_win));
         }
         */
-        //make sure score exists?  otherwise players who just made MMR available may not show up until randomly selected for DB audit
-        player.incr = true;
-        updateScore(player, cb);
+        //make sure we can incr (have existing score)?  otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
+        redis.zscore('hero_rankings:' + player.hero_id, player.account_id, function(err, score)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            player.incr = Boolean(score);
+            updateScore(player, cb);
+        });
     }
     else
     {
