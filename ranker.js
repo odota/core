@@ -32,7 +32,7 @@ function processRank(job, cb)
             redis.hincrby(generateRedisKey(), 'wins', Number(isRadiant(player) === player.radiant_win));
         }
         */
-        //make sure score exists?
+        //make sure score exists?  otherwise players who just made MMR available may not show up until randomly selected for DB audit
         player.incr = true;
         updateScore(player, cb);
     }

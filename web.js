@@ -346,7 +346,17 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
 {
     if (!req.params.hero_id)
     {
-        res.render('rankings');
+        var alpha_heroes = Object.keys(constants.heroes).map(function(id)
+            {
+                return constants.heroes[id];
+            }).sort(function(a, b)
+            {
+                return a.localized_name < b.localized_name ? -1 : 1;
+            });
+        res.render('rankings',
+        {
+            alpha_heroes: alpha_heroes
+        });
     }
     else
     {
