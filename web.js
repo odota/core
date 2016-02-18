@@ -342,17 +342,40 @@ app.get('/picks/:n?', function(req, res, next)
         });
     });
 });
+var notables = fs.readFileSync('./sql/notables.sql', 'utf8');
+app.get('/top', function(req, res, cb)
+{
+    db.raw(notables).asCallback(function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        utility.getLeaderboard(db, redis, 'solo_competitive_rank', 1000, function(err, result2)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.render('top',
+            {
+                notables: result.rows,
+                leaderboard: result2
+            });
+        });
+    });
+});
 app.get('/rankings/:hero_id?', function(req, res, cb)
 {
     if (!req.params.hero_id)
     {
         var alpha_heroes = Object.keys(constants.heroes).map(function(id)
-            {
-                return constants.heroes[id];
-            }).sort(function(a, b)
-            {
-                return a.localized_name < b.localized_name ? -1 : 1;
-            });
+        {
+            return constants.heroes[id];
+        }).sort(function(a, b)
+        {
+            return a.localized_name < b.localized_name ? -1 : 1;
+        });
         res.render('rankings',
         {
             alpha_heroes: alpha_heroes
@@ -366,15 +389,31 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
             {
                 return cb(err);
             }
-            async.each(entries, function(e, cb)
+            async.each(entries, function(player, cb)
             {
-                redis.zscore('solo_competitive_rank', e.account_id, function(err, score)
+                async.parallel(
+                {
+                    solo_competitive_rank: function(cb)
+                    {
+                        redis.zscore('solo_competitive_rank', player.account_id, cb);
+                    },
+                    wins: function(cb)
+                    {
+                        redis.hget('wins:' + player.account_id, player.hero_id, cb);
+                    },
+                    games: function(cb)
+                    {
+                        redis.hget('games:' + player.account_id, player.hero_id, cb);
+                    }
+                }, function(err, result)
                 {
                     if (err)
                     {
                         return cb(err);
                     }
-                    e.solo_competitive_rank = score;
+                    player.solo_competitive_rank = result.solo_competitive_rank;
+                    player.games = result.games;
+                    player.wins = result.wins;
                     cb(err);
                 });
             }, function(err)

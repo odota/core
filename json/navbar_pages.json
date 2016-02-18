@@ -2,11 +2,12 @@
   "request": {
     "name": "Request"
   },
-  "players": {
-    "name": "Players"
+  "top": {
+    "name": "Top"
   },
   "rankings": {
-    "name": "Rankings"
+    "name": "Rankings",
+    "hide": true
   },
   "distributions": {
     "name": "Distributions"

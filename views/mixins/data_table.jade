@@ -2,7 +2,7 @@ include data_table_header
 
 mixin data_table(options)
     h3.inline-header=options.heading
-    .table-responsive.collapse.in(style="background-color:#333; border:1px solid #666;", id=options.id)
+    .table-responsive.collapse.in(id=options.id)
       table.table.table-condensed.table-striped(class=options.summable ? "summable" : "", class=options.rankable ? "rankable" : "")
         block
         if options.summable
