@@ -145,12 +145,20 @@ app.use(function(req, res, next)
 app.use(function(req, res, next)
 {
     var timeStart = new Date();
+    if (req.path.indexOf('/names') === 0)
+    {
+        redis.zadd("alias_hits", moment().format('X'), req.path);
+    }
+    if (req.query.json)
+    {
+        redis.zadd("json_hits", moment().format('X'), req.path);
+    }
     res.once('finish', function()
     {
         var timeEnd = new Date();
         /*
         var obj = JSON.stringify({
-            path: req.originalUrl,
+            path: req.path,
             time: timeEnd - timeStart
         };
         */
@@ -182,7 +190,7 @@ app.use(function(req, res, next)
         res.locals.api_down = Number(results.apiDown);
         var theGoal = Number(results.cheese || 0.1) / goal * 100;
         res.locals.cheese_goal = (theGoal - 100) > 0 ? 100 : theGoal;
-        logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.originalUrl);
+        logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.path);
         return next(err);
     });
 });
@@ -445,7 +453,7 @@ app.use(function(err, req, res, next)
 {
     res.status(err.status || 500);
     console.log(err);
-    redis.zadd("error_500", moment().format('X'), req.originalUrl);
+    redis.zadd("error_500", moment().format('X'), req.path);
     if (config.NODE_ENV !== "development")
     {
         return res.render('error/' + (err.status === 404 ? '404' : '500'),

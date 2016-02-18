@@ -65,6 +65,14 @@ module.exports = function getStatus(db, redis, cb)
         {
             redis.zcard("added_match", cb);
         },
+        alias_hits: function(cb)
+        {
+            redis.zcard("alias_hits", cb);
+        },
+        json_hits: function(cb)
+        {
+            redis.zcard("json_hits", cb);
+        },
         last_added: function(cb)
         {
             db.from('matches').select(['match_id', 'duration', 'start_time']).orderBy('match_id', 'desc').limit(10).asCallback(cb);
