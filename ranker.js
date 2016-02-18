@@ -25,7 +25,7 @@ function processRank(job, cb)
     {
         async.parallel(
         {
-            mmr: function(cb)
+            solo_competitive_rank: function(cb)
             {
                 redis.zscore('solo_competitive_rank', player.account_id, cb);
             },
@@ -54,7 +54,7 @@ function processRank(job, cb)
                 return cb();
             }
             player.score = result.score;
-            player.mmr = result.mmr;
+            player.solo_competitive_rank = result.solo_competitive_rank;
             player.wins = result.wins;
             player.games = result.games;
             //make sure we have existing score if we want to incr?  otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
@@ -106,6 +106,7 @@ function updateScore(player, cb)
     if (player.incr)
     {
         var win = Number(isRadiant(player) === player.radiant_win);
+        //TODO possible inconsistency if we exit/crash after this incr but before completion
         redis.hincrby('wins:' + player.account_id, player.hero_id, win);
         redis.hincrby('games:' + player.account_id, player.hero_id, 1);
         player.wins += win;
@@ -118,8 +119,8 @@ function updateScore(player, cb)
     }
     var scaleF = 0.00001;
     var winRatio = (player.wins / (player.games - player.wins + 1));
-    var mmrBonus = scaleF * Math.pow(player.mmr, 2);
+    var mmrBonus = scaleF * Math.pow(player.solo_competitive_rank, 2);
     redis.zadd('hero_rankings:' + player.hero_id, player.games * winRatio * mmrBonus, player.account_id);
-    console.log('ranked %s, %s', player.account_id, player.hero_id);
+    console.log("ranked %s, %s", player.account_id, player.hero_id);
     cb();
 }

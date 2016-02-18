@@ -42,7 +42,7 @@ block content
                 td.rankable=player.games
                 td.rankable #{(player.wins/player.games*100).toFixed(2)}%
                 td.rankable=player.solo_competitive_rank
-                td.rankable=player.score
+                td.rankable=Number(player.score).toFixed(0)
             
 append footer_assets
   script.

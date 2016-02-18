@@ -399,11 +399,11 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
                     },
                     wins: function(cb)
                     {
-                        redis.hget('wins:' + player.account_id, player.hero_id, cb);
+                        redis.hget('wins:' + player.account_id, req.params.hero_id, cb);
                     },
                     games: function(cb)
                     {
-                        redis.hget('games:' + player.account_id, player.hero_id, cb);
+                        redis.hget('games:' + player.account_id, req.params.hero_id, cb);
                     }
                 }, function(err, result)
                 {
