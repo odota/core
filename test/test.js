@@ -7,6 +7,7 @@ config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
 config.ENABLE_MATCH_CACHE = 1;
 config.ENABLE_PLAYER_CACHE = 1;
+config.FRONTEND_PORT = 4900;
 var async = require('async');
 var redis = require('../redis');
 var queue = require('../queue');
