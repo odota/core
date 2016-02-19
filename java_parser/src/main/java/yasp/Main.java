@@ -191,11 +191,12 @@ public class Main {
     @OnMessage(CDemoFileInfo.class)
     public void onFileInfo(Context ctx, CDemoFileInfo message) {
         //beware of 4.2b limit!  we don't currently do anything with this, so we might be able to just remove this
-        Entry matchIdEntry = new Entry();
-        matchIdEntry.type = "match_id";
-        matchIdEntry.value = message.getGameInfo().getDota().getMatchId();
-        output(matchIdEntry);
-
+        //we can't use the value field since it takes Integers
+        //Entry matchIdEntry = new Entry();
+        //matchIdEntry.type = "match_id";
+        //matchIdEntry.value = message.getGameInfo().getDota().getMatchId();
+        //output(matchIdEntry);
+        
         //emit epilogue event to mark finish
         Entry epilogueEntry = new Entry();
         epilogueEntry.type = "epilogue";
