@@ -8,7 +8,7 @@ var start_id = Number(args[0]) || 0;
 //var end_id = Number(args[1]) || Number.MAX_VALUE;
 module.exports = function(cb)
 {
-    var stream = db.select(['match_id', 'pgroup', 'radiant_win']).from('matches').where('match_id', '>=', start_id).where('game_mode', "!=", 11).orderBy("match_id", "desc").limit(100000).stream();
+    var stream = db.select(['match_id', 'pgroup', 'radiant_win']).from('matches').where('match_id', '>=', start_id).where('game_mode', "!=", 11).orderBy("match_id", "desc").limit(50000).stream();
     stream.on('end', done);
     stream.pipe(JSONStream.parse());
     var result = {};
