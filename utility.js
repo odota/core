@@ -460,43 +460,6 @@ function min(array)
     return Math.min.apply(null, array);
 }
 
-function invokeInterval(func, delay)
-{
-    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
-    (function invoker()
-    {
-        console.log("running %s", func.name);
-        func(function(err)
-        {
-            if (err)
-            {
-                //log the error, but wait until next interval to retry
-                console.error(err);
-            }
-            setTimeout(invoker, delay);
-        });
-    })();
-}
-
-function queueReq(queue, type, payload, options, cb)
-{
-    var job = generateJob(type, payload);
-    queue[job.type].add(job,
-    {
-        attempts: options.attempts || 15,
-        backoff:
-        {
-            delay: 60 * 1000,
-            type: 'exponential'
-        },
-        timeout: options.timeout
-    }).then(function(queuejob)
-    {
-        console.log("created %s jobId: %s", type, queuejob.jobId);
-        cb(null, queuejob);
-    }).catch(cb);
-}
-
 function preprocessQuery(query, constants)
 {
     //check if we already processed to ensure idempotence
@@ -669,8 +632,6 @@ module.exports = {
     isSignificant: isSignificant,
     max: max,
     min: min,
-    invokeInterval: invokeInterval,
-    queueReq: queueReq,
     preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,

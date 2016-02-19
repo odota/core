@@ -5,7 +5,6 @@ var getData = utility.getData;
 var queries = require('../queries');
 var insertMatch = queries.insertMatch;
 var db = require('../db');
-var queue = require('../queue');
 var redis = require('../redis');
 var args = process.argv.slice(2);
 var start_seq_num = Number(args[0]) || 0;
@@ -82,7 +81,7 @@ function getPage(match_seq_num, bucket)
             var matches = body.result.matches;
             async.each(matches, function(m, cb)
             {
-                insertMatch(db, redis, queue, m,
+                insertMatch(db, redis, m,
                 {
                     type: "api",
                     skipCacheUpdate: true,

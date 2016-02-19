@@ -1,9 +1,10 @@
 var utility = require('./utility');
 var queue = require('./queue');
+var mQueue = queue.getQueue('mmr');
 var db = require('./db');
 var getData = utility.getData;
 var queries = require('./queries');
-queue.mmr.process(20, processMmr);
+mQueue.process(20, processMmr);
 
 function processMmr(job, cb) {
     getData({
