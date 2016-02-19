@@ -212,6 +212,7 @@ function genStats()
 
 function getMMStats(idx, cb)
 {
+    return cb('disabled');
     steamObj[idx].Dota2.requestMatchmakingStats();
     steamObj[idx].Dota2.once('matchmakingStatsData', function(waitTimes, searchingPlayers, disabledGroups, raw)
     {

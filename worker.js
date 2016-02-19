@@ -207,6 +207,7 @@ function invokeInterval(func, delay)
             else
             {
                 console.log("running %s", func.name);
+                console.time(func.name);
                 func(function(err)
                 {
                     if (err)
@@ -219,6 +220,7 @@ function invokeInterval(func, delay)
                         //mark success, don't redo until this key expires
                         redis.setex('worker:' + func.name, delay / 1000 * 0.9, "1");
                     }
+                    console.timeEnd(func.name);
                     setTimeout(invoker, delay);
                 });
             }
