@@ -116,7 +116,7 @@ module.exports = function runParse(match, job, cb)
         {
             case 'epilogue':
                 var dota = JSON.parse(e.key).gameInfo_.dota_;
-                //container.match_id = dota.matchId_;
+                container.match_id = dota.matchId_;
                 container.game_mode = dota.gameMode_;
                 container.radiant_win = dota.gameWinner_ === 2;
                 //following needs some extraction/transformation
@@ -136,9 +136,6 @@ module.exports = function runParse(match, job, cb)
                 break;
             case 'player_slot':
                 container.players[e.key].player_slot = e.value;
-                break;
-            case 'match_id':
-                container.match_id = e.value;
                 break;
             case 'chat':
                 container.chat.push(JSON.parse(JSON.stringify(e)));
