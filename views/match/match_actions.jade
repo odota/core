@@ -17,10 +17,9 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             - player.actions = player.actions || {}
-            - player.pings = player.pings || {}
             td.rankable #{player.actions_per_min || "-"}
             //td #{p.clicks[0] || "-"}
             each val, key in constants.order_types
               if val in display_types
                 td.rankable #{player.actions[key] || "-"}
-            td.rankable #{player.pings[0] || "-"}
+            td.rankable #{player.pings || "-"}
