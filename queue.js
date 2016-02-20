@@ -103,7 +103,7 @@ function getCounts(redis, cb)
     }
 }
 
-function cleanup(redis)
+function cleanup(redis, cb)
 {
     redis.keys('bull:*:id', function(err, result)
     {
@@ -116,11 +116,19 @@ function cleanup(redis)
         {
             return extractType(e);
         });
-        types.forEach(function(key)
+        async.each(types, function(key, cb)
         {
-            getQueue(key).clean(24 * 60 * 60 * 1000, 'completed');
-            getQueue(key).clean(24 * 60 * 60 * 1000, 'failed');
-        });
+            var queue = getQueue(key);
+            async.each(['completed', 'failed'], function(type, cb)
+            {
+                queue.clean(24 * 60 * 60 * 1000, type);
+                queue.once('cleaned', function(job, type)
+                {
+                    console.log('cleaned %s %s jobs from queue %s', job.length, type, key);
+                    cb();
+                });
+            }, cb);
+        }, cb);
     });
 }
 module.exports = {
