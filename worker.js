@@ -125,7 +125,6 @@ invokeInterval(function buildDistributions(cb)
 }, 60 * 60 * 1000 * 6);
 invokeInterval(function cleanup(cb)
 {
-    queue.cleanup(redis);
     redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("json_hits", 0, moment().subtract(1, 'day').format('X'));
@@ -154,7 +153,7 @@ invokeInterval(function cleanup(cb)
             cb();
         });
     });
-    return cb();
+    queue.cleanup(redis, cb);
 }, 60 * 60 * 1000);
 invokeInterval(function buildPicks(cb)
 {
