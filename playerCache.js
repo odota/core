@@ -60,11 +60,11 @@ function readCache(account_id, options, cb)
         }
         else
         {
-            console.time('readcache');
+            //console.time('readcache');
             redis.get(new Buffer("player:" + account_id), function(err, result)
             {
                 var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-                console.timeEnd('readcache');
+                //console.timeEnd('readcache');
                 //console.log(result ? result.length : 0, JSON.stringify(cache).length);
                 return cb(err, cache);
             });

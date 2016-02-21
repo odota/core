@@ -19,7 +19,8 @@
     "create": "bash sql/create.sh",
     "psql": "psql -d postgresql://yasp:yasp@localhost/yasp",
     "task": "node runner",
-    "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest"
+    "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest",
+    "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c"
   },
   "repository":
   {

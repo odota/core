@@ -643,7 +643,6 @@ function getLeaderboard(db, redis, key, n, cb)
         {
             return cb(err);
         }
-        //get player data from DB
         var entries = rows.map(function(r, i)
         {
             return {
@@ -658,6 +657,7 @@ function getLeaderboard(db, redis, key, n, cb)
         {
             return r.account_id;
         });
+        //get player data from DB
         db.select().from('players').whereIn('account_id', account_ids).asCallback(function(err, names)
         {
             if (err)

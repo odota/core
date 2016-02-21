@@ -236,6 +236,7 @@ function insertMatch(db, redis, match, options, cb)
         var copy = JSON.parse(JSON.stringify(match));
         copy.players = players;
         copy.insert_type = options.type;
+        copy.origin = options.origin;
         queue.addToQueue(cQueue, copy,
         {}, cb);
     }

@@ -40,6 +40,7 @@ var server = app.listen(port, function()
     var host = server.address().address;
     console.log('[SCANNER] listening at http://%s:%s', host, port);
 });
+var moment = require('moment');
 buildSets(db, redis, function(err)
 {
     if (err)
@@ -178,8 +179,7 @@ function scanApi(seq_num)
                                     account_id: p.account_id,
                                     hero_id: p.hero_id,
                                     player_slot: p.player_slot,
-                                    radiant_win: match.radiant_win,
-                                    insertMatch: true
+                                    radiant_win: match.radiant_win
                                 },
                                 {
                                     attempts: 1
@@ -195,10 +195,10 @@ function scanApi(seq_num)
                 {
                     if (match.parse_status === 0 || match.parse_status === 3)
                     {
-                        redis.zadd("added_match", moment().format('X'), match.match_id);
                         insertMatch(db, redis, match,
                         {
-                            type: "api"
+                            type: "api",
+                            origin: "scanner"
                         }, close);
                     }
                     else

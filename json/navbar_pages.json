@@ -3,7 +3,8 @@
     "name": "Request"
   },
   "top": {
-    "name": "Top"
+    "name": "Top",
+    "hide": true
   },
   "rankings": {
     "name": "Rankings",

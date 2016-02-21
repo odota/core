@@ -12,7 +12,6 @@ var constants = require('./constants');
 var sql = {};
 var sqlq = fs.readdirSync('./sql');
 var queries = require('./queries');
-var composition = require('./composition');
 sqlq.forEach(function(f)
 {
     sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
@@ -129,42 +128,28 @@ invokeInterval(function cleanup(cb)
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("json_hits", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("alias_hits", 0, moment().subtract(1, 'day').format('X'));
-    redis.keys("parser:*", function(err, result)
+    var cleans = ["parser", "retriever", "picks", "picks_wins"];
+    async.each(cleans, function(key, cb)
     {
-        if (err)
+        redis.keys(key + ":*", function(err, result)
         {
-            console.log(err);
-        }
-        async.map(result, function(zset, cb)
-        {
-            redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'));
-            cb();
+            if (err)
+            {
+                return cb(err);
+            }
+            result.forEach(function(zset)
+            {
+                redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'));
+            });
+            cb(err);
         });
-    });
-    redis.keys("retriever:*", function(err, result)
-    {
-        if (err)
-        {
-            console.log(err);
-        }
-        async.map(result, function(zset, cb)
-        {
-            redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'));
-            cb();
-        });
-    });
-    queue.cleanup(redis, cb);
-}, 60 * 60 * 1000);
-invokeInterval(function buildPicks(cb)
-{
-    composition(function(err, result)
+    }, function(err)
     {
         if (err)
         {
             return cb(err);
         }
-        redis.set("picks", JSON.stringify(result));
-        cb(err);
+        return queue.cleanup(redis, cb);
     });
 }, 60 * 60 * 1000);
 invokeInterval(function notablePlayers(cb)
@@ -186,6 +171,36 @@ invokeInterval(function notablePlayers(cb)
         }, cb);
     });
 }, 10 * 60 * 1000);
+invokeInterval(function loadPickCounts(cb)
+{
+    var keys = ['picks', 'picks_wins'];
+    async.each(keys, function(base, cb)
+    {
+        //load counts into zset
+        redis.keys(base + ':*', function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            async.eachSeries(result, function(key, cb)
+            {
+                redis.zcard(key, function(err, card)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    var spl = key.split(':');
+                    var length = spl[1];
+                    var pick = spl[2];
+                    redis.zadd(base + '_counts:' + length, card, pick);
+                    cb(err);
+                });
+            });
+        });
+    }, cb);
+}, 60 * 60 * 1000);
 
 function invokeInterval(func, delay)
 {

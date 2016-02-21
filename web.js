@@ -325,28 +325,68 @@ app.use('/distributions', function(req, res, next)
         });
     });
 });
-app.get('/picks/:n?', function(req, res, next)
+app.get('/picks/:n?', function(req, res, cb)
 {
-    redis.get('picks', function(err, result)
+    var length = req.params.n || 1;
+    var limit = 500;
+    //get top 1000 picks for current length
+    redis.zrevrangebyscore('picks_counts:' + length, "inf", "-inf", "WITHSCORES", "LIMIT", "0", limit, function(err, rows)
     {
         if (err)
         {
-            return next(err);
+            return cb(err);
         }
-        result = JSON.parse(result);
-        res.render('picks',
+        var entries = rows.map(function(r, i)
         {
-            picks: result ||
-            {},
-            n: req.params.n || "1",
-            tabs:
+            return {
+                key: r,
+                games: rows[i + 1]
+            };
+        }).filter(function(r, i)
+        {
+            return i % 2 === 0;
+        });
+        //look up wins
+        async.each(entries, function(entry, cb)
+        {
+            redis.zscore('picks_wins_counts:' + length, entry.key, function(err, score)
             {
-                1: "Monads",
-                2: "Dyads",
-                3: "Triads",
-                4: "Tetrads",
-                5: "Pentads"
+                if (err)
+                {
+                    return cb(err);
+                }
+                entry.wins = Number(score);
+                cb(err);
+            });
+        }, function(err)
+        {
+            if (err)
+            {
+                return cb(err);
             }
+            //look up total
+            redis.zcard('added_match', function(err, card)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                res.render('picks',
+                {
+                    total: card,
+                    limit: limit,
+                    picks: entries,
+                    n: req.params.n || "1",
+                    tabs:
+                    {
+                        1: "Monads",
+                        2: "Dyads",
+                        3: "Triads",
+                        4: "Tetrads",
+                        5: "Pentads"
+                    }
+                });
+            });
         });
     });
 });
