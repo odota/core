@@ -9,12 +9,12 @@ function permute(user, n)
 {
     if (n >= user.length || (limit && count > limit))
     {
+        arr[0] = user;
+        console.log(arr.join('@'));
+        count += 1;
         return;
     }
     var diff = [user.substr(0, n), user.substr(n)].join('.');
-    arr[0] = diff;
-    console.log(arr.join('@'));
-    count += 2;
     //don't add a period
     permute(user, n + 1);
     //add a period
