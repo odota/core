@@ -70,10 +70,12 @@ function incrCounts(match)
             {
                 return a - b;
             }).join(',');
-            redis.zadd('picks:' + i + ":" + g, moment().format('X'), match.match_id);
+            //redis.zadd('picks:' + i + ":" + g, moment().format('X'), match.match_id);
+            redis.zincrby('picks_counts:' + i, 1, g);
             if (win)
             {
-                redis.zadd('picks_wins:' + i + ":" + g, moment().format('X'), match.match_id);
+                //redis.zadd('picks_wins:' + i + ":" + g, moment().format('X'), match.match_id);
+                redis.zincrby('picks_wins_counts:' + i, 1, g);
             }
         });
     }

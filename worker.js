@@ -171,6 +171,7 @@ invokeInterval(function notablePlayers(cb)
         }, cb);
     });
 }, 10 * 60 * 1000);
+/*
 invokeInterval(function loadPickCounts(cb)
 {
     var keys = ['picks', 'picks_wins'];
@@ -201,7 +202,7 @@ invokeInterval(function loadPickCounts(cb)
         });
     }, cb);
 }, 60 * 60 * 1000);
-
+*/
 function invokeInterval(func, delay)
 {
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
