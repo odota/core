@@ -60,32 +60,21 @@ pQueue.process(function(job, cb)
         },
         "runParse": function(cb)
         {
-            try
+            runParse(match, job, function(err, parsed_data)
             {
-                runParse(match, job, function(err, parsed_data)
+                if (err)
                 {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    //extend match object with parsed data, keep existing data if key conflict
-                    //match.players was deleted earlier during insertion of api data
-                    for (var key in parsed_data)
-                    {
-                        match[key] = match[key] || parsed_data[key];
-                    }
-                    match.parse_status = 2;
-                    cb(err);
-                });
-            }
-            catch (e)
-            {
-                cb(e);
-                setTimeout(function()
+                    return cb(err);
+                }
+                //extend match object with parsed data, keep existing data if key conflict
+                //match.players was deleted earlier during insertion of api data
+                for (var key in parsed_data)
                 {
-                    throw e;
-                }, 1000);
-            }
+                    match[key] = match[key] || parsed_data[key];
+                }
+                match.parse_status = 2;
+                cb(err);
+            });
         },
         "insertMatch": match.replay_blob_key ? function(cb)
         {
