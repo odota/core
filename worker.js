@@ -53,6 +53,18 @@ invokeInterval(function buildDistributions(cb)
             }
             loadData("lobby_type", mapFunc, cb);
         },
+        "skill": function(cb)
+        {
+            var mapFunc = function(results)
+            {
+                results.rows = results.rows.map(function(r)
+                {
+                    r.display_name = constants.skill[r.skill] || "Unknown";
+                    return r;
+                });
+            }
+            loadData("skill", mapFunc, cb);
+        },
         "country_mmr": function(cb)
         {
             var mapFunc = function(results)

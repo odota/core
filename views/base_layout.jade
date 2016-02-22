@@ -28,9 +28,6 @@ html
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
     block head
-    //constants for client side rendering (c3 graphs, etc)
-    script.
-      var constants = !{JSON.stringify({"player_colors": constants.player_colors})};
     script(src="/public/build/yasp.min.js")
 
   body

@@ -3,11 +3,19 @@ import { render } from 'react-dom'
 import { Provider } from 'react-redux'
 import store from '../store'
 import Todos from './todos'
+import NavBar from './navbar'
+import Footer from './footer'
 
 let reactElement = document.getElementById('react')
 render(
   <Provider store={store}>
+    <NavBar />
     <Todos />
+    <Footer />
   </Provider>,
   reactElement
 )
+
+//document.body.style["margin-bottom"] = document.getElementById('footer').clientHeight;
+//tooltips();
+//formatHtml();
