@@ -38,7 +38,7 @@ block match_content
               th: abbr(title=tooltips.hero_healing) HH
               th: abbr(title=tooltips.items) Items
           tr(class=player.isRadiant ? "radiant" : "dire")
-            +hero_td(player)
+            +hero_td(player, player.abandons ? constants.leaver_status[player.leaver_status] : "")
             td
               //img.img-sm(src=player.avatar)
               if (player.last_login)
