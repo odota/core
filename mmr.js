@@ -5,7 +5,8 @@ var db = require('./db');
 var getData = utility.getData;
 var queries = require('./queries');
 var redis = require('./redis');
-mQueue.process(20, processMmr);
+var config = require('./config');
+mQueue.process(config.RETRIEVER_HOST.split(',').length * 10, processMmr);
 
 function processMmr(job, cb)
 {
