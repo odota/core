@@ -16,7 +16,7 @@ block playercontent
             - var hero = constants.heroes[entry.hero_id]
             if entry.rank
               tr
-                td
+                td.text-left
                   if hero
                     img.img-sm.hero(src=hero.img, title=hero.localized_name)
                     a(href="/rankings/"+hero.id)=hero.localized_name

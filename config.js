@@ -25,7 +25,7 @@ var defaults = {
     "PROXY_PORT": "5300",
     "WORK_PORT": "5400",
     "SCANNER_PORT": "5500",
-    "POSTGRES_URL": "postgresql:/yasp:yasp@localhost/yasp",
+    "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "CASSANDRA_URL": "cassandra://localhost/yasp",
     "RETRIEVER_HOST": "localhost:5100",
