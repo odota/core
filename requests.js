@@ -28,7 +28,8 @@ function processRequest(job, cb)
             insertMatch(db, redis, match,
             {
                 type: "api",
-                attempts: 1
+                attempts: 1,
+                lifo: true
             }, waitParse);
         });
     }
