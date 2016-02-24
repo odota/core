@@ -60,6 +60,8 @@ function incrCounts(match)
         addToResults(k_combinations(radiant, i), i, match.radiant_win, match);
         addToResults(k_combinations(dire, i), i, !match.radiant_win, match);
     }
+    
+    redis.incr('picks_match_count');
 
     function addToResults(groups, i, win, m)
     {

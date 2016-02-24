@@ -328,7 +328,7 @@ app.use('/distributions', function(req, res, next)
 app.get('/picks/:n?', function(req, res, cb)
 {
     var length = req.params.n || 1;
-    var limit = 500;
+    var limit = 1000;
     //get top 1000 picks for current length
     redis.zrevrangebyscore('picks_counts:' + length, "inf", "-inf", "WITHSCORES", "LIMIT", "0", limit, function(err, rows)
     {
@@ -365,7 +365,7 @@ app.get('/picks/:n?', function(req, res, cb)
                 return cb(err);
             }
             //look up total
-            redis.zcard('added_match', function(err, card)
+            redis.get('picks_match_count', function(err, card)
             {
                 if (err)
                 {
@@ -373,7 +373,7 @@ app.get('/picks/:n?', function(req, res, cb)
                 }
                 res.render('picks',
                 {
-                    total: card,
+                    total: Number(card),
                     limit: limit,
                     picks: entries,
                     n: req.params.n || "1",
