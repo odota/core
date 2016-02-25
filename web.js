@@ -187,7 +187,11 @@ app.use(function(req, res, next)
     });
 });
 var Poet = require('poet');
-var poet = new Poet(app);
+var poet = new Poet(app, {
+    routes: {
+    '/post/:post': 'blog/post'
+  }
+});
 poet.watch(function()
 {
     // watcher reloaded
@@ -199,7 +203,7 @@ poet.addRoute('/blog/:id?', function(req, res)
 {
     var max = poet.helpers.getPostCount();
     var id = Number(req.params.id) || max;
-    res.render('blog',
+    res.render('blog/blog',
     {
         posts: poet.helpers.getPosts(max - id, max - id + 1),
         id: id,
