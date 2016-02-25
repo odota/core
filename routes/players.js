@@ -171,6 +171,7 @@ module.exports = function(db, redis)
             console.timeEnd("player " + req.params.account_id);
             if (req.query.json)
             {
+                delete result.player.aggData.teammates;
                 return res.json(result.player);
             }
             res.render("player/player_" + info,
