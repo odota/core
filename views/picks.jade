@@ -4,7 +4,7 @@ block content
   .row
     .col-md-12
       h3 Picks 
-        small Recent Matches
+        small Heroes on a team together, last #{total} matches, top #{limit} picks
     .col-md-12(style="margin-bottom:5px;")
       ul.nav.nav-tabs
         each val, key in tabs
@@ -20,13 +20,13 @@ block content
             th Pick%
             th Win%
         tbody
-          each entry, i in picks[n] || []
+          each entry, i in picks || []
             tr
               td=i+1
               td.text-left
                 +renderName(entry.key)
               td.rankable=entry.games
-              td.rankable #{(entry.games/entry.total*100).toFixed(2)}%
+              td.rankable #{(entry.games/total*100).toFixed(2)}%
               td.rankable #{(entry.wins/entry.games*100).toFixed(2)}%
             
 append footer_assets

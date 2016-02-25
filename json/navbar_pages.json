@@ -2,12 +2,19 @@
   "request": {
     "name": "Request"
   },
+  "top": {
+    "name": "Top",
+    "hide": true
+  },
+  "rankings": {
+    "name": "Rankings",
+    "hide": true
+  },
   "distributions": {
     "name": "Distributions"
   },
   "picks": {
-    "name": "Picks",
-    "new-feature": true
+    "name": "Picks"
   },
   "mmstats": {
     "name": "MMStats"

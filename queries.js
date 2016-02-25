@@ -199,7 +199,7 @@ function insertMatch(db, redis, match, options, cb)
     function insertPlayerMatchesTable(cb)
     {
         //we can skip this if we have no players (skill case)
-        async.eachSeries(players || [], function(pm, cb)
+        async.each(players || [], function(pm, cb)
         {
             pm.match_id = match.match_id;
             upsert(db, 'player_matches', pm,
@@ -236,6 +236,7 @@ function insertMatch(db, redis, match, options, cb)
         var copy = JSON.parse(JSON.stringify(match));
         copy.players = players;
         copy.insert_type = options.type;
+        copy.origin = options.origin;
         queue.addToQueue(cQueue, copy,
         {}, cb);
     }
@@ -396,4 +397,5 @@ module.exports = {
     getPlayerMatches: getPlayerMatches,
     getPlayerRatings: getPlayerRatings,
     getPlayer: getPlayer,
+    upsert: upsert
 };

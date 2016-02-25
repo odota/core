@@ -93,19 +93,26 @@ module.exports = function runParse(match, job, cb)
     {
         if (!err)
         {
-            var message = "time spent on post-processing match ";
-            console.time(message);
-            var meta = processMetadata(entries);
-            var res = processExpand(entries, meta, populate);
-            var parsed_data = res.parsed_data;
-            parsed_data.teamfights = processTeamfights(res.tf_data, meta, populate);
-            var ap = processAllPlayers(res.int_data);
-            parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
-            parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
-            parsed_data.duration = meta.game_end - meta.game_zero;
-            //processMultiKillStreaks();
-            //processReduce(res.expanded);
-            console.timeEnd(message);
+            try
+            {
+                var message = "time spent on post-processing match ";
+                console.time(message);
+                var meta = processMetadata(entries);
+                var res = processExpand(entries, meta, populate);
+                var parsed_data = res.parsed_data;
+                parsed_data.teamfights = processTeamfights(res.tf_data, meta, populate);
+                var ap = processAllPlayers(res.int_data);
+                parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
+                parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
+                parsed_data.duration = meta.game_end - meta.game_zero;
+                //processMultiKillStreaks();
+                //processReduce(res.expanded);
+                console.timeEnd(message);
+            }
+            catch (e)
+            {
+                return cb(e);
+            }
         }
         return cb(err, parsed_data);
     }

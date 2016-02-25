@@ -4,7 +4,9 @@ var getData = utility.getData;
 var db = require('./db');
 var redis = require('./redis');
 var queue = require('./queue');
+var addToQueue = queue.addToQueue;
 var mQueue = queue.getQueue('mmr');
+var rankQueue = queue.getQueue('rank');
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
@@ -38,6 +40,7 @@ var server = app.listen(port, function()
     var host = server.address().address;
     console.log('[SCANNER] listening at http://%s:%s', host, port);
 });
+var moment = require('moment');
 buildSets(db, redis, function(err)
 {
     if (err)
@@ -101,7 +104,7 @@ function scanApi(seq_num)
         getData(
         {
             url: container.url,
-            delay: 100,
+            delay: Number(config.SCANNER_DELAY),
             proxyAffinityRange: 4
         }, function(err, data)
         {
@@ -123,47 +126,79 @@ function scanApi(seq_num)
                     //parse tournament games
                     match.parse_status = 0;
                 }
+                else if (match.players.some(function(p)
+                    {
+                        return (p.account_id in trackedPlayers);
+                    }))
+                {
+                    //queued
+                    match.parse_status = 0;
+                }
+                else if (match.players.some(function(p)
+                    {
+                        return (config.ENABLE_INSERT_ALL_MATCHES || p.account_id in userPlayers);
+                    }))
+                {
+                    //skipped
+                    match.parse_status = 3;
+                }
                 async.each(match.players, function(p, cb)
                 {
-                    if (p.account_id in trackedPlayers)
+                    async.parallel(
                     {
-                        //queued
-                        match.parse_status = 0;
-                    }
-                    if ((config.ENABLE_INSERT_ALL_MATCHES || p.account_id in userPlayers) && match.parse_status !== 0)
-                    {
-                        //skipped, but only if not already queued
-                        match.parse_status = 3;
-                    }
-                    if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 20 === 0)))
-                    {
-                        //could possibly pick up MMR change for matches we don't add, this is probably ok
-                        queue.addToQueue(mQueue,
+                        "decideMmr": function(cb)
                         {
-                            match_id: match.match_id,
-                            account_id: p.account_id,
-                            //url: ratingPlayers[p.account_id]
-                            url: retrieverArr.map(function(r)
+                            if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 10 === 0)))
                             {
-                                return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id=" + p.account_id;
-                            })[p.account_id % retrieverArr.length]
+                                //could possibly pick up MMR change for matches we don't add, this is probably ok
+                                addToQueue(mQueue,
+                                {
+                                    match_id: match.match_id,
+                                    account_id: p.account_id,
+                                    url: retrieverArr.map(function(r)
+                                    {
+                                        return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id=" + p.account_id;
+                                    })[p.account_id % retrieverArr.length]
+                                },
+                                {
+                                    attempts: 1
+                                }, cb);
+                            }
+                            else
+                            {
+                                cb();
+                            }
                         },
+                        "decideRank": function(cb)
                         {
-                            attempts: 1
-                        }, cb);
-                    }
-                    else
-                    {
-                        cb();
-                    }
+                            if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id)
+                            {
+                                addToQueue(rankQueue,
+                                {
+                                    match_id: match.match_id,
+                                    account_id: p.account_id,
+                                    hero_id: p.hero_id,
+                                    player_slot: p.player_slot,
+                                    radiant_win: match.radiant_win
+                                },
+                                {
+                                    attempts: 1
+                                }, cb);
+                            }
+                            else
+                            {
+                                cb();
+                            }
+                        }
+                    }, cb);
                 }, function(err)
                 {
                     if (match.parse_status === 0 || match.parse_status === 3)
                     {
-                        redis.zadd("added_match", moment().format('X'), match.match_id);
                         insertMatch(db, redis, match,
                         {
-                            type: "api"
+                            type: "api",
+                            origin: "scanner"
                         }, close);
                     }
                     else

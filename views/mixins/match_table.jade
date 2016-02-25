@@ -22,16 +22,16 @@ mixin match_table(matches, extended)
       each match in matches
         - var hero = constants.heroes[match.hero_id]
         tr 
-          td: a(href="/matches/"+match.match_id)=match.match_id
+          td: a(class=match.player_win ? "text-success" : "text-danger", href="/matches/"+match.match_id)=match.match_id
           td
             if hero
               img.img-sm(src=hero.img, title=hero.localized_name)
             else
               =match.hero_id
           td(class=match.player_win ? "text-success" : "text-danger")=match.player_win ? "W" : "L"
-          td=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
-          td=constants.skill[match.skill] || match.skill
-          td=match.start_time+match.duration
+          td.small=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
+          td.small=constants.skill[match.skill] || match.skill
+          td.small=match.start_time+match.duration
           td.rankable=match.duration
           td.rankable=match.kills
           td.rankable=match.deaths
