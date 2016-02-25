@@ -2,12 +2,12 @@ include /mixins/progress_bar
 
 mixin hero_table(rows, short)
   h3 Heroes
-  table.table.table-condensed#heroes.table-striped.rankable(style="border:1px solid #666;")
+  table.table.table-condensed#heroes.table-striped.rankable
     thead
       tr
         th: abbr(title=tooltips.hero_id) Hero
         th.fromNow: abbr(title=tooltips.last_played) Last
-        th: abbr(title=tooltips.played_as) As
+        th: abbr(title=tooltips.played_as) Played
         th: abbr(title=tooltips.win_pct_as) Win%
         if !short
           th: abbr(title=tooltips.played_with) With
@@ -18,10 +18,10 @@ mixin hero_table(rows, short)
       each h in rows
         - var hero = constants.heroes[h.hero_id]
         tr
-          td.text-left
+          td.text-left.small
             img.img-sm(src=hero.img, title=hero.localized_name)
             =hero.localized_name
-          td=h.last_played
+          td.small=h.last_played
           td.rankable=h.games
           td.rankable
             +progress_bar(h.win, h.games)

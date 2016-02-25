@@ -119,7 +119,7 @@ function cleanup(redis, cb)
         async.each(types, function(key, cb)
         {
             var queue = getQueue(key);
-            async.each(['completed', 'failed'], function(type, cb)
+            async.each(['completed', 'failed', 'delayed'], function(type, cb)
             {
                 queue.clean(24 * 60 * 60 * 1000, type);
                 queue.once('cleaned', function(job, type)

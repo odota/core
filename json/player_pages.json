@@ -20,14 +20,8 @@
   "records": {
     "name": "Records"
   },
-  "counts": {
-    "name": "Counts"
-  },
   "trends": {
     "name": "Trends"
-  },
-  "sprees": {
-    "name": "Sprees"
   },
   "wardmap": {
     "name": "Wardmap"
@@ -43,5 +37,9 @@
   },
   "rating": {
     "name": "Rating"
+  },
+  "rankings": {
+    "name": "Rankings",
+    "hide": true
   }
 }

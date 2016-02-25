@@ -1,0 +1,1 @@
+select skill, count(*) from (select match_skill.skill from matches left join match_skill on matches.match_id = match_skill.match_id order by matches.match_id desc limit 100000) ms group by skill;

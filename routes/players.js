@@ -125,6 +125,35 @@ module.exports = function(db, redis)
             "ratings": function(cb)
             {
                 queries.getPlayerRatings(db, account_id, cb);
+            },
+            "rankings": function(cb)
+            {
+                if (info === "rankings")
+                {
+                    async.map(Object.keys(constants.heroes), function(hero_id, cb)
+                    {
+                        redis.zcard('hero_rankings:' + hero_id, function(err, card)
+                        {
+                            if (err)
+                            {
+                                return cb(err);
+                            }
+                            redis.zrank('hero_rankings:' + hero_id, account_id, function(err, rank)
+                            {
+                                cb(err,
+                                {
+                                    hero_id: hero_id,
+                                    rank: rank,
+                                    card: card
+                                });
+                            });
+                        });
+                    }, cb);
+                }
+                else
+                {
+                    return cb();
+                }
             }
         }, function(err, result)
         {
@@ -137,6 +166,7 @@ module.exports = function(db, redis)
             player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
             player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
             player.ratings = ratings;
+            player.rankings = result.rankings;
             delete req.query.account_id;
             console.timeEnd("player " + req.params.account_id);
             if (req.query.json)

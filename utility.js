@@ -104,6 +104,15 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
+        "api_notable": function()
+        {
+            return {
+                url: api_url + "/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=" + api_key,
+                title: [type].join(),
+                type: "api",
+                payload: payload
+            };
+        },
         "parse": function()
         {
             return {
@@ -144,6 +153,14 @@ function generateJob(type, payload)
         {
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
+                type: type,
+                payload: payload
+            };
+        },
+        "rank": function()
+        {
+            return {
+                title: [type, payload.account_id, payload.hero_id].join(),
                 type: type,
                 payload: payload
             };
@@ -214,7 +231,7 @@ function getData(url, cb)
                 //non-retryable
                 return cb(body);
             }
-            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response))
+            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos))
             {
                 //invalid response
                 if (url.noRetry)
@@ -617,6 +634,52 @@ function reduceMinimal(pm)
         duration: pm.duration
     };
 }
+
+function getLeaderboard(db, redis, key, n, cb)
+{
+    redis.zrevrangebyscore(key, "inf", "-inf", "WITHSCORES", "LIMIT", "0", n, function(err, rows)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        var entries = rows.map(function(r, i)
+        {
+            return {
+                account_id: r,
+                score: rows[i + 1]
+            };
+        }).filter(function(r, i)
+        {
+            return i % 2 === 0;
+        });
+        var account_ids = entries.map(function(r)
+        {
+            return r.account_id;
+        });
+        //get player data from DB
+        db.select().from('players').whereIn('account_id', account_ids).asCallback(function(err, names)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var obj = {};
+            names.forEach(function(n)
+            {
+                obj[n.account_id] = n;
+            });
+            entries.forEach(function(e)
+            {
+                for (var key in obj[e.account_id])
+                {
+                    e[key] = e[key] || obj[e.account_id][key];
+                }
+            });
+            cb(err, entries);
+        });
+    });
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -635,5 +698,6 @@ module.exports = {
     preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
-    reduceMinimal: reduceMinimal
+    reduceMinimal: reduceMinimal,
+    getLeaderboard: getLeaderboard
 };

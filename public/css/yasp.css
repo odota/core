@@ -323,6 +323,11 @@ h4,
     text-transform: uppercase;
 }
 
+.navbar-nav > li > a
+{
+    font-size: 0.95em;
+}
+
 .icon-bar {
     background-color: #fff;
 }
@@ -456,4 +461,9 @@ table img.img-sm {
 
 .center {
     margin: 0 auto;
+}
+
+table {
+  background-color:#333; 
+  border:1px solid #666;
 }

@@ -1,0 +1,91 @@
+extend layout
+
+block content
+  .row
+    .col-md-6
+      h3 Pros
+      table.table.table-striped.table-condensed#pros
+        thead
+          tr
+            th Name
+            th Role
+            th Team
+            th Rating
+        tbody
+          each player in notables
+            tr
+              td
+                if player.country_code && constants.countries[player.country_code.toUpperCase()]
+                  span: abbr(title=constants.countries[player.country_code.toUpperCase()].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.country_code.toLowerCase())
+                a(href="/players/"+player.account_id)=player.name
+              td=player.fantasy_role === 1 ? "Core" : "Support"
+              td=player.team_name
+              td=player.solo_competitive_rank
+    .col-md-6
+      h3 Top Rated
+      table.table.table-striped.table-condensed#leaderboard
+        thead
+          tr
+            th #
+            th Name
+            th Rating
+            //th Updated
+        tbody
+          each player, i in leaderboard
+            tr
+              td=i+1
+              td
+                if player.loccountrycode && constants.countries[player.loccountrycode]
+                  span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())  
+                a(href="/players/"+player.account_id)=player.personaname || player.account_id
+              td=player.solo_competitive_rank || player.score
+              //td=moment(player.time).fromNow()
+
+append footer_assets
+  script.
+    $('#pros').dataTable({
+      info: false,
+      "paging": false,
+      "searching": true,
+      "order": [
+          [3, "desc"]
+      ],
+      "drawCallback":function(){
+          tooltips();
+      },
+      "columnDefs": [{
+          targets: "fromNow",
+          render: function(data, type) {
+              if (type === "display") {
+                  if (!Number(data)){
+                      return "never";
+                  }
+                  return moment.unix(data).fromNow();
+              }
+              return data;
+          }
+      }]
+    });
+    $('#leaderboard').dataTable({
+      info: false,
+      "paging": false,
+      "searching": true,
+      "order": [
+          [2, "desc"]
+      ],
+      "drawCallback":function(){
+          tooltips();
+      },
+      "columnDefs": [{
+          targets: "fromNow",
+          render: function(data, type) {
+              if (type === "display") {
+                  if (!Number(data)){
+                      return "never";
+                  }
+                  return moment.unix(data).fromNow();
+              }
+              return data;
+          }
+      }]
+    });
