@@ -1,0 +1,13 @@
+extend blog_base
+
+block blog_content
+    .row
+        .col-md-12
+          each post in posts
+            include post_body
+          ul.pagination.pull-left
+            if id<max
+              li: a(href="/blog/"+(id+1)) Newer
+          ul.pagination.pull-right
+            if id>1
+              li: a(href="/blog/"+(id-1)) Older
