@@ -394,10 +394,11 @@ app.get('/picks/:n?', function(req, res, cb)
         });
     });
 });
-var notables = fs.readFileSync('./sql/notables.sql', 'utf8');
 app.get('/top', function(req, res, cb)
 {
-    db.raw(notables).asCallback(function(err, result)
+    db.raw(`
+    SELECT * from notable_players
+    `).asCallback(function(err, result)
     {
         if (err)
         {
