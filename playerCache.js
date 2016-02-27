@@ -20,6 +20,7 @@ if (enabled)
         cassandra = require('./cassandra');
     }
 }
+
 function readCache(account_id, options, cb)
 {
     if (enabled)
@@ -197,24 +198,10 @@ function countPlayerCaches(cb)
 {
     if (enabled)
     {
-        if (cEnabled)
+        redis.keys("player:*", function(err, result)
         {
-            cassandra.execute('SELECT DISTINCT COUNT(account_id) FROM player_caches', [],
-            {
-                prepare: true
-            }, function(err, result)
-            {
-                result = result && result.rows && result.rows[0] && result.rows[0].count ? result.rows[0].count.toNumber() : 0;
-                return cb(err, result);
-            });
-        }
-        else
-        {
-            redis.keys("player:*", function(err, result)
-            {
-                cb(err, result.length);
-            });
-        }
+            cb(err, result.length);
+        });
     }
     else
     {
