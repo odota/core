@@ -9,7 +9,7 @@ var utility = require('./utility');
 var filter = require('./filter');
 var reduceAggregable = utility.reduceAggregable;
 var enabled = config.ENABLE_PLAYER_CACHE;
-var cEnabled = config.CASSANDRA_PLAYER_CACHE;
+var cEnabled = config.ENABLE_CASSANDRA_PLAYER_CACHE;
 var redis;
 var cassandra;
 if (enabled)
@@ -20,8 +20,6 @@ if (enabled)
         cassandra = require('./cassandra');
     }
 }
-//CREATE KEYSPACE yasp WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1': 1 };
-//CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match text, PRIMARY KEY(account_id, match_id));
 function readCache(account_id, options, cb)
 {
     if (enabled)
