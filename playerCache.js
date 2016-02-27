@@ -147,6 +147,11 @@ function updateCache(match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
+                //join player with match to form player_match
+                for (var key in match)
+                {
+                    player_match[key] = match[key];
+                }
                 if (cEnabled)
                 {
                     writeCache(player_match.account_id,
@@ -166,11 +171,6 @@ function updateCache(match, cb)
                         //if player cache doesn't exist, skip
                         if (cache)
                         {
-                            //join player with match to form player_match
-                            for (var key in match)
-                            {
-                                player_match[key] = match[key];
-                            }
                             computePlayerMatchData(player_match);
                             cache.aggData = aggregator([player_match], null, cache.aggData);
                             writeCache(player_match.account_id, cache, cb);
