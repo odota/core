@@ -186,7 +186,7 @@ function insertMatch(db, redis, match, options, cb)
         */
         return cb(err, results.dp);
     });
-    //}).catch(cb);
+    
     function insertMatchTable(cb)
     {
         var row = match;
@@ -264,6 +264,7 @@ function insertMatch(db, redis, match, options, cb)
             });
         }
     }
+    //});
 }
 
 function insertPlayer(db, player, cb)
