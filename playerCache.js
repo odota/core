@@ -148,40 +148,40 @@ function updateCache(match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
-                readCache(player_match.account_id,
-                {}, function(err, cache)
+                if (cEnabled)
                 {
-                    if (err)
+                    writeCache(player_match.account_id,
                     {
-                        return cb(err);
-                    }
-                    //if player cache doesn't exist, skip
-                    if (cache)
+                        raw: [player_match]
+                    }, cb);
+                }
+                else
+                {
+                    readCache(player_match.account_id,
+                    {}, function(err, cache)
                     {
-                        //join player with match to form player_match
-                        for (var key in match)
+                        if (err)
                         {
-                            player_match[key] = match[key];
+                            return cb(err);
                         }
-                        computePlayerMatchData(player_match);
-                        if (cEnabled)
+                        //if player cache doesn't exist, skip
+                        if (cache)
                         {
-                            writeCache(player_match.account_id,
+                            //join player with match to form player_match
+                            for (var key in match)
                             {
-                                raw: [player_match]
-                            }, cb);
-                        }
-                        else
-                        {
+                                player_match[key] = match[key];
+                            }
+                            computePlayerMatchData(player_match);
                             cache.aggData = aggregator([player_match], null, cache.aggData);
                             writeCache(player_match.account_id, cache, cb);
                         }
-                    }
-                    else
-                    {
-                        return cb();
-                    }
-                });
+                        else
+                        {
+                            return cb();
+                        }
+                    });
+                }
             }
             else
             {
