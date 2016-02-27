@@ -119,7 +119,7 @@ function getPage(match_seq_num, bucket)
                         if (err && err.detail && err.detail.indexOf("already exists") !== -1)
                         {
                             //treat already exists as non-error and continue
-                            console.log("match %s already exists", match.match_id);
+                            console.error("match %s already exists", match.match_id);
                             err = null;
                         }
                         return cb(err);
