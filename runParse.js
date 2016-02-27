@@ -153,7 +153,7 @@ module.exports = function runParse(match, job, cb)
             case 'CHAT_MESSAGE_FIRSTBLOOD':
             case 'CHAT_MESSAGE_AEGIS':
             case 'CHAT_MESSAGE_AEGIS_STOLEN':
-            case 'CHAT_MESSAGE_AEGIS_DENIED':
+            case 'CHAT_MESSAGE_DENIED_AEGIS':
             case 'CHAT_MESSAGE_ROSHAN_KILL':
                 container.objectives.push(JSON.parse(JSON.stringify(e)));
                 break;

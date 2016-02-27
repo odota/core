@@ -339,7 +339,7 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             e.slot = e.player1;
             expand(e);
         },
-        "CHAT_MESSAGE_AEGIS_DENIED": function(e)
+        "CHAT_MESSAGE_DENIED_AEGIS": function(e)
         {
             //aegis (player)
             //player1 = slot who picked up/denied/stole aegis
