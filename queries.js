@@ -257,7 +257,6 @@ function insertMatch(db, redis, match, options, cb)
                 async.each(players || [], function(pm, cb)
                 {
                     pm.match_id = match.match_id;
-                    console.log('update');
                     trx('player_matches').update(pm).where(
                     {
                         match_id: pm.match_id,

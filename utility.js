@@ -312,7 +312,7 @@ function mergeObjects(merge, val)
         {
             merge[attr] = val[attr];
         }
-        else if (val[attr].constructor === Array)
+        else if (val[attr] && val[attr].constructor === Array)
         {
             merge[attr] = merge[attr].concat(val[attr]);
         }
