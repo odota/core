@@ -562,7 +562,6 @@ function getAggs()
         hero_damage: "api",
         tower_damage: "api",
         hero_healing: "api",
-        //kills_per_min: "api",
         gold_per_min: "api",
         xp_per_min: "api",
         hero_id: "api",
