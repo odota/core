@@ -60,15 +60,14 @@ var projections = {
     peers: basic.concat('pgroup'),
     activity: basic,
     histograms: basic.concat(advanced).concat(['purchase']),
-    records: basic.concat(advanced).concat(['purchase']),
-    counts: basic.concat(advanced),
+    records: basic.concat(advanced).concat(['purchase', 'kill_streaks', 'multi_kills']),
     trends: basic.concat(advanced).concat(['purchase']),
-    sprees: basic.concat(['kill_streaks', 'multi_kills']),
     wardmap: basic.concat(['obs', 'sen']),
     items: basic.concat(['purchase', 'purchase_log', 'item_uses']),
     skills: basic.concat(['hero_hits', 'ability_uses']),
     wordcloud: basic.concat('chat'),
-    rating: basic
+    rating: basic,
+    rankings: basic,
 };
 var sigModes = [];
 for (var key in constants.game_mode)
@@ -125,6 +124,35 @@ module.exports = function(db, redis)
             "ratings": function(cb)
             {
                 queries.getPlayerRatings(db, account_id, cb);
+            },
+            "rankings": function(cb)
+            {
+                if (info === "rankings")
+                {
+                    async.map(Object.keys(constants.heroes), function(hero_id, cb)
+                    {
+                        redis.zcard('hero_rankings:' + hero_id, function(err, card)
+                        {
+                            if (err)
+                            {
+                                return cb(err);
+                            }
+                            redis.zrank('hero_rankings:' + hero_id, account_id, function(err, rank)
+                            {
+                                cb(err,
+                                {
+                                    hero_id: hero_id,
+                                    rank: rank,
+                                    card: card
+                                });
+                            });
+                        });
+                    }, cb);
+                }
+                else
+                {
+                    return cb();
+                }
             }
         }, function(err, result)
         {
@@ -137,10 +165,12 @@ module.exports = function(db, redis)
             player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
             player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
             player.ratings = ratings;
+            player.rankings = result.rankings;
             delete req.query.account_id;
             console.timeEnd("player " + req.params.account_id);
             if (req.query.json)
             {
+                delete result.player.aggData.teammates;
                 return res.json(result.player);
             }
             res.render("player/player_" + info,

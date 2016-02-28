@@ -1,9 +1,7 @@
 var config = require('./config');
 var utility = require('./utility');
 var request = require('request');
-var queueReq = utility.queueReq;
 var redis = require('./redis');
-var queue = require('./queue');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
@@ -35,6 +33,8 @@ var mmstats = require('./routes/mmstats');
 var requestRouter = require('./routes/request');
 var querystring = require('querystring');
 var util = require('util');
+var queue = require('./queue');
+var fhQueue = queue.getQueue('fullhistory');
 //PASSPORT config
 passport.serializeUser(function(user, done)
 {
@@ -78,7 +78,7 @@ passport.use(new SteamStrategy(
             {
                 return cb(err);
             }
-            queueReq(queue, "fullhistory", player,
+            queue.addToQueue(fhQueue, player,
             {}, function(err)
             {
                 return cb(err, player);
@@ -145,12 +145,20 @@ app.use(function(req, res, next)
 app.use(function(req, res, next)
 {
     var timeStart = new Date();
+    if (req.path.indexOf('/names') === 0)
+    {
+        redis.zadd("alias_hits", moment().format('X'), req.path);
+    }
+    if (req.query.json)
+    {
+        redis.zadd("json_hits", moment().format('X'), req.path);
+    }
     res.once('finish', function()
     {
         var timeEnd = new Date();
         /*
         var obj = JSON.stringify({
-            path: req.originalUrl,
+            path: req.path,
             time: timeEnd - timeStart
         };
         */
@@ -182,12 +190,16 @@ app.use(function(req, res, next)
         res.locals.api_down = Number(results.apiDown);
         var theGoal = Number(results.cheese || 0.1) / goal * 100;
         res.locals.cheese_goal = (theGoal - 100) > 0 ? 100 : theGoal;
-        logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.originalUrl);
+        logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.path);
         return next(err);
     });
 });
 var Poet = require('poet');
-var poet = new Poet(app);
+var poet = new Poet(app, {
+    routes: {
+    '/post/:post': 'blog/post'
+  }
+});
 poet.watch(function()
 {
     // watcher reloaded
@@ -199,7 +211,7 @@ poet.addRoute('/blog/:id?', function(req, res)
 {
     var max = poet.helpers.getPostCount();
     var id = Number(req.params.id) || max;
-    res.render('blog',
+    res.render('blog/blog',
     {
         posts: poet.helpers.getPosts(max - id, max - id + 1),
         id: id,
@@ -233,7 +245,7 @@ app.route('/healthz').get(function(req, res)
 });
 app.route('/status').get(function(req, res, next)
 {
-    status(db, redis, queue, function(err, result)
+    status(db, redis, function(err, result)
     {
         if (err)
         {
@@ -269,9 +281,10 @@ app.route('/logout').get(function(req, res)
     req.session = null;
     res.redirect('/');
 });
-app.route('/privacyterms').get(function(req, res) {
+app.route('/privacyterms').get(function(req, res)
+{
     res.redirect("/faq");
-})
+});
 app.use('/matches', matches(db, redis));
 app.use('/players', players(db, redis));
 app.use('/names/:vanityUrl', function(req, res, cb)
@@ -316,28 +329,160 @@ app.use('/distributions', function(req, res, next)
         });
     });
 });
-app.get('/picks/:n?', function(req, res, next)
+app.get('/picks/:n?', function(req, res, cb)
 {
-    redis.get('picks', function(err, result)
+    var length = req.params.n || 1;
+    var limit = 1000;
+    //get top 1000 picks for current length
+    redis.zrevrangebyscore('picks_counts:' + length, "inf", "-inf", "WITHSCORES", "LIMIT", "0", limit, function(err, rows)
     {
         if (err)
         {
-            return next(err);
+            return cb(err);
         }
-        result = JSON.parse(result);
-        res.render('picks',
+        var entries = rows.map(function(r, i)
         {
-            picks: result || {},
-            n: req.params.n || "1",
-            tabs: {
-                1: "Monads",
-                2: "Dyads",
-                3: "Triads",
-                4: "Tetrads",
-                5: "Pentads"
+            return {
+                key: r,
+                games: rows[i + 1]
+            };
+        }).filter(function(r, i)
+        {
+            return i % 2 === 0;
+        });
+        //look up wins
+        async.each(entries, function(entry, cb)
+        {
+            redis.zscore('picks_wins_counts:' + length, entry.key, function(err, score)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                entry.wins = Number(score);
+                cb(err);
+            });
+        }, function(err)
+        {
+            if (err)
+            {
+                return cb(err);
             }
+            //look up total
+            redis.get('picks_match_count', function(err, card)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                res.render('picks',
+                {
+                    total: Number(card),
+                    limit: limit,
+                    picks: entries,
+                    n: req.params.n || "1",
+                    tabs:
+                    {
+                        1: "Monads",
+                        2: "Dyads",
+                        3: "Triads",
+                        4: "Tetrads",
+                        5: "Pentads"
+                    }
+                });
+            });
         });
     });
+});
+app.get('/top', function(req, res, cb)
+{
+    db.raw(`
+    SELECT * from notable_players
+    `).asCallback(function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        utility.getLeaderboard(db, redis, 'solo_competitive_rank', 1000, function(err, result2)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.render('top',
+            {
+                notables: result.rows,
+                leaderboard: result2
+            });
+        });
+    });
+});
+app.get('/rankings/:hero_id?', function(req, res, cb)
+{
+    if (!req.params.hero_id)
+    {
+        var alpha_heroes = Object.keys(constants.heroes).map(function(id)
+        {
+            return constants.heroes[id];
+        }).sort(function(a, b)
+        {
+            return a.localized_name < b.localized_name ? -1 : 1;
+        });
+        res.render('rankings',
+        {
+            alpha_heroes: alpha_heroes
+        });
+    }
+    else
+    {
+        utility.getLeaderboard(db, redis, 'hero_rankings:' + req.params.hero_id, 250, function(err, entries)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            async.each(entries, function(player, cb)
+            {
+                async.parallel(
+                {
+                    solo_competitive_rank: function(cb)
+                    {
+                        redis.zscore('solo_competitive_rank', player.account_id, cb);
+                    },
+                    wins: function(cb)
+                    {
+                        redis.hget('wins:' + player.account_id, req.params.hero_id, cb);
+                    },
+                    games: function(cb)
+                    {
+                        redis.hget('games:' + player.account_id, req.params.hero_id, cb);
+                    }
+                }, function(err, result)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    player.solo_competitive_rank = result.solo_competitive_rank;
+                    player.games = result.games;
+                    player.wins = result.wins;
+                    cb(err);
+                });
+            }, function(err)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                res.render('rankings',
+                {
+                    hero_id: Number(req.params.hero_id),
+                    rankings: entries
+                });
+            });
+        });
+    }
 });
 app.use('/api', api);
 app.use('/', donate(db, redis));
@@ -353,7 +498,7 @@ app.use(function(err, req, res, next)
 {
     res.status(err.status || 500);
     console.log(err);
-    redis.zadd("error_500", moment().format('X'), req.originalUrl);
+    redis.zadd("error_500", moment().format('X'), req.path);
     if (config.NODE_ENV !== "development")
     {
         return res.render('error/' + (err.status === 404 ? '404' : '500'),

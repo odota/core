@@ -13,7 +13,7 @@ constants.heroes = {};
 constants.hero_names = {};
 heroes.forEach(function(h)
 {
-    h.img = "/apps/dota2/images/heroes/" + h.name.replace("npc_dota_hero_", "") + "_sb.png";
+    h.img = "/apps/dota2/images/heroes/" + h.name.replace("npc_dota_hero_", "") + "_full.png";
     constants.heroes[h.id] = h;
     constants.hero_names[h.name] = h;
 });

@@ -1,0 +1,7 @@
+.panel.panel-default.blog-panel
+  .panel-heading
+      h2.panel-title.blog-heading
+        a(href="#{post.url}")= post.title
+      h6.blog-date By #{post.author} | #{moment(post.date).format("dddd, MMMM Do, YYYY")}
+  .panel-body
+      != post.content

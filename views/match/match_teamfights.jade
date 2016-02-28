@@ -90,13 +90,13 @@ block match_content
               +hero_td(player)
               td
                 if player.participate
-                  div(style="font-size:30px;") !{"&#10003;"}
+                  i.fa.fa-check(style="font-size:28px;")
               td
                 if player.deaths
-                  div(style="font-size:30px;") !{"&#128128;"}
+                  i.fa.fa-times(style="font-size:28px;")
               td
                 if player.buybacks
-                 div(style="font-size:30px;") !{"&#128176;"}
+                  i.fa.fs-usd(style="font-size:28px;")
               td(style="white-space: nowrap;")
                 if player.level_start !== player.level_end
                   | #{player.level_start}<i class="fa fa-long-arrow-right"></i>#{player.level_end}

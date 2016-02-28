@@ -38,7 +38,7 @@ block match_content
               th: abbr(title=tooltips.hero_healing) HH
               th: abbr(title=tooltips.items) Items
           tr(class=player.isRadiant ? "radiant" : "dire")
-            +hero_td(player)
+            +hero_td(player, player.abandons ? constants.leaver_status[player.leaver_status] : "")
             td
               //img.img-sm(src=player.avatar)
               if (player.last_login)
@@ -106,7 +106,7 @@ block match_content
         else
           h3.text-center: small
             | Ability upgrade data has expired for this match. <br>
-            | Use the request form to reload data. More information #[a(href="/blog/35") here].
+            | Use the request form to reload data. More information #[a(href="/post/ability-upgrade-removal") here].
 
     .col-md-4
       h3 Buildings

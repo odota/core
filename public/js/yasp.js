@@ -33,3 +33,6 @@ require('./resize.js')
 require('./requestForm.js')
 require('../css/flaticon.css')
 require('../css/yasp.css')
+window.constants = {
+    player_colors: require('../../json/player_colors.json')
+};

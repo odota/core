@@ -31,6 +31,7 @@ app.get('/redis/:key', function(req, res, cb)
 });
 app.listen(config.PARSER_PORT);
 var queue = require('./queue');
+var pQueue = queue.getQueue('parse');
 var getReplayUrl = require('./getReplayUrl');
 var db = require('./db');
 var redis = require('./redis');
@@ -42,7 +43,7 @@ var compute = require('./compute');
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
-queue.parse.process(function(job, cb)
+pQueue.process(function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
@@ -59,32 +60,21 @@ queue.parse.process(function(job, cb)
         },
         "runParse": function(cb)
         {
-            try
+            runParse(match, job, function(err, parsed_data)
             {
-                runParse(match, job, function(err, parsed_data)
+                if (err)
                 {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    //extend match object with parsed data, keep existing data if key conflict
-                    //match.players was deleted earlier during insertion of api data
-                    for (var key in parsed_data)
-                    {
-                        match[key] = match[key] || parsed_data[key];
-                    }
-                    match.parse_status = 2;
-                    cb(err);
-                });
-            }
-            catch (e)
-            {
-                cb(e);
-                setTimeout(function()
+                    return cb(err);
+                }
+                //extend match object with parsed data, keep existing data if key conflict
+                //match.players was deleted earlier during insertion of api data
+                for (var key in parsed_data)
                 {
-                    throw e;
-                }, 1000);
-            }
+                    match[key] = match[key] || parsed_data[key];
+                }
+                match.parse_status = 2;
+                cb(err);
+            });
         },
         "insertMatch": match.replay_blob_key ? function(cb)
         {
@@ -102,7 +92,7 @@ queue.parse.process(function(job, cb)
         } : function(cb)
         {
             //fs.writeFileSync('output.json', JSON.stringify(match));
-            insertMatch(db, redis, queue, match,
+            insertMatch(db, redis, match,
             {
                 type: "parsed"
             }, cb);

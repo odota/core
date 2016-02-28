@@ -104,28 +104,26 @@ gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-d
 #cassandra
 gcloud compute instances delete -q cassandra-1
 gcloud compute instances delete -q cassandra-2
-gcloud compute instances create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 100GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+gcloud compute instances create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 docker run --name cassandra -d --net=host cassandra:latest
 '
-gcloud compute instances create cassandra-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 100GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+gcloud compute instances create cassandra-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 docker run --name cassandra -d --net=host -e CASSANDRA_SEEDS=cassandra-1 cassandra:latest
 '
-
-#backend
-gcloud compute instance-groups managed delete -q backend-group-1
-gcloud compute instance-templates delete -q backend-1
-gcloud compute instance-templates create backend-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-
-'
-gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"
+#cqlsh
+#CREATE KEYSPACE yasp WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1': 1 };
+#CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match text, PRIMARY KEY(account_id, match_id));
 
 #importer
 gcloud compute instance-groups managed delete -q importer-group-1
 gcloud compute instance-templates delete -q importer-1
 gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "node dev/allMatches.js 0 1900000000 5000"
+sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "sh -c 'node dev/allMatches.js 0 1900000000 1000 > /dev/null'"
 '
 gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
 
+#postgres maintenance
+gcloud compute instances create temp-1 --machine-type n1-standard-2 --image container-vm --disk name=temp-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd
+
 #redeploy yasp container
-sudo docker pull yasp/yasp:latest && sudo docker stop yasp && sudo docker rm yasp && sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "./node_modules/pm2/bin/pm2 start deploy.json && sleep infinity"
+sudo docker pull yasp/yasp:latest && sudo docker stop yasp && sudo docker rm yasp && sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "node deploy.js"

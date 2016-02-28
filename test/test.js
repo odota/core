@@ -7,6 +7,7 @@ config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
 config.ENABLE_MATCH_CACHE = 1;
 config.ENABLE_PLAYER_CACHE = 1;
+config.FRONTEND_PORT = 4900;
 var async = require('async');
 var redis = require('../redis');
 var queue = require('../queue');
@@ -20,7 +21,7 @@ var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
 */
-var queueReq = require('../utility').queueReq;
+var pQueue = queue.getQueue('parse');
 var supertest = require('supertest');
 var replay_dir = "./test/testfiles/";
 var pg = require('pg');
@@ -149,7 +150,7 @@ before(function(done)
             console.log("loading matches");
             async.mapSeries([require('./details_api.json').result], function(m, cb)
             {
-                queries.insertMatch(db, redis, queue, m,
+                queries.insertMatch(db, redis, m,
                 {
                     type: "api"
                 }, cb);
@@ -163,61 +164,6 @@ before(function(done)
                 queries.insertPlayer(db, p, cb);
             }, cb);
         }], done);
-});
-describe("worker", function()
-{
-    this.timeout(wait);
-    //TODO fix match/account_ids
-    /*
-    it('process details request', function(done) {
-        queueReq(queue, "api_details", {
-            match_id: 870061127
-        }, {}, function(err, job) {
-            assert(!err);
-            assert(job);
-            processApi(job, function(err) {
-                done(err);
-            });
-        });
-    });
-    it('process mmr request', function(done) {
-        queueReq(queue, "mmr", {
-            match_id: 870061127,
-            account_id: 88367253,
-            url: "http://localhost:5100/?account_id=88367253"
-        }, {}, function(err, job) {
-            assert(!err);
-            assert(job);
-            processMmr(job, function(err) {
-                done(err);
-            });
-        });
-    });
-    it('process summaries request', function(done) {
-        queueReq(queue, "api_summaries", {
-            players: [{
-                account_id: 88367253
-            }]
-        }, {}, function(err, job) {
-            assert(!err);
-            assert(job);
-            processApi(job, function(err) {
-                done(err);
-            });
-        });
-    });
-    it('process fullhistory request', function(done) {
-        queueReq(queue, "fullhistory", {
-            account_id: 88367253
-        }, {}, function(err, job) {
-            assert(!err);
-            assert(job);
-            processFullHistory(job, function(err) {
-                done(err);
-            });
-        });
-    });
-    */
 });
 describe("parser", function()
 {
@@ -245,27 +191,34 @@ describe("parser", function()
                 slot_to_id:
                 {}
             };
-            queueReq(queue, "parse", match,
+            queue.addToQueue(pQueue, match,
             {}, function(err, job)
             {
                 assert(job && !err);
-                queue.parse.once('completed', function(job2)
+                var poll = setInterval(function()
                 {
-                    if (job.jobId === job2.jobId)
+                    pQueue.getJob(job.jobId).then(function(job)
                     {
-                        //ensure parse data got inserted
-                        queries.getMatch(db, tests[key], function(err, match)
+                        job.getState().then(function(state)
                         {
-                            if (err)
+                            if (state === "completed")
                             {
-                                return done(err);
+                                clearInterval(poll);
+                                //ensure parse data got inserted
+                                queries.getMatch(db, tests[key], function(err, match)
+                                {
+                                    if (err)
+                                    {
+                                        return done(err);
+                                    }
+                                    assert(match.version);
+                                    assert(match.players && match.players[0] && match.players[0].lh_t);
+                                    return done();
+                                });
                             }
-                            assert(match.version);
-                            assert(match.players && match.players[0] && match.players[0].lh_t);
-                            return done();
                         });
-                    }
-                });
+                    }).catch(done);
+                }, 1000);
             });
         });
     }

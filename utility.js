@@ -104,6 +104,15 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
+        "api_notable": function()
+        {
+            return {
+                url: api_url + "/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=" + api_key,
+                title: [type].join(),
+                type: "api",
+                payload: payload
+            };
+        },
         "parse": function()
         {
             return {
@@ -144,6 +153,14 @@ function generateJob(type, payload)
         {
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
+                type: type,
+                payload: payload
+            };
+        },
+        "rank": function()
+        {
+            return {
+                title: [type, payload.account_id, payload.hero_id].join(),
                 type: type,
                 payload: payload
             };
@@ -214,7 +231,7 @@ function getData(url, cb)
                 //non-retryable
                 return cb(body);
             }
-            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response))
+            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos))
             {
                 //invalid response
                 if (url.noRetry)
@@ -460,43 +477,6 @@ function min(array)
     return Math.min.apply(null, array);
 }
 
-function invokeInterval(func, delay)
-{
-    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
-    (function invoker()
-    {
-        console.log("running %s", func.name);
-        func(function(err)
-        {
-            if (err)
-            {
-                //log the error, but wait until next interval to retry
-                console.error(err);
-            }
-            setTimeout(invoker, delay);
-        });
-    })();
-}
-
-function queueReq(queue, type, payload, options, cb)
-{
-    var job = generateJob(type, payload);
-    queue[job.type].add(job,
-    {
-        attempts: options.attempts || 15,
-        backoff:
-        {
-            delay: 60 * 1000,
-            type: 'exponential'
-        },
-        timeout: options.timeout
-    }).then(function(queuejob)
-    {
-        console.log("created %s jobId: %s", type, queuejob.jobId);
-        cb(null, queuejob);
-    }).catch(cb);
-}
-
 function preprocessQuery(query, constants)
 {
     //check if we already processed to ensure idempotence
@@ -582,7 +562,6 @@ function getAggs()
         hero_damage: "api",
         tower_damage: "api",
         hero_healing: "api",
-        //kills_per_min: "api",
         gold_per_min: "api",
         xp_per_min: "api",
         hero_id: "api",
@@ -649,10 +628,57 @@ function reduceMinimal(pm)
         gold_per_min: pm.gold_per_min,
         parse_status: pm.parse_status,
         skill: pm.skill,
+        radiant_win: pm.radiant_win,
         player_win: pm.player_win,
         start_time: pm.start_time,
         duration: pm.duration
     };
+}
+
+function getLeaderboard(db, redis, key, n, cb)
+{
+    redis.zrevrangebyscore(key, "inf", "-inf", "WITHSCORES", "LIMIT", "0", n, function(err, rows)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        var entries = rows.map(function(r, i)
+        {
+            return {
+                account_id: r,
+                score: rows[i + 1]
+            };
+        }).filter(function(r, i)
+        {
+            return i % 2 === 0;
+        });
+        var account_ids = entries.map(function(r)
+        {
+            return r.account_id;
+        });
+        //get player data from DB
+        db.select().from('players').whereIn('account_id', account_ids).asCallback(function(err, names)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var obj = {};
+            names.forEach(function(n)
+            {
+                obj[n.account_id] = n;
+            });
+            entries.forEach(function(e)
+            {
+                for (var key in obj[e.account_id])
+                {
+                    e[key] = e[key] || obj[e.account_id][key];
+                }
+            });
+            cb(err, entries);
+        });
+    });
 }
 module.exports = {
     tokenize: tokenize,
@@ -669,10 +695,9 @@ module.exports = {
     isSignificant: isSignificant,
     max: max,
     min: min,
-    invokeInterval: invokeInterval,
-    queueReq: queueReq,
     preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
-    reduceMinimal: reduceMinimal
+    reduceMinimal: reduceMinimal,
+    getLeaderboard: getLeaderboard
 };

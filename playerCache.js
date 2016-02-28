@@ -9,7 +9,7 @@ var utility = require('./utility');
 var filter = require('./filter');
 var reduceAggregable = utility.reduceAggregable;
 var enabled = config.ENABLE_PLAYER_CACHE;
-var cEnabled = config.CASSANDRA_PLAYER_CACHE;
+var cEnabled = config.ENABLE_CASSANDRA_PLAYER_CACHE;
 var redis;
 var cassandra;
 if (enabled)
@@ -20,8 +20,7 @@ if (enabled)
         cassandra = require('./cassandra');
     }
 }
-//CREATE KEYSPACE yasp WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1': 1 };
-//CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match text, PRIMARY KEY(account_id, match_id));
+
 function readCache(account_id, options, cb)
 {
     if (enabled)
@@ -60,11 +59,11 @@ function readCache(account_id, options, cb)
         }
         else
         {
-            console.time('readcache');
+            //console.time('readcache');
             redis.get(new Buffer("player:" + account_id), function(err, result)
             {
                 var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-                console.timeEnd('readcache');
+                //console.timeEnd('readcache');
                 //console.log(result ? result.length : 0, JSON.stringify(cache).length);
                 return cb(err, cache);
             });
@@ -148,40 +147,40 @@ function updateCache(match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
-                readCache(player_match.account_id,
-                {}, function(err, cache)
+                //join player with match to form player_match
+                for (var key in match)
                 {
-                    if (err)
+                    player_match[key] = match[key];
+                }
+                if (cEnabled)
+                {
+                    writeCache(player_match.account_id,
                     {
-                        return cb(err);
-                    }
-                    //if player cache doesn't exist, skip
-                    if (cache)
+                        raw: [player_match]
+                    }, cb);
+                }
+                else
+                {
+                    readCache(player_match.account_id,
+                    {}, function(err, cache)
                     {
-                        //join player with match to form player_match
-                        for (var key in match)
+                        if (err)
                         {
-                            player_match[key] = match[key];
+                            return cb(err);
                         }
-                        computePlayerMatchData(player_match);
-                        if (cEnabled)
+                        //if player cache doesn't exist, skip
+                        if (cache)
                         {
-                            writeCache(player_match.account_id,
-                            {
-                                raw: [player_match]
-                            }, cb);
-                        }
-                        else
-                        {
+                            computePlayerMatchData(player_match);
                             cache.aggData = aggregator([player_match], null, cache.aggData);
                             writeCache(player_match.account_id, cache, cb);
                         }
-                    }
-                    else
-                    {
-                        return cb();
-                    }
-                });
+                        else
+                        {
+                            return cb();
+                        }
+                    });
+                }
             }
             else
             {
@@ -199,24 +198,10 @@ function countPlayerCaches(cb)
 {
     if (enabled)
     {
-        if (cEnabled)
+        redis.keys("player:*", function(err, result)
         {
-            cassandra.execute('SELECT DISTINCT COUNT(account_id) FROM player_caches', [],
-            {
-                prepare: true
-            }, function(err, result)
-            {
-                result = result && result.rows && result.rows[0] && result.rows[0].count ? result.rows[0].count.toNumber() : 0;
-                return cb(err, result);
-            });
-        }
-        else
-        {
-            redis.keys("player:*", function(err, result)
-            {
-                cb(err, result.length);
-            });
-        }
+            cb(err, result.length);
+        });
     }
     else
     {

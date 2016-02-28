@@ -72,6 +72,7 @@ block content
       ul.nav.nav-tabs
         each val, key in tabs
           li(class= (route === key ? 'active' : ''))
+            if !val.hide
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key) + querystring, class=(val["new-feature"] ? "new-feature" : ""))= val.name
   include /query
   block playercontent

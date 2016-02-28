@@ -29,13 +29,9 @@ RUN . /root/.bashrc && npm install
 ADD java_parser /usr/src/yasp/java_parser
 RUN . /root/.bashrc && npm run maven
 
-# Add and build webpack
-ADD webpack.config.js /usr/src/yasp/
-ADD public /usr/src/yasp/public
-RUN . /root/.bashrc && npm run webpack
-
 # Add everything else
 ADD . /usr/src/yasp
+RUN . /root/.bashrc && npm run webpack
 
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "web.js" ]

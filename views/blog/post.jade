@@ -1,0 +1,6 @@
+extend blog_base
+
+block blog_content
+  include post_body
+  ul.pagination.pull-right
+      li: a(href="/blog/") Back to the Blog

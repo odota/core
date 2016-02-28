@@ -1,7 +1,6 @@
 var async = require('async');
 var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
-var queueReq = utility.queueReq;
 var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
@@ -9,6 +8,9 @@ var aggregator = require('./aggregator');
 var constants = require('./constants');
 var filter = require('./filter');
 var util = require('util');
+var queue = require('./queue');
+var cQueue = queue.getQueue('cache');
+var pQueue = queue.getQueue('parse');
 var columnInfo = {};
 
 function getSets(redis, cb)
@@ -58,7 +60,7 @@ function getColumnInfo(db, table, cb)
     }
 }
 
-function upsert(db, table, row, conflict, cb)
+function cleanRow(db, table, row, cb)
 {
     getColumnInfo(db, table, function(err)
     {
@@ -73,6 +75,18 @@ function upsert(db, table, row, conflict, cb)
                 delete row[key];
                 //console.error(key);
             }
+        }
+        cb(err, row);
+    });
+}
+
+function upsert(db, table, row, conflict, cb)
+{
+    cleanRow(db, table, row, function(err)
+    {
+        if (err)
+        {
+            return cb(err);
         }
         var query1 = db(table).insert(row);
         var query2 = db(table).update(row).where(conflict);
@@ -130,7 +144,7 @@ function genValue(row, key)
     }
 }
 
-function insertMatch(db, redis, queue, match, options, cb)
+function insertMatch(db, redis, match, options, cb)
 {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
@@ -161,68 +175,110 @@ function insertMatch(db, redis, queue, match, options, cb)
     }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
-    //db.transaction(function(trx){
     async.series(
     {
-        "imt": insertMatchTable,
-        "ipmt": insertPlayerMatchesTable,
-        "ipl": insertPlayers,
+        "clean": clean,
+        "i": insert,
         "pc": updatePlayerCaches,
         "cmc": clearMatchCache,
         "dp": decideParse
     }, function(err, results)
     {
-        /*
-        if (err)
-        {
-            trx.rollback(err);
-        }
-        else
-        {
-            trx.commit();
-        }
-        */
         return cb(err, results.dp);
     });
-    //}).catch(cb);
-    function insertMatchTable(cb)
+
+    function clean(cb)
     {
-        var row = match;
-        upsert(db, 'matches', row,
+        cleanRow(db, 'matches', match, function(err)
         {
-            match_id: match.match_id
-        }, cb);
+            if (err)
+            {
+                return cb(err);
+            }
+            async.each(players || [], function(pm, cb)
+            {
+                cleanRow(db, 'player_matches', pm, cb);
+            }, cb);
+        });
     }
 
-    function insertPlayerMatchesTable(cb)
+    function insert(cb)
     {
-        //we can skip this if we have no players (skill case)
-        async.eachSeries(players || [], function(pm, cb)
+        db.transaction(function(trx)
         {
-            pm.match_id = match.match_id;
-            upsert(db, 'player_matches', pm,
+            trx('matches').insert(match).asCallback(function(err)
             {
-                match_id: pm.match_id,
-                player_slot: pm.player_slot
-            }, cb);
-        }, cb);
+                if (err)
+                {
+                    return exit(err);
+                }
+                async.each(players || [], function(pm, cb)
+                {
+                    pm.match_id = match.match_id;
+                    trx('player_matches').insert(pm).asCallback(cb);
+                }, exit);
+            });
+
+            function exit(err)
+            {
+                if (err)
+                {
+                    trx.rollback(err);
+                }
+                else
+                {
+                    trx.commit();
+                }
+                if (err && err.detail && err.detail.indexOf("already exists") !== -1)
+                {
+                    update(cb);
+                }
+                else
+                {
+                    cb(err);
+                }
+            }
+        });
     }
-    /**		
-     * Inserts a placeholder player into db with just account ID for each player in this match		
-     **/
-    function insertPlayers(cb)
+
+    function update(cb)
     {
-        if (options.skipInsertPlayers)
+        db.transaction(function(trx)
         {
-            return cb();
-        }
-        async.each(players || [], function(p, cb)
-        {
-            insertPlayer(db,
+            trx('matches').update(match).where(
             {
-                account_id: p.account_id
-            }, cb);
-        }, cb);
+                match_id: match.match_id
+            }).asCallback(function(err)
+            {
+                if (err)
+                {
+                    return exit(err);
+                }
+                async.each(players || [], function(pm, cb)
+                {
+                    pm.match_id = match.match_id;
+                    console.log('update');
+                    trx('player_matches').update(pm).where(
+                    {
+                        match_id: pm.match_id,
+                        player_slot: pm.player_slot
+                    }).asCallback(cb);
+                }, exit);
+            });
+
+            function exit(err)
+            {
+                if (err)
+                {
+                    trx.rollback(err);
+                }
+                else
+                {
+                    trx.commit();
+                }
+                cb(err);
+            }
+        });
     }
 
     function updatePlayerCaches(cb)
@@ -234,7 +290,8 @@ function insertMatch(db, redis, queue, match, options, cb)
         var copy = JSON.parse(JSON.stringify(match));
         copy.players = players;
         copy.insert_type = options.type;
-        queueReq(queue, "cache", copy,
+        copy.origin = options.origin;
+        queue.addToQueue(cQueue, copy,
         {}, cb);
     }
 
@@ -255,7 +312,7 @@ function insertMatch(db, redis, queue, match, options, cb)
         {
             //queue it and finish, callback with the queued parse job
             options.timeout = 180000;
-            return queueReq(queue, "parse", match, options, function(err, job2)
+            return queue.addToQueue(pQueue, match, options, function(err, job2)
             {
                 cb(err, job2);
             });
@@ -394,4 +451,5 @@ module.exports = {
     getPlayerMatches: getPlayerMatches,
     getPlayerRatings: getPlayerRatings,
     getPlayer: getPlayer,
+    upsert: upsert
 };

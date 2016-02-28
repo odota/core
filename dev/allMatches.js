@@ -2,10 +2,7 @@ var utility = require('../utility');
 var generateJob = utility.generateJob;
 var async = require('async');
 var getData = utility.getData;
-var queries = require('../queries');
-var insertMatch = queries.insertMatch;
 var db = require('../db');
-var queue = require('../queue');
 var redis = require('../redis');
 var args = process.argv.slice(2);
 var start_seq_num = Number(args[0]) || 0;
@@ -20,6 +17,7 @@ const cluster = require('cluster');
 //bucket idspace into groups of 100000000
 //save progress to redis key complete_history:n
 var bucket_size = 100000000;
+var columnInfo = {};
 if (cluster.isMaster)
 {
     // Fork workers.
@@ -32,21 +30,33 @@ if (cluster.isMaster)
     }
     cluster.on('exit', (worker, code, signal) =>
     {
-        console.log(`worker ${worker.process.pid} died`);
-        throw 'worker died';
+        if (code !== 0)
+        {
+            throw 'worker died';
+        }
+        else
+        {
+            console.error('worker exited successfully');
+        }
     });
 }
 else
 {
     var bucket = process.env.BUCKET;
-    redis.get('complete_history:' + bucket, function(err, result)
+    getColumnInfo(db, 'matches', function(err)
     {
-        if (err)
+        getColumnInfo(db, 'player_matches', function(err)
         {
-            throw err;
-        }
-        result = result ? Number(result) : bucket;
-        getPage(result, bucket);
+            redis.get('complete_history:' + bucket, function(err, result)
+            {
+                if (err)
+                {
+                    throw err;
+                }
+                result = result ? Number(result) : bucket;
+                getPage(result, bucket);
+            });
+        });
     });
 }
 
@@ -54,7 +64,7 @@ function getPage(match_seq_num, bucket)
 {
     if (match_seq_num > bucket + bucket_size)
     {
-        return;
+        process.exit(0);
     }
     var job = generateJob("api_sequence",
     {
@@ -74,15 +84,69 @@ function getPage(match_seq_num, bucket)
         if (body.result)
         {
             var matches = body.result.matches;
-            async.each(matches, function(m, cb)
+            async.each(matches, function(match, cb)
             {
-                insertMatch(db, redis, queue, m,
+                var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
+                //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
+                if (players && !match.pgroup)
                 {
-                    type: "api",
-                    skipCacheUpdate: true,
-                    skipAbilityUpgrades: true,
-                    skipInsertPlayers: true
-                }, cb);
+                    match.pgroup = {};
+                    players.forEach(function(p, i)
+                    {
+                        match.pgroup[p.player_slot] = {
+                            account_id: p.account_id,
+                            hero_id: p.hero_id,
+                            player_slot: p.player_slot
+                        };
+                    });
+                }
+                db.transaction(function(trx)
+                {
+                    async.series(
+                    {
+                        "imt": insertMatchTable,
+                        "ipmt": insertPlayerMatchesTable,
+                    }, function(err, results)
+                    {
+                        if (err)
+                        {
+                            trx.rollback(err);
+                        }
+                        else
+                        {
+                            trx.commit();
+                        }
+                        if (err && err.detail && err.detail.indexOf("already exists") !== -1)
+                        {
+                            //treat already exists as non-error and continue
+                            console.error("match %s already exists", match.match_id);
+                            err = null;
+                        }
+                        return cb(err);
+                    });
+
+                    function insertMatchTable(cb)
+                    {
+                        var row = match;
+                        insert(trx, 'matches', row,
+                        {
+                            match_id: match.match_id
+                        }, cb);
+                    }
+
+                    function insertPlayerMatchesTable(cb)
+                    {
+                        async.each(players || [], function(pm, cb)
+                        {
+                            pm.match_id = match.match_id;
+                            insert(trx, 'player_matches', pm,
+                            {
+                                match_id: pm.match_id,
+                                player_slot: pm.player_slot
+                            }, cb);
+                        }, cb);
+                    }
+                });
             }, function(err)
             {
                 if (err)
@@ -99,4 +163,33 @@ function getPage(match_seq_num, bucket)
             throw body;
         }
     });
+}
+
+function getColumnInfo(db, table, cb)
+{
+    if (columnInfo[table])
+    {
+        return cb();
+    }
+    else
+    {
+        db(table).columnInfo().asCallback(function(err, result)
+        {
+            columnInfo[table] = result;
+            cb(err);
+        });
+    }
+}
+
+function insert(db, table, row, conflict, cb)
+{
+    for (var key in row)
+    {
+        if (!(key in columnInfo[table]))
+        {
+            delete row[key];
+            //console.error(key);
+        }
+    }
+    db(table).insert(row).asCallback(cb);
 }

@@ -24,3 +24,4 @@ postgres-config.yaml
 dependency-reduced-pom.xml
 kubernetes
 yasp.sql
+Procfile.dev
