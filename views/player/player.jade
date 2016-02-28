@@ -3,7 +3,7 @@ include /mixins/progress_bar
 
 block content
   .row.match-top
-    .col-xs-3
+    .col-xs-6
       div
         if player.avatar
           a(href=player.profileurl || "#", target="_blank")
@@ -16,44 +16,8 @@ block content
             div
               i.flaticon-1.small-cheese(style="display:inline-block")
               small(style="margin-left:.5em") x #{' '} #{player.cheese}
-    .col-xs-3
-          h4
-            span.text-info.rating: abbr(title="Solo MMR")
-              i.fa.fa-fw.fa-user
-              small(style="margin-left:.5em") #{player.soloRating || "N/A"}
-            span.text-info.rating: abbr(title="Highest Solo MMR")
-              i.fa.fa-fw.fa-star
-              small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.solo_competitive_rank;})),0) || "N/A"}
-          h4
-            span.text-warning.rating: abbr(title="Party MMR")
-              i.fa.fa-fw.fa-users
-              small(style="margin-left:.5em") #{player.partyRating || "N/A"}
-            span.text-warning.rating: abbr(title="Highest Party MMR")
-              i.fa.fa-fw.fa-star
-              small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
-    .col-xs-3
-          h4
-            if (!player.full_history_time && !config.ENABLE_INSERT_ALL_MATCHES)
-              span.text-danger.rating: abbr(title="This player does not have full match history yet.  Some matches may be missing.  (A full history request is automatically queued on login)")
-                i.fa.fa-exclamation-triangle
-            else
-              span.text-success.rating: abbr(title="Full history has been processed for this player.")
-                i.fa.fa-check
-            small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.") #{player.match_count} recorded 
-              
-          h4
-            if !(player.account_id in trackedPlayers)
-              span.text-danger.rating: abbr(title="This player has not visited in the last #{config.UNTRACK_DAYS} days, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
-                i.fa.fa-eye-slash
-            else
-              span.text-success.rating: abbr(title="This player has visited in the last #{config.UNTRACK_DAYS} days.  Matches they play are automatically parsed.")
-                i.fa.fa-eye
-            small: abbr(title="A parsed match is a match that has had its replay analyzed.<br> \
-              Replay parsing is only available for matches with unexpired replays.<br> \
-              Many advanced statistics are only available for parsed matches.<br> \
-              Replays of active users are automatically parsed and users can request specific matches individually.") #{player.parsed_match_count} parsed 
 
-    .col-xs-3
+    .col-xs-6
       h4
         span.text-primary
           i.fa.fa-trophy
