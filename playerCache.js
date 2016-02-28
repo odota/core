@@ -152,6 +152,7 @@ function updateCache(match, cb)
                 {
                     player_match[key] = match[key];
                 }
+                computePlayerMatchData(player_match);
                 if (cEnabled)
                 {
                     writeCache(player_match.account_id,
@@ -171,7 +172,6 @@ function updateCache(match, cb)
                         //if player cache doesn't exist, skip
                         if (cache)
                         {
-                            computePlayerMatchData(player_match);
                             cache.aggData = aggregator([player_match], null, cache.aggData);
                             writeCache(player_match.account_id, cache, cb);
                         }
