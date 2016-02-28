@@ -60,15 +60,14 @@ var projections = {
     peers: basic.concat('pgroup'),
     activity: basic,
     histograms: basic.concat(advanced).concat(['purchase']),
-    records: basic.concat(advanced).concat(['purchase']),
-    counts: basic.concat(advanced),
+    records: basic.concat(advanced).concat(['purchase', 'kill_streaks', 'multi_kills']),
     trends: basic.concat(advanced).concat(['purchase']),
-    sprees: basic.concat(['kill_streaks', 'multi_kills']),
     wardmap: basic.concat(['obs', 'sen']),
     items: basic.concat(['purchase', 'purchase_log', 'item_uses']),
     skills: basic.concat(['hero_hits', 'ability_uses']),
     wordcloud: basic.concat('chat'),
-    rating: basic
+    rating: basic,
+    rankings: basic,
 };
 var sigModes = [];
 for (var key in constants.game_mode)

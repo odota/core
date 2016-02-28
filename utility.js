@@ -629,6 +629,7 @@ function reduceMinimal(pm)
         gold_per_min: pm.gold_per_min,
         parse_status: pm.parse_status,
         skill: pm.skill,
+        radiant_win: pm.radiant_win,
         player_win: pm.player_win,
         start_time: pm.start_time,
         duration: pm.duration
