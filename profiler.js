@@ -42,6 +42,11 @@ function getSummaries(cb)
             {
                 return cb(err);
             }
+	    if (results.rows.length === 0)
+	    {
+		console.log('No Steamids to scan for...');
+		return cb();
+	    }
             console.log('players sampled: %s', results.rows.length);
             var container = utility.generateJob("api_summaries",
             {
