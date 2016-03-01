@@ -34,4 +34,4 @@ ADD . /usr/src/yasp
 RUN . /root/.bashrc && npm run webpack
 
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
-CMD [ "web.js" ]
+CMD [ "deploy.js" ]

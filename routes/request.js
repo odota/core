@@ -53,7 +53,7 @@ module.exports = function(db, redis)
             if (!body.success && config.ENABLE_RECAPTCHA)
             {
                 console.log('failed recaptcha');
-                res.json(
+                return res.json(
                 {
                     error: "Recaptcha Failed!"
                 });

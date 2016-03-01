@@ -3,13 +3,14 @@ var async = require('async');
 var config = require('./config');
 var args = process.argv.slice(2);
 var manifest = require('./package.json');
-if (config.ROLE === "retriever" || config.ROLE == "proxy")
+if (config.ROLE)
 {
-    //don't use pm2 for these roles
+    //if role variable is set just run that script
     require('./' + config.ROLE + ".js");
 }
 else
 {
+    //specific role not set, just use pm2 to run the production config
     pm2.connect(function()
     {
         async.each(manifest.apps, start, exit);
