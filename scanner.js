@@ -171,7 +171,7 @@ function scanApi(seq_num)
                         },
                         "decideRank": function(cb)
                         {
-                            if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id)
+                            if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && config.ENABLE_RANKER)
                             {
                                 addToQueue(rankQueue,
                                 {
