@@ -1,19 +1,18 @@
 {{{
-  "title": "Be Our Valentine. We have uploads!",
-  "date": "2-13-2016",
-  "author": "Albert"
+  "title": "Update on Picks",
+  "date": "3-2-2016",
+  "author": "HowardC"
 }}}
 
-Your one-true-love has gotten even sexier. Today, we're rolling out a few hot, new features:
+I've removed Tetrads and Pentads from the Picks data.
 
-* [Replay uploads](/request) (are back!): Upload your replays to see the parsed stats on YASP.
-  * This replay data will be temporarily stored on YASP to keep the costs lower
-  * This will even support private lobbies!
-* [Picks](/picks): Ever wonder how well certain combinations of heroes do? Now you can see.
-* [Paypal](/carry): You gotta get your Valentine something nice. Now you can through Paypal.
-* [Discord](https://discord.gg/0o5SQGbXuWALMIGQ): Talk to us all the time. We now have a Discord channel. Report bugs, ask questions, talk directly to the devs! Come join the YASP dev community.
-* [Developer's guide](https://github.com/yasp-dota/yasp/blob/master/README.md): And now we've made it easier to play with us. Get deving today with our updated developer's guide.
+Two reasons:
 
-On this loveliest of holidays, we hope you spend it with us ;)
+1) Memory. We've had issues with memory on previous features. Some contributors lobbied to collect data for groups of heroes on a team, feeling that the data would be interesting. That was a mistake. 
+The number of combinations of 4/5 heroes is large (110c4 and 110c5 respectively), and we have to keep a count of each unique one we see.  Unavailability caused by OOM errors is an ass, and we won't be letting it kill PostgreSQL again.
 
-Happy Dota!
+2) As long as I'm talking about reasons to remove it, the top picks were also dominated by item farming bots.  They will be reported, and we hope they get banned before they take over the entire game.
+
+As always, I can be reached at howardc93@gmail.com.
+
+Howard
