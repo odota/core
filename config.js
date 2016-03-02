@@ -45,6 +45,7 @@ var defaults = {
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
     "ENABLE_CASSANDRA_PLAYER_CACHE": "", //set to use cassandra for player caches
+    "ENABLE_RANKER": "", //set to enable ranking of mmr players
     //the following are deprecated
     "PARSER_HOST": "localhost:5200",
     "MONGO_URL": "mongodb://localhost/dota",
