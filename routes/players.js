@@ -15,6 +15,7 @@ var util = require('util');
 var playerCache = require('../playerCache');
 var readCache = playerCache.readCache;
 var writeCache = playerCache.writeCache;
+//list of fields that are numerical (continuous).  These define the possible categories for histograms, trends, and records
 var subkeys = {
     "kills": 1,
     "deaths": 1,
@@ -47,6 +48,15 @@ var subkeys = {
     "loss": 1,
     "actions_per_min": 1
 };
+//list of fields that are categorical (discrete).  These define the possible categories for counts.
+var countCats = {
+    "leaver_status": 1,
+    "game_mode": 1,
+    "lobby_type": 1,
+    "lane_role": 1,
+    "region": 1,
+    "patch": 1
+};
 //optimize by only projecting certain columns based on tab  set query.project based on info
 var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version', 'cluster'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'first_blood_time', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
@@ -68,6 +78,24 @@ var projections = {
     wordcloud: basic.concat('chat'),
     rating: basic,
     rankings: basic,
+};
+//TODO currently aggregator does live significance check.  Persist it to store so we can project fewer fields?
+var basicAggs = ['match_id', 'version', 'abandons', 'win', 'lose'];
+var aggs = {
+    index: basicAggs.concat('heroes'),
+    matches: basicAggs,
+    heroes: basicAggs.concat('heroes'),
+    peers: basicAggs.concat('teammates'),
+    activity: basicAggs.concat('start_time'),
+    histograms: basicAggs.concat(Object.keys(subkeys)),
+    records: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks']),
+    trends: basicAggs.concat(Object.keys(subkeys)),
+    wardmap: basicAggs.concat(['obs', 'sen']),
+    items: basicAggs.concat(['purchase_time', 'purchase_counts', 'item_usage', 'item_uses', 'purchase', 'item_win']),
+    skills: basicAggs.concat(['hero_hits', 'ability_uses']),
+    wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
+    rating: basicAggs,
+    rankings: basicAggs,
 };
 var sigModes = [];
 for (var key in constants.game_mode)
@@ -93,6 +121,7 @@ module.exports = function(db, redis)
     {
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
+        var subkey = req.params.subkey || "kills";
         var account_id = req.params.account_id;
         var compare_data;
         if (isNaN(Number(account_id)))
@@ -182,12 +211,13 @@ module.exports = function(db, redis)
                 player: player,
                 trackedPlayers: result.sets.trackedPlayers,
                 histograms: subkeys,
-                subkey: req.params.subkey || "kills",
+                subkey: subkey,
                 times:
                 {
                     "duration": 1,
                     "first_blood_time": 1
                 },
+                counts: countCats,
                 compare_data: compare_data,
                 compare: info === "compare",
                 title: (player.personaname || player.account_id) + " - YASP"
@@ -396,6 +426,13 @@ module.exports = function(db, redis)
         account_id = Number(account_id);
         //select player_matches with this account_id
         options.queryObj.select.account_id = account_id;
+        //project fields to aggregate based on tab
+        var obj = {};
+        aggs[options.info].forEach(function(k)
+        {
+            obj[k] = 1;
+        });
+        options.queryObj.js_agg = obj;
         options.queryObj = preprocessQuery(options.queryObj, constants);
         var filter_exists = options.queryObj.filter_count > 1;
         //try to find player in db

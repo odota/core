@@ -32,8 +32,6 @@ block playercontent
                   td #{val.n}
                   td(class=(key in times ? "format-seconds" : "format"), data-format-seconds=val.sum) #{val.sum}
                   td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg) #{avg.toFixed(2)}
-                  
-      - var counts = {"leaver_status":1,"game_mode":1,"lobby_type":1,"lane_role":1,"region":1,"patch":1}
       .col-md-3
         each val, key in counts
           h3=key.split("_").join(" ")
