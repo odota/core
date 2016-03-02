@@ -107,21 +107,33 @@ gcloud compute instances delete -q cassandra-1
 gcloud compute instances delete -q cassandra-2
 #seed node
 gcloud compute instances create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-docker run --name cassandra -d --net=host cassandra:latest
+docker run --name cassandra --restart=always -d --net=host cassandra:latest
 '
 #joining node
 gcloud compute instances create cassandra-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-docker run --name cassandra -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:latest
+docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:latest
 '
 #cqlsh
 #CREATE KEYSPACE yasp WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1': 1 };
 #CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match text, PRIMARY KEY(account_id, match_id));
 
+#rethinkdb
+gcloud compute instances delete -q rethinkdb-1
+gcloud compute instances delete -q rethinkdb-2
+#seed node
+gcloud compute instances create rethinkdb-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+docker run --name rethinkdb -d --restart=always --net=host rethinkdb:latest
+'
+#joining node
+gcloud compute instances create rethinkdb-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+docker run --name rethinkdb -d --restart=always --net=host rethinkdb:latest rethinkdb --bind all --join core-1:29015
+'
+
 #importer
 gcloud compute instance-groups managed delete -q importer-group-1
 gcloud compute instance-templates delete -q importer-1
 gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "sh -c 'node dev/allMatches.js 0 1900000000 1000 > /dev/null'"
+sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "sh -c 'node dev/allMatches.js 0 1900000000 3000 2> /dev/null'"
 '
 gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
 

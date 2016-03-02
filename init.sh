@@ -1,10 +1,7 @@
 #STANDALONE
-sudo rm -f /etc/apt/sources.list.d/cassandra.sources.list
 sudo rm -f /etc/apt/sources.list.d/postgresql.list
-echo "deb http://debian.datastax.com/community stable main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
-curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -
 sudo add-apt-repository -y ppa:openjdk-r/ppa
 sudo add-apt-repository -y ppa:chris-lea/redis-server
 sudo apt-get -y update && sudo apt-get -y upgrade

@@ -17,7 +17,7 @@ Overview
 Tech Stack
 ----
 * Web/Microservices: Node.js
-* Storage: PostgreSQL/Redis/Cassandra
+* Storage: PostgreSQL/Redis
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
 Quickstart

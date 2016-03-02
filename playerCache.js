@@ -10,14 +10,20 @@ var filter = require('./filter');
 var reduceAggregable = utility.reduceAggregable;
 var enabled = config.ENABLE_PLAYER_CACHE;
 var cEnabled = config.ENABLE_CASSANDRA_PLAYER_CACHE;
+var rEnabled = config.ENABLE_RETHINKDB_PLAYER_CACHE;
 var redis;
 var cassandra;
+var rethinkdb;
 if (enabled)
 {
     redis = require('./redis');
     if (cEnabled)
     {
         cassandra = require('./cassandra');
+    }
+    if (rEnabled)
+    {
+        rethinkdb = require('./rethinkdb');
     }
 }
 
@@ -54,6 +60,52 @@ function readCache(account_id, options, cb)
                 cb(err,
                 {
                     aggData: aggData
+                });
+            });
+        }
+        else if (rEnabled)
+        {
+            console.time('readcache');
+            rethinkdb.connect(
+            {
+                host: 'localhost',
+                port: 28015
+            }, function(err, conn)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                rethinkdb.db('test').table('player_caches').getAll(Number(account_id),
+                {
+                    index: 'account_id'
+                }).run(conn, function(err, res)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    res.toArray(function(err, matches)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        var filtered = filter(matches, options.js_select);
+                        var aggData = aggregator(filtered, options.js_agg);
+                        conn.close(function(err)
+                        {
+                            if (err)
+                            {
+                                return cb(err);
+                            }
+                            console.timeEnd('readcache');
+                            cb(err,
+                            {
+                                aggData: aggData
+                            });
+                        });
+                    });
                 });
             });
         }
@@ -99,6 +151,45 @@ function writeCache(account_id, cache, cb)
             {
                 console.timeEnd("writecache");
                 return cb(err);
+            });
+        }
+        else if (rEnabled)
+        {
+            console.time("writecache");
+            console.log("saving player cache to rethinkdb %s", account_id);
+            var arr = cache.raw.map(function(m)
+            {
+                return reduceAggregable(m);
+            });
+            rethinkdb.connect(
+            {
+                host: 'localhost',
+                port: 28015
+            }, function(err, conn)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                rethinkdb.db('test').table('player_caches').insert(arr,
+                {
+                    conflict: "update"
+                }).run(conn, function(err, res)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    conn.close(function(err)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        console.timeEnd("writecache");
+                        cb(err);
+                    });
+                });
             });
         }
         else
@@ -153,7 +244,7 @@ function updateCache(match, cb)
                     player_match[key] = match[key];
                 }
                 computePlayerMatchData(player_match);
-                if (cEnabled)
+                if (cEnabled || rEnabled)
                 {
                     writeCache(player_match.account_id,
                     {
