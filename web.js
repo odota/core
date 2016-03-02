@@ -386,8 +386,10 @@ app.get('/picks/:n?', function(req, res, cb)
                         1: "Monads",
                         2: "Dyads",
                         3: "Triads",
+                        /*
                         4: "Tetrads",
                         5: "Pentads"
+                        */
                     }
                 });
             });

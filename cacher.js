@@ -55,7 +55,7 @@ function incrCounts(match)
         }
     }
     //compute singles, dyads, triads, etc.
-    for (var i = 1; i < 6; i++)
+    for (var i = 1; i < 4; i++)
     {
         addToResults(k_combinations(radiant, i), i, match.radiant_win, match);
         addToResults(k_combinations(dire, i), i, !match.radiant_win, match);
