@@ -6,7 +6,7 @@ FROM phusion/baseimage:0.9.17
 # if building, need jdk and maven
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
-    apt-get install -y git openjdk-8-jdk maven build-essential jq && \
+    apt-get install -y git openjdk-8-jdk maven build-essential && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 WORKDIR /usr/src/yasp
 ENV NODE_VERSION 5.5.0

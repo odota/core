@@ -49,13 +49,17 @@ function readCache(account_id, options, cb)
                 {
                     return cb();
                 }
+                console.time('jsonparse');
                 var matches = results.rows.map(function(m)
                 {
                     return JSON.parse(m.match);
                 });
+                console.timeEnd('jsonparse');
                 //get array of matches, filter, agg and return results
                 var filtered = filter(matches, options.js_select);
+                console.time('agg');
                 var aggData = aggregator(filtered, options.js_agg);
+                console.timeEnd('agg');
                 console.timeEnd('readcache');
                 cb(err,
                 {

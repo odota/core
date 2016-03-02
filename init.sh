@@ -1,11 +1,9 @@
 #STANDALONE
-sudo rm -f /etc/apt/sources.list.d/postgresql.list
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
 sudo add-apt-repository -y ppa:openjdk-r/ppa
-sudo add-apt-repository -y ppa:chris-lea/redis-server
+#install docker
+curl -sSL https://get.docker.com/ | sh
 sudo apt-get -y update && sudo apt-get -y upgrade
-sudo apt-get -y install make g++ build-essential redis-server postgresql-9.5 openjdk-8-jdk git maven cassandra jq
+sudo apt-get -y install make g++ build-essential openjdk-8-jdk git maven jq
 NODE_VERSION=`jq '.engines.node' package.json`
 echo "" > /root/.bashrc && \
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
@@ -20,3 +18,6 @@ sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
 sudo apt-get -y remove maven2
 sudo rm -f /usr/bin/javac
 sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/javac /usr/bin/javac
+#launch postgres/redis with docker
+sudo docker run -d --name postgres --net=host postgres:latest
+sudo docker run -d --name redis --net=host redis:latest
