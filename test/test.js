@@ -6,7 +6,7 @@ config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
 config.ENABLE_MATCH_CACHE = 1;
-config.ENABLE_PLAYER_CACHE = 1;
+config.ENABLE_PLAYER_CACHE;
 config.FRONTEND_PORT = 4900;
 var async = require('async');
 var redis = require('../redis');
