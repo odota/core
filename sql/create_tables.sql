@@ -39,33 +39,7 @@ CREATE TABLE matches (
   version integer,
   pgroup json
   );
-
-CREATE TABLE players (
-  account_id bigint PRIMARY KEY,
-  steamid varchar(32),
-  avatar varchar(255),
-  avatarmedium varchar(255),
-  avatarfull varchar(255),
-  profileurl varchar(255),
-  personaname varchar(255),
-  last_login timestamp with time zone,
-  full_history_time timestamp with time zone,
-  cheese integer DEFAULT 0,
-  fh_unavailable boolean,
-  loccountrycode varchar(2)
-  /*
-    "communityvisibilitystate" : 3,
-    "lastlogoff" : 1426020853,
-    "loccityid" : 44807,
-    "locstatecode" : "16",
-    "personastate" : 0,
-    "personastateflags" : 0,
-    "primaryclanid" : "103582791433775490",
-    "profilestate" : 1,
-    "realname" : "Alper",
-    "timecreated" : 1332289262,
-  */
-);
+CREATE INDEX on matches(version);
 
 CREATE TABLE player_matches (
   PRIMARY KEY(match_id, player_slot),
@@ -133,6 +107,37 @@ CREATE TABLE player_matches (
   --kill_streaks_log json[][], --an array of kill streak values
   --multi_kill_id_vals integer[] --an array of multi kill values (the length of each multi kill)
 );
+CREATE INDEX on player_matches(account_id);
+
+CREATE TABLE players (
+  account_id bigint PRIMARY KEY,
+  steamid varchar(32),
+  avatar varchar(255),
+  avatarmedium varchar(255),
+  avatarfull varchar(255),
+  profileurl varchar(255),
+  personaname varchar(255),
+  last_login timestamp with time zone,
+  full_history_time timestamp with time zone,
+  cheese integer DEFAULT 0,
+  fh_unavailable boolean,
+  loccountrycode varchar(2)
+  /*
+    "communityvisibilitystate" : 3,
+    "lastlogoff" : 1426020853,
+    "loccityid" : 44807,
+    "locstatecode" : "16",
+    "personastate" : 0,
+    "personastateflags" : 0,
+    "primaryclanid" : "103582791433775490",
+    "profilestate" : 1,
+    "realname" : "Alper",
+    "timecreated" : 1332289262,
+  */
+);
+CREATE INDEX on players(full_history_time);
+CREATE INDEX on players(last_login);
+CREATE INDEX on players(cheese);
 
 CREATE TABLE player_ratings (
   PRIMARY KEY(account_id, time),
@@ -150,6 +155,8 @@ CREATE TABLE subscriptions (
   amount int,
   active_until date
 );
+CREATE INDEX on subscriptions(account_id);
+CREATE INDEX on subscriptions(customer_id);
 
 CREATE TABLE match_skill (
   match_id bigint PRIMARY KEY,
@@ -164,27 +171,17 @@ CREATE TABLE match_logs (
   key varchar(50),
   value integer
 );
-
-CREATE TABLE notable_players (
-account_id bigint PRIMARY KEY,
-name varchar(255),
-country_code varchar(2),
-fantasy_role int,
-team_id int,
-team_name varchar(255),
-team_tag varchar(255),
-is_locked boolean,
-is_pro boolean,
-locked_until integer
-);
-
-CREATE INDEX on player_matches(account_id);
-CREATE INDEX on matches(version);
-CREATE INDEX on players(full_history_time);
-CREATE INDEX on players(last_login);
-CREATE INDEX on players(cheese);
-CREATE INDEX on subscriptions(account_id);
-CREATE INDEX on subscriptions(customer_id);
 CREATE INDEX on match_logs(match_id);
 
-CLUSTER player_matches USING player_matches_account_id_idx;
+CREATE TABLE notable_players (
+  account_id bigint PRIMARY KEY,
+  name varchar(255),
+  country_code varchar(2),
+  fantasy_role int,
+  team_id int,
+  team_name varchar(255),
+  team_tag varchar(255),
+  is_locked boolean,
+  is_pro boolean,
+  locked_until integer
+);

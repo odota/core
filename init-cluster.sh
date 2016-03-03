@@ -113,9 +113,6 @@ docker run --name cassandra --restart=always -d --net=host cassandra:latest
 gcloud compute instances create cassandra-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:latest
 '
-#cqlsh
-#CREATE KEYSPACE yasp WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1': 1 };
-#CREATE TABLE yasp.player_caches (account_id bigint, match_id bigint, match text, PRIMARY KEY(account_id, match_id));
 
 #rethinkdb
 gcloud compute instances delete -q rethinkdb-1
@@ -126,7 +123,7 @@ docker run --name rethinkdb -d --restart=always --net=host rethinkdb:latest
 '
 #joining node
 gcloud compute instances create rethinkdb-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-docker run --name rethinkdb -d --restart=always --net=host rethinkdb:latest rethinkdb --bind all --join core-1:29015
+docker run --name rethinkdb -d --restart=always --net=host rethinkdb:latest rethinkdb --bind all --join cor-1:29015
 '
 
 #importer
