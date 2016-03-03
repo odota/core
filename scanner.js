@@ -198,7 +198,7 @@ function scanApi(seq_num)
                         insertMatch(db, redis, match,
                         {
                             type: "api",
-                            origin: "scanner"
+                            origin: "scanner",
                         }, close);
                     }
                     else
@@ -211,6 +211,7 @@ function scanApi(seq_num)
                         if (err)
                         {
                             console.error("failed to insert match from scanApi %s", match.match_id);
+                            console.error(err);
                         }
                         return cb(err);
                     }

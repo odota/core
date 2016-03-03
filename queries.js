@@ -280,6 +280,59 @@ function insertMatch(db, redis, match, options, cb)
         });
     }
 
+    function insertCassandra(cb)
+    {
+        var cassandra = options.cassandra;
+        //TODO clean based on cassandra schema
+        //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_caches'
+        //insert into matches
+        //insert into player matches
+        //current dependencies on matches/player_matches in db
+        //parser, check and save replay url: store salts/urls in separate collection?
+        //fullhistory, diff a user's current matches from the set obtained from webapi
+        //ranker, get source-of-truth counts/wins for a hero
+        //distributions (queries on gamemode/lobbytype/skill)
+        var obj = serialize(match);
+        var query = "INSERT INTO yasp.matches JSON ?";
+        cassandra.execute(query, [JSON.stringify(obj)],
+        {
+            prepare: true
+        }, function(err, results)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            async.each(players || [], function(pm, cb)
+            {
+                var query2 = "INSERT INTO yasp.player_matches JSON ?";
+                pm.match_id = match.match_id;
+                var obj2 = serialize(pm);
+                cassandra.execute(query2, [JSON.stringify(obj2)],
+                {
+                    prepare: true
+                }, cb);
+            }, cb);
+        });
+    }
+
+    function serialize(row)
+    {
+        var obj = {};
+        for (var key in row)
+        {
+            if (row[key] && typeof(row[key]) === "object")
+            {
+                obj[key] = JSON.stringify(row[key]);
+            }
+            else if (row[key] !== null)
+            {
+                obj[key] = row[key];
+            }
+        }
+        return obj;
+    }
+
     function updatePlayerCaches(cb)
     {
         if (options.skipCacheUpdate)
@@ -410,6 +463,12 @@ function getPlayerMatches(db, queryObj, cb)
         }
     });
 }
+
+function getMatchCassandra()
+{}
+
+function getPlayerMatchesCassandra()
+{}
 
 function getPlayerRatings(db, account_id, cb)
 {

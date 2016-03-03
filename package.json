@@ -77,7 +77,6 @@
     "redux": "^3.3.1",
     "request": "2.69.0",
     "request-progress": "2.0.1",
-    "rethinkdb": "^2.2.2",
     "selectize": "0.12.1",
     "sentiment": "1.0.6",
     "steam": "1.4.0",
