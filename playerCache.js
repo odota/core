@@ -85,8 +85,8 @@ function writeCache(account_id, cache, cb)
     {
         if (cEnabled)
         {
-            console.time("writecache");
-            console.log("saving player cache to cassandra %s", account_id);
+            //console.time("writecache");
+            //console.log("saving player cache to cassandra %s", account_id);
             var arr = cache.raw.map(function(m)
             {
                 return reduceAggregable(m);
@@ -101,7 +101,7 @@ function writeCache(account_id, cache, cb)
                 }, cb);
             }, function(err)
             {
-                console.timeEnd("writecache");
+                //console.timeEnd("writecache");
                 return cb(err);
             });
         }

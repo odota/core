@@ -17,8 +17,12 @@ block content
             th #
             th Name
             th Games
+            th Exp Pick%
             th Pick%
+            th Pick Diff%
+            th Exp Win%
             th Win%
+            th Win Diff%
         tbody
           each entry, i in picks || []
             tr
@@ -26,9 +30,13 @@ block content
               td.text-left
                 +renderName(entry.key)
               td.rankable=entry.games
-              td.rankable #{(entry.games/total*100).toFixed(2)}%
-              td.rankable #{(entry.wins/entry.games*100).toFixed(2)}%
-            
+              td.rankable #{(100 * entry.expected_pick).toFixed(2)}%
+              td.rankable #{(100 * entry.pickrate).toFixed(2)}%
+              td.rankable #{(100 * (entry.pickrate - entry.expected_pick)).toFixed(2)}%
+              td.rankable #{(100 * entry.expected_win).toFixed(2)}%
+              td.rankable #{(100 * entry.winrate).toFixed(2)}%
+              td.rankable #{(100 * (entry.winrate- entry.expected_win)).toFixed(2)}%
+           
 append footer_assets
   script.
     $('#picks').dataTable({

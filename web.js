@@ -195,10 +195,12 @@ app.use(function(req, res, next)
     });
 });
 var Poet = require('poet');
-var poet = new Poet(app, {
-    routes: {
-    '/post/:post': 'blog/post'
-  }
+var poet = new Poet(app,
+{
+    routes:
+    {
+        '/post/:post': 'blog/post'
+    }
 });
 poet.watch(function()
 {
@@ -333,64 +335,108 @@ app.get('/picks/:n?', function(req, res, cb)
 {
     var length = req.params.n || 1;
     var limit = 1000;
-    //get top 1000 picks for current length
-    redis.zrevrangebyscore('picks_counts:' + length, "inf", "-inf", "WITHSCORES", "LIMIT", "0", limit, function(err, rows)
+    var single_rates = {};
+    //look up total
+    redis.get('picks_match_count', function(err, total)
     {
         if (err)
         {
             return cb(err);
         }
-        var entries = rows.map(function(r, i)
+        //get singles games/wins for composite computation
+        async.parallel(
         {
-            return {
-                key: r,
-                games: rows[i + 1]
-            };
-        }).filter(function(r, i)
-        {
-            return i % 2 === 0;
-        });
-        //look up wins
-        async.each(entries, function(entry, cb)
-        {
-            redis.zscore('picks_wins_counts:' + length, entry.key, function(err, score)
+            "picks": function(cb)
             {
-                if (err)
+                async.map(Object.keys(constants.heroes), function(hero_id, cb)
                 {
-                    return cb(err);
-                }
-                entry.wins = Number(score);
-                cb(err);
-            });
-        }, function(err)
+                    redis.zscore('picks_counts:1', hero_id, cb);
+                }, cb);
+            },
+            "wins": function(cb)
+            {
+                async.map(Object.keys(constants.heroes), function(hero_id, cb)
+                {
+                    redis.zscore('picks_wins_counts:1', hero_id, cb);
+                }, cb);
+            }
+        }, function(err, result)
         {
             if (err)
             {
                 return cb(err);
             }
-            //look up total
-            redis.get('picks_match_count', function(err, card)
+            Object.keys(constants.heroes).forEach(function(hero_id, i)
+            {
+                single_rates[hero_id] = {
+                    pick_rate: Number(result.picks[i]) / total,
+                    win_rate: Number(result.wins[i]) / Number(result.picks[i])
+                };
+            });
+            console.log(single_rates);
+            //get top 1000 picks for current length
+            redis.zrevrangebyscore('picks_counts:' + length, "inf", "-inf", "WITHSCORES", "LIMIT", "0", limit, function(err, rows)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                res.render('picks',
+                var entries = rows.map(function(r, i)
                 {
-                    total: Number(card),
-                    limit: limit,
-                    picks: entries,
-                    n: req.params.n || "1",
-                    tabs:
+                    return {
+                        key: r,
+                        games: rows[i + 1]
+                    };
+                }).filter(function(r, i)
+                {
+                    return i % 2 === 0;
+                });
+                //look up wins
+                async.each(entries, function(entry, cb)
+                {
+                    entry.pickrate = entry.games / total;
+                    var hids = entry.key.split(',');
+                    entry.expected_pick = hids.map(function(hero_id)
                     {
-                        1: "Monads",
-                        2: "Dyads",
-                        3: "Triads",
-                        /*
-                        4: "Tetrads",
-                        5: "Pentads"
-                        */
+                        return single_rates[hero_id].pick_rate;
+                    }).reduce((prev, curr) => prev * curr) / hids.length;
+                    entry.expected_win = hids.map(function(hero_id)
+                    {
+                        return single_rates[hero_id].win_rate;
+                    }).reduce((prev, curr) => prev + curr) / hids.length;
+                    redis.zscore('picks_wins_counts:' + length, entry.key, function(err, score)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        entry.wins = Number(score);
+                        entry.winrate = entry.wins / entry.games;
+                        cb(err);
+                    });
+                }, function(err)
+                {
+                    if (err)
+                    {
+                        return cb(err);
                     }
+                    res.render('picks',
+                    {
+                        total: Number(total),
+                        limit: limit,
+                        picks: entries,
+                        n: req.params.n || "1",
+                        tabs:
+                        {
+                            1: "Monads",
+                            2: "Dyads",
+                            3: "Triads",
+                            /*
+                            4: "Tetrads",
+                            5: "Pentads"
+                            */
+                        }
+                    });
                 });
             });
         });
