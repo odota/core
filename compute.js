@@ -223,7 +223,10 @@ function computePlayerMatchData(pm)
         var dp = pm.posData.lane_pos[i];
         for (var j = 0; j < dp.value; j++)
         {
-            lanes.push(constants.lanes[dp.y][dp.x]);
+            if (constants.lanes[dp.y])
+            {
+                lanes.push(constants.lanes[dp.y][dp.x]);
+            }
         }
     }
     if (lanes.length)

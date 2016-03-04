@@ -373,7 +373,6 @@ app.get('/picks/:n?', function(req, res, cb)
                     win_rate: Number(result.wins[i]) / Number(result.picks[i])
                 };
             });
-            console.log(single_rates);
             //get top 1000 picks for current length
             redis.zrevrangebyscore('picks_counts:' + length, "inf", "-inf", "WITHSCORES", "LIMIT", "0", limit, function(err, rows)
             {
