@@ -119,8 +119,8 @@ function updateScore(player, cb)
     }
     var scaleF = 0.00001;
     var winRatio = (player.wins / (player.games - player.wins + 1));
-    var mmrBonus = scaleF * Math.pow(player.solo_competitive_rank, 2);
-    redis.zadd('hero_rankings:' + player.hero_id, player.games * winRatio * mmrBonus, player.account_id);
+    var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
+    redis.zadd('hero_rankings:' + player.hero_id, scaleF * player.games * winRatio * mmrBonus, player.account_id);
     console.log("ranked %s, %s", player.account_id, player.hero_id);
     cb();
 }

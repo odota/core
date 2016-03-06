@@ -19,13 +19,13 @@ export default class TabsExampleControlled extends React.Component {
       value: 'a',
     };
   }
-/*
-  handleChange = (value) => {
+
+  handleChange(value)  {
     this.setState({
       value: value,
     });
-  };
-*/
+  }
+
   render() {
     return (
       <Tabs
