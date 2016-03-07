@@ -93,14 +93,14 @@ gcloud compute instances add-metadata core-1 --metadata-from-file startup-script
 #parsers
 gcloud compute instance-groups managed delete -q parser-group-1
 gcloud compute instance-templates delete -q parser-1
-gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --metadata startup-script='#!/bin/bash
+gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 for i in `seq 1 4`;
 do
     sudo docker run -d --restart=always yasp/yasp:latest "node parser.js"
 done
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
-gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "3" --target-cpu-utilization "0.75"
+gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "100" --min-num-replicas "3" --target-cpu-utilization "0.75"
 
 #cassandra
 gcloud compute instances delete -q cassandra-1
@@ -112,18 +112,6 @@ docker run --name cassandra --restart=always -d --net=host cassandra:latest
 #joining node
 gcloud compute instances create cassandra-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:latest
-'
-
-#rethinkdb
-gcloud compute instances delete -q rethinkdb-1
-gcloud compute instances delete -q rethinkdb-2
-#seed node
-gcloud compute instances create rethinkdb-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-docker run --name rethinkdb -d --restart=always --net=host rethinkdb:latest
-'
-#joining node
-gcloud compute instances create rethinkdb-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-docker run --name rethinkdb -d --restart=always --net=host rethinkdb:latest rethinkdb --bind all --join cor-1:29015
 '
 
 #importer
