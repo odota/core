@@ -94,13 +94,13 @@ gcloud compute instances add-metadata core-1 --metadata-from-file startup-script
 gcloud compute instance-groups managed delete -q parser-group-1
 gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --metadata startup-script='#!/bin/bash
-for i in `seq 1 3`;
+for i in `seq 1 4`;
 do
     sudo docker run -d --restart=always yasp/yasp:latest "node parser.js"
 done
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
-gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "3" --target-cpu-utilization "0.7"
+gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "3" --target-cpu-utilization "0.75"
 
 #cassandra
 gcloud compute instances delete -q cassandra-1
