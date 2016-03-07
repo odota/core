@@ -534,9 +534,9 @@ function preprocessQuery(query, constants)
 function getAggs()
 {
     return {
+        account_id: "api",
         match_id: "api",
         player_slot: "api",
-        account_id: "api",
         heroes: "api",
         teammates: "api",
         win: "api",
@@ -680,6 +680,23 @@ function getLeaderboard(db, redis, key, n, cb)
         });
     });
 }
+
+function serialize(row)
+{
+    var obj = {};
+    for (var key in row)
+    {
+        if (row[key] && typeof(row[key]) === "object")
+        {
+            obj[key] = JSON.stringify(row[key]);
+        }
+        else if (row[key] !== null)
+        {
+            obj[key] = row[key];
+        }
+    }
+    return obj;
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -699,5 +716,6 @@ module.exports = {
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
     reduceMinimal: reduceMinimal,
-    getLeaderboard: getLeaderboard
+    getLeaderboard: getLeaderboard,
+    serialize: serialize
 };

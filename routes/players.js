@@ -79,7 +79,6 @@ var projections = {
     rating: basic,
     rankings: basic,
 };
-//TODO currently aggregator does live significance check.  Persist it to store so we can project fewer fields?
 var basicAggs = ['match_id', 'version', 'abandons', 'win', 'lose'];
 var aggs = {
     index: basicAggs.concat('heroes'),

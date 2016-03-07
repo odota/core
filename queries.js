@@ -11,6 +11,7 @@ var util = require('util');
 var queue = require('./queue');
 var cQueue = queue.getQueue('cache');
 var pQueue = queue.getQueue('parse');
+var serialize = utility.serialize;
 var columnInfo = {};
 
 function getSets(redis, cb)
@@ -314,23 +315,6 @@ function insertMatch(db, redis, match, options, cb)
                 }, cb);
             }, cb);
         });
-    }
-
-    function serialize(row)
-    {
-        var obj = {};
-        for (var key in row)
-        {
-            if (row[key] && typeof(row[key]) === "object")
-            {
-                obj[key] = JSON.stringify(row[key]);
-            }
-            else if (row[key] !== null)
-            {
-                obj[key] = row[key];
-            }
-        }
-        return obj;
     }
 
     function updatePlayerCaches(cb)

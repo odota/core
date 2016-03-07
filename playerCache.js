@@ -6,7 +6,9 @@ var aggregator = require('./aggregator');
 var async = require('async');
 var constants = require('./constants');
 var utility = require('./utility');
+var serialize = utility.serialize;
 var filter = require('./filter');
+var util = require('util');
 var reduceAggregable = utility.reduceAggregable;
 var enabled = config.ENABLE_PLAYER_CACHE;
 var cEnabled = config.ENABLE_CASSANDRA_PLAYER_CACHE;
@@ -28,7 +30,10 @@ function readCache(account_id, options, cb)
         if (cEnabled)
         {
             console.time('readcache');
-            var query = 'SELECT match FROM player_caches WHERE account_id = ?';
+            //TODO currently aggregator does live significance check.  Persist it to store so we can project fewer fields?
+            var proj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
+            var table = ['hero_id', 'player_win', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min'];
+            var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', Object.keys(options.js_agg).concat(proj).concat(table).join(','));
             return cassandra.execute(query, [account_id],
             {
                 prepare: true
@@ -46,7 +51,18 @@ function readCache(account_id, options, cb)
                 console.time('jsonparse');
                 var matches = results.rows.map(function(m)
                 {
-                    return JSON.parse(m.match);
+                    m.keys().forEach(function(key)
+                    {
+                        try
+                        {
+                            m[key] = JSON.parse(m[key]);
+                        }
+                        catch (e)
+                        {
+                            console.error(e, m[key]);
+                        }
+                    });
+                    return m;
                 });
                 console.timeEnd('jsonparse');
                 //get array of matches, filter, agg and return results
@@ -89,13 +105,14 @@ function writeCache(account_id, cache, cb)
             //console.log("saving player cache to cassandra %s", account_id);
             var arr = cache.raw.map(function(m)
             {
-                return reduceAggregable(m);
+                var agg = reduceAggregable(m);
+                return serialize(agg);
             });
             //upsert matches into store
             return async.each(arr, function(m, cb)
             {
-                var query = 'INSERT INTO player_caches (account_id, match_id, match) VALUES (?, ?, ?)';
-                cassandra.execute(query, [m.account_id, m.match_id, JSON.stringify(m)],
+                var query = 'INSERT INTO player_caches JSON ?';
+                cassandra.execute(query, [JSON.stringify(m)],
                 {
                     prepare: true
                 }, cb);
