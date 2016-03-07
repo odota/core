@@ -48,7 +48,7 @@ function processRank(job, cb)
                 console.error(err);
                 return cb(err);
             }
-            if (!result.mmr)
+            if (!result.solo_competitive_rank)
             {
                 //if no MMR on record, can't rank this player, finish fast
                 return cb();
