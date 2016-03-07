@@ -6,7 +6,7 @@ var queries = require('./queries');
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var async = require('async');
-rankQueue.process(10, processRank);
+rankQueue.process(1, processRank);
 
 function processRank(job, cb)
 {
