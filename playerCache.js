@@ -34,24 +34,16 @@ function readCache(account_id, options, cb)
             var proj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
             var table = ['hero_id', 'player_win', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
             var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', Object.keys(options.js_agg).concat(proj).concat(table).join(','));
-            return cassandra.execute(query, [account_id],
+            var aggData = aggregator([], options.js_agg);
+            return cassandra.stream(query, [account_id],
             {
                 prepare: true,
-                fetchSize: 20000,
                 autoPage: true,
-            }, function(err, results)
+            }).on('readable', function()
             {
-                if (err)
-                {
-                    console.log(err);
-                    return cb(err);
-                }
-                if (!results.rows || !results.rows.length)
-                {
-                    return cb();
-                }
-                console.time('jsonparse');
-                var matches = results.rows.map(function(m)
+                //readable is emitted as soon a row is received and parsed
+                var m;
+                while (m = this.read())
                 {
                     m.keys().forEach(function(key)
                     {
@@ -64,19 +56,25 @@ function readCache(account_id, options, cb)
                             console.error(e, m[key]);
                         }
                     });
-                    return m;
-                });
-                console.timeEnd('jsonparse');
-                //get array of matches, filter, agg and return results
-                var filtered = filter(matches, options.js_select);
-                console.time('agg');
-                var aggData = aggregator(filtered, options.js_agg);
-                console.timeEnd('agg');
+                    if (filter([m], options.js_select).length)
+                    {
+                        aggData = aggregator([m], options.js_agg, aggData);
+                    }
+                }
+            }).on('end', function()
+            {
+                //stream ended, there aren't any more rows
                 console.timeEnd('readcache');
-                cb(err,
+                return cb(null,
                 {
                     aggData: aggData
                 });
+            }).on('error', function(err)
+            {
+                //Something went wrong: err is a response error from Cassandra
+                console.error(err);
+                console.timeEnd('readcache');
+                return cb(err);
             });
         }
         else
