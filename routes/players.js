@@ -90,7 +90,7 @@ var aggs = {
     records: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks']),
     trends: basicAggs.concat(Object.keys(subkeys)),
     wardmap: basicAggs.concat(['obs', 'sen']),
-    items: basicAggs.concat(['purchase_time', 'purchase_counts', 'item_usage', 'item_uses', 'purchase', 'item_win']),
+    items: basicAggs.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']),
     skills: basicAggs.concat(['hero_hits', 'ability_uses']),
     wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
     rating: basicAggs,
