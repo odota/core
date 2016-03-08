@@ -38,6 +38,7 @@ function readCache(account_id, options, cb)
             return cassandra.stream(query, [account_id],
             {
                 prepare: true,
+                fetchSize: 1000,
                 autoPage: true,
             }).on('readable', function()
             {
