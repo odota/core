@@ -37,6 +37,7 @@ function readCache(account_id, options, cb)
             return cassandra.execute(query, [account_id],
             {
                 prepare: true,
+                fetchSize: 20000,
                 autoPage: true,
             }, function(err, results)
             {
