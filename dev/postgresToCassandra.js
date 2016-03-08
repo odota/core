@@ -1,6 +1,8 @@
 var JSONStream = require('JSONStream');
 var db = require('../db');
 var cassandra = require('../cassandra');
+var utility = require('../utility');
+var serialize = utility.serialize;
 var args = process.argv.slice(2);
 var start_id = Number(args[0]) || 0;
 var tbl = args[1];
@@ -52,21 +54,4 @@ function insertPlayerMatch(pm, cb)
     {
         prepare: true
     }, cb);
-}
-
-function serialize(row)
-{
-    var obj = {};
-    for (var key in row)
-    {
-        if (row[key] && typeof(row[key]) === "object")
-        {
-            obj[key] = JSON.stringify(row[key]);
-        }
-        else if (row[key] !== null)
-        {
-            obj[key] = row[key];
-        }
-    }
-    return obj;
 }

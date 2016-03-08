@@ -36,7 +36,8 @@ function readCache(account_id, options, cb)
             var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', Object.keys(options.js_agg).concat(proj).concat(table).join(','));
             return cassandra.execute(query, [account_id],
             {
-                prepare: true
+                prepare: true,
+                autoPage: true,
             }, function(err, results)
             {
                 if (err)
