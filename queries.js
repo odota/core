@@ -328,7 +328,9 @@ function insertMatch(db, redis, match, options, cb)
         copy.insert_type = options.type;
         copy.origin = options.origin;
         queue.addToQueue(cQueue, copy,
-        {}, cb);
+        {
+            attempts: 1
+        }, cb);
     }
 
     function clearMatchCache(cb)
