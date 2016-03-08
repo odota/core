@@ -108,7 +108,7 @@ function writeCache(account_id, cache, cb)
                 return serialize(agg);
             });
             //upsert matches into store
-            return async.each(arr, function(m, cb)
+            return async.eachSeries(arr, function(m, cb)
             {
                 var query = 'INSERT INTO player_caches JSON ?';
                 cassandra.execute(query, [JSON.stringify(m)],
