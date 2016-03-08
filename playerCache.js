@@ -72,9 +72,7 @@ function readCache(account_id, options, cb)
             }).on('error', function(err)
             {
                 //Something went wrong: err is a response error from Cassandra
-                console.error(err);
-                console.timeEnd('readcache');
-                return cb(err);
+                throw err;
             });
         }
         else
