@@ -2,8 +2,20 @@ sudo: required
 language: node_js
 services:
 - docker
+- redis-server
 node_js:
 - 'node'
+before_install:
+  - wget https://gist.github.com/petere/5893799/raw/apt.postgresql.org.sh
+  - wget https://gist.github.com/petere/6023944/raw/pg-travis-test.sh
+  - sudo sh ./apt.postgresql.org.sh
+env:
+  - PGVERSION=9.0
+  - PGVERSION=9.1
+  - PGVERSION=9.2
+  - PGVERSION=9.3
+  - PGVERSION=9.4
+  - PGVERSION=9.5
 install: true
 notifications:
   email:
@@ -11,9 +23,9 @@ notifications:
   - christian@paral.in
   - aqc2109@columbia.edu
 before_script:
-- sudo service postgresql stop
-- docker run --name postgres -v /var/lib/postgresql/data:/var/lib/postgresql/data --restart=always -u postgres --net=host postgres:9.5
-- docker run --name redis --restart=always --net=host redis:3
+#- sudo service postgresql stop
+#- docker run --name postgres -v /var/lib/postgresql/data:/var/lib/postgresql/data --restart=always -u postgres --net=host postgres:9.5
+#- docker run --name redis --restart=always --net=host redis:3
 #- docker run --name cassandra --restart=always --net=host cassandra:latest
 - docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
 script:
