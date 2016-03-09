@@ -9,12 +9,8 @@ before_install:
   - wget https://gist.github.com/petere/5893799/raw/apt.postgresql.org.sh
   - wget https://gist.github.com/petere/6023944/raw/pg-travis-test.sh
   - sudo sh ./apt.postgresql.org.sh
+  - psql --version
 env:
-  - PGVERSION=9.0
-  - PGVERSION=9.1
-  - PGVERSION=9.2
-  - PGVERSION=9.3
-  - PGVERSION=9.4
   - PGVERSION=9.5
 install: true
 notifications:
