@@ -12,11 +12,11 @@ notifications:
   - aqc2109@columbia.edu
 before_script:
 - sudo service postgresql stop
+- docker run --name postgres --restart=always -u postgres --net=host postgres:9.5
+- docker run --name redis --restart=always --net=host redis:3
+#- docker run --name cassandra --restart=always --net=host cassandra:latest
 - docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
 script:
-- docker run --privileged --name postgres --restart=always -u postgres --net=host postgres:9.5
-- docker run --privileged --name redis --restart=always --net=host redis:3
-#- docker run --privileged --name cassandra --restart=always --net=host cassandra:latest
 # run test outside container
 #- npm run test && (npm run coveralls || true)
 # run test inside container, don't need to build since the docker image already built
