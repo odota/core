@@ -12,7 +12,7 @@ notifications:
   - aqc2109@columbia.edu
 before_script:
 - sudo service postgresql stop
-- docker run --name postgres --restart=always -u postgres --net=host postgres:9.5
+- docker run --name postgres -v /var/lib/postgresql/data:/var/lib/postgresql/data --restart=always -u postgres --net=host postgres:9.5
 - docker run --name redis --restart=always --net=host redis:3
 #- docker run --name cassandra --restart=always --net=host cassandra:latest
 - docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
