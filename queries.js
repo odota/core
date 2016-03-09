@@ -89,60 +89,22 @@ function upsert(db, table, row, conflict, cb)
         {
             return cb(err);
         }
-        var query1 = db(table).insert(row);
-        var query2 = db(table).update(row).where(conflict);
-        query1.asCallback(function(err)
-        {
-            if (err && err.detail && err.detail.indexOf("already exists") !== -1)
-            {
-                query2.asCallback(cb);
-            }
-            else
-            {
-                cb(err);
-            }
-        });
-        /*
         var values = Object.keys(row).map(function(key)
         {
-            return genValue(row, key);
-        }).join(',');
+            return '?';
+        });
         var update = Object.keys(row).map(function(key)
         {
             return util.format("%s=%s", key, "EXCLUDED." + key);
-        }).join(',');
-        var query = util.format("insert into %s(%s) VALUES (%s) on conflict(%s) do update set %s", table, Object.keys(row), values, Object.keys(conflict).join(','), update);
-        require('fs').writeFileSync('output.json', query);
-        db.raw(query).asCallback(cb);
-        */
-    });
-}
-
-function genValue(row, key)
-{
-    if (row[key] && row[key].constructor === Array)
-    {
-        return util.format("'{%s}'", row[key].map(function(e)
+        });
+        var query = util.format("INSERT INTO %s (%s) VALUES (%s) ON conflict (%s) DO UPDATE SET %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
+        //require('fs').writeFileSync('output.json', query);
+        console.log(query);
+        db.raw(query, Object.keys(row).map(function(key)
         {
-            return JSON.stringify(JSON.stringify(e));
-        }).join(','));
-    }
-    else if (row[key] && typeof(row[key]) === "object")
-    {
-        return util.format("'%s'", JSON.stringify(row[key]));
-    }
-    else if (typeof(row[key]) === "string")
-    {
-        return util.format("'%s'", row[key]);
-    }
-    else if (row[key] === null)
-    {
-        return "NULL";
-    }
-    else
-    {
-        return row[key];
-    }
+            return row[key];
+        })).asCallback(cb);
+    });
 }
 
 function insertMatch(db, redis, match, options, cb)
@@ -178,8 +140,7 @@ function insertMatch(db, redis, match, options, cb)
     //we want to insert into matches, then insert into player_matches for each entry in players
     async.series(
     {
-        "clean": clean,
-        "i": insert,
+        "i": upsertMatch,
         "pc": updatePlayerCaches,
         "cmc": clearMatchCache,
         "dp": decideParse
@@ -188,68 +149,14 @@ function insertMatch(db, redis, match, options, cb)
         return cb(err, results.dp);
     });
 
-    function clean(cb)
-    {
-        cleanRow(db, 'matches', match, function(err)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            async.each(players || [], function(pm, cb)
-            {
-                cleanRow(db, 'player_matches', pm, cb);
-            }, cb);
-        });
-    }
-
-    function insert(cb)
+    function upsertMatch(cb)
     {
         db.transaction(function(trx)
         {
-            trx('matches').insert(match).asCallback(function(err)
-            {
-                if (err)
-                {
-                    return exit(err);
-                }
-                async.each(players || [], function(pm, cb)
-                {
-                    pm.match_id = match.match_id;
-                    trx('player_matches').insert(pm).asCallback(cb);
-                }, exit);
-            });
-
-            function exit(err)
-            {
-                if (err)
-                {
-                    trx.rollback(err);
-                }
-                else
-                {
-                    trx.commit();
-                }
-                if (err && err.detail && err.detail.indexOf("already exists") !== -1)
-                {
-                    update(cb);
-                }
-                else
-                {
-                    cb(err);
-                }
-            }
-        });
-    }
-
-    function update(cb)
-    {
-        db.transaction(function(trx)
-        {
-            trx('matches').update(match).where(
+            upsert(trx, 'matches', match,
             {
                 match_id: match.match_id
-            }).asCallback(function(err)
+            }, function(err)
             {
                 if (err)
                 {
@@ -258,26 +165,27 @@ function insertMatch(db, redis, match, options, cb)
                 async.each(players || [], function(pm, cb)
                 {
                     pm.match_id = match.match_id;
-                    trx('player_matches').update(pm).where(
+                    upsert(trx, 'player_matches', pm,
                     {
                         match_id: pm.match_id,
                         player_slot: pm.player_slot
-                    }).asCallback(cb);
+                    }, cb);
                 }, exit);
-            });
 
-            function exit(err)
-            {
-                if (err)
+                function exit(err)
                 {
-                    trx.rollback(err);
+                    if (err)
+                    {
+                        console.error(err);
+                        trx.rollback(err);
+                    }
+                    else
+                    {
+                        trx.commit();
+                    }
+                    cb(err);
                 }
-                else
-                {
-                    trx.commit();
-                }
-                cb(err);
-            }
+            });
         });
     }
 
@@ -294,8 +202,14 @@ function insertMatch(db, redis, match, options, cb)
         //ranker, get source-of-truth counts/wins for a hero
         //distributions (queries on gamemode/lobbytype/skill)
         var obj = serialize(match);
-        var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(match).join(','), Object.values(match).join(','));
-        cassandra.execute(query, [JSON.stringify(obj)],
+        var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
+        {
+            return '?';
+        }).join(','));
+        cassandra.execute(query, Object.keys(obj).map(function(k)
+        {
+            return obj[k];
+        }),
         {
             prepare: true
         }, function(err, results)
@@ -306,10 +220,16 @@ function insertMatch(db, redis, match, options, cb)
             }
             async.each(players || [], function(pm, cb)
             {
-                var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(pm).join(','), Object.values(pm).join(','));
                 pm.match_id = match.match_id;
                 var obj2 = serialize(pm);
-                cassandra.execute(query2, [JSON.stringify(obj2)],
+                var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
+                {
+                    return '?';
+                }).join(','));
+                cassandra.execute(query2, Object.keys(obj2).map(function(k)
+                {
+                    return obj2[k];
+                }),
                 {
                     prepare: true
                 }, cb);
