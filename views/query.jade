@@ -20,7 +20,7 @@ h2.inline-header
               option(value=entry.id, selected=q.against_hero_id && q.against_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
           label The Players Included
-          select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player")#included_account_id
+          select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player ID")#included_account_id
             each entry in q.included_account_id || []
               option(value=entry, selected=q.included_account_id && q.included_account_id.indexOf(entry)!==-1)=entry
               
@@ -84,8 +84,9 @@ h2.inline-header
               option(value=id, selected=(q.region && q.region[0]===Number(id)))=name
 
     .row
-      .col-md-4.col-md-offset-4.text-center
+      .col-md-2.col-md-offset-4.text-center
         span: button.btn.btn-query(type="submit") Do the Thing
+      .col-md-2.col-md-offset-0.text-center
         span: a.btn.btn-danger(href="./"+route) Reset the Thing
 
   hr
