@@ -19,21 +19,22 @@ block match_content
               td.format-seconds(data-format-seconds=entry.time)=entry.time
               td.text-left(style="word-break: break-all;")=entry.key
     .col-md-4
-      .row
-        .col-md-12
-          h3: abbr(title=tooltips.positivity, style="display:inline-block") Positivity
-            br
-            small (Score: #{match.sentiment.score}, Tokens: #{match.sentiment.tokens.length})
-          .progress
-            - var pct = (match.sentiment.comparative+1)/2
-            .progress-bar(class=pct>0.5 ? "progress-bar-success" : "progress-bar-danger", style="width:#{pct*100}%")  #{match.sentiment.comparative.toFixed(2)}
-        .col-md-6
-          h4 <i class="fa fa-smile-o"></i>
-          //p: pre=JSON.stringify(match.sentiment, null, 2)
-          p: pre=JSON.stringify(match.sentiment.positive, null, 2)
-        .col-md-6
-          h4 <i class="fa fa-frown-o"></i>
-          p: pre=JSON.stringify(match.sentiment.negative, null, 2)
+      if match.sentiment
+        .row
+          .col-md-12
+            h3: abbr(title=tooltips.positivity, style="display:inline-block") Positivity
+              br
+              small (Score: #{match.sentiment.score}, Tokens: #{match.sentiment.tokens.length})
+            .progress
+              - var pct = (match.sentiment.comparative+1)/2
+              .progress-bar(class=pct>0.5 ? "progress-bar-success" : "progress-bar-danger", style="width:#{pct*100}%")  #{match.sentiment.comparative.toFixed(2)}
+          .col-md-6
+            h4 <i class="fa fa-smile-o"></i>
+            //p: pre=JSON.stringify(match.sentiment, null, 2)
+            p: pre=JSON.stringify(match.sentiment.positive, null, 2)
+          .col-md-6
+            h4 <i class="fa fa-frown-o"></i>
+            p: pre=JSON.stringify(match.sentiment.negative, null, 2)
       +ad("skyscraper")
 
 append footer_assets

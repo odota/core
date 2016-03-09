@@ -97,9 +97,8 @@ function upsert(db, table, row, conflict, cb)
         {
             return util.format("%s=%s", key, "EXCLUDED." + key);
         });
-        var query = util.format("INSERT INTO %s (%s) VALUES (%s) ON conflict (%s) DO UPDATE SET %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
+        var query = util.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
         //require('fs').writeFileSync('output.json', query);
-        console.log(query);
         db.raw(query, Object.keys(row).map(function(key)
         {
             return row[key];

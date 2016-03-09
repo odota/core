@@ -29,7 +29,7 @@ block match_content
             td.rankable #{player.roshan_kills || "-"}
             td.rankable #{player.necronomicon_kills || "-"}
             td.small
-              each val, key in player.specific
+              each val, key in player.specific || {}
                 div #{val} #{key}
   .row
     .col-md-12
