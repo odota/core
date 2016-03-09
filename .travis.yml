@@ -12,7 +12,6 @@ notifications:
   - aqc2109@columbia.edu
 before_script:
 - sudo service postgresql stop
-- sudo service redis-server stop
 - docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
 script:
 - docker run -d --name postgres --restart=always -u postgres --net=host postgres:9.5
