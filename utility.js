@@ -524,7 +524,7 @@ function preprocessQuery(query, constants)
             query.filter_count += 1;
         }
     }
-    query.limit = 20000;
+    query.limit = config.PLAYER_MATCH_LIMIT;
     //mark this query processed
     query.processed = true;
     console.log(query);

@@ -37,6 +37,7 @@ var defaults = {
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     "SCANNER_DELAY": 100, //delay for scanner API requests (more time-sensitive)
+    "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API

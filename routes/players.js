@@ -433,6 +433,7 @@ module.exports = function(db, redis)
         });
         options.queryObj.js_agg = obj;
         options.queryObj = preprocessQuery(options.queryObj, constants);
+        //1 filter expected for account id
         var filter_exists = options.queryObj.filter_count > 1;
         //try to find player in db
         getPlayer(db, account_id, function(err, player)
