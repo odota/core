@@ -294,7 +294,7 @@ function insertMatch(db, redis, match, options, cb)
         //ranker, get source-of-truth counts/wins for a hero
         //distributions (queries on gamemode/lobbytype/skill)
         var obj = serialize(match);
-        var query = "INSERT INTO yasp.matches JSON ?";
+        var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(match).join(','), Object.values(match).join(','));
         cassandra.execute(query, [JSON.stringify(obj)],
         {
             prepare: true
@@ -306,7 +306,7 @@ function insertMatch(db, redis, match, options, cb)
             }
             async.each(players || [], function(pm, cb)
             {
-                var query2 = "INSERT INTO yasp.player_matches JSON ?";
+                var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(pm).join(','), Object.values(pm).join(','));
                 pm.match_id = match.match_id;
                 var obj2 = serialize(pm);
                 cassandra.execute(query2, [JSON.stringify(obj2)],
@@ -458,7 +458,7 @@ function getPlayerMatchesCassandra()
 
 function getPlayerRatings(db, account_id, cb)
 {
-    if (!isNaN(account_id))
+    if (!Number.isNaN(account_id))
     {
         db.from('player_ratings').where(
         {
@@ -473,7 +473,7 @@ function getPlayerRatings(db, account_id, cb)
 
 function getPlayer(db, account_id, cb)
 {
-    if (!isNaN(account_id))
+    if (!Number.isNaN(account_id))
     {
         db.first().from('players').where(
         {

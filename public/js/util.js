@@ -5,7 +5,7 @@ window.pad = function pad(n, width, z) {
 };
 window.format = function format(input) {
     input = Number(input);
-    if (input === 0 || isNaN(input)) {
+    if (input === 0 || Number.isNaN(input)) {
         return "-";
     }
     return (Math.abs(input) < 1000 ? ~~(input) : window.numeral(input).format('0.0a'));

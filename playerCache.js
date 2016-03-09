@@ -110,8 +110,14 @@ function writeCache(account_id, cache, cb)
             //upsert matches into store
             return async.eachSeries(arr, function(m, cb)
             {
-                var query = 'INSERT INTO player_caches JSON ?';
-                cassandra.execute(query, [JSON.stringify(m)],
+                var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function(k)
+                {
+                    return '?';
+                }).join(','));
+                cassandra.execute(query, Object.keys(m).map(function(k)
+                {
+                    return m[k];
+                }),
                 {
                     prepare: true
                 }, cb);

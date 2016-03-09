@@ -123,7 +123,7 @@ module.exports = function(db, redis)
         var subkey = req.params.subkey || "kills";
         var account_id = req.params.account_id;
         var compare_data;
-        if (isNaN(Number(account_id)))
+        if (Number.isNaN(account_id))
         {
             return next("non-numeric account_id");
         }
@@ -280,7 +280,7 @@ module.exports = function(db, redis)
         {
             return cb();
         }
-        if (!isNaN(account_id))
+        if (!Number.isNaN(account_id))
         {
             console.time("validate");
             db('player_matches').count().where(

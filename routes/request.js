@@ -71,7 +71,7 @@ module.exports = function(db, redis)
                     replay_blob_key: key
                 };
             }
-            else if (match_id && !isNaN(match_id))
+            else if (match_id && !Number.isNaN(match_id))
             {
                 match = {
                     match_id: match_id
