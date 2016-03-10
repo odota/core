@@ -4,8 +4,12 @@ var request = require('request');
 var host = "localhost:5000";
 module.exports = function(cb)
 {
-    db.select('account_id').from('players').orderBy('account_id', 'asc').limit(10000).asCallback(function(err, results)
+    db.select('account_id', 'last_login').from('players').whereNotNull('last_login').orderBy('last_login').orderBy('account_id').asCallback(function(err, results)
     {
+        if (err)
+        {
+            return cb(err);
+        }
         async.eachLimit(results, 10, function(r, cb)
         {
             console.time(r.account_id);
