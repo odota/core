@@ -81,7 +81,6 @@ module.exports = function processTeamfights(entries, meta, populate)
     });
     for (var i = 0; i < entries.length; i++)
     {
-        //loop over entries again
         var e = entries[i];
         //check each teamfight to see if this event should be processed as part of that teamfight
         for (var j = 0; j < teamfights.length; j++)

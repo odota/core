@@ -50,7 +50,7 @@ module.exports = function(db, redis)
             }
             var match_id = Number(req.body.match_id);
             var match;
-            if (!body.success && config.ENABLE_RECAPTCHA)
+            if (!body.success && config.ENABLE_RECAPTCHA && !req.file)
             {
                 console.log('failed recaptcha');
                 return res.json(

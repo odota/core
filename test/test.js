@@ -213,7 +213,11 @@ describe("parser", function()
                                         return done(err);
                                     }
                                     assert(match.version);
-                                    assert(match.players && match.players[0] && match.players[0].lh_t);
+                                    assert(match.players)
+                                    assert(match.players[0])
+                                    assert(match.players[0].lh_t);
+                                    assert(match.teamfights);
+                                    assert(match.radiant_gold_adv);
                                     return done();
                                 });
                             }

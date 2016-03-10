@@ -1,4 +1,4 @@
-var utility = require('./utility');
+var utility = require('../utility');
 //Compute data requiring all players in a match for storage in match table
 module.exports = function processAllPlayers(entries)
 {

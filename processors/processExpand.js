@@ -1,5 +1,4 @@
-var utility = require('./utility');
-module.exports = function processCreateParsedData(entries, meta, populate)
+module.exports = function processExpand(entries, meta)
 {
     var types = {
         "DOTA_COMBATLOG_DAMAGE": function(e)
@@ -286,7 +285,6 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             //e.slot = e.player2;
             //e.key = e.player1.toString();
             //currently disabled in favor of combat log kills
-            //populate(e);
         },
         "CHAT_MESSAGE_GLYPH_USED": function(e)
         {
@@ -367,10 +365,10 @@ module.exports = function processCreateParsedData(entries, meta, populate)
                 e2.type = "stuns";
                 e2.value = e2.stuns;
                 expand(e2);
-                //var e5 = JSON.parse(JSON.stringify(e));
-                //e5.type = "pos";
-                //e5.key = [e5.x, e5.y];
-                //expand(e5);
+                //var e8 = JSON.parse(JSON.stringify(e));
+                //e8.type = "pos";
+                //e8.key = [e8.x, e8.y];
+                //expand(e8);
                 var e6 = JSON.parse(JSON.stringify(e));
                 e6.type = "life_state";
                 e6.key = e6.life_state;
@@ -383,25 +381,31 @@ module.exports = function processCreateParsedData(entries, meta, populate)
                     e3.type = "times";
                     e3.value = e3.time;
                     expand(e3);
-                    e3.type = "gold_t";
-                    e3.value = e3.gold;
-                    expand(e3);
-                    e3.type = "xp_t";
-                    e3.value = e3.xp;
-                    expand(e3);
-                    e3.type = "lh_t";
-                    e3.value = e3.lh;
-                    expand(e3);
+                    var e4 = JSON.parse(JSON.stringify(e));
+                    e4.interval = true;
+                    e4.type = "gold_t";
+                    e4.value = e4.gold;
+                    expand(e4);
+                    var e5 = JSON.parse(JSON.stringify(e));
+                    e5.interval = true;
+                    e5.type = "xp_t";
+                    e5.value = e5.xp;
+                    expand(e5);
+                    var e7 = JSON.parse(JSON.stringify(e));
+                    e7.interval = true;
+                    e7.type = "lh_t";
+                    e7.value = e7.lh;
+                    expand(e7);
                 }
             }
             // store player position for the first 10 minutes
             if (e.time <= 600 && e.x && e.y)
             {
-                var e4 = JSON.parse(JSON.stringify(e));
-                e4.type = "lane_pos";
-                e4.key = [e4.x, e4.y];
-                e4.posData = true;
-                expand(e4);
+                var e9 = JSON.parse(JSON.stringify(e));
+                e9.type = "lane_pos";
+                e9.key = [e9.x, e9.y];
+                e9.posData = true;
+                expand(e9);
             }
         },
         "obs": function(e)
@@ -410,24 +414,28 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             e.key = JSON.parse(e.key);
             e.posData = true;
             expand(e);
-            e.posData = false;
-            e.type = "obs_log";
-            expand(e);
+            var e2 = JSON.parse(JSON.stringify(e));
+            e2.posData = false;
+            e2.type = "obs_log";
+            expand(e2);
         },
         "sen": function(e)
         {
             e.key = JSON.parse(e.key);
             e.posData = true;
             expand(e);
-            e.posData = false;
-            e.type = "sen_log";
-            expand(e);
+            var e2 = JSON.parse(JSON.stringify(e));
+            e2.posData = false;
+            e2.type = "sen_log";
+            expand(e2);
         }
     };
+    //define the types we want to put into each array
+    //null means all types
     var reqs = {
         parsed_data: null,
         //expanded: null,
-        "tf_data":
+        tf_data:
         {
             killed: 1,
             interval: 1,
@@ -438,28 +446,35 @@ module.exports = function processCreateParsedData(entries, meta, populate)
             ability_uses: 1,
             item_uses: 1
         },
-        "int_data":
+        int_data:
         {
+            interval: 1
+        },
+        uploadProps:
+        {
+            epilogue: 1,
             interval: 1
         }
     };
-    var res = {
-        parsed_data: utility.getParseSchema()
-    };
+    var res = {};
     for (var i = 0; i < entries.length; i++)
     {
         var e = entries[i];
         if (types[e.type])
         {
+            //preprocess based on type name
             types[e.type](e);
         }
         else
         {
+            //expand if not specified
             expand(e);
         }
     }
     return res;
-    //strips off "item_" from strings
+    /**
+     * Strips off "item_" from strings
+     **/
     function translate(input)
     {
         if (input)
@@ -471,12 +486,16 @@ module.exports = function processCreateParsedData(entries, meta, populate)
         }
         return input;
     }
-    //prepends illusion_ to string if illusion
+    /**
+     * Prepends illusion_ to string if illusion
+     **/
     function computeIllusionString(input, isIllusion)
     {
         return (isIllusion ? "illusion_" : "") + input;
     }
-
+    /**
+     * Place the entry in the output arrays
+     **/
     function expand(e)
     {
         //set slot and player_slot
@@ -484,20 +503,13 @@ module.exports = function processCreateParsedData(entries, meta, populate)
         e.player_slot = meta.slot_to_playerslot[e.slot];
         for (var key in reqs)
         {
-            if (key === "parsed_data")
+            if (!res[key])
             {
-                populate(e, res.parsed_data);
+                res[key] = [];
             }
-            else
+            if (!reqs[key] || (e.type in reqs[key]))
             {
-                if (!res[key])
-                {
-                    res[key] = [];
-                }
-                if (!reqs[key] || (e.type in reqs[key]))
-                {
-                    res[key].push(e);
-                }
+                res[key].push(e);
             }
         }
     }

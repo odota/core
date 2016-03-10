@@ -1,13 +1,37 @@
 var express = require('express');
 var utility = require('./utility');
 var bodyParser = require('body-parser');
-var runParse = require('./runParse');
 var app = express();
 var capacity = require('os').cpus().length;
 var startedAt = new Date();
 var os = require('os');
-var fs = require('fs');
 var config = require('./config');
+var request = require('request');
+var cp = require('child_process');
+var ndjson = require('ndjson');
+var spawn = cp.spawn;
+var progress = require('request-progress');
+var processAllPlayers = require('./processors/processAllPlayers');
+var processTeamfights = require('./processors/processTeamfights');
+var processReduce = require('./processors/processReduce');
+var processUploadProps = require('./processors/processUploadProps');
+var processParsedData = require('./processors/processParsedData');
+var processMetadata = require('./processors/processMetadata');
+var processExpand = require('./processors/processExpand');
+var stream = require('stream');
+var queue = require('./queue');
+var pQueue = queue.getQueue('parse');
+var getReplayUrl = require('./getReplayUrl');
+var db = require('./db');
+var redis = require('./redis');
+var moment = require('moment');
+var queries = require('./queries');
+var insertMatch = queries.insertMatch;
+var async = require('async');
+var compute = require('./compute');
+var renderMatch = compute.renderMatch;
+var computeMatchData = compute.computeMatchData;
+var computePlayerMatchData = compute.computePlayerMatchData;
 app.use(bodyParser.json());
 app.get('/', function(req, res)
 {
@@ -30,19 +54,6 @@ app.get('/redis/:key', function(req, res, cb)
     });
 });
 app.listen(config.PARSER_PORT);
-var queue = require('./queue');
-var pQueue = queue.getQueue('parse');
-var getReplayUrl = require('./getReplayUrl');
-var db = require('./db');
-var redis = require('./redis');
-var moment = require('moment');
-var queries = require('./queries');
-var insertMatch = queries.insertMatch;
-var async = require('async');
-var compute = require('./compute');
-var renderMatch = compute.renderMatch;
-var computeMatchData = compute.computeMatchData;
-var computePlayerMatchData = compute.computePlayerMatchData;
 pQueue.process(function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
@@ -64,6 +75,7 @@ pQueue.process(function(job, cb)
             {
                 if (err)
                 {
+                    console.error(err.stack);
                     return cb(err);
                 }
                 //extend match object with parsed data, keep existing data if key conflict
@@ -79,8 +91,13 @@ pQueue.process(function(job, cb)
         "insertMatch": match.replay_blob_key ? function(cb)
         {
             //save uploaded replay parse in redis
-            match.players.forEach(function(p)
+            match.match_id = match.upload.match_id;
+            match.game_mode = match.upload.game_mode;
+            match.radiant_win = match.upload.radiant_win;
+            match.duration = match.upload.duration;
+            match.players.forEach(function(p, i)
             {
+                utility.mergeObjects(p, match.upload.player_map[p.player_slot]);
                 p.gold_per_min = ~~(p.gold / match.duration * 60);
                 p.xp_per_min = ~~(p.xp / match.duration * 60);
                 p.duration = match.duration;
@@ -114,3 +131,206 @@ pQueue.process(function(job, cb)
         return cb(err, match.match_id);
     });
 });
+
+function runParse(match, job, cb)
+{
+    var url = match.url;
+    var inStream;
+    var parseStream;
+    var bz;
+    var parser;
+    var entries = [];
+    createInputStream();
+
+    function createInputStream()
+    {
+        inStream = progress(request(
+        {
+            url: url,
+            encoding: null,
+            timeout: 30000
+        })).on('progress', function(state)
+        {
+            console.log(JSON.stringify(
+            {
+                url: url,
+                state: state
+            }));
+            if (job)
+            {
+                job.progress(state.percentage * 100);
+            }
+        }).on('response', function(response)
+        {
+            if (response.statusCode === 200)
+            {
+                forwardInput(inStream);
+            }
+            else
+            {
+                exit(response.statusCode.toString());
+            }
+        }).on('error', exit);
+    }
+
+    function forwardInput(inStream)
+    {
+        parser = spawn("java", ["-jar",
+                    "-Xmx64m",
+                    "java_parser/target/stats-0.1.0.jar"
+                ],
+        {
+            //we may want to ignore stderr so the child doesn't stay open
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
+        parseStream = ndjson.parse();
+        if (url && url.slice(-3) === "bz2")
+        {
+            bz = spawn("bunzip2");
+        }
+        else
+        {
+            var str = stream.PassThrough();
+            bz = {
+                stdin: str,
+                stdout: str
+            };
+        }
+        inStream.pipe(bz.stdin);
+        bz.stdout.pipe(parser.stdin);
+        parser.stdout.pipe(parseStream);
+        parser.stderr.on('data', function printStdErr(data)
+        {
+            console.log(data.toString());
+        });
+        parseStream.on('data', function handleStream(e)
+        {
+            entries.push(e);
+        });
+        parseStream.on('end', exit);
+        parseStream.on('error', exit);
+    }
+
+    function exit(err)
+    {
+        if (!err)
+        {
+            try
+            {
+                var message = "time spent on post-processing match ";
+                console.time(message);
+                var meta = processMetadata(entries);
+                var res = processExpand(entries, meta, populate);
+                var parsed_data = processParsedData(res.parsed_data, meta, populate);
+                var teamfights = processTeamfights(res.tf_data, meta, populate);
+                var upload = processUploadProps(res.uploadProps, meta, populate);
+                var ap = processAllPlayers(res.int_data);
+                parsed_data.teamfights = teamfights;
+                parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
+                parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
+                parsed_data.upload = upload;
+                //processMultiKillStreaks();
+                //processReduce(res.expanded);
+                console.timeEnd(message);
+            }
+            catch (e)
+            {
+                return cb(e);
+            }
+        }
+        return cb(err, parsed_data);
+    }
+}
+
+function populate(e, container)
+{
+    switch (e.type)
+    {
+        case 'interval':
+            break;
+        case 'player_slot':
+            container.players[e.key].player_slot = e.value;
+            break;
+        case 'chat':
+            container.chat.push(JSON.parse(JSON.stringify(e)));
+            break;
+        case 'CHAT_MESSAGE_TOWER_KILL':
+        case 'CHAT_MESSAGE_TOWER_DENY':
+        case 'CHAT_MESSAGE_BARRACKS_KILL':
+        case 'CHAT_MESSAGE_FIRSTBLOOD':
+        case 'CHAT_MESSAGE_AEGIS':
+        case 'CHAT_MESSAGE_AEGIS_STOLEN':
+        case 'CHAT_MESSAGE_DENIED_AEGIS':
+        case 'CHAT_MESSAGE_ROSHAN_KILL':
+            container.objectives.push(JSON.parse(JSON.stringify(e)));
+            break;
+        default:
+            if (!container.players[e.slot])
+            {
+                //couldn't associate with a player, probably attributed to a creep/tower/necro unit
+                //console.log(e);
+                return;
+            }
+            var t = container.players[e.slot][e.type];
+            if (typeof t === "undefined")
+            {
+                //container.players[0] doesn't have a type for this event
+                console.log("no field in parsed_data.players for %s", e.type);
+                return;
+            }
+            else if (e.posData)
+            {
+                //fill 2d hash with x,y values
+                var x = e.key[0];
+                var y = e.key[1];
+                if (!t[x])
+                {
+                    t[x] = {};
+                }
+                if (!t[x][y])
+                {
+                    t[x][y] = 0;
+                }
+                t[x][y] += 1;
+            }
+            else if (e.max)
+            {
+                //check if value is greater than what was stored
+                if (e.value > t.value)
+                {
+                    container.players[e.slot][e.type] = e;
+                }
+            }
+            else if (t.constructor === Array)
+            {
+                //determine whether we want the value only (interval) or the time and key (log)
+                //either way this creates a new value so e can be mutated later
+                var arrEntry = (e.interval) ? e.value :
+                {
+                    time: e.time,
+                    key: e.key
+                };
+                t.push(arrEntry);
+            }
+            else if (typeof t === "object")
+            {
+                //add it to hash of counts
+                e.value = e.value || 1;
+                t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
+            }
+            else if (typeof t === "string")
+            {
+                //string, used for steam id
+                container.players[e.slot][e.type] = e.key;
+            }
+            else
+            {
+                //we must use the full reference since this is a primitive type
+                //use the value most of the time, but key when stuns since value only holds Integers in Java
+                //replace the value directly
+                container.players[e.slot][e.type] = e.value || Number(e.key);
+            }
+            break;
+    }
+}
