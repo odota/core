@@ -2,7 +2,7 @@ var request = require('request');
 var async = require('async');
 var winston = require('winston');
 var config = require('./config');
-var BigNumber = require('big-number').n;
+var BigNumber = require('big-number');
 var urllib = require('url');
 var transports = [];
 transports.push(new(winston.transports.Console)(
