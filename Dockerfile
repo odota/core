@@ -9,7 +9,7 @@ RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get install -y git openjdk-8-jdk maven build-essential && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 WORKDIR /usr/src/yasp
-ENV NODE_VERSION 5.5.0
+ENV NODE_VERSION 5.8.0
 RUN echo "" > /root/.bashrc && \
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
     . /root/.bashrc && \
