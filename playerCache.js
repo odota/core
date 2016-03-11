@@ -49,14 +49,7 @@ function readCache(account_id, options, cb)
                 {
                     m.keys().forEach(function(key)
                     {
-                        try
-                        {
-                            m[key] = JSON.parse(m[key]);
-                        }
-                        catch (e)
-                        {
-                            console.error(e, m[key]);
-                        }
+                        m[key] = JSON.parse(m[key]);
                     });
                     if (filter([m], options.js_select).length)
                     {
@@ -103,14 +96,10 @@ function writeCache(account_id, cache, cb)
         {
             //console.time("writecache");
             //console.log("saving player cache to cassandra %s", account_id);
-            var arr = cache.raw.map(function(m)
-            {
-                var agg = reduceAggregable(m);
-                return serialize(agg);
-            });
             //upsert matches into store
-            return async.eachSeries(arr, function(m, cb)
+            return async.eachSeries(cache.raw, function(m, cb)
             {
+                m = serialize(reduceAggregable(m));
                 var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function(k)
                 {
                     return '?';
@@ -124,6 +113,10 @@ function writeCache(account_id, cache, cb)
                 }, cb);
             }, function(err)
             {
+                if (err)
+                {
+                    console.error(err.stack);
+                }
                 //console.timeEnd("writecache");
                 return cb(err);
             });

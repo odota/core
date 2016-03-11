@@ -117,10 +117,10 @@ CREATE TABLE yasp.player_caches (
   kills int,
   deaths int,
   assists int,
-  kda decimal,
+  kda int,
   last_hits int,
   denies int,
-  hero_damage int,
+  hero_damage bigint,
   tower_damage bigint,
   hero_healing bigint,
   gold_per_min int,
@@ -158,8 +158,8 @@ CREATE TABLE yasp.player_caches (
   purchase_rapier int,
   purchase_gem int,
   pings int,
-  stuns decimal,
-  lane_efficiency_pct decimal,
+  stuns double,
+  lane_efficiency_pct int,
   parse_status int,
   skill int
 );
