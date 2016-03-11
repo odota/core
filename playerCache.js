@@ -97,7 +97,7 @@ function writeCache(account_id, cache, cb)
             //console.time("writecache");
             //console.log("saving player cache to cassandra %s", account_id);
             //upsert matches into store
-            return async.eachSeries(cache.raw, function(m, cb)
+            return async.each(cache.raw, function(m, cb)
             {
                 m = serialize(reduceAggregable(m));
                 var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function(k)
