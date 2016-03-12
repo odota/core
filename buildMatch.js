@@ -1,7 +1,17 @@
 module.exports = buildMatch;
+var compute = require('./compute');
+var config = require('./config');
+var queries = require('./queries');
+var computeMatchData = compute.computeMatchData;
+var computePlayerMatchData = compute.computePlayerMatchData;
+var renderMatch = compute.renderMatch;
+var getMatch = queries.getMatch;
 
-function buildMatch(match_id, cb)
+function buildMatch(options, cb)
 {
+    var db = options.db;
+    var redis = options.redis;
+    var match_id = options.match_id;
     var key = "match:" + match_id;
     redis.get(key, function(err, reply)
     {

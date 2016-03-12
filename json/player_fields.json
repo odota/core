@@ -1,0 +1,49 @@
+{
+    "subkeys":
+    {
+        "kills": 1,
+        "deaths": 1,
+        "assists": 1,
+        "kda": 1,
+        "gold_per_min": 1,
+        "xp_per_min": 1,
+        "last_hits": 1,
+        "denies": 1,
+        "lane_efficiency_pct": 1,
+        "duration": 1,
+        "first_blood_time": 1,
+        "level": 1,
+        "hero_damage": 1,
+        "tower_damage": 1,
+        "hero_healing": 1,
+        "stuns": 1,
+        "tower_kills": 1,
+        "neutral_kills": 1,
+        "courier_kills": 1,
+        "purchase_tpscroll": 1,
+        "purchase_ward_observer": 1,
+        "purchase_ward_sentry": 1,
+        "purchase_gem": 1,
+        "purchase_rapier": 1,
+        "pings": 1,
+        "throw": 1,
+        "comeback": 1,
+        "stomp": 1,
+        "loss": 1,
+        "actions_per_min": 1
+    },
+    "countCats":
+    {
+        "leaver_status": 1,
+        "game_mode": 1,
+        "lobby_type": 1,
+        "lane_role": 1,
+        "region": 1,
+        "patch": 1
+    },
+    "times":
+    {
+        "duration": 1,
+        "first_blood_time": 1
+    }
+}

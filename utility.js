@@ -414,9 +414,10 @@ function getParseSchema()
                 {},
                 "multi_kills":
                 {},
-                "healing":
-                {},
                 "life_state":
+                {},
+                //below not in sql schema
+                "healing":
                 {},
                 "modifier_applied":
                 {},

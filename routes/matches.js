@@ -1,36 +1,26 @@
 var express = require('express');
 var matches = express.Router();
-var compute = require('../compute');
-var config = require('../config');
-var computeMatchData = compute.computeMatchData;
-var computePlayerMatchData = compute.computePlayerMatchData;
-var renderMatch = compute.renderMatch;
 var constants = require('../constants.js');
 var matchPages = constants.match_pages;
-var queries = require('../queries');
-var getMatch = queries.getMatch;
+var buildMatch = require('../buildMatch');
 module.exports = function(db, redis)
 {
-    matches.get('/:match_id/:info?', function(req, res, next)
+    matches.get('/:match_id/:info?', function(req, res, cb)
     {
-        /*
-        if (req.query.json) {
-            return res.status(500).json({error: "currently disabled"});
-        }
-        */
         console.time("match page");
-        prepareMatch(req.params.match_id, function(err, match)
+        buildMatch(
+        {
+            db: db,
+            redis: redis,
+            match_id: req.params.match_id
+        }, function(err, match)
         {
             if (err)
             {
-                return next(err);
+                return cb(err);
             }
             console.timeEnd("match page");
             var info = matchPages[req.params.info] ? req.params.info : "index";
-            if (req.query.json)
-            {
-                return res.json(match);
-            }
             res.render("match/match_" + info,
             {
                 route: info,
@@ -72,65 +62,4 @@ module.exports = function(db, redis)
         });
     });
     return matches;
-
-    function prepareMatch(match_id, cb)
-    {
-        var key = "match:" + match_id;
-        redis.get(key, function(err, reply)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            else if (reply)
-            {
-                console.log("Cache hit for match " + match_id);
-                var match = JSON.parse(reply);
-                return cb(err, match);
-            }
-            else
-            {
-                console.log("Cache miss for match " + match_id);
-                getMatch(db, match_id, function(err, match)
-                {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    //get ability upgrades data
-                    redis.get('ability_upgrades:' + match_id, function(err, result)
-                    {
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        result = JSON.parse(result);
-                        if (match.players && result)
-                        {
-                            match.players.forEach(function(p)
-                            {
-                                p.ability_upgrades_arr = result[p.player_slot];
-                            });
-                        }
-                        renderMatch(match);
-                        //remove some duplicated columns from match.players to reduce saved size
-                        if (match.players)
-                        {
-                            match.players.forEach(function(p)
-                            {
-                                delete p.chat;
-                                delete p.objectives;
-                                delete p.teamfights;
-                            });
-                        }
-                        if (match.version && config.ENABLE_MATCH_CACHE)
-                        {
-                            redis.setex(key, 3600, JSON.stringify(match));
-                        }
-                        return cb(err, match);
-                    });
-                });
-            }
-        });
-    }
 };

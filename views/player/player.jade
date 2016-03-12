@@ -43,7 +43,7 @@ block content
               Players signing in for the first time may not see all matches until their full history has been retrieved.<br>") #{player.match_count} recorded 
               
           h4
-            if !(player.account_id in trackedPlayers)
+            if !(player.tracked)
               span.text-danger.rating: abbr(title="This player has not visited in the last #{config.UNTRACK_DAYS} days, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
                 i.fa.fa-eye-slash
             else

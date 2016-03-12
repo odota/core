@@ -149,9 +149,9 @@ app.use(function(req, res, next)
     {
         redis.zadd("alias_hits", moment().format('X'), req.path);
     }
-    if (req.query.json)
+    if (req.path.indexOf('/api') === 0)
     {
-        redis.zadd("json_hits", moment().format('X'), req.path);
+        redis.zadd("api_hits", moment().format('X'), req.path);
     }
     res.once('finish', function()
     {
@@ -201,13 +201,6 @@ var poet = new Poet(app,
     {
         '/post/:post': 'blog/post'
     }
-});
-poet.watch(function()
-{
-    // watcher reloaded
-}).init().then(function()
-{
-    // Ready to go!
 });
 poet.addRoute('/blog/:id?', function(req, res)
 {
@@ -531,7 +524,7 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
         });
     }
 });
-app.use('/api', api);
+app.use('/api', api(db, redis));
 app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));
 app.use('/', requestRouter(db, redis));
@@ -556,7 +549,6 @@ app.use(function(err, req, res, next)
     //default express handler
     next(err);
 });
-module.exports = app;
 var port = config.PORT || config.FRONTEND_PORT;
 var server = app.listen(port, function()
 {
@@ -584,3 +576,4 @@ function gracefulShutdown()
         process.exit();
     }, 10 * 1000);
 }
+module.exports = app;

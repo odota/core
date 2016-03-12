@@ -69,9 +69,9 @@ module.exports = function getStatus(db, redis, cb)
         {
             redis.zcard("alias_hits", cb);
         },
-        json_hits: function(cb)
+        api_hits: function(cb)
         {
-            redis.zcard("json_hits", cb);
+            redis.zcard("api_hits", cb);
         },
         last_added: function(cb)
         {
