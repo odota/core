@@ -42,4 +42,4 @@ deploy:
   skip_cleanup: true
   on:
     branch: master
-  script: cluster/scripts/deploy.sh
+  script: cluster/scripts/postbuild.sh
