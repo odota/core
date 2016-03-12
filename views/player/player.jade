@@ -16,9 +16,24 @@ block content
             div
               i.flaticon-1.small-cheese(style="display:inline-block")
               small(style="margin-left:.5em") x #{' '} #{player.cheese}
+    .col-xs-3
+        h4
+          span.text-info.rating: abbr(title="Solo MMR")
+            i.fa.fa-fw.fa-user
+            small(style="margin-left:.5em") #{player.soloRating || "N/A"}
+          span.text-info.rating: abbr(title="Highest Solo MMR")
+            i.fa.fa-fw.fa-star
+            small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.solo_competitive_rank;})),0) || "N/A"}
+        h4
+          span.text-warning.rating: abbr(title="Party MMR")
+            i.fa.fa-fw.fa-users
+            small(style="margin-left:.5em") #{player.partyRating || "N/A"}
+          span.text-warning.rating: abbr(title="Highest Party MMR")
+            i.fa.fa-fw.fa-star
+            small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
         if config.NODE_ENV === "development"
           h4
-            span.text-info.rating(onclick="estimateMMR(#{player.account_id})"): abbr(title="Estimate MMR based on data from peer players")
+            span.text-success.rating(onclick="estimateMMR(#{player.account_id})"): abbr(title="Click to estimate MMR based on data from peer players")
               i.fa.fa-fw.fa-question-circle
               small#estimate(style="margin-left:.5em") Estimate MMR
           script.
@@ -35,21 +50,6 @@ block content
                 }
               };
             }
-    .col-xs-3
-          h4
-            span.text-info.rating: abbr(title="Solo MMR")
-              i.fa.fa-fw.fa-user
-              small(style="margin-left:.5em") #{player.soloRating || "N/A"}
-            span.text-info.rating: abbr(title="Highest Solo MMR")
-              i.fa.fa-fw.fa-star
-              small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.solo_competitive_rank;})),0) || "N/A"}
-          h4
-            span.text-warning.rating: abbr(title="Party MMR")
-              i.fa.fa-fw.fa-users
-              small(style="margin-left:.5em") #{player.partyRating || "N/A"}
-            span.text-warning.rating: abbr(title="Highest Party MMR")
-              i.fa.fa-fw.fa-star
-              small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
     .col-xs-3
           h4
             if (!player.full_history_time)

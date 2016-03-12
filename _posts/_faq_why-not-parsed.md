@@ -19,5 +19,5 @@ There are several reasons why we wouldn't have parsed data for a match:
 
 * The replay is expired.  Valve deletes replays after 7 days, so we can't parse these matches.
 
-Since we only parse the replays of active users, we have only parsed a small percentage of all the Dota 2 matches ever played, and only those after we started operations (August 2014).
-This also means we probably won't be able to do replay parsing for the majority of your historical matches (from before registration).
+Since we only parse the replays of active users, we have only parsed a small percentage of all the Dota 2 matches ever played, and only those after August 2014.
+This means we probably won't be able to do replay parsing for the majority of your historical matches (from before registration).

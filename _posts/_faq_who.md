@@ -22,7 +22,7 @@ Howard's a software engineer (Duke University '15) and casual Dota 2 player.
 His favorite heroes are Nature's Prophet, Terrorblade, and Lycan, so he's probably that guy you hate in your pub matches.
 He also enjoys playing ultimate and board games.
 
-Howard wrote most of the code for the replay parsing/backend services, making sure the system can scale properly.  He also built the heatmap, word cloud, querying, comparison, rating tracker, histogram, and "played with" features.
+Howard wrote most of the code and is constantly playing with new technologies to strive for better performance and lower cost.
 
 <div>
 <img src="https://avatars3.githubusercontent.com/u/3838552?v=3&s=150"/>
@@ -33,7 +33,7 @@ Albert Cui:
 * [/u/Triple_A](http://reddit.com/user/Triple_A)
 * [Player Profile](/players/102344608)
 
-Albert came up with the original idea for the site and manages the server deployments.  He built the donation system and works on the frontend design.
+Albert came up with the original idea for the site and manages the bills.  He built the donation system.
 
 <div>
 <img src="https://avatars1.githubusercontent.com/u/9388670?v=3&s=150"/>
@@ -43,4 +43,4 @@ Nicholas Hanson-Holtry:
 * [/u/waterandshade](http://reddit.com/user/waterandshade)
 * [Player Profile](/players/75392401)
 
-Nick developed the Kill Streaks/Multi-Kills feature under the teamfights tab.
+Nick comes up with ideas for cool machine learning things we can do with the data.
