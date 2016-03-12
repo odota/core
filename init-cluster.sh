@@ -126,4 +126,4 @@ gcloud compute instance-groups managed create "importer-group-1" --base-instance
 gcloud compute instances create temp-1 --machine-type n1-standard-2 --image container-vm --disk name=temp-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd
 
 #redeploy yasp container
-sudo docker pull yasp/yasp:latest && sudo docker stop yasp && sudo docker rm yasp && sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "node deploy.js"
+sudo docker pull yasp/yasp:latest && sudo docker run -d --name yasp_DEPLOY --restart=always -e VIRTUAL_HOST=yasp.co --expose=5000 yasp/yasp:latest "node deploy.js" && sudo docker stop yasp && sudo docker rm -v yasp && sudo docker rename yasp_DEPLOY yasp
