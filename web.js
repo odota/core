@@ -147,11 +147,11 @@ app.use(function(req, res, next)
     var timeStart = new Date();
     if (req.path.indexOf('/names') === 0)
     {
-        redis.zadd("alias_hits", moment().format('X'), req.path);
+        redis.zadd("alias_hits", moment().format('X'), moment().valueOf() + req.path);
     }
     if (req.path.indexOf('/api') === 0)
     {
-        redis.zadd("api_hits", moment().format('X'), req.path);
+        redis.zadd("api_hits", moment().format('X'), moment().valueOf() + req.path);
     }
     res.once('finish', function()
     {
@@ -165,6 +165,7 @@ app.use(function(req, res, next)
         redis.lpush("load_times", timeEnd - timeStart);
         redis.ltrim("load_times", 0, 10000);
     });
+    logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.path);
     next();
 });
 app.use(function(req, res, next)
@@ -190,7 +191,6 @@ app.use(function(req, res, next)
         res.locals.api_down = Number(results.apiDown);
         var theGoal = Number(results.cheese || 0.1) / goal * 100;
         res.locals.cheese_goal = (theGoal - 100) > 0 ? 100 : theGoal;
-        logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.path);
         return next(err);
     });
 });
@@ -277,6 +277,7 @@ app.route('/logout').get(function(req, res)
     req.session = null;
     res.redirect('/');
 });
+// Kept for legacy reasons
 app.route('/privacyterms').get(function(req, res)
 {
     res.redirect("/faq");

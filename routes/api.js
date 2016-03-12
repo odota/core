@@ -6,6 +6,7 @@ var buildMatch = require('../buildMatch');
 var buildPlayer = require('../buildPlayer');
 module.exports = function(db, redis)
 {
+    //TODO rate-limit by IP?
     api.get('/items', function(req, res)
     {
         res.json(constants.items[req.query.name]);
@@ -100,15 +101,19 @@ module.exports = function(db, redis)
             });
         });
     });
-    api.get('/cheese status');
     api.get('/login_status');
     api.get('/distributions');
     api.get('/picks/:n');
-    api.get('/rankings/:hero_id');
+    api.get('/ratings/:account_id');
+    api.get('/rankings/heroes/:hero_id');
+    api.get('/rankings/players/:account_id');
     api.get('/faq');
-    //TODO will need to figure out how to do slugs if albert insists on routing with them
+    api.get('/status');
+    //TODO will need to figure out how to do slugs if @albertcui insists on routing with them
     api.get('/blog/:n');
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
+    api.get('/banner');
+    api.get('/cheese_status');
     return api;
 };

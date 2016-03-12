@@ -29,7 +29,6 @@ function readCache(account_id, options, cb)
     {
         if (cEnabled)
         {
-            console.time('readcache');
             //TODO currently aggregator does live significance check.  Persist it to store so we can project fewer fields?
             var proj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
             var table = ['hero_id', 'player_win', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
@@ -59,7 +58,6 @@ function readCache(account_id, options, cb)
             }).on('end', function()
             {
                 //stream ended, there aren't any more rows
-                console.timeEnd('readcache');
                 return cb(null,
                 {
                     aggData: aggData
@@ -72,11 +70,9 @@ function readCache(account_id, options, cb)
         }
         else
         {
-            //console.time('readcache');
             redis.get(new Buffer("player:" + account_id), function(err, result)
             {
                 var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-                //console.timeEnd('readcache');
                 //console.log(result ? result.length : 0, JSON.stringify(cache).length);
                 return cb(err, cache);
             });
@@ -94,7 +90,6 @@ function writeCache(account_id, cache, cb)
     {
         if (cEnabled)
         {
-            //console.time("writecache");
             //console.log("saving player cache to cassandra %s", account_id);
             //upsert matches into store
             return async.each(cache.raw, function(m, cb)
@@ -117,13 +112,11 @@ function writeCache(account_id, cache, cb)
                 {
                     console.error(err.stack);
                 }
-                //console.timeEnd("writecache");
                 return cb(err);
             });
         }
         else
         {
-            console.time("writecache");
             console.log("saving player cache to redis %s", account_id);
             redis.ttl("player:" + account_id, function(err, ttl)
             {
@@ -136,7 +129,6 @@ function writeCache(account_id, cache, cb)
                 };
                 redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function(err)
                 {
-                    console.timeEnd("writecache");
                     cb(err);
                 });
             });
@@ -214,6 +206,37 @@ function updateCache(match, cb)
     }
 }
 
+function validateCache(db, account_id, cache, cb)
+{
+    if (!cache)
+    {
+        return cb();
+    }
+    if (!Number.isNaN(account_id))
+    {
+        db('player_matches').count().where(
+        {
+            account_id: Number(account_id)
+        }).asCallback(function(err, count)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            count = Number(count[0].count);
+            //console.log(cache);
+            //console.log(Object.keys(cache.aggData.matches).length, count);
+            var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
+            return cb(err, cacheValid);
+        });
+    }
+    else
+    {
+        //non-integer account_id (all/professional), skip validation (always valid)
+        cb(null, true);
+    }
+}
+
 function countPlayerCaches(cb)
 {
     if (enabled)
@@ -232,5 +255,6 @@ module.exports = {
     readCache: readCache,
     writeCache: writeCache,
     updateCache: updateCache,
+    validateCache: validateCache,
     countPlayerCaches: countPlayerCaches,
 };

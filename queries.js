@@ -377,17 +377,50 @@ function getPlayerMatchesCassandra()
 
 function getPlayerRatings(db, account_id, cb)
 {
+    console.time('[PLAYER] getPlayerRatings ' + account_id);
     if (!Number.isNaN(account_id))
     {
         db.from('player_ratings').where(
         {
             account_id: Number(account_id)
-        }).orderBy('time', 'asc').asCallback(cb);
+        }).orderBy('time', 'asc').asCallback(function(err, result)
+        {
+            console.timeEnd('[PLAYER] getPlayerRatings ' + account_id);
+            cb(err, result);
+        });
     }
     else
     {
         cb();
     }
+}
+
+function getPlayerRankings(redis, account_id, cb)
+{
+    console.time('[PLAYER] getPlayerRankings ' + account_id);
+    async.map(Object.keys(constants.heroes), function(hero_id, cb)
+    {
+        redis.zcard('hero_rankings:' + hero_id, function(err, card)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            redis.zrank('hero_rankings:' + hero_id, account_id, function(err, rank)
+            {
+                cb(err,
+                {
+                    hero_id: hero_id,
+                    rank: rank,
+                    card: card
+                });
+            });
+        });
+    }, function(err, result)
+    {
+        console.timeEnd('[PLAYER] getPlayerRankings ' + account_id);
+        cb(err, result);
+    });
 }
 
 function getPlayer(db, account_id, cb)
@@ -413,6 +446,7 @@ module.exports = {
     getMatch: getMatch,
     getPlayerMatches: getPlayerMatches,
     getPlayerRatings: getPlayerRatings,
+    getPlayerRankings: getPlayerRankings,
     getPlayer: getPlayer,
     upsert: upsert
 };

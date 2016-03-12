@@ -3,77 +3,59 @@ include /mixins/progress_bar
 
 block content
   .row.match-top
-    .col-xs-3
+    .col-xs-4
       div
-        if player.avatar
-          a(href=player.profileurl || "#", target="_blank")
-            img(style="display:inline-block; margin-right:5px;" src='#{player.avatar}').img-thumbnail
-        if player.loccountrycode && constants.countries[player.loccountrycode]
-          span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())
-        h4(style="word-wrap:break-word;") #{player.personaname || player.account_id}
         h4
+          if player.avatar
+            span
+              a(href=player.profileurl || "#", target="_blank")
+                img(style="display:inline-block; margin-right:5px;" src='#{player.avatar}').img-thumbnail
+          span(style="word-wrap:break-word;") #{player.personaname || player.account_id}
+          if player.loccountrycode && constants.countries[player.loccountrycode]
+            span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())
           if player.cheese
             div
               i.flaticon-1.small-cheese(style="display:inline-block")
               small(style="margin-left:.5em") x #{' '} #{player.cheese}
-    .col-xs-3
+    .col-xs-4
         h4
-          span.text-info.rating: abbr(title="Solo MMR")
-            i.fa.fa-fw.fa-user
+          span.text-info.rating
+            span: abbr(title="Solo MMR")
+              i.fa.fa-fw.fa-user
             small(style="margin-left:.5em") #{player.soloRating || "N/A"}
-          span.text-info.rating: abbr(title="Highest Solo MMR")
-            i.fa.fa-fw.fa-star
+          span.text-info.rating
+            span: abbr(title="Highest Solo MMR")
+              i.fa.fa-fw.fa-star
             small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.solo_competitive_rank;})),0) || "N/A"}
         h4
-          span.text-warning.rating: abbr(title="Party MMR")
-            i.fa.fa-fw.fa-users
+          span.text-warning.rating
+            span: abbr(title="Party MMR")
+              i.fa.fa-fw.fa-users
             small(style="margin-left:.5em") #{player.partyRating || "N/A"}
-          span.text-warning.rating: abbr(title="Highest Party MMR")
-            i.fa.fa-fw.fa-star
+          span.text-warning.rating
+            span: abbr(title="Highest Party MMR")
+              i.fa.fa-fw.fa-star
             small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
-        if config.NODE_ENV === "development"
-          h4
-            span.text-success.rating(onclick="estimateMMR(#{player.account_id})"): abbr(title="Click to estimate MMR based on data from peer players")
+        h4
+          span.text-success.rating(onclick="estimateMMR(#{player.account_id})")
+            span: abbr(title="MMR estimate based on data from peer players")
               i.fa.fa-fw.fa-question-circle
-              small#estimate(style="margin-left:.5em") Estimate MMR
-          script.
-            //loading image
-            function estimateMMR(account_id)
-            {
-              document.getElementById('estimate').innerHTML='<i class="fa fa-spinner fa-spin"></i>';
-              var oReq = new XMLHttpRequest();
-              oReq.open("GET", "/api/mmrestimate/"+account_id);
-              oReq.send();
-              oReq.onreadystatechange = function() {
-                if (oReq.readyState == 4 && oReq.status == 200) {
-                  document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate;
-                }
-              };
-            }
-    .col-xs-3
-          h4
-            if (!player.full_history_time)
-              span.text-danger.rating: abbr(title="This player does not have full match history yet.  Some matches may be missing.  (A full history request is automatically queued on login)")
-                i.fa.fa-exclamation-triangle
-            else
-              span.text-success.rating: abbr(title="Full history has been processed for this player.")
-                i.fa.fa-check
-            small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
-              Players signing in for the first time may not see all matches until their full history has been retrieved.<br>") #{player.match_count} recorded 
-              
-          h4
-            if !(player.tracked)
-              span.text-danger.rating: abbr(title="This player has not visited in the last #{config.UNTRACK_DAYS} days, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
-                i.fa.fa-eye-slash
-            else
-              span.text-success.rating: abbr(title="This player has visited in the last #{config.UNTRACK_DAYS} days.  Matches they play are automatically parsed.")
-                i.fa.fa-eye
-            small: abbr(title="A parsed match is a match that has had its replay analyzed.<br> \
-              Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
-              Many advanced statistics are only available for parsed matches.<br> \
-              Replays of active users and specifically requested matches are parsed.") #{player.parsed_match_count} parsed 
-
-    .col-xs-3
+            small#estimate(style="margin-left:.5em")
+              button.btn.btn-xs.btn-success Estimate MMR
+        script.
+          function estimateMMR(account_id)
+          {
+            document.getElementById('estimate').innerHTML='<i class="fa fa-spinner fa-spin"></i>';
+            var oReq = new XMLHttpRequest();
+            oReq.open("GET", "/api/mmrestimate/"+account_id);
+            oReq.send();
+            oReq.onreadystatechange = function() {
+              if (oReq.readyState == 4 && oReq.status == 200) {
+                document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate;
+              }
+            };
+          }
+    .col-xs-4
       h4
         span.text-primary
           i.fa.fa-trophy
