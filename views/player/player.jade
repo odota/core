@@ -16,6 +16,25 @@ block content
             div
               i.flaticon-1.small-cheese(style="display:inline-block")
               small(style="margin-left:.5em") x #{' '} #{player.cheese}
+        if config.NODE_ENV === "development"
+          h4
+            span.text-info.rating(onclick="estimateMMR(#{player.account_id})"): abbr(title="Estimate MMR based on data from peer players")
+              i.fa.fa-fw.fa-question-circle
+              small#estimate(style="margin-left:.5em") Estimate MMR
+          script.
+            //loading image
+            function estimateMMR(account_id)
+            {
+              document.getElementById('estimate').innerHTML='<i class="fa fa-spinner fa-spin"></i>';
+              var oReq = new XMLHttpRequest();
+              oReq.open("GET", "/api/mmrestimate/"+account_id);
+              oReq.send();
+              oReq.onreadystatechange = function() {
+                if (oReq.readyState == 4 && oReq.status == 200) {
+                  document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate;
+                }
+              };
+            }
     .col-xs-3
           h4
             span.text-info.rating: abbr(title="Solo MMR")

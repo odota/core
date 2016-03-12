@@ -1,4 +1,5 @@
 var express = require('express');
+var async = require('async');
 var api = express.Router();
 var constants = require('../constants');
 var buildMatch = require('../buildMatch');
@@ -60,8 +61,54 @@ module.exports = function(db, redis)
             res.json(player);
         });
     });
-    api.get('/mmrestimate');
+    api.get('/mmrestimate/:account_id', function(req, res, cb)
+    {
+        db.raw(`
+        select account_id from player_matches pm 
+        where pm.match_id in (select match_id from player_matches where account_id = ? order by match_id desc limit 10)
+        AND account_id < ?
+        ;
+        `, [req.params.account_id, constants.anonymous_account_id]).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            async.map(result.rows, function(r, cb)
+            {
+                redis.zscore('solo_competitive_rank', r.account_id, cb);
+            }, function(err, result)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                var data = result.filter(function(d)
+                {
+                    return d;
+                }).map(function(d)
+                {
+                    return Number(d);
+                });
+                res.json(
+                {
+                    estimate: ~~(data.reduce(function(a, b)
+                    {
+                        return a + b;
+                    }) / data.length)
+                });
+            });
+        });
+    });
     api.get('/cheese status');
     api.get('/login_status');
+    api.get('/distributions');
+    api.get('/picks/:n');
+    api.get('/rankings/:hero_id');
+    api.get('/faq');
+    //TODO will need to figure out how to do slugs if albert insists on routing with them
+    api.get('/blog/:n');
+    //TODO @albertcui owns mmstats
+    api.get('/mmstats');
     return api;
 };
