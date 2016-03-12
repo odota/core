@@ -202,6 +202,7 @@ var poet = new Poet(app,
         '/post/:post': 'blog/post'
     }
 });
+poet.init();
 poet.addRoute('/blog/:id?', function(req, res)
 {
     var max = poet.helpers.getPostCount();
