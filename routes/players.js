@@ -145,13 +145,16 @@ module.exports = function(db, redis)
                     sql: req.query.sql
                 }, cb);
             },
-            "sets": function(cb)
-            {
-                queries.getSets(redis, cb);
-            },
             "ratings": function(cb)
             {
-                queries.getPlayerRatings(db, account_id, cb);
+                if (info === "rating")
+                {
+                    queries.getPlayerRatings(db, account_id, cb);
+                }
+                else
+                {
+                    cb();
+                }
             },
             "rankings": function(cb)
             {
@@ -208,7 +211,6 @@ module.exports = function(db, redis)
                 route: info,
                 tabs: playerPages,
                 player: player,
-                trackedPlayers: result.sets.trackedPlayers,
                 histograms: subkeys,
                 subkey: subkey,
                 times:

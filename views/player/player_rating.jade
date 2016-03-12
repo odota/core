@@ -5,7 +5,24 @@ block playercontent
     .col-md-12
       h3 Rating 
         small To display MMR, #[a(href="/post/yasp-mmr-and-you") enable it] on your in-game Dota profile.
-      div.btn.btn-info.btn-sm(onclick='toggle()') Toggle Timeseries
+      
+      h3.text-center
+        span.text-info.rating: abbr(title="Solo MMR")
+          i.fa.fa-fw.fa-user
+          small(style="margin-left:.5em") #{player.soloRating || "N/A"}
+        span.text-info.rating: abbr(title="Highest Solo MMR")
+          i.fa.fa-fw.fa-star
+          small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.solo_competitive_rank;})),0) || "N/A"}
+      
+        span.text-warning.rating: abbr(title="Party MMR")
+          i.fa.fa-fw.fa-users
+          small(style="margin-left:.5em") #{player.partyRating || "N/A"}
+        span.text-warning.rating: abbr(title="Highest Party MMR")
+          i.fa.fa-fw.fa-star
+          small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
+              
+      span.btn.btn-info.btn-sm(onclick='toggle()') Toggle Timeseries
+      
       #ratings
 
 append footer_assets
