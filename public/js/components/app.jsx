@@ -6,8 +6,11 @@ import Container from './Container';
 import Footer from './Footer';
 import { createStore } from 'redux';
 import reducer from '../reducers/reducer';
-require('../../css/yasp.css');
+require('../../../node_modules/font-awesome/css/font-awesome.css');
+require('../../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
+require('../../../node_modules/bootstrap/dist/css/bootstrap.css');
 require('../../../node_modules/bootswatch/darkly/bootstrap.css');
+require('../../css/yasp.css');
 
 var store = createStore(reducer);
 

@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import AppBar from 'material-ui/lib/app-bar';
 
 const NavBar = () => (
-<div style={{marginBottom:"0px"}} class="navbar">
-   <div class="navbar-header">
+<div style={{marginBottom:"0px"}} className="navbar">
+   <div className="navbar-header">
       <a href="/" className="navbar-brand">
          <strong className="theme-blue">YASP</strong>
          <a data-toggle="collapse" data-target=".navbar-collapse" className="navbar-toggle">
