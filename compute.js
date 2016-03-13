@@ -96,6 +96,7 @@ function computeMatchData(match)
  **/
 function computePlayerMatchData(pm)
 {
+    //WARNING: Don't store fields that mutate based on self_hero in Cassandra.  It isn't set post-parse and the cache update will write incorrect data.
     var self_hero = constants.heroes[pm.hero_id];
     computeMatchData(pm);
     if (pm.player_slot !== undefined && pm.radiant_win !== undefined)
