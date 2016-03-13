@@ -96,7 +96,7 @@ module.exports = function(db, redis)
                     estimate: ~~(data.reduce(function(a, b)
                     {
                         return a + b;
-                    }) / data.length)
+                    }, 0) / data.length)
                 });
             });
         });

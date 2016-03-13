@@ -12,6 +12,7 @@
     "update": "npm-check-updates -u",
     "webpack": "webpack -p",
     "watch": "webpack --watch",
+    "webpack-dev-server": "webpack-dev-server",
     "mocha": "mocha",
     "maven": "mvn -q -f java_parser/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack",
@@ -107,7 +108,8 @@
     "style-loader": "^0.13.0",
     "supertest": "^1.1.0",
     "url-loader": "^0.5.7",
-    "webpack": "^1.12.12"
+    "webpack": "^1.12.12",
+    "webpack-dev-server": "^1.14.1"
   },
   "engines": {
     "node": "5.8.0",

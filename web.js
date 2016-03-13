@@ -137,6 +137,10 @@ app.use(function(req, res, next)
     {
         res.redirect(req.protocol + '://' + req.headers.host.replace(/^www\./, '') + req.url);
     }
+    else if (req.headers.host.match(/^beta/) !== null)
+    {
+        res.sendFile('./public/index.html');
+    }
     else
     {
         next();
@@ -428,6 +432,6 @@ function gracefulShutdown()
     {
         console.error("Could not close connections in time, forcefully shutting down");
         process.exit();
-    }, 10 * 1000);
+    }, 30 * 1000);
 }
 module.exports = app;

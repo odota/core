@@ -20,4 +20,4 @@ sudo docker start redis
 sudo docker start cassandra
 
 EXISTING=$(sudo docker ps --filter name=yasp --format='{{.ID}}')
-sudo docker pull yasp/yasp:latest && sudo docker run -d --name yasp`date +%s` --restart=always -e VIRTUAL_HOST=yasp.co --expose=5000 yasp/yasp:latest "node deploy.js" && sudo docker stop $EXISTING && sudo docker rm -v $EXISTING
+sudo docker pull yasp/yasp:latest && sudo docker run -d --name yasp`date +%s` --restart=always -e VIRTUAL_HOST=yasp.co --expose=5000 yasp/yasp:latest "node deploy.js" && sudo docker stop -t 30 $EXISTING && sudo docker rm -v $EXISTING
