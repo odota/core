@@ -437,6 +437,195 @@ function getPlayer(db, account_id, cb)
         cb();
     }
 }
+
+function getDistributions(redis, cb)
+{
+    redis.keys('distribution:*', function(err, results)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        var result = {};
+        async.each(results, function(r, cb)
+        {
+            redis.get(r, function(err, blob)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                result[r.split(':')[1]] = JSON.parse(blob);
+                cb(err);
+            });
+        }, function(err)
+        {
+            return cb(err, result);
+        });
+    });
+}
+
+function getPicks(redis, options, cb)
+{
+    var length = options.length;
+    var limit = options.limit;
+    var single_rates = {};
+    //look up total
+    redis.get('picks_match_count', function(err, total)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        //get singles games/wins for composite computation
+        async.parallel(
+        {
+            "picks": function(cb)
+            {
+                async.map(Object.keys(constants.heroes), function(hero_id, cb)
+                {
+                    redis.zscore('picks_counts:1', hero_id, cb);
+                }, cb);
+            },
+            "wins": function(cb)
+            {
+                async.map(Object.keys(constants.heroes), function(hero_id, cb)
+                {
+                    redis.zscore('picks_wins_counts:1', hero_id, cb);
+                }, cb);
+            }
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            Object.keys(constants.heroes).forEach(function(hero_id, i)
+            {
+                single_rates[hero_id] = {
+                    pick_rate: Number(result.picks[i]) / total,
+                    win_rate: Number(result.wins[i]) / Number(result.picks[i])
+                };
+            });
+            //get top 1000 picks for current length
+            redis.zrevrangebyscore('picks_counts:' + length, "inf", "-inf", "WITHSCORES", "LIMIT", "0", limit, function(err, rows)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                var entries = rows.map(function(r, i)
+                {
+                    return {
+                        key: r,
+                        games: rows[i + 1]
+                    };
+                }).filter(function(r, i)
+                {
+                    return i % 2 === 0;
+                });
+                //look up wins
+                async.each(entries, function(entry, cb)
+                {
+                    entry.pickrate = entry.games / total;
+                    var hids = entry.key.split(',');
+                    entry.expected_pick = hids.map(function(hero_id)
+                    {
+                        return single_rates[hero_id].pick_rate;
+                    }).reduce((prev, curr) => prev * curr) / hids.length;
+                    entry.expected_win = hids.map(function(hero_id)
+                    {
+                        return single_rates[hero_id].win_rate;
+                    }).reduce((prev, curr) => prev + curr) / hids.length;
+                    redis.zscore('picks_wins_counts:' + length, entry.key, function(err, score)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        entry.wins = Number(score);
+                        entry.winrate = entry.wins / entry.games;
+                        cb(err);
+                    });
+                }, function(err)
+                {
+                    return cb(err,
+                    {
+                        total: Number(total),
+                        entries: entries
+                    });
+                });
+            });
+        });
+    });
+}
+
+function getTop(db, redis, cb)
+{
+    db.raw(`
+    SELECT * from notable_players
+    `).asCallback(function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        utility.getLeaderboard(db, redis, 'solo_competitive_rank', 1000, function(err, result2)
+        {
+            return cb(err,
+            {
+                notables: result.rows,
+                leaderboard: result2
+            });
+        });
+    });
+}
+
+function getHeroRankings(db, redis, hero_id, cb)
+{
+    utility.getLeaderboard(db, redis, 'hero_rankings:' + hero_id, 250, function(err, entries)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        async.each(entries, function(player, cb)
+        {
+            async.parallel(
+            {
+                solo_competitive_rank: function(cb)
+                {
+                    redis.zscore('solo_competitive_rank', player.account_id, cb);
+                },
+                wins: function(cb)
+                {
+                    redis.hget('wins:' + player.account_id, hero_id, cb);
+                },
+                games: function(cb)
+                {
+                    redis.hget('games:' + player.account_id, hero_id, cb);
+                }
+            }, function(err, result)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                player.solo_competitive_rank = result.solo_competitive_rank;
+                player.games = result.games;
+                player.wins = result.wins;
+                cb(err);
+            });
+        }, function(err)
+        {
+            return cb(err,
+            {
+                hero_id: Number(hero_id),
+                rankings: entries
+            });
+        });
+    });
+}
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
@@ -448,5 +637,9 @@ module.exports = {
     getPlayerRatings: getPlayerRatings,
     getPlayerRankings: getPlayerRankings,
     getPlayer: getPlayer,
-    upsert: upsert
+    getDistributions: getDistributions,
+    getPicks: getPicks,
+    getTop: getTop,
+    getHeroRankings: getHeroRankings,
+    upsert: upsert,
 };
