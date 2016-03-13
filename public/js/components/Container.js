@@ -1,10 +1,10 @@
-import React from 'react'
-import { connect } from 'react-redux'
-import Tabs from './tabs'
+import React from 'react';
+import { connect } from 'react-redux';
+import TabBar from './TabBar';
 
 const Container = ({todos}) => (
     <div>
-      <Tabs />
+      <TabBar />
       <h1>Title 
       <small>Subtext</small>
       </h1>

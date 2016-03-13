@@ -137,10 +137,6 @@ app.use(function(req, res, next)
     {
         res.redirect(req.protocol + '://' + req.headers.host.replace(/^www\./, '') + req.url);
     }
-    else if (req.headers.host.match(/^beta/) !== null)
-    {
-        res.sendFile('./public/index.html');
-    }
     else
     {
         next();

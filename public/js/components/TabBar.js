@@ -11,7 +11,7 @@ const styles = {
   },
 };
 
-export default class TabsExampleControlled extends React.Component {
+export default class TabBar extends React.Component {
 
   constructor(props) {
     super(props);
@@ -20,17 +20,10 @@ export default class TabsExampleControlled extends React.Component {
     };
   }
 
-  handleChange(value)  {
-    this.setState({
-      value: value,
-    });
-  }
-
   render() {
     return (
       <Tabs
         value={this.state.value}
-        onChange={this.handleChange}
       >
         <Tab label="Tab A" value="a" >
           <div>
