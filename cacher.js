@@ -18,6 +18,7 @@ function processCache(job, cb)
     if (match.origin === "scanner")
     {
         incrCounts(match);
+        updateBenchmarks(match);
     }
     updateCache(match, function(err)
     {
@@ -27,6 +28,34 @@ function processCache(job, cb)
         }
         return cb(err);
     });
+}
+
+function updateBenchmarks(match)
+{
+    var benchmarks = {
+        "lh_per_ten": function(m, p)
+        {
+            return ~~(p.last_hits / m.duration * 60 / 10) * 10;
+        },
+        "gold_per_min": function(m, p)
+        {
+            return p.gold_per_min;
+        }
+    };
+    for (var i = 0; i < match.players.length; i++)
+    {
+        var p = match.players[i];
+        if (p.hero_id === 0)
+        {
+            //exclude this match
+            return;
+        }
+        for (var key in benchmarks)
+        {
+            var metric_bucket = benchmarks[key](match, p);
+            redis.zadd(["benchmarks", key, p.hero_id].join(':'), metric_bucket, match.match_id);
+        }
+    }
 }
 
 function incrCounts(match)
@@ -57,30 +86,29 @@ function incrCounts(match)
     //compute singles, dyads, triads, etc.
     for (var i = 1; i < 4; i++)
     {
-        addToResults(k_combinations(radiant, i), i, match.radiant_win, match);
-        addToResults(k_combinations(dire, i), i, !match.radiant_win, match);
+        addToPickResults(k_combinations(radiant, i), i, match.radiant_win, match);
+        addToPickResults(k_combinations(dire, i), i, !match.radiant_win, match);
     }
-    
     redis.incr('picks_match_count');
+}
 
-    function addToResults(groups, i, win, m)
+function addToPickResults(groups, i, win, m)
+{
+    groups.forEach(function(g)
     {
-        groups.forEach(function(g)
+        //sort and join the g into a unique key
+        g = g.sort(function(a, b)
         {
-            //sort and join the g into a unique key
-            g = g.sort(function(a, b)
-            {
-                return a - b;
-            }).join(',');
-            //redis.zadd('picks:' + i + ":" + g, moment().format('X'), match.match_id);
-            redis.zincrby('picks_counts:' + i, 1, g);
-            if (win)
-            {
-                //redis.zadd('picks_wins:' + i + ":" + g, moment().format('X'), match.match_id);
-                redis.zincrby('picks_wins_counts:' + i, 1, g);
-            }
-        });
-    }
+            return a - b;
+        }).join(',');
+        //redis.zadd('picks:' + i + ":" + g, moment().format('X'), match.match_id);
+        redis.zincrby('picks_counts:' + i, 1, g);
+        if (win)
+        {
+            //redis.zadd('picks_wins:' + i + ":" + g, moment().format('X'), match.match_id);
+            redis.zincrby('picks_wins_counts:' + i, 1, g);
+        }
+    });
 }
 
 function k_combinations(arr, k)

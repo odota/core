@@ -552,6 +552,7 @@ function getPicks(redis, options, cb)
                     return cb(err,
                     {
                         total: Number(total),
+                        n: length,
                         entries: entries
                     });
                 });
@@ -626,6 +627,54 @@ function getHeroRankings(db, redis, hero_id, cb)
         });
     });
 }
+
+function getBenchmarks(db, redis, options, cb)
+{
+    var ret = {};
+    async.each(Object.keys(constants.heroes), function(hero_id, cb)
+    {
+        var arr = [];
+        for (var i = 0; i < 100; i += 10)
+        {
+            arr.push(i);
+        }
+        async.map(arr, function(percentile, cb)
+        {
+            redis.zcard(["benchmarks", options.metric, hero_id].join(':'), function(err, card)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                var position = ~~(card * percentile / 100);
+                redis.zrange(["benchmarks", options.metric, hero_id].join(':'), position, position, "WITHSCORES", function(err, result)
+                {
+                    console.log(position, result);
+                    cb(err,
+                    {
+                        percentile: percentile,
+                        x: constants.heroes[hero_id].localized_name,
+                        y: Number(result[1])
+                    });
+                });
+            });
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            ret[constants.heroes[hero_id].localized_name] = result;
+            return cb(err, result);
+        });
+    }, function(err, result)
+    {
+        return cb(err,
+        {
+            result: ret
+        });
+    });
+}
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
@@ -642,4 +691,5 @@ module.exports = {
     getTop: getTop,
     getHeroRankings: getHeroRankings,
     upsert: upsert,
+    getBenchmarks: getBenchmarks,
 };

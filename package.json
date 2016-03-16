@@ -69,6 +69,7 @@
     "passport-steam": "1.0.1",
     "pg": "^4.4.4",
     "pg-query-stream": "^1.0.0",
+    "plotly.js": "^1.6.3",
     "pm2": "^1.0.0",
     "poet": "^2.0.1",
     "qtip2": "3.0.2",
