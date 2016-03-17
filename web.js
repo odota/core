@@ -354,16 +354,10 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
 {
     if (!req.params.hero_id)
     {
-        var alpha_heroes = Object.keys(constants.heroes).map(function(id)
+        res.render('heroes',
         {
-            return constants.heroes[id];
-        }).sort(function(a, b)
-        {
-            return a.localized_name < b.localized_name ? -1 : 1;
-        });
-        res.render('rankings',
-        {
-            alpha_heroes: alpha_heroes
+            path: '/rankings',
+            alpha_heroes: utility.getAlphaHeroes()
         });
     }
     else
@@ -380,6 +374,14 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
 });
 app.get('/benchmarks/:hero_id?', function(req, res, cb)
 {
+    if (!req.params.hero_id)
+    {
+        res.render('heroes',
+        {
+            path: '/benchmarks',
+            alpha_heroes: utility.getAlphaHeroes()
+        });
+    }
     queries.getBenchmarks(db, redis,
     {
         hero_id: req.params.hero_id

@@ -90,7 +90,7 @@ function buildPlayer(options, cb)
         obj[k] = 1;
     });
     queryObj.js_agg = obj;
-    queryObj = preprocessQuery(queryObj, constants);
+    queryObj = preprocessQuery(queryObj);
     //1 filter expected for account id
     var filter_exists = queryObj.filter_count > 1;
     //try to find player in db

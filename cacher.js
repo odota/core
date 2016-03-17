@@ -3,9 +3,14 @@ var cQueue = queue.getQueue('cache');
 var playerCache = require('./playerCache');
 var updateCache = playerCache.updateCache;
 var utility = require('./utility');
+var queries = require('./queries');
+var updateScore = queries.updateScore;
 var redis = require('./redis');
 var moment = require('moment');
 var benchmarks = require('./benchmarks');
+var async = require('async');
+var constants = require('./constants');
+var db = require('./db');
 cQueue.process(1, processCache);
 cQueue.on('completed', function(job)
 {
@@ -21,7 +26,17 @@ function processCache(job, cb)
         incrCounts(match);
         updateBenchmarks(match);
     }
-    updateCache(match, function(err)
+    async.parallel(
+    {
+        "cache": function(cb)
+        {
+            return updateCache(match, cb);
+        },
+        "rankings": function(cb)
+        {
+            return updateRankings(match, cb);
+        }
+    }, function(err)
     {
         if (err)
         {
@@ -31,12 +46,95 @@ function processCache(job, cb)
     });
 }
 
+function updateRankings(match, cb)
+{
+    async.each(match.players, function(player, cb)
+    {
+        if (match.lobby_type !== 7 || player.account_id === constants.anonymous_account_id)
+        {
+            return cb();
+        }
+        async.parallel(
+        {
+            solo_competitive_rank: function(cb)
+            {
+                redis.zscore('solo_competitive_rank', player.account_id, cb);
+            },
+            score: function(cb)
+            {
+                redis.zscore('hero_rankings:' + player.hero_id, player.account_id, cb);
+            },
+            wins: function(cb)
+            {
+                redis.hget('wins:' + player.account_id, player.hero_id, cb);
+            },
+            games: function(cb)
+            {
+                redis.hget('games:' + player.account_id, player.hero_id, cb);
+            }
+        }, function(err, result)
+        {
+            if (err)
+            {
+                console.error(err);
+                return cb(err);
+            }
+            if (!result.solo_competitive_rank)
+            {
+                //if no MMR on record, can't rank this player, finish fast
+                return cb();
+            }
+            player.score = result.score;
+            player.solo_competitive_rank = result.solo_competitive_rank;
+            player.wins = result.wins;
+            player.games = result.games;
+            player.radiant_win = match.radiant_win;
+            //make sure we have existing score if we want to incr?  otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
+            //also add adjustable random factor to fallback to db for consistency check
+            player.incr = Boolean(player.score) && Math.random() < 0.99;
+            if (player.incr)
+            {
+                updateScore(redis, player, cb);
+            }
+            else
+            {
+                //db mode, lookup of current games, wins
+                db.raw(`
+            SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
+            FROM player_matches
+            JOIN matches
+            ON player_matches.match_id = matches.match_id
+            WHERE player_matches.account_id = ?
+            AND hero_id = ?
+            AND lobby_type = 7
+            GROUP BY player_matches.account_id, hero_id
+            `, [player.account_id, player.hero_id]).asCallback(function(err, result)
+                {
+                    if (err)
+                    {
+                        console.error(err);
+                        return cb(err);
+                    }
+                    if (!result.rows || !result.rows[0])
+                    {
+                        return cb("no players found");
+                    }
+                    var dbPlayer = result.rows[0];
+                    player.games = dbPlayer.games;
+                    player.wins = dbPlayer.wins;
+                    updateScore(player, cb);
+                });
+            }
+        });
+    }, cb);
+}
+
 function updateBenchmarks(match)
 {
     for (var i = 0; i < match.players.length; i++)
     {
         var p = match.players[i];
-        if (p.hero_id === 0)
+        if (!p.hero_id)
         {
             //exclude this match
             return;

@@ -5,44 +5,32 @@ block content
     .col-md-12
       h3 Rankings 
         small Based on ranked matches. MMR must be shared on profile in order to compute ranking.
-      if !rankings
-        .grid
-          each hero in alpha_heroes
-            <a href="/rankings/#{hero.id}">
-            <figure class="effect-chico">
-            <img src="#{hero.img}" />
-            <figcaption>
-            <p>#{hero.localized_name}<p>
-            </figcaption>			
-            </figure>
-            </a>
-      else
-        - var hero = constants.heroes[hero_id]
-        h3.text-center
-          span #{hero.localized_name}
-        h4.text-center
-          img.hero(src=hero.img, title=hero.localized_name)
-        table.table.table-striped.table-condensed.rankable#picks
-          thead
+      - var hero = constants.heroes[hero_id]
+      h3.text-center
+        span #{hero.localized_name}
+      h4.text-center
+        img.hero(src=hero.img, title=hero.localized_name)
+      table.table.table-striped.table-condensed.rankable#picks
+        thead
+          tr
+            th #
+            th Name
+            th Matches
+            th Win%
+            th Rating
+            th Score
+        tbody
+          each player, i in rankings || []
             tr
-              th #
-              th Name
-              th Matches
-              th Win%
-              th Rating
-              th Score
-          tbody
-            each player, i in rankings || []
-              tr
-                td=i+1
-                td.text-left
-                  if player.loccountrycode && constants.countries[player.loccountrycode]
-                    span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())  
-                  a(href="/players/"+player.account_id)=player.personaname || player.account_id
-                td.rankable=player.games
-                td.rankable #{(player.wins/player.games*100).toFixed(2)}%
-                td.rankable=player.solo_competitive_rank
-                td.rankable=Number(player.score).toFixed(0)
+              td=i+1
+              td.text-left
+                if player.loccountrycode && constants.countries[player.loccountrycode]
+                  span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())  
+                a(href="/players/"+player.account_id)=player.personaname || player.account_id
+              td.rankable=player.games
+              td.rankable #{(player.wins/player.games*100).toFixed(2)}%
+              td.rankable=player.solo_competitive_rank
+              td.rankable=Number(player.score).toFixed(0)
             
 append footer_assets
   script.
@@ -69,148 +57,3 @@ append footer_assets
           }
       }]
     });
-  style.
-    .grid {
-    	position: relative;
-    	margin: 0 auto;
-    	padding: 1em 0 4em;
-    	max-width: 1000px;
-    	list-style: none;
-    	text-align: center;
-    }
-    
-    /* Common style */
-    .grid figure {
-    	position: relative;
-    	float: left;
-    	overflow: hidden;
-    	margin: 5px 5px;
-    	width: 12%;
-    	background: #3085a3;
-    	text-align: center;
-    	cursor: pointer;
-    }
-    
-    .grid figure img {
-    	position: relative;
-    	display: block;
-    	min-height: 100%;
-    	max-width: 100%;
-    	opacity: 0.8;
-    }
-    
-    .grid figure figcaption {
-    	color: #fff;
-    	text-transform: uppercase;
-    	font-size: 1.25em;
-    	-webkit-backface-visibility: hidden;
-    	backface-visibility: hidden;
-    	display: flex;
-      justify-content:center;
-      align-content:center;
-      flex-direction:column; /* column | row */
-    }
-    
-    .grid figure figcaption::before,
-    .grid figure figcaption::after {
-    	pointer-events: none;
-    }
-    
-    .grid figure figcaption,
-    .grid figure figcaption > a {
-    	position: absolute;
-    	top: 0;
-    	left: 0;
-    	width: 100%;
-    	height: 100%;
-    }
-    
-    /* Anchor will cover the whole item by default */
-    .grid figure figcaption > a {
-    	z-index: 1000;
-    	text-indent: 200%;
-    	white-space: nowrap;
-    	font-size: 0;
-    	opacity: 0;
-    }
-    
-    .grid figure h2 {
-    	word-spacing: -0.15em;
-    	font-weight: 300;
-    }
-    
-    .grid figure h2 span {
-    	font-weight: 800;
-    }
-    
-    .grid figure h2,
-    .grid figure p {
-    	margin: 0;
-    }
-    
-    .grid figure p {
-    	letter-spacing: 1px;
-    	font-size: 75%;
-    }
-    
-    figure.effect-chico img {
-    	-webkit-transition: opacity 0.35s, -webkit-transform 0.35s;
-    	transition: opacity 0.35s, transform 0.35s;
-    	-webkit-transform: scale(1.12);
-    	transform: scale(1.12);
-    }
-    
-    figure.effect-chico:hover img {
-    	opacity: 0.5;
-    	-webkit-transform: scale(1);
-    	transform: scale(1);
-    }
-    
-    figure.effect-chico figcaption {
-    }
-    
-    figure.effect-chico figcaption::before {
-    	position: absolute;
-    	top: 30px;
-    	right: 30px;
-    	bottom: 30px;
-    	left: 30px;
-    	border: 0px solid #fff;
-    	content: '';
-    	-webkit-transform: scale(1.1);
-    	transform: scale(1.1);
-    }
-    
-    figure.effect-chico figcaption::before,
-    figure.effect-chico p {
-    	opacity: 0;
-    	-webkit-transition: opacity 0.35s, -webkit-transform 0.35s;
-    	transition: opacity 0.35s, transform 0.35s;
-    }
-    
-    figure.effect-chico h2 {
-    	padding: 20% 0 20px 0;
-    }
-    
-    figure.effect-chico p {
-    	margin: 0 auto;
-    	max-width: 200px;
-    	-webkit-transform: scale(1.5);
-    	transform: scale(1.5);
-    }
-    
-    figure.effect-chico:hover figcaption::before,
-    figure.effect-chico:hover p {
-    	opacity: 1;
-    	-webkit-transform: scale(1);
-    	transform: scale(1);
-    }
-    
-    @media screen and (max-width: 50em) {
-    	.grid figure {
-    		display: inline-block;
-    		float: none;
-    		margin: 10px auto;
-    		width: 30%;
-    	}
-    }

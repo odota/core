@@ -1,10 +1,8 @@
-var constants = require('../constants');
-var queue = require('../queue');
-var addToQueue = queue.addToQueue;
-var rQueue = queue.getQueue('rank');
 var JSONStream = require('JSONStream');
 var async = require('async');
 var db = require('../db');
+var redis = require('../redis');
+var queries = require('../queries');
 var args = process.argv.slice(2);
 var start_id = Number(args[0]) || 0;
 var stream = db.raw(`
@@ -38,10 +36,9 @@ GROUP BY account_id, hero_id
         }
         async.each(result.rows, function(player2, cb)
         {
-            player2.bootstrap = true;
             player2.solo_competitive_rank = player.solo_competitive_rank;
-            addToQueue(rQueue, player2,
-            {}, cb);
+            redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
+            queries.updateScore(redis, player2, cb);
         }, function(err)
         {
             if (err)
