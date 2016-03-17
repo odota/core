@@ -5,7 +5,7 @@ include /mixins/teammate_table
 include /mixins/match_table
 
 block playercontent
-  //pre=JSON.stringify(player.aggData)
+  //pre=JSON.stringify(player.heroes_list)
   .row
     .col-md-7
       +match_table(player.aggData.matches.slice(0,20))

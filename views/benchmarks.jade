@@ -1,45 +1,64 @@
 extends layout
 
 block content
-  pre #{JSON.stringify(result)}
-  #benchmarks
-  //-
-      script.
-        var data = !{JSON.stringify(result)};
-        var xs = {};
-        var columns = [];
-        var cats = [];
-        var bin = 0;
-        for (var key in data){
-         cats.push(key);
-        }
-        for (var i=0;i<100;i+=10){
-        //10 columns
-        //'num' followed by values for each hero
-        columns.push([i.toString()].concat(Object.keys(data).map(function(k){return data[k][i/10].y;})));
-        }
-        console.log(columns);
-        var options = {
-            bindto: "#benchmarks",
-            size: {height: 1600},
-            data: {
-            columns: columns,
-            type: 'scatter'
-        },
-        axis: {
-            x: {
-                label: 'Hero',
-                type: 'category',
-                categories: cats
-            },
-            y: {
-                label: 'Metric'
-            },
-            rotated: true,
-        },
-        legend:
-        {
-        hide: true
-        }
-        };
-        c3.generate(options);
+  .row
+    .col-md-12
+        h3 Benchmarks 
+          small Performance percentiles in a given stat
+        - var hero = constants.heroes[hero_id]
+        if hero
+          h3.text-center
+            span #{hero.localized_name}
+          h4.text-center
+            img.hero(src=hero.img, title=hero.localized_name)
+        
+        table.table.table-condensed.table-striped
+          tr
+            th Stat
+            each entry, i in result[Object.keys(result)[0]]
+              th=(entry.percentile*100)+"%"
+          each val, key in result
+            tr
+              td=key
+              each entry, i in result[key]
+                td=entry.value
+        //-
+            script.
+              var data = !{JSON.stringify(result)};
+              var xs = {};
+              var columns = [];
+              var cats = [];
+              var bin = 0;
+              for (var key in data){
+               cats.push(key);
+              }
+              for (var i=0;i<100;i+=10){
+              //10 columns
+              //'num' followed by values for each hero
+              columns.push([i.toString()].concat(Object.keys(data).map(function(k){return data[k][i/10].y;})));
+              }
+              console.log(columns);
+              var options = {
+                  bindto: "#benchmarks",
+                  size: {height: 1600},
+                  data: {
+                  columns: columns,
+                  type: 'scatter'
+              },
+              axis: {
+                  x: {
+                      label: 'Hero',
+                      type: 'category',
+                      categories: cats
+                  },
+                  y: {
+                      label: 'Metric'
+                  },
+                  rotated: true,
+              },
+              legend:
+              {
+              hide: true
+              }
+              };
+              c3.generate(options);     

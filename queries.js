@@ -4,6 +4,8 @@ var convert64to32 = utility.convert64to32;
 var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
+var renderMatch = compute.renderMatch;
+var benchmarkMatch = compute.benchmarkMatch;
 var aggregator = require('./aggregator');
 var constants = require('./constants');
 var benchmarks = require('./benchmarks');
@@ -189,54 +191,6 @@ function insertMatch(db, redis, match, options, cb)
         });
     }
 
-    function insertCassandra(cb)
-    {
-        var cassandra = options.cassandra;
-        //TODO clean based on cassandra schema
-        //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_caches'
-        //insert into matches
-        //insert into player matches
-        //current dependencies on matches/player_matches in db
-        //parser, check and save replay url: store salts/urls in separate collection?
-        //fullhistory, diff a user's current matches from the set obtained from webapi
-        //ranker, get source-of-truth counts/wins for a hero
-        //distributions (queries on gamemode/lobbytype/skill)
-        var obj = serialize(match);
-        var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
-        {
-            return '?';
-        }).join(','));
-        cassandra.execute(query, Object.keys(obj).map(function(k)
-        {
-            return obj[k];
-        }),
-        {
-            prepare: true
-        }, function(err, results)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            async.each(players || [], function(pm, cb)
-            {
-                pm.match_id = match.match_id;
-                var obj2 = serialize(pm);
-                var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
-                {
-                    return '?';
-                }).join(','));
-                cassandra.execute(query2, Object.keys(obj2).map(function(k)
-                {
-                    return obj2[k];
-                }),
-                {
-                    prepare: true
-                }, cb);
-            }, cb);
-        });
-    }
-
     function updatePlayerCaches(cb)
     {
         if (options.skipCacheUpdate)
@@ -278,6 +232,54 @@ function insertMatch(db, redis, match, options, cb)
     }
 }
 
+function insertMatchCassandra(match, players, options, cb)
+{
+    var cassandra = options.cassandra;
+    //TODO clean based on cassandra schema
+    //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_caches'
+    //insert into matches
+    //insert into player matches
+    //current dependencies on matches/player_matches in db
+    //parser, check and save replay url: store salts/urls in separate collection?
+    //fullhistory, diff a user's current matches from the set obtained from webapi
+    //ranker, get source-of-truth counts/wins for a hero
+    //distributions (queries on gamemode/lobbytype/skill)
+    var obj = serialize(match);
+    var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
+    {
+        return '?';
+    }).join(','));
+    cassandra.execute(query, Object.keys(obj).map(function(k)
+    {
+        return obj[k];
+    }),
+    {
+        prepare: true
+    }, function(err, results)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        async.each(players || [], function(pm, cb)
+        {
+            pm.match_id = match.match_id;
+            var obj2 = serialize(pm);
+            var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
+            {
+                return '?';
+            }).join(','));
+            cassandra.execute(query2, Object.keys(obj2).map(function(k)
+            {
+                return obj2[k];
+            }),
+            {
+                prepare: true
+            }, cb);
+        }, cb);
+    });
+}
+
 function insertPlayer(db, player, cb)
 {
     if (player.steamid)
@@ -308,7 +310,7 @@ function insertMatchSkill(db, row, cb)
     }, cb);
 }
 
-function getMatch(db, match_id, cb)
+function getMatch(db, redis, match_id, cb)
 {
     db.first().from('matches').where(
     {
@@ -335,13 +337,45 @@ function getMatch(db, match_id, cb)
                 {
                     return cb(err);
                 }
-                players.forEach(function(p)
+                //get ability upgrades data
+                redis.get('ability_upgrades:' + match_id, function(err, ab_upgrades)
                 {
-                    computePlayerMatchData(p);
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    ab_upgrades = JSON.parse(ab_upgrades);
+                    players.forEach(function(p)
+                    {
+                        computePlayerMatchData(p);
+                        if (ab_upgrades)
+                        {
+                            p.ability_upgrades_arr = ab_upgrades[p.player_slot];
+                        }
+                    });
+                    match.players = players;
+                    computeMatchData(match);
+                    renderMatch(match);
+                    benchmarkMatch(redis, match, function(err)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        if (match.players)
+                        {
+                            //remove some duplicated columns from match.players to reduce size
+                            //we don't need them anymore since we already the computations
+                            match.players.forEach(function(p)
+                            {
+                                delete p.chat;
+                                delete p.objectives;
+                                delete p.teamfights;
+                            });
+                        }
+                        return cb(err, match);
+                    });
                 });
-                match.players = players;
-                computeMatchData(match);
-                return cb(err, match);
             });
         }
     });
@@ -369,12 +403,6 @@ function getPlayerMatches(db, queryObj, cb)
         }
     });
 }
-
-function getMatchCassandra()
-{}
-
-function getPlayerMatchesCassandra()
-{}
 
 function getPlayerRatings(db, account_id, cb)
 {
@@ -664,6 +692,7 @@ function getBenchmarks(db, redis, options, cb)
     {
         return cb(err,
         {
+            hero_id: Number(hero_id),
             result: ret
         });
     });

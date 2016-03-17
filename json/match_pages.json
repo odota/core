@@ -32,6 +32,9 @@
   "analysis": {
     "name": "Analysis"
   },
+  "benchmarks": {
+    "name": "Benchmarks"
+  },
   "chat": {
     "name": "Chat"
   }

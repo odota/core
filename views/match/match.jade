@@ -39,7 +39,7 @@ block content
             td: abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, HH:mm:ss Z"))= moment.unix(match.start_time + match.duration).fromNow()
             //td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
     
-  .row(style="margin-top:1em;")
+  .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs

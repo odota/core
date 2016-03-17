@@ -362,7 +362,7 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
     }
     else
     {
-        queries.getHeroRankings(db, redis, function(err, result)
+        queries.getHeroRankings(db, redis, req.params.hero_id, function(err, result)
         {
             if (err)
             {
@@ -376,23 +376,26 @@ app.get('/benchmarks/:hero_id?', function(req, res, cb)
 {
     if (!req.params.hero_id)
     {
-        res.render('heroes',
+        return res.render('heroes',
         {
             path: '/benchmarks',
             alpha_heroes: utility.getAlphaHeroes()
         });
     }
-    queries.getBenchmarks(db, redis,
+    else
     {
-        hero_id: req.params.hero_id
-    }, function(err, result)
-    {
-        if (err)
+        queries.getBenchmarks(db, redis,
         {
-            return cb(err);
-        }
-        res.render('benchmarks', result);
-    });
+            hero_id: req.params.hero_id
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.render('benchmarks', result);
+        });
+    }
 });
 app.use('/api', api(db, redis));
 app.use('/', donate(db, redis));

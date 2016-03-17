@@ -10,6 +10,9 @@
     "name": "Rankings",
     "hide": true
   },
+  "benchmarks": {
+    "name": "Benchmarks"
+  },
   "distributions": {
     "name": "Distributions"
   },

@@ -138,30 +138,49 @@ invokeInterval(function cleanup(cb)
 {
     redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("json_hits", 0, moment().subtract(1, 'day').format('X'));
+    redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("alias_hits", 0, moment().subtract(1, 'day').format('X'));
     var cleans = ["parser", "retriever", "picks", "picks_wins"];
-    async.each(cleans, function(key, cb)
+    async.parallel(
     {
-        redis.keys(key + ":*", function(err, result)
+        "counts": function(cb)
         {
-            if (err)
+            async.each(cleans, function(key, cb)
             {
-                return cb(err);
-            }
-            result.forEach(function(zset)
-            {
-                redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'));
-            });
-            cb(err);
-        });
-    }, function(err)
+                redis.keys(key + ":*", function(err, result)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    result.forEach(function(zset)
+                    {
+                        redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'));
+                    });
+                    cb(err);
+                });
+            }, cb);
+        },
+        "queue": function(cb)
+        {
+            return queue.cleanup(redis, cb);
+        },
+    }, cb);
+}, 60 * 60 * 1000);
+invokeInterval(function cleanBenchmarks(cb)
+{
+    //clean up benchmarks from 2 days ago (leave 1 day of full data to use)
+    redis.keys(["benchmarks", moment().subtract(2, 'day').format('X'), "*"].join(':'), function(err, result)
     {
         if (err)
         {
             return cb(err);
         }
-        return queue.cleanup(redis, cb);
+        result.forEach(function(k)
+        {
+            redis.del(k);
+        });
+        cb(err);
     });
 }, 60 * 60 * 1000);
 invokeInterval(function notablePlayers(cb)

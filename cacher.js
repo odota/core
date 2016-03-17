@@ -22,11 +22,6 @@ function processCache(job, cb)
 {
     var match = job.data.payload;
     console.log('match: %s', match.match_id);
-    if (match.origin === "scanner")
-    {
-        incrCounts(match);
-        updateBenchmarks(match);
-    }
     async.parallel(
     {
         "cache": function(cb)
@@ -43,8 +38,34 @@ function processCache(job, cb)
         {
             console.error(err);
         }
+        if (match.origin === "scanner")
+        {
+            incrCounts(match);
+        }
+        updateBenchmarks(match);
         return cb(err);
     });
+}
+
+function updateBenchmarks(match)
+{
+    for (var i = 0; i < match.players.length; i++)
+    {
+        var p = match.players[i];
+        if (!p.hero_id)
+        {
+            //exclude this match
+            return;
+        }
+        for (var key in benchmarks)
+        {
+            var metric = benchmarks[key](match, p);
+            if (metric !== undefined && !Number.isNaN(metric))
+            {
+                redis.zadd(["benchmarks", moment.startOf('day').format('X'), key, p.hero_id].join(':'), metric, match.match_id);
+            }
+        }
+    }
 }
 
 function updateRankings(match, cb)
@@ -128,24 +149,6 @@ function updateRankings(match, cb)
             }
         });
     }, cb);
-}
-
-function updateBenchmarks(match)
-{
-    for (var i = 0; i < match.players.length; i++)
-    {
-        var p = match.players[i];
-        if (!p.hero_id)
-        {
-            //exclude this match
-            return;
-        }
-        for (var key in benchmarks)
-        {
-            var metric = benchmarks[key](match, p);
-            redis.zadd(["benchmarks", key, p.hero_id].join(':'), metric, match.match_id);
-        }
-    }
 }
 
 function incrCounts(match)

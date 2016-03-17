@@ -25,7 +25,7 @@ var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_l
 var filter = ['purchase', 'lane_pos'];
 var everything = basic.concat(advanced).concat(others).concat(filter);
 var projections = {
-    index: basic,
+    index: basic.concat('pgroup'),
     matches: basic,
     heroes: basic.concat('pgroup'),
     peers: basic.concat('pgroup'),
