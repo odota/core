@@ -176,7 +176,7 @@ app.use(function(req, res, cb)
             return cb(err);
         }
         console.log(resp);
-        if (resp[0] > 5)
+        if (resp[0] > 5 && config.NODE_ENV !== "test")
         {
             return res.status(429).json(
             {
