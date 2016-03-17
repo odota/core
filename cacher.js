@@ -10,6 +10,7 @@ var moment = require('moment');
 var benchmarks = require('./benchmarks');
 var async = require('async');
 var constants = require('./constants');
+var config = require('./config');
 var db = require('./db');
 cQueue.process(1, processCache);
 cQueue.on('completed', function(job)
@@ -50,7 +51,7 @@ function updateRankings(match, cb)
 {
     async.each(match.players, function(player, cb)
     {
-        if (match.lobby_type !== 7 || player.account_id === constants.anonymous_account_id)
+        if (!config.ENABLE_RANKER || match.lobby_type !== 7 || player.account_id === constants.anonymous_account_id)
         {
             return cb();
         }
