@@ -656,6 +656,8 @@ function getHeroRankings(db, redis, hero_id, cb)
         });
     });
 }
+var moment = require('moment');
+var config = require('./config');
 
 function getBenchmarks(db, redis, options, cb)
 {
@@ -666,14 +668,15 @@ function getBenchmarks(db, redis, options, cb)
         var arr = [0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99];
         async.each(arr, function(percentile, cb)
         {
-            redis.zcard(["benchmarks", metric, hero_id].join(':'), function(err, card)
+            var key = ["benchmarks", moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'day').startOf('day').format('X'), metric, hero_id].join(':');
+            redis.zcard(key, function(err, card)
             {
                 if (err)
                 {
                     return cb(err);
                 }
                 var position = ~~(card * percentile);
-                redis.zrange(["benchmarks", metric, hero_id].join(':'), position, position, "WITHSCORES", function(err, result)
+                redis.zrange(key, position, position, "WITHSCORES", function(err, result)
                 {
                     var obj = {
                         percentile: percentile,

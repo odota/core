@@ -21,7 +21,7 @@ block content
             tr
               td=key
               each entry, i in result[key]
-                td=entry.value
+                td=entry.value.toFixed(2)
         //-
             script.
               var data = !{JSON.stringify(result)};

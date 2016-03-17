@@ -38,11 +38,19 @@ function processCache(job, cb)
         {
             console.error(err);
         }
-        if (match.origin === "scanner")
+        try
         {
-            incrCounts(match);
+            if (match.origin === "scanner")
+            {
+                incrCounts(match);
+            }
+            updateBenchmarks(match);
         }
-        updateBenchmarks(match);
+        catch (e)
+        {
+            console.error(e);
+            throw e;
+        }
         return cb(err);
     });
 }
@@ -62,7 +70,7 @@ function updateBenchmarks(match)
             var metric = benchmarks[key](match, p);
             if (metric !== undefined && !Number.isNaN(metric))
             {
-                redis.zadd(["benchmarks", moment.startOf('day').format('X'), key, p.hero_id].join(':'), metric, match.match_id);
+                redis.zadd(["benchmarks", moment().startOf('day').format('X'), key, p.hero_id].join(':'), metric, match.match_id);
             }
         }
     }
