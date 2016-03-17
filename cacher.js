@@ -5,6 +5,7 @@ var updateCache = playerCache.updateCache;
 var utility = require('./utility');
 var redis = require('./redis');
 var moment = require('moment');
+var benchmarks = require('./benchmarks');
 cQueue.process(1, processCache);
 cQueue.on('completed', function(job)
 {
@@ -32,16 +33,6 @@ function processCache(job, cb)
 
 function updateBenchmarks(match)
 {
-    var benchmarks = {
-        "lh_per_ten": function(m, p)
-        {
-            return ~~(p.last_hits / m.duration * 60 / 10) * 10;
-        },
-        "gold_per_min": function(m, p)
-        {
-            return p.gold_per_min;
-        }
-    };
     for (var i = 0; i < match.players.length; i++)
     {
         var p = match.players[i];
@@ -52,8 +43,8 @@ function updateBenchmarks(match)
         }
         for (var key in benchmarks)
         {
-            var metric_bucket = benchmarks[key](match, p);
-            redis.zadd(["benchmarks", key, p.hero_id].join(':'), metric_bucket, match.match_id);
+            var metric = benchmarks[key](match, p);
+            redis.zadd(["benchmarks", key, p.hero_id].join(':'), metric, match.match_id);
         }
     }
 }

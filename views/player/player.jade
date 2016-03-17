@@ -134,6 +134,7 @@ append footer_assets
                 "targets": "fromNow",
                 render: function(data, type) {
                     if (type === "display") {
+                        moment.locale('en');
                         return moment.unix(data).fromNow();
                     }
                     return data;

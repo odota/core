@@ -6,6 +6,7 @@ var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
 var aggregator = require('./aggregator');
 var constants = require('./constants');
+var benchmarks = require('./benchmarks');
 var filter = require('./filter');
 var util = require('util');
 var queue = require('./queue');
@@ -630,44 +631,36 @@ function getHeroRankings(db, redis, hero_id, cb)
 
 function getBenchmarks(db, redis, options, cb)
 {
+    var hero_id = options.hero_id;
     var ret = {};
-    async.each(Object.keys(constants.heroes), function(hero_id, cb)
+    async.each(Object.keys(benchmarks), function(metric, cb)
     {
-        var arr = [];
-        for (var i = 0; i < 100; i += 10)
+        var arr = [0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99];
+        async.each(arr, function(percentile, cb)
         {
-            arr.push(i);
-        }
-        async.map(arr, function(percentile, cb)
-        {
-            redis.zcard(["benchmarks", options.metric, hero_id].join(':'), function(err, card)
+            redis.zcard(["benchmarks", metric, hero_id].join(':'), function(err, card)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                var position = ~~(card * percentile / 100);
-                redis.zrange(["benchmarks", options.metric, hero_id].join(':'), position, position, "WITHSCORES", function(err, result)
+                var position = ~~(card * percentile);
+                redis.zrange(["benchmarks", metric, hero_id].join(':'), position, position, "WITHSCORES", function(err, result)
                 {
-                    console.log(position, result);
-                    cb(err,
-                    {
+                    var obj = {
                         percentile: percentile,
-                        x: constants.heroes[hero_id].localized_name,
-                        y: Number(result[1])
-                    });
+                        value: Number(result[1])
+                    };
+                    if (!ret[metric])
+                    {
+                        ret[metric] = [];
+                    }
+                    ret[metric].push(obj);
+                    cb(err, obj);
                 });
             });
-        }, function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            ret[constants.heroes[hero_id].localized_name] = result;
-            return cb(err, result);
-        });
-    }, function(err, result)
+        }, cb);
+    }, function(err)
     {
         return cb(err,
         {

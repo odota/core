@@ -378,10 +378,12 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
         });
     }
 });
-app.get('/benchmarks', function(req, res, cb)
+app.get('/benchmarks/:hero_id?', function(req, res, cb)
 {
-    var options = {metric: "gold_per_min"};
-    queries.getBenchmarks(db, redis, options, function(err, result)
+    queries.getBenchmarks(db, redis,
+    {
+        hero_id: req.params.hero_id
+    }, function(err, result)
     {
         if (err)
         {
