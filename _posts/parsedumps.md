@@ -12,3 +12,5 @@ Our motivation for releasing this data is threefold. First, we are committed to 
 If you do any interesting ML on this dataset, [let us know](https://github.com/yasp-dota/yasp/issues)! (If you’re looking for more information on the technical specifications of these files, the JSON schema overall format of the parse dumps are explained [here](https://github.com/yasp-dota/yasp/wiki/JSON-Data-Dump). And if you publish or post your findings anywhere, we’d really appreciate it if you cite YASP as your source for the data.) If you seed either of these files for any length of time, thank you! And as always, if you’d like to contribute to the YASP codebase, never hesitate to check out our [github](https://github.com/yasp-dota/yasp).
 
 Happy holidays, everyone :)
+
+Update 2016-03-17: [@felipehoffa](https://twitter.com/felipehoffa) loaded the 3.5 million matches dump into Google BigQuery. Learn more about [querying YASP on BigQuery](https://github.com/yasp-dota/yasp/issues/924) on our github.
