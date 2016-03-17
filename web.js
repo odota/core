@@ -308,7 +308,7 @@ app.use('/distributions', function(req, res, cb)
 });
 app.get('/picks/:n?', function(req, res, cb)
 {
-    var length = req.params.n || 1;
+    var length = Number(req.params.n || 1);
     var limit = 1000;
     queries.getPicks(redis,
     {
