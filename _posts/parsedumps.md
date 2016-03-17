@@ -13,4 +13,4 @@ If you do any interesting ML on this dataset, [let us know](https://github.com/y
 
 Happy holidays, everyone :)
 
-Update 2016-03-17: [@felipehoffa](https://twitter.com/felipehoffa) loaded the 3.5 million matches dump into Google BigQuery. Learn more about [querying YASP on BigQuery](https://github.com/yasp-dota/yasp/issues/924) on our github.
+*Update 2016-03-17*: [@felipehoffa](https://twitter.com/felipehoffa) loaded the 3.5 million matches dump into Google BigQuery. Learn more about [querying YASP on BigQuery](https://github.com/yasp-dota/yasp/issues/924) on our github.
