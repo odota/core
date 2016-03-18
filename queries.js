@@ -5,7 +5,9 @@ var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
-var benchmarkMatch = compute.benchmarkMatch;
+var benchmarkMatch = require('./benchmarkMatch');
+var moment = require('moment');
+var config = require('./config');
 var aggregator = require('./aggregator');
 var constants = require('./constants');
 var benchmarks = require('./benchmarks');
@@ -656,8 +658,6 @@ function getHeroRankings(db, redis, hero_id, cb)
         });
     });
 }
-var moment = require('moment');
-var config = require('./config');
 
 function getBenchmarks(db, redis, options, cb)
 {

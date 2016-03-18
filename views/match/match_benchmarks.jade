@@ -15,7 +15,7 @@ block match_content
             //-
             each val, key in player.benchmarks || {}
                 td
-                    div: abbr(title=util.format("This player's %s %s is higher than %s% of performances on this hero.", val.raw.toFixed(2), key, (val.pct*100).toFixed(2)))
+                    div: abbr(title=util.format("This player's %s %s is equal or higher than %s% of performances on this hero.", val.raw.toFixed(2), key, (val.pct*100).toFixed(2)))
                       - var pct = val.pct
                       - var pctD = (val.pct*100).toFixed(2)+"%"
                       if pct >= 0.8

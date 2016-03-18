@@ -32,7 +32,7 @@ var compute = require('./compute');
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
-var benchmarkMatch = compute.benchmarkMatch;
+var benchmarkMatch = require('./benchmarkMatch');
 app.use(bodyParser.json());
 app.get('/', function(req, res)
 {
