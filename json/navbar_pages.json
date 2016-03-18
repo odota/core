@@ -11,7 +11,8 @@
     "hide": true
   },
   "benchmarks": {
-    "name": "Benchmarks"
+    "name": "Benchmarks",
+    "hide": true
   },
   "distributions": {
     "name": "Distributions"

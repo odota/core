@@ -33,7 +33,8 @@
     "name": "Analysis"
   },
   "benchmarks": {
-    "name": "Benchmarks"
+    "name": "Benchmarks",
+    "hide": true
   },
   "chat": {
     "name": "Chat"
