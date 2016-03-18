@@ -169,8 +169,8 @@ invokeInterval(function cleanup(cb)
 }, 60 * 60 * 1000);
 invokeInterval(function cleanBenchmarks(cb)
 {
-    //clean up benchmarks from 2 days ago (leave 1 day of full data to use)
-    redis.keys(["benchmarks", moment().subtract(2, 'day').format('X'), "*"].join(':'), function(err, result)
+    //clean up benchmarks from more than 1 day ago (leave 1 day of full data to use and leave current day data)
+    redis.keys("benchmarks:*", function(err, result)
     {
         if (err)
         {
@@ -178,7 +178,10 @@ invokeInterval(function cleanBenchmarks(cb)
         }
         result.forEach(function(k)
         {
-            redis.del(k);
+            if (Number(k.split(':')[1]) < Number(moment().subtract(1, 'day').startOf('day').format('X')))
+            {
+                redis.del(k);
+            }
         });
         cb(err);
     });
