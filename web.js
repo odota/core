@@ -166,7 +166,7 @@ app.use(function(req, res, cb)
         redis.ltrim("load_times", 0, 10000);
     });
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    ip = ip.replace(/^.*:/, '');
+    ip = ip.replace(/^.*:/, '').split(',')[0];
     var key = 'rate_limit:' + ip;
     logger.info("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
     redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
