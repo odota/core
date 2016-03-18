@@ -325,7 +325,9 @@ h4,
 
 .navbar-nav > li > a
 {
-    font-size: 0.85em;
+    font-size: 0.9em;
+    padding-right: 8px;
+    padding-left: 8px;
 }
 
 .icon-bar {

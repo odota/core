@@ -73,8 +73,8 @@ block content
     .col-md-12.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
-          li(class= (route === key ? 'active' : ''))
-            if !val.hide
+          if !val.hide || config.NODE_ENV === "development"
+            li(class= (route === key ? 'active' : ''))
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key) + querystring, class=(val["new-feature"] ? "new-feature" : ""))= val.name
   include /query
   block playercontent
