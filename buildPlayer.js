@@ -264,7 +264,22 @@ function buildPlayer(options, cb)
                 },
                 ratings: function(cb)
                 {
-                    queries.getPlayerRatings(db, account_id, cb);
+                    if (info === "rating")
+                    {
+                        queries.getPlayerRatings(db, account_id, cb);
+                    }
+                    else
+                    {
+                        cb();
+                    }
+                },
+                soloRating: function(cb)
+                {
+                    redis.zscore('solo_competitive_rank', account_id, cb);
+                },
+                partyRating: function(cb)
+                {
+                    redis.zscore('competitive_rank', account_id, cb);
                 },
                 rankings: function(cb)
                 {
@@ -283,8 +298,8 @@ function buildPlayer(options, cb)
                 player.rankings = result.rankings;
                 player.teammate_list = result.teammate_list;
                 var ratings = player.ratings;
-                player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
-                player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
+                player.soloRating = result.soloRating;
+                player.partyRating = result.partyRating;
                 player.ratings = ratings;
                 player.rankings = result.rankings;
                 player.match_count = player.aggData.match_id.n;
