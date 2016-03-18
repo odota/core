@@ -163,14 +163,15 @@ function buildPlayer(options, cb)
                     console.time("[PLAYER] writeCache " + account_id);
                     writeCache(player.account_id, results, function(err)
                     {
+                        if (err)
+                        {
+                            console.error(err);
+                        }
                         console.timeEnd("[PLAYER] writeCache " + account_id);
-                        processResults(err, results);
                     });
                 }
-                else
-                {
-                    processResults(err, results);
-                }
+                //don't need to wait for cache write
+                processResults(err, results);
             });
         }
 
@@ -294,13 +295,11 @@ function buildPlayer(options, cb)
                 }
             }, function(err, result)
             {
-                player.ratings = result.ratings || [];
                 player.rankings = result.rankings;
                 player.teammate_list = result.teammate_list;
-                var ratings = player.ratings;
                 player.soloRating = result.soloRating;
                 player.partyRating = result.partyRating;
-                player.ratings = ratings;
+                player.ratings = result.ratings || [];
                 player.rankings = result.rankings;
                 player.match_count = player.aggData.match_id.n;
                 player.parsed_match_count = player.aggData.version.n;
