@@ -2,16 +2,16 @@
   "request": {
     "name": "Request"
   },
-  "top": {
-    "name": "Top",
-    "hide": true
-  },
   "rankings": {
     "name": "Rankings",
     "hide": true
   },
   "benchmarks": {
     "name": "Benchmarks",
+    "hide": true
+  },
+  "top": {
+    "name": "Top",
     "hide": true
   },
   "distributions": {
