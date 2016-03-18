@@ -12,7 +12,7 @@ var async = require('async');
 var constants = require('./constants');
 var config = require('./config');
 var db = require('./db');
-cQueue.process(1, processCache);
+cQueue.process(10, processCache);
 cQueue.on('completed', function(job)
 {
     job.remove();
@@ -119,9 +119,9 @@ function updateRankings(match, cb)
             player.wins = result.wins;
             player.games = result.games;
             player.radiant_win = match.radiant_win;
-            //make sure we have existing score if we want to incr?  otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
+            //make sure we have existing score if we want to incr, otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
             //also add adjustable random factor to fallback to db for consistency check
-            player.incr = Boolean(player.score) && Math.random() < 0.99;
+            player.incr = Boolean(player.score) && Math.random() < 0.999;
             if (player.incr)
             {
                 updateScore(redis, player, cb);
