@@ -20,7 +20,7 @@ block playercontent
                 - var val = player.aggData[key]
                 - var avg = val.sum/val.n
                 tr
-                  td: abbr(title=tooltips[key])=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+                  td: abbr(title=tooltips[key])= prettyPrint(key)
                   td
                     - var hero = constants.heroes[val.max_match.hero_id]
                     if hero

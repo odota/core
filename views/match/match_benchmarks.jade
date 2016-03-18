@@ -9,7 +9,7 @@ block match_content
             tr
               th: abbr(title=tooltips.hero_id) Hero
               each val, key in player.benchmarks || {}
-                th=key
+                th=prettyPrint(key)
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player, player.desc)
             //-

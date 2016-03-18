@@ -6,22 +6,16 @@ block playercontent
       .col-md-12
         script.
           var histogramData = {};
-        //p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()") Show All
-        //-
-          each v, key in histograms
-            if key in player.aggData
-              - var collapsed = true
-              button.btn.btn-xs.btn-dark.toggle-button.bright-border-collapsible(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key class="histogram-toggle-button") #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
         ul.nav.nav-pills
           each v, key in histograms
-            li(class=subkey===key ? "active" : ""): a(href='/players/'+player.account_id+'/'+route+'/'+key + querystring) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
+            li(class=subkey===key ? "active" : ""): a(href='/players/'+player.account_id+'/'+route+'/'+key + querystring) #{prettyPrint(key)}
         each v, key in histograms
           if key in player.aggData && (subkey===key)
             - var val = player.aggData[key]
             - var avg = val.sum/val.n
             //- var collapsed = true
             section.histogram-section(id="chart-histogram-container-"+key, data-histogram=key, class=collapsed ? "collapse" : "")
-              h3: abbr(title=tooltips[key]) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+              h3: abbr(title=tooltips[key]) #{prettyPrint(key)} 
                 small (#{val.n} matches, <span data-format-seconds=#{avg} class=#{key in times ? "format-seconds" : ""}>#{(avg).toFixed(2)}</span> mean)
               script.
                 histogramData["#{key}"] = !{JSON.stringify({counts: player.aggData[key].counts, win_counts: player.aggData[key].win_counts})};

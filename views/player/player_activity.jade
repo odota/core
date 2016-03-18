@@ -11,7 +11,7 @@ block playercontent
         var start_times = !{JSON.stringify(player.aggData.start_time)};
       - var histograms = {"day":1,"hour":1,"month":1}
       each val, key in histograms
-        h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
+        h3 #{prettyPrint(key)}
         div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
     
 append footer_assets

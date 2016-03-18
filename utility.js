@@ -661,6 +661,22 @@ function getAlphaHeroes()
     });
     return alpha_heroes;
 }
+
+function prettyPrint(str)
+{
+    return str.split("_").map(function(s){
+        switch(s) {
+            case "xp":
+                return "XP";
+            case "kda":
+                return "KDA";
+            case "tpscroll":
+                return "TP Scroll";
+            default:
+                return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+    }).join(" ")
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -682,4 +698,5 @@ module.exports = {
     reduceMinimal: reduceMinimal,
     serialize: serialize,
     getAlphaHeroes: getAlphaHeroes,
+    prettyPrint: prettyPrint
 };
