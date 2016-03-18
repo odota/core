@@ -142,7 +142,7 @@ app.use(function(req, res, next)
         next();
     }
 });
-app.use(function(req, res, next)
+app.use(function(req, res, cb)
 {
     var timeStart = new Date();
     if (req.path.indexOf('/names') === 0)
@@ -165,8 +165,29 @@ app.use(function(req, res, next)
         redis.lpush("load_times", timeEnd - timeStart);
         redis.ltrim("load_times", 0, 10000);
     });
-    logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.path);
-    next();
+    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    ip = ip.replace(/^.*:/, '');
+    var key = 'rate_limit:' + ip;
+    logger.info("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
+    redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        console.log(resp);
+        if (resp[0] > 5 && config.NODE_ENV !== "test")
+        {
+            return res.status(429).json(
+            {
+                error: "rate limit exceeded"
+            });
+        }
+        else
+        {
+            cb();
+        }
+    });
 });
 app.use(function(req, res, next)
 {

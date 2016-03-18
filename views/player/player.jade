@@ -51,7 +51,7 @@ block content
             oReq.send();
             oReq.onreadystatechange = function() {
               if (oReq.readyState == 4 && oReq.status == 200) {
-                document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate;
+                document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate || "N/A";
               }
             };
           }
