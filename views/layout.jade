@@ -4,9 +4,7 @@ include mixins/ads
 block page_content
   .container
     +ad("banner1")
-    hr
     if banner_msg
       .alert.alert-success.text-center(role="alert") !{banner_msg}
     block content
-    hr
     +ad("banner3")
