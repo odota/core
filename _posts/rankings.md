@@ -1,5 +1,5 @@
 {{{
-  "title": "Complete Match History and Rankings!",
+  "title": "Complete Match History, Rankings, and Benchmarks!",
   "date": "4-15-2016",
   "author": "Howard",
   "draft": true
@@ -13,13 +13,10 @@ Patch Notes:
   * Each hero's top 250 players are shown on the corresponding hero page.
   * Each player page now has a new tab showing their rank and percentile for every hero eligible for ranking.
   * Only ranked games are counted and only players with a publicly shared MMR are eligible for rankings, since MMR is part of the ranking calculation.
+* Benchmarks.  See how each hero performs across a variety of stats.
+  * We also automatically compute benchmarks for each hero in a match!  See this on each match page.
 * Toplist.  See the top public players by MMR as well as a list of professional players.
-* Faster player profiles.  Player profiles are now served out of Cassandra.  After an initial slow "cold" load from PostgreSQL, subsequent loads of a player profile should be much faster.
-
-Note on MMR distribution data:
-* I'd also like to reiterate that the MMR distribution is not limited to players who have signed in.  This did apply for the first few weeks after initial publication, leading to some confusion around this.  We now randomly attempt to get MMR for non-anonymous players when the API reports a ranked match finishes.  Therefore the only criteria for being part of the MMR distribution are:
-  * Share MMR on profile (so we can see it)
-  * Have "Expose Public Match Data" enabled (so you don't show up as anonymous after a match.  We don't have your ID to request MMR for if you're anonymous!)
+* Faster player profiles.  Player profiles are now served out of Cassandra.  After an initial slow "cold" load from PostgreSQL, subsequent loads of a player profile should be much faster.Faster
 
 Got questions or feedback?  Come chat with us on Discord.
 
