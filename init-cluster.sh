@@ -71,3 +71,4 @@ gcloud compute instances create temp-1 --machine-type n1-standard-2 --image cont
 gcloud alpha compute rolling-updates start --group parser-group-1 --template parser-1
 gcloud alpha compute rolling-updates start --group backend-group-1 --template backend-1
 gcloud alpha compute rolling-updates start --group web-group-1 --template web-1
+gcloud alpha compute rolling-updates list
