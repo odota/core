@@ -32,6 +32,7 @@ var compute = require('./compute');
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
+var benchmarkMatch = require('./benchmarkMatch');
 app.use(bodyParser.json());
 app.get('/', function(req, res)
 {
@@ -105,7 +106,14 @@ pQueue.process(function(job, cb)
             });
             computeMatchData(match);
             renderMatch(match);
-            redis.setex('match:' + match.replay_blob_key, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
+            benchmarkMatch(redis, match, function(err)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                redis.setex('match:' + match.replay_blob_key, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
+            });
         } : function(cb)
         {
             //fs.writeFileSync('output.json', JSON.stringify(match));

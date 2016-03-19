@@ -47,7 +47,7 @@
     "d3": "^3.5.14",
     "datatables": "^1.10.9",
     "datatables-bootstrap3-plugin": "^0.4.0",
-    "dota2": "^2.0.0",
+    "dota2": "yasp-dota/node-dota2#dev",
     "dota2-minimap-hero-sprites": "^1.0.1",
     "dotenv": "^2.0.0",
     "express": "^4.13.4",
@@ -69,6 +69,7 @@
     "passport-steam": "1.0.1",
     "pg": "^4.4.4",
     "pg-query-stream": "^1.0.0",
+    "plotly.js": "^1.6.3",
     "pm2": "^1.0.0",
     "poet": "^2.0.1",
     "qtip2": "3.0.2",
@@ -163,12 +164,6 @@
       "role": "core",
       "exec_mode": "cluster",
       "instances": 2
-    },
-    {
-      "script": "ranker.js",
-      "role": "core",
-      "exec_mode": "cluster",
-      "instances": 1
     },
     {
       "script": "web.js",

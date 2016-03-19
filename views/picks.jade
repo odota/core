@@ -8,7 +8,7 @@ block content
     .col-md-12(style="margin-bottom:5px;")
       ul.nav.nav-tabs
         each val, key in tabs
-          li(class=(n === key ? 'active' : ''))
+          li(class=(n === Number(key) ? 'active' : ''))
               a(href="/picks/" + key)= val
     .col-md-12.table-responsive
       table.table.table-striped.table-condensed.rankable#picks

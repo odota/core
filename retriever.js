@@ -120,49 +120,11 @@ async.each(a, function(i, cb)
         client.profiles = 0;
         client.Dota2.once("ready", function()
         {
-            //console.log("Dota 2 ready");
             steamObj[client.steamID] = client;
             dotaReady = true;
             allDone();
         });
         client.Dota2.launch();
-        /*
-        client.steamFriends.on("relationships", function() {
-            //console.log(Steam.EFriendRelationship);
-            console.log("searching for pending friend requests...");
-            //friends is a object with key steam id and value relationship
-            //console.log(Steam.friends);
-            for (var prop in client.steamFriends.friends) {
-                //iterate through friends and accept requests/populate hash
-                var steamID = prop;
-                var relationship = client.steamFriends.friends[prop];
-                //friends that came in while offline
-                if (relationship === Steam.EFriendRelationship.RequestRecipient) {
-                    client.steamFriends.addFriend(steamID);
-                    console.log(steamID + " was added as a friend");
-                }
-                accountToIdx[convert64To32(steamID)] = client.steamID;
-            }
-            console.log("finished searching");
-        });
-        client.steamFriends.once("relationships", function() {
-            //console.log("relationships obtained");
-            relationshipReady = true;
-            allDone();
-        });
-        client.steamFriends.on("friend", function(steamID, relationship) {
-            //immediately accept incoming friend requests
-            if (relationship === Steam.EFriendRelationship.RequestRecipient) {
-                console.log("friend request received");
-                client.steamFriends.addFriend(steamID);
-                console.log("friend request accepted");
-                accountToIdx[convert64To32(steamID)] = client.steamID;
-            }
-            if (relationship === Steam.EFriendRelationship.None) {
-                delete accountToIdx[convert64To32(steamID)];
-            }
-        });
-        */
         client.once('loggedOff', function()
         {
             console.log("relogging");
@@ -212,11 +174,14 @@ function genStats()
 
 function getMMStats(idx, cb)
 {
-    return cb('disabled');
     steamObj[idx].Dota2.requestMatchmakingStats();
     steamObj[idx].Dota2.once('matchmakingStatsData', function(waitTimes, searchingPlayers, disabledGroups, raw)
     {
-        cb(null, waitTimes);
+        if (disabledGroups) {
+            cb(null, disabledGroups["legacy_searching_players_by_group_source2"]);
+        } else {
+            cb("error mmstats");
+        }
     });
 }
 

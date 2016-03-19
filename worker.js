@@ -138,30 +138,82 @@ invokeInterval(function cleanup(cb)
 {
     redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("json_hits", 0, moment().subtract(1, 'day').format('X'));
+    redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("alias_hits", 0, moment().subtract(1, 'day').format('X'));
-    var cleans = ["parser", "retriever", "picks", "picks_wins"];
-    async.each(cleans, function(key, cb)
+    var cleans = ["parser", "retriever"];
+    async.parallel(
     {
-        redis.keys(key + ":*", function(err, result)
+        "counts": function(cb)
         {
-            if (err)
+            async.each(cleans, function(key, cb)
             {
-                return cb(err);
-            }
-            result.forEach(function(zset)
+                redis.keys(key + ":*", function(err, result)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    result.forEach(function(zset)
+                    {
+                        redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'));
+                    });
+                    cb(err);
+                });
+            }, cb);
+        },
+        "queue": function(cb)
+        {
+            return queue.cleanup(redis, cb);
+        },
+        "picks": function(cb)
+        {
+            redis.zcard('picks_match_count', function(err, card)
             {
-                redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'));
+                if (err)
+                {
+                    return cb(err);
+                }
+                card = Number(card);
+                if (card > 10000000)
+                {
+                    redis.keys('picks_*', function(err, keys)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        keys.forEach(function(k)
+                        {
+                            redis.del(k);
+                        });
+                        cb(err);
+                    });
+                }
+                else
+                {
+                    cb(err);
+                }
             });
-            cb(err);
-        });
-    }, function(err)
+        }
+    }, cb);
+}, 60 * 60 * 1000);
+invokeInterval(function cleanBenchmarks(cb)
+{
+    //clean up benchmarks from more than 1 day ago (leave 1 day of full data to use and leave current day data)
+    redis.keys("benchmarks:*", function(err, result)
     {
         if (err)
         {
             return cb(err);
         }
-        return queue.cleanup(redis, cb);
+        result.forEach(function(k)
+        {
+            if (Number(k.split(':')[1]) < Number(moment().subtract(1, 'day').startOf('day').format('X')))
+            {
+                redis.del(k);
+            }
+        });
+        cb(err);
     });
 }, 60 * 60 * 1000);
 invokeInterval(function notablePlayers(cb)

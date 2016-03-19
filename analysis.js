@@ -165,9 +165,9 @@ function generatePlayerAnalysis(match, pm)
                 valid: time !== undefined,
                 score: function(raw)
                 {
-                    return 120 - raw;
+                    return 180 - raw;
                 },
-                top: 20
+                top: 30
             };
         },
         //low obs wards/min

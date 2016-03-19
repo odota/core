@@ -39,13 +39,14 @@ block content
             td: abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, HH:mm:ss Z"))= moment.unix(match.start_time + match.duration).fromNow()
             //td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
     
-  .row(style="margin-top:1em;")
+  .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
-          - var disableTab = !match.version && key!=="index"
-          li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? tooltips.unparsed_tab : ''))
-              a(href="/matches/#{match.replay_blob_key || match.match_id}/" + (key == 'index' ? "" : key), class=(val["new-feature"] ? "new-feature" : ""))= val.name
+          if !val.hide || config.NODE_ENV === "development"
+            - var disableTab = !match.version && key!=="index"
+            li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? tooltips.unparsed_tab : ''))
+                a(href="/matches/#{match.replay_blob_key || match.match_id}/" + (key == 'index' ? "" : key), class=(val["new-feature"] ? "new-feature" : ""))= val.name
 
   .match
     block match_content

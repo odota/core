@@ -96,6 +96,7 @@ app.locals.qs = querystring;
 app.locals.util = util;
 app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
+app.locals.prettyPrint = utility.prettyPrint;
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function(req, res)
 {
@@ -166,7 +167,7 @@ app.use(function(req, res, cb)
         redis.ltrim("load_times", 0, 10000);
     });
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    ip = ip.replace(/^.*:/, '');
+    ip = ip.replace(/^.*:/, '').split(',')[0];
     var key = 'rate_limit:' + ip;
     logger.info("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
     redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
@@ -329,7 +330,7 @@ app.use('/distributions', function(req, res, cb)
 });
 app.get('/picks/:n?', function(req, res, cb)
 {
-    var length = req.params.n || 1;
+    var length = Number(req.params.n || 1);
     var limit = 1000;
     queries.getPicks(redis,
     {
@@ -375,27 +376,46 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
 {
     if (!req.params.hero_id)
     {
-        var alpha_heroes = Object.keys(constants.heroes).map(function(id)
+        res.render('heroes',
         {
-            return constants.heroes[id];
-        }).sort(function(a, b)
-        {
-            return a.localized_name < b.localized_name ? -1 : 1;
-        });
-        res.render('rankings',
-        {
-            alpha_heroes: alpha_heroes
+            path: '/rankings',
+            alpha_heroes: utility.getAlphaHeroes()
         });
     }
     else
     {
-        queries.getHeroRankings(db, redis, function(err, result)
+        queries.getHeroRankings(db, redis, req.params.hero_id, function(err, result)
         {
             if (err)
             {
                 return cb(err);
             }
             res.render('rankings', result);
+        });
+    }
+});
+app.get('/benchmarks/:hero_id?', function(req, res, cb)
+{
+    if (!req.params.hero_id)
+    {
+        return res.render('heroes',
+        {
+            path: '/benchmarks',
+            alpha_heroes: utility.getAlphaHeroes()
+        });
+    }
+    else
+    {
+        queries.getBenchmarks(db, redis,
+        {
+            hero_id: req.params.hero_id
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.render('benchmarks', result);
         });
     }
 });

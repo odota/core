@@ -6,7 +6,6 @@ var redis = require('./redis');
 var queue = require('./queue');
 var addToQueue = queue.addToQueue;
 var mQueue = queue.getQueue('mmr');
-var rankQueue = queue.getQueue('rank');
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
@@ -14,7 +13,6 @@ var insertMatch = require('./queries').insertMatch;
 var queries = require('./queries');
 var buildSets = require('./buildSets');
 var constants = require('./constants');
-var retrieverArr = config.RETRIEVER_HOST.split(",");
 var trackedPlayers;
 var userPlayers;
 // Used to create endpoint for monitoring
@@ -32,15 +30,14 @@ app.route("/").get(function(req, res)
             started_at: startedAt.format(),
             started_ago: startedAt.fromNow(),
             match_seq_num: result || "NOT FOUND"
-        })
-    })
-})
+        });
+    });
+});
 var server = app.listen(port, function()
 {
     var host = server.address().address;
     console.log('[SCANNER] listening at http://%s:%s', host, port);
 });
-var moment = require('moment');
 buildSets(db, redis, function(err)
 {
     if (err)
@@ -154,32 +151,7 @@ function scanApi(seq_num)
                                 addToQueue(mQueue,
                                 {
                                     match_id: match.match_id,
-                                    account_id: p.account_id,
-                                    url: retrieverArr.map(function(r)
-                                    {
-                                        return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id=" + p.account_id;
-                                    })[p.account_id % retrieverArr.length]
-                                },
-                                {
-                                    attempts: 1
-                                }, cb);
-                            }
-                            else
-                            {
-                                cb();
-                            }
-                        },
-                        "decideRank": function(cb)
-                        {
-                            if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && config.ENABLE_RANKER)
-                            {
-                                addToQueue(rankQueue,
-                                {
-                                    match_id: match.match_id,
-                                    account_id: p.account_id,
-                                    hero_id: p.hero_id,
-                                    player_slot: p.player_slot,
-                                    radiant_win: match.radiant_win
+                                    account_id: p.account_id
                                 },
                                 {
                                     attempts: 1

@@ -7,6 +7,8 @@ var generatePositionData = utility.generatePositionData;
 var generatePlayerAnalysis = require('./analysis');
 var constants = require('./constants.js');
 var sentiment = require('sentiment');
+var benchmarks = require('./benchmarks');
+var async = require('async');
 var ancients = {
     npc_dota_neutral_black_drake: 1,
     npc_dota_neutral_black_dragon: 1,
@@ -714,5 +716,5 @@ function generateTreemapData(match)
 module.exports = {
     renderMatch: renderMatch,
     computeMatchData: computeMatchData,
-    computePlayerMatchData: computePlayerMatchData
+    computePlayerMatchData: computePlayerMatchData,
 };

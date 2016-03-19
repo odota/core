@@ -10,7 +10,7 @@ block playercontent
           tr
             th: abbr(title=tooltips.items_name) Hero
             th Percentile
-            th Rank
+            th.ordinal Rank
         tbody
           each entry in player.rankings || []
             - var hero = constants.heroes[entry.hero_id]
@@ -48,5 +48,22 @@ append footer_assets
               }
               return data;
           }
+      },
+      {
+        targets: "ordinal",
+        render: function(data, type) {
+          if (type==="display")
+          {
+            return getOrdinal(data);
+          }
+          return data;
+        }
       }]
     });
+    
+    function getOrdinal(n)
+    {
+        var s = ["th", "st", "nd", "rd"],
+            v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    };

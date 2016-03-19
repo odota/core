@@ -25,7 +25,7 @@ var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_l
 var filter = ['purchase', 'lane_pos'];
 var everything = basic.concat(advanced).concat(others).concat(filter);
 var projections = {
-    index: basic,
+    index: basic.concat('pgroup'),
     matches: basic,
     heroes: basic.concat('pgroup'),
     peers: basic.concat('pgroup'),
@@ -90,7 +90,7 @@ function buildPlayer(options, cb)
         obj[k] = 1;
     });
     queryObj.js_agg = obj;
-    queryObj = preprocessQuery(queryObj, constants);
+    queryObj = preprocessQuery(queryObj);
     //1 filter expected for account id
     var filter_exists = queryObj.filter_count > 1;
     //try to find player in db
@@ -163,14 +163,15 @@ function buildPlayer(options, cb)
                     console.time("[PLAYER] writeCache " + account_id);
                     writeCache(player.account_id, results, function(err)
                     {
+                        if (err)
+                        {
+                            console.error(err);
+                        }
                         console.timeEnd("[PLAYER] writeCache " + account_id);
-                        processResults(err, results);
                     });
                 }
-                else
-                {
-                    processResults(err, results);
-                }
+                //don't need to wait for cache write
+                processResults(err, results);
             });
         }
 
@@ -264,7 +265,22 @@ function buildPlayer(options, cb)
                 },
                 ratings: function(cb)
                 {
-                    queries.getPlayerRatings(db, account_id, cb);
+                    if (info === "rating")
+                    {
+                        queries.getPlayerRatings(db, account_id, cb);
+                    }
+                    else
+                    {
+                        cb();
+                    }
+                },
+                soloRating: function(cb)
+                {
+                    redis.zscore('solo_competitive_rank', account_id, cb);
+                },
+                partyRating: function(cb)
+                {
+                    redis.zscore('competitive_rank', account_id, cb);
                 },
                 rankings: function(cb)
                 {
@@ -279,13 +295,11 @@ function buildPlayer(options, cb)
                 }
             }, function(err, result)
             {
-                player.ratings = result.ratings || [];
                 player.rankings = result.rankings;
                 player.teammate_list = result.teammate_list;
-                var ratings = player.ratings;
-                player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
-                player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
-                player.ratings = ratings;
+                player.soloRating = result.soloRating;
+                player.partyRating = result.partyRating;
+                player.ratings = result.ratings || [];
                 player.rankings = result.rankings;
                 player.match_count = player.aggData.match_id.n;
                 player.parsed_match_count = player.aggData.version.n;

@@ -4,6 +4,7 @@ var winston = require('winston');
 var config = require('./config');
 var BigNumber = require('big-number');
 var urllib = require('url');
+var constants = require('./constants');
 var transports = [];
 transports.push(new(winston.transports.Console)(
 {
@@ -478,7 +479,7 @@ function min(array)
     return Math.min.apply(null, array);
 }
 
-function preprocessQuery(query, constants)
+function preprocessQuery(query)
 {
     //check if we already processed to ensure idempotence
     if (query.processed)
@@ -636,52 +637,6 @@ function reduceMinimal(pm)
     };
 }
 
-function getLeaderboard(db, redis, key, n, cb)
-{
-    redis.zrevrangebyscore(key, "inf", "-inf", "WITHSCORES", "LIMIT", "0", n, function(err, rows)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        var entries = rows.map(function(r, i)
-        {
-            return {
-                account_id: r,
-                score: rows[i + 1]
-            };
-        }).filter(function(r, i)
-        {
-            return i % 2 === 0;
-        });
-        var account_ids = entries.map(function(r)
-        {
-            return r.account_id;
-        });
-        //get player data from DB
-        db.select().from('players').whereIn('account_id', account_ids).asCallback(function(err, names)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            var obj = {};
-            names.forEach(function(n)
-            {
-                obj[n.account_id] = n;
-            });
-            entries.forEach(function(e)
-            {
-                for (var key in obj[e.account_id])
-                {
-                    e[key] = e[key] || obj[e.account_id][key];
-                }
-            });
-            cb(err, entries);
-        });
-    });
-}
-
 function serialize(row)
 {
     var obj = {};
@@ -693,6 +648,34 @@ function serialize(row)
         }
     }
     return obj;
+}
+
+function getAlphaHeroes()
+{
+    var alpha_heroes = Object.keys(constants.heroes).map(function(id)
+    {
+        return constants.heroes[id];
+    }).sort(function(a, b)
+    {
+        return a.localized_name < b.localized_name ? -1 : 1;
+    });
+    return alpha_heroes;
+}
+
+function prettyPrint(str)
+{
+    return str.split("_").map(function(s){
+        switch(s) {
+            case "xp":
+                return "XP";
+            case "kda":
+                return "KDA";
+            case "tpscroll":
+                return "TP Scroll";
+            default:
+                return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+    }).join(" ")
 }
 module.exports = {
     tokenize: tokenize,
@@ -713,6 +696,7 @@ module.exports = {
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
     reduceMinimal: reduceMinimal,
-    getLeaderboard: getLeaderboard,
-    serialize: serialize
+    serialize: serialize,
+    getAlphaHeroes: getAlphaHeroes,
+    prettyPrint: prettyPrint
 };

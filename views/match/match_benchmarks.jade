@@ -1,0 +1,30 @@
+extend match
+
+block match_content
+  .row
+    .col-md-12
+      +data_table({id:"benchmarks", heading: "Benchmarks"})
+        each player, i in match.players
+          +data_table_header(i, match)
+            tr
+              th: abbr(title=tooltips.hero_id) Hero
+              each val, key in player.benchmarks || {}
+                th=prettyPrint(key)
+          tr(class = player.isRadiant ? "radiant" : "dire")
+            +hero_td(player, player.desc)
+            //-
+            each val, key in player.benchmarks || {}
+                td
+                    div: abbr(title=util.format("This player's %s %s is equal or higher than %s% of performances on this hero.", val.raw.toFixed(2), key, (val.pct*100).toFixed(2)))
+                      - var pct = val.pct
+                      - var pctD = (val.pct*100).toFixed(2)+"%"
+                      if pct >= 0.8
+                        span.text-success=pctD
+                      else if pct >= 0.6
+                        span.text-info=pctD
+                      else if pct >= 0.4
+                        span.text-primary=pctD
+                      else if pct >= 0.2
+                        span.text-warning=pctD
+                      else
+                        span.text-danger=pctD
