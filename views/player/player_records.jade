@@ -32,7 +32,34 @@ block playercontent
                   td #{val.n}
                   td(class=(key in times ? "format-seconds" : "format"), data-format-seconds=val.sum) #{val.sum}
                   td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg) #{avg.toFixed(2)}
-      .col-md-3
+        .row
+          .col-md-6
+            h3 Kill Streaks 
+              small (#{player.aggData.kill_streaks.n} matches
+            table.table.table-striped.rankable.small
+              thead
+                tr
+                  th Type
+                  th Count
+              tbody
+                each val, key in constants.kill_streaks
+                  tr
+                    td #{val} (#{key})
+                    td.rankable=player.aggData.kill_streaks.counts[key] || 0
+          .col-md-6
+            h3 Multi Kills 
+              small (#{player.aggData.multi_kills.n} matches)
+            table.table.table-striped.rankable.small
+              thead
+                tr
+                  th Type
+                  th Count
+              tbody
+                each val, key in constants.multi_kills
+                  tr
+                    td #{val} (#{key})
+                    td.rankable=player.aggData.multi_kills.counts[key] || 0
+      .col-md-6
         each val, key in counts
           h3=key.split("_").join(" ")
             small  (#{player.aggData[key].n} matches)
@@ -51,29 +78,3 @@ block playercontent
                   td.rankable=val2
                   td.rankable
                     +progress_bar(player.aggData[key].win_counts[key2], val2)
-                    
-      .col-md-3
-        h3 Multi Kills 
-          small (#{player.aggData.multi_kills.n} matches)
-        table.table.table-striped.rankable.small
-          thead
-            tr
-              th Type
-              th Count
-          tbody
-            each val, key in constants.multi_kills
-              tr
-                td #{val} (#{key})
-                td.rankable=player.aggData.multi_kills.counts[key] || 0
-        h3 Kill Streaks         
-          small (#{player.aggData.kill_streaks.n} matches)        
-        table.table.table-striped.rankable.small 
-          thead        
-            tr        
-              th Type        
-              th Count        
-          tbody        
-            each val, key in constants.kill_streaks        
-              tr        
-                td #{val} (#{key})        
-                td.rankable=player.aggData.kill_streaks.counts[key] || 0

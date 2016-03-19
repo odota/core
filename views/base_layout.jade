@@ -39,7 +39,13 @@ html
 block footer_assets
 script.
   //make footer sticky
-  $('body').css('margin-bottom', $('.footer').height());
+  function stickyFooter() {
+    $('body').css('margin-bottom', $('footer').outerHeight());
+  }
+  stickyFooter();
+  $(window).resize(function() {
+    stickyFooter();
+  });
   //by default, run formatting functions on all pages at page end
   tooltips();
   formatHtml();

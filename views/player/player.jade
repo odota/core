@@ -14,50 +14,50 @@ block content
           if player.loccountrycode && constants.countries[player.loccountrycode]
             span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())
           if player.cheese
-            div
+            div(style="margin-top:1%;")
               i.flaticon-1.small-cheese(style="display:inline-block")
               small(style="margin-left:.5em") x #{' '} #{player.cheese}
-    .col-xs-4
-        h4
+    .col-xs-2.text-center
+      h4
+        span.text-info.rating
+          span: abbr(title="Solo MMR")
+            i.fa.fa-fw.fa-user
+          small(style="margin-left:.5em") #{player.soloRating || "N/A"}
+        //-
           span.text-info.rating
-            span: abbr(title="Solo MMR")
-              i.fa.fa-fw.fa-user
-            small(style="margin-left:.5em") #{player.soloRating || "N/A"}
-          //-
-            span.text-info.rating
-              span: abbr(title="Highest Solo MMR")
-                i.fa.fa-fw.fa-star
-              small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.solo_competitive_rank;})),0) || "N/A"}
-        h4
+            span: abbr(title="Highest Solo MMR")
+              i.fa.fa-fw.fa-star
+            small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.solo_competitive_rank;})),0) || "N/A"}
+      h4
+        span.text-warning.rating
+          span: abbr(title="Party MMR")
+            i.fa.fa-fw.fa-users
+          small(style="margin-left:.5em") #{player.partyRating || "N/A"}
+        //-
           span.text-warning.rating
-            span: abbr(title="Party MMR")
-              i.fa.fa-fw.fa-users
-            small(style="margin-left:.5em") #{player.partyRating || "N/A"}
-          //-
-            span.text-warning.rating
-              span: abbr(title="Highest Party MMR")
-                i.fa.fa-fw.fa-star
-              small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
-        h4
-          span.text-success.rating(onclick="estimateMMR(#{player.account_id})")
-            span: abbr(title="MMR estimate based on data from peer players")
-              i.fa.fa-fw.fa-question-circle
-            small#estimate(style="margin-left:.5em")
-              button.btn.btn-xs.btn-success Estimate MMR
-        script.
-          function estimateMMR(account_id)
-          {
-            document.getElementById('estimate').innerHTML='<i class="fa fa-spinner fa-spin"></i>';
-            var oReq = new XMLHttpRequest();
-            oReq.open("GET", "/api/mmrestimate/"+account_id);
-            oReq.send();
-            oReq.onreadystatechange = function() {
-              if (oReq.readyState == 4 && oReq.status == 200) {
-                document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate || "N/A";
-              }
-            };
-          }
-    .col-xs-4
+            span: abbr(title="Highest Party MMR")
+              i.fa.fa-fw.fa-star
+            small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
+    .col-xs-3.text-center
+      h4
+        span: abbr(title="MMR estimate based on data from peer players")
+          i.fa.fa-fw.fa-question-circle
+        div.text-success.rating#estimate(onclick="estimateMMR(#{player.account_id})", style="margin:1em .4em;display:inline-block;")
+          button.btn.btn-xs.btn-success Estimate MMR
+      script.
+        function estimateMMR(account_id)
+        {
+          document.getElementById('estimate').innerHTML='<i class="fa fa-spinner fa-spin"></i>';
+          var oReq = new XMLHttpRequest();
+          oReq.open("GET", "/api/mmrestimate/"+account_id);
+          oReq.send();
+          oReq.onreadystatechange = function() {
+            if (oReq.readyState == 4 && oReq.status == 200) {
+              document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate || "N/A";
+            }
+          };
+        }
+    .col-xs-3
       h4
         span.text-primary
           i.fa.fa-trophy
@@ -70,7 +70,7 @@ block content
         span.text-primary
           i.fa.fa-sign-out
           small(style="margin-left:.5em") #{player.abandon_count} abandons
-      
+    
   .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive
       ul.nav.nav-tabs
