@@ -13,7 +13,6 @@ var moment = require('moment');
 var bodyParser = require('body-parser');
 var async = require('async');
 var fs = require('fs');
-var goal = Number(config.GOAL);
 var constants = require('./constants.js');
 var express = require('express');
 var app = express();
@@ -211,8 +210,7 @@ app.use(function(req, res, next)
         res.locals.user = req.user;
         res.locals.banner_msg = results.banner;
         res.locals.api_down = Number(results.apiDown);
-        var theGoal = Number(results.cheese || 0.1) / goal * 100;
-        res.locals.cheese_goal = (theGoal - 100) > 0 ? 100 : theGoal;
+        res.locals.cheese = results.cheese;
         return next(err);
     });
 });
