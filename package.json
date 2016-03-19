@@ -167,9 +167,9 @@
     },
     {
       "script": "web.js",
-      "role": "core",
+      "role": "web",
       "exec_mode": "cluster",
-      "instances": 0
+      "instances": 1
     },
     {
       "script": "retriever.js",

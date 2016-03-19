@@ -28,7 +28,7 @@ function exit(err)
 
 function start(app, cb)
 {
-    if (args[0] === app.role || (!args[0] && app.role === "core"))
+    if (args[0] === app.role || !args[0])
     {
         console.log(app.script, app.instances);
         pm2.start(app.script,
