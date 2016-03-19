@@ -122,7 +122,7 @@ function buildPlayer(options, cb)
             }
             //check count of matches in db to validate cache
             console.time("[PLAYER] validateCache " + account_id);
-            validateCache(db, account_id, cache, function(err, valid)
+            validateCache(db, redis, account_id, cache, function(err, valid)
             {
                 console.timeEnd("[PLAYER] validateCache " + account_id);
                 if (err)

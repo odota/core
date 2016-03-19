@@ -206,36 +206,44 @@ function updateCache(match, cb)
     }
 }
 
-function validateCache(db, account_id, cache, cb)
+function validateCache(db, redis, account_id, cache, cb)
 {
     if (!cache)
     {
         return cb();
     }
-    //random auditing of the cache
-    if (!Number.isNaN(account_id) && Math.random() > 0.5)
+    //set key in redis to mark cache audited, don't do it again until timeout
+    redis.get('player_cache_audit:' + account_id, function(err, result)
     {
-        db('player_matches').count().where(
+        if (err)
         {
-            account_id: Number(account_id)
-        }).asCallback(function(err, count)
+            return cb(err);
+        }
+        if (!Number.isNaN(account_id) && !result)
         {
-            if (err)
+            db('player_matches').count().where(
             {
-                return cb(err);
-            }
-            count = Number(count[0].count);
-            //console.log(cache);
-            //console.log(Object.keys(cache.aggData.matches).length, count);
-            var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
-            return cb(err, cacheValid);
-        });
-    }
-    else
-    {
-        //non-integer account_id (all/professional), skip validation (always valid)
-        cb(null, true);
-    }
+                account_id: Number(account_id)
+            }).asCallback(function(err, count)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                count = Number(count[0].count);
+                //console.log(cache);
+                //console.log(Object.keys(cache.aggData.matches).length, count);
+                var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
+                redis.setex('player_cache_audit:' + account_id, 60 * 60 * 24 * 7, "1");
+                return cb(err, cacheValid);
+            });
+        }
+        else
+        {
+            //non-integer account_id (all/professional), skip validation (always valid)
+            cb(null, true);
+        }
+    });
 }
 
 function countPlayerCaches(cb)

@@ -195,7 +195,7 @@ invokeInterval(function cleanup(cb)
 }, 60 * 60 * 1000);
 invokeInterval(function cleanBenchmarks(cb)
 {
-    //clean up benchmarks from more than 1 day ago (leave 1 day of full data to use and leave current day data)
+    //clean up old benchmarks
     redis.keys("benchmarks:*", function(err, result)
     {
         if (err)
