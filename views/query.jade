@@ -23,6 +23,11 @@ h2.inline-header
           select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player ID")#included_account_id
             each entry in q.included_account_id || []
               option(value=entry, selected=q.included_account_id && q.included_account_id.indexOf(entry)!==-1)=entry
+        .form-group
+          label The Players Excluded
+          select.form-control(name="excluded_account_id", multiple, data-placeholder="Excluded: Any Player ID")#excluded_account_id
+            each entry in q.excluded_account_id || []
+              option(value=entry, selected=q.excluded_account_id && q.excluded_account_id.indexOf(entry)!==-1)=entry
               
       .col-md-4
         h4 Personal Parameters

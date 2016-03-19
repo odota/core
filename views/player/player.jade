@@ -88,6 +88,11 @@ append footer_assets
         create: true,
         maxItems: 10
     });
+    $("#excluded_account_id").selectize({
+        plugins: ['remove_button'],
+        create: true,
+        maxItems: 10
+    });
     $("#with_hero_id").selectize({
         plugins: ['remove_button'],
         sortField: 'text',
