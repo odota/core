@@ -668,7 +668,7 @@ function getBenchmarks(db, redis, options, cb)
         var arr = [0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99];
         async.each(arr, function(percentile, cb)
         {
-            var key = ["benchmarks", moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'day').startOf('day').format('X'), metric, hero_id].join(':');
+            var key = ["benchmarks", moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'hour').startOf('hour').format('X'), metric, hero_id].join(':');
             redis.zcard(key, function(err, card)
             {
                 if (err)

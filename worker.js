@@ -204,7 +204,7 @@ invokeInterval(function cleanBenchmarks(cb)
         }
         result.forEach(function(k)
         {
-            if (Number(k.split(':')[1]) < Number(moment().subtract(1, 'day').startOf('day').format('X')))
+            if (Number(k.split(':')[1]) < Number(moment().subtract(1, 'hour').startOf('hour').format('X')))
             {
                 redis.del(k);
             }

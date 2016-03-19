@@ -13,7 +13,7 @@ function benchmarkMatch(redis, m, cb)
         async.each(Object.keys(benchmarks), function(metric, cb)
         {
             //in development use live data (for speed), in production use full data from last day (for consistency)
-            var key = ['benchmarks', moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'day').startOf('day').format('X'), metric, p.hero_id].join(':');
+            var key = ['benchmarks', moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'hour').startOf('hour').format('X'), metric, p.hero_id].join(':');
             var raw = benchmarks[metric](m, p);
             redis.zcard(key, function(err, card)
             {
