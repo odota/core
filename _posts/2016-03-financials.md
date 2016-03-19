@@ -18,6 +18,7 @@ better site experience.)
 But as the number of users and matches has grown so have our server costs. Meanwhile, revenue has stagnated.
 
 Last month, February, we spent $987 on servers on $578 of net donations ($638 total, we generally lose ~10% from fees).
+A breakdown of expendatures can be seen [here](http://imgur.com/a/dLZMg).
 
 This month, we're looking at server costs of about $1300, meaning we need around $1400 in donations to break even.
 While it's a big increase, there are a lot of good reasons for it:
