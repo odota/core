@@ -25,6 +25,9 @@ While it's a big increase, there are a lot of good reasons for it:
   * Scaling up our hard drives for our ever increasing data
   * And preparing for cool new features coming in April
 
+To be clear, we operate completely not-for-profit. All income we get we invest straight back into hosting YASP. All
+devs, team members, and contributors receive no compensation.
+
 We want to keep YASP ads free for as long as possible. We believe our users and their data shouldn't be products!
 
 **So we need your help to keep YASP running. If everyone who read this gave $1, we'd reach our goal in half a day.**
