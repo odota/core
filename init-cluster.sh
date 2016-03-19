@@ -67,3 +67,7 @@ gcloud compute instance-groups managed create "importer-group-1" --base-instance
 #postgres maintenance
 gcloud compute instances create temp-1 --machine-type n1-standard-2 --image container-vm --disk name=temp-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd
 
+#deploy
+gcloud alpha compute rolling-updates start --group parser-group-1 --template parser-1
+gcloud alpha compute rolling-updates start --group backend-group-1 --template backend-1
+gcloud alpha compute rolling-updates start --group web-group-1 --template web-1
