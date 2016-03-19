@@ -167,14 +167,14 @@ invokeInterval(function cleanup(cb)
         },
         "picks": function(cb)
         {
-            redis.zcard('picks_match_count', function(err, card)
+            redis.get('picks_match_count', function(err, count)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                card = Number(card);
-                if (card > 10000000)
+                count = Number(count);
+                if (count > 10000000)
                 {
                     redis.keys('picks_*', function(err, keys)
                     {

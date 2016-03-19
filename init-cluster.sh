@@ -1,7 +1,7 @@
 #prod env vars to metadata
 gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 
-#core
+#core (infra)
 gcloud compute instances delete -q core-1
 gcloud compute instances create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 200GB --boot-disk-type pd-ssd --tags "http-server" --metadata-from-file startup-script=./cluster/scripts/core.sh
 #update core startup script
@@ -23,6 +23,14 @@ gcloud compute --project "peaceful-parity-87002" target-pools create "lb-pool" -
 gcloud compute --project "peaceful-parity-87002" forwarding-rules create "lb-rule" --region "us-central1" --address "104.197.19.32" --ip-protocol "TCP" --port-range "80" --target-pool "lb-pool"
 gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "web-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/lb-pool"
 gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "2" --target-cpu-utilization "0.7"
+
+#backend
+gcloud compute instance-groups managed delete -q backend-group-1
+gcloud compute instance-templates delete -q backend-1
+gcloud compute instance-templates create backend-1 --machine-type n1-highcpu-4 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
+sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "node deploy.js core"
+'
+gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"
 
 #parsers
 gcloud compute instance-groups managed delete -q parser-group-1
@@ -58,3 +66,4 @@ gcloud compute instance-groups managed create "importer-group-1" --base-instance
 
 #postgres maintenance
 gcloud compute instances create temp-1 --machine-type n1-standard-2 --image container-vm --disk name=temp-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd
+

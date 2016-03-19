@@ -1,5 +1,5 @@
 #!/bin/bash
-#pull configs
+#pull infra configs
 rm -rf yasp
 git clone https://github.com/yasp-dota/yasp
 
@@ -16,7 +16,3 @@ sudo docker run -d --name cassandra --restart=always --net=host cassandra:3
 sudo docker start postgres
 sudo docker start redis
 sudo docker start cassandra
-
-sudo docker pull yasp/yasp:latest
-sudo docker rm -fv yasp
-sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "node deploy.js core"
