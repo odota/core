@@ -29,9 +29,6 @@
   "blog": {
     "name": "Blog"
   },
-  "status": {
-    "name": "Status"
-  },
   "carry": {
     "name": "Carry"
   }

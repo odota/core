@@ -19,7 +19,7 @@ block content
               th=(entry.percentile*100)+"%"
           each val, key in result
             tr
-              td=key
+              td=prettyPrint(key)
               each entry, i in result[key]
                 td=entry.value.toFixed(2)
         //-

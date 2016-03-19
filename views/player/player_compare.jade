@@ -3,7 +3,6 @@ extend player
 block playercontent
   h2 Compare 
     small Comparing player medians against #{compare_data[0].aggData.games} recent matches
-  //pre=JSON.stringify(data[1].aggData)
   table.table.table-condensed.table-striped
     thead
       tr
@@ -14,46 +13,9 @@ block playercontent
     tbody
       each val, key in histograms
         tr
-          td: abbr(title=tooltips[key])=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+          td: abbr(title=tooltips[key])=prettyPrint(key)
           each player in compare_data.slice(1)
             td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : 0
             td.rankable
-              //pre= JSON.stringify(compare_data[0].aggData[key].counts, null, 2)
               +progress_bar(player.aggData[key].percentile, 1)
   #chart
-//-
-  append footer_assets
-    script.
-      var data = !{JSON.stringify(data.map(function(d){return d;}))};
-      //cats are names of aggData keys
-      //first element of each array is name of player
-      var columns = [];
-      var categories = [];
-      for (var key in data[0].aggData){
-      categories.push(key);
-      }
-      data.forEach(function(p){
-      var col = [p.personaname];
-      for (var key in p.aggData){
-      col.push(p.aggData[key].avg);
-      }
-      columns.push(col);
-      });
-      console.log(columns);
-      var chart = c3.generate({
-        data: {
-            columns: columns,
-            type: 'bar'
-        },
-        bar: {
-            width: {
-                ratio: 0.5 // this makes bar width 50% of length between ticks
-            }
-        },
-        axis: {
-        x:{            
-        type: 'category',
-                categories: categories
-                }
-                }
-      });
