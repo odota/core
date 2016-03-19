@@ -140,7 +140,7 @@ invokeInterval(function cleanup(cb)
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("alias_hits", 0, moment().subtract(1, 'day').format('X'));
-    var cleans = ["parser", "retriever", "picks", "picks_wins"];
+    var cleans = ["parser", "retriever"];
     async.parallel(
     {
         "counts": function(cb)
@@ -165,6 +165,36 @@ invokeInterval(function cleanup(cb)
         {
             return queue.cleanup(redis, cb);
         },
+        "picks": function(cb)
+        {
+            redis.zcard('picks_match_count', function(err, card)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                card = Number(card);
+                if (card > 10000000)
+                {
+                    redis.keys('picks_*', function(err, keys)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        keys.forEach(function(k)
+                        {
+                            redis.del(k);
+                        });
+                        cb(err);
+                    });
+                }
+                else
+                {
+                    cb(err);
+                }
+            });
+        }
     }, cb);
 }, 60 * 60 * 1000);
 invokeInterval(function cleanBenchmarks(cb)

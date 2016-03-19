@@ -13,7 +13,6 @@ var insertMatch = require('./queries').insertMatch;
 var queries = require('./queries');
 var buildSets = require('./buildSets');
 var constants = require('./constants');
-var retrieverArr = config.RETRIEVER_HOST.split(",");
 var trackedPlayers;
 var userPlayers;
 // Used to create endpoint for monitoring
@@ -152,11 +151,7 @@ function scanApi(seq_num)
                                 addToQueue(mQueue,
                                 {
                                     match_id: match.match_id,
-                                    account_id: p.account_id,
-                                    url: retrieverArr.map(function(r)
-                                    {
-                                        return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id=" + p.account_id;
-                                    })[p.account_id % retrieverArr.length]
+                                    account_id: p.account_id
                                 },
                                 {
                                     attempts: 1

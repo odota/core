@@ -6,13 +6,18 @@ var getData = utility.getData;
 var queries = require('./queries');
 var redis = require('./redis');
 var config = require('./config');
-mQueue.process(config.RETRIEVER_HOST.split(',').length * 10, processMmr);
+var retrieverArr = config.RETRIEVER_HOST.split(",");
+mQueue.process(retrieverArr.length * 10, processMmr);
 
 function processMmr(job, cb)
 {
+    var account_id = job.data.account_id;
     getData(
     {
-        url: job.data.url,
+        url: retrieverArr.map(function(r)
+        {
+            return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id=" + account_id;
+        })[account_id % retrieverArr.length],
         noRetry: true
     }, function(err, data)
     {
