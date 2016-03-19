@@ -213,7 +213,7 @@ function validateCache(db, account_id, cache, cb)
         return cb();
     }
     //random auditing of the cache
-    if (!Number.isNaN(account_id) && Math.random() > 0.99)
+    if (!Number.isNaN(account_id) && Math.random() > 0.5)
     {
         db('player_matches').count().where(
         {
