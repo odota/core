@@ -22,7 +22,7 @@ gcloud compute --project "peaceful-parity-87002" http-health-checks create "lb-c
 gcloud compute --project "peaceful-parity-87002" target-pools create "lb-pool" --region "us-central1" --health-check "lb-check" --session-affinity "NONE"
 gcloud compute --project "peaceful-parity-87002" forwarding-rules create "lb-rule" --region "us-central1" --address "104.197.19.32" --ip-protocol "TCP" --port-range "80" --target-pool "lb-pool"
 gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "web-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/lb-pool"
-gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "2" --target-cpu-utilization "0.7"
+gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down-period "60" --max-num-replicas "50" --min-num-replicas "3" --target-cpu-utilization "0.7"
 
 #backend
 gcloud compute instance-groups managed delete -q backend-group-1
@@ -45,30 +45,27 @@ gcloud compute instance-groups managed create "parser-group-1" --base-instance-n
 gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "100" --min-num-replicas "3" --target-cpu-utilization "0.7"
 
 #cassandra
-gcloud compute instances delete -q cassandra-1
-gcloud compute instances delete -q cassandra-2
 #seed node
+gcloud compute instances delete -q cassandra-1
 gcloud compute instances create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-docker run --name cassandra --restart=always -d --net=host cassandra:latest
+docker run --name cassandra --restart=always -d --net=host cassandra:3
 '
-#joining node
-gcloud compute instances create cassandra-2 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:latest
+#joining nodes
+gcloud compute instance-groups managed delete -q cassandra-group-1
+gcloud compute instance-templates delete -q cassandra-1
+gcloud compute instance-templates create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:3
 '
+gcloud compute instance-groups managed create "cassandra-group-1" --base-instance-name "cassandra-group-1" --template "cassandra-1" --size "1"
+gcloud compute instance-groups managed set-autoscaling "cassandra-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "1" --target-cpu-utilization "0.7"
 
-#importer
-gcloud compute instance-groups managed delete -q importer-group-1
-gcloud compute instance-templates delete -q importer-1
-gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "sh -c 'node dev/allMatches.js 0 1900000000 1000 2> /dev/null'"
-'
-gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
-
-#postgres maintenance
-gcloud compute instances create temp-1 --machine-type n1-standard-2 --image container-vm --disk name=temp-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd
-
-#deploy
-gcloud alpha compute rolling-updates start --group parser-group-1 --template parser-1
-gcloud alpha compute rolling-updates start --group backend-group-1 --template backend-1
-gcloud alpha compute rolling-updates start --group web-group-1 --template web-1
-gcloud alpha compute rolling-updates list
+##importer
+#gcloud compute instance-groups managed delete -q importer-group-1
+#gcloud compute instance-templates delete -q importer-1
+#gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
+#sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "sh -c 'node dev/allMatches.js 0 1900000000 1000 2> /dev/null'"
+#'
+#gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
+#
+##postgres maintenance
+#gcloud compute instances create temp-1 --machine-type n1-standard-2 --image container-vm --disk name=temp-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd
