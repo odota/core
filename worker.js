@@ -161,10 +161,6 @@ invokeInterval(function cleanup(cb)
                 });
             }, cb);
         },
-        "queue": function(cb)
-        {
-            return queue.cleanup(redis, cb);
-        },
         "picks": function(cb)
         {
             redis.get('picks_match_count', function(err, count)
@@ -215,6 +211,10 @@ invokeInterval(function cleanBenchmarks(cb)
         });
         cb(err);
     });
+}, 60 * 60 * 1000);
+invokeInterval(function cleanQueues(cb)
+{
+    queue.cleanup(redis, cb);
 }, 60 * 60 * 1000);
 invokeInterval(function notablePlayers(cb)
 {
