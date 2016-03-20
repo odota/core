@@ -15,13 +15,16 @@ function benchmarkMatch(redis, m, cb)
             //in development use live data (for speed), in production use full data from last day (for consistency)
             var key = ['benchmarks', moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'hour').startOf('hour').format('X'), metric, p.hero_id].join(':');
             var raw = benchmarks[metric](m, p);
+            p.benchmarks[metric] = {
+                raw: raw
+            };
             redis.zcard(key, function(err, card)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                if (!Number.isNaN(raw))
+                if (raw !== undefined && raw !== null)
                 {
                     redis.zcount(key, '0', raw, function(err, count)
                     {
@@ -30,10 +33,7 @@ function benchmarkMatch(redis, m, cb)
                             return cb(err);
                         }
                         var pct = count / card;
-                        p.benchmarks[metric] = {
-                            pct: pct,
-                            raw: raw
-                        };
+                        p.benchmarks[metric].pct = pct;
                         return cb(err);
                     });
                 }

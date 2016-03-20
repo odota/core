@@ -11,11 +11,12 @@ block match_content
               each val, key in player.benchmarks || {}
                 th=prettyPrint(key)
           tr(class = player.isRadiant ? "radiant" : "dire")
-            +hero_td(player, player.desc)
+            +hero_td(player)
             //-
             each val, key in player.benchmarks || {}
                 td
-                    div: abbr(title=util.format("This player's %s %s is equal or higher than %s% of performances on this hero.", val.raw.toFixed(2), key, (val.pct*100).toFixed(2)))
+                  if val.raw !== undefined && val.raw !== null
+                    div: abbr(title=util.format("This player's %s %s is equal or higher than %s% of performances on this hero.", Number(val.raw.toFixed(2)), key, (val.pct*100).toFixed(2)))
                       - var pct = val.pct
                       - var pctD = (val.pct*100).toFixed(2)+"%"
                       if pct >= 0.8
@@ -28,3 +29,6 @@ block match_content
                         span.text-warning=pctD
                       else
                         span.text-danger=pctD
+                      span  (#{Number(val.raw.toFixed(2))})
+                  else
+                    div="-"

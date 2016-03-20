@@ -1,42 +1,66 @@
 {
-  "index": {
+  "index":
+  {
     "name": "Overview"
   },
-  "performances": {
-    "name": "Performances"
-  },
-  "purchases": {
-    "name": "Purchases"
-  },
-  "farm": {
-    "name": "Farm"
-  },
-  "combat": {
-    "name": "Combat"
-  },
-  "graphs": {
-    "name": "Graphs"
-  },
-  "vision": {
-    "name": "Vision"
-  },
-  "objectives": {
-    "name": "Objectives"
-  },
-  "teamfights": {
-    "name": "Teamfights"
-  },
-  "actions": {
-    "name": "Actions"
-  },
-  "analysis": {
-    "name": "Analysis"
-  },
-  "benchmarks": {
+  "benchmarks":
+  {
     "name": "Benchmarks",
     "hide": true
   },
-  "chat": {
-    "name": "Chat"
+  "performances":
+  {
+    "name": "Performances",
+    "parsed": true
+  },
+  "purchases":
+  {
+    "name": "Purchases",
+    "parsed": true
+  },
+  "farm":
+  {
+    "name": "Farm",
+    "parsed": true
+  },
+  "combat":
+  {
+    "name": "Combat",
+    "parsed": true
+  },
+  "graphs":
+  {
+    "name": "Graphs",
+    "parsed": true
+  },
+  "vision":
+  {
+    "name": "Vision",
+    "parsed": true
+  },
+  "objectives":
+  {
+    "name": "Objectives",
+    "parsed": true
+  },
+  "teamfights":
+  {
+    "name": "Teamfights",
+    "parsed": true
+  },
+  "actions":
+  {
+    "name": "Actions",
+    "parsed": true
+  },
+  "analysis":
+  {
+    "name": "Analysis",
+    "parsed": true
+  },
+  "chat":
+  {
+    "name": "Chat",
+    "parsed": true
   }
 }
