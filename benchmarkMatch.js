@@ -10,7 +10,7 @@ function benchmarkMatch(redis, m, cb)
     async.map(m.players, function(p, cb)
     {
         p.benchmarks = {};
-        async.each(Object.keys(benchmarks), function(metric, cb)
+        async.eachSeries(Object.keys(benchmarks), function(metric, cb)
         {
             //in development use live data (for speed), in production use full data from last day (for consistency)
             var key = ['benchmarks', moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'hour').startOf('hour').format('X'), metric, p.hero_id].join(':');
@@ -24,7 +24,8 @@ function benchmarkMatch(redis, m, cb)
                 {
                     return cb(err);
                 }
-                if (raw !== undefined && raw !== null)
+                console.log(raw)
+                if (raw !== undefined && raw !== null && !Number.isNaN(raw))
                 {
                     redis.zcount(key, '0', raw, function(err, count)
                     {
