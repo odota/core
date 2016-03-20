@@ -7,17 +7,20 @@ footer.footer
       .col-md-4.text-center
         .meter_wrapper
           h3(style="font-weight:700; margin-top: 0;") Monthly Cheese Goal
+          - var percent = Number(cheese || 0) / config.GOAL * 100;
+          - percent = percent > 100 ? 100 : percent;
           .meter
-            span(style="width: #{cheese_goal}%;min-width:7.1%;") #{cheese_goal.toFixed(0)}%
+            span(style="width: #{percent}%;min-width:7.1%;") #{percent.toFixed(0)}%
           small
             - var today = moment()
-            - var difference = (today.date() / today.endOf("month").date()) * 100 - cheese_goal
+            - var difference = (today.date() / today.endOf("month").date()) * 100 - percent
+            | $#{cheese || 0}/$#{config.GOAL}
             if difference > 0
-              | Behind #{difference.toFixed(2)}%. 
-            if cheese_goal >= 50 && cheese_goal < 100
-              | Getting there... 
-            else if cheese_goal === 100
-              | Woo!!! We did it! Thanks guys! 
+              |  - Behind #{difference.toFixed(2)}%. 
+            if percent >= 50 && percent < 100
+              |  - Getting there... 
+            else if percent === 100
+              |  - Woo!!! We did it! Thanks guys! 
             | Resets #{moment().endOf("month").fromNow()}.
       .col-md-4.text-center
         span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
