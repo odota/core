@@ -68,7 +68,7 @@ function updateBenchmarks(match)
         for (var key in benchmarks)
         {
             var metric = benchmarks[key](match, p);
-            if (metric !== undefined && metric !== null)
+            if (metric !== undefined && metric !== null && !Number.isNaN(metric))
             {
                 redis.zadd(["benchmarks", moment().startOf('hour').format('X'), key, p.hero_id].join(':'), metric, match.match_id);
             }
