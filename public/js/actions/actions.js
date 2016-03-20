@@ -1,13 +1,19 @@
-export function addTodo(todo){
+export const REQUEST_NAVBAR = 'GET_NAVBAR';
+export function requestNavbar() {
   return {
-    type: 'addTodo',
-    todo
-  }
+    type: REQUEST_NAVBAR
+  };
 }
 
-export function deleteTodo(index){
+export const RECEIVE_NAVBAR = 'RECEIVE_NAVBAR';
+export function receiveNavbar() {
   return {
-    type: 'deleteTodo',
-    index
-  }
+    type: RECEIVE_NAVBAR
+  };
 }
+
+//SELECT_MATCH_OVERVIEW
+//SELECT_PLAYER_OVERVIEW
+//SELECT_DISTRIBUTIONS
+//SELECT_PICKS
+//SELECT_CARRY

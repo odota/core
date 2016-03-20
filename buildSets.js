@@ -1,7 +1,4 @@
 var async = require('async');
-var config = require('./config');
-var retrieverConfig = config.RETRIEVER_HOST;
-var secret = config.RETRIEVER_SECRET;
 module.exports = function buildSets(db, redis, cb) {
     console.log("rebuilding sets");
     async.parallel({

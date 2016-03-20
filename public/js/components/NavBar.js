@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import AppBar from 'material-ui/lib/app-bar';
 
 const NavBar = () => (
 <div style={{marginBottom:"0px"}} className="navbar">
@@ -19,27 +18,6 @@ const NavBar = () => (
          <li>
             <a href="/request">Request</a>
          </li>
-         <li>
-            <a href="/distributions">Distributions</a>
-         </li>
-         <li>
-            <a href="/picks">Picks</a>
-         </li>
-         <li>
-            <a href="/mmstats">MMStats</a>
-         </li>
-         <li>
-            <a href="/faq">FAQ</a>
-         </li>
-         <li>
-            <a href="/blog">Blog</a>
-         </li>
-         <li>
-            <a href="/status">Status</a>
-         </li>
-         <li>
-            <a href="/carry">Carry</a>
-         </li>
       </ul>
       <ul className="nav navbar-nav navbar-right">
          <li>
@@ -53,17 +31,10 @@ const NavBar = () => (
 </div>
 );
 
-/*
-<AppBar
-    title="Title"
-    iconClassNameRight="muidocs-icon-navigation-expand-more"
-  />
-*/
-
 function mapStateToProps(input) {
   return {
     input
-  }
+  };
 }
 
-export default connect(mapStateToProps)(NavBar)
+export default connect(mapStateToProps)(NavBar);

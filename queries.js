@@ -144,8 +144,9 @@ function insertMatch(db, redis, match, options, cb)
     //we want to insert into matches, then insert into player_matches for each entry in players
     async.series(
     {
-        "i": upsertMatch,
-        "pc": updatePlayerCaches,
+        "u": upsertMatch,
+        "uc": upsertMatchCassandra,
+        "upc": updatePlayerCaches,
         "cmc": clearMatchCache,
         "dp": decideParse
     }, function(err, results)
@@ -193,6 +194,62 @@ function insertMatch(db, redis, match, options, cb)
         });
     }
 
+    function upsertMatchCassandra(cb)
+    {
+        var cassandra = options.cassandra;
+        if (!cassandra)
+        {
+            return cb();
+        }
+        //TODO clean based on cassandra schema
+        //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
+        //insert into matches
+        //insert into player matches
+        //current dependencies on matches/player_matches in db
+        //getReplayUrl, check and save replay url: store salts/urls in separate collection?
+        //fullhistory, diff a user's current matches from the set obtained from webapi
+        //cacher, get source-of-truth counts/wins for a hero for rankings
+        //distributions (queries on gamemode/lobbytype/skill)
+        //status (recent added/parsed, counts)
+        //query for match (joins)
+        //query for player (joins)
+        //mmr estimator
+        var obj = serialize(match);
+        var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
+        {
+            return '?';
+        }).join(','));
+        cassandra.execute(query, Object.keys(obj).map(function(k)
+        {
+            return obj[k];
+        }),
+        {
+            prepare: true
+        }, function(err, results)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            async.each(players || [], function(pm, cb)
+            {
+                pm.match_id = match.match_id;
+                var obj2 = serialize(pm);
+                var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
+                {
+                    return '?';
+                }).join(','));
+                cassandra.execute(query2, Object.keys(obj2).map(function(k)
+                {
+                    return obj2[k];
+                }),
+                {
+                    prepare: true
+                }, cb);
+            }, cb);
+        });
+    }
+
     function updatePlayerCaches(cb)
     {
         if (options.skipCacheUpdate)
@@ -232,54 +289,6 @@ function insertMatch(db, redis, match, options, cb)
             });
         }
     }
-}
-
-function insertMatchCassandra(match, players, options, cb)
-{
-    var cassandra = options.cassandra;
-    //TODO clean based on cassandra schema
-    //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_caches'
-    //insert into matches
-    //insert into player matches
-    //current dependencies on matches/player_matches in db
-    //parser, check and save replay url: store salts/urls in separate collection?
-    //fullhistory, diff a user's current matches from the set obtained from webapi
-    //ranker, get source-of-truth counts/wins for a hero
-    //distributions (queries on gamemode/lobbytype/skill)
-    var obj = serialize(match);
-    var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
-    {
-        return '?';
-    }).join(','));
-    cassandra.execute(query, Object.keys(obj).map(function(k)
-    {
-        return obj[k];
-    }),
-    {
-        prepare: true
-    }, function(err, results)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        async.each(players || [], function(pm, cb)
-        {
-            pm.match_id = match.match_id;
-            var obj2 = serialize(pm);
-            var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
-            {
-                return '?';
-            }).join(','));
-            cassandra.execute(query2, Object.keys(obj2).map(function(k)
-            {
-                return obj2[k];
-            }),
-            {
-                prepare: true
-            }, cb);
-        }, cb);
-    });
 }
 
 function insertPlayer(db, player, cb)

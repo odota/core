@@ -4,9 +4,9 @@ var cassandra = require('../cassandra');
 var utility = require('../utility');
 var serialize = utility.serialize;
 var args = process.argv.slice(2);
-var start_id = Number(args[0]) || 0;
-var tbl = args[1];
-var stream = db.select("*").from(args[1]).where('match_id', '>=', start_id).orderBy("match_id", "asc").stream();
+var start_id = Number(args[1]) || 0;
+var tbl = args[0];
+var stream = db.select("*").from(tbl).where('match_id', '>=', start_id).orderBy("match_id", "asc").stream();
 stream.on('end', exit);
 stream.pipe(JSONStream.parse());
 stream.on('data', function(match)
@@ -22,7 +22,7 @@ stream.on('data', function(match)
         {
             return exit(err);
         }
-        console.log(match.match_id);
+        console.log(match.match_id, match.player_slot);
         stream.resume();
     });
 });

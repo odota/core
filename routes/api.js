@@ -101,7 +101,9 @@ module.exports = function(db, redis)
             });
         });
     });
-    api.get('/login_status');
+    api.get('/user', function(req, res) {
+        res.json(req.user);
+    });
     api.get('/distributions');
     api.get('/picks/:n');
     api.get('/ratings/:account_id');
