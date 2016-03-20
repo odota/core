@@ -146,7 +146,6 @@ function generateJob(type, payload)
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
                 type: type,
-                url: payload.url,
                 payload: payload
             };
         },

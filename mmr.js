@@ -11,7 +11,7 @@ mQueue.process(retrieverArr.length * 10, processMmr);
 
 function processMmr(job, cb)
 {
-    var account_id = job.data.account_id;
+    var account_id = job.data.payload.account_id;
     getData(
     {
         url: retrieverArr.map(function(r)
