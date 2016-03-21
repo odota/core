@@ -144,7 +144,7 @@ module.exports = function(db, redis) {
                             // this condition indicates the key is new
                             // Set TTL to end of the month
                             redis.expire("cheese_goal", moment().endOf("month").unix() - moment().unix());
-                        } else {
+                        } else if (err) {
                             console.log("Failed to increment cheese_goal");
                         }
                         
@@ -256,7 +256,7 @@ module.exports = function(db, redis) {
         
         clearPaymentSessions(req);
         res.render("thanks", {
-            cheese: cheeseCount,
+            cheeseCount: cheeseCount,
             total: cheeseTotal,
             subscription: subscription,
             cancel: cancel
