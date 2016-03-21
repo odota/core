@@ -1,20 +1,20 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-const Container = ({todos}) => (
+const Container = ({data}) => (
     <div>
       <h1>Title 
       <small>Subtext</small>
       </h1>
-      {todos.map(todo => <p key={todo}>{todo}</p>)}
+      <pre>{JSON.stringify(data)}</pre>
     </div>
 );
 
-function mapStateToProps(todos) {
+function mapStateToProps(data) {
   return {
-    todos
-  }
+    data
+  };
 }
 
-export default connect(mapStateToProps)(Container)    
+export default connect(mapStateToProps)(Container);  
     

@@ -1,8 +1,14 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import
+{
+   connect
+}
+from 'react-redux';
 
-const NavBar = () => (
-<div style={{marginBottom:"0px"}} className="navbar">
+
+   
+const NavBar = (state) => (
+   <div style={{marginBottom:"0px"}} className="navbar">
    <div className="navbar-header">
       <a href="/" className="navbar-brand">
          <strong className="theme-blue">YASP</strong>
@@ -15,9 +21,11 @@ const NavBar = () => (
    </div>
    <div id="navbar" className="navbar-collapse collapse">
       <ul className="nav navbar-nav">
-         <li>
-            <a href="/request">Request</a>
-         </li>
+      {
+      state.navbar ? state.navbar.map(page =>
+      <li><a href="/{page.path}">{page.name}</a></li>
+      ) : ""
+      }
       </ul>
       <ul className="nav navbar-nav navbar-right">
          <li>
@@ -28,13 +36,16 @@ const NavBar = () => (
          </li>
       </ul>
    </div>
-</div>
-);
+</div>);
 
-function mapStateToProps(input) {
-  return {
-    input
-  };
+function mapStateToProps(state)
+{
+   console.log(state);
+   if (state && state.navbar && state.navbar){
+      var arr = Object.keys(state.navbar).map(function(page){return {path: page, name: state.navbar[page].name}});
+      console.log(arr);
+      return { navbar: arr};
+   }
+   return { state };
 }
-
 export default connect(mapStateToProps)(NavBar);

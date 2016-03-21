@@ -23,9 +23,9 @@ module.exports = function(db, redis)
     {
         res.json(constants.player_pages);
     });
-    api.get('/navbar', function(req, res)
+    api.get('/navbar_pages', function(req, res)
     {
-        res.json(constants.navbar);
+        res.json(constants.navbar_pages);
     });
     api.get('/matches/:match_id/:info', function(req, res, cb)
     {
