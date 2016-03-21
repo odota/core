@@ -12,7 +12,7 @@ gcloud alpha compute rolling-updates start --group parser-group-1 --template par
 fi
 
 if [ $1 = "backend" ] || [ $1 = "" ]; then
-gcloud compute instance-templates create backend-$DATETIME --machine-type n1-standard-1 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
+gcloud compute instance-templates create backend-$DATETIME --machine-type n1-standard-2 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
 sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "node deploy.js core"
 '
 gcloud alpha compute rolling-updates start --group backend-group-1 --template backend-$DATETIME
