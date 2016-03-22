@@ -326,6 +326,6 @@ function generatePlayerAnalysis(match, pm)
             "bloodstone": 1,
             "radiance": 1
         };
-        return (constants.items[key].desc.substring(0, "Active".length) === "Active" && !(key in whitelist));
+        return (constants.items[key].desc.indexOf("Active: ") > -1 && !(key in whitelist));
     }
 }
