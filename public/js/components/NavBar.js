@@ -5,8 +5,6 @@ import
 }
 from 'react-redux';
 
-
-   
 const NavBar = (state) => (
    <div style={{marginBottom:"0px"}} className="navbar">
    <div className="navbar-header">
@@ -22,9 +20,11 @@ const NavBar = (state) => (
    <div id="navbar" className="navbar-collapse collapse">
       <ul className="nav navbar-nav">
       {
-      state.navbar ? state.navbar.map(page =>
+      state.isFetching ? 
+      <li><i className="fa fa-spinner fa-spin"></i></li>
+      : state.data.map(page =>
       <li><a href="/{page.path}">{page.name}</a></li>
-      ) : ""
+      )
       }
       </ul>
       <ul className="nav navbar-nav navbar-right">
@@ -40,12 +40,6 @@ const NavBar = (state) => (
 
 function mapStateToProps(state)
 {
-   console.log(state);
-   if (state && state.navbar && state.navbar){
-      var arr = Object.keys(state.navbar).map(function(page){return {path: page, name: state.navbar[page].name}});
-      console.log(arr);
-      return { navbar: arr};
-   }
-   return { state };
+   return state.navbar;
 }
 export default connect(mapStateToProps)(NavBar);

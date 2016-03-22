@@ -27,22 +27,20 @@ require('../../../node_modules/bootstrap/dist/css/bootstrap.css');
 require('../../../node_modules/bootswatch/darkly/bootstrap.css');
 require('../../css/yasp.css');
 const loggerMiddleware = createLogger();
-var store = createStore(reducer, applyMiddleware(thunkMiddleware, // lets us dispatch() functions
+var initialState = {
+  match:{data : {}},
+  player:{data : {}},
+  user:{data : {}},
+  navbar:{data: []},
+  cheese:{data: {}}
+};
+var store = createStore(reducer, initialState, applyMiddleware(thunkMiddleware, // lets us dispatch() functions
   loggerMiddleware // neat middleware that logs actions
 ));
-store.dispatch(Actions.fetchNavbar()).then(() => console.log(store.getState()));
-//state shape
-/*
-{
-  match:{isFetching}
-  player:{isFetching}
-  user:{isFetching}
-  navbar:{isFetching}
-  cheese:{isFetching}
-  title:
-  subtext:
-}
-*/
+store.dispatch(Actions.fetchNavbar());
+store.dispatch(Actions.fetchUser());
+store.dispatch(Actions.fetchCheese());
+//TODO react router to handle link clicks and make more dispatches?
 let reactElement = document.getElementById('react');
 render(<Provider store={store}>
     <div>

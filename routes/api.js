@@ -6,7 +6,6 @@ var buildMatch = require('../buildMatch');
 var buildPlayer = require('../buildPlayer');
 module.exports = function(db, redis)
 {
-    //TODO rate-limit by IP?
     api.get('/items', function(req, res)
     {
         res.json(constants.items[req.query.name]);
@@ -116,6 +115,9 @@ module.exports = function(db, redis)
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     api.get('/banner');
-    api.get('/cheese_status');
+    api.get('/cheese', function(req, res){
+        //TODO implement this
+        res.json({cheese: 1, goal: 2});
+    });
     return api;
 };
