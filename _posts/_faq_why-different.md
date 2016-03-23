@@ -5,7 +5,7 @@
   "author": "Admin"
 }}}
 
-These some of the features we think make us unique.  We try to focus development on features that aren't already available elsewhere for free.
+Here are some of the features we think make us unique.  We also try to focus development on features that aren't already available elsewhere for free.
 
 * Free public match replay parsing.  Most similar services offer this as a premium feature.  Replay parsing allows us to extract much more data from games than the API offers.
 
