@@ -663,8 +663,10 @@ function getAlphaHeroes()
 
 function prettyPrint(str)
 {
-    return str.split("_").map(function(s){
-        switch(s) {
+    return str.split("_").map(function(s)
+    {
+        switch (s)
+        {
             case "xp":
                 return "XP";
             case "kda":
@@ -674,7 +676,56 @@ function prettyPrint(str)
             default:
                 return s.charAt(0).toUpperCase() + s.slice(1);
         }
-    }).join(" ")
+    }).join(" ");
+}
+/**
+ * Returns a string of the unix timestamp at the beginning of a block of size hours
+ * Offset controls the number of blocks to look ahead
+ **/
+function getStartOfBlockHours(size, offset)
+{
+    offset = offset || 0;
+    var blockS = size * 60 * 60;
+    return (Math.floor(((new Date() / 1000 + (offset * blockS)) / blockS)) * blockS).toFixed(0);
+}
+
+function percentToTextClass(pct)
+{
+    if (pct >= 0.8)
+    {
+        return {
+            className: "text-success",
+            grade: "A"
+        };
+    }
+    else if (pct >= 0.6)
+    {
+        return {
+            className: "text-info",
+            grade: "B"
+        };
+    }
+    else if (pct >= 0.4)
+    {
+        return {
+            className: "text-primary",
+            grade: "C"
+        };
+    }
+    else if (pct >= 0.2)
+    {
+        return {
+            className: "text-warning",
+            grade: "D"
+        };
+    }
+    else
+    {
+        return {
+            className: "text-danger",
+            grade: "F"
+        };
+    }
 }
 module.exports = {
     tokenize: tokenize,
@@ -697,5 +748,7 @@ module.exports = {
     reduceMinimal: reduceMinimal,
     serialize: serialize,
     getAlphaHeroes: getAlphaHeroes,
-    prettyPrint: prettyPrint
+    prettyPrint: prettyPrint,
+    getStartOfBlockHours: getStartOfBlockHours,
+    percentToTextClass: percentToTextClass,
 };

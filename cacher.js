@@ -12,6 +12,7 @@ var async = require('async');
 var constants = require('./constants');
 var config = require('./config');
 var db = require('./db');
+var getMatchRating = require('./getMatchRating');
 cQueue.process(10, processCache);
 cQueue.on('completed', function(job)
 {
@@ -21,7 +22,7 @@ cQueue.on('completed', function(job)
 function processCache(job, cb)
 {
     var match = job.data.payload;
-    console.log('match: %s', match.match_id);
+    //console.log('match: %s', match.match_id);
     async.parallel(
     {
         "cache": function(cb)
@@ -31,7 +32,11 @@ function processCache(job, cb)
         "rankings": function(cb)
         {
             return updateRankings(match, cb);
-        }
+        },
+        "updateMatchRating": function(cb)
+        {
+            return updateMatchRating(match, cb);
+        },
     }, function(err)
     {
         if (err)
@@ -70,7 +75,7 @@ function updateBenchmarks(match)
             var metric = benchmarks[key](match, p);
             if (metric !== undefined && metric !== null && !Number.isNaN(metric))
             {
-                redis.zadd(["benchmarks", moment().startOf('hour').format('X'), key, p.hero_id].join(':'), metric, match.match_id);
+                redis.zadd(["benchmarks", utility.getStartOfBlockHours(6, 0), key, p.hero_id].join(':'), metric, match.match_id);
             }
         }
     }
@@ -80,7 +85,7 @@ function updateRankings(match, cb)
 {
     async.each(match.players, function(player, cb)
     {
-        if (!config.ENABLE_RANKER || match.lobby_type !== 7 || player.account_id === constants.anonymous_account_id)
+        if (!config.ENABLE_RANKER || match.lobby_type !== 7 || !player.account_id || player.account_id === constants.anonymous_account_id)
         {
             return cb();
         }
@@ -157,6 +162,18 @@ function updateRankings(match, cb)
             }
         });
     }, cb);
+}
+
+function updateMatchRating(match, cb)
+{
+    getMatchRating(redis, match, function(err, avg)
+    {
+        if (avg && !Number.isNaN(avg))
+        {
+            redis.zadd('match_ratings:' + utility.getStartOfBlockHours(24, 0), avg, match.match_id);
+        }
+        return cb(err);
+    });
 }
 
 function incrCounts(match)

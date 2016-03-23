@@ -22,16 +22,8 @@ block match_content
                   if val.valid
                     div: abbr(title=val.display)
                       - var pct = val.pct
-                      if pct >= 1
-                        span.text-success="A"
-                      else if pct >= 0.75
-                        span.text-info="B"
-                      else if pct >= 0.5
-                        span.text-primary="C"
-                      else if pct >= 0.25
-                        span.text-warning="D"
-                      else
-                        span.text-danger="F"
+                      - var res = percentToTextClass(val.pct)
+                      span(class=res.className)=res.grade
                   else
                     ="-"
             each cond in [false]

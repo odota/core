@@ -204,7 +204,25 @@ invokeInterval(function cleanBenchmarks(cb)
         }
         result.forEach(function(k)
         {
-            if (Number(k.split(':')[1]) < Number(moment().subtract(1, 'hour').startOf('hour').format('X')))
+            if (Number(k.split(':')[1]) < Number(utility.getStartOfBlockHours(6, -1)))
+            {
+                redis.del(k);
+            }
+        });
+        cb(err);
+    });
+}, 60 * 60 * 1000);
+invokeInterval(function cleanMatchRatings(cb)
+{
+    redis.keys("match_ratings:*", function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        result.forEach(function(k)
+        {
+            if (Number(k.split(':')[1]) < Number(utility.getStartOfBlockHours(24, -1)))
             {
                 redis.del(k);
             }

@@ -26,7 +26,7 @@ module.exports = function(db, redis)
     {
         res.json(constants.navbar_pages);
     });
-    api.get('/matches/:match_id/:info', function(req, res, cb)
+    api.get('/matches/:match_id/:info?', function(req, res, cb)
     {
         buildMatch(
         {

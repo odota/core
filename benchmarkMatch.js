@@ -1,4 +1,5 @@
 var moment = require('moment');
+var utility = require('./utility');
 var config = require('./config');
 var benchmarks = require('./benchmarks');
 var async = require('async');
@@ -13,7 +14,7 @@ function benchmarkMatch(redis, m, cb)
         async.eachSeries(Object.keys(benchmarks), function(metric, cb)
         {
             //in development use live data (for speed), in production use full data from last day (for consistency)
-            var key = ['benchmarks', moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'hour').startOf('hour').format('X'), metric, p.hero_id].join(':');
+            var key = ['benchmarks', utility.getStartOfBlockHours(6, config.NODE_ENV === "development" ? 0 : -1), metric, p.hero_id].join(':');
             var raw = benchmarks[metric](m, p);
             p.benchmarks[metric] = {
                 raw: raw
@@ -24,7 +25,6 @@ function benchmarkMatch(redis, m, cb)
                 {
                     return cb(err);
                 }
-                console.log(raw)
                 if (raw !== undefined && raw !== null && !Number.isNaN(raw))
                 {
                     redis.zcount(key, '0', raw, function(err, count)

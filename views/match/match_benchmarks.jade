@@ -19,17 +19,7 @@ block match_content
                     div: abbr(title=util.format("This player's %s %s is equal or higher than %s% of performances on this hero.", Number(val.raw.toFixed(2)), prettyPrint(key), (val.pct*100).toFixed(2)))
                       - var pct = val.pct
                       - var pctD = (val.pct*100).toFixed(2)+"%"
-                      if pct >= 0.8
-                        span.text-success=pctD
-                      else if pct >= 0.6
-                        span.text-info=pctD
-                      else if pct >= 0.4
-                        span.text-primary=pctD
-                      else if pct >= 0.2
-                        span.text-warning=pctD
-                      else
-                        span.text-danger=pctD
-              
+                      span(class=percentToTextClass(pct).className)=pctD
                       span.small.text-muted  #{Number(val.raw.toFixed(2))}
                   else
                     div="-"
