@@ -27,7 +27,7 @@ gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down
 #backend
 gcloud compute instance-groups managed delete -q backend-group-1
 gcloud compute instance-templates delete -q backend-1
-gcloud compute instance-templates create backend-1 --machine-type n1-highcpu-4 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
+gcloud compute instance-templates create backend-1 --machine-type n1-standard-2 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
 sudo docker run -d --name yasp --restart=always --net=host yasp/yasp:latest "node deploy.js core"
 '
 gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"

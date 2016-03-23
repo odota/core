@@ -87,9 +87,7 @@ CREATE TABLE yasp.player_matches (
   killed_by text,
   kill_streaks text,
   multi_kills text,
-  healing text,
   life_state text,
-  modifier_applied text
 );
 CREATE INDEX on yasp.player_matches(account_id);
 

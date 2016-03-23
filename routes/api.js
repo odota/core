@@ -6,7 +6,6 @@ var buildMatch = require('../buildMatch');
 var buildPlayer = require('../buildPlayer');
 module.exports = function(db, redis)
 {
-    //TODO rate-limit by IP?
     api.get('/items', function(req, res)
     {
         res.json(constants.items[req.query.name]);
@@ -23,9 +22,9 @@ module.exports = function(db, redis)
     {
         res.json(constants.player_pages);
     });
-    api.get('/navbar', function(req, res)
+    api.get('/navbar_pages', function(req, res)
     {
-        res.json(constants.navbar);
+        res.json(constants.navbar_pages);
     });
     api.get('/matches/:match_id/:info', function(req, res, cb)
     {
@@ -116,6 +115,9 @@ module.exports = function(db, redis)
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     api.get('/banner');
-    api.get('/cheese_status');
+    api.get('/cheese', function(req, res){
+        //TODO implement this
+        res.json({cheese: 1, goal: 2});
+    });
     return api;
 };
