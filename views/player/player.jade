@@ -53,7 +53,7 @@ block content
           oReq.send();
           oReq.onreadystatechange = function() {
             if (oReq.readyState == 4 && oReq.status == 200) {
-              document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate || "N/A";
+              document.getElementById("estimate").innerHTML = JSON.parse(oReq.responseText).estimate || "-";
             }
           };
         }
@@ -141,7 +141,8 @@ append footer_assets
                 "targets": "fromNow",
                 render: function(data, type) {
                     if (type === "display") {
-                        return moment.unix(data).fromNow();
+                        return moment(data, 'X').fromNow();
+                        //return moment.unix(data).fromNow();
                     }
                     return data;
                 }
@@ -175,7 +176,7 @@ append footer_assets
                     if (!Number(data)){
                         return "never";
                     }
-                    return moment.unix(data).fromNow();
+                    return moment(data, 'X').fromNow();
                 }
                 return data;
             }
