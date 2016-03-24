@@ -1,15 +1,11 @@
-var db = require('knex')(
+var db = require('../db');
+db.raw('select * from player_matches where match_id = 2208963728').asCallback(function(err, result)
 {
-    client: 'pg',
-    connection: 'postgres://postgres:postgres@core-1/yasp'
-});
-db.client.pool.on('error', function(err)
-{
-    throw err;
-});
-db.raw('select version();').asCallback(function(err, rows)
-{
-    console.log(rows);
+    result.rows.forEach(function(r){
+        for (var key in r){
+            console.log(key, JSON.stringify(r[key]).length);
+        }
+    });
     process.exit(Number(err));
 });
 module.exports = db;

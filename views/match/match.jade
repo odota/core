@@ -42,7 +42,8 @@ block content
             - var rtg = match.rating
             - var pct = match.rating_percentile
             - var pctD = (pct*100).toFixed(2)
-            td: abbr(title=util.format("The average MMR in this match of %s is higher than %s% of matches", rtg, pctD))(class=percentToTextClass(pct).className) #{pctD}% 
+            td: abbr(title=util.format("The average MMR in this match of %s is higher than %s% of matches", rtg, pctD))
+              span(class=percentToTextClass(pct).className) #{pctD}% 
               span.text-muted  #{rtg}
     
   .row.player-tabs(style="margin-top:1em;")

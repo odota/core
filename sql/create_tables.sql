@@ -28,16 +28,15 @@ CREATE TABLE matches (
   --dire_team_complete integer,
   --radiant_team_id integer,
   --dire_team_id integer,
+  pgroup json,
   --parsed data below
   parse_status integer,
-  url varchar(255),
   chat json[],
   objectives json[],
   radiant_gold_adv integer[],
   radiant_xp_adv integer[],
   teamfights json[],
-  version integer,
-  pgroup json
+  version integer
   );
 CREATE INDEX on matches(version);
 

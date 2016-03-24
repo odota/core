@@ -207,14 +207,13 @@ function insertMatch(db, redis, match, options, cb)
         //insert into matches
         //insert into player matches
         //current dependencies on matches/player_matches in db
-        //getReplayUrl, check and save replay url: store salts/urls in separate collection?
         //fullhistory, diff a user's current matches from the set obtained from webapi
         //cacher, get source-of-truth counts/wins for a hero for rankings
         //distributions (queries on gamemode/lobbytype/skill)
         //status (recent added/parsed, counts)
         //query for match (joins)
         //query for player (joins)
-        //mmr estimator
+        //mmr estimator (players in last 10 matches)
         var obj = serialize(match);
         var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
         {

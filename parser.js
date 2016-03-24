@@ -63,7 +63,6 @@ pQueue.process(function(job, cb)
     {
         "getDataSource": match.replay_blob_key ? function(cb)
         {
-            //getReplayBlob(redis, match, cb);
             match.url = "http://localhost:" + config.PARSER_PORT + "/redis/" + match.replay_blob_key;
             cb();
         } : function(cb)
