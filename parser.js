@@ -230,8 +230,10 @@ function runParse(match, job, cb)
         parseStream.on('error', exit);
     }
 
+    var exited = false;
     function exit(err)
     {
+        exited = true;
         if (!err)
         {
             try
