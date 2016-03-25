@@ -212,6 +212,7 @@ function runParse(match, job, cb)
         {
             console.log(data.toString());
         });
+        parser.on('error', exit);
         parseStream.on('data', function handleStream(e)
         {
             entries.push(e);
