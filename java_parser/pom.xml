@@ -40,13 +40,13 @@
         </repository>
     </repositories>
     <dependencies>
-     <!--   
+ 
         <dependency>
             <groupId>com.github.skadistats</groupId>
             <artifactId>clarity</artifactId>
-            <version>-SNAPSHOT</version>
+            <version>master-SNAPSHOT</version>
         </dependency>
-        -->
+
     <!--
         <dependency>
             <groupId>com.github.skadistats</groupId>
@@ -54,13 +54,13 @@
             <version>70956f5a89fca56f3a292e739ea3eda96a33fd8c</version>
         </dependency>
         -->
-        
+        <!--
         <dependency>
             <groupId>com.skadistats</groupId>
             <artifactId>clarity</artifactId>
             <version>2.1-SNAPSHOT</version>
         </dependency>
-
+-->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>

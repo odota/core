@@ -203,33 +203,41 @@ public class Main {
         epilogueEntry.key = new Gson().toJson(message);
         output(epilogueEntry);
     }
-
+    
     @OnCombatLogEntry
     public void onCombatLogEntry(Context ctx, CombatLogEntry cle) {
-        time = Math.round(cle.getTimestamp());
-        //create a new entry
-        Entry combatLogEntry = new Entry(time);
-        combatLogEntry.type = cle.getType().name();
-        //translate the fields using string tables if necessary (get*Name methods)
-        combatLogEntry.attackername = cle.getAttackerName();
-        combatLogEntry.targetname = cle.getTargetName();
-        combatLogEntry.sourcename = cle.getDamageSourceName();
-        combatLogEntry.targetsourcename = cle.getTargetSourceName();
-        combatLogEntry.inflictor = cle.getInflictorName();
-        combatLogEntry.gold_reason = cle.getGoldReason();
-        combatLogEntry.xp_reason = cle.getXpReason();
-        combatLogEntry.attackerhero = cle.isAttackerHero();
-        combatLogEntry.targethero = cle.isTargetHero();
-        combatLogEntry.attackerillusion = cle.isAttackerIllusion();
-        combatLogEntry.targetillusion = cle.isTargetIllusion();
-        combatLogEntry.value = cle.getValue();
-        //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
-        if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_PURCHASE) {
-            combatLogEntry.valuename = cle.getValueName();
+        try 
+        {
+            time = Math.round(cle.getTimestamp());
+            //create a new entry
+            Entry combatLogEntry = new Entry(time);
+            combatLogEntry.type = cle.getType().name();
+            //translate the fields using string tables if necessary (get*Name methods)
+            combatLogEntry.attackername = cle.getAttackerName();
+            combatLogEntry.targetname = cle.getTargetName();
+            combatLogEntry.sourcename = cle.getDamageSourceName();
+            combatLogEntry.targetsourcename = cle.getTargetSourceName();
+            combatLogEntry.inflictor = cle.getInflictorName();
+            combatLogEntry.gold_reason = cle.getGoldReason();
+            combatLogEntry.xp_reason = cle.getXpReason();
+            combatLogEntry.attackerhero = cle.isAttackerHero();
+            combatLogEntry.targethero = cle.isTargetHero();
+            combatLogEntry.attackerillusion = cle.isAttackerIllusion();
+            combatLogEntry.targetillusion = cle.isTargetIllusion();
+            combatLogEntry.value = cle.getValue();
+            //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
+            if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_PURCHASE) {
+                combatLogEntry.valuename = cle.getValueName();
+            }
+            output(combatLogEntry);
+            
+            if (cle.getType().ordinal() > 19) {
+                System.err.println(cle);
+            }
         }
-        output(combatLogEntry);
-        
-        if (cle.getType().ordinal() > 19) {
+        catch(Exception e)
+        {
+            System.err.println(e);
             System.err.println(cle);
         }
     }
