@@ -192,6 +192,12 @@ function runParse(match, job, cb)
             stdio: ['pipe', 'pipe', 'pipe'],
             encoding: 'utf8'
         });
+        parser.on('close', (code) => {
+          if (code) 
+          {
+            exit(code);
+          }
+        });  
         parseStream = ndjson.parse();
         if (url && url.slice(-3) === "bz2")
         {
@@ -207,17 +213,15 @@ function runParse(match, job, cb)
         }
         inStream.pipe(bz.stdin);
         bz.stdout.pipe(parser.stdin);
+        bz.stdin.on('error', exit);
+        bz.stdout.on('error', exit);
         parser.stdout.pipe(parseStream);
+        parser.stdin.on('error', exit);
+        parser.stdout.on('error', exit);
         parser.stderr.on('data', function printStdErr(data)
         {
             console.log(data.toString());
         });
-        parser.on('close', (code) => {
-          if (code) 
-          {
-            exit(code);
-          }
-        });        
         parseStream.on('data', function handleStream(e)
         {
             entries.push(e);
