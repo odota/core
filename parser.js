@@ -224,12 +224,16 @@ function runParse(match, job, cb)
         });
         parseStream.on('data', function handleStream(e)
         {
+            if (e.type === 'epilogue')
+            {
+                incomplete = false;
+            }
             entries.push(e);
         });
         parseStream.on('end', exit);
         parseStream.on('error', exit);
     }
-
+    var incomplete = "incomplete";
     var exited = false;
     function exit(err)
     {
@@ -238,6 +242,7 @@ function runParse(match, job, cb)
             return;
         }
         exited = true;
+        err = err || incomplete;
         if (!err)
         {
             try
