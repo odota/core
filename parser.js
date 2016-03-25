@@ -233,6 +233,10 @@ function runParse(match, job, cb)
     var exited = false;
     function exit(err)
     {
+        if (exited) 
+        {
+            return;
+        }
         exited = true;
         if (!err)
         {
