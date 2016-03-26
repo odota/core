@@ -43,7 +43,7 @@ store.dispatch(Actions.fetchCheese());
 //TODO react router to handle link clicks and make more dispatches?
 let reactElement = document.getElementById('react');
 render(<Provider store={store}>
-    <div>
+    <div className='container'>
       <NavBar />
       <Container />
       <Footer />

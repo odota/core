@@ -75,7 +75,7 @@ function updateBenchmarks(match)
             var metric = benchmarks[key](match, p);
             if (metric !== undefined && metric !== null && !Number.isNaN(metric))
             {
-                redis.zadd(["benchmarks", utility.getStartOfBlockHours(6, 0), key, p.hero_id].join(':'), metric, match.match_id);
+                redis.zadd(["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':'), metric, match.match_id);
             }
         }
     }

@@ -204,7 +204,7 @@ invokeInterval(function cleanBenchmarks(cb)
         }
         result.forEach(function(k)
         {
-            if (Number(k.split(':')[1]) < Number(utility.getStartOfBlockHours(6, -1)))
+            if (Number(k.split(':')[1]) < Number(utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, -1)))
             {
                 redis.del(k);
             }

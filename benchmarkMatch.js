@@ -14,7 +14,7 @@ function benchmarkMatch(redis, m, cb)
         async.eachSeries(Object.keys(benchmarks), function(metric, cb)
         {
             //in development use live data (for speed), in production use full data from last day (for consistency)
-            var key = ['benchmarks', utility.getStartOfBlockHours(6, config.NODE_ENV === "development" ? 0 : -1), metric, p.hero_id].join(':');
+            var key = ['benchmarks', utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1), metric, p.hero_id].join(':');
             var raw = benchmarks[metric](m, p);
             p.benchmarks[metric] = {
                 raw: raw
