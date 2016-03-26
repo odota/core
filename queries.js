@@ -322,7 +322,7 @@ function insertMatchSkill(db, row, cb)
 
 function getMatch(db, redis, match_id, cb)
 {
-    db.first().from('matches').where(
+    db.first().from('matches').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').where(
     {
         match_id: Number(match_id)
     }).asCallback(function(err, match)
@@ -345,7 +345,7 @@ function getMatch(db, redis, match_id, cb)
                     db.select().from('player_matches').where(
                     {
                         "player_matches.match_id": Number(match_id)
-                    }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').orderBy("player_slot", "asc").asCallback(cb);
+                    }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(cb);
                 },
                 "ab_upgrades": function(cb)
                 {

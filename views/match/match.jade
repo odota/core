@@ -29,7 +29,8 @@ block content
             th Duration
             th Ended
             th Skill
-            th Percentile
+            if config.NODE_ENV === "development"
+              th Percentile
         tbody
           tr
             //td= constants.parse_status[match.parse_status]
