@@ -1,7 +1,7 @@
 sudo add-apt-repository -y ppa:openjdk-r/ppa
 sudo apt-get -y update && sudo apt-get -y upgrade
 sudo apt-get -y install make g++ build-essential openjdk-8-jdk git maven jq
-NODE_VERSION=`jq '.engines.node' package.json`
+NODE_VERSION=5.8.0
 echo "" > /root/.bashrc && \
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
 . /root/.bashrc && \
