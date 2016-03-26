@@ -324,7 +324,7 @@ function getMatch(db, redis, match_id, cb)
 {
     db.first().from('matches').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').where(
     {
-        match_id: Number(match_id)
+        "matches.match_id": Number(match_id)
     }).asCallback(function(err, match)
     {
         if (err)
