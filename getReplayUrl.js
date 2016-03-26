@@ -4,34 +4,42 @@ var secret = config.RETRIEVER_SECRET;
 var retrieverConfig = config.RETRIEVER_HOST;
 var moment = require('moment');
 var getData = utility.getData;
-module.exports = function getReplayUrl(db, redis, match, cb) {
-    if (match.url) {
+module.exports = function getReplayUrl(db, redis, match, cb)
+{
+    if (match.url)
+    {
         //if there's already a url in match object, we don't need to retrieve.  Could be an external (non-valve URL)
         console.log("replay %s url in job", match.match_id);
         return cb();
     }
-    db.first(['url']).from('matches').where({
-        match_id: match.match_id
-    }).asCallback(function(err, doc) {
-        if (err) {
+    redis.get('replay_url:' + match.match_id, function(err, replay_url)
+    {
+        if (err)
+        {
             return cb(err);
         }
-        if (doc && doc.url) {
-            console.log("replay %s url in db", match.match_id);
-            match.url = doc.url;
+        if (replay_url)
+        {
+            console.log("replay %s url saved", match.match_id);
+            match.url = replay_url;
             return cb(err);
         }
-        else {
-            var retrievers = retrieverConfig.split(",").map(function(r) {
+        else
+        {
+            var retrievers = retrieverConfig.split(",").map(function(r)
+            {
                 return "http://" + r + "?key=" + secret;
             });
             var result = retrievers;
             //make array of retriever urls and use a random one on each retry
-            var urls = result.map(function(r) {
+            var urls = result.map(function(r)
+            {
                 return r + "&match_id=" + match.match_id;
             });
-            getData(urls, function(err, body, metadata) {
-                if (err || !body || !body.match || !body.match.replay_salt) {
+            getData(urls, function(err, body, metadata)
+            {
+                if (err || !body || !body.match || !body.match.replay_salt)
+                {
                     //non-retryable error
                     return cb("invalid body or error");
                 }
@@ -40,15 +48,12 @@ module.exports = function getReplayUrl(db, redis, match, cb) {
                 url = config.NODE_ENV === 'test' ? url.slice(0, -4) : url;
                 match.url = url;
                 //count retriever calls
-                if (body.match.replay_salt) {
+                if (body.match.replay_salt)
+                {
                     redis.zadd("retriever:" + metadata.hostname.split('.')[0], moment().format('X'), match.match_id);
+                    redis.setex('replay_url:'+match.match_id, 86400, url);
                 }
-                //save replay url in db
-                db('matches').update({
-                    url: url
-                }).where({
-                    match_id: match.match_id
-                }).asCallback(cb);
+                return cb(err);
             });
         }
     });

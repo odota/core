@@ -16,6 +16,7 @@ var util = require('util');
 var queue = require('./queue');
 var cQueue = queue.getQueue('cache');
 var pQueue = queue.getQueue('parse');
+var getMatchRating = require('./getMatchRating');
 var serialize = utility.serialize;
 var columnInfo = {};
 
@@ -206,14 +207,13 @@ function insertMatch(db, redis, match, options, cb)
         //insert into matches
         //insert into player matches
         //current dependencies on matches/player_matches in db
-        //getReplayUrl, check and save replay url: store salts/urls in separate collection?
         //fullhistory, diff a user's current matches from the set obtained from webapi
         //cacher, get source-of-truth counts/wins for a hero for rankings
         //distributions (queries on gamemode/lobbytype/skill)
         //status (recent added/parsed, counts)
         //query for match (joins)
         //query for player (joins)
-        //mmr estimator
+        //mmr estimator (players in last 10 matches)
         var obj = serialize(match);
         var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
         {
@@ -337,53 +337,80 @@ function getMatch(db, redis, match_id, cb)
         }
         else
         {
-            //join to get personaname, last_login, avatar
-            db.select().from('player_matches').where(
+            async.parallel(
             {
-                "player_matches.match_id": Number(match_id)
-            }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(function(err, players)
+                "players": function(cb)
+                {
+                    //join to get personaname, last_login, avatar
+                    db.select().from('player_matches').where(
+                    {
+                        "player_matches.match_id": Number(match_id)
+                    }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').orderBy("player_slot", "asc").asCallback(cb);
+                },
+                "ab_upgrades": function(cb)
+                {
+                    redis.get('ability_upgrades:' + match_id, cb);
+                },
+            }, function(err, result)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                //get ability upgrades data
-                redis.get('ability_upgrades:' + match_id, function(err, ab_upgrades)
+                var players = result.players;
+                var ab_upgrades = JSON.parse(result.ab_upgrades);
+                players.forEach(function(p)
+                {
+                    computePlayerMatchData(p);
+                    if (ab_upgrades)
+                    {
+                        p.ability_upgrades_arr = ab_upgrades[p.player_slot];
+                    }
+                });
+                match.players = players;
+                computeMatchData(match);
+                renderMatch(match);
+                getMatchRating(redis, match, function(err, avg)
                 {
                     if (err)
                     {
                         return cb(err);
                     }
-                    ab_upgrades = JSON.parse(ab_upgrades);
-                    players.forEach(function(p)
-                    {
-                        computePlayerMatchData(p);
-                        if (ab_upgrades)
-                        {
-                            p.ability_upgrades_arr = ab_upgrades[p.player_slot];
-                        }
-                    });
-                    match.players = players;
-                    computeMatchData(match);
-                    renderMatch(match);
-                    benchmarkMatch(redis, match, function(err)
+                    var key = 'match_ratings:' + utility.getStartOfBlockHours(24, config.NODE_ENV === "development" ? 0 : -1);
+                    redis.zcard(key, function(err, card)
                     {
                         if (err)
                         {
                             return cb(err);
                         }
-                        if (match.players)
+                        redis.zcount(key, 0, avg, function(err, count)
                         {
-                            //remove some duplicated columns from match.players to reduce size
-                            //we don't need them anymore since we already the computations
-                            match.players.forEach(function(p)
+                            if (err)
                             {
-                                delete p.chat;
-                                delete p.objectives;
-                                delete p.teamfights;
+                                return cb(err);
+                            }
+                            match.rating = avg;
+                            match.rating_percentile = Number(count) / Number(card);
+                            benchmarkMatch(redis, match, function(err)
+                            {
+                                if (err)
+                                {
+                                    return cb(err);
+                                }
+                                if (match.players)
+                                {
+                                    //remove some duplicated columns from match.players to reduce size
+                                    //we don't need them anymore since we already the computations
+                                    match.players.forEach(function(p)
+                                    {
+                                        delete p.chat;
+                                        delete p.objectives;
+                                        delete p.teamfights;
+                                    });
+                                }
+                                return cb(err, match);
                             });
-                        }
-                        return cb(err, match);
+                        });
                     });
                 });
             });
@@ -397,7 +424,7 @@ function getPlayerMatches(db, queryObj, cb)
         aggData: aggregator([], queryObj.js_agg),
         raw: []
     };
-    var stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
+    var stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'ASC').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
     stream.on('end', function(err)
     {
         cb(err, result);
@@ -676,7 +703,7 @@ function getBenchmarks(db, redis, options, cb)
         var arr = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
         async.each(arr, function(percentile, cb)
         {
-            var key = ["benchmarks", moment().subtract(config.NODE_ENV === "development" ? 0 : 1, 'hour').startOf('hour').format('X'), metric, hero_id].join(':');
+            var key = ["benchmarks", utility.getStartOfBlockHours(6, config.NODE_ENV === "development" ? 0 : -1), metric, hero_id].join(':');
             redis.zcard(key, function(err, card)
             {
                 if (err)

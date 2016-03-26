@@ -96,6 +96,7 @@ app.locals.util = util;
 app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.locals.prettyPrint = utility.prettyPrint;
+app.locals.percentToTextClass = utility.percentToTextClass;
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function(req, res)
 {
