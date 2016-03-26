@@ -322,7 +322,7 @@ function insertMatchSkill(db, row, cb)
 
 function getMatch(db, redis, match_id, cb)
 {
-    db.first().from('matches').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').where(
+    db.first(['matches.match_id', 'match_skill.skill', 'radiant_win', 'start_time', 'duration', 'tower_status_dire', 'tower_status_radiant', 'barracks_status_dire', 'barracks_status_radiant', 'cluster', 'lobby_type', 'leagueid', 'game_mode', 'picks_bans', 'parse_status', 'chat', 'teamfights', 'objectives', 'radiant_gold_adv', 'radiant_xp_adv', ]).from('matches').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').where(
     {
         "matches.match_id": Number(match_id)
     }).asCallback(function(err, match)
