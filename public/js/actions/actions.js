@@ -3,6 +3,8 @@ export const REQUEST_NAVBAR = 'REQUEST_NAVBAR';
 export const RECEIVE_NAVBAR = 'RECEIVE_NAVBAR';
 export const REQUEST_CHEESE = 'REQUEST_CHEESE';
 export const RECEIVE_CHEESE = 'RECEIVE_CHEESE';
+export const REQUEST_USER = 'REQUEST_USER';
+export const RECEIVE_USER = 'RECEIVE_USER';
 export function requestNavbar()
 {
   return {
@@ -29,14 +31,12 @@ export function receiveCheese(json)
     data: json
   };
 }
-export const REQUEST_USER = 'REQUEST_USER';
 export function requestUser()
 {
   return {
     type: REQUEST_USER
   };
 }
-export const RECEIVE_USER = 'RECEIVE_USER';
 export function receiveUser(json)
 {
   return {
