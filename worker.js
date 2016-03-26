@@ -222,7 +222,7 @@ invokeInterval(function cleanMatchRatings(cb)
         }
         result.forEach(function(k)
         {
-            if (Number(k.split(':')[1]) < Number(utility.getStartOfBlockHours(24, -1)))
+            if (Number(k.split(':')[1]) < Number(utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, -1)))
             {
                 redis.del(k);
             }

@@ -376,7 +376,7 @@ function getMatch(db, redis, match_id, cb)
                     {
                         return cb(err);
                     }
-                    var key = 'match_ratings:' + utility.getStartOfBlockHours(24, config.NODE_ENV === "development" ? 0 : -1);
+                    var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RETENTION_RATING_HOURS, config.NODE_ENV === "development" ? 0 : -1);
                     redis.zcard(key, function(err, card)
                     {
                         if (err)
@@ -703,7 +703,7 @@ function getBenchmarks(db, redis, options, cb)
         var arr = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
         async.each(arr, function(percentile, cb)
         {
-            var key = ["benchmarks", utility.getStartOfBlockHours(6, config.NODE_ENV === "development" ? 0 : -1), metric, hero_id].join(':');
+            var key = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1), metric, hero_id].join(':');
             redis.zcard(key, function(err, card)
             {
                 if (err)

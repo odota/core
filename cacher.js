@@ -170,7 +170,7 @@ function updateMatchRating(match, cb)
     {
         if (avg && !Number.isNaN(avg))
         {
-            redis.zadd('match_ratings:' + utility.getStartOfBlockHours(24, 0), avg, match.match_id);
+            redis.zadd('match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0), avg, match.match_id);
         }
         return cb(err);
     });
