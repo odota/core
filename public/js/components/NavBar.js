@@ -23,7 +23,7 @@ const NavBar = (state) => (
       state.isFetching ? 
       <li><i className="fa fa-spinner fa-spin"></i></li>
       : state.data.map(page =>
-      <li><a href="/{page.path}">{page.name}</a></li>
+      <li><a href={'/'+page.path}>{page.name}</a></li>
       )
       }
       </ul>
