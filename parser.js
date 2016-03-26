@@ -129,6 +129,7 @@ pQueue.process(function(job, cb)
         },
     }, function(err)
     {
+        clearTimeout(timeout);
         if (err)
         {
             console.log(err);
@@ -141,7 +142,6 @@ pQueue.process(function(job, cb)
             redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
             redis.ltrim("parse_delay", 0, 10000);
         }
-        clearTimeout(timeout);
         return cb(err, match.match_id);
     });
 });
