@@ -1,6 +1,6 @@
 mixin match_table(matches, extended)
   h3 Matches
-  .table-responsive
+  div
     table.table.table-condensed#matches.table-striped.rankable(style="border:1px solid #666;")
       thead
         tr
@@ -43,7 +43,7 @@ mixin match_table(matches, extended)
             td
               abbr(title=constants.tooltips["status_"+match.parse_status])
                 if match.parse_status===0
-                  i.fa.fa-cog.fa-spin
+                  i.fa.fa-spinner.fa-spin
                 else if match.parse_status===2
                   i.fa.fa-bar-chart
                 else if match.parse_status===3
