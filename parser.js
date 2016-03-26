@@ -57,6 +57,12 @@ app.get('/redis/:key', function(req, res, cb)
 app.listen(config.PARSER_PORT);
 pQueue.process(function(job, cb)
 {
+    var timeout = setTimeout(function(){
+        cb('timeout');
+        setTimeout(function(){
+            throw 'timed out, restarting';
+        }, 1000);
+    }, 180000);
     console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
     async.series(
@@ -136,6 +142,7 @@ pQueue.process(function(job, cb)
             redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
             redis.ltrim("parse_delay", 0, 10000);
         }
+        clearTimeout(timeout);
         return cb(err, match.match_id);
     });
 });

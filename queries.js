@@ -282,7 +282,6 @@ function insertMatch(db, redis, match, options, cb)
         else
         {
             //queue it and finish, callback with the queued parse job
-            options.timeout = 180000;
             return queue.addToQueue(pQueue, match, options, function(err, job2)
             {
                 cb(err, job2);
