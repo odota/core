@@ -65,7 +65,7 @@ pQueue.process(function(job, cb)
             console.error('timed out, restarting');
             process.exit(1);
         }, 1000);
-    }, 180000);
+    }, 300000);
     console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
     async.series(

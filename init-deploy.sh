@@ -2,7 +2,7 @@
 DATETIME=$(date +%s)
 
 if [ "$1" = "parser" ] || [[ $# -eq 0 ]]; then
-gcloud compute instance-templates create parser-$DATETIME --machine-type n1-highcpu-4 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+gcloud compute instance-templates create parser-$DATETIME --machine-type n1-highcpu-32 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 for i in $(seq 1 $(nproc));
 do
     sudo docker run -d --restart=always yasp/yasp:latest "node parser.js"
