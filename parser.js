@@ -125,11 +125,14 @@ pQueue.process(function(job, cb)
         if (err)
         {
             console.log(err, err.stack);
-            setTimeout(function()
+            if (err !== "404")
             {
-                console.error('encountered exception, restarting');
-                process.exit(1);
-            }, 1000);
+                setTimeout(function()
+                {
+                    console.error('encountered exception, restarting');
+                    process.exit(1);
+                }, 1000);
+            }
             return cb(err);
         }
         var hostname = os.hostname();
