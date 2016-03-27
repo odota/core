@@ -125,6 +125,11 @@ pQueue.process(function(job, cb)
         if (err)
         {
             console.log(err, err.stack);
+            setTimeout(function()
+            {
+                console.error('encountered exception, restarting');
+                process.exit(1);
+            }, 1000);
             return cb(err);
         }
         var hostname = os.hostname();
@@ -143,11 +148,6 @@ function runParse(match, job, cb)
     var timeout = setTimeout(function()
     {
         exit('timeout');
-        setTimeout(function()
-        {
-            console.error('timed out, restarting');
-            process.exit(1);
-        }, 1000);
     }, 300000);
     var url = match.url;
     var inStream;
@@ -250,9 +250,9 @@ function runParse(match, job, cb)
         {
             return;
         }
-        clearTimeout(timeout);
         exited = true;
         err = err || incomplete;
+        clearTimeout(timeout);
         if (err)
         {
             return cb(err);
