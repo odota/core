@@ -57,15 +57,6 @@ app.get('/redis/:key', function(req, res, cb)
 app.listen(config.PARSER_PORT);
 pQueue.process(function(job, cb)
 {
-    var timeout = setTimeout(function()
-    {
-        cb('timeout');
-        setTimeout(function()
-        {
-            console.error('timed out, restarting');
-            process.exit(1);
-        }, 1000);
-    }, 300000);
     console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
     async.series(
@@ -84,7 +75,6 @@ pQueue.process(function(job, cb)
             {
                 if (err)
                 {
-                    console.error(err.stack);
                     return cb(err);
                 }
                 //extend match object with parsed data, keep existing data if key conflict
@@ -132,10 +122,9 @@ pQueue.process(function(job, cb)
         },
     }, function(err)
     {
-        clearTimeout(timeout);
         if (err)
         {
-            console.log(err);
+            console.log(err, err.stack);
             return cb(err);
         }
         var hostname = os.hostname();
@@ -151,6 +140,15 @@ pQueue.process(function(job, cb)
 
 function runParse(match, job, cb)
 {
+    var timeout = setTimeout(function()
+    {
+        cb('timeout');
+        setTimeout(function()
+        {
+            console.error('timed out, restarting');
+            process.exit(1);
+        }, 1000);
+    }, 300000);
     var url = match.url;
     var inStream;
     var parseStream;
@@ -252,34 +250,32 @@ function runParse(match, job, cb)
         {
             return;
         }
+        clearTimeout(timeout);
         exited = true;
         err = err || incomplete;
-        if (!err)
+        if (err)
         {
-            try
-            {
-                var message = "time spent on post-processing match ";
-                console.time(message);
-                var meta = processMetadata(entries);
-                var res = processExpand(entries, meta, populate);
-                var parsed_data = processParsedData(res.parsed_data, meta, populate);
-                var teamfights = processTeamfights(res.tf_data, meta, populate);
-                var upload = processUploadProps(res.uploadProps, meta, populate);
-                var ap = processAllPlayers(res.int_data);
-                parsed_data.teamfights = teamfights;
-                parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
-                parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
-                parsed_data.upload = upload;
-                //processMultiKillStreaks();
-                //processReduce(res.expanded);
-                console.timeEnd(message);
-            }
-            catch (e)
-            {
-                return cb(e);
-            }
+            return cb(err);
         }
-        return cb(err, parsed_data);
+        else
+        {
+            var message = "time spent on post-processing match ";
+            console.time(message);
+            var meta = processMetadata(entries);
+            var res = processExpand(entries, meta, populate);
+            var parsed_data = processParsedData(res.parsed_data, meta, populate);
+            var teamfights = processTeamfights(res.tf_data, meta, populate);
+            var upload = processUploadProps(res.uploadProps, meta, populate);
+            var ap = processAllPlayers(res.int_data);
+            parsed_data.teamfights = teamfights;
+            parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
+            parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
+            parsed_data.upload = upload;
+            //processMultiKillStreaks();
+            //processReduce(res.expanded);
+            console.timeEnd(message);
+            return cb(err, parsed_data);
+        }
     }
 }
 
