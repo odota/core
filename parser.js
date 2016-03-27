@@ -142,7 +142,7 @@ function runParse(match, job, cb)
 {
     var timeout = setTimeout(function()
     {
-        cb('timeout');
+        exit('timeout');
         setTimeout(function()
         {
             console.error('timed out, restarting');
