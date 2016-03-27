@@ -23,6 +23,7 @@ module.exports = function getStatus(db, redis, cb)
                 extractCount(err, count, cb);
             });
         },
+        /*
         user_players: function(cb)
         {
             db.from('players').count().whereNotNull('last_login').asCallback(function(err, count)
@@ -37,6 +38,7 @@ module.exports = function getStatus(db, redis, cb)
                 extractCount(err, count, cb);
             });
         },
+        */
         tracked_players: function(cb)
         {
             redis.get("trackedPlayers", function(err, res)

@@ -57,10 +57,13 @@ app.get('/redis/:key', function(req, res, cb)
 app.listen(config.PARSER_PORT);
 pQueue.process(function(job, cb)
 {
-    var timeout = setTimeout(function(){
+    var timeout = setTimeout(function()
+    {
         cb('timeout');
-        setTimeout(function(){
-            throw 'timed out, restarting';
+        setTimeout(function()
+        {
+            console.error('timed out, restarting');
+            process.exit(1);
         }, 1000);
     }, 180000);
     console.log("parse job: %s", job.jobId);
@@ -198,12 +201,13 @@ function runParse(match, job, cb)
             stdio: ['pipe', 'pipe', 'pipe'],
             encoding: 'utf8'
         });
-        parser.on('close', (code) => {
-          if (code) 
-          {
-            exit(code);
-          }
-        });  
+        parser.on('close', (code) =>
+        {
+            if (code)
+            {
+                exit(code);
+            }
+        });
         parseStream = ndjson.parse();
         if (url && url.slice(-3) === "bz2")
         {
@@ -241,9 +245,10 @@ function runParse(match, job, cb)
     }
     var incomplete = "incomplete";
     var exited = false;
+
     function exit(err)
     {
-        if (exited) 
+        if (exited)
         {
             return;
         }

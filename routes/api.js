@@ -100,7 +100,8 @@ module.exports = function(db, redis)
             });
         });
     });
-    api.get('/user', function(req, res) {
+    api.get('/user', function(req, res)
+    {
         res.json(req.user);
     });
     api.get('/distributions');
@@ -115,9 +116,29 @@ module.exports = function(db, redis)
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     api.get('/banner');
-    api.get('/cheese', function(req, res){
+    api.get('/cheese', function(req, res)
+    {
         //TODO implement this
-        res.json({cheese: 1, goal: 2});
+        res.json(
+        {
+            cheese: 1,
+            goal: 2
+        });
+    });
+    api.get('/search', function(req, res, cb)
+    {
+        db.raw(`
+        SELECT account_id, personaname, avatarmedium, similarity(personaname, ?) 
+        FROM players WHERE personaname ILIKE ? 
+        ORDER BY similarity DESC LIMIT 1000
+        `, [req.query.q, "%" + req.query.q + "%"]).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result.rows);
+        });
     });
     return api;
 };
