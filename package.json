@@ -30,8 +30,6 @@
   "dependencies": {
     "JSONStream": "^1.0.7",
     "async": "2.0.0-rc.2",
-    "babel-loader": "^6.2.3",
-    "babel-polyfill": "^6.7.2",
     "big-number": "0.4.0",
     "body-parser": "1.15.0",
     "bootstrap": "^3.3.6",
@@ -48,6 +46,8 @@
     "d3": "^3.5.14",
     "datatables": "^1.10.9",
     "datatables-bootstrap3-plugin": "^0.4.0",
+    "datatables.net": "^1.10.11",
+    "datatables.net-bs": "^1.10.11",
     "dota2": "^3.0.0",
     "dota2-minimap-hero-sprites": "^1.0.1",
     "dotenv": "^2.0.0",
@@ -97,6 +97,7 @@
   "devDependencies": {
     "babel-core": "6.7.4",
     "babel-loader": "^6.2.3",
+    "babel-polyfill": "^6.7.2",
     "babel-preset-es2015": "^6.5.0",
     "babel-preset-react": "^6.5.0",
     "coveralls": "2.11.9",
