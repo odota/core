@@ -35,7 +35,7 @@
     "bootstrap": "^3.3.6",
     "bootswatch": "^3.3.6",
     "braintree": "^1.35.0",
-    "bull": "0.7.2",
+    "bull": "yasp-dota/bull#8170fd3cc63a7889def7ee4970c4e0a41e7c4189",
     "c3": "0.4.11-rc4",
     "cal-heatmap": "3.5.4",
     "cassandra-driver": "^3.0.0",
