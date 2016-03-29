@@ -23,14 +23,21 @@ module.exports = function getStatus(db, redis, cb)
                 extractCount(err, count, cb);
             });
         },
-        /*
         user_players: function(cb)
         {
+            /*
             db.from('players').count().whereNotNull('last_login').asCallback(function(err, count)
             {
                 extractCount(err, count, cb);
             });
+            */
+            redis.get("userPlayers", function(err, res)
+            {
+                res = res ? Object.keys(JSON.parse(res)).length : 0;
+                cb(err, res);
+            });
         },
+        /*
         full_history_players: function(cb)
         {
             db.from('players').count().whereNotNull('full_history_time').asCallback(function(err, count)
