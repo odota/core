@@ -376,7 +376,7 @@ function getMatch(db, redis, match_id, cb)
                     {
                         return cb(err);
                     }
-                    var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RETENTION_RATING_HOURS, config.NODE_ENV === "development" ? 0 : -1);
+                    var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
                     redis.zcard(key, function(err, card)
                     {
                         if (err)

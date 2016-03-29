@@ -40,6 +40,7 @@ var defaults = {
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "BENCHMARK_RETENTION_HOURS": 3, //hours in block to retain benchmark data
     "MATCH_RATING_RETENTION_HOURS": 24, //hours in block to retain match rating data
+    "ICON_PATH": "/public/images/yasp-icon.svg", //path to the icon
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API

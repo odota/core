@@ -43,19 +43,11 @@ function processCache(job, cb)
         {
             console.error(err);
         }
-        try
+        if (match.origin === "scanner")
         {
-            if (match.origin === "scanner")
-            {
-                incrCounts(match);
-            }
-            updateBenchmarks(match);
+            incrCounts(match);
         }
-        catch (e)
-        {
-            console.error(e);
-            throw e;
-        }
+        updateBenchmarks(match);
         return cb(err);
     });
 }
