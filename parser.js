@@ -55,6 +55,10 @@ app.get('/redis/:key', function(req, res, cb)
     });
 });
 app.listen(config.PARSER_PORT);
+pQueue.on('completed', function(job)
+{
+    job.remove();
+});
 pQueue.process(1, function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
