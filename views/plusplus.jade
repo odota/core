@@ -1,0 +1,103 @@
+extend layout
+
+include /mixins/hero_td
+include /mixins/data_table
+include /mixins/data_table_header
+
+block content
+  .row
+    .col-md-12.text-center
+      h1(style='font-weight: 700;') Grow your e-peen with YASP++
+      p.lead YASP++ will make you smarter. Faster. Sexier.
+      .row
+        .col-md-8.col-md-offset-2
+          a.btn.btn-default Upgrade to <large>++</large>
+          p Just $3.22/month (120 hats/month) or $32.20/year (1337 hats/year).
+  hr
+  .row
+    .col-md-12.text-center
+      h3 Hyperopia reveals future match details
+      p Hyperopia analyzes the future, so you can win without playing.
+      .row
+        .col-md-3
+          h4(style='margin-top:50%;') Detailed Game Play Breakdowns...
+          h4 ... from the Future
+        .col-md-9
+          include match/timelines_purchases_table
+      .row
+        .col-md-9
+          h3 Gold
+          #chart-gold
+        .col-md-3
+          h4(style='margin-top:50%;') Great Scott!
+          h4 When Hyperopia hits 88 games, you're gonna see some serious shit.
+  .row(style='margin-top:1em;')
+    .col-md-3
+      p.
+        Who needs wards to guess where your opponents are? With Hyperopia,
+        your days of wasting gold as a support are over and you can instead focus on the
+        Agh's that you will definitely finish. How do you know? Hyperopia.
+    .col-md-3
+      p.
+        Why wait for your teammates to make mistakes before you mock them?
+        With Hyperopia, you can be sure to have all your one-liners prepared as
+        they get they get triple-killed because you didn't call missing.
+    .col-md-3
+      p.
+        Ever call "GG" in the first 5 minutes of gameplay? With Hyperopia,
+        you'll know your excellent predictions will be right every time.
+    .col-md-3
+      p Know ahead of time to go full retard.
+  hr
+  .row
+    .col-md-12.text-center
+      h3 NSASight reveals personal player details
+      p Charge up your flames and hurt them where it hurts
+  .row.text-center
+    .col-md-3
+      p.lead Locations
+      span.fa.fa-map-marker.fa-5x
+      p.text(style="margin-top:1em;") Yep. Explains that.
+    .col-md-3
+      p.lead Food
+      span.fa.fa-cutlery.fa-5x
+      p.text(style="margin-top:1em;") Know their favorite snacks.
+    .col-md-3
+      p.lead IQ
+      span.fa.fa-cogs.fa-5x
+      p.text Also explains that.
+    .col-md-3
+      p.lead(style='margin-top:25%;') and more!
+
+  hr
+  .row
+    .col-md-12
+      h3.text-center YASP++ Benefits
+      .col-md-8
+        h3 YASP Basic
+        .row
+          .col-md-4
+            p #[i.fa.fa-plus] Player Profile
+            p #[i.fa.fa-plus] Public Statistics
+            p #[i.fa.fa-plus] Match Parsing/Replay Analysis
+            p #[i.fa.fa-plus] Data Retention
+            p #[i.fa.fa-plus] Word Clouds
+            p #[i.fa.fa-plus] No Advertisements
+          .col-md-4
+            p #[i.fa.fa-plus] Match Making Statistics
+            p #[i.fa.fa-plus] MMR Estimation
+            p #[i.fa.fa-plus] MMR Tracking
+            p #[i.fa.fa-plus] Advanced Match Filtering
+            p #[i.fa.fa-plus] Peers tracking
+
+      .col-md-4
+        h3 YASP++
+        .row
+          .col-md-12.yellow-plus
+            p #[i.fa.fa-plus]#[i.fa.fa-plus] Hyperopia Future Analysis
+            p #[i.fa.fa-plus]#[i.fa.fa-plus] NSASight Player Analysis
+
+append footer_assets
+  script.
+    var graphData = !{JSON.stringify(match.graphData)};
+    generateCharts(graphData);

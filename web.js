@@ -25,6 +25,7 @@ var host = config.ROOT_URL;
 var queries = require('./queries');
 var buildSets = require('./buildSets');
 var matches = require('./routes/matches');
+var hyperopia = require('./routes/hyperopia');
 var players = require('./routes/players');
 var api = require('./routes/api');
 var donate = require('./routes/donate');
@@ -304,6 +305,7 @@ app.route('/privacyterms').get(function(req, res)
     res.redirect("/faq");
 });
 app.use('/matches', matches(db, redis));
+app.use('/hyperopia', hyperopia(db));
 app.use('/players', players(db, redis));
 app.use('/names/:vanityUrl', function(req, res, cb)
 {
@@ -417,6 +419,13 @@ app.get('/benchmarks/:hero_id?', function(req, res, cb)
             res.render('benchmarks', result);
         });
     }
+});
+app.get('/plusplus', function(req, res, cb)
+{
+   return res.render('plusplus', {
+       match: example_match,
+       truncate: [2, 6]
+   });
 });
 app.use('/api', api(db, redis));
 app.use('/', donate(db, redis));
