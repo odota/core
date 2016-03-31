@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "JSONStream": "^1.0.7",
-    "async": "2.0.0-rc.2",
+    "async": "1.5.2",
     "big-number": "0.4.0",
     "body-parser": "1.15.0",
     "bootstrap": "^3.3.6",
