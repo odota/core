@@ -169,7 +169,7 @@
       "script": "cacher.js",
       "role": "core",
       "exec_mode": "cluster",
-      "instances": 2
+      "instances": 1
     },
     {
       "script": "web.js",

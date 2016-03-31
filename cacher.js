@@ -149,7 +149,7 @@ function updateRankings(match, cb)
                     var dbPlayer = result.rows[0];
                     player.games = dbPlayer.games;
                     player.wins = dbPlayer.wins;
-                    updateScore(player, cb);
+                    updateScore(redis, player, cb);
                 });
             }
         });
