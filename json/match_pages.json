@@ -3,11 +3,6 @@
   {
     "name": "Overview"
   },
-  "nsa":
-  {
-    "name": "NSASight",
-    "new": true
-  },
   "benchmarks":
   {
     "name": "Benchmarks",

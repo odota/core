@@ -44,6 +44,6 @@
   },
   "hyperopia": {
     "name": "Hyperopia",
-    "new": true
+    "new-feature": true
   }
 }

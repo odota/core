@@ -39,6 +39,7 @@ var projections = {
     wordcloud: basic.concat('chat'),
     rating: basic,
     rankings: basic,
+    hyperopia: basic
 };
 //optimize by only aggregating certain columns based on tab
 //set query.js_agg based on this
@@ -58,6 +59,7 @@ var aggs = {
     wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
     rating: basicAggs,
     rankings: basicAggs,
+    hyperopia: basicAggs
 };
 
 function buildPlayer(options, cb)
