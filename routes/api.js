@@ -133,7 +133,7 @@ module.exports = function(db, redis)
             else
             {
                 var single = result[req.params.metric];
-                res.status(single.ok ? 200 : 500).json(single);
+                res.status(single.metric < single.threshold ? 200 : 500).json(single);
             }
         });
     });

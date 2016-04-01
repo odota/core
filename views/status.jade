@@ -109,16 +109,17 @@ block content
         thead
           tr
             th Name
-            th Metadata
+            th Metric/Threshold
             th Time
             th Healthy
         tbody
           each val, key in result.health
             tr
               td=key
-              td=val.metadata
+              td #{val.metric}/#{val.threshold}
+                span.small.text-muted  #{(val.metric/val.threshold).toFixed(2)}%
               td=moment.unix(val.timestamp).fromNow()
-              td(class=val.ok ? "text-success" : "text-danger")=val.ok
+              td(class=val.metric < val.threshold ? "text-success" : "text-danger")=val.metric < val.threshold
 
   .row
     .col-md-12
