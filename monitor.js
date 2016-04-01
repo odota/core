@@ -71,7 +71,7 @@ var health = {
             {
                 return cb(err || resp.statusCode !== 200,
                 {
-                    metadata: "",
+                    metadata: "GetMatchHistory",
                     ok: JSON.parse(body).result.status === 1
                 });
             }
@@ -134,10 +134,10 @@ var health = {
 };
 for (var key in health)
 {
-    invokeInterval(health[key], 1000);
+    invokeInterval(health[key]);
 }
 
-function invokeInterval(func, delay)
+function invokeInterval(func)
 {
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
     (function invoker()
@@ -157,7 +157,7 @@ function invokeInterval(func, delay)
                 redis.hset('health', func.name, JSON.stringify(result));
             }
             console.timeEnd(func.name);
-            setTimeout(invoker, delay);
+            setTimeout(invoker, result && result.delay ? result.delay : 10000);
         });
     })();
 }
