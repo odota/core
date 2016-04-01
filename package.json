@@ -39,6 +39,7 @@
     "c3": "0.4.11-rc4",
     "cal-heatmap": "3.5.4",
     "cassandra-driver": "^3.0.0",
+    "chance": "^1.0.1",
     "compression": "^1.6.1",
     "connect-multiparty": "^2.0.0",
     "connect-redis": "^3.0.2",

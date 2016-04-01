@@ -57,6 +57,9 @@ block content
           if !val.hide || config.NODE_ENV === "development"
             - var disableTab = !match.version && key!=="index" && val.parsed
             li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? tooltips.unparsed_tab : ''))
+              if hyperopia
+                a(href="/hyperopia/#{player_id}/#{match.match_id}/" + (key == 'index' ? "" : key), class=(val["new-feature"] ? "new-feature" : ""))= val.name
+              else
                 a(href="/matches/#{match.replay_blob_key || match.match_id}/" + (key == 'index' ? "" : key), class=(val["new-feature"] ? "new-feature" : ""))= val.name
 
   .match

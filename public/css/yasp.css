@@ -106,7 +106,7 @@ h3 img {
 }
 
 .player-tabs .nav > li > a {
-    padding: 5px 10px;
+    padding: 5px 6px;
 }
 
 
@@ -468,4 +468,14 @@ table img.img-sm {
 table {
   background-color:#333; 
   border:1px solid #666;
+}
+
+/* YASP April 2016 */
+
+#plusplus a {
+    color: yellow;
+}
+
+.yellow-plus i {
+    color: yellow;
 }

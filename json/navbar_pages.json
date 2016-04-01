@@ -31,5 +31,8 @@
   },
   "carry": {
     "name": "Carry"
+  },
+  "plusplus": {
+    "name": "++"
   }
 }
