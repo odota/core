@@ -5,7 +5,7 @@ var request = require('request');
 var utility = require('./utility');
 var api_key = config.STEAM_API_KEY.split(',')[0];
 var health = {
-    random_match: function(cb)
+    random_match: function random_match(cb)
     {
         db.raw(`select max(match_id) from matches`).asCallback(function(err, result)
         {
@@ -13,7 +13,7 @@ var health = {
             {
                 return cb(err);
             }
-            var max = Number(result.rows[0].match_id);
+            var max = Number(result.rows[0].max);
             var random = Math.floor(Math.random() * max);
             db.raw(`select match_id from matches where match_id > ? order by match_id asc limit 1`, [random]).asCallback(function(err, result)
             {
@@ -21,7 +21,7 @@ var health = {
                 {
                     return cb(err);
                 }
-                request(config.ROOT_URL + "/matches/" + result.rows[0], function(err, resp, body)
+                request(config.ROOT_URL + "/matches/" + result.rows[0].match_id, function(err, resp, body)
                 {
                     return cb(err || resp.statusCode !== 200,
                     {
@@ -32,7 +32,7 @@ var health = {
             });
         });
     },
-    random_player: function(cb)
+    random_player: function random_player(cb)
     {
         db.raw(`select max(account_id) from players`).asCallback(function(err, result)
         {
@@ -40,7 +40,7 @@ var health = {
             {
                 return cb(err);
             }
-            var max = Number(result.rows[0].account_id);
+            var max = Number(result.rows[0].max);
             var random = Math.floor(Math.random() * max);
             db.raw(`select account_id from players where account_id > ? order by account_id asc limit 1`, [random]).asCallback(function(err, result)
             {
@@ -48,7 +48,7 @@ var health = {
                 {
                     return cb(err);
                 }
-                request(config.ROOT_URL + "/players/" + result.rows[0], function(err, resp, body)
+                request(config.ROOT_URL + "/players/" + result.rows[0].account_id, function(err, resp, body)
                 {
                     return cb(err || resp.statusCode !== 200,
                     {
@@ -59,7 +59,7 @@ var health = {
             });
         });
     },
-    steam_api: function(cb)
+    steam_api: function steam_api(cb)
     {
         request("http://api.steampowered.com" + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key, function(err, resp, body)
         {
@@ -81,7 +81,7 @@ var health = {
             }
         });
     },
-    seq_num_delay: function(cb)
+    seq_num_delay: function seq_num_delay(cb)
     {
         request("http://api.steampowered.com" + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key, function(err, resp, body)
         {
@@ -114,7 +114,7 @@ var health = {
             }
         });
     },
-    parse_delay: function(cb)
+    parse_delay: function parse_delay(cb)
     {
         //get parse delay array, compare with threshold (30 min)
         redis.lrange('parse_delay', 0, -1, function(err, arr)
@@ -124,7 +124,6 @@ var health = {
                 return cb(err);
             }
             var metric = utility.average(arr);
-            console.log(metric);
             return cb(err,
             {
                 metadata: metric,
@@ -135,17 +134,30 @@ var health = {
 };
 for (var key in health)
 {
-    health[key](function(err, result)
+    invokeInterval(health[key], 1000);
+}
+
+function invokeInterval(func, delay)
+{
+    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
+    (function invoker()
     {
-        if (err)
+        console.log("running %s", func.name);
+        console.time(func.name);
+        func(function(err, result)
         {
-            console.log(err);
-        }
-        else
-        {
-            result.timestamp = ~~(new Date() / 1000);
-            redis.hset('health', key, JSON.stringify(result));
-        }
-        setTimeout(health[key], result && result.interval ? result.interval : 1000);
-    });
+            if (err)
+            {
+                //log the error, but wait until next interval to retry
+                console.error(err);
+            }
+            else
+            {
+                result.timestamp = ~~(new Date() / 1000);
+                redis.hset('health', func.name, JSON.stringify(result));
+            }
+            console.timeEnd(func.name);
+            setTimeout(invoker, delay);
+        });
+    })();
 }

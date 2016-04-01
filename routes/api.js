@@ -114,7 +114,7 @@ module.exports = function(db, redis)
             res.json(result.rows);
         });
     });
-    api.get('health/:metric', function(req, res, cb)
+    api.get('/health/:metric?', function(req, res, cb)
     {
         redis.hgetall('health', function(err, result)
         {
