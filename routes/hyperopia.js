@@ -38,7 +38,7 @@ module.exports = function(db)
                 match.tower_status_radiant = 0; //generateTowers(1, match.radiant_win);
                 match.tower_status_dire = 0;
                 match.tower_status_radiant = 0;
-                match.cluster = 0;
+                match.region = mChance.pickone(Object.keys(constants.region).splice(1));
                 match.lobby_type = mChance.pickone(Object.keys(constants.lobby_type));
                 match.leagueid = 0;
                 match.game_mode = mChance.pickone(["1", "2", "3", "4", "5", "12", "13", "22"]);
@@ -82,7 +82,8 @@ module.exports = function(db)
                             hero_healing: mChance.natural({max: 5000}),
                             level: mChance.natural({max: 25}),
                             max_hero_hit: null,
-                            times: times
+                            times: times,
+                            isRadiant: i < 5
                         };
 
                         var gold = [], lh = [], xp = [];
