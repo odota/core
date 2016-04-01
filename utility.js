@@ -727,6 +727,28 @@ function percentToTextClass(pct)
         };
     }
 }
+
+function average(data)
+{
+    return ~~(data.reduce(function(a, b)
+    {
+        return a + b;
+    }, 0) / data.length);
+}
+
+function stdDev(data)
+{
+    var avg = average(data);
+    var squareDiffs = data.map(function(value)
+    {
+        var diff = value - avg;
+        var sqrDiff = diff * diff;
+        return sqrDiff;
+    });
+    var avgSquareDiff = average(squareDiffs);
+    var stdDev = Math.sqrt(avgSquareDiff);
+    return stdDev;
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -751,4 +773,6 @@ module.exports = {
     prettyPrint: prettyPrint,
     getStartOfBlockHours: getStartOfBlockHours,
     percentToTextClass: percentToTextClass,
+    average: average,
+    stdDev: stdDev,
 };

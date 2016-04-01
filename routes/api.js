@@ -4,6 +4,7 @@ var api = express.Router();
 var constants = require('../constants');
 var buildMatch = require('../buildMatch');
 var buildPlayer = require('../buildPlayer');
+var queries = require('../queries');
 module.exports = function(db, redis)
 {
     api.get('/items', function(req, res)
@@ -63,41 +64,14 @@ module.exports = function(db, redis)
     });
     api.get('/mmrestimate/:account_id', function(req, res, cb)
     {
-        db.raw(`
-        select account_id from player_matches pm 
-        where pm.match_id in (select match_id from player_matches where account_id = ? order by match_id desc limit 10)
-        AND account_id < ?
-        ;
-        `, [req.params.account_id, constants.anonymous_account_id]).asCallback(function(err, result)
+        queries.mmrEstimate(db, redis, req.params.account_id, function(err, result)
         {
             if (err)
             {
                 return cb(err);
             }
-            async.map(result.rows, function(r, cb)
-            {
-                redis.zscore('solo_competitive_rank', r.account_id, cb);
-            }, function(err, result)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                var data = result.filter(function(d)
-                {
-                    return d;
-                }).map(function(d)
-                {
-                    return Number(d);
-                });
-                res.json(
-                {
-                    estimate: ~~(data.reduce(function(a, b)
-                    {
-                        return a + b;
-                    }, 0) / data.length)
-                });
-            });
+            console.log(result);
+            res.json(result);
         });
     });
     api.get('/user', function(req, res)
@@ -138,6 +112,29 @@ module.exports = function(db, redis)
                 return cb(err);
             }
             res.json(result.rows);
+        });
+    });
+    api.get('health/:metric', function(req, res, cb)
+    {
+        redis.hgetall('health', function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            for (var key in result)
+            {
+                result[key] = JSON.parse(result[key]);
+            }
+            if (!req.params.metric)
+            {
+                res.json(result);
+            }
+            else
+            {
+                var single = result[req.params.metric];
+                res.status(single.ok ? 200 : 500).json(single);
+            }
         });
     });
     return api;
