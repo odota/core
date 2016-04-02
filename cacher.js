@@ -26,7 +26,7 @@ function processCache(job, cb)
 {
     var match = job.data.payload;
     //console.log('match: %s', match.match_id);
-    async.series(
+    async.parallel(
     {
         "cache": function(cb)
         {
