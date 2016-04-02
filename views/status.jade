@@ -117,7 +117,7 @@ block content
             tr
               td=key
               td #{val.metric}/#{val.threshold}
-                span.small.text-muted  #{(val.metric/val.threshold).toFixed(2)}%
+                span.small.text-muted  #{(val.metric/val.threshold*100).toFixed(2)}%
               td=moment.unix(val.timestamp).fromNow()
               td(class=val.metric < val.threshold ? "text-success" : "text-danger")=val.metric < val.threshold
 
