@@ -104,6 +104,25 @@ block content
               td=entry.count
   .row
     .col-md-12
+      h3 Health
+      table.table.table-condensed
+        thead
+          tr
+            th Name
+            th Metric/Threshold
+            th Time
+            th Healthy
+        tbody
+          each val, key in result.health
+            tr
+              td=key
+              td #{val.metric}/#{val.threshold}
+                span.small.text-muted  #{(val.metric/val.threshold).toFixed(2)}%
+              td=moment.unix(val.timestamp).fromNow()
+              td(class=val.metric < val.threshold ? "text-success" : "text-danger")=val.metric < val.threshold
+
+  .row
+    .col-md-12
       h3 Load Times (ms)
       #chart-histogram-load_times
       //pre=JSON.stringify(result.load_times)

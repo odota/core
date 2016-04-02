@@ -208,12 +208,14 @@ function insertMatch(db, redis, match, options, cb)
         //insert into player matches
         //current dependencies on matches/player_matches in db
         //fullhistory, diff a user's current matches from the set obtained from webapi
-        //cacher, get source-of-truth counts/wins for a hero for rankings
-        //distributions (queries on gamemode/lobbytype/skill)
-        //status (recent added/parsed, counts)
+        //rankings audit/bootstrap (manually count results from cassandra?)
+        //validatecache audit
+        //distributions (queries on gamemode/lobbytype/skill), move to redis?
+        //status (recent added/parsed)
         //query for match (joins)
         //query for player (joins)
         //mmr estimator (players in last 10 matches)
+        //instead of serialize insert using JSON syntax?
         var obj = serialize(match);
         var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
         {
@@ -805,6 +807,45 @@ function updateScore(redis, player, cb)
     console.log("ranked %s, %s", player.account_id, player.hero_id);
     cb();
 }
+
+function mmrEstimate(db, redis, account_id, cb)
+{
+    db.raw(`
+        select account_id from player_matches pm 
+        where pm.match_id in (select match_id from player_matches where account_id = ? order by match_id desc limit 10)
+        AND account_id < ?
+        ;
+        `, [account_id, constants.anonymous_account_id]).asCallback(function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        async.map(result.rows, function(r, cb)
+        {
+            redis.zscore('solo_competitive_rank', r.account_id, cb);
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var data = result.filter(function(d)
+            {
+                return d;
+            }).map(function(d)
+            {
+                return Number(d);
+            });
+            cb(err,
+            {
+                estimate: utility.average(data),
+                stdDev: utility.stdDev(data),
+                n: data.length
+            });
+        });
+    });
+}
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
@@ -824,4 +865,5 @@ module.exports = {
     getBenchmarks: getBenchmarks,
     getLeaderboard: getLeaderboard,
     updateScore: updateScore,
+    mmrEstimate: mmrEstimate,
 };

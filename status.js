@@ -158,6 +158,21 @@ module.exports = function getStatus(db, redis, cb)
             {
                 cb(err, generateCounts(arr, 60 * 60 * 1000));
             });
+        },
+        health: function(cb)
+        {
+            redis.hgetall('health', function(err, result)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                for (var key in result)
+                {
+                    result[key] = JSON.parse(result[key]);
+                }
+                cb(err, result);
+            });
         }
     }, function(err, results)
     {

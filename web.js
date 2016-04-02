@@ -199,10 +199,6 @@ app.use(function(req, res, next)
         {
             redis.get("banner", cb);
         },
-        apiDown: function(cb)
-        {
-            redis.get("apiDown", cb);
-        },
         cheese: function(cb)
         {
             redis.get("cheese_goal", cb);
@@ -211,7 +207,6 @@ app.use(function(req, res, next)
     {
         res.locals.user = req.user;
         res.locals.banner_msg = results.banner;
-        res.locals.api_down = Number(results.apiDown);
         res.locals.cheese = results.cheese;
         return next(err);
     });
@@ -239,7 +234,7 @@ poet.addRoute('/blog/:id?', function(req, res)
 app.get('/robots.txt', function(req, res)
 {
     res.type('text/plain');
-    res.send("User-agent: *\nDisallow: /players\nDisallow: /matches");
+    res.send("User-agent: *\nDisallow: /matches\nDisallow: /api");
 });
 app.route('/').get(function(req, res, next)
 {

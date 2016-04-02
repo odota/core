@@ -173,6 +173,12 @@
       "instances": 1
     },
     {
+      "script": "monitor.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+    },    
+    {
       "script": "web.js",
       "role": "web",
       "exec_mode": "cluster",
