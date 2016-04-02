@@ -25,7 +25,7 @@ cQueue.on('completed', function(job)
 function processCache(job, cb)
 {
     var match = job.data.payload;
-    //console.log('match: %s', match.match_id);
+    console.log('match: %s', match.match_id);
     async.parallel(
     {
         "cache": function(cb)
@@ -202,7 +202,7 @@ function updateMatchRating(match, cb)
         {
             redis.zadd('match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0), avg, match.match_id);
             //for each player
-            async.each(match.players, function(player, cb)
+            match.players.forEach(function(player)
             {
                 if (player.account_id !== constants.anonymous_account_id)
                 {
@@ -210,7 +210,8 @@ function updateMatchRating(match, cb)
                     redis.lpush('mmr_estimates:' + player.account_id, avg);
                     redis.ltrim('mmr_estimates:' + player.account_id, 0, 50);
                 }
-            }, cb);
+            });
+            cb();
         }
         else
         {
