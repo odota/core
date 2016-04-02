@@ -18,12 +18,15 @@ cQueue.on('completed', function(job)
 {
     job.remove();
 });
-
+/**
+ * Handles counting and caching tasks to be performed when a match is inserted or parsed.
+ * All operations in this processor should deal with ephemeral data (can be reconstructed from persistent data stores)
+ **/
 function processCache(job, cb)
 {
     var match = job.data.payload;
     //console.log('match: %s', match.match_id);
-    async.parallel(
+    async.series(
     {
         "cache": function(cb)
         {
@@ -31,23 +34,59 @@ function processCache(job, cb)
         },
         "rankings": function(cb)
         {
-            return updateRankings(match, cb);
+            if (!config.ENABLE_RANKER || match.lobby_type !== 7 || match.origin !== "scanner")
+            {
+                return cb();
+            }
+            else
+            {
+                return updateRankings(match, cb);
+            }
         },
         "updateMatchRating": function(cb)
         {
-            return updateMatchRating(match, cb);
+            if (match.origin !== "scanner")
+            {
+                return cb();
+            }
+            else
+            {
+                return updateMatchRating(match, cb);
+            }
         },
+        "incrCounts": function(cb)
+        {
+            try
+            {
+                if (match.origin === "scanner")
+                {
+                    incrCounts(match);
+                }
+                cb();
+            }
+            catch (e)
+            {
+                return cb(e);
+            }
+        },
+        "updateBenchmarks": function(cb)
+        {
+            try
+            {
+                updateBenchmarks(match);
+                cb();
+            }
+            catch (e)
+            {
+                return cb(e);
+            }
+        }
     }, function(err)
     {
         if (err)
         {
             console.error(err);
         }
-        if (match.origin === "scanner")
-        {
-            incrCounts(match);
-        }
-        updateBenchmarks(match);
         return cb(err);
     });
 }
@@ -77,7 +116,7 @@ function updateRankings(match, cb)
 {
     async.each(match.players, function(player, cb)
     {
-        if (!config.ENABLE_RANKER || match.lobby_type !== 7 || !player.account_id || player.account_id === constants.anonymous_account_id)
+        if (!player.account_id || player.account_id === constants.anonymous_account_id)
         {
             return cb();
         }
@@ -117,15 +156,14 @@ function updateRankings(match, cb)
             player.games = result.games;
             player.radiant_win = match.radiant_win;
             //make sure we have existing score if we want to incr, otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
-            //also add adjustable random factor to fallback to db for consistency check
-            player.incr = Boolean(player.score) && Math.random() < 0.999;
+            player.incr = Boolean(player.score);
             if (player.incr)
             {
                 updateScore(redis, player, cb);
             }
             else
             {
-                //db mode, lookup of current games, wins
+                //db mode, lookup of current games, wins.  This is the bootstrapping case (new player entering rankings).  Also can be used as a consistency check (audit)
                 db.raw(`
             SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
             FROM player_matches
@@ -163,17 +201,29 @@ function updateMatchRating(match, cb)
         if (avg && !Number.isNaN(avg))
         {
             redis.zadd('match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0), avg, match.match_id);
+            //for each player
+            async.each(match.players, function(player, cb)
+            {
+                if (player.account_id !== constants.anonymous_account_id)
+                {
+                    //push into list, limit to 50 elements
+                    redis.lpush('mmr_estimates:' + player.account_id, avg);
+                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 50);
+                }
+            }, cb);
         }
-        return cb(err);
+        else
+        {
+            return cb(err);
+        }
     });
 }
 
 function incrCounts(match)
 {
-    //increment redis counts
-    //count match
+    //count match for telemetry
     redis.zadd("added_match", moment().format('X'), match.match_id);
-    //picks
+    //increment picks
     var radiant = [];
     var dire = [];
     for (var i = 0; i < match.players.length; i++)

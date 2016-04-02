@@ -68,7 +68,7 @@ function buildPlayer(options, cb)
     var redis = options.redis;
     var account_id = options.account_id;
     var orig_account_id = account_id;
-    var info = options.info;
+    var info = options.info || "index";
     var subkey = options.subkey;
     var query = options.query;
     if (Number.isNaN(account_id))
@@ -265,6 +265,10 @@ function buildPlayer(options, cb)
                         return cb();
                     }
                 },
+                mmr_estimate: function(cb)
+                {
+                    queries.mmrEstimate(db, redis, account_id, cb);
+                },
                 ratings: function(cb)
                 {
                     if (info === "rating")
@@ -299,6 +303,7 @@ function buildPlayer(options, cb)
             {
                 player.rankings = result.rankings;
                 player.teammate_list = result.teammate_list;
+                player.mmr_estimate = result.mmr_estimate;
                 player.soloRating = result.soloRating;
                 player.partyRating = result.partyRating;
                 player.ratings = result.ratings || [];

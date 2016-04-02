@@ -206,15 +206,14 @@ function insertMatch(db, redis, match, options, cb)
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
         //insert into matches
         //insert into player matches
-        //current dependencies on matches/player_matches in db
-        //fullhistory, diff a user's current matches from the set obtained from webapi
+        //current dependencies on matches/player_matches in db (potential solution)
+        //fullhistory, diff a user's current matches from the set obtained from webapi (rewrite query)
         //rankings audit/bootstrap (manually count results from cassandra?)
-        //validatecache audit
-        //distributions (queries on gamemode/lobbytype/skill), move to redis?
-        //status (recent added/parsed)
-        //query for match (joins)
-        //query for player (joins)
-        //mmr estimator (players in last 10 matches)
+        //validatecache audit (rewrite query)
+        //distributions: queries on gamemode/lobbytype/skill (move to redis?)
+        //status: recent added/parsed (rewrite query)
+        //query for match (rewrite with manual joins)
+        //query for player (rewrite with manual joins)
         //instead of serialize insert using JSON syntax?
         var obj = serialize(match);
         var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
@@ -810,39 +809,26 @@ function updateScore(redis, player, cb)
 
 function mmrEstimate(db, redis, account_id, cb)
 {
-    db.raw(`
-        select account_id from player_matches pm 
-        where pm.match_id in (select match_id from player_matches where account_id = ? order by match_id desc limit 10)
-        AND account_id < ?
-        ;
-        `, [account_id, constants.anonymous_account_id]).asCallback(function(err, result)
+    redis.lrange('mmr_estimates:' + account_id, 0, -1, function(err, result)
     {
         if (err)
         {
             return cb(err);
         }
-        async.map(result.rows, function(r, cb)
+        var data = result.filter(function(d)
         {
-            redis.zscore('solo_competitive_rank', r.account_id, cb);
-        }, function(err, result)
+            //remove invalid values
+            return d;
+        }).map(function(d)
         {
-            if (err)
-            {
-                return cb(err);
-            }
-            var data = result.filter(function(d)
-            {
-                return d;
-            }).map(function(d)
-            {
-                return Number(d);
-            });
-            cb(err,
-            {
-                estimate: utility.average(data),
-                stdDev: utility.stdDev(data),
-                n: data.length
-            });
+            //convert to numerical values
+            return Number(d);
+        });
+        cb(err,
+        {
+            estimate: utility.average(data),
+            stdDev: utility.stdDev(data),
+            n: data.length
         });
     });
 }

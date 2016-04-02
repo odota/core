@@ -62,18 +62,6 @@ module.exports = function(db, redis)
             res.json(player);
         });
     });
-    api.get('/mmrestimate/:account_id', function(req, res, cb)
-    {
-        queries.mmrEstimate(db, redis, req.params.account_id, function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            console.log(result);
-            res.json(result);
-        });
-    });
     api.get('/user', function(req, res)
     {
         res.json(req.user);

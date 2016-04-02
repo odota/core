@@ -42,25 +42,13 @@ block content
                 small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
 
             span.rating
-              span: abbr(title="MMR estimate based on data from peer players")
+              span: abbr(title="MMR estimate based on available data from peer players. This is a 95% confidence interval on the true mean MMR of the recent matches played by this user.")
                 i.fa.fa-fw.fa-question-circle
-              small#estimate(onclick="estimateMMR(#{player.account_id})", style="margin-left:.5em;display:inline-block;")
-                button.btn.btn-xs.btn-success Estimate MMR
-            script.
-              function estimateMMR(account_id)
-              {
-                document.getElementById('estimate').innerHTML='<i class="fa fa-spinner fa-spin"></i>';
-                var oReq = new XMLHttpRequest();
-                oReq.open("GET", "/api/mmrestimate/"+account_id);
-                oReq.send();
-                oReq.onreadystatechange = function() {
-                  if (oReq.readyState == 4 && oReq.status == 200) {
-                    var resp = JSON.parse(oReq.responseText);
-                    var stdDev = resp.stdDev ? resp.stdDev.toFixed(0) : null;
-                    document.getElementById("estimate").innerHTML = resp.estimate ? resp.estimate + " &#177; " + stdDev*2 + ", N=" + resp.n : "N/A";
-                  }
-                };
-              }
+              small#estimate(style="margin-left:.5em;display:inline-block;")
+                if player.mmr_estimate.estimate
+                  span #{player.mmr_estimate.estimate} !{"&#177;"} #{player.mmr_estimate.stdDev ? (player.mmr_estimate.stdDev*2).toFixed(0) : 0}, N=#{player.mmr_estimate.n}
+                else
+                  ="N/A"
     .col-md-4
       h4
         span.text-primary
