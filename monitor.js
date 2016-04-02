@@ -7,56 +7,38 @@ var api_key = config.STEAM_API_KEY.split(',')[0];
 var health = {
     random_match: function random_match(cb)
     {
-        db.raw(`select max(match_id) from matches`).asCallback(function(err, result)
+        db.raw(`select match_id from matches tablesample bernoulli(1) limit 1`).asCallback(function(err, result)
         {
             if (err)
             {
                 return cb(err);
             }
-            var max = Number(result.rows[0].max);
-            var random = Math.floor(Math.random() * max);
-            db.raw(`select match_id from matches where match_id > ? order by match_id asc limit 1`, [random]).asCallback(function(err, result)
+            request(config.ROOT_URL + "/matches/" + result.rows[0].match_id, function(err, resp, body)
             {
-                if (err)
+                var fail = err || resp.statusCode !== 200;
+                return cb(fail,
                 {
-                    return cb(err);
-                }
-                request(config.ROOT_URL + "/matches/" + result.rows[0].match_id, function(err, resp, body)
-                {
-                    var fail = err || resp.statusCode !== 200;
-                    return cb(fail,
-                    {
-                        metric: Number(fail),
-                        threshold: 1,
-                    });
+                    metric: Number(fail),
+                    threshold: 1,
                 });
             });
         });
     },
     random_player: function random_player(cb)
     {
-        db.raw(`select max(account_id) from players`).asCallback(function(err, result)
+        db.raw(`select account_id from players tablesample bernoulli(1) limit 1`).asCallback(function(err, result)
         {
             if (err)
             {
                 return cb(err);
             }
-            var max = Number(result.rows[0].max);
-            var random = Math.floor(Math.random() * max);
-            db.raw(`select account_id from players where account_id > ? order by account_id asc limit 1`, [random]).asCallback(function(err, result)
+            request(config.ROOT_URL + "/players/" + result.rows[0].account_id, function(err, resp, body)
             {
-                if (err)
+                var fail = err || resp.statusCode !== 200;
+                return cb(fail,
                 {
-                    return cb(err);
-                }
-                request(config.ROOT_URL + "/players/" + result.rows[0].account_id, function(err, resp, body)
-                {
-                    var fail = err || resp.statusCode !== 200;
-                    return cb(fail,
-                    {
-                        metric: Number(fail),
-                        threshold: 1,
-                    });
+                    metric: Number(fail),
+                    threshold: 1,
                 });
             });
         });

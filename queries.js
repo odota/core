@@ -208,12 +208,14 @@ function insertMatch(db, redis, match, options, cb)
         //insert into player matches
         //current dependencies on matches/player_matches in db
         //fullhistory, diff a user's current matches from the set obtained from webapi
-        //cacher, get source-of-truth counts/wins for a hero for rankings
-        //distributions (queries on gamemode/lobbytype/skill)
-        //status (recent added/parsed, counts)
+        //rankings audit/bootstrap (manually count results from cassandra?)
+        //validatecache audit
+        //distributions (queries on gamemode/lobbytype/skill), move to redis?
+        //status (recent added/parsed)
         //query for match (joins)
         //query for player (joins)
         //mmr estimator (players in last 10 matches)
+        //instead of serialize insert using JSON syntax?
         var obj = serialize(match);
         var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
         {
