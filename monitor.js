@@ -108,6 +108,10 @@ var health = {
             {
                 return cb(err);
             }
+            arr = arr.map(function(d)
+            {
+                return Number(d);
+            });
             var metric = utility.average(arr);
             return cb(err,
             {
