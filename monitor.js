@@ -101,7 +101,7 @@ var health = {
     },
     parse_delay: function parse_delay(cb)
     {
-        //get parse delay array, compare with threshold (30 min)
+        //get parse delay array, compare with threshold
         redis.lrange('parse_delay', 0, -1, function(err, arr)
         {
             if (err)
@@ -112,11 +112,11 @@ var health = {
             {
                 return Number(d);
             });
-            var metric = utility.average(arr);
+            var metric = utility.median(arr);
             return cb(err,
             {
                 metric: metric,
-                threshold: 30 * 60 * 1000,
+                threshold: 60 * 60 * 1000,
             });
         });
     },

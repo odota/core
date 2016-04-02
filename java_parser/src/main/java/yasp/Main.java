@@ -26,6 +26,7 @@ import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_Locati
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_SpectatorPlayerUnitOrders;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
+import skadistats.clarity.wire.s2.proto.S2DotaGcCommon.CMsgDOTAMatch;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -113,6 +114,13 @@ public class Main {
         output(entry);
     }
     */
+    
+    @OnMessage(CMsgDOTAMatch.class)
+    public void onDotaMatch(Context ctx, CMsgDOTAMatch message)
+    {
+        //TODO could use this for match overview data for uploads
+        //System.err.println(message);
+    }
 
     @OnMessage(CDOTAUserMsg_SpectatorPlayerUnitOrders.class)
     public void onSpectatorPlayerUnitOrders(Context ctx, CDOTAUserMsg_SpectatorPlayerUnitOrders message) {

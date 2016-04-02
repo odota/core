@@ -749,6 +749,17 @@ function stdDev(data)
     var stdDev = Math.sqrt(avgSquareDiff);
     return stdDev;
 }
+
+function median(data)
+{
+    data.sort(function(a, b)
+    {
+        return a - b;
+    });
+    var half = Math.floor(data.length / 2);
+    if (data.length % 2) return data[half];
+    else return (data[half - 1] + data[half]) / 2.0;
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -775,4 +786,5 @@ module.exports = {
     percentToTextClass: percentToTextClass,
     average: average,
     stdDev: stdDev,
+    median: median,
 };
