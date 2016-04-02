@@ -41,7 +41,7 @@ block content
             - var rtg = match.rating
             - var pct = match.rating_percentile
             - var pctD = (pct*100).toFixed(2)
-            if isNaN(pctD)
+            if !match.rating || Number.isNaN(match.rating)
               td N/A
             else
               td: abbr(title=util.format("The average MMR in this match of %s is higher than %s% of matches", rtg, pctD))
