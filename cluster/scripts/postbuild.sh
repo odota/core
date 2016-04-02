@@ -34,3 +34,10 @@ if [ -n "$KUBECONFIGDATA" ]; then
   export PATH="$PATH:$TRAVIS_BUILD_DIR"
   npm run deploy
 fi
+
+if [ -n "$GCE_KEY" ]; then
+  curl https://sdk.cloud.google.com | bash
+  echo "$GCE_KEY" > client-secret.json
+  gcloud auth activate-service-account --key-file client-secret.json --project peaceful-parity-87002
+  bash init-deploy.sh
+fi
