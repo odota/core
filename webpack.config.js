@@ -67,6 +67,7 @@ module.exports = {
                 target: config.ROOT_URL,
                 secure: false,
             }
-        }
+        },
+        historyApiFallback: true
     }
 };
