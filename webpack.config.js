@@ -62,6 +62,11 @@ module.exports = {
                 target: config.ROOT_URL,
                 secure: false,
             },
+            '/apps/*':
+            {
+                target: config.ROOT_URL,
+                secure: false,
+            }
         }
     }
 };
