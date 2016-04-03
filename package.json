@@ -50,7 +50,7 @@
     "datatables.net": "^1.10.11",
     "datatables.net-bs": "^1.10.11",
     "dota2": "^3.0.0",
-    "dota2-minimap-hero-sprites": "^1.0.1",
+    "dota2-minimap-hero-sprites": "^2.0.0",
     "dotenv": "^2.0.0",
     "es6-promise": "^3.1.2",
     "express": "^4.13.4",
