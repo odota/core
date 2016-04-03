@@ -1,9 +1,10 @@
 var webpack = require('webpack');
+var config = require('./config');
 module.exports = {
     entry:
     {
         'yasp': './public/js/yasp.js',
-        'yaspv2': './public/js/components/app.jsx'
+        'yaspv2': './public/js/yaspv2.js'
     },
     output:
     {
@@ -48,5 +49,19 @@ module.exports = {
                 }
             }
         ]
+    },
+    devServer:
+    {
+        contentBase: 'public/build',
+        progress: true,
+        host: "0.0.0.0",
+        proxy:
+        {
+            '/api/*':
+            {
+                target: config.ROOT_URL,
+                secure: false,
+            },
+        }
     }
 };

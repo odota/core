@@ -4,9 +4,7 @@ import
    connect
 }
 from 'react-redux';
-
-const NavBar = (state) => (
-   <div style={{marginBottom:"0px"}} className="navbar">
+const NavBar = (input) => (<div style={{marginBottom:"0px"}} className="navbar">
    <div className="navbar-header">
       <a href="/" className="navbar-brand">
          <strong className="theme-blue">YASP</strong>
@@ -20,10 +18,10 @@ const NavBar = (state) => (
    <div id="navbar" className="navbar-collapse collapse">
       <ul className="nav navbar-nav">
       {
-      state.isFetching ? 
+      input.isFetching ? 
       <li><i className="fa fa-spinner fa-spin"></i></li>
-      : state.data.map(page =>
-      <li><a href={'/'+page.path}>{page.name}</a></li>
+      : Object.keys(input.data).map(page =>
+      <li><a href={'/'+page}>{input.data[page].name}</a></li>
       )
       }
       </ul>
@@ -40,6 +38,6 @@ const NavBar = (state) => (
 
 function mapStateToProps(state)
 {
-   return state.navbar;
+   return state.reducers.navbar;
 }
 export default connect(mapStateToProps)(NavBar);
