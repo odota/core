@@ -89,17 +89,13 @@ module.exports = function(db, redis)
     });
     api.get('/search', function(req, res, cb)
     {
-        db.raw(`
-        SELECT account_id, personaname, avatarmedium, similarity(personaname, ?) 
-        FROM players WHERE personaname ILIKE ? 
-        ORDER BY similarity DESC LIMIT 1000
-        `, [req.query.q, "%" + req.query.q + "%"]).asCallback(function(err, result)
-        {
+        queries.searchPlayer(db, req.query.q, function(err, result) {
             if (err)
             {
-                return cb(err);
+               return cb(err);
             }
-            res.json(result.rows);
+
+            res.json(result)
         });
     });
     api.get('/health/:metric?', function(req, res, cb)

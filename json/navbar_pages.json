@@ -32,6 +32,9 @@
   "carry": {
     "name": "Carry"
   },
+  "search": {
+    "name": "Search"
+  },
   "plusplus": {
     "name": "++"
   }

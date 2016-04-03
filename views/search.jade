@@ -1,0 +1,30 @@
+extend layout
+  
+block content
+  .row
+    .col-md-4.text-center.col-md-offset-4
+      h1 Player Search
+      form.form
+        .input-group
+          input(type="text", name="q", class="form-control", placeholder="Search by Player Name or ID", value="#{ query ? query : ''}")
+          span.input-group-btn
+            button.btn.btn-default(type="submit")
+              span.glyphicon.glyphicon-search(aria-hidden="true")
+  mixin displayResult(player)
+    figure.effect-sarah
+      img(src="#{player.avatarfull}" alt="/public/images/yasp-icon.svg")
+      figcaption
+        h2 #{player.personaname}
+        p #{player.account_id}
+        a(href="/players/#{player.account_id}")
+  if result
+    .row
+      .col-md-12
+        .grid
+          if result.account_id
+            +displayResult(result.account_id)
+          each player in result.personaname
+            +displayResult(player)
+    link(rel="stylesheet", type="text/css", href="/public/css/search.css")
+  if !result && query
+    p Looks like we couldn't find anything!

@@ -832,6 +832,49 @@ function mmrEstimate(db, redis, account_id, cb)
         });
     });
 }
+
+function searchPlayer(db, query, cb)
+{
+    async.parallel(
+        {
+            account_id: function(callback)
+            {
+                if (isNaN(query))
+                {
+                    return callback();
+                } else
+                {
+                    db.first(['account_id', 'personaname', 'avatarfull'])
+                    .from('players')
+                    .where(
+                    {
+                        account_id: Number(query)
+                    })
+                    .asCallback(callback);
+                }
+            },
+            personaname: function(callback)
+            {
+                db.raw(`
+                    SELECT account_id, personaname, avatarfull, similarity(personaname, ?)
+                    FROM players WHERE personaname ILIKE ?
+                    ORDER BY similarity DESC LIMIT 1000
+                    `, [query, "%" + query + "%"])
+                .asCallback(function(err, result)
+                {
+                    if (err)
+                    {
+                        return callback(err);
+                    }
+
+                    return callback(err, result.rows);
+                });
+            }
+        },
+        cb
+    );
+}
+
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
@@ -852,4 +895,5 @@ module.exports = {
     getLeaderboard: getLeaderboard,
     updateScore: updateScore,
     mmrEstimate: mmrEstimate,
+    searchPlayer: searchPlayer
 };
