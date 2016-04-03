@@ -15,7 +15,7 @@ Patch Notes:
   * Only ranked games are counted and only players with a publicly shared MMR are eligible for rankings, since MMR is part of the ranking calculation.
 * Benchmarks.  See how each hero performs across a variety of stats.
   * We also automatically compute benchmarks for each hero in a match!  See this on each match page.
-* Faster player profiles.  Player profiles are now served out of Cassandra.  After an initial slow "cold" load from PostgreSQL, subsequent loads of a player profile should be much faster.Faster
+* Faster player profiles.  Player profiles are now served out of Cassandra.  After an initial slow "cold" load from PostgreSQL, subsequent loads of a player profile should be much faster.
 
 Got questions or feedback?  Come chat with us on Discord.
 
