@@ -15,14 +15,12 @@
     overflow: hidden;
     margin: 10px 1%;
     min-width: 100px;
-    max-width: 184px;
-    max-height: 120px;
     width: 18%;
     text-align: center;
     cursor: pointer;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 992px) {
     .grid figure {
         width: 23%
     }
