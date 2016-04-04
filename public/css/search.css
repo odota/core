@@ -1,3 +1,4 @@
+/*https://github.com/codrops/HoverEffectIdeas*/
 .grid {
     position: relative;
     margin: 0 auto;
@@ -17,16 +18,27 @@
     max-width: 184px;
     max-height: 120px;
     width: 18%;
-    background: #3085a3;
     text-align: center;
     cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .grid figure {
+        width: 23%
+    }
+}
+
+@media (max-width: 768px) {
+    .grid figure {
+        width: 31%;
+    }
 }
 
 .grid figure img {
     position: relative;
     display: block;
-    min-height: 100%;
-    max-width: 100%;
+    height: 50px;
+    width: 50px;
     opacity: 0.8;
 }
 
@@ -45,8 +57,8 @@
 .grid figure figcaption,
 .grid figure figcaption > a {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: -15px;
+    left: 40px;
     width: 100%;
     height: 100%;
 }
@@ -80,23 +92,14 @@
 }
 
 figure.effect-sarah {
-    background: #34ACCA;
+    background: #465154;
 }
 
 figure.effect-sarah img {
-    max-width: none;
-    width: -webkit-calc(100% + 20px);
-    width: calc(100% + 20px);
-    -webkit-transition: opacity 0.35s, -webkit-transform 0.35s;
-    transition: opacity 0.35s, transform 0.35s;
-    -webkit-transform: translate3d(-10px, 0, 0);
-    transform: translate3d(-10px, 0, 0);
-    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
 }
 
 figure.effect-sarah:hover img {
-    opacity: 0.4;
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
 }
@@ -112,10 +115,9 @@ figure.effect-sarah h2 {
     font-size: 1em;
     text-transform: initial;
     text-shadow: 1px 1px #000000;
-}
-
-figure.effect-sarah:hover figcaption {
-    color: black;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 80%;
 }
 
 figure.effect-sarah:hover h2 {
@@ -127,8 +129,8 @@ figure.effect-sarah h2::after {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 3px;
-    background: black;
+    height: 2px;
+    background: white;
     content: '';
     -webkit-transition: -webkit-transform 0.35s;
     transition: transform 0.35s;
@@ -142,7 +144,6 @@ figure.effect-sarah:hover h2::after {
 }
 
 figure.effect-sarah p {
-    padding: 1em 0;
     opacity: 0;
     -webkit-transition: opacity 0.35s, -webkit-transform 0.35s;
     transition: opacity 0.35s, transform 0.35s;

@@ -12,11 +12,11 @@ block content
               span.glyphicon.glyphicon-search(aria-hidden="true")
   mixin displayResult(player)
     figure.effect-sarah
-      img(src="#{player.avatarfull}" alt="/public/images/yasp-icon.svg")
-      figcaption
-        h2 #{player.personaname}
-        p #{player.account_id}
-        a(href="/players/#{player.account_id}")
+      a(href="/players/#{player.account_id}")
+        img(src="#{player.avatarfull}" alt="/public/images/yasp-icon.svg")
+        figcaption
+          h2 #{player.personaname}
+          p ID: #{player.account_id}
   if result
     .row
       .col-md-12
