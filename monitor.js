@@ -103,7 +103,7 @@ var health = {
     {
         //get parse delay array, compare with thresholde
         db.raw(`
-        SELECT avg(extract(epoch from now()) - (start_time+duration))*1000 from (select * from matches where version > 0 order by match_id desc limit 10) parsed;
+        SELECT avg(extract(epoch from now()) - (start_time+duration))*1000 as avg from (select * from matches where version > 0 order by match_id desc limit 10) parsed;
         `).asCallback(function(err, result)
         {
             if (err) {
