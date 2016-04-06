@@ -56,8 +56,17 @@ render(<Provider store={store}>
     { /* Tell the Router to use our enhanced history */ }
     <Router history={history}>
       <Route path="/" component={App}>
-        <Route path="matches" component={App}/>
-        <Route path="players" component={App}/>
+        <Route path="matches/:match_id" component={App}/>
+        <Route path="players/:account_id" component={App}/>
+        <Route path="distributions" component={App}/>
+        <Route path="carry" component={App}/>
+        <Route path="picks" component={App}/>
+        <Route path="mmstats" component={App}/>
+        <Route path="rankings" component={App}/>
+        <Route path="benchmarks" component={App}/>
+        <Route path="faq" component={App}/>
+        <Route path="blog" component={App}/>
+        <Route path="search" component={App}/>
       </Route>
     </Router>
   </Provider>, reactElement);
