@@ -8,9 +8,9 @@ block playercontent
   //pre=JSON.stringify(player.heroes_list)
   .row
     .col-md-7
-      +match_table(player.aggData.matches.slice(0,20))
+      +match_table(player.matches)
     .col-md-5
-      +hero_table(player.heroes_list.slice(0,20), true)
+      +hero_table(player.heroes_list, true)
       //+teammate_table(player.teammate_list.slice(0,10), true)
       
 append footer_assets
