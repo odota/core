@@ -245,7 +245,7 @@ function buildPlayer(options, cb)
                         {
                             return b.games - a.games;
                         });
-                        heroes_list.slice(0, info === "index" ? 30 : undefined);
+                        heroes_list = heroes_list.slice(0, info === "index" ? 30 : undefined);
                         cb(null, heroes_list);
                     }
                     else
