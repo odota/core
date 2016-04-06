@@ -833,24 +833,53 @@ function mmrEstimate(db, redis, account_id, cb)
     });
 }
 
+/**
+ * @param db - databse object
+ * @param search - object to for where parameter of query
+ * @param cb - callback
+ */
+function findPlayer(db, search, cb)
+{
+    db.first(['account_id', 'personaname', 'avatarfull'])
+    .from('players')
+    .where(search)
+    .asCallback(cb);
+}
+
 function searchPlayer(db, query, cb)
 {
     async.parallel(
         {
             account_id: function(callback)
             {
-                if (isNaN(query))
+                if (Number.isNaN(Number(query)))
                 {
                     return callback();
-                } else
+                }
+                else
                 {
-                    db.first(['account_id', 'personaname', 'avatarfull'])
-                    .from('players')
-                    .where(
-                    {
-                        account_id: Number(query)
-                    })
-                    .asCallback(callback);
+                    findPlayer(db, {account_id: Number(query)}, callback);
+                }
+            },
+            steam64: function(callback)
+            {
+                if (!query.startsWith("7656119"))
+                {
+                    return callback();
+                }
+                else
+                {
+                    findPlayer(db, {steamid: query}, callback);
+                }
+            },
+            url: function(callback)
+            {
+                if (query.indexOf("http://steamcommunity.com") === -1) {
+                    return callback();
+                }
+                else
+                {
+                    findPlayer(db, {profileurl: query}, callback);
                 }
             },
             personaname: function(callback)
@@ -858,7 +887,7 @@ function searchPlayer(db, query, cb)
                 db.raw(`
                     SELECT account_id, personaname, avatarfull, similarity(personaname, ?)
                     FROM players WHERE personaname ILIKE ?
-                    ORDER BY similarity DESC LIMIT 1000
+                    ORDER BY similarity DESC LIMIT 100
                     `, [query, "%" + query + "%"])
                 .asCallback(function(err, result)
                 {
@@ -871,7 +900,25 @@ function searchPlayer(db, query, cb)
                 });
             }
         },
-        cb
+        function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            
+            var ret = [];
+            
+            for(var key in result)
+            {
+                if (result[key])
+                {
+                    ret = ret.concat(result[key]);
+                }
+            }
+            
+            cb(null, ret);
+        }
     );
 }
 

@@ -2,29 +2,29 @@ extend layout
   
 block content
   .row
-    .col-md-4.text-center.col-md-offset-4
+    .col-md-6.text-center.col-md-offset-3
       h1 Player Search
       form.form
         .input-group
-          input(type="text", name="q", class="form-control", placeholder="Search by Player Name or ID", value="#{ query ? query : ''}")
+          input(type="text", name="q", class="form-control", placeholder="Search by Player Name, Steam ID, or Steam Profile URL", value="#{ query ? query : ''}")
           span.input-group-btn
             button.btn.btn-default(type="submit")
               span.glyphicon.glyphicon-search(aria-hidden="true")
-  mixin displayResult(player)
-    figure.effect-sarah
-      a(href="/players/#{player.account_id}")
-        img(src="#{player.avatarfull}" alt="/public/images/yasp-icon.svg")
-        figcaption
-          h2 #{player.personaname}
-          p ID: #{player.account_id}
-  if result
+  if result && Array.isArray(result) && result.length > 0
     .row
       .col-md-12
         .grid
-          if result.account_id
-            +displayResult(result.account_id)
-          each player in result.personaname
-            +displayResult(player)
+          // Remove repeats by keeping track of what we've printed.
+          - var seen = {};
+          each player in result
+            if !(player.account_id in seen)
+              figure.effect-sarah
+                a(href="/players/#{player.account_id}")
+                  img(src="#{player.avatarfull}" alt="/public/images/yasp-icon.svg")
+                  figcaption
+                    h2 #{player.personaname}
+                    p ID: #{player.account_id}
+              - seen[player.account_id] = 0;
     link(rel="stylesheet", type="text/css", href="/public/css/search.css")
-  if !result && query
-    p Looks like we couldn't find anything!
+  else if result
+    h3.text-center Looks like we couldn't find anything!

@@ -431,7 +431,9 @@ app.get('/search', function(req, res, cb)
                 result: result
             })
         })
-    } else {
+    }
+    else
+    {
         res.render('search');
     }
 });

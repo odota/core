@@ -89,13 +89,19 @@ module.exports = function(db, redis)
     });
     api.get('/search', function(req, res, cb)
     {
-        queries.searchPlayer(db, req.query.q, function(err, result) {
+        if (!req.query.q)
+        {
+            return cb(400);
+        }
+        
+        queries.searchPlayer(db, req.query.q, function(err, result)
+        {
             if (err)
             {
                return cb(err);
             }
 
-            res.json(result)
+            res.json(result);
         });
     });
     api.get('/health/:metric?', function(req, res, cb)
