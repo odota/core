@@ -196,6 +196,10 @@ app.get('/robots.txt', function(req, res)
     res.type('text/plain');
     res.send("User-agent: *\nDisallow: /matches\nDisallow: /api");
 });
+app.route('/healthz').get(function(req, res)
+{
+    res.send("ok");
+});
 app.route('/login').get(passport.authenticate('steam',
 {
     failureRedirect: '/'
@@ -212,10 +216,6 @@ app.route('/logout').get(function(req, res)
     req.logout();
     req.session = null;
     res.redirect('/');
-});
-app.route('/healthz').get(function(req, res)
-{
-    res.send("ok");
 });
 app.use('/api', api(db, redis));
 app.use(function(req, res, cb)

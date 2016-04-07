@@ -26,17 +26,42 @@ module.exports = function(db, redis)
     {
         res.json(constants.abilities[req.query.name]);
     });
-    api.get('/match_pages', function(req, res)
+    api.get('/metadata', function(req, res, cb)
     {
-        res.json(constants.match_pages);
-    });
-    api.get('/player_pages', function(req, res)
-    {
-        res.json(constants.player_pages);
-    });
-    api.get('/navbar_pages', function(req, res)
-    {
-        res.json(constants.navbar_pages);
+        async.parallel(
+        {
+            banner: function(cb)
+            {
+                redis.get("banner", cb);
+            },
+            cheese: function(cb)
+            {
+                redis.get("cheese_goal", cb);
+            },
+            user: function(cb)
+            {
+                cb(null, req.user);
+            },
+            navbar_pages: function(cb)
+            {
+                cb(null, constants.navbar_pages);
+            },
+            player_pages: function(cb)
+            {
+                cb(null, constants.player_pages);
+            },
+            match_pages: function(cb)
+            {
+                cb(null, constants.match_pages);
+            },
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
     });
     api.get('/matches/:match_id/:info?', function(req, res, cb)
     {
@@ -73,15 +98,9 @@ module.exports = function(db, redis)
             res.json(player);
         });
     });
-    api.get('/user', function(req, res)
-    {
-        res.json(req.user);
-    });
     api.get('/distributions');
     api.get('/picks/:n');
-    api.get('/ratings/:account_id');
-    api.get('/rankings/heroes/:hero_id');
-    api.get('/rankings/players/:account_id');
+    api.get('/rankings/:hero_id');
     api.get('/faq');
     api.get('/status');
     //TODO will need to figure out how to do slugs if @albertcui insists on routing with them

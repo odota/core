@@ -31,9 +31,9 @@ import
 from 'react-router-redux';
 require('../../node_modules/font-awesome/css/font-awesome.css');
 require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
-require('../../node_modules/bootstrap/dist/css/bootstrap.css');
-require('../../node_modules/bootswatch/darkly/bootstrap.css');
-require('../css/yasp.css');
+//require('../../node_modules/bootstrap/dist/css/bootstrap.css');
+//require('../../node_modules/bootswatch/darkly/bootstrap.css');
+//require('../css/yasp.css');
 const loggerMiddleware = createLogger();
 var reducer = combineReducers(Object.assign(
 {},
@@ -48,9 +48,8 @@ var store = createStore(reducer, applyMiddleware(thunkMiddleware, // lets us dis
 ));
 // Create an enhanced history that syncs navigation events with the store
 const history = syncHistoryWithStore(browserHistory, store);
-store.dispatch(Actions.fetchNavbar());
-store.dispatch(Actions.fetchUser());
-store.dispatch(Actions.fetchCheese());
+// Actions to dispatch by default
+store.dispatch(Actions.fetchMetadata());
 let reactElement = document.getElementById('react');
 render(<Provider store={store}>
     { /* Tell the Router to use our enhanced history */ }

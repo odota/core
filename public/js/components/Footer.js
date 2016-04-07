@@ -1,11 +1,13 @@
 import React from 'react';
 import
 {
-  connect
+   connect
 }
 from 'react-redux';
-const Footer = () => (
-  <footer className="footer">
+const Footer = function(input)
+{
+   var w = (input.data.cheese ? input.data.cheese.cheese / input.data.cheese.goal : 0);
+   return <footer className="footer">
    <div className="container">
       <div className="row">
          <div className="col-md-4 text-center">
@@ -16,9 +18,8 @@ const Footer = () => (
             <div className="meter_wrapper">
                <h3 style={{"fontWeight":700, "marginTop": 0}}>Monthly Cheese Goal</h3>
                <div className="meter">
-                  <span style={{width: "2%", "minWidth":"7.1%"}}>2%</span>
+                  <span style={{width: w+"%"}}>{w}</span>
                </div>
-               <small>Behind 36.71%. Resets in 19 days.</small>
             </div>
          </div>
          <div className="col-md-4 text-center">
@@ -44,13 +45,11 @@ const Footer = () => (
       </div>
    </div>
   </footer>
-);
+};
 
-function mapStateToProps(input)
+function mapStateToProps(state)
 {
-  return {
-    input
-  };
+   return state.reducers.metadata;
 }
 export default connect(mapStateToProps)(Footer);
 //tooltips();

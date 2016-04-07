@@ -6,7 +6,7 @@ const Container = ({data}) => (
       <h1>Title 
       <small>Subtext</small>
       </h1>
-      <pre>{JSON.stringify(data)}</pre>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
 );
 

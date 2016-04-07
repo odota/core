@@ -1,95 +1,71 @@
 import * as Actions from '../actions/actions.js';
 var initialState = {
-  match:
+  content:
   {
     data:
     {}
   },
-  player:
+  metadata:
   {
     data:
-    {}
+    {
+      navbar_pages:
+      {},
+      match_pages:
+      {},
+      player_pages:
+      {},
+      cheese: null,
+      user: null,
+      banner: null,
+    }
   },
-  user:
-  {
-    data:
-    {}
-  },
-  navbar:
-  {
-    data:
-    {}
-  },
-  cheese:
-  {
-    data:
-    {}
-  }
 };
 export default function reducers(state = initialState, action)
 {
   switch (action.type)
   {
-    case Actions.REQUEST_NAVBAR:
+    case Actions.REQUEST_METADATA:
       return Object.assign(
       {}, state,
       {
-        navbar:
+        metadata:
         {
           isFetching: true,
           data:
           {}
         }
       });
-    case Actions.RECEIVE_NAVBAR:
+    case Actions.RECEIVE_METADATA:
       return Object.assign(
       {}, state,
       {
-        navbar:
+        metadata:
         {
           isFetching: false,
           data: action.data
         }
       });
-    case Actions.REQUEST_CHEESE:
+    case Actions.REQUEST_MATCH:
+    case Actions.REQUEST_PLAYER:
       return Object.assign(
       {}, state,
       {
-        cheese:
+        content:
         {
           isFetching: true,
           data:
           {}
         }
       });
-    case Actions.RECEIVE_CHEESE:
+    case Actions.RECEIVE_MATCH:
+    case Actions.RECEIVE_PLAYER:
       return Object.assign(
       {}, state,
       {
-        cheese:
+        content:
         {
-          isFetching: true,
-          data: action.data
-        }
-      });
-    case Actions.REQUEST_USER:
-      return Object.assign(
-      {}, state,
-      {
-        user:
-        {
-          isFetching: true,
-          data:
-          {}
-        }
-      });
-    case Actions.RECEIVE_USER:
-      return Object.assign(
-      {}, state,
-      {
-        user:
-        {
-          isFetching: true,
+          isFetching: false,
           data: action.data
         }
       });

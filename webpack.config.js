@@ -57,16 +57,34 @@ module.exports = {
         host: "0.0.0.0",
         proxy:
         {
+            //api
             '/api/*':
             {
                 target: config.ROOT_URL,
                 secure: false,
             },
+            //images
             '/apps/*':
             {
                 target: config.ROOT_URL,
                 secure: false,
-            }
+            },
+            //auth
+            '/login':
+            {
+                target: config.ROOT_URL,
+                secure: false,
+            },
+            '/logout':
+            {
+                target: config.ROOT_URL,
+                secure: false,
+            },
+            '/return':
+            {
+                target: config.ROOT_URL,
+                secure: false,
+            },
         },
         historyApiFallback: true
     }
