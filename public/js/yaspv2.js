@@ -67,6 +67,7 @@ render(<Provider store={store}>
         <Route path="faq" component={App}/>
         <Route path="blog" component={App}/>
         <Route path="search" component={App}/>
+        <Route path="status" component={App}/>
       </Route>
     </Router>
   </Provider>, reactElement);

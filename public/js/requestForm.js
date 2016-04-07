@@ -37,7 +37,7 @@ window.requestSubmit = function submit(response)
     var xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", updateProgress);
     // Open the connection.
-    xhr.open('POST', '/request_job', true);
+    xhr.open('POST', '/api/request_job', true);
     // Set up a handler for when the request finishes.
     xhr.onload = function()
     {
@@ -86,7 +86,7 @@ window.requestSubmit = function submit(response)
     {
         $.ajax(
         {
-            url: "/request_job?id=" + job_id
+            url: "/api/request_job?id=" + job_id
         }).done(function(msg)
         {
             console.log(msg);

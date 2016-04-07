@@ -429,8 +429,8 @@ function fillSkill(db, matches, options, cb)
         return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
     });
     */
-    //just get skill for last 20 matches (faster)
-    var recents = matches.slice(0, 20);
+    //just get skill for last N matches (faster)
+    var recents = matches.slice(0, 30);
     var skillMap = {};
     db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
     {

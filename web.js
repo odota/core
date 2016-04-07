@@ -5,8 +5,6 @@ var redis = require('./redis');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
-//var session = require('express-session');
-//var RedisStore = require('connect-redis')(session);
 var status = require('./status');
 var path = require('path');
 var moment = require('moment');
@@ -30,11 +28,11 @@ var players = require('./routes/players');
 var api = require('./routes/api');
 var donate = require('./routes/donate');
 var mmstats = require('./routes/mmstats');
-var requestRouter = require('./routes/request');
 var querystring = require('querystring');
 var util = require('util');
 var queue = require('./queue');
 var fhQueue = queue.getQueue('fullhistory');
+var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 //PASSPORT config
 passport.serializeUser(function(user, done)
 {
@@ -105,20 +103,6 @@ app.use("/apps/dota2/images/:group_name/:image_name", function(req, res)
     request("http://cdn.dota2.com/apps/dota2/images/" + req.params.group_name + "/" + req.params.image_name).pipe(res);
 });
 app.use("/public", express.static(path.join(__dirname, '/public')));
-/*
-var sessOptions = {
-    store: new RedisStore({
-        client: redis,
-        ttl: 52 * 7 * 24 * 60 * 60
-    }),
-    cookie: {
-        maxAge: 52 * 7 * 24 * 60 * 60 * 1000
-    },
-    secret: config.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-}
-*/
 var sessOptions = {
     maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
     secret: config.SESSION_SECRET,
@@ -128,11 +112,6 @@ var sessOptions = {
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded(
-{
-    extended: true
-}));
 app.use(function(req, res, next)
 {
     if (req.headers.host.match(/^www/) !== null)
@@ -211,6 +190,50 @@ app.use(function(req, res, next)
         return next(err);
     });
 });
+//START service/admin routes
+app.get('/robots.txt', function(req, res)
+{
+    res.type('text/plain');
+    res.send("User-agent: *\nDisallow: /matches\nDisallow: /api");
+});
+app.route('/login').get(passport.authenticate('steam',
+{
+    failureRedirect: '/'
+}));
+app.route('/return').get(passport.authenticate('steam',
+{
+    failureRedirect: '/'
+}), function(req, res, next)
+{
+    res.redirect('/players/' + req.user.account_id);
+});
+app.route('/logout').get(function(req, res)
+{
+    req.logout();
+    req.session = null;
+    res.redirect('/');
+});
+app.route('/healthz').get(function(req, res)
+{
+    res.send("ok");
+});
+app.use('/api', api(db, redis));
+app.use(function(req, res, cb)
+{
+    if (config.ENABLE_SPA_MODE)
+    {
+        res.sendFile('./public/build/index.html',
+        {
+            root: __dirname
+        });
+    }
+    else
+    {
+        return cb();
+    }
+});
+//END service/admin routes
+//START blog
 var Poet = require('poet');
 var poet = new Poet(app,
 {
@@ -231,11 +254,8 @@ poet.addRoute('/blog/:id?', function(req, res)
         max: max
     });
 });
-app.get('/robots.txt', function(req, res)
-{
-    res.type('text/plain');
-    res.send("User-agent: *\nDisallow: /matches\nDisallow: /api");
-});
+//END blog
+//START standard routes.  Don't need these in SPA
 app.route('/').get(function(req, res, next)
 {
     if (req.user)
@@ -252,9 +272,12 @@ app.route('/').get(function(req, res, next)
         });
     }
 });
-app.route('/healthz').get(function(req, res)
+app.get('/request', function(req, res)
 {
-    res.send("ok");
+    res.render('request',
+    {
+        rc_public: rc_public
+    });
 });
 app.route('/status').get(function(req, res, next)
 {
@@ -276,23 +299,6 @@ app.route('/faq').get(function(req, res)
     {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
-});
-app.route('/login').get(passport.authenticate('steam',
-{
-    failureRedirect: '/'
-}));
-app.route('/return').get(passport.authenticate('steam',
-{
-    failureRedirect: '/'
-}), function(req, res, next)
-{
-    res.redirect('/players/' + req.user.account_id);
-});
-app.route('/logout').get(function(req, res)
-{
-    req.logout();
-    req.session = null;
-    res.redirect('/');
 });
 // Kept for legacy reasons
 app.route('/privacyterms').get(function(req, res)
@@ -416,19 +422,18 @@ app.get('/benchmarks/:hero_id?', function(req, res, cb)
 });
 app.get('/april/:year?', function(req, res, cb)
 {
-   return res.render('plusplus', {
-       match: example_match,
-       truncate: [2, 6]
-   });
+    return res.render('plusplus',
+    {
+        match: example_match,
+        truncate: [2, 6]
+    });
 });
 app.use('/april/2016/hyperopia', hyperopia(db));
-app.use('/api', api(db, redis));
 app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));
-app.use('/', requestRouter(db, redis));
+//END standard routes
 app.use(function(req, res, next)
 {
-    //res.sendFile('./public/build/index.html', { root: __dirname });
     var err = new Error("Not Found");
     err.status = 404;
     return next(err);
