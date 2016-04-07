@@ -428,6 +428,7 @@ app.use('/', mmstats(redis));
 app.use('/', requestRouter(db, redis));
 app.use(function(req, res, next)
 {
+    //res.sendFile('./public/build/index.html', { root: __dirname });
     var err = new Error("Not Found");
     err.status = 404;
     return next(err);
