@@ -46,7 +46,7 @@ block content
                 i.fa.fa-fw.fa-question-circle
               small#estimate(style="margin-left:.5em;display:inline-block;")
                 if player.mmr_estimate.estimate
-                  span #{player.mmr_estimate.estimate} !{"&#177;"} #{player.mmr_estimate.stdDev ? (player.mmr_estimate.stdDev*2).toFixed(0) : 0}, N=#{player.mmr_estimate.n}
+                  span #{player.mmr_estimate.estimate} !{"&#177;"} #{player.mmr_estimate.stdDev ? (player.mmr_estimate.stdDev*2).toFixed(0) : 0}, #{player.mmr_estimate.n} matches
                 else
                   ="N/A"
     .col-md-4
