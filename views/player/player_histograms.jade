@@ -8,7 +8,7 @@ block playercontent
           var histogramData = {};
         ul.nav.nav-pills
           each v, key in histograms
-            li(class=subkey===key ? "active" : ""): a(href='/players/'+player.account_id+'/'+route+'/'+key + querystring) #{prettyPrint(key)}
+            li(class=subkey===key ? "active" : ""): a(href='/players/'+player.profile.account_id+'/'+route+'/'+key + querystring) #{prettyPrint(key)}
         each v, key in histograms
           if key in player.aggData && (subkey===key)
             - var val = player.aggData[key]
