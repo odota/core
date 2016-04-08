@@ -50,7 +50,7 @@
     "datatables.net": "^1.10.11",
     "datatables.net-bs": "^1.10.11",
     "dota2": "^3.0.0",
-    "dota2-minimap-hero-sprites": "^1.0.1",
+    "dota2-minimap-hero-sprites": "^2.0.0",
     "dotenv": "^2.0.0",
     "es6-promise": "^3.1.2",
     "express": "^4.13.4",
@@ -79,6 +79,8 @@
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "react-redux": "^4.4.0",
+    "react-router": "^2.0.1",
+    "react-router-redux": "^4.0.1",
     "react-tap-event-plugin": "^0.2.2",
     "redis": "2.5.3",
     "redux": "^3.3.1",
@@ -177,7 +179,7 @@
       "role": "core",
       "exec_mode": "cluster",
       "instances": 1
-    },    
+    },
     {
       "script": "web.js",
       "role": "web",

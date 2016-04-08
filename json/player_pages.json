@@ -41,9 +41,5 @@
   "rankings": {
     "name": "Rankings",
     "hide": true
-  },
-  "hyperopia": {
-    "name": "Hyperopia",
-    "new-feature": true
   }
 }

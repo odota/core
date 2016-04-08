@@ -101,21 +101,17 @@ var health = {
     },
     parse_delay: function parse_delay(cb)
     {
-        //get parse delay array, compare with threshold
-        redis.lrange('parse_delay', 0, -1, function(err, arr)
+        //get parse delay array, compare with thresholde
+        db.raw(`
+        SELECT avg(extract(epoch from now()) - (start_time+duration))*1000 as avg from (select * from matches where version > 0 order by match_id desc limit 10) parsed;
+        `).asCallback(function(err, result)
         {
-            if (err)
-            {
+            if (err) {
                 return cb(err);
             }
-            arr = arr.map(function(d)
-            {
-                return Number(d);
-            });
-            var metric = utility.median(arr);
             return cb(err,
             {
-                metric: metric,
+                metric: ~~result.rows[0].avg,
                 threshold: 60 * 60 * 1000,
             });
         });

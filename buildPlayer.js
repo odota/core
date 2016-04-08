@@ -1,6 +1,5 @@
 module.exports = buildPlayer;
 var async = require('async');
-var moment = require('moment');
 var constants = require('./constants.js');
 var queries = require("./queries");
 var utility = require('./utility');
@@ -183,11 +182,22 @@ function buildPlayer(options, cb)
             {
                 return cb(err);
             }
-            player.aggData = cache.aggData;
-            var aggData = player.aggData;
+            var aggData = cache.aggData;
             async.parallel(
             {
-                unpackAndSkill: function(cb)
+                profile: function(cb)
+                {
+                    return cb(null, player);
+                },
+                win: function(cb)
+                {
+                    return cb(null, aggData.win.sum);
+                },
+                lose: function(cb)
+                {
+                    return cb(null, aggData.lose.sum);
+                },
+                matches: function(cb)
                 {
                     if (info === "index" || info === "matches")
                     {
@@ -198,61 +208,50 @@ function buildPlayer(options, cb)
                         {
                             arr.push(matches[key]);
                         }
-                        aggData.matches = arr;
+                        matches = arr;
                         //sort matches by descending match id for display
-                        aggData.matches.sort(function(a, b)
+                        matches.sort(function(a, b)
                         {
                             return Number(b.match_id) - Number(a.match_id);
                         });
+                        matches = matches.slice(0, info === "index" ? 30 : undefined);
                         if (options.cache)
                         {
-                            fillSkill(db, aggData.matches, options, cb);
+                            fillSkill(db, matches, options, cb);
                         }
                         else
                         {
-                            cb();
+                            cb(null, matches);
                         }
                     }
                     else
                     {
-                        cb();
+                        cb(null, []);
                     }
                 },
-                postProcess: function(cb)
+                heroes_list: function(cb)
                 {
-                    if (info === "index" || info === "heroes")
+                    //convert heroes hash to array and sort
+                    if (aggData.heroes)
                     {
-                        //convert heroes hash to array and sort
-                        if (aggData.heroes)
+                        var heroes_list = [];
+                        var heroes = aggData.heroes;
+                        for (var id in heroes)
                         {
-                            var heroes_arr = [];
-                            var heroes = aggData.heroes;
-                            for (var id in heroes)
-                            {
-                                var h = heroes[id];
-                                heroes_arr.push(h);
-                            }
-                            heroes_arr.sort(function(a, b)
-                            {
-                                return b.games - a.games;
-                            });
-                            player.heroes_list = heroes_arr;
+                            var h = heroes[id];
+                            heroes_list.push(h);
                         }
+                        heroes_list.sort(function(a, b)
+                        {
+                            return b.games - a.games;
+                        });
+                        heroes_list = heroes_list.slice(0, info === "index" ? 30 : undefined);
+                        cb(null, heroes_list);
                     }
-                    if (aggData.obs && info === "wardmap")
+                    else
                     {
-                        //generally position data function is used to generate heatmap data for each player in a natch
-                        //we use it here to generate a single heatmap for aggregated counts
-                        player.obs = aggData.obs.counts;
-                        player.sen = aggData.sen.counts;
-                        var d = {
-                            "obs": true,
-                            "sen": true
-                        };
-                        generatePositionData(d, player);
-                        player.posData = [d];
+                        return cb(null, []);
                     }
-                    cb();
                 },
                 teammate_list: function(cb)
                 {
@@ -298,23 +297,75 @@ function buildPlayer(options, cb)
                     {
                         return cb();
                     }
+                },
+                activity: function(cb)
+                {
+                    if (info === "activity")
+                    {
+                        return cb(null, aggData.start_time);
+                    }
+                    else
+                    {
+                        return cb();
+                    }
+                },
+                wardmap: function(cb)
+                {
+                    if (info === "wardmap")
+                    {
+                        //generally position data function is used to generate heatmap data for each player in a natch
+                        //we use it here to generate a single heatmap for aggregated counts
+                        var ward_data = {
+                            obs: aggData.obs,
+                            sen: aggData.sen,
+                        };
+                        var ward_counts = {
+                            obs: ward_data.obs.counts,
+                            sen: ward_data.sen.counts,
+                        };
+                        var d = {
+                            "obs": true,
+                            "sen": true
+                        };
+                        generatePositionData(d, ward_counts);
+                        var obj = {
+                            posData: [d]
+                        };
+                        return cb(null, Object.assign(
+                        {}, obj, ward_data));
+                    }
+                    else
+                    {
+                        return cb();
+                    }
+                },
+                wordcloud: function(cb)
+                {
+                    if (info === "wordcloud")
+                    {
+                        return cb(null,
+                        {
+                            my_word_counts: aggData.my_word_counts,
+                            all_word_counts: aggData.all_word_counts
+                        });
+                    }
+                    else
+                    {
+                        return cb();
+                    }
+                },
+                aggData: function(cb)
+                {
+                    if (info === "histograms" || info === "records" || info === "trends" || info === "items" || info === "skills")
+                    {
+                        return cb(null, aggData);
+                    }
+                    else
+                    {
+                        return cb();
+                    }
                 }
-            }, function(err, result)
-            {
-                player.rankings = result.rankings;
-                player.teammate_list = result.teammate_list;
-                player.mmr_estimate = result.mmr_estimate;
-                player.soloRating = result.soloRating;
-                player.partyRating = result.partyRating;
-                player.ratings = result.ratings || [];
-                player.rankings = result.rankings;
-                player.match_count = player.aggData.match_id.n;
-                player.parsed_match_count = player.aggData.version.n;
-                player.abandon_count = player.aggData.abandons.sum;
-                player.win = player.aggData.win.sum;
-                player.lose = player.aggData.lose.sum;
-                cb(err, player);
-            });
+            }, cb);
         }
     });
 }
@@ -378,8 +429,8 @@ function fillSkill(db, matches, options, cb)
         return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
     });
     */
-    //just get skill for last 20 matches (faster)
-    var recents = matches.slice(0, 20);
+    //just get skill for last N matches (faster)
+    var recents = matches.slice(0, 30);
     var skillMap = {};
     db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
     {
@@ -400,6 +451,6 @@ function fillSkill(db, matches, options, cb)
             m.skill = m.skill || skillMap[m.match_id];
         });
         console.timeEnd('[PLAYER] fillSkill');
-        return cb(err);
+        return cb(err, matches);
     });
 }

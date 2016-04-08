@@ -14,7 +14,8 @@ constants*.json
 java_parser/target
 /bin/
 Thumbs.db
-public/build
+public/build/*
+!index.html
 /test/testfiles
 ecosystem.json
 *.swp

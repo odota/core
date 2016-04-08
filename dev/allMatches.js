@@ -42,7 +42,7 @@ if (cluster.isMaster)
 }
 else
 {
-    var bucket = process.env.BUCKET;
+    var bucket = Number(process.env.BUCKET);
     getColumnInfo(db, 'matches', function(err)
     {
         getColumnInfo(db, 'player_matches', function(err)

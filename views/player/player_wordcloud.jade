@@ -4,14 +4,14 @@ block playercontent
   .row
     .col-md-12
       h3 Words said by this player in all chat
-        small (#{player.aggData.my_word_counts.n} matches)
+        small (#{player.wordcloud.my_word_counts.n} matches)
       #mywordcontainer
         canvas()#mywordcounts
       
       +ad("banner2")
       
       h3 Words read by this player in all chat
-        small (#{player.aggData.all_word_counts.n} matches)
+        small (#{player.wordcloud.all_word_counts.n} matches)
       #allwordcontainer
         canvas()#allwordcounts
       
@@ -86,8 +86,8 @@ append footer_assets
       WordCloud(element, { list: word_list });
     }
 
-    var my_counts = !{JSON.stringify(player.aggData.my_word_counts.counts)};
-    var all_counts = !{JSON.stringify(player.aggData.all_word_counts.counts)};
+    var my_counts = !{JSON.stringify(player.wordcloud.my_word_counts.counts)};
+    var all_counts = !{JSON.stringify(player.wordcloud.all_word_counts.counts)};
 
     populate_word_cloud("mywordcounts", my_counts);
     populate_word_cloud("allwordcounts", all_counts);

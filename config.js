@@ -50,13 +50,7 @@ var defaults = {
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
     "ENABLE_CASSANDRA_PLAYER_CACHE": "", //set to use cassandra for player caches
     "ENABLE_RANKER": "", //set to enable ranker queue
-    //the following are deprecated
-    "PARSER_HOST": "localhost:5200",
-    "MONGO_URL": "mongodb://localhost/dota",
-    "AWS_S3_BUCKET": "",
-    "AWS_ACCESS_KEY_ID": "",
-    "AWS_SECRET_ACCESS_KEY": "",
-    "STEAM_GUARD_CODE": ""
+    "ENABLE_SPA_MODE": "", //set to enable single-page application mode for web
 };
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults) {

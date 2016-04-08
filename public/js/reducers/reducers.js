@@ -1,22 +1,76 @@
 import * as Actions from '../actions/actions.js';
-
-export default (state, action) => {
-  switch(action.type) {
-    case Actions.REQUEST_NAVBAR:
-      return Object.assign({}, state, {navbar: {isFetching: true, data: []}});
-    case Actions.RECEIVE_NAVBAR:
-      var arr = Object.keys(action.data).map(function(page){return {path: page, name: action.data[page].name}});
-      return Object.assign({}, state, {navbar: {isFetching: false, data: arr}});
-    case Actions.REQUEST_CHEESE:
-      return Object.assign({}, state, {cheese: {isFetching: true, data: {}}});
-    case Actions.RECEIVE_CHEESE:
-      return Object.assign({}, state, {cheese: {isFetching: true, data: action.data}});
-    case Actions.REQUEST_USER:
-      return Object.assign({}, state, {user: {isFetching: true, data: {}}});
-    case Actions.RECEIVE_USER:
-      return Object.assign({}, state, {user: {isFetching: true, data: action.data}});
+var initialState = {
+  content:
+  {
+    data:
+    {}
+  },
+  metadata:
+  {
+    data:
+    {
+      navbar_pages:
+      {},
+      match_pages:
+      {},
+      player_pages:
+      {},
+      cheese: null,
+      user: null,
+      banner: null,
+    }
+  },
+};
+export default function reducers(state = initialState, action)
+{
+  switch (action.type)
+  {
+    case Actions.REQUEST_METADATA:
+      return Object.assign(
+      {}, state,
+      {
+        metadata:
+        {
+          isFetching: true,
+          data:
+          {}
+        }
+      });
+    case Actions.RECEIVE_METADATA:
+      return Object.assign(
+      {}, state,
+      {
+        metadata:
+        {
+          isFetching: false,
+          data: action.data
+        }
+      });
+    case Actions.REQUEST_MATCH:
+    case Actions.REQUEST_PLAYER:
+      return Object.assign(
+      {}, state,
+      {
+        content:
+        {
+          isFetching: true,
+          data:
+          {}
+        }
+      });
+    case Actions.RECEIVE_MATCH:
+    case Actions.RECEIVE_PLAYER:
+      return Object.assign(
+      {}, state,
+      {
+        content:
+        {
+          isFetching: false,
+          data: action.data
+        }
+      });
     default:
       //unrecognized action, return original state
       return state;
   }
-};
+}
