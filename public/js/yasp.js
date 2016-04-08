@@ -22,7 +22,7 @@ require('wordcloud');
 window.h337 = require('../../node_modules/heatmap.js/heatmap.js');
 window.moment = require('moment');
 window.numeral = require('numeral');
-window.Resumable = require('resumablejs');
+// window.Resumable = require('resumablejs');
 //window.Plotly = require('plotly.js');
 require('../../node_modules/flag-icon-css/css/flag-icon.css');
 require("./tooltips.js")
