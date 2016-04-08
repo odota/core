@@ -36,7 +36,14 @@ module.exports = function(db, redis)
             },
             cheese: function(cb)
             {
-                redis.get("cheese_goal", cb);
+                redis.get("cheese_goal", function(err, result)
+                {
+                    return cb(err,
+                    {
+                        cheese: result,
+                        goal: config.GOAL
+                    });
+                });
             },
             user: function(cb)
             {

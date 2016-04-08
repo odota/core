@@ -40,7 +40,7 @@
   "farm_necronomicon": "Necronomicon units killed",
   "actions_per_min": "Number of actions the player performed per minute",
   "pings": "Number of times the player pinged the map",
-  "mmr": "Player's Solo MMR",
+  "mmr": "The Solo MMR of the player",
   "level": "Level achieved by hero",
   "kills": "Number of kills by hero",
   "deaths": "Number of deaths of hero",

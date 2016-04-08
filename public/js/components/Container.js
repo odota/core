@@ -1,20 +1,19 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import Match from './Match';
+import Player from './Player';
 
-const Container = ({data}) => (
+const Container = (data) => (
     <div>
-      <h1>Title 
-      <small>Subtext</small>
-      </h1>
+      <h2>{(data.personaname || data.match_id) + " "}
+      <small>{ "asdf" }</small>
+      </h2>
       <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
 );
 
 function mapStateToProps(data) {
-  return {
-    data
-  };
+  return {data};
 }
 
-export default connect(mapStateToProps)(Container);  
-    
+export default connect(mapStateToProps)(Container);

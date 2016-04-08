@@ -10,7 +10,7 @@ Patch Notes:
 * Complete match history.  In order to make our aggregated data more accurate and to improve the experience for new users (no more waiting for full history!), we've spent the last few months going back and adding every public Dota 2 match ever played.
   * All future public matches played will show up as well!
 * Rankings.  How do you stack up against other players?  Players are scored on heroes based on ranked games played, win rate, and MMR.  The full details are available on GitHub if you'd like to propose changes to the ranking algorithm.
-  * Each hero's top 250 players are shown on the corresponding hero page.
+  * Each hero's top-ranked players are shown on the corresponding hero page.
   * Each player page now has a new tab showing their rank and percentile for every hero eligible for ranking.
   * Only ranked games are counted and only players with a publicly shared MMR are eligible for rankings, since MMR is part of the ranking calculation.
 * Benchmarks.  See how each hero performs across a variety of stats.

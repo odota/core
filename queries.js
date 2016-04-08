@@ -360,56 +360,63 @@ function getMatch(db, redis, match_id, cb)
                 }
                 var players = result.players;
                 var ab_upgrades = JSON.parse(result.ab_upgrades);
-                players.forEach(function(p)
+                async.each(players, function(p, cb)
                 {
                     computePlayerMatchData(p);
                     if (ab_upgrades)
                     {
                         p.ability_upgrades_arr = ab_upgrades[p.player_slot];
                     }
-                });
-                match.players = players;
-                computeMatchData(match);
-                renderMatch(match);
-                getMatchRating(redis, match, function(err, avg)
+                    redis.zscore('solo_competitive_rank', p.account_id || "", function(err, rating)
+                    {
+                        p.solo_competitive_rank = rating;
+                        return cb(err);
+                    });
+                }, function(err)
                 {
                     if (err)
                     {
                         return cb(err);
                     }
-                    var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
-                    redis.zcard(key, function(err, card)
+                    match.players = players;
+                    computeMatchData(match);
+                    renderMatch(match);
+                    if (match.players)
+                    {
+                        //remove some duplicated columns from match.players to reduce size
+                        //we don't need them anymore since we already did the computations
+                        match.players.forEach(function(p)
+                        {
+                            delete p.chat;
+                            delete p.objectives;
+                            delete p.teamfights;
+                        });
+                    }
+                    getMatchRating(redis, match, function(err, avg)
                     {
                         if (err)
                         {
                             return cb(err);
                         }
-                        redis.zcount(key, 0, avg, function(err, count)
+                        var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
+                        redis.zcard(key, function(err, card)
                         {
                             if (err)
                             {
                                 return cb(err);
                             }
-                            match.rating = avg;
-                            match.rating_percentile = Number(count) / Number(card);
-                            benchmarkMatch(redis, match, function(err)
+                            redis.zcount(key, 0, avg, function(err, count)
                             {
                                 if (err)
                                 {
                                     return cb(err);
                                 }
-                                if (match.players)
+                                match.rating = avg;
+                                match.rating_percentile = Number(count) / Number(card);
+                                benchmarkMatch(redis, match, function(err)
                                 {
-                                    //remove some duplicated columns from match.players to reduce size
-                                    //we don't need them anymore since we already the computations
-                                    match.players.forEach(function(p)
-                                    {
-                                        delete p.chat;
-                                        delete p.objectives;
-                                        delete p.teamfights;
-                                    });
-                                }
-                                return cb(err, match);
+                                    return cb(err, match);
+                                });
                             });
                         });
                     });
@@ -600,10 +607,10 @@ function getPicks(redis, options, cb)
                     {
                         return single_rates[hero_id].pick_rate;
                     }).reduce((prev, curr) => prev * curr) / hids.length;
-                    entry.expected_win = hids.map(function(hero_id)
+                    entry.expected_win = expectedWin(hids.map(function(hero_id)
                     {
                         return single_rates[hero_id].win_rate;
-                    }).reduce((prev, curr) => prev + curr) / hids.length;
+                    }));
                     redis.zscore('picks_wins_counts:' + length, entry.key, function(err, score)
                     {
                         if (err)
@@ -626,6 +633,16 @@ function getPicks(redis, options, cb)
             });
         });
     });
+}
+
+function expectedWin(rates)
+{
+    //simple implementation, average
+    //return rates.reduce((prev, curr) => prev + curr)) / hids.length;
+    //advanced implementation, asymptotic
+    //https://github.com/yasp-dota/yasp/issues/959
+    //return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
+    return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
 }
 
 function getTop(db, redis, cb)
@@ -651,7 +668,7 @@ function getTop(db, redis, cb)
 
 function getHeroRankings(db, redis, hero_id, cb)
 {
-    getLeaderboard(db, redis, 'hero_rankings:' + hero_id, 250, function(err, entries)
+    getLeaderboard(db, redis, 'hero_rankings:' + hero_id, 100, function(err, entries)
     {
         if (err)
         {

@@ -10,6 +10,8 @@ import
 }
 from 'react-redux';
 import App from './components/App';
+import Match from './components/Match';
+import Player from './components/Player';
 import
 {
   createStore, applyMiddleware, combineReducers
@@ -46,17 +48,27 @@ var reducer = combineReducers(Object.assign(
 var store = createStore(reducer, applyMiddleware(thunkMiddleware, // lets us dispatch() functions
   loggerMiddleware // neat middleware that logs actions
 ));
-// Create an enhanced history that syncs navigation events with the store
-const history = syncHistoryWithStore(browserHistory, store);
 // Actions to dispatch by default
 store.dispatch(Actions.fetchMetadata());
+// Create an enhanced history that syncs navigation events with the store
+const history = syncHistoryWithStore(browserHistory, store);
+// Listen to route changes and dispatch the correct event
+history.listen(location => console.log(location));
+
 let reactElement = document.getElementById('react');
 render(<Provider store={store}>
     { /* Tell the Router to use our enhanced history */ }
     <Router history={history}>
       <Route path="/" component={App}>
-        <Route path="matches/:match_id/:info" component={App}/>
-        <Route path="players/:account_id/:info/:subkey" component={App}/>
+        <Route path="matches/:match_id" component={Match}>
+          <Route path=":info" component={Match}/>
+        </Route>
+        <Route path="players/:account_id" component={Player}>
+          <Route path="/:info">
+            <Route path="/:subkey">
+            </Route>
+          </Route>
+        </Route>
         <Route path="distributions" component={App}/>
         <Route path="carry" component={App}/>
         <Route path="picks/:n" component={App}/>
