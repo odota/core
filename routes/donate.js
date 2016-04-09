@@ -14,8 +14,14 @@ var gateway = braintree.connect({
   publicKey: config.BRAIN_TREE_PUBLIC_KEY,
   privateKey: config.BRAIN_TREE_PRIVATE_KEY
 });
+var bodyParser = require('body-parser');
 
 module.exports = function(db, redis) {
+    donate.use(bodyParser.json());		
+    donate.use(bodyParser.urlencoded(		
+    {		
+        extended: true		
+    }));
     donate.route('/carry').get(function(req, res, next) {
         db.from('players').where('cheese', '>', 0).limit(50).orderBy('cheese', 'desc')
         .asCallback(function(err, results) {

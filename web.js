@@ -8,7 +8,6 @@ var session = require('cookie-session');
 var status = require('./status');
 var path = require('path');
 var moment = require('moment');
-var bodyParser = require('body-parser');
 var async = require('async');
 var fs = require('fs');
 var constants = require('./constants.js');

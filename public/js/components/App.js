@@ -19,7 +19,7 @@ export default function App({ children }) {
       <div className='container'>
         <AppBar/>
         <Navigation />
-        //<NavBar />
+        <NavBar />
         <Container />
         <Footer />
       </div>
