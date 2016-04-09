@@ -12,7 +12,7 @@ var funcs = {
 };
 var streams = {
     "matches": db.select().from(tbl).where('match_id', '>=', start_id).orderBy("match_id", "asc").stream(),
-    "player_matches": db.select(['player_matches.match_id', 'player_matches.account_id', 'player_slot', 'hero_id', 'item_0', 'item_1', 'item_2', 'item_3', 'item_4', 'item_5', 'kills', 'deaths', 'assists', 'leaver_status', 'gold', 'last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_spent', 'hero_damage', 'tower_damage', 'hero_healing', 'level', 'additional_units', 'stuns', 'max_hero_hit', 'times', 'gold_t', 'lh_t', 'xp_t', 'obs_log', 'sen_log', 'purchase_log', 'kills_log', 'buyback_log', 'lane_pos', 'obs', 'sen', 'actions', 'pings', 'purchase', 'gold_reasons', 'xp_reasons', 'killed', 'item_uses', 'ability_uses', 'hero_hits', 'damage', 'damage_taken', 'damage_inflictor', 'runes', 'killed_by', 'kill_streaks', 'multi_kills', 'life_state', 'radiant_win', 'start_time', 'duration', 'cluster', 'lobby_type', 'game_mode', 'version']).from(tbl).join('matches', 'player_matches.match_id', 'matches.match_id').where('match_id', '>=', start_id).orderBy("match_id", "asc").stream(),
+    "player_matches": db.select(['player_matches.match_id', 'player_matches.account_id', 'player_slot', 'hero_id', 'item_0', 'item_1', 'item_2', 'item_3', 'item_4', 'item_5', 'kills', 'deaths', 'assists', 'leaver_status', 'gold', 'last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_spent', 'hero_damage', 'tower_damage', 'hero_healing', 'level', 'additional_units', 'stuns', 'max_hero_hit', 'times', 'gold_t', 'lh_t', 'xp_t', 'obs_log', 'sen_log', 'purchase_log', 'kills_log', 'buyback_log', 'lane_pos', 'obs', 'sen', 'actions', 'pings', 'purchase', 'gold_reasons', 'xp_reasons', 'killed', 'item_uses', 'ability_uses', 'hero_hits', 'damage', 'damage_taken', 'damage_inflictor', 'runes', 'killed_by', 'kill_streaks', 'multi_kills', 'life_state', 'radiant_win', 'start_time', 'duration', 'cluster', 'lobby_type', 'game_mode']).from(tbl).join('matches', 'player_matches.match_id', 'matches.match_id').where('matches.match_id', '>=', start_id).orderBy("matches.match_id", "asc").stream(),
 };
 var stream = streams[tbl];
 stream.on('end', exit);
@@ -52,7 +52,6 @@ function insertMatch(match, cb)
 
 function insertPlayerMatch(pm, cb)
 {
-    //TODO fetch match to get denormalized columns
     var obj2 = serialize(pm);
     var query2 = "INSERT INTO yasp.player_matches JSON ?";
     cassandra.execute(query2, [JSON.stringify(obj2)],

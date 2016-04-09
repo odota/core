@@ -24,7 +24,7 @@ function buildMatch(options, cb)
         else
         {
             console.log("Cache miss for match " + match_id);
-            getMatch(db, redis, match_id, function(err, match)
+            getMatch(db, redis, match_id, options, function(err, match)
             {
                 if (err)
                 {

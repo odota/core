@@ -33,6 +33,7 @@ var util = require('util');
 var queue = require('./queue');
 var fhQueue = queue.getQueue('fullhistory');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE ? require('./cassandra') : undefined;
 //PASSPORT config
 passport.serializeUser(function(user, done)
 {
@@ -217,7 +218,7 @@ app.route('/logout').get(function(req, res)
     req.session = null;
     res.redirect('/');
 });
-app.use('/api', api(db, redis));
+app.use('/api', api(db, redis, cassandra));
 app.use(function(req, res, cb)
 {
     if (config.ENABLE_SPA_MODE)
@@ -305,8 +306,8 @@ app.route('/privacyterms').get(function(req, res)
 {
     res.redirect("/faq");
 });
-app.use('/matches', matches(db, redis));
-app.use('/players', players(db, redis));
+app.use('/matches', matches(db, redis, cassandra));
+app.use('/players', players(db, redis, cassandra));
 app.use('/names/:vanityUrl', function(req, res, cb)
 {
     redis.get("vanity:" + req.params.vanityUrl, function(err, result)

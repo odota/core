@@ -18,13 +18,13 @@ var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
 //optimize by only projecting certain columns based on tab
 //set query.project based on this
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'radiant_win', 'leaver_status', 'cluster', 'parse_status'];
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'radiant_win', 'leaver_status', 'cluster'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
 var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
 var filter = ['purchase', 'lane_pos'];
 var everything = basic.concat(advanced).concat(others).concat(filter);
 var projections = {
-    index: basic.concat('pgroup'),
+    index: basic,
     matches: basic,
     heroes: basic.concat('pgroup'),
     peers: basic.concat('pgroup'),
@@ -151,7 +151,7 @@ function buildPlayer(options, cb)
             //need fields to filter on if a filter is specified
             queryObj.project = queryObj.project.concat(filter_exists ? filter : []);
             console.time("[PLAYER] getPlayerMatches " + account_id);
-            getPlayerMatches(db, queryObj, function(err, results)
+            getPlayerMatches(db, queryObj, options, function(err, results)
             {
                 console.timeEnd("[PLAYER] getPlayerMatches " + account_id);
                 if (err)
