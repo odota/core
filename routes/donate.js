@@ -14,6 +14,7 @@ var gateway = braintree.connect({
   publicKey: config.BRAIN_TREE_PUBLIC_KEY,
   privateKey: config.BRAIN_TREE_PRIVATE_KEY
 });
+var bodyParser = require('body-parser');
 
 module.exports = function(db, redis) {
     donate.use(bodyParser.json());		
