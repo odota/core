@@ -206,12 +206,13 @@ function insertMatch(db, redis, match, options, cb)
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
         //insert into matches
         //insert into player matches
-        //current dependencies on matches/player_matches in db (potential solution)
-        //fullhistory, diff a user's current matches from the set obtained from webapi (rewrite query)
-        //rankings audit/bootstrap (manually count results from cassandra?)
-        //validatecache audit (rewrite query)
+        //current dependencies on matches/player_matches in postgres (potential solution)
         //distributions: queries on gamemode/lobbytype/skill (move to redis?)
         //status: recent added/parsed (rewrite query)
+        //dependencies on player_matches
+        //fullhistory, diff a user's current matches from the set obtained from webapi (rewrite query)
+        //rankings audit/bootstrap (manually count results from cassandra?)
+        //validatecache audit (rewrite query or drop entirely)
         //query for match (rewrite with manual joins)
         //query for player (rewrite with manual joins)
         //instead of serialize insert using JSON syntax?
@@ -234,7 +235,14 @@ function insertMatch(db, redis, match, options, cb)
             }
             async.each(players || [], function(pm, cb)
             {
+                //denormalized columns for efficiency
                 pm.match_id = match.match_id;
+                pm.radiant_win = match.radiant_win;
+                pm.start_time = match.start_time;
+                pm.duration = match.duration;
+                pm.cluster = match.cluster;
+                pm.lobby_type = match.lobby_type;
+                pm.game_mode = match.game_mode;
                 var obj2 = serialize(pm);
                 var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
                 {
@@ -342,11 +350,11 @@ function getMatch(db, redis, match_id, cb)
             {
                 "players": function(cb)
                 {
-                    //join to get personaname, last_login, avatar
-                    db.select().from('player_matches').where(
+                    //TODO add cassandra mode
+                    db.select(['personaname', 'last_login', 'player_matches.match_id', 'player_matches.account_id', 'player_slot', 'hero_id', 'item_0', 'item_1', 'item_2', 'item_3', 'item_4', 'item_5', 'kills', 'deaths', 'assists', 'leaver_status', 'gold', 'last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_spent', 'hero_damage', 'tower_damage', 'hero_healing', 'level', 'additional_units', 'stuns', 'max_hero_hit', 'times', 'gold_t', 'lh_t', 'xp_t', 'obs_log', 'sen_log', 'purchase_log', 'kills_log', 'buyback_log', 'lane_pos', 'obs', 'sen', 'actions', 'pings', 'purchase', 'gold_reasons', 'xp_reasons', 'killed', 'item_uses', 'ability_uses', 'hero_hits', 'damage', 'damage_taken', 'damage_inflictor', 'runes', 'killed_by', 'kill_streaks', 'multi_kills', 'life_state']).from('player_matches').where(
                     {
                         "player_matches.match_id": Number(match_id)
-                    }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(cb);
+                    }).leftJoin('players', 'player_matches.account_id', 'players.account_id').orderBy("player_slot", "asc").asCallback(cb);
                 },
                 "ab_upgrades": function(cb)
                 {
@@ -362,6 +370,13 @@ function getMatch(db, redis, match_id, cb)
                 var ab_upgrades = JSON.parse(result.ab_upgrades);
                 async.each(players, function(p, cb)
                 {
+                    p.radiant_win = match.radiant_win;
+                    p.start_time = match.start_time;
+                    p.duration = match.duration;
+                    p.cluster = match.cluster;
+                    p.lobby_type = match.lobby_type;
+                    p.game_mode = match.game_mode;
+                    p.version = match.version;
                     computePlayerMatchData(p);
                     if (ab_upgrades)
                     {
@@ -381,17 +396,6 @@ function getMatch(db, redis, match_id, cb)
                     match.players = players;
                     computeMatchData(match);
                     renderMatch(match);
-                    if (match.players)
-                    {
-                        //remove some duplicated columns from match.players to reduce size
-                        //we don't need them anymore since we already did the computations
-                        match.players.forEach(function(p)
-                        {
-                            delete p.chat;
-                            delete p.objectives;
-                            delete p.teamfights;
-                        });
-                    }
                     getMatchRating(redis, match, function(err, avg)
                     {
                         if (err)
@@ -428,24 +432,25 @@ function getMatch(db, redis, match_id, cb)
 
 function getPlayerMatches(db, queryObj, cb)
 {
-    var result = {
-        aggData: aggregator([], queryObj.js_agg),
-        raw: []
-    };
-    var stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'ASC').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
-    stream.on('end', function(err)
+    //TODO add cassandra mode, get extra columns if needed based on queryObj.project
+    //chat, radiant_gold_adv, pgroup (generate single player pgroup for speed on overview), parse_status (maybe drop)
+    db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'ASC').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').asCallback(function(err, result)
     {
-        cb(err, result);
-    });
-    stream.on('error', cb);
-    stream.on('data', function(m)
-    {
-        computePlayerMatchData(m);
-        if (filter([m], queryObj.js_select).length)
+        if (err)
         {
-            result.aggData = aggregator([m], queryObj.js_agg, result.aggData);
-            result.raw.push(m);
+            return cb(err);
         }
+        result.forEach(function(m)
+        {
+            computePlayerMatchData(m);
+        });
+        result = filter(result, queryObj.js_select);
+        var aggData = aggregator(result, queryObj.js_agg);
+        return cb(err,
+        {
+            aggData: aggData,
+            raw: result
+        });
     });
 }
 
