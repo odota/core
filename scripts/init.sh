@@ -6,7 +6,7 @@ sudo echo 'deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main' >> /et
 sudo echo 'deb-src http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main' >> /etc/apt/sources.list.d/openjdk.list 
 ####
 sudo apt-get -y update && sudo apt-get -y upgrade
-sudo apt-get -y install make g++ build-essential openjdk-8-jdk git maven jq
+sudo apt-get -y install make g++ build-essential openjdk-8-jdk git maven
 NODE_VERSION=5.8.0
 echo "" > /root/.bashrc && \
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
@@ -33,7 +33,7 @@ sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/javac /usr/bin/javac
 #sudo docker run -d --name redis --net=host redis:latest
 #sudo docker run -d --name cassandra --net=host cassandra:latest
 
-#install infra dependencies via apt-get
+#install infra dependencies via apt-get (if not dockerable)
 sudo rm -f /etc/apt/sources.list.d/postgresql.list		
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
