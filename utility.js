@@ -635,7 +635,9 @@ function reduceMinimal(pm)
         duration: pm.duration
     };
 }
-
+/**
+ * Serializes a JSON object to row for storage in Cassandra
+ **/
 function serialize(row)
 {
     var obj = {};
@@ -648,7 +650,20 @@ function serialize(row)
     }
     return obj;
 }
-
+/**
+ * Deserializes a row to JSON object read from Cassandra
+ **/
+function deserialize(row)
+{
+    row.keys().forEach(function(key)
+    {
+        row[key] = JSON.parse(row[key]);
+    });
+    return row;
+}
+/**
+ * Returns a list of heroes sorted in alphabetical order
+ **/
 function getAlphaHeroes()
 {
     var alpha_heroes = Object.keys(constants.heroes).map(function(id)
@@ -660,7 +675,9 @@ function getAlphaHeroes()
     });
     return alpha_heroes;
 }
-
+/**
+ * Formats a snake_cased string for display
+ **/
 function prettyPrint(str)
 {
     return str.split("_").map(function(s)
@@ -787,4 +804,5 @@ module.exports = {
     average: average,
     stdDev: stdDev,
     median: median,
+    deserialize,
 };
