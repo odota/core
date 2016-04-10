@@ -26,7 +26,7 @@ Quickstart
 * Create an account on Cloud 9: https://c9.io/dashboard.html
 * Start a new workspace and choose the source GitHub repository as yasp-dota/yasp, or your own fork of it if you're planning to make changes and submit a pull request.
 * Open the workspace
-* Install dependencies: `sudo bash init.sh`. The script is designed for Ubuntu 14.04 LTS.  For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
+* Install dependencies: `sudo bash scripts/init.sh`. The script is designed for Ubuntu 14.04 LTS.  For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
 * Set up the database `sudo npm run create`
