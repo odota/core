@@ -15,6 +15,8 @@ var initialState = {
       {},
       player_pages:
       {},
+      player_fields:
+      {},
       cheese: null,
       user: null,
       banner: null,

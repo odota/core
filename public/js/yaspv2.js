@@ -12,6 +12,7 @@ from 'react-redux';
 import App from './components/App';
 import Match from './components/Match';
 import Player from './components/Player';
+import Home from './components/Home';
 import
 {
   createStore, applyMiddleware, combineReducers
@@ -23,7 +24,7 @@ import thunkMiddleware from 'redux-thunk';
 import createLogger from 'redux-logger';
 import
 {
-  Router, Route, browserHistory
+  Router, Route, browserHistory, IndexRoute
 }
 from 'react-router';
 import
@@ -31,6 +32,7 @@ import
   syncHistoryWithStore, routerReducer
 }
 from 'react-router-redux';
+// Load CSS
 require('../../node_modules/font-awesome/css/font-awesome.css');
 require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
 //require('../../node_modules/bootstrap/dist/css/bootstrap.css');
@@ -52,16 +54,15 @@ var store = createStore(reducer, applyMiddleware(thunkMiddleware, // lets us dis
 store.dispatch(Actions.fetchMetadata());
 // Create an enhanced history that syncs navigation events with the store
 const history = syncHistoryWithStore(browserHistory, store);
-// Listen to route changes and dispatch the correct event
-history.listen(location => console.log(location));
-
+//history.listen(function(location) {Actions.routeChange(location)});
 let reactElement = document.getElementById('react');
 render(<Provider store={store}>
     { /* Tell the Router to use our enhanced history */ }
     <Router history={history}>
       <Route path="/" component={App}>
+        <IndexRoute component={Home} />
         <Route path="matches/:match_id" component={Match}>
-          <Route path=":info" component={Match}/>
+          <Route path=":info"/>
         </Route>
         <Route path="players/:account_id" component={Player}>
           <Route path="/:info">

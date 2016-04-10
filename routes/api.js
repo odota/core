@@ -61,6 +61,9 @@ module.exports = function(db, redis, cassandra)
             {
                 cb(null, constants.match_pages);
             },
+            player_fields: function(cb){
+                cb(null, constants.player_fields);
+            },
         }, function(err, result)
         {
             if (err)

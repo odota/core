@@ -83,6 +83,7 @@ export function receiveMatch(json)
 }
 export function fetchMatch(match_id)
 {
+  console.log('fetch');
   return function(dispatch)
   {
     dispatch(requestMatch());
