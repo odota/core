@@ -32,3 +32,14 @@ sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/javac /usr/bin/javac
 #sudo docker run -d --name postgres --net=host postgres:latest
 #sudo docker run -d --name redis --net=host redis:latest
 #sudo docker run -d --name cassandra --net=host cassandra:latest
+
+#install infra dependencies via apt-get
+sudo rm -f /etc/apt/sources.list.d/postgresql.list		
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
+sudo rm -f /etc/apt/sources.list.d/cassandra.sources.list
+echo "deb http://debian.datastax.com/community stable main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -
+sudo add-apt-repository -y ppa:chris-lea/redis-server
+sudo apt-get -y update
+sudo apt-get -y install redis-server postgresql-9.5 cassandra
