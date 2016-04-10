@@ -11,7 +11,7 @@ export const RECEIVE_PLAYER = 'RECEIVE_PLAYER';
 //https://github.com/glittershark/reactable
 //qtip2
 //https://github.com/wwayne/react-tooltip
-//selectize
+//select library
 //??? not sure yet
 //TODO actions to add
 //distributions
@@ -83,7 +83,6 @@ export function receiveMatch(json)
 }
 export function fetchMatch(match_id)
 {
-  console.log('fetch');
   return function(dispatch)
   {
     dispatch(requestMatch());

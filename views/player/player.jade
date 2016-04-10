@@ -71,46 +71,6 @@ block content
 
 append footer_assets
   script.
-    $("#included_account_id").selectize({
-        plugins: ['remove_button'],
-        create: true,
-        maxItems: 10
-    });
-    $("#excluded_account_id").selectize({
-        plugins: ['remove_button'],
-        create: true,
-        maxItems: 10
-    });
-    $("#with_hero_id").selectize({
-        plugins: ['remove_button'],
-        sortField: 'text',
-        maxItems: 5
-    });
-    $("#enemy_hero_id").selectize({
-        plugins: ['remove_button'],
-        sortField: 'text',
-        maxItems: 5
-    });
-    $("#purchased_item").selectize({
-        plugins: ['remove_button'],
-        sortField: 'text',
-        maxItems: 5
-    });
-    $("#hero_id").selectize({
-        plugins: ['remove_button'],
-        mode: 'multi',
-        sortField: 'text',
-        maxItems: 1
-    });
-    $("#isRadiant").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#win").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#lane_role").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#patch").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#game_mode").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#lobby_type").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#region").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#date").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    
     $('#matches').dataTable({
         "order": [
                 [0, "desc"]
