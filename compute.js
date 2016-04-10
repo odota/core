@@ -127,6 +127,18 @@ function computePlayerMatchData(pm)
         pm.heroes = pm.pgroup;
         pm.teammates = pm.pgroup;
     }
+    else
+    {
+        //single player case, we can still compute heroes for that player only
+        pm.heroes = {
+            [pm.player_slot]:
+            {
+                account_id: pm.account_id,
+                hero_id: pm.hero_id,
+                player_slot: pm.player_slot
+            }
+        };
+    }
     if (pm.chat)
     {
         // word counts for this player and all players

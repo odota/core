@@ -206,7 +206,7 @@ describe("parser", function()
                             {
                                 clearInterval(poll);
                                 //ensure parse data got inserted
-                                queries.getMatch(db, redis, tests[key], function(err, match)
+                                queries.getMatch(db, redis, tests[key], {}, function(err, match)
                                 {
                                     if (err)
                                     {

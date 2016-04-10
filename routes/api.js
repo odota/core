@@ -16,7 +16,7 @@ var utility = require('../utility');
 var queue = require('../queue');
 var rQueue = queue.getQueue('request');
 const crypto = require('crypto');
-module.exports = function(db, redis)
+module.exports = function(db, redis, cassandra)
 {
     api.get('/items', function(req, res)
     {
@@ -61,6 +61,9 @@ module.exports = function(db, redis)
             {
                 cb(null, constants.match_pages);
             },
+            player_fields: function(cb){
+                cb(null, constants.player_fields);
+            },
         }, function(err, result)
         {
             if (err)
@@ -76,6 +79,7 @@ module.exports = function(db, redis)
         {
             db: db,
             redis: redis,
+            cassandra: cassandra,
             match_id: req.params.match_id
         }, function(err, match)
         {
@@ -92,6 +96,7 @@ module.exports = function(db, redis)
         {
             db: db,
             redis: redis,
+            cassandra: cassandra,
             account_id: req.params.account_id,
             info: req.params.info,
             subkey: req.params.subkey,

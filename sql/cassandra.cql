@@ -20,14 +20,13 @@ CREATE TABLE yasp.matches (
   engine int,
   picks_bans text,
   parse_status int,
-  url text,
   chat text,
   objectives text,
   radiant_gold_adv text,
   radiant_xp_adv text,
   teamfights text,
   version int,
-  pgroup text
+  pgroup text,
 );
 
 CREATE TABLE yasp.player_matches (
@@ -88,6 +87,12 @@ CREATE TABLE yasp.player_matches (
   kill_streaks text,
   multi_kills text,
   life_state text,
+  radiant_win boolean,
+  start_time int,
+  duration int,
+  cluster int,
+  lobby_type int,
+  game_mode int,
 );
 CREATE INDEX on yasp.player_matches(account_id);
 

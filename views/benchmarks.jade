@@ -11,19 +11,19 @@ block content
             span #{hero.localized_name}
           h4.text-center
             img.hero(src=hero.img, title=hero.localized_name)
-        
-        table.table.table-condensed.table-striped
-          tr
-            th Stat
-            each entry, i in result[Object.keys(result)[0]]
-              th=(entry.percentile*100)+"%"
-          each val, key in result
+        .table-responsive
+          table.table.table-condensed.table-striped
             tr
-              td=prettyPrint(key)
-              each entry, i in result[key]
-                td=Number(entry.value.toFixed(2))
-        each val, key in result
-          div(id="benchmarks-"+key)
+              th Stat
+              each entry, i in result[Object.keys(result)[0]]
+                th=(entry.percentile*100)+"%"
+            each val, key in result
+              tr
+                td=prettyPrint(key)
+                each entry, i in result[key]
+                  td=Number(entry.value.toFixed(2))
+          each val, key in result
+            div(id="benchmarks-"+key)
 //-
   script.
     var data = !{JSON.stringify(result)};
