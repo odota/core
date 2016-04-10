@@ -6,7 +6,7 @@
   "benchmarks":
   {
     "name": "Benchmarks",
-    "hide": true
+    "new-feature": true
   },
   "performances":
   {
