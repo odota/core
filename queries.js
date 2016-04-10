@@ -3,7 +3,7 @@ var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
 var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
-var computeMatchData = compute.computeMatchData;
+var computeMatchData = compute.computeMatchData;ge
 var renderMatch = compute.renderMatch;
 var benchmarkMatch = require('./benchmarkMatch');
 var moment = require('moment');
@@ -794,7 +794,7 @@ function getBenchmarks(db, redis, options, cb)
     var ret = {};
     async.each(Object.keys(benchmarks), function(metric, cb)
     {
-        var arr = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
+        var arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
         async.each(arr, function(percentile, cb)
         {
             var key = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1), metric, hero_id].join(':');
