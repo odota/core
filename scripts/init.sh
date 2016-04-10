@@ -43,3 +43,6 @@ curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -
 sudo add-apt-repository -y ppa:chris-lea/redis-server
 sudo apt-get -y update
 sudo apt-get -y install redis-server postgresql-9.5 cassandra
+
+#clean up old versions
+sudo apt-get purge postgresql-9.3
