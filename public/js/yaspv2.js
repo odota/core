@@ -51,7 +51,7 @@ var store = createStore(reducer, applyMiddleware(thunkMiddleware, // lets us dis
   loggerMiddleware // neat middleware that logs actions
 ));
 // Fetch metadata (used on all pages)
-store.dispatch(Actions.fetchMetadata());
+store.dispatch(Actions.fetchData(Actions.METADATA));
 // Create an enhanced history that syncs navigation events with the store
 const history = syncHistoryWithStore(browserHistory, store);
 //history.listen(function(location) {Actions.routeChange(location)});

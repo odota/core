@@ -27,48 +27,25 @@ export default function reducers(state = initialState, action)
 {
   switch (action.type)
   {
-    case Actions.REQUEST_METADATA:
+    case Actions.METADATA:
       return Object.assign(
       {}, state,
       {
         metadata:
         {
-          isFetching: true,
-          data:
-          {}
+          isFetching: !Boolean(action.data),
+          data: action.data || state.metadata.data
         }
       });
-    case Actions.RECEIVE_METADATA:
-      return Object.assign(
-      {}, state,
-      {
-        metadata:
-        {
-          isFetching: false,
-          data: action.data
-        }
-      });
-    case Actions.REQUEST_MATCH:
-    case Actions.REQUEST_PLAYER:
+    case Actions.MATCH:
+    case Actions.PLAYER:
       return Object.assign(
       {}, state,
       {
         content:
         {
-          isFetching: true,
-          data:
-          {}
-        }
-      });
-    case Actions.RECEIVE_MATCH:
-    case Actions.RECEIVE_PLAYER:
-      return Object.assign(
-      {}, state,
-      {
-        content:
-        {
-          isFetching: false,
-          data: action.data
+          isFetching: !Boolean(action.data),
+          data: action.data || state.content.data
         }
       });
     default:

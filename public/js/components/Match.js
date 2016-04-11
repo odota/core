@@ -13,10 +13,14 @@ class Match extends React.Component
   }
   componentDidMount()
   {
-    this.props.dispatch(Actions.fetchMatch(this.props.params.match_id));
+    this.props.dispatch(Actions.fetchData(Actions.MATCH,
+    {
+      match_id: this.props.params.match_id
+    }));
   }
   render()
   {
+    //sections
     return <pre>{JSON.stringify(this.props, null, 2)}</pre>;
   }
 }
