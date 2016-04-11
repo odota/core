@@ -50,7 +50,7 @@ var reducer = combineReducers(Object.assign(
 var store = createStore(reducer, applyMiddleware(thunkMiddleware, // lets us dispatch() functions
   loggerMiddleware // neat middleware that logs actions
 ));
-// Actions to dispatch by default
+// Fetch metadata (used on all pages)
 store.dispatch(Actions.fetchMetadata());
 // Create an enhanced history that syncs navigation events with the store
 const history = syncHistoryWithStore(browserHistory, store);
@@ -70,16 +70,18 @@ render(<Provider store={store}>
             </Route>
           </Route>
         </Route>
-        <Route path="distributions" component={App}/>
-        <Route path="carry" component={App}/>
-        <Route path="picks/:n" component={App}/>
-        <Route path="mmstats" component={App}/>
-        <Route path="rankings/:hero_id" component={App}/>
-        <Route path="benchmarks/:hero_id" component={App}/>
-        <Route path="faq" component={App}/>
-        <Route path="blog" component={App}/>
-        <Route path="search" component={App}/>
-        <Route path="status" component={App}/>
       </Route>
     </Router>
   </Provider>, reactElement);
+/*
+<Route path="distributions" component={Distribution}/>
+<Route path="carry" component={Carry}/>
+<Route path="picks/:n" component={Picks}/>
+<Route path="mmstats" component={MMStats}/>
+<Route path="rankings/:hero_id" component={Ranking}/>
+<Route path="benchmarks/:hero_id" component={Benchmark}/>
+<Route path="faq" component={FAQ}/>
+<Route path="blog" component={Blog}/>
+<Route path="search" component={Search}/>
+<Route path="status" component={Status}/>
+*/

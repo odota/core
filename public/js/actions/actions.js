@@ -13,10 +13,12 @@ export const RECEIVE_PLAYER = 'RECEIVE_PLAYER';
 //https://github.com/wwayne/react-tooltip
 //select library
 //??? not sure yet
-//TODO actions to add
-//distributions
-//picks
-//carry (leaderboard?)
+//TODO more actions
+//REQUEST_PLAYER..., one for each since player data is split?
+//RECEIVE_PLAYER
+//REQUEST_DISTRIBUTIONS
+//REQUEST_PICKS
+//REQUEST_CARRY
 //mmstats
 //faq
 //blog
@@ -24,18 +26,6 @@ export const RECEIVE_PLAYER = 'RECEIVE_PLAYER';
 //status
 //benchmarks
 //rankings
-//TODO examples
-//SELECT_MATCH
-//REQUEST_MATCH
-//RECEIVE_MATCH
-//SELECT_PLAYER
-//SELECT_PLAYER_OVERVIEW
-//SELECT_PLAYER..., one for each since player data is split?
-//REQUEST_PLAYER
-//RECEIVE_PLAYER
-//SELECT_DISTRIBUTIONS
-//SELECT_PICKS
-//SELECT_CARRY
 export function requestMetadata()
 {
   return {
