@@ -93,6 +93,7 @@ CREATE TABLE yasp.player_matches (
   cluster int,
   lobby_type int,
   game_mode int,
+  parse_status int,
 );
 CREATE INDEX on yasp.player_matches(account_id);
 

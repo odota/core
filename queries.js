@@ -244,6 +244,7 @@ function insertMatch(db, redis, match, options, cb)
                 pm.cluster = match.cluster;
                 pm.lobby_type = match.lobby_type;
                 pm.game_mode = match.game_mode;
+                pm.parse_status = match.parse_status;
                 var obj2 = serialize(pm);
                 var query2 = 'INSERT INTO player_matches JSON ?';
                 var arr2 = [JSON.stringify(obj2)];
@@ -406,6 +407,7 @@ function getMatch(db, redis, match_id, options, cb)
                     p.cluster = match.cluster;
                     p.lobby_type = match.lobby_type;
                     p.game_mode = match.game_mode;
+                    p.parse_status = match.parse_status;
                     computePlayerMatchData(p);
                     if (ab_upgrades)
                     {
