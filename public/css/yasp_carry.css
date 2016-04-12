@@ -7,6 +7,7 @@
   background-position: 50% 0px;
   color: #f5f5f5;
   position: relative;
+  margin-bottom: 10px;
 }
 .carry-header-valign {
   position: absolute;
@@ -14,7 +15,6 @@
   -webkit-transform: translateY(-50%);
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
-  margin-top: -10px;
 }
 .carry-header h1 {
   font-weight: 400;
@@ -24,14 +24,23 @@
   font-weight: 300;
   text-transform: none;
 }
-.carry-header svg {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  fill: #222;
-  visibility: hidden;
-}
 
+.carry-picauthor {
+  position: absolute;
+  right: 20px;
+  font-size: 14px;
+  bottom: 10px;
+  opacity: .8;
+  font-weight: 300;
+  display: block;
+}
+.carry-picauthor a {
+  color: #111;
+}
+.carry-picauthor a:hover {
+  color: #111;
+  opacity: 1;
+}
 
 
 .carry-col h3 {
@@ -85,11 +94,6 @@
     font-size: 28px;
   }
 }
-@media (min-width: 992px) {
-  .carry-header svg {
-    visibility: visible;
-  }
-}
 
 
 
@@ -104,4 +108,7 @@
 }
 .carry-table tbody tr {
   border-bottom: 1px solid #222;
+}
+.carry-text-shadow {
+  text-shadow: 0px 1px 1px #111;
 }
