@@ -726,7 +726,8 @@ function generateTreemapData(match)
     return data;
 }
 module.exports = {
-    renderMatch: renderMatch,
-    computeMatchData: computeMatchData,
-    computePlayerMatchData: computePlayerMatchData,
+    renderMatch,
+    computeMatchData,
+    computePlayerMatchData,
+    count_words,
 };
