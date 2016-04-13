@@ -3,7 +3,11 @@ var async = require('async');
 var config = require('./config');
 var args = process.argv.slice(2);
 var manifest = require('./package.json');
-if (config.ROLE)
+if (config.DEV_MODE)
+{
+    console.log("Development mode, sleeping");
+}
+else if (config.ROLE)
 {
     //if role variable is set just run that script
     require('./' + config.ROLE + ".js");
