@@ -1,0 +1,5 @@
+CREATE USER yasp;
+ALTER USER yasp WITH PASSWORD 'yasp';
+ALTER USER postgres PASSWORD 'postgres';
+CREATE EXTENSION pg_trgm;
+CREATE DATABASE yasp OWNER yasp;

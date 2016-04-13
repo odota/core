@@ -135,6 +135,7 @@ CREATE TABLE players (
 CREATE INDEX on players(full_history_time);
 CREATE INDEX on players(last_login);
 CREATE INDEX on players(cheese);
+CREATE INDEX on players USING GIN(personaname gin_trgm_ops);
 
 CREATE TABLE player_ratings (
   PRIMARY KEY(account_id, time),

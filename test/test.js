@@ -1,6 +1,5 @@
 var config = require('../config');
 config.PORT = ""; //use service defaults
-config.MONGO_URL = "mongodb://localhost/test";
 config.POSTGRES_URL = "postgres://yasp_test:yasp_test@localhost/yasp_test";
 config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
@@ -122,22 +121,6 @@ before(function(done)
                 });
             });
         },
-                function(cb)
-        {
-            console.log('create extension');
-            pg.connect("postgres://postgres:postgres@localhost/yasp_test", function(err, client)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                var query = fs.readFileSync("./sql/trgm.sql", "utf8");
-                client.query(query, function(err, result)
-                {
-                    cb(err);
-                });
-            });
-        },
         function(cb)
         {
             console.log("wiping redis");
@@ -206,7 +189,8 @@ describe("parser", function()
                             {
                                 clearInterval(poll);
                                 //ensure parse data got inserted
-                                queries.getMatch(db, redis, tests[key], {}, function(err, match)
+                                queries.getMatch(db, redis, tests[key],
+                                {}, function(err, match)
                                 {
                                     if (err)
                                     {
