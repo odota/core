@@ -6,6 +6,7 @@ var manifest = require('./package.json');
 if (config.DEV_MODE)
 {
     console.log("Development mode, sleeping");
+    process.stdin.resume();
 }
 else if (config.ROLE)
 {
