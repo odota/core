@@ -1,3 +1,5 @@
+CREATE EXTENSION pg_trgm;
+
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
   match_seq_num bigint,

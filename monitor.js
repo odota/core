@@ -13,6 +13,10 @@ var health = {
             {
                 return cb(err);
             }
+            if (!result.rows[0])
+            {
+                return cb();
+            }
             request(config.ROOT_URL + "/matches/" + result.rows[0].match_id, function(err, resp, body)
             {
                 var fail = err || resp.statusCode !== 200;
@@ -31,6 +35,10 @@ var health = {
             if (err)
             {
                 return cb(err);
+            }
+            if (!result.rows[0])
+            {
+                return cb();
             }
             request(config.ROOT_URL + "/players/" + result.rows[0].account_id, function(err, resp, body)
             {
@@ -68,7 +76,8 @@ var health = {
     },
     seq_num_delay: function seq_num_delay(cb)
     {
-        utility.getData(utility.generateJob("api_history", {}).url, function(err, body)
+        utility.getData(utility.generateJob("api_history",
+        {}).url, function(err, body)
         {
             if (err)
             {
@@ -102,6 +111,10 @@ var health = {
             if (err)
             {
                 return cb(err);
+            }
+            if (!result.rows[0])
+            {
+                return cb();
             }
             return cb(err,
             {
