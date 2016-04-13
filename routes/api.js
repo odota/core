@@ -163,7 +163,8 @@ module.exports = function(db, redis, cassandra)
             else
             {
                 var single = result[req.params.metric];
-                res.status(single.metric < single.threshold ? 200 : 500).json(single);
+                var healthy = single.metric < single.threshold;
+                res.status(healthy ? 200 : 500).json(single);
             }
         });
     });

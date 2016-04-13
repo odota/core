@@ -68,7 +68,7 @@ var health = {
     },
     seq_num_delay: function seq_num_delay(cb)
     {
-        utility.getData(utility.generateJob("api_history").url, function(err, body)
+        utility.getData(utility.generateJob("api_history", {}).url, function(err, body)
         {
             if (err)
             {
