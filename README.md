@@ -27,8 +27,9 @@ Quickstart
 * Clone the repo: `git clone https://github.com/yasp-dota/yasp`
 * Go into the directory: `cd yasp`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
-  * The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
-* Start a new container running the image in development mode, and map your local directory into the container: `sudo docker run -e -v $(pwd):/usr/src/yasp -d --name yasp --net=host yasp/yasp:latest`
+  * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
+  * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
+* Start a new container running the image, and map your local directory into the container: `sudo docker run -e -v $(pwd):/usr/src/yasp -d --name yasp --net=host yasp/yasp:latest`
 * Start the external dependencies in separate containers.
   * `sudo docker run -d --name postgres --net=host postgres:latest`
   * `sudo docker run -d --name redis --net=host redis:latest`
@@ -49,7 +50,7 @@ Quickstart
   * `npm run update` updates all deps in `package.json` to latest versions.
 * Get some starter data
   * You can request some parses by ID to get some parsed data.  
-  * You can also log in through Steam on your own instance to trigger a full history request for that user (requires `fullhistory` service to be running)
+  * You can also log in through Steam to trigger a full history request for that user (requires `fullhistory` service to be running)
   * You can also run `scanner` with `ENABLE_INSERT_ALL_MATCHES=1` in your `.env to get some matches from the API.
 * File changes you make outside the container should be automatically mirrored to the container.
 * Make some changes and commit them: `git add --all; git commit -m "My first commit!"`
