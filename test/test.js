@@ -1,7 +1,6 @@
 var config = require('../config');
 config.PORT = ""; //use service defaults
-config.MONGO_URL = "mongodb://localhost/test";
-config.POSTGRES_URL = "postgres://yasp_test:yasp_test@localhost/yasp_test";
+config.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
 config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
@@ -73,14 +72,10 @@ before(function(done)
                 {
                     return cb(err);
                 }
-                console.log('cleaning database role for testing');
-                client.query('DROP ROLE IF EXISTS yasp_test;', function(err, result)
+                console.log('cleaning test database', config.POSTGRES_URL);
+                client.query('DROP DATABASE IF EXISTS yasp_test', function(err, result)
                 {
-                    console.log('cleaning test database', config.POSTGRES_URL);
-                    client.query('DROP DATABASE IF EXISTS yasp_test;', function(err, result)
-                    {
-                        cb(err);
-                    });
+                    cb(err);
                 });
             });
         },
@@ -93,14 +88,10 @@ before(function(done)
                 {
                     return cb(err);
                 }
-                console.log('creation of database role for testing');
-                client.query('CREATE ROLE yasp_test WITH LOGIN PASSWORD \'yasp_test\';', function(err, result)
+                console.log('creation of test database', config.POSTGRES_URL);
+                client.query('CREATE DATABASE yasp_test', function(err, result)
                 {
-                    console.log('creation of test database', config.POSTGRES_URL);
-                    client.query('CREATE DATABASE yasp_test OWNER yasp_test;', function(err, result)
-                    {
-                        cb(err);
-                    });
+                    cb(err);
                 });
             });
         },
@@ -118,22 +109,6 @@ before(function(done)
                 client.query(query, function(err, result)
                 {
                     console.log('set up %s', config.POSTGRES_URL);
-                    cb(err);
-                });
-            });
-        },
-                function(cb)
-        {
-            console.log('create extension');
-            pg.connect("postgres://postgres:postgres@localhost/yasp_test", function(err, client)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                var query = fs.readFileSync("./sql/trgm.sql", "utf8");
-                client.query(query, function(err, result)
-                {
                     cb(err);
                 });
             });
@@ -206,7 +181,8 @@ describe("parser", function()
                             {
                                 clearInterval(poll);
                                 //ensure parse data got inserted
-                                queries.getMatch(db, redis, tests[key], {}, function(err, match)
+                                queries.getMatch(db, redis, tests[key],
+                                {}, function(err, match)
                                 {
                                     if (err)
                                     {
