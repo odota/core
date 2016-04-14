@@ -33,5 +33,8 @@ RUN . /root/.bashrc && npm run maven
 ADD . /usr/src/yasp
 RUN . /root/.bashrc && npm run webpack
 
+# Add pm2 to path
+RUN export PATH=$PATH:/usr/src/yasp/node_modules/pm2/bin
+
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "sleep", "inf" ]
