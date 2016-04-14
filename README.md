@@ -51,7 +51,7 @@ Quickstart
 * Get some starter data
   * You can request some parses by ID to get some parsed data.  
   * You can also log in through Steam to trigger a full history request for that user (requires `fullhistory` service to be running)
-  * You can also run `scanner` with `ENABLE_INSERT_ALL_MATCHES=1` in your `.env to get some matches from the API.
+  * You can also run `scanner` with `ENABLE_INSERT_ALL_MATCHES=1` in your `.env` to get some matches from the API.
 * File changes you make outside the container should be automatically mirrored to the container.
 * Make some changes and commit them: `git add --all; git commit -m "My first commit!"`
 * Submit a pull request.  Wait for it to be reviewed and merged.
