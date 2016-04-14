@@ -38,7 +38,7 @@ Quickstart
 * Create tables: `sudo docker exec -i postgres psql -- postgres://yasp:yasp@localhost/yasp < sql/create_tables.sql`
 * Get a terminal into the running container: `sudo docker exec -it yasp bash`
 * Start the services you want to run:
-  * `pm2 start web --watch` The `--watch` flag tells pm2 to restart the server when it detects a file change.  Replace `web` with the name of the service you want to run.
+  * `pm2 start web.js --watch` The `--watch` flag tells pm2 to restart the server when it detects a file change.  Replace `web` with the name of the service you want to run.
   * `web,parser,requests,retriever` These are the minimal services for being able to open the site in a browser and request parses by ID (which is a useful end-to-end test).
   * `pm2 logs web` You can use this command to inspect the output of the service.
   * `pm2 delete all` Stop everything.
