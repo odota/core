@@ -2,7 +2,7 @@
   "title": "Lessons learned from 10 million replays parsed",
   "date": "5-1-2016",
   "author": "Howard",
-  "draft" true
+  "draft": true
 }}}
 
 What we've learned in 18 months of working on this project:
