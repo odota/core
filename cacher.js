@@ -34,24 +34,24 @@ function processCache(job, cb)
         },
         "rankings": function(cb)
         {
-            if (!config.ENABLE_RANKER || match.lobby_type !== 7 || match.origin !== "scanner")
+            if (config.ENABLE_RANKER && match.lobby_type === 7 && match.origin === "scanner")
             {
-                return cb();
+                return updateRankings(match, cb);
             }
             else
             {
-                return updateRankings(match, cb);
+                return cb();
             }
         },
         "updateMatchRating": function(cb)
         {
-            if (match.origin !== "scanner")
+            if (match.origin === "scanner")
             {
-                return cb();
+                return updateMatchRating(match, cb);
             }
             else
             {
-                return updateMatchRating(match, cb);
+                return cb();
             }
         },
         "incrCounts": function(cb)
@@ -73,7 +73,10 @@ function processCache(job, cb)
         {
             try
             {
-                updateBenchmarks(match);
+                if (match.origin === "scanner")
+                {
+                    updateBenchmarks(match);
+                }
                 cb();
             }
             catch (e)

@@ -35,7 +35,7 @@ Quickstart
   * `sudo docker run -d --name redis --net=host redis:latest`
   * (optional) `sudo docker run -d --name cassandra --net=host cassandra:latest`
 * Initialize Postgres: `sudo docker exec -i postgres psql -- postgres://postgres@localhost < sql/init.sql`
-* Create tables: `sudo docker exec -i postgres psql -- postgres://yasp:yasp@localhost/yasp < sql/create_tables.sql`
+* Create tables: `sudo docker exec -i postgres psql -- postgres://postgres@localhost/yasp < sql/create_tables.sql`
 * Get a terminal into the running container: `sudo docker exec -it yasp bash`
 * Start the services you want to run:
   * `pm2 start web.js --watch` The `--watch` flag tells pm2 to restart the server when it detects a file change.  Replace `web` with the name of the service you want to run.
