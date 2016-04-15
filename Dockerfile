@@ -21,7 +21,7 @@ RUN echo "" > /root/.bashrc && \
 RUN update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/java-8-openjdk-amd64/bin/java" 1
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
 
-# Just add package.json to get the NPM install cached.
+# Add package.json to get the NPM install cached.
 ADD package.json /usr/src/yasp/
 RUN . /root/.bashrc && npm install
 
@@ -32,9 +32,6 @@ RUN . /root/.bashrc && npm run maven
 # Add everything else
 ADD . /usr/src/yasp
 RUN . /root/.bashrc && npm run webpack
-
-# Add pm2 to path
-RUN export PATH=$PATH:/usr/src/yasp/node_modules/pm2/bin
 
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "sleep", "inf" ]
