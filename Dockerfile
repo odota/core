@@ -33,5 +33,7 @@ RUN . /root/.bashrc && npm run maven
 ADD . /usr/src/yasp
 RUN . /root/.bashrc && npm run webpack
 
+ENV PATH /usr/src/yasp/node_modules/pm2/bin:$PATH
+
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "sleep", "inf" ]
