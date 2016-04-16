@@ -59,7 +59,7 @@ RUN apk upgrade --update && \
            /tmp/* /var/cache/apk/* && \
     echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 
-
+#https://github.com/nitram509/docker-alpine-oraclejdk8-maven-cmake-gcc/blob/master/Dockerfile
 ENV MAVEN_HOME="/usr/share/maven"
 ENV MAVEN_VERSION="3.3.9"
 
