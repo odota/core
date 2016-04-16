@@ -1,9 +1,9 @@
 import React from 'react';
-import LeftNav from 'material-ui/lib/left-nav';
-import List from 'material-ui/lib/lists/list';
-import ListItem from 'material-ui/lib/lists/list-item';
-import World from 'material-ui/lib/svg-icons/social/public';
-import RaisedButton from 'material-ui/lib/raised-button';
+import LeftNav from 'material-ui/left-nav';
+import List from 'material-ui/lists/list';
+import ListItem from 'material-ui/lists/list-item';
+import World from 'material-ui/svg-icons/social/public';
+import RaisedButton from 'material-ui/raised-button';
 import {Motion, spring} from 'react-motion';
 
 export default class Navigation extends React.Component {
