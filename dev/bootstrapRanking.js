@@ -5,6 +5,7 @@ var redis = require('../redis');
 var queries = require('../queries');
 var args = process.argv.slice(2);
 var start_id = Number(args[0]) || 0;
+var conc = 0;
 var stream = db.raw(`
 SELECT pr.account_id, solo_competitive_rank from player_ratings pr
 JOIN 
@@ -14,12 +15,17 @@ AND pr.time = grouped.maxtime
 WHERE pr.account_id > ?
 AND solo_competitive_rank > 0
 AND solo_competitive_rank IS NOT NULL
+ORDER BY account_id asc
 `, [start_id]).stream();
 stream.on('end', exit);
 stream.pipe(JSONStream.parse());
 stream.on('data', function(player)
 {
-    stream.pause();
+    conc += 1;
+    if (conc > 10)
+    {
+        stream.pause();
+    }
     db.raw(`
     SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
 FROM player_matches
@@ -46,6 +52,7 @@ GROUP BY account_id, hero_id
                 return exit(err);
             }
             console.log(player.account_id);
+            conc -= 1;
             stream.resume();
         });
     });
