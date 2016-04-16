@@ -1,9 +1,9 @@
 import React from 'react';
-import LeftNav from 'material-ui/left-nav';
-import List from 'material-ui/lists/list';
-import ListItem from 'material-ui/lists/list-item';
+import Drawer from 'material-ui/Drawer';
+import List from 'material-ui/List';
+import ListItem from 'material-ui/List/ListItem';
 import World from 'material-ui/svg-icons/social/public';
-import RaisedButton from 'material-ui/raised-button';
+import RaisedButton from 'material-ui/RaisedButton';
 import {Motion, spring} from 'react-motion';
 
 export default class Navigation extends React.Component {
@@ -33,7 +33,7 @@ export default class Navigation extends React.Component {
         <div>
           <Motion style={{x: spring(this.state.expand ? 200 : 52)}}>
             {({x}) =>
-              <LeftNav
+              <Drawer
                 open={true}
                 width={x}
                 containerStyle={{
@@ -64,7 +64,7 @@ export default class Navigation extends React.Component {
                     ]}
                   />
                 </List>
-              </LeftNav>
+              </Drawer>
             }
           </Motion>
         </div>
