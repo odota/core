@@ -1,12 +1,5 @@
 FROM mhart/alpine-node:5.10.1
 
-RUN apk update && apk add git bash curl
-
-# Dependencies for native modules
-# RUN apk update && apk add make gcc g++ python
-# APK packages don't seem to work
-# openjdk maven
-
 # https://github.com/anapsix/docker-alpine-java/blob/master/8/jdk/Dockerfile
 # Java Version and other ENV
 ENV JAVA_VERSION_MAJOR=8 \
@@ -75,6 +68,12 @@ RUN cd / && \
     wget -q "http://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz" -O - | tar xvzf - && \
     mv /apache-maven-$MAVEN_VERSION /usr/share/maven && \
     ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
+RUN apk upgrade --update && apk add --update git bash curl
+# Dependencies for native modules
+# make gcc g++ python
+# APK packages don't seem to work yet
+# openjdk maven
 
 WORKDIR /usr/src/yasp
 
