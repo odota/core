@@ -214,7 +214,7 @@ function buildPlayer(options, cb)
                         {
                             return Number(b.match_id) - Number(a.match_id);
                         });
-                        matches = matches.slice(0, info === "index" ? 30 : undefined);
+                        matches = matches.slice(0, info === "index" ? 20 : undefined);
                         if (options.cache)
                         {
                             fillSkill(db, matches, options, cb);
@@ -245,7 +245,7 @@ function buildPlayer(options, cb)
                         {
                             return b.games - a.games;
                         });
-                        heroes_list = heroes_list.slice(0, info === "index" ? 30 : undefined);
+                        heroes_list = heroes_list.slice(0, info === "index" ? 20 : undefined);
                         cb(null, heroes_list);
                     }
                     else

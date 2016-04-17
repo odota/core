@@ -1,9 +1,8 @@
-h2.inline-header
-  button.btn.btn-sm.btn-dark.toggle-button(style="float: right;" data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Apply A Filter
+button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Apply A Filter
 #filter_collapse.collapse(class=querystring ? "in" : "")
   form#query(action="" method="GET")
     if config.NODE_ENV==="development"
-      pre=JSON.stringify(q)
+      //pre=JSON.stringify(q)
     .row
       .col-md-4
         h4 Synergies
