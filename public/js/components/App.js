@@ -3,7 +3,7 @@ import { Link, browserHistory } from 'react-router';
 import NavBar from './NavBar';
 import Container from './Container';
 import Footer from './Footer';
-import AppBar from 'material-ui/lib/app-bar';
+import AppBar from 'material-ui/AppBar';
 import Navigation from './Navigation';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import Match from './Match';

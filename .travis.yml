@@ -36,7 +36,7 @@ script:
 # run test outside container
 #- npm run test && (npm run coveralls || true)
 # run test inside container, don't need to build since the docker image already built
-- docker run -e "TEST_SKIP_BUILD=y" -e "COVERALLS_SERVICE_NAME=travis-ci" -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN --net=host -i yasp/yasp:latest "npm run test && (npm run coveralls || true)"
+- docker run -e "TEST_SKIP_BUILD=y" -e "COVERALLS_SERVICE_NAME=travis-ci" -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN --net=host -i yasp/yasp:latest sh -c 'npm run test && (npm run coveralls || true)'
 deploy:
   provider: script
   skip_cleanup: true
