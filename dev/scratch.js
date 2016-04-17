@@ -1,8 +1,5 @@
-var pm2 = require('pm2');
-    pm2.connect(function()
-    {
-        console.log('d');
-    });
+var cp = require('child_process');
+cp.execSync('curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env');
 /*
 var utility = require('../utility');
 var queueReq = utility.queueReq;

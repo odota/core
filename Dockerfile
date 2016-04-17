@@ -91,7 +91,4 @@ RUN npm run webpack
 
 ENV PATH /usr/src/yasp/node_modules/pm2/bin:$PATH
 
-ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
-
-# Sleep
-CMD [ "tail", "-f", "/dev/null" ]
+CMD [ "node", "deploy.js" ]
