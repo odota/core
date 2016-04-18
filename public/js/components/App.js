@@ -18,7 +18,6 @@ injectTapEventPlugin();
 export default function App({ children }) {
   return (
       <div className='container'>
-        <AppBar/>
         <NavBar />
         { children }
         <Footer />

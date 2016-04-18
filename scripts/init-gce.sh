@@ -62,9 +62,7 @@ gcloud compute instance-groups managed set-autoscaling "cassandra-group-1" --coo
 #gcloud compute instance-groups managed delete -q importer-group-1
 #gcloud compute instance-templates delete -q importer-1
 #gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-#sudo docker run -d --name importer --restart=always --net=host yasp/yasp:latest "sh -c 'node dev/allMatches.js 0 1900000000 1000 2> /dev/null'"
+#sudo curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && docker run -d --name bootstrap --restart=always --net=host yasp/yasp:latest "sh -c 'node dev/bootstrapRankings.js'"
 #'
 #gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
 #
-##postgres maintenance
-#gcloud compute instances create temp-1 --machine-type n1-standard-2 --image container-vm --disk name=temp-postgres --boot-disk-size 100GB --boot-disk-type pd-ssd
