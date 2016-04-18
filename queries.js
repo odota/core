@@ -205,7 +205,7 @@ function insertMatch(db, redis, match, options, cb)
         }
         //OPTIONAL clean based on cassandra schema
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
-        //current dependencies on matches/player_matches in postgres (potential solution)
+        //current dependencies on matches in postgres (potential solution)
         //distributions: queries on gamemode/lobbytype/skill (move to redis?)
         //status: recent added/parsed (rewrite query)
         //dependencies on player_matches
@@ -878,9 +878,10 @@ function getLeaderboard(db, redis, key, n, cb)
     });
 }
 
-function updateScore(redis, player, cb)
+function updateScore(player, options, cb)
 {
-    if (player.incr)
+    var redis = options.redis;
+    if (options.incr)
     {
         var win = Number(utility.isRadiant(player) === player.radiant_win);
         //TODO possible inconsistency if we exit/crash after this incr but before completion
@@ -891,6 +892,7 @@ function updateScore(redis, player, cb)
     }
     else
     {
+        redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
         redis.hset('wins:' + player.account_id, player.hero_id, player.wins);
         redis.hset('games:' + player.account_id, player.hero_id, player.games);
     }
@@ -927,6 +929,35 @@ function mmrEstimate(db, redis, account_id, cb)
         });
     });
 }
+
+function getInitRanking(player, options, cb)
+{
+    var db = options.db;
+    var redis = options.redis;
+    db.raw(`
+    SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
+    FROM player_matches
+    JOIN matches
+    ON player_matches.match_id = matches.match_id
+    WHERE lobby_type = 7
+    AND account_id = ?
+    GROUP BY account_id, hero_id
+    `, [player.account_id]).asCallback(function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        async.each(result.rows, function(player2, cb)
+        {
+            player2.solo_competitive_rank = player.solo_competitive_rank;
+            updateScore(player2,
+            {
+                redis: redis
+            }, cb);
+        }, cb);
+    });
+}
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
@@ -945,6 +976,7 @@ module.exports = {
     upsert: upsert,
     getBenchmarks: getBenchmarks,
     getLeaderboard: getLeaderboard,
-    updateScore: updateScore,
-    mmrEstimate: mmrEstimate,
+    updateScore,
+    mmrEstimate,
+    getInitRanking,
 };

@@ -26,35 +26,19 @@ stream.on('data', function(player)
     {
         stream.pause();
     }
-    db.raw(`
-    SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
-FROM player_matches
-JOIN matches
-ON player_matches.match_id = matches.match_id
-WHERE lobby_type = 7
-AND account_id = ?
-GROUP BY account_id, hero_id
-    `, [player.account_id]).asCallback(function(err, result)
+    queries.getInitRanking(player,
+    {
+        db: db,
+        redis: redis
+    }, function(err)
     {
         if (err)
         {
             return exit(err);
         }
-        async.each(result.rows, function(player2, cb)
-        {
-            player2.solo_competitive_rank = player.solo_competitive_rank;
-            redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
-            queries.updateScore(redis, player2, cb);
-        }, function(err)
-        {
-            if (err)
-            {
-                return exit(err);
-            }
-            console.log(player.account_id);
-            conc -= 1;
-            stream.resume();
-        });
+        console.log(player.account_id);
+        conc -= 1;
+        stream.resume();
     });
 });
 

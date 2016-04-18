@@ -159,39 +159,25 @@ function updateRankings(match, cb)
             player.games = result.games;
             player.radiant_win = match.radiant_win;
             //make sure we have existing score if we want to incr, otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
-            player.incr = Boolean(player.score);
-            if (player.incr)
+            if (Boolean(player.score))
             {
-                updateScore(redis, player, cb);
+                updateScore(player,
+                {
+                    redis: redis,
+                    incr: true,
+                }, cb);
             }
             else
             {
-                //db mode, lookup of current games, wins.  This is the bootstrapping case (new player entering rankings).  Also can be used as a consistency check (audit)
-                db.raw(`
-            SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
-            FROM player_matches
-            JOIN matches
-            ON player_matches.match_id = matches.match_id
-            WHERE player_matches.account_id = ?
-            AND hero_id = ?
-            AND lobby_type = 7
-            GROUP BY player_matches.account_id, hero_id
-            `, [player.account_id, player.hero_id]).asCallback(function(err, result)
+                return cb();
+                //TODO temporarily skip uncached players to prevent it from holding up the cacher
+                /*
+                queries.getInitRanking(player,
                 {
-                    if (err)
-                    {
-                        console.error(err);
-                        return cb(err);
-                    }
-                    if (!result.rows || !result.rows[0])
-                    {
-                        return cb("no players found");
-                    }
-                    var dbPlayer = result.rows[0];
-                    player.games = dbPlayer.games;
-                    player.wins = dbPlayer.wins;
-                    updateScore(redis, player, cb);
-                });
+                    db: db,
+                    redis: redis
+                }, cb);
+                */
             }
         });
     }, cb);
