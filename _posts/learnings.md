@@ -5,7 +5,9 @@
   "draft": true
 }}}
 
-What we've learned in 18 months of working on this project:
+Working on this project has a highly educational experience for both of us.
+
+Here are some of the things we learned along the way:
 
 * Origins
   * Started in August 2014
