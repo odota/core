@@ -17,7 +17,7 @@ var health = {
             {
                 return cb();
             }
-            request(config.ROOT_URL + "/matches/" + result.rows[0].match_id, function(err, resp, body)
+            request(config.ROOT_URL + "/api/matches/" + result.rows[0].match_id, function(err, resp, body)
             {
                 var fail = err || resp.statusCode !== 200;
                 return cb(fail,
@@ -40,7 +40,7 @@ var health = {
             {
                 return cb();
             }
-            request(config.ROOT_URL + "/players/" + result.rows[0].account_id, function(err, resp, body)
+            request(config.ROOT_URL + "/api/players/" + result.rows[0].account_id, function(err, resp, body)
             {
                 var fail = err || resp.statusCode !== 200;
                 return cb(fail,
