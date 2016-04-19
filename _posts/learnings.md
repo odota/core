@@ -54,7 +54,7 @@ Here are some of the things we learned along the way:
     * Bonus points: make it email you when something goes wrong
     * Extra bonus points: make it call you so you can be on-call 24/7 and wake up at 3AM to put out fires!
 * Config
-  * Don't put secrets in your code!  It's really easy to accidentally push them to GitHub, and then you have to deal with rotating them.  This sucks, and people will laugh at you while (Russian hackers pwn your webapp)[http://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags/1732454#1732454].
+  * Don't put secrets in your code!  It's really easy to accidentally push them to GitHub, and then you have to deal with rotating them.  This sucks, and people will laugh at you while [Russian hackers pwn your webapp](http://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags/1732454#1732454).
   * Put your config settings in one place.  It makes it easy for developers to see what settings can be changed.
 * Security
   * Reduce state provided by users.
