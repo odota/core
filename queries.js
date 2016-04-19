@@ -116,6 +116,14 @@ function upsert(db, table, row, conflict, cb)
 function insertMatch(db, redis, match, options, cb)
 {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
+    //don't insert anonymous account id
+    players.forEach(function(p)
+    {
+        if (p.account_id === constants.anonymous_account_id)
+        {
+            delete p.acount_id;
+        }
+    });
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
     if (players && !match.pgroup)
     {

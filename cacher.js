@@ -141,7 +141,7 @@ function updateMatchRating(match, cb)
             //for each player
             match.players.forEach(function(player)
             {
-                if (player.account_id !== constants.anonymous_account_id)
+                if (player.account_id && player.account_id !== constants.anonymous_account_id)
                 {
                     //push into list, limit to 50 elements
                     redis.lpush('mmr_estimates:' + player.account_id, avg);
