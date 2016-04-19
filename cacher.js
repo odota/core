@@ -34,7 +34,7 @@ function processCache(job, cb)
         },
         "rankings": function(cb)
         {
-            if (config.ENABLE_RANKER && match.lobby_type === 7 && match.origin === "scanner")
+            if (match.lobby_type === 7 && match.origin === "scanner")
             {
                 return updateRankings(match, cb);
             }
@@ -123,63 +123,11 @@ function updateRankings(match, cb)
         {
             return cb();
         }
-        async.parallel(
+        player.radiant_win = match.radiant_win;
+        updateScore(player,
         {
-            solo_competitive_rank: function(cb)
-            {
-                redis.zscore('solo_competitive_rank', player.account_id, cb);
-            },
-            score: function(cb)
-            {
-                redis.zscore('hero_rankings:' + player.hero_id, player.account_id, cb);
-            },
-            wins: function(cb)
-            {
-                redis.hget('wins:' + player.account_id, player.hero_id, cb);
-            },
-            games: function(cb)
-            {
-                redis.hget('games:' + player.account_id, player.hero_id, cb);
-            }
-        }, function(err, result)
-        {
-            if (err)
-            {
-                console.error(err);
-                return cb(err);
-            }
-            if (!result.solo_competitive_rank)
-            {
-                //if no MMR on record, can't rank this player, finish fast
-                return cb();
-            }
-            player.score = result.score;
-            player.solo_competitive_rank = result.solo_competitive_rank;
-            player.wins = result.wins;
-            player.games = result.games;
-            player.radiant_win = match.radiant_win;
-            //make sure we have existing score if we want to incr, otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
-            if (Boolean(player.score))
-            {
-                updateScore(player,
-                {
-                    redis: redis,
-                    incr: true,
-                }, cb);
-            }
-            else
-            {
-                return cb();
-                //TODO temporarily skip uncached players to prevent it from holding up the cacher
-                /*
-                queries.getInitRanking(player,
-                {
-                    db: db,
-                    redis: redis
-                }, cb);
-                */
-            }
-        });
+            redis: redis,
+        }, cb);
     }, cb);
 }
 

@@ -26,20 +26,10 @@ stream.on('data', function(player)
     {
         stream.pause();
     }
-    queries.getInitRanking(player,
-    {
-        db: db,
-        redis: redis
-    }, function(err)
-    {
-        if (err)
-        {
-            return exit(err);
-        }
-        console.log(player.account_id);
-        conc -= 1;
-        stream.resume();
-    });
+    redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
+    console.log(player.account_id);
+    conc -= 1;
+    stream.resume();
 });
 
 function exit(err)

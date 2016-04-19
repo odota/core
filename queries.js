@@ -552,13 +552,13 @@ function getPlayerRankings(redis, account_id, cb)
     console.time('[PLAYER] getPlayerRankings ' + account_id);
     async.map(Object.keys(constants.heroes), function(hero_id, cb)
     {
-        redis.zcard('hero_rankings:' + hero_id, function(err, card)
+        redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), function(err, card)
         {
             if (err)
             {
                 return cb(err);
             }
-            redis.zrank('hero_rankings:' + hero_id, account_id, function(err, rank)
+            redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), account_id, function(err, rank)
             {
                 cb(err,
                 {
@@ -746,7 +746,7 @@ function getTop(db, redis, cb)
 
 function getHeroRankings(db, redis, hero_id, cb)
 {
-    getLeaderboard(db, redis, 'hero_rankings:' + hero_id, 100, function(err, entries)
+    getLeaderboard(db, redis, ['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), 100, function(err, entries)
     {
         if (err)
         {
@@ -762,11 +762,11 @@ function getHeroRankings(db, redis, hero_id, cb)
                 },
                 wins: function(cb)
                 {
-                    redis.hget('wins:' + player.account_id, hero_id, cb);
+                    redis.hget(['wins', moment().startOf('quarter').format('X'), player.account_id].join(':'), hero_id, cb);
                 },
                 games: function(cb)
                 {
-                    redis.hget('games:' + player.account_id, hero_id, cb);
+                    redis.hget(['games', moment().startOf('quarter').format('X'), player.account_id].join(':'), hero_id, cb);
                 }
             }, function(err, result)
             {
@@ -881,27 +881,51 @@ function getLeaderboard(db, redis, key, n, cb)
 function updateScore(player, options, cb)
 {
     var redis = options.redis;
-    if (options.incr)
+    var reset = moment().startOf('quarter').format('X');
+    var expire = moment().add(1, 'quarter').startOf('quarter').diff(moment(), 'seconds');
+    var win = Number(utility.isRadiant(player) === player.radiant_win);
+    //TODO possible inconsistency if we exit/crash after this incr but before completion
+    redis.hincrby(['wins', reset, player.account_id].join(':'), player.hero_id, win);
+    redis.hincrby(['games', reset, player.account_id].join(':'), player.hero_id, 1);
+    redis.expire(['wins', reset, player.account_id].join(':'), expire);
+    redis.expire(['games', reset, player.account_id].join(':'), expire);
+    async.parallel(
     {
-        var win = Number(utility.isRadiant(player) === player.radiant_win);
-        //TODO possible inconsistency if we exit/crash after this incr but before completion
-        redis.hincrby('wins:' + player.account_id, player.hero_id, win);
-        redis.hincrby('games:' + player.account_id, player.hero_id, 1);
-        player.wins += win;
-        player.games += 1;
-    }
-    else
+        solo_competitive_rank: function(cb)
+        {
+            redis.zscore('solo_competitive_rank', player.account_id, cb);
+        },
+        wins: function(cb)
+        {
+            redis.hget(['wins', reset, player.account_id].join(':'), player.hero_id, cb);
+        },
+        games: function(cb)
+        {
+            redis.hget(['games', reset, player.account_id].join(':'), player.hero_id, cb);
+        },
+    }, function(err, result)
     {
-        redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
-        redis.hset('wins:' + player.account_id, player.hero_id, player.wins);
-        redis.hset('games:' + player.account_id, player.hero_id, player.games);
-    }
-    var scaleF = 0.00001;
-    var winRatio = (player.wins / (player.games - player.wins + 1));
-    var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
-    redis.zadd('hero_rankings:' + player.hero_id, scaleF * player.games * winRatio * mmrBonus, player.account_id);
-    console.log("ranked %s, %s", player.account_id, player.hero_id);
-    cb();
+        if (err)
+        {
+            console.error(err);
+            return cb(err);
+        }
+        if (!result.solo_competitive_rank)
+        {
+            //if no MMR on record, can't rank this player
+            return cb();
+        }
+        console.log('ranking');
+        player.solo_competitive_rank = Number(result.solo_competitive_rank);
+        player.wins = Number(result.wins);
+        player.games = Number(result.games);
+        var scaleF = 0.00001;
+        var winRatio = (player.wins / (player.games - player.wins + 1));
+        var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
+        redis.zadd(['hero_rankings', reset, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
+        redis.expire(['hero_rankings', reset, player.hero_id].join(':'), expire);
+        cb(err);
+    });
 }
 
 function mmrEstimate(db, redis, account_id, cb)
@@ -959,23 +983,23 @@ function getInitRanking(player, options, cb)
     });
 }
 module.exports = {
-    getSets: getSets,
-    insertPlayer: insertPlayer,
-    insertMatch: insertMatch,
-    insertPlayerRating: insertPlayerRating,
-    insertMatchSkill: insertMatchSkill,
-    getMatch: getMatch,
-    getPlayerMatches: getPlayerMatches,
-    getPlayerRatings: getPlayerRatings,
-    getPlayerRankings: getPlayerRankings,
-    getPlayer: getPlayer,
-    getDistributions: getDistributions,
-    getPicks: getPicks,
-    getTop: getTop,
-    getHeroRankings: getHeroRankings,
-    upsert: upsert,
-    getBenchmarks: getBenchmarks,
-    getLeaderboard: getLeaderboard,
+    getSets,
+    insertPlayer,
+    insertMatch,
+    insertPlayerRating,
+    insertMatchSkill,
+    getMatch,
+    getPlayerMatches,
+    getPlayerRatings,
+    getPlayerRankings,
+    getPlayer,
+    getDistributions,
+    getPicks,
+    getTop,
+    getHeroRankings,
+    upsert,
+    getBenchmarks,
+    getLeaderboard,
     updateScore,
     mmrEstimate,
     getInitRanking,

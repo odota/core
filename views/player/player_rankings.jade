@@ -5,7 +5,7 @@ block playercontent
   .row
     .col-md-12
       h3 Rankings 
-        small Based on ranked matches. MMR must be shared on profile in order to compute ranking.
+        small=constants.tooltips.subheading_ranking
       table.table#rankings.table-striped.rankable
         thead
           tr
@@ -24,7 +24,7 @@ block playercontent
                   else
                     =hero_id
                 - var pct = (entry.rank+1)/entry.card
-                td(class=percentToTextClass(pct).className)=(pct*100).toFixed(2)
+                td(class=percentToTextClass(pct).className) #{(pct*100).toFixed(2)}%
                 td=(entry.card - entry.rank)
 
 append footer_assets

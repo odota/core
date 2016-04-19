@@ -58,11 +58,5 @@ docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=co
 gcloud compute instance-groups managed create "cassandra-group-1" --base-instance-name "cassandra-group-1" --template "cassandra-1" --size "1"
 gcloud compute instance-groups managed set-autoscaling "cassandra-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "1" --target-cpu-utilization "0.7"
 
-##importer
-#gcloud compute instance-groups managed delete -q importer-group-1
-#gcloud compute instance-templates delete -q importer-1
-#gcloud compute instance-templates create importer-1 --machine-type n1-highcpu-4 --preemptible --image container-vm --metadata startup-script='#!/bin/bash
-#sudo curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && docker run -d --name bootstrap --restart=always --net=host yasp/yasp:latest "sh -c 'node dev/bootstrapRankings.js'"
-#'
-#gcloud compute instance-groups managed create "importer-group-1" --base-instance-name "importer-group-1" --template "importer-1" --size "1"
-#
+# running scripts in container
+#docker run -d --name bootstrap --restart=always --net=host yasp/yasp:latest sh -c 'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/bootstrapRanking.js'

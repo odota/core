@@ -114,6 +114,6 @@
   "played_against": "Number of games with this player/hero on the opposing team",
   "win_pct_as": "Win percentage as this hero",
   "win_pct_with": "Win percentage with this player/hero",
-  "win_pct_against": "Win percentage against this player/hero"
-
+  "win_pct_against": "Win percentage against this player/hero",
+  "subheading_ranking": "Based on ranked matches. MMR must be visible in order to compute ranking. Rankings reset quarterly."
 }

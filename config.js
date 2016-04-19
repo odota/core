@@ -38,7 +38,7 @@ var defaults = {
     "ROLE": "", //for specifying a node type
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
-    "SCANNER_DELAY": 100, //delay for scanner API requests (more time-sensitive)
+    "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "BENCHMARK_RETENTION_HOURS": 3, //hours in block to retain benchmark data
     "MATCH_RATING_RETENTION_HOURS": 24, //hours in block to retain match rating data
@@ -52,7 +52,6 @@ var defaults = {
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
     "ENABLE_CASSANDRA_PLAYER_CACHE": "", //set to use cassandra for player caches
-    "ENABLE_RANKER": "", //set to enable player ranking
     "ENABLE_SPA_MODE": "", //set to enable single page application mode for web
     "ENABLE_CASSANDRA_MATCH_STORE": "", //set to enable using cassandra for match data store
 };

@@ -22,7 +22,7 @@ if [ "$1" = "web" ] || [[ $# -eq 0 ]]; then
 gcloud compute instance-templates create web-$DATETIME --machine-type g1-small --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
 sudo docker run -d --restart=always --net=host -e FRONTEND_PORT=80 -e PROVIDER=gce -e ROLE=web yasp/yasp:latest
 '
-gcloud alpha compute rolling-updates start --group web-group-1 --template web-$DATETIME --min-instance-update-time 60
+gcloud alpha compute rolling-updates start --group web-group-1 --template web-$DATETIME --min-instance-update-time 180
 fi
 
 gcloud alpha compute rolling-updates list

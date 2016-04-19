@@ -4,7 +4,7 @@ block content
   .row
     .col-md-12
       h3 Rankings 
-        small Based on ranked matches. MMR must be shared on profile in order to compute ranking.
+        small=constants.tooltips.subheading_ranking
       - var hero = constants.heroes[hero_id]
       h3.text-center
         span #{hero.localized_name}
