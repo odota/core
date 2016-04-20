@@ -1,5 +1,5 @@
 {{{
-  "title": "Lessons learned from 10 million replays parsed",
+  "title": "Lessons learned from parsing 10 million replays",
   "date": "5-1-2016",
   "author": "Howard",
   "draft": true
