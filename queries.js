@@ -930,4 +930,5 @@ module.exports = {
     upsert,
     getBenchmarks,
     getLeaderboard,
+    mmrEstimate,
 };
