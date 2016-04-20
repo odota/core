@@ -40,6 +40,7 @@
   },
   "rankings": {
     "name": "Rankings",
+    "new-feature": true,
     "hide": true
   }
 }

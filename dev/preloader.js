@@ -20,7 +20,7 @@ stream.on('data', function(player)
     }
     conc += 1;
     count += 1;
-    if (count > 100000)
+    if (count > 1000000)
     {
         return exit();
     }

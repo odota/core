@@ -1,4 +1,3 @@
-module.exports = buildPlayer;
 var async = require('async');
 var constants = require('./constants.js');
 var queries = require("./queries");
@@ -454,3 +453,4 @@ function fillSkill(db, matches, options, cb)
         return cb(err, matches);
     });
 }
+module.exports = buildPlayer;
