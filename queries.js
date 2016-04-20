@@ -886,56 +886,6 @@ function getLeaderboard(db, redis, key, n, cb)
     });
 }
 
-function updateScore(player, options, cb)
-{
-    var redis = options.redis;
-    var reset = moment().startOf('quarter').format('X');
-    var expire = moment().add(1, 'quarter').startOf('quarter').diff(moment(), 'seconds');
-    var win = Number(utility.isRadiant(player) === player.radiant_win);
-    //TODO possible inconsistency if we exit/crash after this incr but before completion
-    redis.hincrby(['wins', reset, player.account_id].join(':'), player.hero_id, win);
-    redis.hincrby(['games', reset, player.account_id].join(':'), player.hero_id, 1);
-    redis.expire(['wins', reset, player.account_id].join(':'), expire);
-    redis.expire(['games', reset, player.account_id].join(':'), expire);
-    async.parallel(
-    {
-        solo_competitive_rank: function(cb)
-        {
-            redis.zscore('solo_competitive_rank', player.account_id, cb);
-        },
-        wins: function(cb)
-        {
-            redis.hget(['wins', reset, player.account_id].join(':'), player.hero_id, cb);
-        },
-        games: function(cb)
-        {
-            redis.hget(['games', reset, player.account_id].join(':'), player.hero_id, cb);
-        },
-    }, function(err, result)
-    {
-        if (err)
-        {
-            console.error(err);
-            return cb(err);
-        }
-        if (!result.solo_competitive_rank)
-        {
-            //if no MMR on record, can't rank this player
-            return cb();
-        }
-        console.log('ranking');
-        player.solo_competitive_rank = Number(result.solo_competitive_rank);
-        player.wins = Number(result.wins);
-        player.games = Number(result.games);
-        var scaleF = 0.00001;
-        var winRatio = (player.wins / (player.games - player.wins + 1));
-        var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
-        redis.zadd(['hero_rankings', reset, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
-        redis.expire(['hero_rankings', reset, player.hero_id].join(':'), expire);
-        cb(err);
-    });
-}
-
 function mmrEstimate(db, redis, account_id, cb)
 {
     redis.lrange('mmr_estimates:' + account_id, 0, -1, function(err, result)
@@ -962,34 +912,6 @@ function mmrEstimate(db, redis, account_id, cb)
     });
 }
 
-function getInitRanking(player, options, cb)
-{
-    var db = options.db;
-    var redis = options.redis;
-    db.raw(`
-    SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
-    FROM player_matches
-    JOIN matches
-    ON player_matches.match_id = matches.match_id
-    WHERE lobby_type = 7
-    AND account_id = ?
-    GROUP BY account_id, hero_id
-    `, [player.account_id]).asCallback(function(err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        async.each(result.rows, function(player2, cb)
-        {
-            player2.solo_competitive_rank = player.solo_competitive_rank;
-            updateScore(player2,
-            {
-                redis: redis
-            }, cb);
-        }, cb);
-    });
-}
 module.exports = {
     getSets,
     insertPlayer,
@@ -1008,7 +930,4 @@ module.exports = {
     upsert,
     getBenchmarks,
     getLeaderboard,
-    updateScore,
-    mmrEstimate,
-    getInitRanking,
 };
