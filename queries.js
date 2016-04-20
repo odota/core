@@ -121,7 +121,7 @@ function insertMatch(db, redis, match, options, cb)
     {
         if (p.account_id === constants.anonymous_account_id)
         {
-            delete p.acount_id;
+            delete p.account_id;
         }
     });
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
