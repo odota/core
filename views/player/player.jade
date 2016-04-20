@@ -45,7 +45,6 @@ block content
               span: abbr(title="MMR estimate based on available data from peer players. This is an estimate of the population mean MMR of the recent matches played by this user.")
                 i.fa.fa-fw.fa-question-circle
               small#estimate(style="margin-left:.5em;display:inline-block;")
-                - player.mmr_estimate = { estimate: 3000, stdDev: 10, n: 10}
                 if player.mmr_estimate.estimate
                   span: abbr(title="95% confidence interval: +/- " + (player.mmr_estimate.stdDev ? (player.mmr_estimate.stdDev*2).toFixed(0) : 0) + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
                 else
