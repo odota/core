@@ -1,4 +1,3 @@
-module.exports = buildPlayer;
 var async = require('async');
 var constants = require('./constants.js');
 var queries = require("./queries");
@@ -384,7 +383,7 @@ function generateTeammateArrayFromHash(db, input, player, cb)
         var tm = teammates[id];
         id = Number(id);
         //don't include if anonymous, self or if few games together
-        if (id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5))
+        if (id && id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5))
         {
             teammates_arr.push(tm);
         }
@@ -454,3 +453,4 @@ function fillSkill(db, matches, options, cb)
         return cb(err, matches);
     });
 }
+module.exports = buildPlayer;

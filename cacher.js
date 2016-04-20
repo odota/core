@@ -94,69 +94,6 @@ function processCache(job, cb)
     });
 }
 
-function updateBenchmarks(match)
-{
-    for (var i = 0; i < match.players.length; i++)
-    {
-        var p = match.players[i];
-        if (!p.hero_id)
-        {
-            //exclude this match
-            return;
-        }
-        for (var key in benchmarks)
-        {
-            var metric = benchmarks[key](match, p);
-            if (metric !== undefined && metric !== null && !Number.isNaN(metric))
-            {
-                redis.zadd(["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':'), metric, match.match_id);
-            }
-        }
-    }
-}
-
-function updateRankings(match, cb)
-{
-    async.each(match.players, function(player, cb)
-    {
-        if (!player.account_id || player.account_id === constants.anonymous_account_id)
-        {
-            return cb();
-        }
-        player.radiant_win = match.radiant_win;
-        updateScore(player,
-        {
-            redis: redis,
-        }, cb);
-    }, cb);
-}
-
-function updateMatchRating(match, cb)
-{
-    getMatchRating(redis, match, function(err, avg)
-    {
-        if (avg && !Number.isNaN(avg))
-        {
-            redis.zadd('match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0), avg, match.match_id);
-            //for each player
-            match.players.forEach(function(player)
-            {
-                if (player.account_id !== constants.anonymous_account_id)
-                {
-                    //push into list, limit to 50 elements
-                    redis.lpush('mmr_estimates:' + player.account_id, avg);
-                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 50);
-                }
-            });
-            cb();
-        }
-        else
-        {
-            return cb(err);
-        }
-    });
-}
-
 function incrCounts(match)
 {
     //count match for telemetry
@@ -242,4 +179,113 @@ function k_combinations(arr, k)
         }
     }
     return combs;
+}
+
+function updateRankings(match, cb)
+{
+    async.each(match.players, function(player, cb)
+    {
+        if (!player.account_id || player.account_id === constants.anonymous_account_id)
+        {
+            return cb();
+        }
+        player.radiant_win = match.radiant_win;
+        var reset = moment().startOf('quarter').format('X');
+        var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
+        var win = Number(utility.isRadiant(player) === player.radiant_win);
+        //TODO possible inconsistency if we exit/crash after this incr but before completion
+        redis.hincrby(['wins', reset, player.account_id].join(':'), player.hero_id, win);
+        redis.hincrby(['games', reset, player.account_id].join(':'), player.hero_id, 1);
+        async.parallel(
+        {
+            solo_competitive_rank: function(cb)
+            {
+                redis.zscore('solo_competitive_rank', player.account_id, cb);
+            },
+            wins: function(cb)
+            {
+                redis.hget(['wins', reset, player.account_id].join(':'), player.hero_id, cb);
+            },
+            games: function(cb)
+            {
+                redis.hget(['games', reset, player.account_id].join(':'), player.hero_id, cb);
+            },
+        }, function(err, result)
+        {
+            if (err)
+            {
+                console.error(err);
+                return cb(err);
+            }
+            if (!result.solo_competitive_rank)
+            {
+                //if no MMR on record, can't rank this player
+                return cb();
+            }
+            console.log('ranking');
+            player.solo_competitive_rank = Number(result.solo_competitive_rank);
+            player.wins = Number(result.wins);
+            player.games = Number(result.games);
+            var scaleF = 0.00001;
+            var winRatio = (player.wins / (player.games - player.wins + 1));
+            var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
+            redis.zadd(['hero_rankings', reset, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
+            redis.expireat(['wins', reset, player.account_id].join(':'), expire);
+            redis.expireat(['games', reset, player.account_id].join(':'), expire);
+            redis.expireat(['hero_rankings', reset, player.hero_id].join(':'), expire);
+            cb(err);
+        });
+    }, cb);
+}
+
+function updateBenchmarks(match)
+{
+    for (var i = 0; i < match.players.length; i++)
+    {
+        var p = match.players[i];
+        if (!p.hero_id)
+        {
+            //exclude this match
+            return;
+        }
+        for (var key in benchmarks)
+        {
+            var metric = benchmarks[key](match, p);
+            if (metric !== undefined && metric !== null && !Number.isNaN(metric))
+            {
+                var rkey = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':');
+                redis.zadd(rkey, metric, match.match_id);
+                //expire at time two blocks later (after prev/current cycle)
+                redis.expireat(rkey, utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 2));
+            }
+        }
+    }
+}
+
+function updateMatchRating(match, cb)
+{
+    getMatchRating(redis, match, function(err, avg)
+    {
+        if (avg && !Number.isNaN(avg))
+        {
+            var rkey = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0);
+            redis.zadd(rkey, avg, match.match_id);
+            redis.expireat(rkey, utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 2));
+            //for each player
+            match.players.forEach(function(player)
+            {
+                if (player.account_id && player.account_id !== constants.anonymous_account_id)
+                {
+                    //push into list, limit to 50 elements
+                    redis.lpush('mmr_estimates:' + player.account_id, avg);
+                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 49);
+                }
+            });
+            cb();
+        }
+        else
+        {
+            return cb(err);
+        }
+    });
 }

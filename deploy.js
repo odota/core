@@ -1,20 +1,19 @@
+var args = process.argv.slice(2);
 var cp = require('child_process');
 if (process.env.PROVIDER === "gce")
 {
     cp.execSync('curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env');
 }
-var pm2 = require('pm2');
-var async = require('async');
-var config = require('./config');
-var args = process.argv.slice(2);
-var manifest = require('./package.json');
-if (config.ROLE)
+if (process.env.ROLE)
 {
     //if role variable is set just run that script
-    require('./' + config.ROLE + ".js");
+    require('./' + process.env.ROLE + ".js");
 }
 else if (args[0])
 {
+    var pm2 = require('pm2');
+    var async = require('async');
+    var manifest = require('./package.json');
     //if argument supplied use pm2 to run processes in that group
     pm2.connect(function()
     {

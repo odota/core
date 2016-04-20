@@ -106,7 +106,7 @@ CREATE TABLE player_matches (
   --kill_streaks_log json[][], --an array of kill streak values
   --multi_kill_id_vals integer[] --an array of multi kill values (the length of each multi kill)
 );
-CREATE INDEX on player_matches(account_id);
+CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 
 CREATE TABLE players (
   account_id bigint PRIMARY KEY,
