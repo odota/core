@@ -193,9 +193,6 @@ function updateRankings(match, cb)
         var reset = moment().startOf('quarter').format('X');
         var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
         var win = Number(utility.isRadiant(player) === player.radiant_win);
-        redis.expireat(['wins', reset, player.hero_id].join(':'), expire);
-        redis.expireat(['games', reset, player.hero_id].join(':'), expire);
-        redis.expireat(['hero_rankings', reset, player.hero_id].join(':'), expire);
         //TODO possible inconsistency if we exit/crash without completing all commands
         async.parallel(
         {
@@ -228,6 +225,9 @@ function updateRankings(match, cb)
             var winRatio = (player.wins / (player.games - player.wins + 1));
             var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
             redis.zadd(['hero_rankings', reset, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
+            redis.expireat(['wins', reset, player.hero_id].join(':'), expire);
+            redis.expireat(['games', reset, player.hero_id].join(':'), expire);
+            redis.expireat(['hero_rankings', reset, player.hero_id].join(':'), expire);
             cb();
         });
     }, cb);
