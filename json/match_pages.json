@@ -5,8 +5,7 @@
   },
   "benchmarks":
   {
-    "name": "Benchmarks",
-    "new-feature": true
+    "name": "Benchmarks"
   },
   "performances":
   {
