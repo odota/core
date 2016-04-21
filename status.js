@@ -171,7 +171,7 @@ module.exports = function getStatus(db, redis, cb)
                 {
                     result[key] = JSON.parse(result[key]);
                 }
-                cb(err, result);
+                cb(err, result || {});
             });
         }
     }, function(err, results)

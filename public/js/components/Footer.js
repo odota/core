@@ -4,9 +4,9 @@ import
    connect
 }
 from 'react-redux';
-const Footer = function(input)
+const Footer = function(props)
 {
-   var w = (input.data.cheese ? input.data.cheese.cheese / input.data.cheese.goal : 0);
+   var w = (props.data.cheese ? props.data.cheese.cheese / props.data.cheese.goal : 0);
    return <footer className="footer">
    <div className="container">
       <div className="row">
@@ -47,9 +47,9 @@ const Footer = function(input)
   </footer>
 };
 
-function mapStateToProps(state)
+function mapStateToProps(data)
 {
-   return state.reducers.metadata;
+   return data.reducers.metadata;
 }
 export default connect(mapStateToProps)(Footer);
 //tooltips();

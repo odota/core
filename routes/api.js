@@ -61,6 +61,9 @@ module.exports = function(db, redis, cassandra)
             {
                 cb(null, constants.match_pages);
             },
+            player_fields: function(cb){
+                cb(null, constants.player_fields);
+            },
         }, function(err, result)
         {
             if (err)
@@ -160,7 +163,8 @@ module.exports = function(db, redis, cassandra)
             else
             {
                 var single = result[req.params.metric];
-                res.status(single.metric < single.threshold ? 200 : 500).json(single);
+                var healthy = single.metric < single.threshold;
+                res.status(healthy ? 200 : 500).json(single);
             }
         });
     });

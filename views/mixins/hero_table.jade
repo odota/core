@@ -6,10 +6,10 @@ mixin hero_table(rows, short)
     thead
       tr
         th: abbr(title=tooltips.hero_id) Hero
-        th.fromNow: abbr(title=tooltips.last_played) Last
         th: abbr(title=tooltips.played_as) Played
         th: abbr(title=tooltips.win_pct_as) Win%
         if !short
+          th.fromNow: abbr(title=tooltips.last_played) Last
           th: abbr(title=tooltips.played_with) With
           th: abbr(title=tooltips.win_pct_with) Win%
           th: abbr(title=tooltips.played_against) Against
@@ -21,11 +21,11 @@ mixin hero_table(rows, short)
           td.text-left.small
             img.img-sm(src=hero.img, title=hero.localized_name)
             =hero.localized_name
-          td.small=h.last_played
           td.rankable=h.games
           td.rankable
             +progress_bar(h.win, h.games)
           if !short
+            td.small=h.last_played
             td.rankable=h.with_games
             td.rankable
               +progress_bar(h.with_win, h.with_games)

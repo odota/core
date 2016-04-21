@@ -116,6 +116,14 @@ function upsert(db, table, row, conflict, cb)
 function insertMatch(db, redis, match, options, cb)
 {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
+    //don't insert anonymous account id
+    players.forEach(function(p)
+    {
+        if (p.account_id === constants.anonymous_account_id)
+        {
+            delete p.account_id;
+        }
+    });
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
     if (players && !match.pgroup)
     {
@@ -205,7 +213,7 @@ function insertMatch(db, redis, match, options, cb)
         }
         //OPTIONAL clean based on cassandra schema
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
-        //current dependencies on matches/player_matches in postgres (potential solution)
+        //current dependencies on matches in postgres (potential solution)
         //distributions: queries on gamemode/lobbytype/skill (move to redis?)
         //status: recent added/parsed (rewrite query)
         //dependencies on player_matches
@@ -244,6 +252,7 @@ function insertMatch(db, redis, match, options, cb)
                 pm.cluster = match.cluster;
                 pm.lobby_type = match.lobby_type;
                 pm.game_mode = match.game_mode;
+                pm.parse_status = match.parse_status;
                 var obj2 = serialize(pm);
                 var query2 = 'INSERT INTO player_matches JSON ?';
                 var arr2 = [JSON.stringify(obj2)];
@@ -406,6 +415,7 @@ function getMatch(db, redis, match_id, options, cb)
                     p.cluster = match.cluster;
                     p.lobby_type = match.lobby_type;
                     p.game_mode = match.game_mode;
+                    p.parse_status = match.parse_status;
                     computePlayerMatchData(p);
                     if (ab_upgrades)
                     {
@@ -550,13 +560,13 @@ function getPlayerRankings(redis, account_id, cb)
     console.time('[PLAYER] getPlayerRankings ' + account_id);
     async.map(Object.keys(constants.heroes), function(hero_id, cb)
     {
-        redis.zcard('hero_rankings:' + hero_id, function(err, card)
+        redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), function(err, card)
         {
             if (err)
             {
                 return cb(err);
             }
-            redis.zrank('hero_rankings:' + hero_id, account_id, function(err, rank)
+            redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), account_id, function(err, rank)
             {
                 cb(err,
                 {
@@ -744,7 +754,7 @@ function getTop(db, redis, cb)
 
 function getHeroRankings(db, redis, hero_id, cb)
 {
-    getLeaderboard(db, redis, 'hero_rankings:' + hero_id, 100, function(err, entries)
+    getLeaderboard(db, redis, ['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), 100, function(err, entries)
     {
         if (err)
         {
@@ -760,11 +770,11 @@ function getHeroRankings(db, redis, hero_id, cb)
                 },
                 wins: function(cb)
                 {
-                    redis.hget('wins:' + player.account_id, hero_id, cb);
+                    redis.hget(['wins', moment().startOf('quarter').format('X'), player.account_id].join(':'), hero_id, cb);
                 },
                 games: function(cb)
                 {
-                    redis.hget('games:' + player.account_id, hero_id, cb);
+                    redis.hget(['games', moment().startOf('quarter').format('X'), player.account_id].join(':'), hero_id, cb);
                 }
             }, function(err, result)
             {
@@ -794,7 +804,7 @@ function getBenchmarks(db, redis, options, cb)
     var ret = {};
     async.each(Object.keys(benchmarks), function(metric, cb)
     {
-        var arr = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
+        var arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
         async.each(arr, function(percentile, cb)
         {
             var key = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1), metric, hero_id].join(':');
@@ -876,30 +886,6 @@ function getLeaderboard(db, redis, key, n, cb)
     });
 }
 
-function updateScore(redis, player, cb)
-{
-    if (player.incr)
-    {
-        var win = Number(utility.isRadiant(player) === player.radiant_win);
-        //TODO possible inconsistency if we exit/crash after this incr but before completion
-        redis.hincrby('wins:' + player.account_id, player.hero_id, win);
-        redis.hincrby('games:' + player.account_id, player.hero_id, 1);
-        player.wins += win;
-        player.games += 1;
-    }
-    else
-    {
-        redis.hset('wins:' + player.account_id, player.hero_id, player.wins);
-        redis.hset('games:' + player.account_id, player.hero_id, player.games);
-    }
-    var scaleF = 0.00001;
-    var winRatio = (player.wins / (player.games - player.wins + 1));
-    var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
-    redis.zadd('hero_rankings:' + player.hero_id, scaleF * player.games * winRatio * mmrBonus, player.account_id);
-    console.log("ranked %s, %s", player.account_id, player.hero_id);
-    cb();
-}
-
 function mmrEstimate(db, redis, account_id, cb)
 {
     redis.lrange('mmr_estimates:' + account_id, 0, -1, function(err, result)
@@ -925,24 +911,24 @@ function mmrEstimate(db, redis, account_id, cb)
         });
     });
 }
+
 module.exports = {
-    getSets: getSets,
-    insertPlayer: insertPlayer,
-    insertMatch: insertMatch,
-    insertPlayerRating: insertPlayerRating,
-    insertMatchSkill: insertMatchSkill,
-    getMatch: getMatch,
-    getPlayerMatches: getPlayerMatches,
-    getPlayerRatings: getPlayerRatings,
-    getPlayerRankings: getPlayerRankings,
-    getPlayer: getPlayer,
-    getDistributions: getDistributions,
-    getPicks: getPicks,
-    getTop: getTop,
-    getHeroRankings: getHeroRankings,
-    upsert: upsert,
-    getBenchmarks: getBenchmarks,
-    getLeaderboard: getLeaderboard,
-    updateScore: updateScore,
-    mmrEstimate: mmrEstimate,
+    getSets,
+    insertPlayer,
+    insertMatch,
+    insertPlayerRating,
+    insertMatchSkill,
+    getMatch,
+    getPlayerMatches,
+    getPlayerRatings,
+    getPlayerRankings,
+    getPlayer,
+    getDistributions,
+    getPicks,
+    getTop,
+    getHeroRankings,
+    upsert,
+    getBenchmarks,
+    getLeaderboard,
+    mmrEstimate,
 };

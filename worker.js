@@ -193,43 +193,6 @@ invokeInterval(function cleanup(cb)
         }
     }, cb);
 }, 60 * 60 * 1000);
-invokeInterval(function cleanBenchmarks(cb)
-{
-    //clean up old benchmarks
-    redis.keys("benchmarks:*", function(err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        result.forEach(function(k)
-        {
-            if (Number(k.split(':')[1]) < Number(utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, -1)))
-            {
-                redis.del(k);
-            }
-        });
-        cb(err);
-    });
-}, 60 * 60 * 1000);
-invokeInterval(function cleanMatchRatings(cb)
-{
-    redis.keys("match_ratings:*", function(err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        result.forEach(function(k)
-        {
-            if (Number(k.split(':')[1]) < Number(utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, -1)))
-            {
-                redis.del(k);
-            }
-        });
-        cb(err);
-    });
-}, 60 * 60 * 1000);
 invokeInterval(function cleanQueues(cb)
 {
     queue.cleanup(redis, cb);

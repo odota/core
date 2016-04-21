@@ -100,6 +100,7 @@
       "longitude": "55.3",
       "display_name": "#dota_region_dubai",
       "division": "se_asia",
+      "enable_weekend_tourney": "0",
       "alert_at_capacity_s2": "0",
       "ip_range": [
         "185.25.183.0/24"
@@ -1055,6 +1056,7 @@
       "division": "europe",
       "alert_at_capacity": "0",
       "alert_at_capacity_s2": "0",
+      "enable_weekend_tourney": "0",
       "ip_range": [
         "152.111.192.243-152.111.192.244",
         "197.80.200.5/32",
@@ -1081,9 +1083,11 @@
       "division": "americas",
       "alert_at_capacity": "0",
       "alert_at_capacity_s2": "0",
+      "enable_weekend_tourney": "0",
       "ip_range": [
         "200.73.65.42/32",
-        "200.73.67.0/25"
+        "200.73.67.0/25",
+        "155.133.249.0/25"
       ],
       "clusters": [
         "241",
@@ -1100,6 +1104,7 @@
       "division": "americas",
       "alert_at_capacity": "0",
       "alert_at_capacity_s2": "0",
+      "enable_weekend_tourney": "0",
       "ip_range": [
         "190.12.73.128/28",
         "190.12.73.160/28",
@@ -1120,8 +1125,10 @@
       "alert_at_capacity": "0",
       "alert_at_capacity_s2": "0",
       "proxy_allow": "leagueonly",
+      "enable_weekend_tourney": "0",
       "ip_range": [
-        "45.113.191.128/27"
+        "45.113.191.128/27",
+        "45.113.137.128/27"
       ],
       "clusters": [
         "261"
@@ -1135,6 +1142,7 @@
       "longitude": "139.7",
       "display_name": "#dota_region_japan",
       "division": "se_asia",
+      "enable_weekend_tourney": "0",
       "ip_range": [
         "45.121.186.0/23"
       ],

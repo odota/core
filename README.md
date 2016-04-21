@@ -22,31 +22,46 @@ Tech Stack
 
 Quickstart
 ----
-* We recommend Cloud 9 IDE for fast and easy setup and development, although you are free to develop on your own setup if you want.
-* Create an account on Cloud 9: https://c9.io/dashboard.html
-* Start a new workspace and choose the source GitHub repository as yasp-dota/yasp, or your own fork of it if you're planning to make changes and submit a pull request.
-* Open the workspace
-* Install dependencies: `sudo bash init.sh`. The script is designed for Ubuntu 14.04 LTS.  For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
+* Using Docker will let you run the code in a container with all dependencies properly installed.
+* Install Docker: `curl -sSL https://get.docker.com/ | sh`
+* Clone the repo: `git clone https://github.com/yasp-dota/yasp`
+* Go into the directory: `cd yasp`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
-  * The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
-* Set up the database `sudo npm run create`
-* Build `npm run build`
-* Run the application with one of the following: (this will run under nodemon so file changes automatically restart the server): 
-  * `npm run dev` Run one instance of each service.
-  * `npm run dev web` Runs just the web server.  Useful for developing just the frontend CSS/JS.
-  * `npm run dev web,parser,requests,retriever` The minimal setup for being able to open the site in a browser and request parses by ID (which is a useful end-to-end test).
-* Other useful commands
-  * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in a separate window in order to automatically rebuild after making changes.
+  * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
+  * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
+* Start a new container running the image, and map your local directory into the container: `sudo docker run -v $(pwd):/usr/src/yasp -di --name yasp --net=host yasp/yasp:latest`
+* Start the external dependencies in separate containers.
+  * `sudo docker run -d --name postgres --net=host postgres:latest`
+  * `sudo docker run -d --name redis --net=host redis:latest`
+  * (optional) `sudo docker run -d --name cassandra --net=host cassandra:latest`
+* Initialize Postgres: `sudo docker exec -i postgres psql -- postgres://postgres@localhost < sql/init.sql`
+* Create tables: `sudo docker exec -i postgres psql -- postgres://postgres@localhost/yasp < sql/create_tables.sql`
+* Get a terminal into the running container: `sudo docker exec -it yasp bash`
+* Build inside the container: `npm run build`
+* Start the services you want to run:
+  * `pm2 start web.js --watch` The `--watch` flag tells pm2 to restart the server when it detects a file change.  Replace `web` with the name of the service you want to run.
+  * `web,parser,requests,retriever` These are the minimal services for being able to open the site in a browser and request parses by ID (which is a useful end-to-end test).
+  * `pm2 logs web` You can use this command to inspect the output of the service.
+  * `pm2 delete all` Stop everything.
+* Useful commands
+  * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in order to automatically rebuild after making changes.
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
   * `npm run task updateconstants` pulls latest constants data and saves to `json` directory.
   * `npm run task fullhistory` queues a full history request for all players in DB who don't have it yet.
   * `npm run update` updates all deps in `package.json` to latest versions.
 * Get some starter data
   * You can request some parses by ID to get some parsed data.  
-  * You can also log in through Steam on your own instance to trigger a full history request for that user (requires `fullhistory` service to be running)
+  * You can also log in through Steam to trigger a full history request for that user (requires `fullhistory` service to be running)
+  * You can also run `scanner` with `ENABLE_INSERT_ALL_MATCHES=1` in your `.env` to get some matches from the API.
+* File changes you make outside the container should be automatically mirrored to the container.
 * Make some changes and commit them: `git add --all; git commit -m "My first commit!"`
 * Submit a pull request.  Wait for it to be reviewed and merged.
 * Congratulations!  You're a contributor.
+
+Getting Help
+----
+* Feel free to open a new issue to ask questions/get help!  This will send us an email and we usually can respond in minutes (if awake).
+* You can also find us on Discord, which we usually check every few hours.
 
 Architecture and Design
 ----

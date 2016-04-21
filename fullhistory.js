@@ -70,7 +70,6 @@ function processFullHistory(job, cb) {
                         var match = body.result;
                         insertMatch(db, redis, match, {
                             type: "api",
-                            skipCacheUpdate: true,
                             skipAbilityUpgrades: true
                         }, cb);
                     });

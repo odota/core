@@ -13,7 +13,11 @@ var health = {
             {
                 return cb(err);
             }
-            request(config.ROOT_URL + "/matches/" + result.rows[0].match_id, function(err, resp, body)
+            if (!result.rows[0])
+            {
+                return cb();
+            }
+            request(config.ROOT_URL + "/api/matches/" + result.rows[0].match_id, function(err, resp, body)
             {
                 var fail = err || resp.statusCode !== 200;
                 return cb(fail,
@@ -32,7 +36,11 @@ var health = {
             {
                 return cb(err);
             }
-            request(config.ROOT_URL + "/players/" + result.rows[0].account_id, function(err, resp, body)
+            if (!result.rows[0])
+            {
+                return cb();
+            }
+            request(config.ROOT_URL + "/api/players/" + result.rows[0].account_id, function(err, resp, body)
             {
                 var fail = err || resp.statusCode !== 200;
                 return cb(fail,
@@ -68,35 +76,29 @@ var health = {
     },
     seq_num_delay: function seq_num_delay(cb)
     {
-        request("http://api.steampowered.com" + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key, function(err, resp, body)
+        utility.getData(utility.generateJob("api_history",
+        {}).url, function(err, body)
         {
-            if (err || resp.statusCode !== 200)
+            if (err)
             {
-                return cb("bad http response");
+                return cb("failed to get current sequence number");
             }
-            try
+            //get match_seq_num, compare with real seqnum
+            var curr_seq_num = body.result.matches[0].match_seq_num;
+            redis.get('match_seq_num', function(err, num)
             {
-                //get match_seq_num, compare with real seqnum
-                var curr_seq_num = JSON.parse(body).result.matches[0].match_seq_num;
-                redis.get('match_seq_num', function(err, num)
+                if (err)
                 {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    num = Number(num);
-                    var metric = curr_seq_num - num;
-                    return cb(err,
-                    {
-                        metric: metric,
-                        threshold: 10000,
-                    });
+                    return cb(err);
+                }
+                num = Number(num);
+                var metric = curr_seq_num - num;
+                return cb(err,
+                {
+                    metric: metric,
+                    threshold: 10000,
                 });
-            }
-            catch (e)
-            {
-                return cb('malformed http response');
-            }
+            });
         });
     },
     parse_delay: function parse_delay(cb)
@@ -106,8 +108,13 @@ var health = {
         SELECT avg(extract(epoch from now()) - (start_time+duration))*1000 as avg from (select * from matches where version > 0 order by match_id desc limit 10) parsed;
         `).asCallback(function(err, result)
         {
-            if (err) {
+            if (err)
+            {
                 return cb(err);
+            }
+            if (!result.rows[0])
+            {
+                return cb();
             }
             return cb(err,
             {
@@ -142,7 +149,7 @@ var health = {
             return cb(err,
             {
                 metric: result.rows[0].pg_database_size,
-                threshold: 3750000000000
+                threshold: 4200000000000
             });
         });
     }

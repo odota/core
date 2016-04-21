@@ -1,3 +1,5 @@
+var cp = require('child_process');
+cp.execSync('curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env');
 /*
 var utility = require('../utility');
 var queueReq = utility.queueReq;
@@ -22,7 +24,7 @@ cassandra.execute('SELECT TTL(cache) FROM player_caches WHERE account_id = ?', [
     console.log(res);
 });
 */
-
+/*
 var input = require('../output2.json');
 var sizes = {};
 input.players.forEach(function(p)
@@ -37,6 +39,7 @@ for (var key in input){
     sizes[key] = JSON.stringify(input[key]).length;
 }
 console.log(sizes);
+*/
 /*
 var test = [];
 var props = 5;

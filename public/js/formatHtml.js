@@ -75,7 +75,7 @@ window.formatHtml = function formatHtml() {
                 var $td = $(element).find("td:eq(" + columnIndex + ")");
                 currentValue = parseFloat($td.text() || $td.attr("data-format-seconds") || $td.attr("data-value"));
                 if ($td.hasClass("rankable")) {
-                    console.log(currentValue, maxValue);
+                    //console.log(currentValue, maxValue);
                     var pct = currentValue / maxValue * 100;
                     var bar = document.createElement("div");
                     bar.className = "progress progress-short";
