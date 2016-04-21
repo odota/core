@@ -278,11 +278,11 @@ function buildPlayer(options, cb)
                         cb();
                     }
                 },
-                soloRating: function(cb)
+                solo_competitive_rank: function(cb)
                 {
                     redis.zscore('solo_competitive_rank', account_id, cb);
                 },
-                partyRating: function(cb)
+                competitive_rank: function(cb)
                 {
                     redis.zscore('competitive_rank', account_id, cb);
                 },

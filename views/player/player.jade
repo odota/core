@@ -24,7 +24,7 @@ block content
             span.text-info.rating
               span: abbr(title="Solo MMR")
                 i.fa.fa-fw.fa-user
-              small(style="margin-left:.5em") #{player.soloRating || "N/A"}
+              small(style="margin-left:.5em") #{player.solo_competitive_rank || "N/A"}
             //-
               span.text-info.rating
                 span: abbr(title="Highest Solo MMR")
@@ -34,7 +34,7 @@ block content
             span.text-warning.rating
               span: abbr(title="Party MMR")
                 i.fa.fa-fw.fa-users
-              small(style="margin-left:.5em") #{player.partyRating || "N/A"}
+              small(style="margin-left:.5em") #{player.competitive_rank || "N/A"}
             //-
               span.text-warning.rating
                 span: abbr(title="Highest Party MMR")
