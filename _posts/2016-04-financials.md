@@ -25,4 +25,4 @@ The YASP team
 Twitter: [@yasp_dota](https://twitter.com/yasp_dota)
 
 *Our Cheese goal counter may have wrongly reported $3000+; there might be a race condition
-somewhere in our code...
+somewhere in our code... Rest assured, all payment processing and reporting is done through Stripe and Paypal!
