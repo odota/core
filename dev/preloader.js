@@ -29,7 +29,7 @@ stream.on('data', function(player)
     {
         if (err || resp.statusCode !== 200)
         {
-            console.error(err || resp.statusCode);
+            console.error("error: %s", err || resp.statusCode);
         }
         console.log(player.account_id);
         setTimeout(function()
