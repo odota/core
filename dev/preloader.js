@@ -3,13 +3,15 @@ var config = require('../config');
 var constants = require('../constants');
 var db = require('../db');
 var request = require('request');
+var args = process.argv.slice(2);
+var limit = Number(args[1]) || 100000;
 var conc = 0;
 var stream = db.raw(`
 SELECT account_id, match_id
 FROM player_matches
 ORDER BY match_id DESC
-LIMIT 10000;
-`).stream();
+LIMIT ?;
+`, [limit]).stream();
 stream.on('end', exit);
 stream.pipe(JSONStream.parse());
 stream.on('data', function(player)
