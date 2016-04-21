@@ -193,9 +193,10 @@ function updateRankings(match, cb)
         var reset = moment().startOf('quarter').format('X');
         var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
         var win = Number(utility.isRadiant(player) === player.radiant_win);
-        //TODO possible inconsistency if we exit/crash after this incr but before completion
-        redis.hincrby(['wins', reset, player.account_id].join(':'), player.hero_id, win);
-        redis.hincrby(['games', reset, player.account_id].join(':'), player.hero_id, 1);
+        redis.expireat(['wins', reset, player.hero_id].join(':'), expire);
+        redis.expireat(['games', reset, player.hero_id].join(':'), expire);
+        redis.expireat(['hero_rankings', reset, player.hero_id].join(':'), expire);
+        //TODO possible inconsistency if we exit/crash without completing all commands
         async.parallel(
         {
             solo_competitive_rank: function(cb)
@@ -204,36 +205,30 @@ function updateRankings(match, cb)
             },
             wins: function(cb)
             {
-                redis.hget(['wins', reset, player.account_id].join(':'), player.hero_id, cb);
+                redis.hincrby(['wins', reset, player.hero_id].join(':'), player.account_id, win, cb);
             },
             games: function(cb)
             {
-                redis.hget(['games', reset, player.account_id].join(':'), player.hero_id, cb);
+                redis.hincrby(['games', reset, player.hero_id].join(':'), player.account_id, 1, cb);
             },
         }, function(err, result)
         {
             if (err)
             {
-                console.error(err);
                 return cb(err);
             }
-            if (!result.solo_competitive_rank)
+            player = Object.assign(
+            {}, player, result);
+            if (!player.solo_competitive_rank)
             {
                 //if no MMR on record, can't rank this player
                 return cb();
             }
-            console.log('ranking');
-            player.solo_competitive_rank = Number(result.solo_competitive_rank);
-            player.wins = Number(result.wins);
-            player.games = Number(result.games);
             var scaleF = 0.00001;
             var winRatio = (player.wins / (player.games - player.wins + 1));
             var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
             redis.zadd(['hero_rankings', reset, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
-            redis.expireat(['wins', reset, player.account_id].join(':'), expire);
-            redis.expireat(['games', reset, player.account_id].join(':'), expire);
-            redis.expireat(['hero_rankings', reset, player.hero_id].join(':'), expire);
-            cb(err);
+            cb();
         });
     }, cb);
 }
