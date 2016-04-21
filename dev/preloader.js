@@ -4,11 +4,11 @@ var constants = require('../constants');
 var db = require('../db');
 var request = require('request');
 var conc = 0;
-var count = 0;
 var stream = db.raw(`
 SELECT account_id, match_id
 FROM player_matches
-ORDER BY match_id DESC;
+ORDER BY match_id DESC
+LIMIT 10000;
 `).stream();
 stream.on('end', exit);
 stream.pipe(JSONStream.parse());
@@ -19,11 +19,6 @@ stream.on('data', function(player)
         return;
     }
     conc += 1;
-    count += 1;
-    if (count > 1000000)
-    {
-        return exit();
-    }
     if (conc > 5)
     {
         stream.pause();
