@@ -8,8 +8,7 @@
     "hide": true
   },
   "benchmarks": {
-    "name": "Benchmarks",
-    "new-feature": true
+    "name": "Benchmarks"
   },
   "top": {
     "name": "Top",
