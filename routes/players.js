@@ -41,7 +41,7 @@ module.exports = function(db, redis, cassandra)
                 histograms: player_fields.subkeys,
                 times: player_fields.times,
                 counts: player_fields.countCats,
-                title: (player.profile.personaname || player.profile.account_id) + " - YASP - Dota 2 Statistics"
+                title: (player.profile.personaname || player.profile.account_id) + " - YASP"
             });
         });
     });
