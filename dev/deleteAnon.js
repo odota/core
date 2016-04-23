@@ -1,7 +1,7 @@
 var db = require('../db');
 var async = require('async');
 var args = process.argv.slice(2);
-var start_id = Number(args[1]) || 0;
+var start_id = Number(args[0]) || 0;
 var end_id = 2400000000;
 var bucket = 10000000;
 var starts = [];
@@ -15,7 +15,7 @@ async.eachSeries(starts, function(s, cb)
     console.log(q.toString());
     q.asCallback(function(err, resp)
     {
-        console.log(resp);
+        console.log("%s %s",resp.command, resp.rowCount);
         cb(err);
     });
 }, function(err)
