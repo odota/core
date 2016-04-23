@@ -9,8 +9,8 @@ block playercontent
     .col-md-12
       script.
         var start_times = !{JSON.stringify(player.activity)};
-      - var histograms = {"day":1,"hour":1,"month":1}
-      each val, key in histograms
+      - var timeBuckets = {"day":1,"hour":1,"month":1}
+      each val, key in timeBuckets
         h3 #{prettyPrint(key)}
         div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
     
