@@ -20,8 +20,7 @@ var countCats = player_fields.countCats;
 var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'radiant_win', 'leaver_status', 'cluster', 'parse_status'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
 var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
-var filter = ['purchase', 'lane_pos'];
-var everything = basic.concat(advanced).concat(others).concat(filter);
+var everything = basic.concat(advanced).concat(others);
 var projections = {
     index: basic,
     matches: basic,
@@ -147,8 +146,6 @@ function buildPlayer(options, cb)
             console.log("player cache miss %s", player.account_id);
             //we need to project everything to build a new cache, otherwise optimize and do a subset
             queryObj.project = config.ENABLE_PLAYER_CACHE ? everything : projections[info];
-            //need fields to filter on if a filter is specified
-            queryObj.project = queryObj.project.concat(filter_exists ? filter : []);
             console.time("[PLAYER] getPlayerMatches " + account_id);
             getPlayerMatches(db, queryObj, options, function(err, results)
             {
@@ -200,28 +197,28 @@ function buildPlayer(options, cb)
                 {
                     if (info === "index" || info === "matches")
                     {
-                        //unpack hash of matches into array
-                        var matches = aggData.matches;
-                        var arr = [];
-                        for (var key in matches)
+                        var matches = cache.raw;
+                        var desc = queryObj.keywords.desc || "match_id";
+                        var project = ["match_id","player_slot","hero_id","game_mode","kills","deaths","assists","parse_status","skill","radiant_win","start_time", "duration"].concat(queryObj.keywords.project || []);
+                        var limit = queryObj.keywords.limit || 20;
+                        //project
+                        matches = matches.map(function(pm)
                         {
-                            arr.push(matches[key]);
-                        }
-                        matches = arr;
-                        //sort matches by descending match id for display
+                            var obj = {};
+                            project.forEach(function(key)
+                            {
+                                obj[key] = pm[key];
+                            });
+                            return obj;
+                        });
+                        //sort
                         matches.sort(function(a, b)
                         {
-                            return Number(b.match_id) - Number(a.match_id);
+                            return Number(b[desc]) - Number(a[desc]);
                         });
-                        matches = matches.slice(0, info === "index" ? 20 : undefined);
-                        if (options.cache)
-                        {
-                            fillSkill(db, matches, options, cb);
-                        }
-                        else
-                        {
-                            cb(null, matches);
-                        }
+                        //limit
+                        matches = matches.slice(0, limit);
+                        fillSkill(db, matches, options, cb);
                     }
                     else
                     {

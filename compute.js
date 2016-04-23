@@ -104,7 +104,6 @@ function computePlayerMatchData(pm)
     if (pm.player_slot !== undefined && pm.radiant_win !== undefined)
     {
         pm.isRadiant = isRadiant(pm);
-        pm.player_win = (isRadiant(pm) === pm.radiant_win); //did the player win?
         pm.win = Number(isRadiant(pm) === pm.radiant_win);
         pm.lose = Number(isRadiant(pm) === pm.radiant_win) ? 0 : 1;
     }

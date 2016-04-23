@@ -1,4 +1,3 @@
-var constants = require('./constants.js');
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 module.exports = function filter(matches, filters)
@@ -9,7 +8,7 @@ module.exports = function filter(matches, filters)
         //filter: player won
         win: function(m, key)
         {
-            return Number(m.player_win) === key;
+            return Number(utility.isRadiant(m) === m.radiant_win) === key;
         },
         patch: function(m, key)
         {
@@ -38,19 +37,6 @@ module.exports = function filter(matches, filters)
         isRadiant: function(m, key)
         {
             return Number(m.isRadiant) === key;
-        },
-        lane_role: function(m, key)
-        {
-            return m.lane_role === key;
-        },
-        purchased_item: function(m, key, arr)
-        {
-            return arr.every(function(k)
-            {
-                var item = constants.item_ids[key];
-                var p = m.purchase;
-                return p && item in p;
-            });
         },
         included_account_id: function(m, key, arr)
         {

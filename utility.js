@@ -26,6 +26,9 @@ function tokenize(input)
     return input.replace(/[^a-zA-Z- ]+/g, '').replace('/ {2,}/', ' ').toLowerCase().split(' ');
 }
 
+/**
+ * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
+ **/
 function generateJob(type, payload)
 {
     var api_url = "http://api.steampowered.com";
@@ -169,6 +172,13 @@ function generateJob(type, payload)
     return opts[type]();
 }
 
+/**
+ * A wrapper around HTTP requests that handles:
+ * proxying
+ * retries/retry delay
+ * Injecting API key for Steam API
+ * Errors from Steam API
+ **/
 function getData(url, cb)
 {
     var u;
@@ -488,6 +498,7 @@ function preprocessQuery(query)
     //select,the query received, build the mongo query and the js filter based on this
     query.db_select = {};
     query.js_select = {};
+    query.keywords = {};
     query.filter_count = 0;
     var dbAble = {
         "account_id": 1,
@@ -497,38 +508,43 @@ function preprocessQuery(query)
         "lobby_type": 1
     };
     //reserved keywords, don't treat these as filters
-    var exceptions = {
-        "json": 1,
-        "compare_account_id": 1,
-        "sql": 1
+    var keywords = {
+        "desc": 1,
+        "project": 1,
+        "limit": 1,
     };
     for (var key in query.select)
     {
-        //arrayify the element
-        query.select[key] = [].concat(query.select[key]).map(function(e)
+        if (!keywords[key])
         {
-            if (typeof e === "object")
+            //arrayify the element
+            query.select[key] = [].concat(query.select[key]).map(function(e)
             {
-                //just return the object if it's an array or object
-                return e;
+                if (typeof e === "object")
+                {
+                    //just return the object if it's an array or object
+                    return e;
+                }
+                //numberify this element
+                return Number(e);
+            });
+            if (dbAble[key])
+            {
+                query.db_select[key] = query.select[key][0];
             }
-            //numberify this element
-            return Number(e);
-        });
-        if (dbAble[key])
-        {
-            query.db_select[key] = query.select[key][0];
-        }
-        query.js_select[key] = query.select[key];
-        if (!exceptions[key])
-        {
+            query.js_select[key] = query.select[key];
             query.filter_count += 1;
         }
+        else
+        {
+            query.keywords[key] = query.select[key];
+        }
     }
+    //absolute limit for number of matches to extract
     query.limit = config.PLAYER_MATCH_LIMIT;
     //mark this query processed
     query.processed = true;
-    console.log(query);
+    //console.log(query);
     return query;
 }
 
@@ -543,7 +559,6 @@ function getAggs()
         win: "api",
         lose: "api",
         radiant_win: "api",
-        player_win: "api",
         abandons: "api",
         start_time: "api",
         duration: "api",
@@ -613,27 +628,6 @@ function reduceAggregable(pm)
         result[key] = pm[key];
     }
     return result;
-}
-//reduce match to only fields needed for basic display
-function reduceMinimal(pm)
-{
-    return {
-        match_id: pm.match_id,
-        player_slot: pm.player_slot,
-        hero_id: pm.hero_id,
-        game_mode: pm.game_mode,
-        kills: pm.kills,
-        deaths: pm.deaths,
-        assists: pm.assists,
-        last_hits: pm.last_hits,
-        gold_per_min: pm.gold_per_min,
-        parse_status: pm.parse_status,
-        skill: pm.skill,
-        radiant_win: pm.radiant_win,
-        player_win: pm.player_win,
-        start_time: pm.start_time,
-        duration: pm.duration
-    };
 }
 /**
  * Serializes a JSON object to row for storage in Cassandra
@@ -795,7 +789,6 @@ module.exports = {
     preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
-    reduceMinimal: reduceMinimal,
     serialize: serialize,
     getAlphaHeroes: getAlphaHeroes,
     prettyPrint: prettyPrint,

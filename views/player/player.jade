@@ -72,19 +72,13 @@ block content
 append footer_assets
   script.
     $('#matches').dataTable({
-        "order": [
-                [0, "desc"]
-            ],
-        info: #{route === "matches"},
-        paging: #{route === "matches"},
+        "order": [],
+        info: false,
+        paging: false,
         pageLength: 20,
         lengthChange: false,
         searching: false,
         responsive: true,
-        "drawCallback":function(){
-            formatHtml();
-            tooltips();
-        },
         columnDefs: [
             {
                 "targets": "fromNow",

@@ -19,8 +19,6 @@ module.exports = function aggregator(matches, fields, existing)
         {},
         parsed_match_ids:
         {},
-        matches:
-        {},
     };
     for (var key in fields)
     {
@@ -71,22 +69,6 @@ module.exports = function aggregator(matches, fields, existing)
         if (m.version)
         {
             aggData.parsed_match_ids[m.match_id] = 1;
-        }
-        //reduce match to save cache space--we only need basic data per match for matches tab
-        var reduced_player_match = reduceMinimal(m);
-        var identifier = [m.match_id, m.player_slot].join(':');
-        var orig = aggData.matches[identifier];
-        if (orig)
-        {
-            //iterate instead of setting directly to avoid clobbering existing data
-            for (var key in reduced_player_match)
-            {
-                orig[key] = reduced_player_match[key] || orig[key];
-            }
-        }
-        else
-        {
-            aggData.matches[identifier] = reduced_player_match;
         }
     }
     return aggData;

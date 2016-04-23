@@ -44,18 +44,7 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
           select.form-control(multiple name="win" data-placeholder="Any Result")#win
             option(value="1", selected=(q["win"] && q["win"][0]===1)) Wins
             option(value="0", selected=(q["win"] && q["win"][0]===0)) Losses
-        .form-group  
-          label Lane
-          select.form-control(multiple name="lane_role" data-placeholder="Any Lane")#lane_role
-            each val, key in constants.lane_role
-              option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
-        .form-group  
-          label Purchased Item(s)
-          select.form-control(multiple name="purchased_item" data-placeholder="Any Item")#purchased_item
-            each val, key in constants.items
-              - var key = Number(val.id)
-              option(value=key, selected=(q["purchased_item"] && q["purchased_item"].indexOf(key)!==-1))=val.dname
-              
+            
       .col-md-4
         h4 Match Parameters
         .form-group
