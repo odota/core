@@ -37,8 +37,8 @@ function readCache(account_id, options, cb)
             var proj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
             var table = ['hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
             var filters = ['pgroup', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'purchase'];
-            var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id ASC', Object.keys(options.js_agg).concat(proj).concat(table).concat(options.filter_count > 1 ? filters : []).join(','));
-            var aggData = aggregator([], options.js_agg);
+            var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', Object.keys(options.js_agg).concat(proj).concat(table).concat(options.filter_count > 1 ? filters : []).join(','));
+            var matches = [];
             return cassandra.stream(query, [account_id],
             {
                 prepare: true,
@@ -53,7 +53,7 @@ function readCache(account_id, options, cb)
                     m = deserialize(m);
                     if (filter([m], options.js_select).length)
                     {
-                        aggData = aggregator([m], options.js_agg, aggData);
+                        matches.push(m);
                     }
                 }
             }).on('end', function(err)
@@ -61,7 +61,7 @@ function readCache(account_id, options, cb)
                 //stream ended, there aren't any more rows
                 return cb(err,
                 {
-                    aggData: aggData
+                    raw: matches,
                 });
             }).on('error', function(err)
             {

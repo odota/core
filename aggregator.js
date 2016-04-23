@@ -40,13 +40,14 @@ module.exports = function aggregator(matches, fields, existing)
         }
     }
     //sort ascending to support trends
-    matches.sort(function(a, b)
+    var matches2 = matches.slice();
+    matches2.sort(function(a, b)
     {
         return Number(a.match_id) - Number(b.match_id);
     });
-    for (var i = 0; i < matches.length; i++)
+    for (var i = 0; i < matches2.length; i++)
     {
-        var m = matches[i];
+        var m = matches2[i];
         var significant = isSignificant(constants, m);
         for (var key in fields)
         {

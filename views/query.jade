@@ -4,8 +4,21 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
     if config.NODE_ENV==="development"
       //pre=JSON.stringify(q)
     .row
+      .col-md-12.form-inline.text-center
+        h4
+          | Select top 
+          span
+            .form-group
+              input.form-control(style="width: 5em;" name="limit" data-placeholder="" value=q.limit)#limit
+          |  matches by 
+          span
+            .form-group
+              select.form-control(name="desc" data-placeholder="")#desc
+                each val, key in histograms
+                  option(value=key, selected=(q.desc===key))=prettyPrint(key)
+          |  where 
+    .row
       .col-md-4
-        h4 Synergies
         .form-group
           label The Team Included
           select.form-control(name="with_hero_id" multiple, data-placeholder="Team: Any Hero")#with_hero_id
@@ -28,7 +41,6 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
               option(value=entry, selected=q.excluded_account_id && q.excluded_account_id.indexOf(entry)!==-1)=entry
               
       .col-md-4
-        h4 Personal Parameters
         .form-group
           label Hero
           select.form-control(multiple name="hero_id" data-placeholder="Any Hero")#hero_id
@@ -46,7 +58,6 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
             option(value="0", selected=(q["win"] && q["win"][0]===0)) Losses
             
       .col-md-4
-        h4 Match Parameters
         .form-group
           label Patch
           select.form-control(multiple name="patch" data-placeholder="Any Patch")#patch
@@ -74,7 +85,7 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
           select.form-control(multiple name="region" data-placeholder="Any Region")#region
             each name, id in constants.region
               option(value=id, selected=(q.region && q.region[0]===Number(id)))=name
-
+    hr
     .row
       .col-md-2.col-md-offset-4.text-center
         span: button.btn.btn-query(type="submit") Do the Thing

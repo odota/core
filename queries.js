@@ -506,15 +506,15 @@ function getPlayerMatches(db, queryObj, options, cb)
     }
     else
     {
-        stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'ASC').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
+        stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
     }
-    var result = {
-        aggData: aggregator([], queryObj.js_agg),
-        raw: []
-    };
+    var matches = [];
     stream.on('end', function(err)
     {
-        cb(err, result);
+        cb(err,
+        {
+            raw: matches
+        });
     });
     stream.on('data', function(m)
     {
@@ -525,8 +525,7 @@ function getPlayerMatches(db, queryObj, options, cb)
         computePlayerMatchData(m);
         if (filter([m], queryObj.js_select).length)
         {
-            result.aggData = aggregator([m], queryObj.js_agg, result.aggData);
-            result.raw.push(m);
+            matches.push(m);
         }
     });
     stream.on('error', function(err)
@@ -911,7 +910,6 @@ function mmrEstimate(db, redis, account_id, cb)
         });
     });
 }
-
 module.exports = {
     getSets,
     insertPlayer,

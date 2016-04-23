@@ -8,13 +8,16 @@ mixin match_table(matches)
           th: abbr(title=tooltips.hero_id) Hero
           th: abbr(title=tooltips.result) R
           th: abbr(title=tooltips.game_mode) M
-          th: abbr(title=tooltips.skill) S
           th.fromNow: abbr(title=tooltips.ended) E
           th.seconds: abbr(title=tooltips.duration) L
-          th: abbr(title=tooltips.kills) K
-          th: abbr(title=tooltips.deaths) D
-          th: abbr(title=tooltips.assists) A
-          th
+          if q.desc
+            th: abbr(title=tooltips[q.desc])=prettyPrint(q.desc)
+          else
+            th: abbr(title=tooltips.skill) S
+            th: abbr(title=tooltips.kills) K
+            th: abbr(title=tooltips.deaths) D
+            th: abbr(title=tooltips.assists) A
+            th
 
       tbody.small
         each match in matches
@@ -29,13 +32,16 @@ mixin match_table(matches)
                 =match.hero_id
             td(class=win ? "text-success" : "text-danger")=win ? "W" : "L"
             td.small=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
-            td.small=constants.skill[match.skill] || match.skill
             td.small=match.start_time+match.duration
             td.rankable=match.duration
-            td.rankable=match.kills
-            td.rankable=match.deaths
-            td.rankable=match.assists
-            td
-              abbr(title=constants.tooltips["status_"+match.parse_status])		
-                if match.parse_status === 2
-                  i.fa.fa-bar-chart
+            if q.desc
+              td.rankable=match[q.desc]
+            else
+              td.small=constants.skill[match.skill] || match.skill
+              td.rankable=match.kills
+              td.rankable=match.deaths
+              td.rankable=match.assists
+              td
+                abbr(title=constants.tooltips["status_"+match.parse_status])		
+                  if match.parse_status === 2
+                    i.fa.fa-bar-chart

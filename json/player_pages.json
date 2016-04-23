@@ -17,8 +17,8 @@
   "histograms": {
     "name": "Histograms"
   },
-  "records": {
-    "name": "Records"
+  "counts": {
+    "name": "Counts"
   },
   "trends": {
     "name": "Trends"

@@ -4,6 +4,7 @@ var queries = require("./queries");
 var utility = require('./utility');
 var config = require('./config');
 var playerCache = require('./playerCache');
+var aggregator = require('./aggregator');
 var getPlayerMatches = queries.getPlayerMatches;
 var getPlayer = queries.getPlayer;
 var getPlayerRankings = queries.getPlayerRankings;
@@ -19,7 +20,7 @@ var countCats = player_fields.countCats;
 //set query.project based on this
 var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'radiant_win', 'leaver_status', 'cluster', 'parse_status'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
-var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
+var others = ['purchase', 'lane_pos', 'pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
 var everything = basic.concat(advanced).concat(others);
 var projections = {
     index: basic,
@@ -28,7 +29,7 @@ var projections = {
     peers: basic.concat('pgroup'),
     activity: basic,
     histograms: basic.concat(advanced).concat(['purchase']),
-    records: basic.concat(advanced).concat(['purchase', 'kill_streaks', 'multi_kills']),
+    counts: basic.concat(advanced).concat(['purchase', 'kill_streaks', 'multi_kills', 'lane_pos']),
     trends: basic.concat(advanced).concat(['purchase']),
     wardmap: basic.concat(['obs', 'sen']),
     items: basic.concat(['purchase', 'purchase_log', 'item_uses']),
@@ -48,7 +49,7 @@ var aggs = {
     peers: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
     histograms: basicAggs.concat(Object.keys(subkeys)),
-    records: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks']),
+    counts: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
     trends: basicAggs.concat(Object.keys(subkeys)),
     wardmap: basicAggs.concat(['obs', 'sen']),
     items: basicAggs.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']),
@@ -144,8 +145,8 @@ function buildPlayer(options, cb)
         function cacheMiss()
         {
             console.log("player cache miss %s", player.account_id);
-            //we need to project everything to build a new cache, otherwise optimize and do a subset
-            queryObj.project = config.ENABLE_PLAYER_CACHE ? everything : projections[info];
+            //we need to project everything to build a new cache/toplist, otherwise optimize and do a subset
+            queryObj.project = config.ENABLE_PLAYER_CACHE || queryObj.keywords.desc ? everything : projections[info];
             console.time("[PLAYER] getPlayerMatches " + account_id);
             getPlayerMatches(db, queryObj, options, function(err, results)
             {
@@ -178,7 +179,22 @@ function buildPlayer(options, cb)
             {
                 return cb(err);
             }
-            var aggData = cache.aggData;
+            var matches = cache.raw;
+            var desc = queryObj.keywords.desc || "match_id";
+            var limit = isNaN(queryObj.keywords.limit) ? undefined : Number(queryObj.keywords.limit);
+            //sort
+            matches = matches.sort(function(a, b)
+            {
+                if (a[desc] === undefined || b[desc] === undefined)
+                {
+                    return a[desc] === undefined ? 1 : -1;
+                }
+                return Number(b[desc]) - Number(a[desc]);
+            });
+            //limit
+            matches = matches.slice(0, limit);
+            //aggregate
+            var aggData = aggregator(matches, queryObj.js_agg);
             async.parallel(
             {
                 profile: function(cb)
@@ -197,10 +213,8 @@ function buildPlayer(options, cb)
                 {
                     if (info === "index" || info === "matches")
                     {
-                        var matches = cache.raw;
-                        var desc = queryObj.keywords.desc || "match_id";
-                        var project = ["match_id","player_slot","hero_id","game_mode","kills","deaths","assists","parse_status","skill","radiant_win","start_time", "duration"].concat(queryObj.keywords.project || []);
-                        var limit = queryObj.keywords.limit || 20;
+                        var project = ["match_id", "player_slot", "hero_id", "game_mode", "kills", "deaths", "assists", "parse_status", "skill", "radiant_win", "start_time", "duration"].concat(queryObj.keywords.desc || []);
+                        var limit = Number(queryObj.keywords.limit) || 20;
                         //project
                         matches = matches.map(function(pm)
                         {
@@ -210,11 +224,6 @@ function buildPlayer(options, cb)
                                 obj[key] = pm[key];
                             });
                             return obj;
-                        });
-                        //sort
-                        matches.sort(function(a, b)
-                        {
-                            return Number(b[desc]) - Number(a[desc]);
                         });
                         //limit
                         matches = matches.slice(0, limit);
@@ -352,7 +361,7 @@ function buildPlayer(options, cb)
                 },
                 aggData: function(cb)
                 {
-                    if (info === "histograms" || info === "records" || info === "trends" || info === "items" || info === "skills")
+                    if (info === "histograms" || info === "counts" || info === "trends" || info === "items" || info === "skills")
                     {
                         return cb(null, aggData);
                     }
