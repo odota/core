@@ -146,6 +146,7 @@ function computePlayerMatchData(pm)
         pm.all_word_counts = count_words(pm, null);
         // aggregation of only the words in all chat this player said themselves
         pm.my_word_counts = count_words(pm, pm);
+        pm.words = count_words(pm, pm, true);
     }
     if (pm.kills_log && self_hero)
     {
@@ -363,8 +364,9 @@ function computePlayerMatchData(pm)
  * Count the words that occur in a set of messages
  * - messages: the messages to create the counts over
  * - player_filter: if non-null, only count that player's messages
+ * - raw: return the raw messages in an array
  **/
-function count_words(player_match, player_filter)
+function count_words(player_match, player_filter, raw)
 {
     var messages = player_match.chat;
     // extract the message strings from the message objects
@@ -379,6 +381,10 @@ function count_words(player_match, player_filter)
             chat_words.push(message.key);
         }
     });
+    if (raw)
+    {
+        return chat_words;
+    }
     chat_words = chat_words.join(' ');
     var tokens = utility.tokenize(chat_words);
     // count how frequently each word occurs

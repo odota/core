@@ -35,6 +35,7 @@ var projections = {
     items: basic.concat(['purchase', 'purchase_log', 'item_uses']),
     skills: basic.concat(['hero_hits', 'ability_uses']),
     wordcloud: basic.concat('chat'),
+    markov: basic.concat('chat'),
     rating: basic,
     rankings: basic,
     hyperopia: basic
@@ -55,6 +56,7 @@ var aggs = {
     items: basicAggs.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']),
     skills: basicAggs.concat(['hero_hits', 'ability_uses']),
     wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
+    markov: basicAggs.concat('words'),
     rating: basicAggs,
     rankings: basicAggs,
     hyperopia: basicAggs
@@ -363,6 +365,10 @@ function buildPlayer(options, cb)
                     {
                         return cb();
                     }
+                },
+                words: function(cb)
+                {
+                    return cb(null, aggData.words);
                 }
             }, cb);
         }

@@ -21,6 +21,7 @@ module.exports = function aggregator(matches, fields, existing)
         {},
         matches:
         {},
+        words: [],
     };
     for (var key in fields)
     {
@@ -100,6 +101,11 @@ module.exports = function aggregator(matches, fields, existing)
         if (key === "teammates")
         {
             return aggTeammates(aggData, match);
+        }
+        if (key === "words" && match.words)
+        {
+            aggData.words = aggData.words.concat(match.words);
+            return;
         }
         var aggObj = aggData[key];
         if (typeof value === "undefined" || value === null)
