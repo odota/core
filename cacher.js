@@ -1,17 +1,12 @@
 var queue = require('./queue');
 var cQueue = queue.getQueue('cache');
-var playerCache = require('./playerCache');
-var updateCache = playerCache.updateCache;
 var utility = require('./utility');
-var queries = require('./queries');
-var updateScore = queries.updateScore;
 var redis = require('./redis');
 var moment = require('moment');
 var benchmarks = require('./benchmarks');
 var async = require('async');
 var constants = require('./constants');
 var config = require('./config');
-var db = require('./db');
 var getMatchRating = require('./getMatchRating');
 cQueue.process(10, processCache);
 cQueue.on('completed', function(job)
@@ -28,10 +23,6 @@ function processCache(job, cb)
     console.log('match: %s', match.match_id);
     async.parallel(
     {
-        "cache": function(cb)
-        {
-            return updateCache(match, cb);
-        },
         "rankings": function(cb)
         {
             if (match.lobby_type === 7 && match.origin === "scanner")

@@ -8,7 +8,6 @@ var renderMatch = compute.renderMatch;
 var benchmarkMatch = require('./benchmarkMatch');
 var moment = require('moment');
 var config = require('./config');
-var aggregator = require('./aggregator');
 var constants = require('./constants');
 var benchmarks = require('./benchmarks');
 var filter = require('./filter');
@@ -17,6 +16,8 @@ var queue = require('./queue');
 var cQueue = queue.getQueue('cache');
 var pQueue = queue.getQueue('parse');
 var getMatchRating = require('./getMatchRating');
+var playerCache = require('./playerCache');
+var updateCache = playerCache.updateCache;
 var serialize = utility.serialize;
 var deserialize = utility.deserialize;
 var columnInfo = {};
@@ -212,11 +213,9 @@ function insertMatch(db, redis, match, options, cb)
         {
             return cb();
         }
-        //OPTIONAL clean based on cassandra schema
+        //TODO clean based on cassandra schema
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
-        //current dependencies on matches in postgres (potential solution)
-        //status: recent added/parsed (rewrite query)
-        //validatecache audit (rewrite query or drop entirely)
+        //TODO fix validateCache to use cassandra
         var obj = serialize(match);
         var query = 'INSERT INTO matches JSON ?';
         var arr = [JSON.stringify(obj)];
@@ -281,10 +280,17 @@ function insertMatch(db, redis, match, options, cb)
         copy.players = players;
         copy.insert_type = options.type;
         copy.origin = options.origin;
-        queue.addToQueue(cQueue, copy,
+        updateCache(copy, function(err)
         {
-            attempts: 1
-        }, cb);
+            if (err)
+            {
+                return cb(err);
+            }
+            queue.addToQueue(cQueue, copy,
+            {
+                attempts: 1
+            }, cb);
+        });
     }
 
     function telemetry(cb)
