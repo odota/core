@@ -25,6 +25,7 @@ on others. (OD/Invoker spammers?) Today, we're releasing [rankings](/rankings) t
 * Each hero's top-ranked players are shown on the corresponding hero page.
 * Each player page now has a [new tab](https://yasp.co/players/88367253/rankings) showing their rank and percentile for every hero eligible for ranking.
 * Only ranked games are counted and only players with a publicly shared MMR are eligible for rankings, since MMR is part of the ranking calculation.
+* Rankings are reset quarterly.
 
 Thanks for all your support! At the time of this post, we've raised $1133 out of $1400 of our monthly Cheese goal. All funds go directly
 toward running the site. You can see our April financial report [here](/post/april-2016-yasp-financials).
