@@ -1,6 +1,6 @@
 var redis = require('redis');
 var config = require('./config');
-console.log('connecting %s', config.REDIS_URL);
+console.error('connecting %s', config.REDIS_URL);
 var client = redis.createClient(config.REDIS_URL, {
     detect_buffers: true
 });

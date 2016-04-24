@@ -1,3 +1,6 @@
+/**
+ * Provides methods for storing player match data in a faster caching layer
+ **/
 var config = require('./config');
 var zlib = require('zlib');
 var compute = require('./compute');
@@ -7,6 +10,7 @@ var async = require('async');
 var constants = require('./constants');
 var utility = require('./utility');
 var serialize = utility.serialize;
+var deserialize = utility.deserialize;
 var filter = require('./filter');
 var util = require('util');
 var reduceAggregable = utility.reduceAggregable;
@@ -46,25 +50,21 @@ function readCache(account_id, options, cb)
                 var m;
                 while (m = this.read())
                 {
-                    m.keys().forEach(function(key)
-                    {
-                        m[key] = JSON.parse(m[key]);
-                    });
+                    m = deserialize(m);
                     if (filter([m], options.js_select).length)
                     {
                         aggData = aggregator([m], options.js_agg, aggData);
                     }
                 }
-            }).on('end', function()
+            }).on('end', function(err)
             {
                 //stream ended, there aren't any more rows
-                return cb(null,
+                return cb(err,
                 {
                     aggData: aggData
                 });
             }).on('error', function(err)
             {
-                //Something went wrong: err is a response error from Cassandra
                 throw err;
             });
         }
@@ -208,7 +208,7 @@ function updateCache(match, cb)
 
 function validateCache(db, redis, account_id, cache, cb)
 {
-    if (!cache)
+    if (!cache || !enabled)
     {
         return cb();
     }

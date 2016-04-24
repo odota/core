@@ -1,3 +1,5 @@
+CREATE EXTENSION pg_trgm;
+
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
   match_seq_num bigint,
@@ -104,7 +106,7 @@ CREATE TABLE player_matches (
   --kill_streaks_log json[][], --an array of kill streak values
   --multi_kill_id_vals integer[] --an array of multi kill values (the length of each multi kill)
 );
-CREATE INDEX on player_matches(account_id);
+CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 
 CREATE TABLE players (
   account_id bigint PRIMARY KEY,
@@ -135,6 +137,7 @@ CREATE TABLE players (
 CREATE INDEX on players(full_history_time);
 CREATE INDEX on players(last_login);
 CREATE INDEX on players(cheese);
+CREATE INDEX on players USING GIN(personaname gin_trgm_ops);
 
 CREATE TABLE player_ratings (
   PRIMARY KEY(account_id, time),

@@ -6,7 +6,7 @@ var buildPlayer = require('../buildPlayer');
 //list of fields that are numerical (continuous).  These define the possible categories for histograms, trends, and records
 var player_fields = constants.player_fields;
 var playerPages = constants.player_pages;
-module.exports = function(db, redis)
+module.exports = function(db, redis, cassandra)
 {
     players.get('/:account_id/:info?/:subkey?', function(req, res, cb)
     {
@@ -17,6 +17,7 @@ module.exports = function(db, redis)
         {
             db: db,
             redis: redis,
+            cassandra: cassandra,
             account_id: req.params.account_id,
             info: info,
             subkey: subkey,
@@ -40,7 +41,7 @@ module.exports = function(db, redis)
                 histograms: player_fields.subkeys,
                 times: player_fields.times,
                 counts: player_fields.countCats,
-                title: (player.profile.personaname || player.profile.account_id) + " - YASP - Dota 2 Statistics"
+                title: (player.profile.personaname || player.profile.account_id) + " - YASP"
             });
         });
     });

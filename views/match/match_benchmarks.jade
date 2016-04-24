@@ -18,7 +18,7 @@ block match_content
                   if val.raw !== undefined && val.raw !== null
                     div: abbr(title=util.format("This player's %s %s is equal or higher than %s% of performances on this hero.", Number(val.raw.toFixed(2)), prettyPrint(key), (val.pct*100).toFixed(2)))
                       - var pct = val.pct
-                      - var pctD = (val.pct*100).toFixed(2)+"%"
+                      - var pctD = (val.pct*100).toFixed(0)+"%"
                       span(class=percentToTextClass(pct).className)=pctD
                       span.small.text-muted  #{Number(val.raw.toFixed(2))}
                   else

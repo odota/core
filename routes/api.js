@@ -16,7 +16,7 @@ var utility = require('../utility');
 var queue = require('../queue');
 var rQueue = queue.getQueue('request');
 const crypto = require('crypto');
-module.exports = function(db, redis)
+module.exports = function(db, redis, cassandra)
 {
     api.get('/items', function(req, res)
     {
@@ -36,7 +36,14 @@ module.exports = function(db, redis)
             },
             cheese: function(cb)
             {
-                redis.get("cheese_goal", cb);
+                redis.get("cheese_goal", function(err, result)
+                {
+                    return cb(err,
+                    {
+                        cheese: result,
+                        goal: config.GOAL
+                    });
+                });
             },
             user: function(cb)
             {
@@ -54,6 +61,9 @@ module.exports = function(db, redis)
             {
                 cb(null, constants.match_pages);
             },
+            player_fields: function(cb){
+                cb(null, constants.player_fields);
+            },
         }, function(err, result)
         {
             if (err)
@@ -69,6 +79,7 @@ module.exports = function(db, redis)
         {
             db: db,
             redis: redis,
+            cassandra: cassandra,
             match_id: req.params.match_id
         }, function(err, match)
         {
@@ -85,6 +96,7 @@ module.exports = function(db, redis)
         {
             db: db,
             redis: redis,
+            cassandra: cassandra,
             account_id: req.params.account_id,
             info: req.params.info,
             subkey: req.params.subkey,
@@ -153,7 +165,8 @@ module.exports = function(db, redis)
             else
             {
                 var single = result[req.params.metric];
-                res.status(single.metric < single.threshold ? 200 : 500).json(single);
+                var healthy = single.metric < single.threshold;
+                res.status(healthy ? 200 : 500).json(single);
             }
         });
     });

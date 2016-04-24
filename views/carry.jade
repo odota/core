@@ -1,10 +1,17 @@
 extend layout
   
+block head
+  link(rel='stylesheet', href="/public/css/yasp_carry.css")
+
 block content
-  .page-header.text-center
-    h1(style='font-weight: 700;') We Need Your Help
-    p.lead Buy some Cheese. Help pay for servers.
-    hr
+  .text-center
+    header.carry-header
+      .carry-header-valign
+        h1 We need your help!
+        h3 YASP is completely community funded. We have no ads or paid employees. We run through your support!
+      
+      .carry-picauthor.media-bottom Picture by 
+        a(href="http://entroz.deviantart.com/", target="_blank") Eric Geusz
     .row
       if subscription && subscription.length > 0
         .row
@@ -29,12 +36,22 @@ block content
               | Questions about your subscription? Check #[a(href="/faq") here].
         hr
       #alert.alert.alert-danger(role="alert", style="display:none;")
-      .col-md-4(style="font-size:24px;")
-        h4 YASP is completely community funded. We have no ads or paid employees. 
-        h4 We run through your support!
-      .col-md-4
-        p Give me 
-          select.form-control#amount(style="width:inherit;display:inline;")
+      .col-md-6.carry-col.carry-col-media1st
+        h3 Buy some Cheese. Help pay for servers.
+        p $1/Cheese. It's worth it. 
+          br
+          | Payment processing is done through Stripe or Paypal. We never see your credit card information. 
+        if user
+          p
+            i.fa.fa-info-circle.carry-info-icon
+            | You are logged in! Your contribution will be public. Logout if you wish to remain anonymous.
+        else  
+          p
+            i.fa.fa-info-circle.carry-info-icon
+            | You aren't logged in! This contribution will be anonymous, and the Cheese will not be attached to an account.
+      .col-md-6.carry-col.carry-col-media2nd
+        h3 Give me
+          select.form-control#amount(style="width:inherit; display:inline; margin: 0 10px")
             option 1
             option 2
             option 3
@@ -52,11 +69,12 @@ block content
             option 75
             option 100
             option 150
-          |  cheese!
+          | cheese!
         .checkbox
           label 
             input#subscription(type="checkbox") 
-            abbr(title="You'll be charged monthly for this amount. Subscriptions give us reliable revenue so that we can better allocate our expenditures on providing the best site experience.") Make this a monthly thing <br> cause you're extra awesome!
+            abbr(title="You'll be charged monthly for this amount. Subscriptions give us reliable revenue so that we can better allocate our expenditures on providing the best site experience.")
+              | Make this a monthly thing cause<br>you're extra awesome!
         .row
           .col-md-6
             div.inline
@@ -66,62 +84,51 @@ block content
                 i.fa.fa-btc
                 |  via Stripe
           .col-md-6
-            div.inline#paypal-container
-        #cancel-info(style="display:none;")
-          br
-          p Subscriptions are only supported through Stripe.
-          if user
-            p You'll be able to cancel your subscription from this page or by emailing support@yasp.co with your player ID.
-          else
-            p You're not logged in! If you want to cancel your subscription, you'll have to email us at support@yasp.co.
-      .col-md-4
-        p $1/Cheese. It's worth it.
-        p Payment processing is done through Stripe or Paypal. We never see your credit card information. <br>
-        br
-        if user
-          strong You are logged in! Your contribution will be public. Logout if you wish to remain anonymous.
-        else  
-          strong You aren't logged in! This contribution will be anonymous, and the Cheese will not be attached to an account.
+            #paypal-container(style="display:inline-block;")
+        #cancel-info(style="display:none; margin-top: 14px")
+          p 
+            i.fa.fa-info-circle.carry-info-icon
+            | Subscriptions are only supported through Stripe.<br>
+            if user
+              | You'll be able to cancel your subscription from this page or by emailing support@yasp.co with your player ID.
+            else
+              | You're not logged in! If you want to cancel your subscription, you'll have to email us at support@yasp.co.
     hr
-    .row
+    .row.carry-col.carry-feature
       .col-md-4
-        p.lead Be At the Top
+        h3 Be at the top
         span.fa.fa-line-chart.fa-5x
         p.text(style="margin-top:1em;") Get listed as a <a href="#top">top contributor</a>. People will be all, "Wow!"
       .col-md-4
-        p.lead Cheese Your Profile
-        span.flaticon-1.medium-cheese
+        h3 Cheese your profile
+        span.flaticon-1.medium-cheese(style="font-size: 5em; line-height: .96;")
         p.text(style="margin-top:1em;") Cause cheese is awesome.
       .col-md-4
-        p.lead Feel Good About Yourself
+        h3 Feel good about yourself
         span.fa.fa-heart-o.fa-5x
-        p.text You're awesome.
-    .row
-      p.lead Cheese buyers are also indefinitely tracked. <br> All your games from now on will be parsed, whether you visit or not.
+        p.text(style="margin-top:1em;") You're awesome.
+    h3(style="font-weight: 300; text-transform: none") Cheese buyers are also indefinitely tracked.<br>All your games from now on will be parsed, whether you visit or not.
+    p(style="font-size: 18px; font-weight: 300") More Cheese features to come. Or not. Who knows.
     hr
-    .row
-      p.lead More Cheese features to come. Or not. Who knows.
-  .row#top
-    .text-center
-      h1 Top Carries
-      p.lead  These people have made especially large contributions. Look at them in awe. Thank you. Thank you. Thank you.
-    table.table.table-striped
-      tr
-        th Number
-        th User
-        th Cheese Count
-      each player, i in users
-        if player.cheese
-          tr
-            td= i + 1
-            td
-              div(style="margin: 0 auto;")
+    h1#top Top Carries
+    h3.carry-tc-desc-media(style="font-weight: 300; text-transform: none")  These people have made especially large contributions. Look at them in awe. Thank you! Thank you! Thank you!
+    table.table.carry-table
+      thead
+        tr
+          td(width="100") Rank
+          td(style="text-align: left; padding-left: 58px") User
+          td(width="190") Cheese Count
+      tbody
+        each player, i in users
+          if player.cheese
+            tr
+              td= i + 1
+              td(style="text-align: left")
                 a(href=player.profileurl || "#", target="_blank", style="display:inline-block; margin-right:10px;")
                   if player.avatar
-                    img(src='#{player.avatar}').img-thumbnail
+                    img(src='#{player.avatar}', style="margin-right: 10px").img-thumbnail
                 h4(style="display:inline"): a(href="/players/#{player.account_id}") #{player.personaname || player.account_id}
-            td #{player.cheese}
-
+              td #{player.cheese}
 append footer_assets
    style.
      .img-thumbnail { width: 40px;}
@@ -130,4 +137,3 @@ append footer_assets
     var stripe_public = "#{stripe_public}";
    script(src="https://js.braintreegateway.com/v2/braintree.js")
    script(src="/public/js/donate.js")
-        

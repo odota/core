@@ -8,15 +8,11 @@ mixin hero_td(player, metadata)
       else
         =player.hero_id
       div(class=(player.isRadiant || player.team) ? "text-success" : "text-danger")
-        if (Number(player.account_id) === constants.anonymous_account_id)
-          ="Anonymous"
-        else if (player.account_id)
+        if (player.personaname || player.account_id)
           a(href='/players/#{player.account_id}')= player.personaname || player.account_id
         else if ("team" in player)
           =player.team ? "The Radiant" : "The Dire"
-        else if (!player.account_id && !player.personaname)
-          ="Unknown"
         else
-          =player.personaname
+          ="Anonymous"
       div
          =metadata

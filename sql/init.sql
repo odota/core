@@ -1,0 +1,4 @@
+CREATE USER yasp;
+ALTER USER yasp WITH PASSWORD 'yasp';
+ALTER USER postgres PASSWORD 'postgres';
+CREATE DATABASE yasp OWNER yasp;

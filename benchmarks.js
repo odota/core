@@ -15,6 +15,10 @@ var benchmarks = {
     {
         return (p.last_hits / m.duration * 60);
     },
+    "hero_damage_per_min": function(m, p)
+    {
+        return (p.hero_damage / m.duration * 60);
+    },
     "kills": function(m, p)
     {
         return p.kills;

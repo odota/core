@@ -24,7 +24,7 @@ block content
             span.text-info.rating
               span: abbr(title="Solo MMR")
                 i.fa.fa-fw.fa-user
-              small(style="margin-left:.5em") #{player.soloRating || "N/A"}
+              small(style="margin-left:.5em") #{player.solo_competitive_rank || "N/A"}
             //-
               span.text-info.rating
                 span: abbr(title="Highest Solo MMR")
@@ -34,7 +34,7 @@ block content
             span.text-warning.rating
               span: abbr(title="Party MMR")
                 i.fa.fa-fw.fa-users
-              small(style="margin-left:.5em") #{player.partyRating || "N/A"}
+              small(style="margin-left:.5em") #{player.competitive_rank || "N/A"}
             //-
               span.text-warning.rating
                 span: abbr(title="Highest Party MMR")
@@ -42,11 +42,11 @@ block content
                 small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
 
             span.rating
-              span: abbr(title="MMR estimate based on available data from peer players. This is a 95% confidence interval on the true mean MMR of the recent matches played by this user.")
+              span: abbr(title="MMR estimate based on available data from peer players. This is an estimate of the population mean MMR of the recent matches played by this user.")
                 i.fa.fa-fw.fa-question-circle
               small#estimate(style="margin-left:.5em;display:inline-block;")
                 if player.mmr_estimate.estimate
-                  span #{player.mmr_estimate.estimate} !{"&#177;"} #{player.mmr_estimate.stdDev ? (player.mmr_estimate.stdDev*2).toFixed(0) : 0}, #{player.mmr_estimate.n} matches
+                  span: abbr(title="95% confidence interval: +/- " + (player.mmr_estimate.stdDev ? (player.mmr_estimate.stdDev*2).toFixed(0) : 0) + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
                 else
                   ="N/A"
     .col-md-4
@@ -71,46 +71,6 @@ block content
 
 append footer_assets
   script.
-    $("#included_account_id").selectize({
-        plugins: ['remove_button'],
-        create: true,
-        maxItems: 10
-    });
-    $("#excluded_account_id").selectize({
-        plugins: ['remove_button'],
-        create: true,
-        maxItems: 10
-    });
-    $("#with_hero_id").selectize({
-        plugins: ['remove_button'],
-        sortField: 'text',
-        maxItems: 5
-    });
-    $("#enemy_hero_id").selectize({
-        plugins: ['remove_button'],
-        sortField: 'text',
-        maxItems: 5
-    });
-    $("#purchased_item").selectize({
-        plugins: ['remove_button'],
-        sortField: 'text',
-        maxItems: 5
-    });
-    $("#hero_id").selectize({
-        plugins: ['remove_button'],
-        mode: 'multi',
-        sortField: 'text',
-        maxItems: 1
-    });
-    $("#isRadiant").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#win").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#lane_role").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#patch").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#game_mode").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#lobby_type").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#region").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    $("#date").selectize({plugins: ['remove_button'],mode: 'multi',maxItems: 1});
-    
     $('#matches').dataTable({
         "order": [
                 [0, "desc"]
@@ -153,7 +113,6 @@ append footer_assets
         "paging": false,
         "searching": false,
         "order": [
-            [2, "desc"]
         ],
         "drawCallback":function(){
             tooltips();

@@ -4,11 +4,11 @@
   },
   "rankings": {
     "name": "Rankings",
+    "new-feature": true,
     "hide": true
   },
   "benchmarks": {
-    "name": "Benchmarks",
-    "hide": true
+    "name": "Benchmarks"
   },
   "top": {
     "name": "Top",

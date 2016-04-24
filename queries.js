@@ -18,6 +18,7 @@ var cQueue = queue.getQueue('cache');
 var pQueue = queue.getQueue('parse');
 var getMatchRating = require('./getMatchRating');
 var serialize = utility.serialize;
+var deserialize = utility.deserialize;
 var columnInfo = {};
 
 function getSets(redis, cb)
@@ -115,6 +116,14 @@ function upsert(db, table, row, conflict, cb)
 function insertMatch(db, redis, match, options, cb)
 {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
+    //don't insert anonymous account id
+    players.forEach(function(p)
+    {
+        if (p.account_id === constants.anonymous_account_id)
+        {
+            delete p.account_id;
+        }
+    });
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
     if (players && !match.pgroup)
     {
@@ -202,28 +211,29 @@ function insertMatch(db, redis, match, options, cb)
         {
             return cb();
         }
-        //TODO clean based on cassandra schema
+        //OPTIONAL clean based on cassandra schema
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
-        //insert into matches
-        //insert into player matches
-        //current dependencies on matches/player_matches in db (potential solution)
-        //fullhistory, diff a user's current matches from the set obtained from webapi (rewrite query)
-        //rankings audit/bootstrap (manually count results from cassandra?)
-        //validatecache audit (rewrite query)
+        //current dependencies on matches in postgres (potential solution)
         //distributions: queries on gamemode/lobbytype/skill (move to redis?)
         //status: recent added/parsed (rewrite query)
-        //query for match (rewrite with manual joins)
-        //query for player (rewrite with manual joins)
-        //instead of serialize insert using JSON syntax?
+        //dependencies on player_matches
+        //fullhistory, diff a user's current matches from the set obtained from webapi (rewrite query)
+        //rankings audit/bootstrap (manually count results from cassandra?)
+        //validatecache audit (rewrite query or drop entirely)
         var obj = serialize(match);
+        var query = 'INSERT INTO matches JSON ?';
+        var arr = [JSON.stringify(obj)];
+        /*
         var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
         {
             return '?';
         }).join(','));
-        cassandra.execute(query, Object.keys(obj).map(function(k)
+        var arr = Object.keys(obj).map(function(k)
         {
             return obj[k];
-        }),
+        });
+        */
+        cassandra.execute(query, arr,
         {
             prepare: true
         }, function(err, results)
@@ -234,16 +244,29 @@ function insertMatch(db, redis, match, options, cb)
             }
             async.each(players || [], function(pm, cb)
             {
+                //denormalized columns for efficiency
                 pm.match_id = match.match_id;
+                pm.radiant_win = match.radiant_win;
+                pm.start_time = match.start_time;
+                pm.duration = match.duration;
+                pm.cluster = match.cluster;
+                pm.lobby_type = match.lobby_type;
+                pm.game_mode = match.game_mode;
+                pm.parse_status = match.parse_status;
                 var obj2 = serialize(pm);
+                var query2 = 'INSERT INTO player_matches JSON ?';
+                var arr2 = [JSON.stringify(obj2)];
+                /*
                 var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
                 {
                     return '?';
                 }).join(','));
-                cassandra.execute(query2, Object.keys(obj2).map(function(k)
+                var arr2 = Object.keys(obj2).map(function(k)
                 {
                     return obj2[k];
-                }),
+                });
+                */
+                cassandra.execute(query2, arr2,
                 {
                     prepare: true
                 }, cb);
@@ -321,7 +344,7 @@ function insertMatchSkill(db, row, cb)
     }, cb);
 }
 
-function getMatch(db, redis, match_id, cb)
+function getMatch(db, redis, match_id, options, cb)
 {
     db.first(['matches.match_id', 'match_skill.skill', 'radiant_win', 'start_time', 'duration', 'tower_status_dire', 'tower_status_radiant', 'barracks_status_dire', 'barracks_status_radiant', 'cluster', 'lobby_type', 'leagueid', 'game_mode', 'picks_bans', 'parse_status', 'chat', 'teamfights', 'objectives', 'radiant_gold_adv', 'radiant_xp_adv', 'version']).from('matches').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').where(
     {
@@ -342,11 +365,34 @@ function getMatch(db, redis, match_id, cb)
             {
                 "players": function(cb)
                 {
-                    //join to get personaname, last_login, avatar
-                    db.select().from('player_matches').where(
+                    if (options.cassandra)
                     {
-                        "player_matches.match_id": Number(match_id)
-                    }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(cb);
+                        options.cassandra.execute(`SELECT * FROM player_matches where match_id = ?`, [Number(match_id)],
+                        {
+                            prepare: true,
+                            fetchSize: 10,
+                            autoPage: true,
+                        }, function(err, result)
+                        {
+                            if (err)
+                            {
+                                return cb(err);
+                            }
+                            result = result.map(function(m)
+                            {
+                                return deserialize(m);
+                            });
+                            //TODO get personanames
+                            return cb(err, result);
+                        });
+                    }
+                    else
+                    {
+                        db.select(['personaname', 'last_login', 'player_matches.match_id', 'player_matches.account_id', 'player_slot', 'hero_id', 'item_0', 'item_1', 'item_2', 'item_3', 'item_4', 'item_5', 'kills', 'deaths', 'assists', 'leaver_status', 'gold', 'last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_spent', 'hero_damage', 'tower_damage', 'hero_healing', 'level', 'additional_units', 'stuns', 'max_hero_hit', 'times', 'gold_t', 'lh_t', 'xp_t', 'obs_log', 'sen_log', 'purchase_log', 'kills_log', 'buyback_log', 'lane_pos', 'obs', 'sen', 'actions', 'pings', 'purchase', 'gold_reasons', 'xp_reasons', 'killed', 'item_uses', 'ability_uses', 'hero_hits', 'damage', 'damage_taken', 'damage_inflictor', 'runes', 'killed_by', 'kill_streaks', 'multi_kills', 'life_state']).from('player_matches').where(
+                        {
+                            "player_matches.match_id": Number(match_id)
+                        }).leftJoin('players', 'player_matches.account_id', 'players.account_id').orderBy("player_slot", "asc").asCallback(cb);
+                    }
                 },
                 "ab_upgrades": function(cb)
                 {
@@ -360,56 +406,60 @@ function getMatch(db, redis, match_id, cb)
                 }
                 var players = result.players;
                 var ab_upgrades = JSON.parse(result.ab_upgrades);
-                players.forEach(function(p)
+                async.each(players, function(p, cb)
                 {
+                    //denormalized columns
+                    p.radiant_win = match.radiant_win;
+                    p.start_time = match.start_time;
+                    p.duration = match.duration;
+                    p.cluster = match.cluster;
+                    p.lobby_type = match.lobby_type;
+                    p.game_mode = match.game_mode;
+                    p.parse_status = match.parse_status;
                     computePlayerMatchData(p);
                     if (ab_upgrades)
                     {
                         p.ability_upgrades_arr = ab_upgrades[p.player_slot];
                     }
-                });
-                match.players = players;
-                computeMatchData(match);
-                renderMatch(match);
-                getMatchRating(redis, match, function(err, avg)
+                    redis.zscore('solo_competitive_rank', p.account_id || "", function(err, rating)
+                    {
+                        p.solo_competitive_rank = rating;
+                        return cb(err);
+                    });
+                }, function(err)
                 {
                     if (err)
                     {
                         return cb(err);
                     }
-                    var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
-                    redis.zcard(key, function(err, card)
+                    match.players = players;
+                    computeMatchData(match);
+                    renderMatch(match);
+                    getMatchRating(redis, match, function(err, avg)
                     {
                         if (err)
                         {
                             return cb(err);
                         }
-                        redis.zcount(key, 0, avg, function(err, count)
+                        var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
+                        redis.zcard(key, function(err, card)
                         {
                             if (err)
                             {
                                 return cb(err);
                             }
-                            match.rating = avg;
-                            match.rating_percentile = Number(count) / Number(card);
-                            benchmarkMatch(redis, match, function(err)
+                            redis.zcount(key, 0, avg, function(err, count)
                             {
                                 if (err)
                                 {
                                     return cb(err);
                                 }
-                                if (match.players)
+                                match.rating = avg;
+                                match.rating_percentile = Number(count) / Number(card);
+                                benchmarkMatch(redis, match, function(err)
                                 {
-                                    //remove some duplicated columns from match.players to reduce size
-                                    //we don't need them anymore since we already the computations
-                                    match.players.forEach(function(p)
-                                    {
-                                        delete p.chat;
-                                        delete p.objectives;
-                                        delete p.teamfights;
-                                    });
-                                }
-                                return cb(err, match);
+                                    return cb(err, match);
+                                });
                             });
                         });
                     });
@@ -419,26 +469,69 @@ function getMatch(db, redis, match_id, cb)
     });
 }
 
-function getPlayerMatches(db, queryObj, cb)
+function getPlayerMatches(db, queryObj, options, cb)
 {
+    var stream;
+    if (options.cassandra)
+    {
+        //remove any compound names
+        queryObj.project = queryObj.project.map(function(k)
+        {
+            var split = k.split('.');
+            return split[split.length - 1];
+        });
+        //TODO get extra columns if needed from other tables based on queryObj.project, remove the column from initial query and get the data later with additional queries
+        var extraProps = {
+            chat: false,
+            skill: false,
+            radiant_gold_adv: false,
+            pgroup: false,
+        };
+        //remove props not in cassandra table
+        queryObj.project = queryObj.project.filter(function(k)
+        {
+            if (k in extraProps)
+            {
+                extraProps[k] = true;
+                return false;
+            }
+            return true;
+        });
+        stream = options.cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
+        {
+            prepare: true,
+            fetchSize: 1000,
+            autoPage: true,
+        });
+    }
+    else
+    {
+        stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'ASC').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
+    }
     var result = {
         aggData: aggregator([], queryObj.js_agg),
         raw: []
     };
-    var stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).orderBy('player_matches.match_id', 'ASC').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
     stream.on('end', function(err)
     {
         cb(err, result);
     });
-    stream.on('error', cb);
     stream.on('data', function(m)
     {
+        if (options.cassandra)
+        {
+            m = deserialize(m);
+        }
         computePlayerMatchData(m);
         if (filter([m], queryObj.js_select).length)
         {
             result.aggData = aggregator([m], queryObj.js_agg, result.aggData);
             result.raw.push(m);
         }
+    });
+    stream.on('error', function(err)
+    {
+        throw err;
     });
 }
 
@@ -467,13 +560,13 @@ function getPlayerRankings(redis, account_id, cb)
     console.time('[PLAYER] getPlayerRankings ' + account_id);
     async.map(Object.keys(constants.heroes), function(hero_id, cb)
     {
-        redis.zcard('hero_rankings:' + hero_id, function(err, card)
+        redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), function(err, card)
         {
             if (err)
             {
                 return cb(err);
             }
-            redis.zrank('hero_rankings:' + hero_id, account_id, function(err, rank)
+            redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), account_id, function(err, rank)
             {
                 cb(err,
                 {
@@ -600,10 +693,10 @@ function getPicks(redis, options, cb)
                     {
                         return single_rates[hero_id].pick_rate;
                     }).reduce((prev, curr) => prev * curr) / hids.length;
-                    entry.expected_win = hids.map(function(hero_id)
+                    entry.expected_win = expectedWin(hids.map(function(hero_id)
                     {
                         return single_rates[hero_id].win_rate;
-                    }).reduce((prev, curr) => prev + curr) / hids.length;
+                    }));
                     redis.zscore('picks_wins_counts:' + length, entry.key, function(err, score)
                     {
                         if (err)
@@ -626,6 +719,16 @@ function getPicks(redis, options, cb)
             });
         });
     });
+}
+
+function expectedWin(rates)
+{
+    //simple implementation, average
+    //return rates.reduce((prev, curr) => prev + curr)) / hids.length;
+    //advanced implementation, asymptotic
+    //https://github.com/yasp-dota/yasp/issues/959
+    //return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
+    return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
 }
 
 function getTop(db, redis, cb)
@@ -651,7 +754,7 @@ function getTop(db, redis, cb)
 
 function getHeroRankings(db, redis, hero_id, cb)
 {
-    getLeaderboard(db, redis, 'hero_rankings:' + hero_id, 250, function(err, entries)
+    getLeaderboard(db, redis, ['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), 100, function(err, entries)
     {
         if (err)
         {
@@ -667,12 +770,12 @@ function getHeroRankings(db, redis, hero_id, cb)
                 },
                 wins: function(cb)
                 {
-                    redis.hget('wins:' + player.account_id, hero_id, cb);
+                    redis.hget(['wins', moment().startOf('quarter').format('X'), hero_id].join(':'), player.account_id, cb);
                 },
                 games: function(cb)
                 {
-                    redis.hget('games:' + player.account_id, hero_id, cb);
-                }
+                    redis.hget(['games', moment().startOf('quarter').format('X'), hero_id].join(':'), player.account_id, cb);
+                },
             }, function(err, result)
             {
                 if (err)
@@ -680,8 +783,8 @@ function getHeroRankings(db, redis, hero_id, cb)
                     return cb(err);
                 }
                 player.solo_competitive_rank = result.solo_competitive_rank;
-                player.games = result.games;
                 player.wins = result.wins;
+                player.games = result.games;
                 cb(err);
             });
         }, function(err)
@@ -701,7 +804,7 @@ function getBenchmarks(db, redis, options, cb)
     var ret = {};
     async.each(Object.keys(benchmarks), function(metric, cb)
     {
-        var arr = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
+        var arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
         async.each(arr, function(percentile, cb)
         {
             var key = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1), metric, hero_id].join(':');
@@ -781,30 +884,6 @@ function getLeaderboard(db, redis, key, n, cb)
             cb(err, entries);
         });
     });
-}
-
-function updateScore(redis, player, cb)
-{
-    if (player.incr)
-    {
-        var win = Number(utility.isRadiant(player) === player.radiant_win);
-        //TODO possible inconsistency if we exit/crash after this incr but before completion
-        redis.hincrby('wins:' + player.account_id, player.hero_id, win);
-        redis.hincrby('games:' + player.account_id, player.hero_id, 1);
-        player.wins += win;
-        player.games += 1;
-    }
-    else
-    {
-        redis.hset('wins:' + player.account_id, player.hero_id, player.wins);
-        redis.hset('games:' + player.account_id, player.hero_id, player.games);
-    }
-    var scaleF = 0.00001;
-    var winRatio = (player.wins / (player.games - player.wins + 1));
-    var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
-    redis.zadd('hero_rankings:' + player.hero_id, scaleF * player.games * winRatio * mmrBonus, player.account_id);
-    console.log("ranked %s, %s", player.account_id, player.hero_id);
-    cb();
 }
 
 function mmrEstimate(db, redis, account_id, cb)
@@ -923,24 +1002,23 @@ function searchPlayer(db, query, cb)
 }
 
 module.exports = {
-    getSets: getSets,
-    insertPlayer: insertPlayer,
-    insertMatch: insertMatch,
-    insertPlayerRating: insertPlayerRating,
-    insertMatchSkill: insertMatchSkill,
-    getMatch: getMatch,
-    getPlayerMatches: getPlayerMatches,
-    getPlayerRatings: getPlayerRatings,
-    getPlayerRankings: getPlayerRankings,
-    getPlayer: getPlayer,
-    getDistributions: getDistributions,
-    getPicks: getPicks,
-    getTop: getTop,
-    getHeroRankings: getHeroRankings,
-    upsert: upsert,
-    getBenchmarks: getBenchmarks,
-    getLeaderboard: getLeaderboard,
-    updateScore: updateScore,
-    mmrEstimate: mmrEstimate,
-    searchPlayer: searchPlayer
+    getSets,
+    insertPlayer,
+    insertMatch,
+    insertPlayerRating,
+    insertMatchSkill,
+    getMatch,
+    getPlayerMatches,
+    getPlayerRatings,
+    getPlayerRankings,
+    getPlayer,
+    getDistributions,
+    getPicks,
+    getTop,
+    getHeroRankings,
+    upsert,
+    getBenchmarks,
+    getLeaderboard,
+    mmrEstimate,
+    searchPlayer
 };

@@ -1,4 +1,3 @@
-module.exports = buildPlayer;
 var async = require('async');
 var constants = require('./constants.js');
 var queries = require("./queries");
@@ -18,13 +17,13 @@ var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
 //optimize by only projecting certain columns based on tab
 //set query.project based on this
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version', 'cluster'];
-var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'first_blood_time', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'radiant_win', 'leaver_status', 'cluster', 'parse_status'];
+var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
 var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
 var filter = ['purchase', 'lane_pos'];
 var everything = basic.concat(advanced).concat(others).concat(filter);
 var projections = {
-    index: basic.concat('pgroup'),
+    index: basic,
     matches: basic,
     heroes: basic.concat('pgroup'),
     peers: basic.concat('pgroup'),
@@ -151,7 +150,7 @@ function buildPlayer(options, cb)
             //need fields to filter on if a filter is specified
             queryObj.project = queryObj.project.concat(filter_exists ? filter : []);
             console.time("[PLAYER] getPlayerMatches " + account_id);
-            getPlayerMatches(db, queryObj, function(err, results)
+            getPlayerMatches(db, queryObj, options, function(err, results)
             {
                 console.timeEnd("[PLAYER] getPlayerMatches " + account_id);
                 if (err)
@@ -214,7 +213,7 @@ function buildPlayer(options, cb)
                         {
                             return Number(b.match_id) - Number(a.match_id);
                         });
-                        matches = matches.slice(0, info === "index" ? 30 : undefined);
+                        matches = matches.slice(0, info === "index" ? 20 : undefined);
                         if (options.cache)
                         {
                             fillSkill(db, matches, options, cb);
@@ -245,7 +244,7 @@ function buildPlayer(options, cb)
                         {
                             return b.games - a.games;
                         });
-                        heroes_list = heroes_list.slice(0, info === "index" ? 30 : undefined);
+                        heroes_list = heroes_list.slice(0, info === "index" ? 20 : undefined);
                         cb(null, heroes_list);
                     }
                     else
@@ -279,11 +278,11 @@ function buildPlayer(options, cb)
                         cb();
                     }
                 },
-                soloRating: function(cb)
+                solo_competitive_rank: function(cb)
                 {
                     redis.zscore('solo_competitive_rank', account_id, cb);
                 },
-                partyRating: function(cb)
+                competitive_rank: function(cb)
                 {
                     redis.zscore('competitive_rank', account_id, cb);
                 },
@@ -384,7 +383,7 @@ function generateTeammateArrayFromHash(db, input, player, cb)
         var tm = teammates[id];
         id = Number(id);
         //don't include if anonymous, self or if few games together
-        if (id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5))
+        if (id && id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5))
         {
             teammates_arr.push(tm);
         }
@@ -454,3 +453,4 @@ function fillSkill(db, matches, options, cb)
         return cb(err, matches);
     });
 }
+module.exports = buildPlayer;

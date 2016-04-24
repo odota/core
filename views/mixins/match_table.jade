@@ -18,11 +18,11 @@ mixin match_table(matches, extended)
             th: abbr(title=tooltips.last_hits) LH
             th: abbr(title=tooltips.gold_per_min) GPM
           th
-  
+
       tbody.small
         each match in matches
           - var hero = constants.heroes[match.hero_id]
-          tr 
+          tr
             td: a(class=match.player_win ? "text-success" : "text-danger", href="/matches/"+match.match_id)=match.match_id
             td
               if hero
@@ -41,10 +41,6 @@ mixin match_table(matches, extended)
               td.rankable=match.last_hits
               td.rankable=match.gold_per_min
             td
-              abbr(title=constants.tooltips["status_"+match.parse_status])
-                if match.parse_status===0
-                  i.fa.fa-spinner.fa-spin
-                else if match.parse_status===2
+              abbr(title=constants.tooltips["status_"+match.parse_status])		
+                if match.parse_status === 2
                   i.fa.fa-bar-chart
-                else if match.parse_status===3
-                  i.fa.fa-eye-slash

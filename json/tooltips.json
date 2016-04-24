@@ -40,7 +40,7 @@
   "farm_necronomicon": "Necronomicon units killed",
   "actions_per_min": "Number of actions the player performed per minute",
   "pings": "Number of times the player pinged the map",
-  "mmr": "Player's Solo MMR",
+  "mmr": "The Solo MMR of the player",
   "level": "Level achieved by hero",
   "kills": "Number of kills by hero",
   "deaths": "Number of deaths of hero",
@@ -114,6 +114,6 @@
   "played_against": "Number of games with this player/hero on the opposing team",
   "win_pct_as": "Win percentage as this hero",
   "win_pct_with": "Win percentage with this player/hero",
-  "win_pct_against": "Win percentage against this player/hero"
-
+  "win_pct_against": "Win percentage against this player/hero",
+  "subheading_ranking": "Based on ranked matches. MMR must be visible in order to compute ranking. Rankings reset quarterly."
 }

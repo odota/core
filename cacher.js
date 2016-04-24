@@ -34,24 +34,24 @@ function processCache(job, cb)
         },
         "rankings": function(cb)
         {
-            if (!config.ENABLE_RANKER || match.lobby_type !== 7 || match.origin !== "scanner")
+            if (match.lobby_type === 7 && match.origin === "scanner")
             {
-                return cb();
+                return updateRankings(match, cb);
             }
             else
             {
-                return updateRankings(match, cb);
+                return cb();
             }
         },
         "updateMatchRating": function(cb)
         {
-            if (match.origin !== "scanner")
+            if (match.origin === "scanner")
             {
-                return cb();
+                return updateMatchRating(match, cb);
             }
             else
             {
-                return updateMatchRating(match, cb);
+                return cb();
             }
         },
         "incrCounts": function(cb)
@@ -73,7 +73,10 @@ function processCache(job, cb)
         {
             try
             {
-                updateBenchmarks(match);
+                if (match.origin === "scanner")
+                {
+                    updateBenchmarks(match);
+                }
                 cb();
             }
             catch (e)
@@ -88,135 +91,6 @@ function processCache(job, cb)
             console.error(err);
         }
         return cb(err);
-    });
-}
-
-function updateBenchmarks(match)
-{
-    for (var i = 0; i < match.players.length; i++)
-    {
-        var p = match.players[i];
-        if (!p.hero_id)
-        {
-            //exclude this match
-            return;
-        }
-        for (var key in benchmarks)
-        {
-            var metric = benchmarks[key](match, p);
-            if (metric !== undefined && metric !== null && !Number.isNaN(metric))
-            {
-                redis.zadd(["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':'), metric, match.match_id);
-            }
-        }
-    }
-}
-
-function updateRankings(match, cb)
-{
-    async.each(match.players, function(player, cb)
-    {
-        if (!player.account_id || player.account_id === constants.anonymous_account_id)
-        {
-            return cb();
-        }
-        async.parallel(
-        {
-            solo_competitive_rank: function(cb)
-            {
-                redis.zscore('solo_competitive_rank', player.account_id, cb);
-            },
-            score: function(cb)
-            {
-                redis.zscore('hero_rankings:' + player.hero_id, player.account_id, cb);
-            },
-            wins: function(cb)
-            {
-                redis.hget('wins:' + player.account_id, player.hero_id, cb);
-            },
-            games: function(cb)
-            {
-                redis.hget('games:' + player.account_id, player.hero_id, cb);
-            }
-        }, function(err, result)
-        {
-            if (err)
-            {
-                console.error(err);
-                return cb(err);
-            }
-            if (!result.solo_competitive_rank)
-            {
-                //if no MMR on record, can't rank this player, finish fast
-                return cb();
-            }
-            player.score = result.score;
-            player.solo_competitive_rank = result.solo_competitive_rank;
-            player.wins = result.wins;
-            player.games = result.games;
-            player.radiant_win = match.radiant_win;
-            //make sure we have existing score if we want to incr, otherwise players who just joined rankings will have incorrect data until randomly selected for DB audit
-            player.incr = Boolean(player.score);
-            if (player.incr)
-            {
-                updateScore(redis, player, cb);
-            }
-            else
-            {
-                //db mode, lookup of current games, wins.  This is the bootstrapping case (new player entering rankings).  Also can be used as a consistency check (audit)
-                db.raw(`
-            SELECT player_matches.account_id, hero_id, count(hero_id) as games, sum(case when ((player_slot < 64) = radiant_win) then 1 else 0 end) as wins
-            FROM player_matches
-            JOIN matches
-            ON player_matches.match_id = matches.match_id
-            WHERE player_matches.account_id = ?
-            AND hero_id = ?
-            AND lobby_type = 7
-            GROUP BY player_matches.account_id, hero_id
-            `, [player.account_id, player.hero_id]).asCallback(function(err, result)
-                {
-                    if (err)
-                    {
-                        console.error(err);
-                        return cb(err);
-                    }
-                    if (!result.rows || !result.rows[0])
-                    {
-                        return cb("no players found");
-                    }
-                    var dbPlayer = result.rows[0];
-                    player.games = dbPlayer.games;
-                    player.wins = dbPlayer.wins;
-                    updateScore(redis, player, cb);
-                });
-            }
-        });
-    }, cb);
-}
-
-function updateMatchRating(match, cb)
-{
-    getMatchRating(redis, match, function(err, avg)
-    {
-        if (avg && !Number.isNaN(avg))
-        {
-            redis.zadd('match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0), avg, match.match_id);
-            //for each player
-            match.players.forEach(function(player)
-            {
-                if (player.account_id !== constants.anonymous_account_id)
-                {
-                    //push into list, limit to 50 elements
-                    redis.lpush('mmr_estimates:' + player.account_id, avg);
-                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 50);
-                }
-            });
-            cb();
-        }
-        else
-        {
-            return cb(err);
-        }
     });
 }
 
@@ -305,4 +179,108 @@ function k_combinations(arr, k)
         }
     }
     return combs;
+}
+
+function updateRankings(match, cb)
+{
+    async.each(match.players, function(player, cb)
+    {
+        if (!player.account_id || player.account_id === constants.anonymous_account_id)
+        {
+            return cb();
+        }
+        player.radiant_win = match.radiant_win;
+        var reset = moment().startOf('quarter').format('X');
+        var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
+        var win = Number(utility.isRadiant(player) === player.radiant_win);
+        //TODO possible inconsistency if we exit/crash without completing all commands
+        async.parallel(
+        {
+            solo_competitive_rank: function(cb)
+            {
+                redis.zscore('solo_competitive_rank', player.account_id, cb);
+            },
+            wins: function(cb)
+            {
+                redis.hincrby(['wins', reset, player.hero_id].join(':'), player.account_id, win, cb);
+            },
+            games: function(cb)
+            {
+                redis.hincrby(['games', reset, player.hero_id].join(':'), player.account_id, 1, cb);
+            },
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            player = Object.assign(
+            {}, player, result);
+            if (!player.solo_competitive_rank)
+            {
+                //if no MMR on record, can't rank this player
+                return cb();
+            }
+            var scaleF = 0.00001;
+            var winRatio = (player.wins / (player.games - player.wins + 1));
+            var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
+            redis.zadd(['hero_rankings', reset, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
+            redis.expireat(['wins', reset, player.hero_id].join(':'), expire);
+            redis.expireat(['games', reset, player.hero_id].join(':'), expire);
+            redis.expireat(['hero_rankings', reset, player.hero_id].join(':'), expire);
+            cb();
+        });
+    }, cb);
+}
+
+function updateBenchmarks(match)
+{
+    for (var i = 0; i < match.players.length; i++)
+    {
+        var p = match.players[i];
+        if (!p.hero_id)
+        {
+            //exclude this match
+            return;
+        }
+        for (var key in benchmarks)
+        {
+            var metric = benchmarks[key](match, p);
+            if (metric !== undefined && metric !== null && !Number.isNaN(metric))
+            {
+                var rkey = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':');
+                redis.zadd(rkey, metric, match.match_id);
+                //expire at time two blocks later (after prev/current cycle)
+                redis.expireat(rkey, utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 2));
+            }
+        }
+    }
+}
+
+function updateMatchRating(match, cb)
+{
+    getMatchRating(redis, match, function(err, avg)
+    {
+        if (avg && !Number.isNaN(avg))
+        {
+            var rkey = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0);
+            redis.zadd(rkey, avg, match.match_id);
+            redis.expireat(rkey, utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 2));
+            //for each player
+            match.players.forEach(function(player)
+            {
+                if (player.account_id && player.account_id !== constants.anonymous_account_id)
+                {
+                    //push into list, limit to 50 elements
+                    redis.lpush('mmr_estimates:' + player.account_id, avg);
+                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 49);
+                }
+            });
+            cb();
+        }
+        else
+        {
+            return cb(err);
+        }
+    });
 }

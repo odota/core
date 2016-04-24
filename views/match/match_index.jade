@@ -23,7 +23,7 @@ block match_content
             tr
               th: abbr(title=tooltips.hero_id) Hero
               th
-              //th: abbr(title=tooltips.mmr) Rating
+              th: abbr(title=tooltips.mmr) MMR
               th: abbr(title=tooltips.level) LV
               th: abbr(title=tooltips.kills) K
               th: abbr(title=tooltips.deaths) D
@@ -43,6 +43,7 @@ block match_content
               //img.img-sm(src=player.avatar)
               if (player.last_login)
                 img.user(src=config.ICON_PATH, title="This user is registered!")
+            td.text-muted.small=player.solo_competitive_rank
             td.rankable= player.level
             td.rankable= player.kills
             td.rankable.negative= player.deaths

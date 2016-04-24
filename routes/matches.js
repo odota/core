@@ -3,7 +3,7 @@ var matches = express.Router();
 var constants = require('../constants.js');
 var matchPages = constants.match_pages;
 var buildMatch = require('../buildMatch');
-module.exports = function(db, redis)
+module.exports = function(db, redis, cassandra)
 {
     matches.get('/:match_id/:info?', function(req, res, cb)
     {
@@ -12,6 +12,7 @@ module.exports = function(db, redis)
         {
             db: db,
             redis: redis,
+            cassandra: cassandra,
             match_id: req.params.match_id
         }, function(err, match)
         {
