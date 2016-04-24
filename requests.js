@@ -1,12 +1,15 @@
-var utility = require('./utility');
-var queue = require('./queue');
+/**
+ * Worker to process parse requests submitted by users
+ **/
+var utility = require('./util/utility');
+var redis = require('./store/redis');
+var db = require('./store/db');
+var queue = require('./store/queue');
+var queries = require('./store/queries');
+var getData = utility.getData;
 var pQueue = queue.getQueue('parse');
 var rQueue = queue.getQueue('request');
-var getData = utility.getData;
-var queries = require('./queries');
-var redis = require('./redis');
 var insertMatch = queries.insertMatch;
-var db = require('./db');
 rQueue.process(100, processRequest);
 
 function processRequest(job, cb)

@@ -1,18 +1,21 @@
-var utility = require('./utility');
+/**
+ * Worker scanning the Steam sequential match API (GetMatchHistoryBySequenceNum) for latest matches.
+ **/
+var utility = require('./util/utility');
+var buildSets = require('./util/buildSets');
 var config = require('./config');
+var constants = require('./constants');
+var db = require('./store/db');
+var redis = require('./store/redis');
+var queue = require('./store/queue');
+var queries = require('./store/queries');
+var insertMatch = queries.insertMatch;
 var getData = utility.getData;
-var db = require('./db');
-var redis = require('./redis');
-var queue = require('./queue');
 var addToQueue = queue.addToQueue;
 var mQueue = queue.getQueue('mmr');
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
-var insertMatch = require('./queries').insertMatch;
-var queries = require('./queries');
-var buildSets = require('./buildSets');
-var constants = require('./constants');
 var trackedPlayers;
 var userPlayers;
 // Used to create endpoint for monitoring

@@ -1,11 +1,14 @@
-var utility = require('./utility');
-var queue = require('./queue');
-var mQueue = queue.getQueue('mmr');
-var db = require('./db');
-var getData = utility.getData;
-var queries = require('./queries');
-var redis = require('./redis');
+/**
+ * Worker to fetch MMR data for players
+ **/
+var utility = require('./util/utility');
+var queue = require('./store/queue');
+var db = require('./store/db');
+var queries = require('./store/queries');
+var redis = require('./store/redis');
 var config = require('./config');
+var mQueue = queue.getQueue('mmr');
+var getData = utility.getData;
 var retrieverArr = config.RETRIEVER_HOST.split(",");
 mQueue.process(retrieverArr.length * 10, processMmr);
 

@@ -1,16 +1,18 @@
-var express = require('express');
-var utility = require('./utility');
-var bodyParser = require('body-parser');
-var app = express();
-var capacity = require('os').cpus().length;
-var startedAt = new Date();
-var os = require('os');
+/**
+ * Worker that parses replays
+ * The actual parsing is done by invoking the Java-based parser.
+ * The resulting event stream (newline-delimited JSON) is run through a series of processors to count/aggregate it into a single object
+ * This object is passed to insertMatch to persist the data into the database.
+ **/
+var utility = require('./util/utility');
+var getReplayUrl = require('./util/getReplayUrl');
 var config = require('./config');
-var request = require('request');
-var cp = require('child_process');
-var ndjson = require('ndjson');
-var spawn = cp.spawn;
-var progress = require('request-progress');
+var db = require('./store/db');
+var redis = require('./store/redis');
+var queue = require('./store/queue');
+var queries = require('./store/queries');
+var compute = require('./compute/compute');
+var benchmarkMatch = require('./compute/benchmarkMatch');
 var processAllPlayers = require('./processors/processAllPlayers');
 var processTeamfights = require('./processors/processTeamfights');
 var processReduce = require('./processors/processReduce');
@@ -18,21 +20,25 @@ var processUploadProps = require('./processors/processUploadProps');
 var processParsedData = require('./processors/processParsedData');
 var processMetadata = require('./processors/processMetadata');
 var processExpand = require('./processors/processExpand');
+var express = require('express');
+var bodyParser = require('body-parser');
+var app = express();
+var capacity = require('os').cpus().length;
+var startedAt = new Date();
+var os = require('os');
+var request = require('request');
+var cp = require('child_process');
+var ndjson = require('ndjson');
+var spawn = cp.spawn;
+var progress = require('request-progress');
 var stream = require('stream');
-var queue = require('./queue');
 var pQueue = queue.getQueue('parse');
-var getReplayUrl = require('./getReplayUrl');
-var db = require('./db');
-var redis = require('./redis');
 var moment = require('moment');
-var queries = require('./queries');
 var insertMatch = queries.insertMatch;
 var async = require('async');
-var compute = require('./compute');
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
-var benchmarkMatch = require('./benchmarkMatch');
 app.use(bodyParser.json());
 app.get('/', function(req, res)
 {

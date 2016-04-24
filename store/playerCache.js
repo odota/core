@@ -1,25 +1,25 @@
 /**
  * Provides methods for storing player match data in a faster caching layer
  **/
-var config = require('./config');
-var compute = require('./compute');
+var enabled = config.ENABLE_PLAYER_CACHE;
+var config = require('../config');
+var compute = require('../compute/compute');
+var filter = require('../compute/filter');
+var constants = require('../constants');
+var utility = require('../util/utility');
+var cassandra = enabled ? require('./cassandra') : undefined;
 var computePlayerMatchData = compute.computePlayerMatchData;
 var async = require('async');
-var constants = require('./constants');
-var utility = require('./utility');
 var serialize = utility.serialize;
 var deserialize = utility.deserialize;
-var filter = require('./filter');
 var util = require('util');
 var reduceAggregable = utility.reduceAggregable;
-var enabled = config.ENABLE_PLAYER_CACHE;
-var cassandra = enabled ? require('./cassandra') : undefined;
 
 function readCache(account_id, options, cb)
 {
     if (enabled)
     {
-        //TODO currently aggregator does live significance check.  Persist it to store so we can project fewer fields?
+        //TODO currently we do live significance check.  Persist it to store so we can project fewer fields?
         var proj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
         var table = ['hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
         var filters = ['pgroup', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'purchase'];

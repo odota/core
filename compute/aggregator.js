@@ -1,10 +1,9 @@
-var constants = require('./constants.js');
-var utility = require('./utility');
+var constants = require('../constants.js');
+var utility = require('../util/utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var isSignificant = utility.isSignificant;
 var getAggs = utility.getAggs;
-var reduceMinimal = utility.reduceMinimal;
 module.exports = function aggregator(matches, fields, existing)
 {
     fields = fields || getAggs();

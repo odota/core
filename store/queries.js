@@ -1,22 +1,25 @@
+/**
+ * Provides functions to get/insert data into data stores.
+ **/
+var utility = require('../util/utility');
+var getMatchRating = require('../util/getMatchRating');
+var compute = require('../compute/compute');
+var benchmarks = require('../compute/benchmarks');
+var filter = require('../compute/filter');
+var benchmarkMatch = require('../compute/benchmarkMatch');
+var config = require('../config');
+var constants = require('../constants');
+var queue = require('./queue');
+var playerCache = require('./playerCache');
 var async = require('async');
-var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
-var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
-var benchmarkMatch = require('./benchmarkMatch');
 var moment = require('moment');
-var config = require('./config');
-var constants = require('./constants');
-var benchmarks = require('./benchmarks');
-var filter = require('./filter');
 var util = require('util');
-var queue = require('./queue');
 var cQueue = queue.getQueue('cache');
 var pQueue = queue.getQueue('parse');
-var getMatchRating = require('./getMatchRating');
-var playerCache = require('./playerCache');
 var updateCache = playerCache.updateCache;
 var serialize = utility.serialize;
 var deserialize = utility.deserialize;

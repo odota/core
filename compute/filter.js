@@ -1,4 +1,4 @@
-var utility = require('./utility');
+var utility = require('../util/utility');
 var isRadiant = utility.isRadiant;
 module.exports = function filter(matches, filters)
 {

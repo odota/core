@@ -1,35 +1,39 @@
+/**
+ * Worker serving as main web application
+ * Serves web/API requests
+ **/
 var config = require('./config');
-var utility = require('./utility');
-var request = require('request');
-var redis = require('./redis');
-var logger = utility.logger;
-var compression = require('compression');
-var session = require('cookie-session');
-var status = require('./status');
-var path = require('path');
-var moment = require('moment');
-var async = require('async');
-var fs = require('fs');
 var constants = require('./constants.js');
-var express = require('express');
-var app = express();
-var example_match = JSON.parse(fs.readFileSync('./matches/frontpage.json'));
-var passport = require('passport');
-var api_key = config.STEAM_API_KEY.split(",")[0];
-var db = require('./db');
-var SteamStrategy = require('passport-steam').Strategy;
-var host = config.ROOT_URL;
-var queries = require('./queries');
-var buildSets = require('./buildSets');
+var utility = require('./util/utility');
+var buildSets = require('./util/buildSets');
+var redis = require('./store/redis');
+var status = require('./store/status');
+var db = require('./store/db');
+var queries = require('./store/queries');
 var matches = require('./routes/matches');
 var hyperopia = require('./routes/hyperopia');
 var players = require('./routes/players');
 var api = require('./routes/api');
 var donate = require('./routes/donate');
 var mmstats = require('./routes/mmstats');
+var request = require('request');
+var logger = utility.logger;
+var compression = require('compression');
+var session = require('cookie-session');
+var path = require('path');
+var moment = require('moment');
+var async = require('async');
+var fs = require('fs');
+var express = require('express');
+var app = express();
+var example_match = JSON.parse(fs.readFileSync('./matches/frontpage.json'));
+var passport = require('passport');
+var api_key = config.STEAM_API_KEY.split(",")[0];
+var SteamStrategy = require('passport-steam').Strategy;
+var host = config.ROOT_URL;
 var querystring = require('querystring');
 var util = require('util');
-var queue = require('./queue');
+
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('./cassandra') : undefined;
 //PASSPORT config

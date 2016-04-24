@@ -1,5 +1,5 @@
 var util = require('util');
-var constants = require('./constants.js');
+var constants = require('../constants.js');
 module.exports = generatePlayerAnalysis;
 /**
  * Generates a player analysis for a player_match

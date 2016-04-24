@@ -1,14 +1,12 @@
-var utility = require('./utility');
+var utility = require('../util/utility');
+var generatePlayerAnalysis = require('./analysis');
+var constants = require('../constants.js');
 var mode = utility.mode;
 var max = utility.max;
 var min = utility.min;
 var isRadiant = utility.isRadiant;
 var generatePositionData = utility.generatePositionData;
-var generatePlayerAnalysis = require('./analysis');
-var constants = require('./constants.js');
 var sentiment = require('sentiment');
-var benchmarks = require('./benchmarks');
-var async = require('async');
 var ancients = {
     npc_dota_neutral_black_drake: 1,
     npc_dota_neutral_black_dragon: 1,

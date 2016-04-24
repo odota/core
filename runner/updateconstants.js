@@ -1,4 +1,4 @@
-var utility = require('../utility');
+var utility = require('../util/utility');
 var getData = utility.getData;
 var async = require('async');
 var fs = require('fs');

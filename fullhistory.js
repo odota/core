@@ -1,12 +1,15 @@
-var utility = require('./utility');
-var redis = require('./redis');
-var queue = require('./queue');
+/**
+ * Worker to fetch full match histories for players
+ **/
+var utility = require('./util/utility');
+var redis = require('./store/redis');
+var queue = require('./store/queue');
 var fhQueue = queue.getQueue('fullhistory');
 var config = require('./config');
 var async = require('async');
-var db = require('./db');
+var db = require('./store/db');
 var getData = utility.getData;
-var queries = require('./queries');
+var queries = require('./store/queries');
 var insertMatch = queries.insertMatch;
 var constants = require('./constants.js');
 var urllib = require('url');

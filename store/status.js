@@ -1,6 +1,4 @@
 var async = require('async');
-var playerCache = require('./playerCache');
-var countPlayerCaches = playerCache.countPlayerCaches;
 var queue = require('./queue');
 module.exports = function getStatus(db, redis, cb)
 {
