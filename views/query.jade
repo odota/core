@@ -13,7 +13,7 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
           |  matches by 
           span
             .form-group
-              select.form-control(name="desc" data-placeholder="")#desc
+              select.form-control(multiple, name="desc", data-placeholder="Match ID")#desc
                 each val, key in histograms
                   option(value=key, selected=(q.desc===key))=prettyPrint(key)
           |  where 

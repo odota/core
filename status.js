@@ -122,6 +122,7 @@ module.exports = function getStatus(db, redis, cb)
                 }, cb);
             });
         },
+        */
         retriever: function(cb)
         {
             redis.keys("retriever:*", function(err, result)
@@ -147,7 +148,6 @@ module.exports = function getStatus(db, redis, cb)
                 }, cb);
             });
         },
-        */
         queue: function(cb)
         {
             //generate object with properties as queue types, each mapped to json object mapping state to count

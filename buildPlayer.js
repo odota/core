@@ -18,15 +18,15 @@ var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
 //optimize by only projecting certain columns based on tab
 //set query.project based on this
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'radiant_win', 'leaver_status', 'cluster', 'parse_status'];
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'radiant_win', 'leaver_status', 'cluster', 'parse_status', 'pgroup'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
-var others = ['purchase', 'lane_pos', 'pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
+var others = ['purchase', 'lane_pos', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
 var everything = basic.concat(advanced).concat(others);
 var projections = {
     index: basic,
     matches: basic,
-    heroes: basic.concat('pgroup'),
-    peers: basic.concat('pgroup'),
+    heroes: basic,
+    peers: basic,
     activity: basic,
     histograms: basic.concat(advanced).concat(['purchase']),
     counts: basic.concat(advanced).concat(['purchase', 'kill_streaks', 'multi_kills', 'lane_pos']),
@@ -181,7 +181,7 @@ function buildPlayer(options, cb)
             }
             var matches = cache.raw;
             var desc = queryObj.keywords.desc || "match_id";
-            var limit = isNaN(queryObj.keywords.limit) ? undefined : Number(queryObj.keywords.limit);
+            var limit = queryObj.keywords.limit ? Number(queryObj.keywords.limit) : undefined;
             //sort
             matches = matches.sort(function(a, b)
             {

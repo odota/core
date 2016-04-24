@@ -72,4 +72,9 @@ window.queryForm = function()
         maximumSelectionLength: 1,
         theme: "bootstrap",
     });
+    $("#desc").select2(
+    {
+        maximumSelectionLength: 1,
+        theme: "bootstrap",
+    });
 };
