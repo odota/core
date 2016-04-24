@@ -1,8 +1,8 @@
 /**
  * Provides methods for storing player match data in a faster caching layer
  **/
-var enabled = config.ENABLE_PLAYER_CACHE;
 var config = require('../config');
+var enabled = config.ENABLE_PLAYER_CACHE;
 var compute = require('../compute/compute');
 var filter = require('../compute/filter');
 var constants = require('../constants');

@@ -1,8 +1,8 @@
+var constants = require('../constants.js');
+var buildPlayer = require('../store/buildPlayer');
 var express = require('express');
 var players = express.Router();
-var constants = require('../constants.js');
 var querystring = require('querystring');
-var buildPlayer = require('../buildPlayer');
 //list of fields that are numerical (continuous).  These define the possible categories for histograms, trends, and records
 var player_fields = constants.player_fields;
 var playerPages = constants.player_pages;
