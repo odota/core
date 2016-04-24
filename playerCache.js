@@ -15,71 +15,46 @@ var filter = require('./filter');
 var util = require('util');
 var reduceAggregable = utility.reduceAggregable;
 var enabled = config.ENABLE_PLAYER_CACHE;
-var cEnabled = config.ENABLE_CASSANDRA_PLAYER_CACHE;
-var redis;
-var cassandra;
-if (enabled)
-{
-    if (cEnabled)
-    {
-        cassandra = require('./cassandra');
-    }
-    else
-    {
-        redis = require('./redis');
-    }
-}
+var cassandra = enabled ? require('./cassandra') : undefined;
 
 function readCache(account_id, options, cb)
 {
     if (enabled)
     {
-        if (cEnabled)
+        //TODO currently aggregator does live significance check.  Persist it to store so we can project fewer fields?
+        var proj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
+        var table = ['hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
+        var filters = ['pgroup', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'purchase'];
+        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', Object.keys(options.js_agg).concat(proj).concat(table).concat(options.filter_count > 1 ? filters : []).join(','));
+        var matches = [];
+        return cassandra.stream(query, [account_id],
         {
-            //TODO currently aggregator does live significance check.  Persist it to store so we can project fewer fields?
-            var proj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
-            var table = ['hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
-            var filters = ['pgroup', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'purchase'];
-            var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', Object.keys(options.js_agg).concat(proj).concat(table).concat(options.filter_count > 1 ? filters : []).join(','));
-            var matches = [];
-            return cassandra.stream(query, [account_id],
+            prepare: true,
+            fetchSize: 1000,
+            autoPage: true,
+        }).on('readable', function()
+        {
+            //readable is emitted as soon a row is received and parsed
+            var m;
+            while (m = this.read())
             {
-                prepare: true,
-                fetchSize: 1000,
-                autoPage: true,
-            }).on('readable', function()
-            {
-                //readable is emitted as soon a row is received and parsed
-                var m;
-                while (m = this.read())
+                m = deserialize(m);
+                if (filter([m], options.js_select).length)
                 {
-                    m = deserialize(m);
-                    if (filter([m], options.js_select).length)
-                    {
-                        matches.push(m);
-                    }
+                    matches.push(m);
                 }
-            }).on('end', function(err)
-            {
-                //stream ended, there aren't any more rows
-                return cb(err,
-                {
-                    raw: matches,
-                });
-            }).on('error', function(err)
-            {
-                throw err;
-            });
-        }
-        else
+            }
+        }).on('end', function(err)
         {
-            redis.get(new Buffer("player:" + account_id), function(err, result)
+            //stream ended, there aren't any more rows
+            return cb(err,
             {
-                var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-                //console.log(result ? result.length : 0, JSON.stringify(cache).length);
-                return cb(err, cache);
+                raw: matches,
             });
-        }
+        }).on('error', function(err)
+        {
+            throw err;
+        });
     }
     else
     {
@@ -91,51 +66,30 @@ function writeCache(account_id, cache, cb)
 {
     if (enabled)
     {
-        if (cEnabled)
+        //console.log("saving player cache to cassandra %s", account_id);
+        //upsert matches into store
+        return async.each(cache.raw, function(m, cb)
         {
-            //console.log("saving player cache to cassandra %s", account_id);
-            //upsert matches into store
-            return async.each(cache.raw, function(m, cb)
+            m = serialize(reduceAggregable(m));
+            var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function(k)
             {
-                m = serialize(reduceAggregable(m));
-                var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function(k)
-                {
-                    return '?';
-                }).join(','));
-                cassandra.execute(query, Object.keys(m).map(function(k)
-                {
-                    return m[k];
-                }),
-                {
-                    prepare: true
-                }, cb);
-            }, function(err)
+                return '?';
+            }).join(','));
+            cassandra.execute(query, Object.keys(m).map(function(k)
             {
-                if (err)
-                {
-                    console.error(err.stack);
-                }
-                return cb(err);
-            });
-        }
-        else
+                return m[k];
+            }),
+            {
+                prepare: true
+            }, cb);
+        }, function(err)
         {
-            console.log("saving player cache to redis %s", account_id);
-            redis.ttl("player:" + account_id, function(err, ttl)
+            if (err)
             {
-                if (err)
-                {
-                    return cb(err);
-                }
-                cache = {
-                    aggData: cache.aggData
-                };
-                redis.setex(new Buffer("player:" + account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)), function(err)
-                {
-                    cb(err);
-                });
-            });
-        }
+                console.error(err.stack);
+            }
+            return cb(err);
+        });
     }
     else
     {
@@ -168,34 +122,10 @@ function updateCache(match, cb)
                     player_match[key] = match[key];
                 }
                 computePlayerMatchData(player_match);
-                if (cEnabled)
+                writeCache(player_match.account_id,
                 {
-                    writeCache(player_match.account_id,
-                    {
-                        raw: [player_match]
-                    }, cb);
-                }
-                else
-                {
-                    readCache(player_match.account_id,
-                    {}, function(err, cache)
-                    {
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        //if player cache doesn't exist, skip
-                        if (cache)
-                        {
-                            cache.aggData = aggregator([player_match], null, cache.aggData);
-                            writeCache(player_match.account_id, cache, cb);
-                        }
-                        else
-                        {
-                            return cb();
-                        }
-                    });
-                }
+                    raw: [player_match]
+                }, cb);
             }
             else
             {

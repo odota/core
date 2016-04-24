@@ -402,7 +402,7 @@ function getMatch(db, redis, match_id, options, cb)
                             {
                                 return cb(err);
                             }
-                            result = result.map(function(m)
+                            result = result.rows.map(function(m)
                             {
                                 return deserialize(m);
                             });
@@ -936,7 +936,6 @@ function mmrEstimate(db, redis, account_id, cb)
         });
     });
 }
-
 /**
  * @param db - databse object
  * @param search - object to for where parameter of query
@@ -944,67 +943,59 @@ function mmrEstimate(db, redis, account_id, cb)
  */
 function findPlayer(db, search, cb)
 {
-    db.first(['account_id', 'personaname', 'avatarfull'])
-    .from('players')
-    .where(search)
-    .asCallback(cb);
+    db.first(['account_id', 'personaname', 'avatarfull']).from('players').where(search).asCallback(cb);
 }
 
 function searchPlayer(db, query, cb)
 {
     async.parallel(
+    {
+        account_id: function(callback)
         {
-            account_id: function(callback)
+            if (Number.isNaN(Number(query)))
             {
-                if (Number.isNaN(Number(query)))
-                {
-                    return callback();
-                }
-                else
-                {
-                    findPlayer(db, {account_id: Number(query)}, callback);
-                }
-            },
-            personaname: function(callback)
+                return callback();
+            }
+            else
             {
-                db.raw(`
+                findPlayer(db,
+                {
+                    account_id: Number(query)
+                }, callback);
+            }
+        },
+        personaname: function(callback)
+        {
+            db.raw(`
                     SELECT account_id, personaname, avatarfull, similarity(personaname, ?)
                     FROM players WHERE personaname ILIKE ?
                     ORDER BY similarity DESC LIMIT 100
-                    `, [query, "%" + query + "%"])
-                .asCallback(function(err, result)
-                {
-                    if (err)
-                    {
-                        return callback(err);
-                    }
-
-                    return callback(err, result.rows);
-                });
-            }
-        },
-        function(err, result)
-        {
-            if (err)
+                    `, [query, "%" + query + "%"]).asCallback(function(err, result)
             {
-                return cb(err);
-            }
-            
-            var ret = [];
-            
-            for(var key in result)
-            {
-                if (result[key])
+                if (err)
                 {
-                    ret = ret.concat(result[key]);
+                    return callback(err);
                 }
-            }
-            
-            cb(null, ret);
+                return callback(err, result.rows);
+            });
         }
-    );
+    }, function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        var ret = [];
+        for (var key in result)
+        {
+            if (result[key])
+            {
+                ret = ret.concat(result[key]);
+            }
+        }
+        cb(null, ret);
+    });
 }
-
 module.exports = {
     getSets,
     insertPlayer,

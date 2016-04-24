@@ -51,7 +51,6 @@ var defaults = {
     "ENABLE_PLAYER_CACHE": "", // set to enable caching players
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
-    "ENABLE_CASSANDRA_PLAYER_CACHE": "", //set to use cassandra for player caches
     "ENABLE_SPA_MODE": "", //set to enable single page application mode for web
     "ENABLE_CASSANDRA_MATCH_STORE_READ": "", //set to enable using cassandra for match data store
 };
