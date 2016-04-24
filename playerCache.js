@@ -20,10 +20,13 @@ var redis;
 var cassandra;
 if (enabled)
 {
-    redis = require('./redis');
     if (cEnabled)
     {
         cassandra = require('./cassandra');
+    }
+    else
+    {
+        redis = require('./redis');
     }
 }
 
@@ -245,25 +248,9 @@ function validateCache(db, redis, account_id, cache, cb)
         }
     });
 }
-
-function countPlayerCaches(cb)
-{
-    if (enabled)
-    {
-        redis.keys("player:*", function(err, result)
-        {
-            cb(err, result.length);
-        });
-    }
-    else
-    {
-        return cb(null, 0);
-    }
-}
 module.exports = {
     readCache: readCache,
     writeCache: writeCache,
     updateCache: updateCache,
     validateCache: validateCache,
-    countPlayerCaches: countPlayerCaches,
 };

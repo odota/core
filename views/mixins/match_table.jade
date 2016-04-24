@@ -42,6 +42,6 @@ mixin match_table(matches)
               td.rankable=match.deaths
               td.rankable=match.assists
               td
-                abbr(title=constants.tooltips["status_"+match.parse_status])		
-                  if match.parse_status === 2
+                if match.parse_status === 2
+                  abbr(title=constants.tooltips.status_2)
                     i.fa.fa-bar-chart

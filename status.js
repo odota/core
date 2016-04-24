@@ -60,10 +60,6 @@ module.exports = function getStatus(db, redis, cb)
                 cb(err, res);
             });
         },
-        cached_players: function(cb)
-        {
-            countPlayerCaches(cb);
-        },
         error_500: function(cb)
         {
             redis.zcard("error_500", cb);

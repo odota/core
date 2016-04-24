@@ -115,7 +115,32 @@ app.use(function(req, res, next)
         next();
     }
 });
-app.use(function(req, res, cb)
+app.use(function rateLimit(req, res, cb)
+{
+    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || "";
+    ip = ip.replace(/^.*:/, '').split(',')[0];
+    var key = 'rate_limit:' + ip;
+    logger.info("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
+    redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        if (resp[0] > 5 && config.NODE_ENV !== "test")
+        {
+            return res.status(429).json(
+            {
+                error: "rate limit exceeded"
+            });
+        }
+        else
+        {
+            cb();
+        }
+    });
+});
+app.use(function telemetry(req, res, cb)
 {
     var timeStart = new Date();
     if (req.path.indexOf('/names') === 0)
@@ -138,31 +163,9 @@ app.use(function(req, res, cb)
         redis.lpush("load_times", timeEnd - timeStart);
         redis.ltrim("load_times", 0, 10000);
     });
-    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || "";
-    ip = ip.replace(/^.*:/, '').split(',')[0];
-    var key = 'rate_limit:' + ip;
-    logger.info("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
-    redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        console.log(resp);
-        if (resp[0] > 5 && config.NODE_ENV !== "test")
-        {
-            return res.status(429).json(
-            {
-                error: "rate limit exceeded"
-            });
-        }
-        else
-        {
-            cb();
-        }
-    });
+    cb();
 });
-app.use(function(req, res, next)
+app.use(function getMetadata(req, res, cb)
 {
     async.parallel(
     {
@@ -179,7 +182,7 @@ app.use(function(req, res, next)
         res.locals.user = req.user;
         res.locals.banner_msg = results.banner;
         res.locals.cheese = results.cheese;
-        return next(err);
+        return cb(err);
     });
 });
 //START service/admin routes

@@ -57,6 +57,3 @@ docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=co
 '
 gcloud compute instance-groups managed create "cassandra-group-1" --base-instance-name "cassandra-group-1" --template "cassandra-1" --size "1"
 gcloud compute instance-groups managed set-autoscaling "cassandra-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "1" --target-cpu-utilization "0.7"
-
-# running scripts in container
-#docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c 'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/preloader.js'

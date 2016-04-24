@@ -215,7 +215,7 @@ function insertMatch(db, redis, match, options, cb)
         }
         //TODO clean based on cassandra schema
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
-        //TODO fix validateCache to use cassandra
+        //TODO disable validateCache if using full cassandra
         var obj = serialize(match);
         var query = 'INSERT INTO matches JSON ?';
         var arr = [JSON.stringify(obj)];
@@ -503,10 +503,8 @@ function getPlayerMatches(db, queryObj, options, cb)
             var split = k.split('.');
             return split[split.length - 1];
         });
-        //TODO get extra columns if needed from other tables based on queryObj.project, remove the column from initial query and get the data later with additional queries
         var extraProps = {
             chat: false,
-            skill: false,
             radiant_gold_adv: false,
             pgroup: false,
         };
@@ -534,6 +532,10 @@ function getPlayerMatches(db, queryObj, options, cb)
     var matches = [];
     stream.on('end', function(err)
     {
+        if (options.cassandra)
+        {
+            //TODO get extra columns if needed from match table based on queryObj.project
+        }
         cb(err,
         {
             raw: matches

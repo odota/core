@@ -17,7 +17,7 @@ Overview
 Tech Stack
 ----
 * Web/Microservices: Node.js
-* Storage: PostgreSQL/Redis
+* Storage: PostgreSQL/Redis/Cassandra
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
 Quickstart
@@ -34,8 +34,9 @@ Quickstart
   * `sudo docker run -d --name postgres --net=host postgres:latest`
   * `sudo docker run -d --name redis --net=host redis:latest`
   * (optional) `sudo docker run -d --name cassandra --net=host cassandra:latest`
-* Initialize Postgres: `sudo docker exec -i postgres psql -- postgres://postgres@localhost < sql/init.sql`
-* Create tables: `sudo docker exec -i postgres psql -- postgres://postgres@localhost/yasp < sql/create_tables.sql`
+* Initialize Postgres: `sudo docker exec -i postgres psql -U postgres < sql/init.sql`
+* Create tables: `sudo docker exec -i postgres psql -U postgres yasp < sql/create_tables.sql`
+* Set up Cassandra (optional): `sudo docker exec -i cassandra cqlsh < sql/cassandra.cql`
 * Get a terminal into the running container: `sudo docker exec -it yasp bash`
 * Build inside the container: `npm run build`
 * Start the services you want to run:
@@ -64,6 +65,11 @@ Getting Help
 Architecture and Design
 ----
 See the [wiki](https://github.com/yasp-dota/yasp/wiki/Architecture-and-Design).
+
+Docker examples
+----
+* Import a Postgres dump: `sudo docker exec -i postgres pg_restore -U yasp -d yasp --clean < ../dump.pgdump`
+* Run a script in production: `sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c 'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/preloader.js'`
 
 History
 ----
