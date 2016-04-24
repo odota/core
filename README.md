@@ -47,11 +47,9 @@ Quickstart
   * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in order to automatically rebuild after making changes.
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
   * `npm run task updateconstants` pulls latest constants data and saves to `json` directory.
-  * `npm run task fullhistory` queues a full history request for all players in DB who don't have it yet.
   * `npm run update` updates all deps in `package.json` to latest versions.
 * Get some starter data
   * You can request some parses by ID to get some parsed data.  
-  * You can also log in through Steam to trigger a full history request for that user (requires `fullhistory` service to be running)
   * You can also run `scanner` with `ENABLE_INSERT_ALL_MATCHES=1` in your `.env` to get some matches from the API.
 * File changes you make outside the container should be automatically mirrored to the container.
 * Make some changes and commit them: `git add --all; git commit -m "My first commit!"`

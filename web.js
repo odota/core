@@ -30,7 +30,6 @@ var mmstats = require('./routes/mmstats');
 var querystring = require('querystring');
 var util = require('util');
 var queue = require('./queue');
-var fhQueue = queue.getQueue('fullhistory');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE ? require('./cassandra') : undefined;
 //PASSPORT config
@@ -72,15 +71,7 @@ passport.use(new SteamStrategy(
         }
         buildSets(db, redis, function(err)
         {
-            if (err)
-            {
-                return cb(err);
-            }
-            queue.addToQueue(fhQueue, player,
-            {}, function(err)
-            {
-                return cb(err, player);
-            });
+            return cb(err, player);
         });
     });
 }));

@@ -16,11 +16,6 @@ var moment = require('moment');
 var assert = require('assert');
 var constants = require('../constants.js');
 var init_db = "postgres://postgres:postgres@localhost/postgres";
-/*
-var processApi = require('../processApi');
-var processFullHistory = require('../processFullHistory');
-var processMmr = require('../processMmr');
-*/
 var pQueue = queue.getQueue('parse');
 var supertest = require('supertest');
 var replay_dir = "./test/testfiles/";
@@ -52,7 +47,6 @@ nock('http://api.steampowered.com')
     })
     //fake full history
     .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, require('./history_api.json'));
-//TODO page 2 for fullhistory?
 //fake heroes list
 //.get('/IEconDOTA2_570/GetHeroes/v0001/').query(true).reply(200, require('./heroes_api.json')
 //fake leagues

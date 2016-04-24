@@ -217,8 +217,6 @@ function insertMatch(db, redis, match, options, cb)
         //distributions: queries on gamemode/lobbytype/skill (move to redis?)
         //status: recent added/parsed (rewrite query)
         //dependencies on player_matches
-        //fullhistory, diff a user's current matches from the set obtained from webapi (rewrite query)
-        //rankings audit/bootstrap (manually count results from cassandra?)
         //validatecache audit (rewrite query or drop entirely)
         var obj = serialize(match);
         var query = 'INSERT INTO matches JSON ?';
