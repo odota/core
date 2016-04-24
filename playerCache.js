@@ -2,10 +2,8 @@
  * Provides methods for storing player match data in a faster caching layer
  **/
 var config = require('./config');
-var zlib = require('zlib');
 var compute = require('./compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
-var aggregator = require('./aggregator');
 var async = require('async');
 var constants = require('./constants');
 var utility = require('./utility');
@@ -172,15 +170,15 @@ function validateCache(db, redis, account_id, cache, cb)
                 count = Number(count[0].count);
                 //console.log(cache);
                 //console.log(Object.keys(cache.aggData.matches).length, count);
-                var cacheValid = cache && cache.raw && cache.raw.length === count;
-                redis.setex('player_cache_audit:' + account_id, 60 * 60 * 24 * 14, "1");
+                var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
+                redis.setex('player_cache_audit:' + account_id, 60 * 60 * 24 * 90, "1");
                 return cb(err, cacheValid);
             });
         }
         else
         {
             //non-integer account_id (all/professional), skip validation (always valid)
-            console.log('player cache validation skipped due to non-numeric account_id')
+            console.log('player cache validation skipped due to non-numeric account_id');
             cb(null, true);
         }
     });
