@@ -53,7 +53,7 @@ var defaults = {
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
     "ENABLE_CASSANDRA_PLAYER_CACHE": "", //set to use cassandra for player caches
     "ENABLE_SPA_MODE": "", //set to enable single page application mode for web
-    "ENABLE_CASSANDRA_MATCH_STORE": "", //set to enable using cassandra for match data store
+    "ENABLE_CASSANDRA_MATCH_STORE_READ": "", //set to enable using cassandra for match data store
 };
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults)

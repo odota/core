@@ -31,7 +31,7 @@ var querystring = require('querystring');
 var util = require('util');
 var queue = require('./queue');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE ? require('./cassandra') : undefined;
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('./cassandra') : undefined;
 //PASSPORT config
 passport.serializeUser(function(user, done)
 {
