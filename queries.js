@@ -940,27 +940,6 @@ function searchPlayer(db, query, cb)
                     findPlayer(db, {account_id: Number(query)}, callback);
                 }
             },
-            steam64: function(callback)
-            {
-                if (!query.startsWith("7656119"))
-                {
-                    return callback();
-                }
-                else
-                {
-                    findPlayer(db, {steamid: query}, callback);
-                }
-            },
-            url: function(callback)
-            {
-                if (query.indexOf("http://steamcommunity.com") === -1) {
-                    return callback();
-                }
-                else
-                {
-                    findPlayer(db, {profileurl: query}, callback);
-                }
-            },
             personaname: function(callback)
             {
                 db.raw(`
