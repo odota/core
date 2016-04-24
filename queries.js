@@ -213,6 +213,7 @@ function insertMatch(db, redis, match, options, cb)
         {
             return cb();
         }
+        //TODO update callers of insertMatch (scanner, requests, parser, fullhistory) to pass options.cassandra
         //TODO clean based on cassandra schema
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
         //TODO disable validateCache if using full cassandra
