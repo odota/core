@@ -222,7 +222,12 @@ function validateCache(db, redis, account_id, cache, cb)
         {
             return cb(err);
         }
-        if (!Number.isNaN(account_id) && !result)
+        if (result)
+        {
+            console.log('validation skipped due to recent audit');
+            return cb(null, true);
+        }
+        else if (!Number.isNaN(account_id))
         {
             db('player_matches').count().where(
             {
@@ -236,7 +241,7 @@ function validateCache(db, redis, account_id, cache, cb)
                 count = Number(count[0].count);
                 //console.log(cache);
                 //console.log(Object.keys(cache.aggData.matches).length, count);
-                var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
+                var cacheValid = cache && cache.raw && cache.raw.length === count;
                 redis.setex('player_cache_audit:' + account_id, 60 * 60 * 24 * 14, "1");
                 return cb(err, cacheValid);
             });
