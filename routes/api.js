@@ -15,6 +15,7 @@ var multer = require('multer')(
 var utility = require('../utility');
 var queue = require('../queue');
 var rQueue = queue.getQueue('request');
+var queries = require('../queries');
 const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {
@@ -131,17 +132,19 @@ module.exports = function(db, redis, cassandra)
     });
     api.get('/search', function(req, res, cb)
     {
-        db.raw(`
-        SELECT account_id, personaname, avatarmedium, similarity(personaname, ?) 
-        FROM players WHERE personaname ILIKE ? 
-        ORDER BY similarity DESC LIMIT 1000
-        `, [req.query.q, "%" + req.query.q + "%"]).asCallback(function(err, result)
+        if (!req.query.q)
+        {
+            return cb(400);
+        }
+        
+        queries.searchPlayer(db, req.query.q, function(err, result)
         {
             if (err)
             {
-                return cb(err);
+               return cb(err);
             }
-            res.json(result.rows);
+
+            res.json(result);
         });
     });
     api.get('/health/:metric?', function(req, res, cb)

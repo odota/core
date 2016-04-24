@@ -4,8 +4,7 @@
   },
   "rankings": {
     "name": "Rankings",
-    "new-feature": true,
-    "hide": true
+    "new-feature": true
   },
   "benchmarks": {
     "name": "Benchmarks"
@@ -31,5 +30,8 @@
   },
   "carry": {
     "name": "Carry"
+  },
+  "search": {
+    "name": "Search"
   }
 }
