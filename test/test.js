@@ -116,7 +116,7 @@ before(function(done)
         },
         function(cb)
         {
-            db = require('../db');
+            db = require('../store/db');
             app = require('../web');
             require('../parser');
             console.log("loading matches");
