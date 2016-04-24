@@ -214,7 +214,6 @@ function insertMatch(db, redis, match, options, cb)
         //OPTIONAL clean based on cassandra schema
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
         //current dependencies on matches in postgres (potential solution)
-        //distributions: queries on gamemode/lobbytype/skill (move to redis?)
         //status: recent added/parsed (rewrite query)
         //dependencies on player_matches
         //validatecache audit (rewrite query or drop entirely)

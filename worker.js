@@ -29,42 +29,6 @@ invokeInterval(function buildDistributions(cb)
 {
     async.parallel(
     {
-        "game_mode": function(cb)
-        {
-            var mapFunc = function(results)
-            {
-                results.rows = results.rows.map(function(r)
-                {
-                    r.display_name = constants.game_mode[r.game_mode] ? constants.game_mode[r.game_mode].name : r.game_mode;
-                    return r;
-                });
-            }
-            loadData("game_mode", mapFunc, cb);
-        },
-        "lobby_type": function(cb)
-        {
-            var mapFunc = function(results)
-            {
-                results.rows = results.rows.map(function(r)
-                {
-                    r.display_name = constants.lobby_type[r.lobby_type] ? constants.lobby_type[r.lobby_type].name : r.lobby_type;
-                    return r;
-                });
-            }
-            loadData("lobby_type", mapFunc, cb);
-        },
-        "skill": function(cb)
-        {
-            var mapFunc = function(results)
-            {
-                results.rows = results.rows.map(function(r)
-                {
-                    r.display_name = constants.skill[r.skill] || "Unknown";
-                    return r;
-                });
-            }
-            loadData("skill", mapFunc, cb);
-        },
         "country_mmr": function(cb)
         {
             var mapFunc = function(results)
@@ -75,7 +39,7 @@ invokeInterval(function buildDistributions(cb)
                     r.common = ref ? ref.name.common : r.loccountrycode;
                     return r;
                 });
-            }
+            };
             loadData("country_mmr", mapFunc, cb);
         },
         "mmr": function(cb)
@@ -105,7 +69,7 @@ invokeInterval(function buildDistributions(cb)
                     return r;
                 });
                 results.sum = sum;
-            }
+            };
             loadData("mmr", mapFunc, cb);
         }
     }, function(err, result)

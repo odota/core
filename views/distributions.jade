@@ -9,16 +9,6 @@ block content
         small Includes players displaying MMR on profile and sharing public match data (Sign-in not required)
       #mmr
   .row
-    .col-md-4
-      h3 Game Mode 
-      #game_mode
-    .col-md-4
-      h3 Lobby Type 
-      #lobby_type
-    .col-md-4
-      h3 Skill
-      #skill
-  .row
     .col-md-12
       h3 Average MMR by Country
       table.table.table-striped.table-condensed
@@ -97,36 +87,3 @@ append footer_assets
         }
     };
     c3.generate(options);
-    var game_mode = !{JSON.stringify(game_mode ? game_mode.rows : [])};
-    var lobby_type = !{JSON.stringify(lobby_type ? lobby_type.rows : [])};
-    var skill = !{JSON.stringify(skill ? skill.rows : [])}
-    c3.generate({
-        bindto: "#game_mode",
-        data: {
-            columns: game_mode.map(function(r){
-                return [r.display_name, r.count];
-            }),
-            type: 'pie'
-        },
-        color: {
-            pattern: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5']
-        }
-    });
-    c3.generate({
-        bindto: "#lobby_type",
-        data: {
-            columns: lobby_type.map(function(r){
-                return [r.display_name, r.count];
-            }),
-            type: 'pie'
-        }
-    });
-    c3.generate({
-        bindto: "#skill",
-        data: {
-            columns: skill.map(function(r){
-                return [r.display_name, r.count];
-            }),
-            type: 'pie'
-        }
-    });
