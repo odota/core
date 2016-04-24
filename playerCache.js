@@ -143,6 +143,7 @@ function validateCache(db, redis, account_id, cache, cb)
 {
     if (!cache || !enabled)
     {
+        console.log('player cache disabled');
         return cb();
     }
     //set key in redis to mark cache audited, don't do it again until timeout
@@ -154,7 +155,7 @@ function validateCache(db, redis, account_id, cache, cb)
         }
         if (result)
         {
-            console.log('validation skipped due to recent audit');
+            console.log('player cache validation skipped due to recent audit');
             return cb(null, true);
         }
         else if (!Number.isNaN(account_id))
@@ -179,6 +180,7 @@ function validateCache(db, redis, account_id, cache, cb)
         else
         {
             //non-integer account_id (all/professional), skip validation (always valid)
+            console.log('player cache validation skipped due to non-numeric account_id')
             cb(null, true);
         }
     });
