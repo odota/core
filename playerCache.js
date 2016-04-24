@@ -234,7 +234,7 @@ function validateCache(db, redis, account_id, cache, cb)
                 //console.log(cache);
                 //console.log(Object.keys(cache.aggData.matches).length, count);
                 var cacheValid = cache && cache.aggData && cache.aggData.matches && Object.keys(cache.aggData.matches).length && Object.keys(cache.aggData.matches).length === count;
-                redis.setex('player_cache_audit:' + account_id, 60 * 60 * 24 * 7, "1");
+                redis.setex('player_cache_audit:' + account_id, 60 * 60 * 24 * 90, "1");
                 return cb(err, cacheValid);
             });
         }
