@@ -15,6 +15,7 @@ var multer = require('multer')(
 var utility = require('../utility');
 var queue = require('../queue');
 var rQueue = queue.getQueue('request');
+var queries = require('../queries');
 const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {
