@@ -420,6 +420,28 @@ app.get('/benchmarks/:hero_id?', function(req, res, cb)
         });
     }
 });
+app.get('/search', function(req, res, cb)
+{
+    if (req.query.q)
+    {
+        queries.searchPlayer(db, req.query.q, function(err, result)
+        {
+            if (err)
+            {
+                cb(err);
+            }
+
+            return res.render('search', {
+                query: req.query.q,
+                result: result
+            });
+        })
+    }
+    else
+    {
+        res.render('search');
+    }
+});
 app.get('/april/:year?', function(req, res, cb)
 {
     return res.render('plusplus',
