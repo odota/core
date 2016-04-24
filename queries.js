@@ -158,6 +158,7 @@ function insertMatch(db, redis, match, options, cb)
         "uc": upsertMatchCassandra,
         "upc": updatePlayerCaches,
         "cmc": clearMatchCache,
+        "t": telemetry,
         "dp": decideParse
     }, function(err, results)
     {
@@ -215,7 +216,6 @@ function insertMatch(db, redis, match, options, cb)
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
         //current dependencies on matches in postgres (potential solution)
         //status: recent added/parsed (rewrite query)
-        //dependencies on player_matches
         //validatecache audit (rewrite query or drop entirely)
         var obj = serialize(match);
         var query = 'INSERT INTO matches JSON ?';
@@ -285,6 +285,26 @@ function insertMatch(db, redis, match, options, cb)
         {
             attempts: 1
         }, cb);
+    }
+
+    function telemetry(cb)
+    {
+        var types = {
+            "api": 'matches_last_added',
+            "parsed": 'matches_last_parsed'
+        };
+        console.log(options.type);
+        if (types[options.type])
+        {
+            redis.rpush(types[options.type], JSON.stringify(
+            {
+                match_id: match.match_id,
+                duration: match.duration,
+                start_time: match.start_time
+            }));
+            redis.ltrim(types[options.type], -10, -1);
+        }
+        return cb();
     }
 
     function clearMatchCache(cb)

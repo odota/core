@@ -9,7 +9,6 @@ module.exports = function getStatus(db, redis, cb)
     {
         matches: function(cb)
         {
-            //db.from('matches').count().asCallback(function(err, count) {
             db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='matches';").asCallback(function(err, count)
             {
                 extractCount(err, count, cb);
@@ -17,7 +16,6 @@ module.exports = function getStatus(db, redis, cb)
         },
         players: function(cb)
         {
-            //db.from('players').count().asCallback(function(err, count) {
             db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='players';").asCallback(function(err, count)
             {
                 extractCount(err, count, cb);
@@ -84,12 +82,25 @@ module.exports = function getStatus(db, redis, cb)
         },
         last_added: function(cb)
         {
-            db.from('matches').select(['match_id', 'duration', 'start_time']).orderBy('match_id', 'desc').limit(10).asCallback(cb);
+            redis.lrange('matches_last_added', 0, -1, function(err, result)
+            {
+                return cb(err, result.map(function(r)
+                {
+                    return JSON.parse(r);
+                }));
+            });
         },
         last_parsed: function(cb)
         {
-            db.from('matches').select(['match_id', 'duration', 'start_time']).where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
+            redis.lrange('matches_last_parsed', 0, -1, function(err, result)
+            {
+                return cb(err, result.map(function(r)
+                {
+                    return JSON.parse(r);
+                }));
+            });
         },
+        /*
         parser: function(cb)
         {
             redis.keys("parser:*", function(err, result)
@@ -140,6 +151,7 @@ module.exports = function getStatus(db, redis, cb)
                 }, cb);
             });
         },
+        */
         queue: function(cb)
         {
             //generate object with properties as queue types, each mapped to json object mapping state to count
@@ -171,7 +183,8 @@ module.exports = function getStatus(db, redis, cb)
                 {
                     result[key] = JSON.parse(result[key]);
                 }
-                cb(err, result || {});
+                cb(err, result ||
+                {});
             });
         }
     }, function(err, results)
