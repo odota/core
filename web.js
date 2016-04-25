@@ -33,7 +33,6 @@ var SteamStrategy = require('passport-steam').Strategy;
 var host = config.ROOT_URL;
 var querystring = require('querystring');
 var util = require('util');
-
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('./cassandra') : undefined;
 //PASSPORT config
@@ -384,7 +383,10 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
     }
     else
     {
-        queries.getHeroRankings(db, redis, req.params.hero_id, function(err, result)
+        queries.getHeroRankings(db, redis, req.params.hero_id,
+        {
+            beta: req.query.beta
+        }, function(err, result)
         {
             if (err)
             {
@@ -429,8 +431,8 @@ app.get('/search', function(req, res, cb)
             {
                 cb(err);
             }
-
-            return res.render('search', {
+            return res.render('search',
+            {
                 query: req.query.q,
                 result: result
             });

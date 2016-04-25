@@ -303,7 +303,6 @@ function insertMatch(db, redis, match, options, cb)
             "api": 'matches_last_added',
             "parsed": 'matches_last_parsed'
         };
-        console.log(options.type);
         if (types[options.type])
         {
             redis.rpush(types[options.type], JSON.stringify(
@@ -780,9 +779,9 @@ function getTop(db, redis, cb)
     });
 }
 
-function getHeroRankings(db, redis, hero_id, cb)
+function getHeroRankings(db, redis, hero_id, options, cb)
 {
-    getLeaderboard(db, redis, ['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), 100, function(err, entries)
+    getLeaderboard(db, redis, [options.beta ? 'hero_rankings2' : 'hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), 100, function(err, entries)
     {
         if (err)
         {
