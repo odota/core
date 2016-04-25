@@ -1,17 +1,20 @@
-var redis = require('./redis');
-var queue = require('./queue');
-var buildSets = require('./buildSets');
-var utility = require('./utility');
-var getMMStats = require("./getMMStats");
+/**
+ * Worker running tasks on timed intervals
+ **/
 var config = require('./config');
+var constants = require('./constants');
+var redis = require('./store/redis');
+var queue = require('./store/queue');
+var db = require('./store/db');
+var queries = require('./store/queries');
+var buildSets = require('./util/buildSets');
+var utility = require('./util/utility');
+var getMMStats = require("./util/getMMStats");
 var async = require('async');
-var db = require('./db');
 var moment = require('moment');
 var fs = require('fs');
-var constants = require('./constants');
 var sql = {};
 var sqlq = fs.readdirSync('./sql');
-var queries = require('./queries');
 sqlq.forEach(function(f)
 {
     sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');

@@ -1,3 +1,6 @@
+/**
+ * Deployment entry point for the application.
+ **/
 var args = process.argv.slice(2);
 var cp = require('child_process');
 if (process.env.PROVIDER === "gce")

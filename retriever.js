@@ -1,9 +1,11 @@
+/**
+ * Worker interfacing with the Steam GC.
+ * Provides HTTP endpoints for other workers.
+ **/
 var config = require('./config');
-var Steam = require("steam");
-var Dota2 = require("dota2");
-var utility = require("./utility");
+var Steam = require('steam');
+var Dota2 = require('dota2');
 var async = require('async');
-var convert64To32 = utility.convert64to32;
 var express = require('express');
 var app = express();
 var users = config.STEAM_USER.split(",");

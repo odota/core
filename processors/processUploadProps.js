@@ -1,4 +1,3 @@
-var utility = require('../utility');
 module.exports = function processUploadProps(entries, meta, populate)
 {
     var container = {

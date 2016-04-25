@@ -1,3 +1,6 @@
+/**
+ * File managing configuration for the application
+ **/
 var dotenv = require('dotenv');
 dotenv.config(
 {

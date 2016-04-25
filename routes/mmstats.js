@@ -1,6 +1,6 @@
+var constants = require('../constants');
 var express = require('express');
 var mmstats = express.Router();
-var constants = require('../constants');
 var async = require('async');
 module.exports = function(redis) {
     var pageCalls = createCalls(-1);

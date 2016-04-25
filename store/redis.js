@@ -1,5 +1,8 @@
+/**
+ * Interface to Redis client
+ **/
+var config = require('../config');
 var redis = require('redis');
-var config = require('./config');
 console.error('connecting %s', config.REDIS_URL);
 var client = redis.createClient(config.REDIS_URL, {
     detect_buffers: true

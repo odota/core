@@ -1,4 +1,7 @@
-var config = require('./config');
+/**
+ * Interface to PostgreSQL client
+ **/
+var config = require('../config');
 var pg = require('pg');
 pg.types.setTypeParser(20, function(val)
 {

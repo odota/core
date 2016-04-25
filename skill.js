@@ -1,13 +1,16 @@
-var utility = require('./utility');
+/**
+ * Worker checking the GetMatchHistory endpoint to get skill data for matches
+ **/
+var constants = require('./constants.js');
+var config = require('./config.js');
+var utility = require('./util/utility');
+var db = require('./store/db');
+var queries = require('./store/queries');
 var async = require('async');
-var constants = require("./constants.js");
-var db = require('./db');
-var queries = require('./queries');
 //var insertMatch = queries.insertMatch;
 var insertMatchSkill = queries.insertMatchSkill;
 var results = {};
 var added = {};
-var config = require('./config.js');
 var api_keys = config.STEAM_API_KEY.split(",");
 var parallelism = Math.min(4, api_keys.length);
 //TODO use cluster to spawn a separate worker for each skill level for greater throughput?

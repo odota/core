@@ -1,4 +1,4 @@
-var utility = require('../utility');
+var utility = require('../util/utility');
 module.exports = function processParsedData(entries, meta, populate)
 {
     var container = utility.getParseSchema();

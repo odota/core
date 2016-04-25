@@ -2,8 +2,6 @@ var express = require('express');
 var async = require('async');
 var api = express.Router();
 var constants = require('../constants');
-var buildMatch = require('../buildMatch');
-var buildPlayer = require('../buildPlayer');
 var config = require('../config');
 var request = require('request');
 var rc_secret = config.RECAPTCHA_SECRET_KEY;
@@ -12,10 +10,11 @@ var multer = require('multer')(
     inMemory: true,
     fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
-var utility = require('../utility');
-var queue = require('../queue');
+var queue = require('../store/queue');
 var rQueue = queue.getQueue('request');
-var queries = require('../queries');
+var queries = require('../store/queries');
+var buildMatch = require('../store/buildMatch');
+var buildPlayer = require('../store/buildPlayer');
 const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {

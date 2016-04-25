@@ -1,6 +1,6 @@
 var moment = require('moment');
-var utility = require('./utility');
-var config = require('./config');
+var utility = require('../util/utility');
+var config = require('../config');
 var benchmarks = require('./benchmarks');
 var async = require('async');
 /**

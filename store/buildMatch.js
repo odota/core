@@ -1,5 +1,5 @@
 module.exports = buildMatch;
-var config = require('./config');
+var config = require('../config');
 var queries = require('./queries');
 var getMatch = queries.getMatch;
 

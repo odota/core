@@ -1,10 +1,14 @@
+/**
+ * Provides utility functions.
+ * All functions should have external dependencies (DB, etc.) self-contained.
+ * A bare Node installation should be able to require() this file without errors.
+ **/
+var config = require('../config');
+var constants = require('../constants');
 var request = require('request');
-var async = require('async');
 var winston = require('winston');
-var config = require('./config');
 var BigNumber = require('big-number');
 var urllib = require('url');
-var constants = require('./constants');
 var transports = [];
 transports.push(new(winston.transports.Console)(
 {

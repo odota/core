@@ -1,4 +1,11 @@
+/**
+ * Main test script to run tests
+ **/
 var config = require('../config');
+var constants = require('../constants.js');
+var redis = require('../store/redis');
+var queue = require('../store/queue');
+var queries = require('../store/queries');
 config.PORT = ""; //use service defaults
 config.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
 config.REDIS_URL = "redis://localhost:6379/1";
@@ -8,12 +15,9 @@ config.ENABLE_MATCH_CACHE = 1;
 config.FRONTEND_PORT = 5001;
 config.PARSER_PORT = 5201;
 var async = require('async');
-var redis = require('../redis');
-var queue = require('../queue');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
-var constants = require('../constants.js');
 var init_db = "postgres://postgres:postgres@localhost/postgres";
 var pQueue = queue.getQueue('parse');
 var supertest = require('supertest');
@@ -24,7 +28,6 @@ var wait = 90000;
 // these are loaded later, as the database needs to be created when these are required
 var db;
 var app;
-var queries = require('../queries');
 //nock.disableNetConnect();
 //nock.enableNetConnect();
 //fake api response
@@ -113,7 +116,7 @@ before(function(done)
         },
         function(cb)
         {
-            db = require('../db');
+            db = require('../store/db');
             app = require('../web');
             require('../parser');
             console.log("loading matches");

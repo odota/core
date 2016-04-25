@@ -1,8 +1,8 @@
+var constants = require('../constants.js');
+var buildMatch = require('../store/buildMatch');
 var express = require('express');
 var matches = express.Router();
-var constants = require('../constants.js');
 var matchPages = constants.match_pages;
-var buildMatch = require('../buildMatch');
 module.exports = function(db, redis, cassandra)
 {
     matches.get('/:match_id/:info?', function(req, res, cb)

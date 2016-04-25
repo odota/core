@@ -1,5 +1,5 @@
-var utility = require('./utility');
-var config = require("./config");
+var utility = require('../util/utility');
+var config = require("../config");
 var secret = config.RETRIEVER_SECRET;
 var retrieverConfig = config.RETRIEVER_HOST;
 var getData = utility.getData;

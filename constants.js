@@ -1,3 +1,6 @@
+/**
+ * File managing constant values for the application
+ **/
 var fs = require('fs');
 var cfs = fs.readdirSync('./json');
 var countries = require('world-countries');
