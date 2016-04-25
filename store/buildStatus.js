@@ -1,6 +1,9 @@
+/**
+ * Function to build status data
+ **/
 var async = require('async');
 var queue = require('./queue');
-module.exports = function getStatus(db, redis, cb)
+module.exports = function buildStatus(db, redis, cb)
 {
     console.time('status');
     async.series(

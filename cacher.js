@@ -2,16 +2,17 @@
  * Worker to handle counting and caching tasks performed when a match is inserted or parsed.
  * All operations in this worker should deal with ephemeral data (can be reconstructed from persistent data stores)
  **/
-var queue = require('./store/queue');
-var cQueue = queue.getQueue('cache');
-var utility = require('./util/utility');
-var redis = require('./store/redis');
-var moment = require('moment');
-var benchmarks = require('./compute/benchmarks');
-var async = require('async');
 var constants = require('./constants');
 var config = require('./config');
-var getMatchRating = require('./util/getMatchRating');
+var redis = require('./store/redis');
+var queue = require('./store/queue');
+var queries = require('./store/queries');
+var utility = require('./util/utility');
+var benchmarks = require('./compute/benchmarks');
+var cQueue = queue.getQueue('cache');
+var moment = require('moment');
+var async = require('async');
+var getMatchRating = queries.getMatchRating;
 cQueue.process(10, processCache);
 cQueue.on('completed', function(job)
 {

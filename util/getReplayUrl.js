@@ -1,3 +1,6 @@
+/**
+ * Issues a request to the retriever to get a replay URL
+ **/
 var utility = require('../util/utility');
 var config = require('../config');
 var secret = config.RETRIEVER_SECRET;

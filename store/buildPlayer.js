@@ -1,3 +1,6 @@
+/**
+ * Function to build player object
+ **/
 var async = require('async');
 var constants = require('../constants.js');
 var queries = require("../store/queries");

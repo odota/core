@@ -1,3 +1,6 @@
+/**
+ * Function to build/cache sets of players
+ **/
 var async = require('async');
 module.exports = function buildSets(db, redis, cb) {
     console.log("rebuilding sets");

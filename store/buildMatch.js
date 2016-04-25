@@ -1,4 +1,6 @@
-module.exports = buildMatch;
+/**
+ * Functions to build/cache match object
+ **/
 var config = require('../config');
 var queries = require('./queries');
 var getMatch = queries.getMatch;
@@ -39,3 +41,4 @@ function buildMatch(options, cb)
         }
     });
 }
+module.exports = buildMatch;

@@ -2,7 +2,6 @@
  * Provides functions to get/insert data into data stores.
  **/
 var utility = require('../util/utility');
-var getMatchRating = require('../util/getMatchRating');
 var compute = require('../compute/compute');
 var benchmarks = require('../compute/benchmarks');
 var filter = require('../compute/filter');
@@ -998,6 +997,37 @@ function searchPlayer(db, query, cb)
         cb(null, ret);
     });
 }
+
+function getMatchRating(redis, match, cb)
+{
+    async.map(match.players, function(player, cb)
+    {
+        if (!player.account_id)
+        {
+            return cb();
+        }
+        redis.zscore('solo_competitive_rank', player.account_id, cb);
+    }, function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        var filt = result.filter(function(r)
+        {
+            return r;
+        });
+        var avg = ~~(filt.map(function(r)
+        {
+            return Number(r);
+        }).reduce(function(a, b)
+        {
+            return a + b;
+        }, 0) / filt.length);
+        cb(err, avg);
+    });
+}
+
 module.exports = {
     getSets,
     insertPlayer,
@@ -1017,5 +1047,6 @@ module.exports = {
     getBenchmarks,
     getLeaderboard,
     mmrEstimate,
-    searchPlayer
+    searchPlayer,
+    getMatchRating,
 };

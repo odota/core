@@ -2,9 +2,9 @@
  * Worker scanning the Steam sequential match API (GetMatchHistoryBySequenceNum) for latest matches.
  **/
 var utility = require('./util/utility');
-var buildSets = require('./util/buildSets');
 var config = require('./config');
 var constants = require('./constants');
+var buildSets = require('./store/buildSets');
 var db = require('./store/db');
 var redis = require('./store/redis');
 var queue = require('./store/queue');
