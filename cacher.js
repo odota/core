@@ -27,7 +27,7 @@ function processCache(job, cb)
     {
         "rankings": function(cb)
         {
-            if (match.lobby_type === 7 && match.origin === "scanner")
+            if (match.origin === "scanner")
             {
                 return updateRankings(match, cb);
             }
@@ -176,65 +176,72 @@ function k_combinations(arr, k)
 
 function updateRankings(match, cb)
 {
-    async.each(match.players, function(player, cb)
+    getMatchRating(redis, match, function(err, avg)
     {
-        if (!player.account_id || player.account_id === constants.anonymous_account_id)
+        if (err)
         {
-            return cb();
+            return cb(err);
         }
-        player.radiant_win = match.radiant_win;
-        var start = moment().startOf('quarter').format('X');
-        var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
-        var win = Number(utility.isRadiant(player) === player.radiant_win);
-        //TODO possible inconsistency if we exit/crash without completing all commands
-        async.parallel(
+        var score = (avg && !Number.isNaN(avg)) ? Math.pow(avg, 3) / 10000000 : undefined;
+        async.each(match.players, function(player, cb)
         {
-            solo_competitive_rank: function(cb)
+            if (!player.account_id || player.account_id === constants.anonymous_account_id)
             {
-                redis.zscore('solo_competitive_rank', player.account_id, cb);
-            },
-            wins: function(cb)
-            {
-                redis.hincrby(['wins', start, player.hero_id].join(':'), player.account_id, win, cb);
-            },
-            games: function(cb)
-            {
-                redis.hincrby(['games', start, player.hero_id].join(':'), player.account_id, 1, cb);
-            },
-        }, function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
+                return cb();
             }
-            player = Object.assign(
-            {}, player, result);
-            if (player.solo_competitive_rank)
+            player.radiant_win = match.radiant_win;
+            var start = moment().startOf('quarter').format('X');
+            var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
+            var win = Number(utility.isRadiant(player) === player.radiant_win);
+            //temporary beta ranking implementation, do for all matches (not just ranked)
+            if (score)
             {
-                var scaleF = 0.00001;
-                var winRatio = (player.wins / (player.games - player.wins + 1));
-                var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
-                redis.zadd(['hero_rankings', start, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
+                redis.zincrby(['hero_rankings2', start, player.hero_id].join(':'), win ? score : 0, player.account_id);
             }
-            getMatchRating(redis, match, function(err, avg)
+            redis.expireat(['hero_rankings2', start, player.hero_id].join(':'), expire);
+            if (match.lobby_type === 7)
             {
-                if (err)
+                async.parallel(
                 {
-                    return cb(err);
-                }
-                if (avg && !Number.isNaN(avg))
+                    solo_competitive_rank: function(cb)
+                    {
+                        redis.zscore('solo_competitive_rank', player.account_id, cb);
+                    },
+                    wins: function(cb)
+                    {
+                        redis.hincrby(['wins', start, player.hero_id].join(':'), player.account_id, win, cb);
+                    },
+                    games: function(cb)
+                    {
+                        redis.hincrby(['games', start, player.hero_id].join(':'), player.account_id, 1, cb);
+                    },
+                }, function(err, result)
                 {
-                    avg = Math.pow(avg, 2) * 0.0001;
-                    redis.zincrby(['hero_rankings2', start, player.hero_id].join(':'), win ? avg : 0, player.account_id);
-                }
-                redis.expireat(['wins', start, player.hero_id].join(':'), expire);
-                redis.expireat(['games', start, player.hero_id].join(':'), expire);
-                redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);
-                redis.expireat(['hero_rankings2', start, player.hero_id].join(':'), expire);
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    player = Object.assign(
+                    {}, player, result);
+                    if (player.solo_competitive_rank)
+                    {
+                        var scaleF = 0.00001;
+                        var winRatio = (player.wins / (player.games - player.wins + 1));
+                        var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
+                        redis.zadd(['hero_rankings', start, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
+                    }
+                    redis.expireat(['wins', start, player.hero_id].join(':'), expire);
+                    redis.expireat(['games', start, player.hero_id].join(':'), expire);
+                    redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);
+                    cb();
+                });
+            }
+            else
+            {
                 cb();
-            });
-        });
-    }, cb);
+            }
+        }, cb);
+    });
 }
 
 function updateBenchmarks(match)
