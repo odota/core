@@ -47,8 +47,7 @@ Quickstart
 * Useful commands
   * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in order to automatically rebuild after making changes.
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
-  * `npm run task updateconstants` pulls latest constants data and saves to `json` directory.
-  * `npm run update` updates all deps in `package.json` to latest versions.
+  * `node tasks/updateconstants` pulls latest constants data and saves to `json` directory.
 * Get some starter data
   * You can request some parses by ID to get some parsed data.  
   * You can also run `scanner` with `ENABLE_INSERT_ALL_MATCHES=1` in your `.env` to get some matches from the API.
