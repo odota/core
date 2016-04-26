@@ -4,23 +4,23 @@
  * The resulting event stream (newline-delimited JSON) is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  **/
-var utility = require('./util/utility');
-var getReplayUrl = require('./util/getReplayUrl');
-var config = require('./config');
-var db = require('./store/db');
-var redis = require('./store/redis');
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('./store/cassandra') : undefined;
-var queue = require('./store/queue');
-var queries = require('./store/queries');
-var compute = require('./compute/compute');
-var benchmarkMatch = require('./compute/benchmarkMatch');
-var processAllPlayers = require('./processors/processAllPlayers');
-var processTeamfights = require('./processors/processTeamfights');
-var processReduce = require('./processors/processReduce');
-var processUploadProps = require('./processors/processUploadProps');
-var processParsedData = require('./processors/processParsedData');
-var processMetadata = require('./processors/processMetadata');
-var processExpand = require('./processors/processExpand');
+var utility = require('../util/utility');
+var getReplayUrl = require('../util/getReplayUrl');
+var config = require('../config');
+var db = require('../store/db');
+var redis = require('../store/redis');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
+var queue = require('../store/queue');
+var queries = require('../store/queries');
+var compute = require('../compute/compute');
+var benchmarkMatch = require('../compute/benchmarkMatch');
+var processAllPlayers = require('../processors/processAllPlayers');
+var processTeamfights = require('../processors/processTeamfights');
+var processReduce = require('../processors/processReduce');
+var processUploadProps = require('../processors/processUploadProps');
+var processParsedData = require('../processors/processParsedData');
+var processMetadata = require('../processors/processMetadata');
+var processExpand = require('../processors/processExpand');
 var startedAt = new Date();
 var request = require('request');
 var cp = require('child_process');
@@ -193,7 +193,7 @@ function runParse(match, job, cb)
     {
         parser = spawn("java", ["-jar",
                     "-Xmx64m",
-                    "java_parser/target/stats-0.1.0.jar"
+                    "../java_parser/target/stats-0.1.0.jar"
                 ],
         {
             //we may want to ignore stderr so the child doesn't stay open

@@ -1,18 +1,18 @@
 /**
  * Worker to fetch full match histories for players
  **/
-var utility = require('./util/utility');
-var redis = require('./store/redis');
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('./store/cassandra') : undefined;
-var queue = require('./store/queue');
-var fhQueue = queue.getQueue('fullhistory');
 var config = require('./config');
+var constants = require('../constants.js');
+var utility = require('../util/utility');
+var redis = require('../store/redis');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
+var db = require('../store/db');
+var queue = require('../store/queue');
+var queries = require('../store/queries');
+var fhQueue = queue.getQueue('fullhistory');
 var async = require('async');
-var db = require('./store/db');
 var getData = utility.getData;
-var queries = require('./store/queries');
 var insertMatch = queries.insertMatch;
-var constants = require('./constants.js');
 var urllib = require('url');
 var generateJob = utility.generateJob;
 var api_keys = config.STEAM_API_KEY.split(",");

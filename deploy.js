@@ -10,7 +10,7 @@ if (process.env.PROVIDER === "gce")
 if (process.env.ROLE)
 {
     //if role variable is set just run that script
-    require('./' + process.env.ROLE + ".js");
+    require('./svc/' + process.env.ROLE + ".js");
 }
 else if (args[0])
 {
@@ -20,12 +20,12 @@ else if (args[0])
     //if argument supplied use pm2 to run processes in that group
     pm2.connect(function()
     {
-        async.each(manifest.apps, function start(app, cb)
+        async.each(manifest.svc, function start(app, cb)
         {
-            if (args[0] === app.role)
+            if (args[0] === app.group)
             {
                 console.log(app.script, app.instances);
-                pm2.start(app.script,
+                pm2.start('svc/'+app.script,
                 {
                     instances: app.instances
                 }, cb);

@@ -1,10 +1,10 @@
 /**
  * Worker that monitors health metrics and saves results
  **/
-var redis = require('./store/redis');
-var db = require('./store/db');
-var utility = require('./util/utility');
-var config = require('./config');
+var config = require('../config');
+var redis = require('../store/redis');
+var db = require('../store/db');
+var utility = require('../util/utility');
 var request = require('request');
 var api_key = config.STEAM_API_KEY.split(',')[0];
 var health = {

@@ -1,10 +1,10 @@
 /**
  * Worker to fetch updated player profiles
  **/
-var constants = require('./constants');
-var queries = require('./store/queries');
-var db = require('./store/db');
-var utility = require('./util/utility');
+var constants = require('../constants');
+var queries = require('../store/queries');
+var db = require('../store/db');
+var utility = require('../util/utility');
 var insertPlayer = queries.insertPlayer;
 var getData = utility.getData;
 var async = require('async');

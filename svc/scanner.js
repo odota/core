@@ -1,15 +1,15 @@
 /**
  * Worker scanning the Steam sequential match API (GetMatchHistoryBySequenceNum) for latest matches.
  **/
-var utility = require('./util/utility');
-var config = require('./config');
-var constants = require('./constants');
-var buildSets = require('./store/buildSets');
-var db = require('./store/db');
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('./store/cassandra') : undefined;
-var redis = require('./store/redis');
-var queue = require('./store/queue');
-var queries = require('./store/queries');
+var utility = require('../util/utility');
+var config = require('../config');
+var constants = require('../constants');
+var buildSets = require('../store/buildSets');
+var db = require('../store/db');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
+var redis = require('../store/redis');
+var queue = require('../store/queue');
+var queries = require('../store/queries');
 var insertMatch = queries.insertMatch;
 var getData = utility.getData;
 var addToQueue = queue.addToQueue;

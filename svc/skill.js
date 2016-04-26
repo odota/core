@@ -1,11 +1,11 @@
 /**
  * Worker checking the GetMatchHistory endpoint to get skill data for matches
  **/
-var constants = require('./constants.js');
-var config = require('./config.js');
-var utility = require('./util/utility');
-var db = require('./store/db');
-var queries = require('./store/queries');
+var constants = require('../constants.js');
+var config = require('../config.js');
+var utility = require('../util/utility');
+var db = require('../store/db');
+var queries = require('../store/queries');
 var async = require('async');
 //var insertMatch = queries.insertMatch;
 var insertMatchSkill = queries.insertMatchSkill;

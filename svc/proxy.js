@@ -2,7 +2,7 @@
  * Worker proxying requests to the Steam API.
  **/
 //mirrors steam api
-var config = require('./config');
+var config = require('../config');
 var httpProxy = require('http-proxy');
 httpProxy.createProxyServer({
     target: 'http://api.steampowered.com',

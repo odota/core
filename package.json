@@ -117,82 +117,82 @@
     "node": "5.8.0",
     "npm": "3.5.0"
   },
-  "apps": [
+  "svc": [
     {
       "script": "skill.js",
-      "role": "core",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "mmr.js",
-      "role": "core",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "profiler.js",
-      "role": "core",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "scanner.js",
-      "role": "core",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "worker.js",
-      "role": "core",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "fullhistory.js",
-      "role": "decommissioned",
+      "group": "decommissioned",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "requests.js",
-      "role": "core",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "cacher.js",
-      "role": "core",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "monitor.js",
-      "role": "core",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "web.js",
-      "role": "web",
+      "group": "web",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "retriever.js",
-      "role": "retriever",
+      "group": "retriever",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "proxy.js",
-      "role": "proxy",
+      "group": "proxy",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "parser.js",
-      "role": "parser",
+      "group": "parser",
       "exec_mode": "cluster",
       "instances": 1
     }

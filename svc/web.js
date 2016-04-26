@@ -2,20 +2,20 @@
  * Worker serving as main web application
  * Serves web/API requests
  **/
-var config = require('./config');
-var constants = require('./constants.js');
-var utility = require('./util/utility');
-var buildSets = require('./store/buildSets');
-var redis = require('./store/redis');
-var status = require('./store/buildStatus');
-var db = require('./store/db');
-var queries = require('./store/queries');
-var matches = require('./routes/matches');
-var hyperopia = require('./routes/hyperopia');
-var players = require('./routes/players');
-var api = require('./routes/api');
-var donate = require('./routes/donate');
-var mmstats = require('./routes/mmstats');
+var config = require('../config');
+var constants = require('../constants.js');
+var utility = require('../util/utility');
+var buildSets = require('../store/buildSets');
+var redis = require('../store/redis');
+var status = require('../store/buildStatus');
+var db = require('../store/db');
+var queries = require('../store/queries');
+var matches = require('../routes/matches');
+var hyperopia = require('../routes/hyperopia');
+var players = require('../routes/players');
+var api = require('../routes/api');
+var donate = require('../routes/donate');
+var mmstats = require('../routes/mmstats');
 var request = require('request');
 var logger = utility.logger;
 var compression = require('compression');
@@ -26,7 +26,7 @@ var async = require('async');
 var fs = require('fs');
 var express = require('express');
 var app = express();
-var example_match = JSON.parse(fs.readFileSync('./matches/frontpage.json'));
+var example_match = JSON.parse(fs.readFileSync('../matches/frontpage.json'));
 var passport = require('passport');
 var api_key = config.STEAM_API_KEY.split(",")[0];
 var SteamStrategy = require('passport-steam').Strategy;
@@ -34,7 +34,7 @@ var host = config.ROOT_URL;
 var querystring = require('querystring');
 var util = require('util');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('./cassandra') : undefined;
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../cassandra') : undefined;
 //PASSPORT config
 passport.serializeUser(function(user, done)
 {
@@ -220,7 +220,7 @@ app.use(function(req, res, cb)
 {
     if (config.ENABLE_SPA_MODE)
     {
-        res.sendFile('./public/build/index.html',
+        res.sendFile('../public/build/index.html',
         {
             root: __dirname
         });
@@ -481,7 +481,6 @@ var server = app.listen(port, function()
 {
     console.log('[WEB] listening on %s', port);
 });
-//require('./socket.js')(server);
 // listen for TERM signal .e.g. kill 
 process.on('SIGTERM', gracefulShutdown);
 // listen for INT signal e.g. Ctrl-C
