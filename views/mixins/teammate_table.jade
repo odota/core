@@ -18,7 +18,7 @@ mixin teammate_table(rows, short)
           td.text-left
             img.img-sm(src=teammate.avatar)
             if (teammate.last_login)
-              img.user(src=config.ICON_PATH, title="This user is registered!")
+              img.user(src=constants.ICON_PATH, title="This user is registered!")
             a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
           td=teammate.last_played
           td.rankable= teammate.with_games

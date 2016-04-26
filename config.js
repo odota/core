@@ -30,22 +30,21 @@ var defaults = {
     "PROXY_PORT": "5300",
     "WORK_PORT": "5400",
     "SCANNER_PORT": "5500",
-    "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp",
-    "REDIS_URL": "redis://127.0.0.1:6379/0",
-    "CASSANDRA_URL": "cassandra://localhost/yasp",
-    "RETRIEVER_HOST": "localhost:5100",
-    "UNTRACK_DAYS": 7,
-    "GOAL": 5,
+    "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp", //connection string for PostgreSQL
+    "REDIS_URL": "redis://127.0.0.1:6379/0", //connection string for Redis
+    "CASSANDRA_URL": "cassandra://localhost/yasp", //connection string for Cassandra
+    "RETRIEVER_HOST": "localhost:5100", //The host of the retriever (access to Dota 2 GC data)
+    "UNTRACK_DAYS": 7, //The number of days a user is tracked for after every visit
+    "GOAL": 5, //The cheese goal
     "PROXY_URLS": "", //comma separated list of proxy urls to use
-    "STEAM_API_HOST": "api.steampowered.com",
-    "ROLE": "", //for specifying a node type
+    "STEAM_API_HOST": "api.steampowered.com", //the list of hosts to fetch Steam API data from
+    "ROLE": "", //for specifying the file that should be run when deploy.js is invoked
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "BENCHMARK_RETENTION_HOURS": 3, //hours in block to retain benchmark data
     "MATCH_RATING_RETENTION_HOURS": 24, //hours in block to retain match rating data
-    "ICON_PATH": "/public/images/yasp-icon.svg", //path to the icon
     "PROVIDER": "", //The cloud provider used by the application (determines how environment data is downloaded)
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
