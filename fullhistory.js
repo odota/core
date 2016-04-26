@@ -3,6 +3,7 @@
  **/
 var utility = require('./util/utility');
 var redis = require('./store/redis');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('./store/cassandra') : undefined;
 var queue = require('./store/queue');
 var fhQueue = queue.getQueue('fullhistory');
 var config = require('./config');
@@ -73,7 +74,8 @@ function processFullHistory(job, cb) {
                         var match = body.result;
                         insertMatch(db, redis, match, {
                             type: "api",
-                            skipAbilityUpgrades: true
+                            cassandra: cassandra,
+                            skipAbilityUpgrades: true,
                         }, cb);
                     });
                 }, function(err) {

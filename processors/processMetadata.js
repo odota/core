@@ -1,4 +1,7 @@
-module.exports = function processMetadata(entries)
+/**
+ * Given an event stream, extracts metadata such as game zero time and hero to slot/ID mappings.
+ **/
+function processMetadata(entries)
 {
     var hero_to_slot = {};
     var slot_to_playerslot = {};
@@ -70,4 +73,5 @@ module.exports = function processMetadata(entries)
         slot_to_playerslot: slot_to_playerslot,
         game_end: game_end
     };
-};
+}
+module.exports = processMetadata;

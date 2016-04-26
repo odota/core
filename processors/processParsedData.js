@@ -1,5 +1,6 @@
 var utility = require('../util/utility');
-module.exports = function processParsedData(entries, meta, populate)
+var populate = require('./populate');
+function processParsedData(entries, meta)
 {
     var container = utility.getParseSchema();
     for (var i = 0; i < entries.length; i++)
@@ -8,4 +9,6 @@ module.exports = function processParsedData(entries, meta, populate)
         populate(e, container);
     }
     return container;
-};
+}
+
+module.exports = processParsedData;

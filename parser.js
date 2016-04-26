@@ -9,6 +9,7 @@ var getReplayUrl = require('./util/getReplayUrl');
 var config = require('./config');
 var db = require('./store/db');
 var redis = require('./store/redis');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('./store/cassandra') : undefined;
 var queue = require('./store/queue');
 var queries = require('./store/queries');
 var compute = require('./compute/compute');
@@ -20,12 +21,7 @@ var processUploadProps = require('./processors/processUploadProps');
 var processParsedData = require('./processors/processParsedData');
 var processMetadata = require('./processors/processMetadata');
 var processExpand = require('./processors/processExpand');
-var express = require('express');
-var bodyParser = require('body-parser');
-var app = express();
-var capacity = require('os').cpus().length;
 var startedAt = new Date();
-var os = require('os');
 var request = require('request');
 var cp = require('child_process');
 var ndjson = require('ndjson');
@@ -33,18 +29,20 @@ var spawn = cp.spawn;
 var progress = require('request-progress');
 var stream = require('stream');
 var pQueue = queue.getQueue('parse');
-var moment = require('moment');
 var insertMatch = queries.insertMatch;
 var async = require('async');
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
+//EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
+var express = require('express');
+var bodyParser = require('body-parser');
+var app = express();
 app.use(bodyParser.json());
 app.get('/', function(req, res)
 {
     res.json(
     {
-        capacity: capacity,
         version: utility.getParseSchema().version,
         started_at: startedAt
     });
@@ -61,6 +59,7 @@ app.get('/redis/:key', function(req, res, cb)
     });
 });
 app.listen(config.PARSER_PORT);
+//END EXPRESS
 pQueue.process(1, function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
@@ -95,7 +94,7 @@ pQueue.process(1, function(job, cb)
         },
         "insertMatch": match.replay_blob_key ? function(cb)
         {
-            //save uploaded replay parse in redis
+            //save uploaded replay parse in redis as a cached match
             match.match_id = match.upload.match_id;
             match.game_mode = match.upload.game_mode;
             match.radiant_win = match.upload.radiant_win;
@@ -123,7 +122,8 @@ pQueue.process(1, function(job, cb)
             //fs.writeFileSync('output.json', JSON.stringify(match));
             insertMatch(db, redis, match,
             {
-                type: "parsed"
+                type: "parsed",
+                cassandra: cassandra,
             }, cb);
         },
     }, function(err)
@@ -139,14 +139,6 @@ pQueue.process(1, function(job, cb)
                     process.exit(1);
                 }, 1000);
             }
-            return cb(err);
-        }
-        var hostname = os.hostname();
-        redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
-        if (match.start_time)
-        {
-            redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
-            redis.ltrim("parse_delay", 0, 10000);
         }
         return cb(err, match.match_id);
     });
@@ -273,10 +265,10 @@ function runParse(match, job, cb)
                 var message = "time spent on post-processing match ";
                 console.time(message);
                 var meta = processMetadata(entries);
-                var res = processExpand(entries, meta, populate);
-                var parsed_data = processParsedData(res.parsed_data, meta, populate);
-                var teamfights = processTeamfights(res.tf_data, meta, populate);
-                var upload = processUploadProps(res.uploadProps, meta, populate);
+                var res = processExpand(entries, meta);
+                var parsed_data = processParsedData(res.parsed_data, meta);
+                var teamfights = processTeamfights(res.tf_data, meta);
+                var upload = processUploadProps(res.uploadProps, meta);
                 var ap = processAllPlayers(res.int_data);
                 parsed_data.teamfights = teamfights;
                 parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
@@ -295,94 +287,3 @@ function runParse(match, job, cb)
     }
 }
 
-function populate(e, container)
-{
-    switch (e.type)
-    {
-        case 'interval':
-            break;
-        case 'player_slot':
-            container.players[e.key].player_slot = e.value;
-            break;
-        case 'chat':
-            container.chat.push(JSON.parse(JSON.stringify(e)));
-            break;
-        case 'CHAT_MESSAGE_TOWER_KILL':
-        case 'CHAT_MESSAGE_TOWER_DENY':
-        case 'CHAT_MESSAGE_BARRACKS_KILL':
-        case 'CHAT_MESSAGE_FIRSTBLOOD':
-        case 'CHAT_MESSAGE_AEGIS':
-        case 'CHAT_MESSAGE_AEGIS_STOLEN':
-        case 'CHAT_MESSAGE_DENIED_AEGIS':
-        case 'CHAT_MESSAGE_ROSHAN_KILL':
-            container.objectives.push(JSON.parse(JSON.stringify(e)));
-            break;
-        default:
-            if (!container.players[e.slot])
-            {
-                //couldn't associate with a player, probably attributed to a creep/tower/necro unit
-                //console.log(e);
-                return;
-            }
-            var t = container.players[e.slot][e.type];
-            if (typeof t === "undefined")
-            {
-                //container.players[0] doesn't have a type for this event
-                console.log("no field in parsed_data.players for %s", e.type);
-                return;
-            }
-            else if (e.posData)
-            {
-                //fill 2d hash with x,y values
-                var x = e.key[0];
-                var y = e.key[1];
-                if (!t[x])
-                {
-                    t[x] = {};
-                }
-                if (!t[x][y])
-                {
-                    t[x][y] = 0;
-                }
-                t[x][y] += 1;
-            }
-            else if (e.max)
-            {
-                //check if value is greater than what was stored
-                if (e.value > t.value)
-                {
-                    container.players[e.slot][e.type] = e;
-                }
-            }
-            else if (t.constructor === Array)
-            {
-                //determine whether we want the value only (interval) or the time and key (log)
-                //either way this creates a new value so e can be mutated later
-                var arrEntry = (e.interval) ? e.value :
-                {
-                    time: e.time,
-                    key: e.key
-                };
-                t.push(arrEntry);
-            }
-            else if (typeof t === "object")
-            {
-                //add it to hash of counts
-                e.value = e.value || 1;
-                t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
-            }
-            else if (typeof t === "string")
-            {
-                //string, used for steam id
-                container.players[e.slot][e.type] = e.key;
-            }
-            else
-            {
-                //we must use the full reference since this is a primitive type
-                //use the value most of the time, but key when stuns since value only holds Integers in Java
-                //replace the value directly
-                container.players[e.slot][e.type] = e.value || Number(e.key);
-            }
-            break;
-    }
-}

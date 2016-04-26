@@ -50,12 +50,13 @@ var defaults = {
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
-    "ENABLE_MATCH_CACHE": "", // set to enable caching matches
-    "ENABLE_PLAYER_CACHE": "", // set to enable caching players
+    "ENABLE_MATCH_CACHE": "", // set to enable caching matches (Redis)
+    "ENABLE_PLAYER_CACHE": "", // set to enable caching players (Cassandra)
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
-    "ENABLE_SPA_MODE": "", //set to enable single page application mode for web
-    "ENABLE_CASSANDRA_MATCH_STORE_READ": "", //set to enable using cassandra for match data store
+    "ENABLE_SPA_MODE": "", //set to enable single page application mode for web (all routes serve the SPA page by default)
+    "ENABLE_CASSANDRA_MATCH_STORE_READ": "", //set to enable reading match data to cassandra
+    "ENABLE_CASSANDRA_MATCH_STORE_WRITE": "", //set to enable writing match data to cassandra
 };
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults)

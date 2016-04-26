@@ -1,4 +1,8 @@
-module.exports = function processExpand(entries, meta)
+/**
+ * Expands an event stream into multiple streams, with the necessary events types in each.
+ * Returns an object containing each child stream as an array
+ **/
+function processExpand(entries, meta)
 {
     var types = {
         "DOTA_COMBATLOG_DAMAGE": function(e)
@@ -513,4 +517,6 @@ module.exports = function processExpand(entries, meta)
             }
         }
     }
-};
+}
+
+module.exports = processExpand;

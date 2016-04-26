@@ -1,9 +1,11 @@
 /**
  * Worker to process parse requests submitted by users
  **/
+var config = require('../config');
 var utility = require('./util/utility');
 var redis = require('./store/redis');
 var db = require('./store/db');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('./store/cassandra') : undefined;
 var queue = require('./store/queue');
 var queries = require('./store/queries');
 var getData = utility.getData;
@@ -32,7 +34,8 @@ function processRequest(job, cb)
             {
                 type: "api",
                 attempts: 1,
-                lifo: true
+                lifo: true,
+                cassandra: cassandra,
             }, waitParse);
         });
     }

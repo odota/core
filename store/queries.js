@@ -11,6 +11,7 @@ var constants = require('../constants');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
 var async = require('async');
+var os = require('os');
 var convert64to32 = utility.convert64to32;
 var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
@@ -215,23 +216,11 @@ function insertMatch(db, redis, match, options, cb)
         {
             return cb();
         }
-        //TODO update callers of insertMatch (scanner, requests, parser, fullhistory) to pass options.cassandra
         //TODO clean based on cassandra schema
         //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
-        //TODO disable validateCache if using full cassandra
         var obj = serialize(match);
         var query = 'INSERT INTO matches JSON ?';
         var arr = [JSON.stringify(obj)];
-        /*
-        var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
-        {
-            return '?';
-        }).join(','));
-        var arr = Object.keys(obj).map(function(k)
-        {
-            return obj[k];
-        });
-        */
         cassandra.execute(query, arr,
         {
             prepare: true
@@ -255,16 +244,6 @@ function insertMatch(db, redis, match, options, cb)
                 var obj2 = serialize(pm);
                 var query2 = 'INSERT INTO player_matches JSON ?';
                 var arr2 = [JSON.stringify(obj2)];
-                /*
-                var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
-                {
-                    return '?';
-                }).join(','));
-                var arr2 = Object.keys(obj2).map(function(k)
-                {
-                    return obj2[k];
-                });
-                */
                 cassandra.execute(query2, arr2,
                 {
                     prepare: true
@@ -311,6 +290,16 @@ function insertMatch(db, redis, match, options, cb)
                 start_time: match.start_time
             }));
             redis.ltrim(types[options.type], -10, -1);
+        }
+        if (options.type === "parsed")
+        {
+            var hostname = os.hostname();
+            redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
+            if (match.start_time)
+            {
+                redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
+                redis.ltrim("parse_delay", 0, 10000);
+            }
         }
         return cb();
     }
@@ -1028,7 +1017,6 @@ function getMatchRating(redis, match, cb)
         cb(err, avg);
     });
 }
-
 module.exports = {
     getSets,
     insertPlayer,
