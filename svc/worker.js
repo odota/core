@@ -9,15 +9,15 @@ var db = require('../store/db');
 var queries = require('../store/queries');
 var buildSets = require('../store/buildSets');
 var utility = require('../util/utility');
-var getMMStats = require("../util/getMMStats");
+var getMMStats = require('../util/getMMStats');
 var async = require('async');
 var moment = require('moment');
 var fs = require('fs');
 var sql = {};
-var sqlq = fs.readdirSync('../sql');
+var sqlq = fs.readdirSync('./sql');
 sqlq.forEach(function(f)
 {
-    sql[f.split('.')[0]] = fs.readFileSync('../sql/' + f, 'utf8');
+    sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
 });
 console.log("[WORKER] starting worker");
 invokeInterval(function doBuildSets(cb)
