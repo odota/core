@@ -117,8 +117,8 @@ before(function(done)
         function(cb)
         {
             db = require('../store/db');
-            app = require('../web');
-            require('../parser');
+            app = require('../svc/web');
+            require('../svc/parser');
             console.log("loading matches");
             async.mapSeries([require('./details_api.json').result], function(m, cb)
             {
