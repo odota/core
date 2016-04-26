@@ -79,7 +79,7 @@ passport.use(new SteamStrategy(
     });
 }));
 //APP config
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = constants;
