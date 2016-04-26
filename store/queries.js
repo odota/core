@@ -396,8 +396,19 @@ function getMatch(db, redis, match_id, options, cb)
                             {
                                 return deserialize(m);
                             });
-                            //TODO get personanames
-                            return cb(err, result);
+                            //get personanames
+                            async.map(result, function(r, cb)
+                            {
+                                db.raw(`SELECT personaname FROM players WHERE account_id = ?`, [r.account_id], function(err, result)
+                                {
+                                    if (err)
+                                    {
+                                        return cb(err);
+                                    }
+                                    r.personaname = result.rows[0] ? result.rows[0].personaname : null;
+                                    return cb(err, r);
+                                });
+                            }, cb);
                         });
                     }
                     else
@@ -502,12 +513,7 @@ function getPlayerMatches(db, queryObj, options, cb)
         //remove props not in cassandra table
         queryObj.project = queryObj.project.filter(function(k)
         {
-            if (k in extraProps)
-            {
-                extraProps[k] = true;
-                return false;
-            }
-            return true;
+            return !(k in extraProps);
         });
         stream = options.cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
         {
@@ -523,10 +529,6 @@ function getPlayerMatches(db, queryObj, options, cb)
     var matches = [];
     stream.on('end', function(err)
     {
-        if (options.cassandra)
-        {
-            //TODO get extra columns if needed from match table based on queryObj.project
-        }
         cb(err,
         {
             raw: matches

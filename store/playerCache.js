@@ -19,11 +19,7 @@ function readCache(account_id, options, cb)
 {
     if (enabled)
     {
-        //TODO currently we do live significance check.  Persist it to store so we can project fewer fields?
-        var proj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
-        var table = ['hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
-        var filters = ['pgroup', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'purchase'];
-        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', Object.keys(options.js_agg).concat(proj).concat(table).concat(options.filter_count > 1 ? filters : []).join(','));
+        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', options.cacheProject.join(','));
         var matches = [];
         return cassandra.stream(query, [account_id],
         {

@@ -14,11 +14,11 @@
   "activity": {
     "name": "Activity"
   },
-  "histograms": {
-    "name": "Histograms"
-  },
   "counts": {
     "name": "Counts"
+  },
+  "histograms": {
+    "name": "Histograms"
   },
   "trends": {
     "name": "Trends"

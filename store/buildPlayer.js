@@ -1,5 +1,5 @@
 /**
- * Function to build player object
+ * Functions to build player object
  **/
 var async = require('async');
 var constants = require('../constants.js');
@@ -19,6 +19,7 @@ var validateCache = playerCache.validateCache;
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
+//Fields to project from player_match table
 //optimize by only projecting certain columns based on tab
 //set query.project based on this
 var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'radiant_win', 'leaver_status', 'cluster', 'parse_status', 'pgroup'];
@@ -31,8 +32,8 @@ var projections = {
     heroes: basic,
     peers: basic,
     activity: basic,
-    histograms: basic.concat(advanced).concat(['purchase']),
     counts: basic.concat(advanced).concat(['purchase', 'kill_streaks', 'multi_kills', 'lane_pos']),
+    histograms: basic.concat(advanced).concat(['purchase']),
     trends: basic.concat(advanced).concat(['purchase']),
     wardmap: basic.concat(['obs', 'sen']),
     items: basic.concat(['purchase', 'purchase_log', 'item_uses']),
@@ -42,6 +43,12 @@ var projections = {
     rankings: basic,
     hyperopia: basic
 };
+//Fields to project from Cassandra player caches
+//TODO currently we do live significance check.  Persist it to store so we can project fewer fields?
+var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
+var cacheTable = ['hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
+var cacheFilters = ['pgroup', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time'];
+//Fields to aggregate on
 //optimize by only aggregating certain columns based on tab
 //set query.js_agg based on this
 var basicAggs = ['match_id', 'version', 'abandons', 'win', 'lose'];
@@ -51,8 +58,9 @@ var aggs = {
     heroes: basicAggs.concat('heroes'),
     peers: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
-    histograms: basicAggs.concat(Object.keys(subkeys)),
     counts: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
+    //TODO only need one subkey
+    histograms: basicAggs.concat(Object.keys(subkeys)),
     trends: basicAggs.concat(Object.keys(subkeys)),
     wardmap: basicAggs.concat(['obs', 'sen']),
     items: basicAggs.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']),
@@ -86,17 +94,22 @@ function buildPlayer(options, cb)
     account_id = Number(account_id);
     //select player_matches with this account_id
     queryObj.select.account_id = account_id;
-    //project fields to aggregate based on tab
+    queryObj = preprocessQuery(queryObj);
+    //1 filter expected for account id
+    var filter_exists = queryObj.filter_count > 1;
+    //choose fields to project based on tab/filter
+    //we need to project everything to build a new cache/toplist, otherwise optimize and do a subset
+    queryObj.project = config.ENABLE_PLAYER_CACHE || queryObj.keywords.desc ? everything : projections[info];
+    //fields to project from the Cassandra cache
+    queryObj.cacheProject = Object.keys(queryObj.js_agg).concat(cacheProj).concat(cacheTable).concat(filter_exists ? cacheFilters : []);
+    //choose fields to aggregate based on tab
     var obj = {};
     aggs[info].forEach(function(k)
     {
         obj[k] = 1;
     });
     queryObj.js_agg = obj;
-    queryObj = preprocessQuery(queryObj);
-    //1 filter expected for account id
-    var filter_exists = queryObj.filter_count > 1;
-    //try to find player in db
+    //Find player in db
     console.time("[PLAYER] getPlayer " + account_id);
     getPlayer(db, account_id, function(err, player)
     {
@@ -110,11 +123,6 @@ function buildPlayer(options, cb)
             account_id: account_id,
             personaname: account_id
         };
-        if (filter_exists && !config.CASSANDRA_PLAYER_CACHE)
-        {
-            console.log("filter exists");
-            return cacheMiss();
-        }
         console.time("[PLAYER] readCache " + account_id);
         readCache(orig_account_id, queryObj, function(err, cache)
         {
@@ -148,8 +156,6 @@ function buildPlayer(options, cb)
         function cacheMiss()
         {
             console.log("player cache miss %s", player.account_id);
-            //we need to project everything to build a new cache/toplist, otherwise optimize and do a subset
-            queryObj.project = config.ENABLE_PLAYER_CACHE || queryObj.keywords.desc ? everything : projections[info];
             console.time("[PLAYER] getPlayerMatches " + account_id);
             getPlayerMatches(db, queryObj, options, function(err, results)
             {
