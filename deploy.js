@@ -25,7 +25,7 @@ else if (args[0])
             if (args[0] === app.group)
             {
                 console.log(app.script, app.instances);
-                pm2.start('svc/'+app.script,
+                pm2.start('svc/' + app.script,
                 {
                     instances: app.instances
                 }, cb);
