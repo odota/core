@@ -193,7 +193,7 @@ function runParse(match, job, cb)
     {
         parser = spawn("java", ["-jar",
                     "-Xmx64m",
-                    "../java_parser/target/stats-0.1.0.jar"
+                    "./java_parser/target/stats-0.1.0.jar"
                 ],
         {
             //we may want to ignore stderr so the child doesn't stay open
