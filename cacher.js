@@ -25,7 +25,7 @@ function processCache(job, cb)
     console.log('match: %s', match.match_id);
     async.parallel(
     {
-        "rankings": function(cb)
+        "updateRankings": function(cb)
         {
             if (match.origin === "scanner")
             {
@@ -197,8 +197,8 @@ function updateRankings(match, cb)
             if (score)
             {
                 redis.zincrby(['hero_rankings2', start, player.hero_id].join(':'), win ? score : 0, player.account_id);
+                redis.expireat(['hero_rankings2', start, player.hero_id].join(':'), expire);
             }
-            redis.expireat(['hero_rankings2', start, player.hero_id].join(':'), expire);
             if (match.lobby_type === 7)
             {
                 async.parallel(
@@ -210,10 +210,12 @@ function updateRankings(match, cb)
                     wins: function(cb)
                     {
                         redis.hincrby(['wins', start, player.hero_id].join(':'), player.account_id, win, cb);
+                        redis.expireat(['wins', start, player.hero_id].join(':'), expire);
                     },
                     games: function(cb)
                     {
                         redis.hincrby(['games', start, player.hero_id].join(':'), player.account_id, 1, cb);
+                        redis.expireat(['games', start, player.hero_id].join(':'), expire);
                     },
                 }, function(err, result)
                 {
@@ -229,10 +231,8 @@ function updateRankings(match, cb)
                         var winRatio = (player.wins / (player.games - player.wins + 1));
                         var mmrBonus = Math.pow(player.solo_competitive_rank, 2);
                         redis.zadd(['hero_rankings', start, player.hero_id].join(':'), scaleF * player.games * winRatio * mmrBonus, player.account_id);
+                        redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);
                     }
-                    redis.expireat(['wins', start, player.hero_id].join(':'), expire);
-                    redis.expireat(['games', start, player.hero_id].join(':'), expire);
-                    redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);
                     cb();
                 });
             }

@@ -35,5 +35,9 @@ var benchmarks = {
     {
         return p.tower_damage;
     },
+    "hero_healing": function(m, p)
+    {
+        return p.hero_healing;
+    },
 };
 module.exports = benchmarks;
