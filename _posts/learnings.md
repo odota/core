@@ -5,7 +5,7 @@
   "draft": true
 }}}
 
-Working on this project has a highly educational experience for both of us.
+Working on this project has been a highly educational experience for both of us.
 
 Here are some of the things we learned along the way:
 
