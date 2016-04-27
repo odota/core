@@ -11,7 +11,7 @@ module.exports = function getReplayUrl(db, redis, match, cb)
 {
     if (match.url)
     {
-        //if there's already a url in match object, we don't need to retrieve.  Could be an external (non-valve URL)
+        //if there's already a url in match object, we don't need to retrieve.  Could be external (non-valve URL)
         console.log("replay %s url in job", match.match_id);
         return cb();
     }
