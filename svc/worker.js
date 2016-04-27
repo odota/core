@@ -60,7 +60,7 @@ invokeInterval(function buildDistributions(cb)
                 });
                 results.rows = results.rows.map(function(r, i)
                 {
-                    r.cumulative_sum = results.rows.slice(0, i + 1).reduce(function(prev, current)
+                    r.cumulative_sum = results.rows.slice(0, i).reduce(function(prev, current)
                     {
                         return {
                             count: prev.count + current.count

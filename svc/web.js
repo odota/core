@@ -97,7 +97,7 @@ app.use("/apps/dota2/images/:group_name/:image_name", function(req, res)
     res.set('Cache-Control', 'max-age=604800, public');
     request("http://cdn.dota2.com/apps/dota2/images/" + req.params.group_name + "/" + req.params.image_name).pipe(res);
 });
-app.use("/public", express.static(path.join(__dirname, '/public')));
+app.use("/public", express.static(path.join(__dirname, '/../public')));
 var sessOptions = {
     maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
     secret: config.SESSION_SECRET,
@@ -482,9 +482,9 @@ var server = app.listen(port, function()
     console.log('[WEB] listening on %s', port);
 });
 // listen for TERM signal .e.g. kill 
-process.on('SIGTERM', gracefulShutdown);
+process.once('SIGTERM', gracefulShutdown);
 // listen for INT signal e.g. Ctrl-C
-process.on('SIGINT', gracefulShutdown);
+process.once('SIGINT', gracefulShutdown);
 // this function is called when you want the server to die gracefully
 // i.e. wait for existing connections
 function gracefulShutdown()
