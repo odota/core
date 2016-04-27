@@ -22,6 +22,7 @@ var updateCache = playerCache.updateCache;
 var serialize = utility.serialize;
 var deserialize = utility.deserialize;
 var columnInfo = {};
+var cassandraColumnInfo = {};
 
 function getSets(redis, cb)
 {
@@ -54,40 +55,64 @@ function getSets(redis, cb)
     });
 }
 
-function getColumnInfo(db, table, cb)
+function cleanRow(db, table, row, cb)
 {
     if (columnInfo[table])
     {
-        return cb();
+        return del(null, columnInfo[table], row, cb);
     }
     else
     {
         db(table).columnInfo().asCallback(function(err, result)
         {
+            if (err)
+            {
+                return cb(err);
+            }
             columnInfo[table] = result;
-            cb(err);
+            return del(err, columnInfo[table], row, cb);
         });
     }
 }
 
-function cleanRow(db, table, row, cb)
+function cleanRowCassandra(cassandra, table, row, cb)
 {
-    getColumnInfo(db, table, function(err)
+    if (cassandraColumnInfo[table])
     {
-        if (err)
+        return del(null, cassandraColumnInfo[table], row, cb);
+    }
+    else
+    {
+        cassandra.execute(`SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = ?`, [table], function(err, result)
         {
-            return cb(err);
-        }
-        for (var key in row)
-        {
-            if (!(key in columnInfo[table]))
+            if (err)
             {
-                delete row[key];
-                //console.error(key);
+                return cb(err);
             }
+            cassandraColumnInfo[table] = {};
+            result.rows.forEach(function(r)
+            {
+                cassandraColumnInfo[table][r.column_name] = 1;
+            });
+            return del(err, cassandraColumnInfo[table], row, cb);
+        });
+    }
+}
+
+function del(err, schema, row, cb)
+{
+    if (err)
+    {
+        return cb(err);
+    }
+    for (var key in row)
+    {
+        if (!(key in schema))
+        {
+            delete row[key];
         }
-        cb(err, row);
-    });
+    }
+    return cb(err, row);
 }
 
 function upsert(db, table, row, conflict, cb)
@@ -209,44 +234,57 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatchCassandra(cb)
     {
+        console.log('[INSERTMATCH] upserting into Cassandra');
         var cassandra = options.cassandra;
         if (!cassandra)
         {
             return cb();
         }
-        //TODO clean based on cassandra schema
-        //SELECT column_name FROM system_schema.columns WHERE keyspace_name = 'yasp' AND table_name = 'player_matches'
-        var obj = serialize(match);
-        var query = 'INSERT INTO matches JSON ?';
-        var arr = [JSON.stringify(obj)];
-        cassandra.execute(query, arr,
-        {
-            prepare: true
-        }, function(err, results)
+        cleanRowCassandra(cassandra, 'matches', match, function(err, match)
         {
             if (err)
             {
                 return cb(err);
             }
-            async.each(players || [], function(pm, cb)
+            var obj = serialize(match);
+            var query = 'INSERT INTO matches JSON ?';
+            var arr = [JSON.stringify(obj)];
+            cassandra.execute(query, arr,
             {
-                //denormalized columns for efficiency
-                pm.match_id = match.match_id;
-                pm.radiant_win = match.radiant_win;
-                pm.start_time = match.start_time;
-                pm.duration = match.duration;
-                pm.cluster = match.cluster;
-                pm.lobby_type = match.lobby_type;
-                pm.game_mode = match.game_mode;
-                pm.parse_status = match.parse_status;
-                var obj2 = serialize(pm);
-                var query2 = 'INSERT INTO player_matches JSON ?';
-                var arr2 = [JSON.stringify(obj2)];
-                cassandra.execute(query2, arr2,
+                prepare: true
+            }, function(err, result)
+            {
+                if (err)
                 {
-                    prepare: true
+                    return cb(err);
+                }
+                async.each(players || [], function(pm, cb)
+                {
+                    //denormalized columns for efficiency
+                    pm.match_id = match.match_id;
+                    pm.radiant_win = match.radiant_win;
+                    pm.start_time = match.start_time;
+                    pm.duration = match.duration;
+                    pm.cluster = match.cluster;
+                    pm.lobby_type = match.lobby_type;
+                    pm.game_mode = match.game_mode;
+                    pm.parse_status = match.parse_status;
+                    cleanRowCassandra(cassandra, 'player_matches', pm, function(err, pm)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        var obj2 = serialize(pm);
+                        var query2 = 'INSERT INTO player_matches JSON ?';
+                        var arr2 = [JSON.stringify(obj2)];
+                        cassandra.execute(query2, arr2,
+                        {
+                            prepare: true
+                        }, cb);
+                    });
                 }, cb);
-            }, cb);
+            });
         });
     }
 
@@ -266,6 +304,7 @@ function insertMatch(db, redis, match, options, cb)
             {
                 return cb(err);
             }
+            //add to queue for counts
             queue.addToQueue(cQueue, copy,
             {
                 attempts: 1
@@ -275,6 +314,7 @@ function insertMatch(db, redis, match, options, cb)
 
     function telemetry(cb)
     {
+        console.log('[INSERTMATCH] updating telemetry');
         var types = {
             "api": 'matches_last_added',
             "parsed": 'matches_last_parsed'
@@ -287,7 +327,7 @@ function insertMatch(db, redis, match, options, cb)
                 duration: match.duration,
                 start_time: match.start_time
             }));
-            redis.ltrim(types[options.type], -10, -1);
+            redis.ltrim(types[options.type], 0, 9);
         }
         if (options.type === "parsed")
         {
@@ -296,7 +336,7 @@ function insertMatch(db, redis, match, options, cb)
             if (match.start_time)
             {
                 redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
-                redis.ltrim("parse_delay", 0, 10000);
+                redis.ltrim("parse_delay", 0, 1000);
             }
         }
         return cb();
@@ -397,13 +437,13 @@ function getMatch(db, redis, match_id, options, cb)
                             //get personanames
                             async.map(result, function(r, cb)
                             {
-                                db.raw(`SELECT personaname FROM players WHERE account_id = ?`, [r.account_id], function(err, result)
+                                db.raw(`SELECT personaname FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function(err, names)
                                 {
                                     if (err)
                                     {
                                         return cb(err);
                                     }
-                                    r.personaname = result.rows[0] ? result.rows[0].personaname : null;
+                                    r.personaname = names.rows[0] ? names.rows[0].personaname : null;
                                     return cb(err, r);
                                 });
                             }, cb);
@@ -491,7 +531,6 @@ function getMatch(db, redis, match_id, options, cb)
         }
     });
 }
-
 /**
  * Benchmarks a match against stored data in Redis.
  **/

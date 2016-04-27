@@ -81,6 +81,7 @@ pQueue.process(1, function(job, cb)
                 {
                     return cb(err);
                 }
+                console.log('[PARSER] runParse complete');
                 //extend match object with parsed data, keep existing data if key conflict
                 //match.players was deleted earlier during insertion of api data
                 for (var key in parsed_data)
@@ -118,6 +119,7 @@ pQueue.process(1, function(job, cb)
             });
         } : function(cb)
         {
+            console.log('insertMatch');
             //fs.writeFileSync('output.json', JSON.stringify(match));
             insertMatch(db, redis, match,
             {
@@ -129,7 +131,7 @@ pQueue.process(1, function(job, cb)
     {
         if (err)
         {
-            console.log(err, err.stack);
+            console.error(err.stack || err);
             if (err !== "404")
             {
                 setTimeout(function()

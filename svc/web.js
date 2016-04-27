@@ -9,6 +9,7 @@ var buildSets = require('../store/buildSets');
 var redis = require('../store/redis');
 var status = require('../store/buildStatus');
 var db = require('../store/db');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
 var queries = require('../store/queries');
 var matches = require('../routes/matches');
 var hyperopia = require('../routes/hyperopia');
@@ -34,7 +35,6 @@ var host = config.ROOT_URL;
 var querystring = require('querystring');
 var util = require('util');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../cassandra') : undefined;
 //PASSPORT config
 passport.serializeUser(function(user, done)
 {

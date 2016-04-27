@@ -653,11 +653,12 @@ function serialize(row)
  **/
 function deserialize(row)
 {
+    var obj = {};
     row.keys().forEach(function(key)
     {
-        row[key] = JSON.parse(row[key]);
+        obj[key] = JSON.parse(row[key]);
     });
-    return row;
+    return obj;
 }
 /**
  * Returns a list of heroes sorted in alphabetical order

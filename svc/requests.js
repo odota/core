@@ -82,6 +82,7 @@ function processRequest(job, cb)
         }
         else
         {
+            console.error(err);
             cb(err);
         }
     }
