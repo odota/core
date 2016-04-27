@@ -31,9 +31,9 @@ Quickstart
   * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
 * Start a new container running the image, and map your local directory into the container: `sudo docker run -v $(pwd):/usr/src/yasp -di --name yasp --net=host yasp/yasp:latest`
 * Start the external dependencies in separate containers.
-  * `sudo docker run -d --name postgres --net=host postgres:latest`
-  * `sudo docker run -d --name redis --net=host redis:latest`
-  * (optional) `sudo docker run -d --name cassandra --net=host cassandra:latest`
+  * `sudo docker run -d --name postgres --net=host postgres:9.5`
+  * `sudo docker run -d --name redis --net=host redis:3`
+  * (optional) `sudo docker run -d --name cassandra --net=host cassandra:3`
 * Initialize Postgres: `sudo docker exec -i postgres psql -U postgres < sql/init.sql`
 * Create tables: `sudo docker exec -i postgres psql -U postgres yasp < sql/create_tables.sql`
 * Set up Cassandra (optional): `sudo docker exec -i cassandra cqlsh < sql/cassandra.cql`

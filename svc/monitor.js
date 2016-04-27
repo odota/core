@@ -8,29 +8,6 @@ var utility = require('../util/utility');
 var request = require('request');
 var api_key = config.STEAM_API_KEY.split(',')[0];
 var health = {
-    random_match: function random_match(cb)
-    {
-        db.raw(`select match_id from matches tablesample system(1) limit 1`).asCallback(function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            if (!result.rows[0])
-            {
-                return cb();
-            }
-            request(config.ROOT_URL + "/api/matches/" + result.rows[0].match_id, function(err, resp, body)
-            {
-                var fail = err || resp.statusCode !== 200;
-                return cb(fail,
-                {
-                    metric: Number(fail),
-                    threshold: 1,
-                });
-            });
-        });
-    },
     random_player: function random_player(cb)
     {
         db.raw(`select account_id from players tablesample system(1) limit 1`).asCallback(function(err, result)
@@ -106,22 +83,20 @@ var health = {
     },
     parse_delay: function parse_delay(cb)
     {
-        //get parse delay array, compare with thresholde
-        db.raw(`
-        SELECT avg(extract(epoch from now()) - (start_time+duration))*1000 as avg from (select * from matches where version > 0 order by match_id desc limit 10) parsed;
-        `).asCallback(function(err, result)
+        redis.lrange('matches_last_parsed', 0, 1, function(err, result)
         {
             if (err)
             {
                 return cb(err);
             }
-            if (!result.rows[0])
+            if (!result[0])
             {
                 return cb();
             }
+            result = JSON.parse(result[0]);
             return cb(err,
             {
-                metric: ~~result.rows[0].avg,
+                metric: ~~(new Date() / 1000 - (result.start_time + result.duration)),
                 threshold: 60 * 60 * 1000,
             });
         });
