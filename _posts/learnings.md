@@ -92,7 +92,9 @@ Here are some of the things we learned along the way:
   * With Docker you can just kill your container/VM and start a brand new one with the latest image.
 * Cloud vs Dedicated
   * Pros of cloud:
-    * It's easier to dynamically scale.  Spin up new instances in a matter of seconds.
+    * It's easier to dynamically scale.  
+      * More CPU?  Spin up new instances in a matter of seconds.
+      * Need more storage?  GCE lets you size whatever disk you want, and even make it bigger on-the-fly.  You can have up to 64TB on a disk, which is way more than most people need.
     * Easy resets.  Need to start from scratch?  Just delete the instance and start over.
     * Great tools/services.  Using the cloud means you get access to an integrated suite of services.  This includes monitoring/logging/deployment/routing tools.
     * Preemptible instances from Google are great for parsing.  They're much cheaper for CPU-bound tasks that can be interrupted.
