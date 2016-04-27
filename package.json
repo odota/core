@@ -114,8 +114,8 @@
     "webpack-dev-server": "^1.14.1"
   },
   "engines": {
-    "node": "5.8.0",
-    "npm": "3.5.0"
+    "node": "6.0.0",
+    "npm": "3.8.8"
   },
   "svc": [
     {

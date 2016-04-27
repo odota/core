@@ -100,7 +100,7 @@ RUN cd / && \
     ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 
 # Node
-ENV NODE_VERSION 5.10.1
+ENV NODE_VERSION 6.0.0
 # gpg keys listed at https://github.com/nodejs/node
 RUN set -ex \
   && for key in \
