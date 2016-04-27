@@ -1,6 +1,7 @@
-var utility = require('../util/utility');
+var utility = require('./utility');
 var isRadiant = utility.isRadiant;
-module.exports = function filter(matches, filters)
+
+function filter(matches, filters)
 {
     //accept a hash of filters, run all the filters in the hash in series
     //console.log(filters);
@@ -119,4 +120,5 @@ module.exports = function filter(matches, filters)
         }
     }
     return filtered;
-};
+}
+module.exports = filter;

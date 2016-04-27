@@ -2,10 +2,9 @@
  * Provides functions to get/insert data into data stores.
  **/
 var utility = require('../util/utility');
-var compute = require('../compute/compute');
-var benchmarks = require('../compute/benchmarks');
-var filter = require('../compute/filter');
-var benchmarkMatch = require('../compute/benchmarkMatch');
+var compute = require('../util/compute');
+var benchmarks = require('../util/benchmarks');
+var filter = require('../util/filter');
 var config = require('../config');
 var constants = require('../constants');
 var queue = require('./queue');
@@ -492,6 +491,51 @@ function getMatch(db, redis, match_id, options, cb)
             });
         }
     });
+}
+
+/**
+ * Benchmarks a match against stored data in Redis.
+ **/
+function benchmarkMatch(redis, m, cb)
+{
+    async.map(m.players, function(p, cb)
+    {
+        p.benchmarks = {};
+        async.eachSeries(Object.keys(benchmarks), function(metric, cb)
+        {
+            //in development use live data (for speed), in production use full data from last day (for consistency)
+            var key = ['benchmarks', utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1), metric, p.hero_id].join(':');
+            var raw = benchmarks[metric](m, p);
+            p.benchmarks[metric] = {
+                raw: raw
+            };
+            redis.zcard(key, function(err, card)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                if (raw !== undefined && raw !== null && !Number.isNaN(raw))
+                {
+                    redis.zcount(key, '0', raw, function(err, count)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        var pct = count / card;
+                        p.benchmarks[metric].pct = pct;
+                        return cb(err);
+                    });
+                }
+                else
+                {
+                    p.benchmarks[metric] = {};
+                    cb();
+                }
+            });
+        }, cb);
+    }, cb);
 }
 
 function getPlayerMatches(db, queryObj, options, cb)

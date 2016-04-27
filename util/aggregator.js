@@ -4,7 +4,8 @@ var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var isSignificant = utility.isSignificant;
 var getAggs = utility.getAggs;
-module.exports = function aggregator(matches, fields, existing)
+
+function aggregator(matches, fields, existing)
 {
     fields = fields || getAggs();
     //ensure aggData isn't null for each requested aggregation field
@@ -227,3 +228,4 @@ function aggTeammates(aggData, m)
         }
     }
 }
+module.exports = aggregator;

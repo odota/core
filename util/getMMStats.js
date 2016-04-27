@@ -4,7 +4,7 @@ var secret = config.RETRIEVER_SECRET;
 var retrieverConfig = config.RETRIEVER_HOST;
 var getData = utility.getData;
 var DATA_POINTS = 60 / (config.MMSTATS_DATA_INTERVAL || 1) * 24; //Store 24 hours worth of data
-module.exports = function getMMStats(redis, cb) {
+function getMMStats(redis, cb) {
     var retrievers = retrieverConfig.split(",").map(function(r) {
         return "http://" + r + "?key=" + secret;
     });
@@ -24,3 +24,5 @@ module.exports = function getMMStats(redis, cb) {
         cb(err);
     });
 }
+
+module.exports = getMMStats;

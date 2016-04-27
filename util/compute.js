@@ -1,4 +1,4 @@
-var utility = require('../util/utility');
+var utility = require('./utility');
 var generatePlayerAnalysis = require('./analysis');
 var constants = require('../constants.js');
 var mode = utility.mode;
@@ -67,13 +67,17 @@ for (var key in specific)
         expanded[key.replace("#", i)] = specific[key];
     }
 }
-
-function computeMatchData(match)
+/**
+ * Computes additional stats from stored data for a player_match
+ **/
+function computeMatchData(pm)
 {
+    //WARNING: Don't store fields that mutate based on self_hero in Cassandra.  It isn't set post-parse and the cache update will write incorrect data.
+    var self_hero = constants.heroes[pm.hero_id];
     // Compute patch based on start_time
-    if (match.start_time)
+    if (pm.start_time)
     {
-        var date = new Date(match.start_time * 1000);
+        var date = new Date(pm.start_time * 1000);
         for (var i = 1; i < constants.patch.length; i++)
         {
             var pd = new Date(constants.patch[i].date);
@@ -84,21 +88,12 @@ function computeMatchData(match)
             }
         }
         //use the value of i before the break, started at 1 to avoid negative index
-        match.patch = i - 1;
+        pm.patch = i - 1;
     }
-    if (match.cluster)
+    if (pm.cluster)
     {
-        match.region = constants.cluster[match.cluster];
+        pm.region = constants.cluster[pm.cluster];
     }
-}
-/**
- * Computes additional stats from stored data for a player_match
- **/
-function computePlayerMatchData(pm)
-{
-    //WARNING: Don't store fields that mutate based on self_hero in Cassandra.  It isn't set post-parse and the cache update will write incorrect data.
-    var self_hero = constants.heroes[pm.hero_id];
-    computeMatchData(pm);
     if (pm.player_slot !== undefined && pm.radiant_win !== undefined)
     {
         pm.isRadiant = isRadiant(pm);
@@ -725,6 +720,5 @@ function generateTreemapData(match)
 module.exports = {
     renderMatch,
     computeMatchData,
-    computePlayerMatchData,
     count_words,
 };

@@ -2,13 +2,13 @@
  * Provides methods for storing player match data in a faster caching layer
  **/
 var config = require('../config');
-var enabled = config.ENABLE_PLAYER_CACHE;
-var compute = require('../compute/compute');
-var filter = require('../compute/filter');
 var constants = require('../constants');
+var enabled = config.ENABLE_PLAYER_CACHE;
+var compute = require('../util/compute');
+var computeMatchData = compute.computeMatchData;
+var filter = require('../util/filter');
 var utility = require('../util/utility');
 var cassandra = enabled ? require('./cassandra') : undefined;
-var computePlayerMatchData = compute.computePlayerMatchData;
 var async = require('async');
 var serialize = utility.serialize;
 var deserialize = utility.deserialize;
@@ -115,7 +115,7 @@ function updateCache(match, cb)
                 {
                     player_match[key] = match[key];
                 }
-                computePlayerMatchData(player_match);
+                computeMatchData(player_match);
                 writeCache(player_match.account_id,
                 {
                     raw: [player_match]

@@ -1,10 +1,9 @@
-var util = require('util');
-var constants = require('../constants.js');
-module.exports = generatePlayerAnalysis;
 /**
  * Generates a player analysis for a player_match
  * Returns an analysis object
  **/
+var util = require('util');
+var constants = require('../constants.js');
 function generatePlayerAnalysis(match, pm)
 {
     //define condition check for each advice point
@@ -329,3 +328,4 @@ function generatePlayerAnalysis(match, pm)
         return (constants.items[key].desc.indexOf("Active: ") > -1 && !(key in whitelist));
     }
 }
+module.exports = generatePlayerAnalysis;

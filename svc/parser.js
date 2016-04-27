@@ -33,7 +33,6 @@ var insertMatch = queries.insertMatch;
 var async = require('async');
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
-var computePlayerMatchData = compute.computePlayerMatchData;
 //EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -105,7 +104,7 @@ pQueue.process(1, function(job, cb)
                 p.gold_per_min = ~~(p.gold / match.duration * 60);
                 p.xp_per_min = ~~(p.xp / match.duration * 60);
                 p.duration = match.duration;
-                computePlayerMatchData(p);
+                computeMatchData(p);
             });
             computeMatchData(match);
             renderMatch(match);
