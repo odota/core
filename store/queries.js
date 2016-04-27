@@ -12,7 +12,6 @@ var playerCache = require('./playerCache');
 var async = require('async');
 var os = require('os');
 var convert64to32 = utility.convert64to32;
-var computePlayerMatchData = compute.computePlayerMatchData;
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
 var moment = require('moment');
@@ -440,7 +439,7 @@ function getMatch(db, redis, match_id, options, cb)
                     p.lobby_type = match.lobby_type;
                     p.game_mode = match.game_mode;
                     p.parse_status = match.parse_status;
-                    computePlayerMatchData(p);
+                    computeMatchData(p);
                     if (ab_upgrades)
                     {
                         p.ability_upgrades_arr = ab_upgrades[p.player_slot];
@@ -584,7 +583,7 @@ function getPlayerMatches(db, queryObj, options, cb)
         {
             m = deserialize(m);
         }
-        computePlayerMatchData(m);
+        computeMatchData(m);
         if (filter([m], queryObj.js_select).length)
         {
             matches.push(m);
@@ -1078,8 +1077,9 @@ module.exports = {
     getPicks,
     getTop,
     getHeroRankings,
-    upsert,
     getBenchmarks,
+    benchmarkMatch,
+    upsert,
     getLeaderboard,
     mmrEstimate,
     searchPlayer,
