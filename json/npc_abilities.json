@@ -16794,7 +16794,7 @@
           "bonus_armor": 3
         },
         {
-          "bonus_range": 372
+          "bonus_range": 350
         },
         {
           "base_attack_time": 1.55
@@ -17886,7 +17886,7 @@
           "slow_duration": 4
         },
         {
-          "cooldown_scepter": 12
+          "cooldown_scepter": 8
         },
         {
           "damage": 350
