@@ -159,7 +159,7 @@ describe("parser", function()
             nock("http://replay1.valve.net").get('/570/' + key).replyWithFile(200, replay_dir + key);
             var match = {
                 match_id: tests[key],
-                start_time: moment().format('X'),
+                start_time: Number(moment().format('X')),
                 slot_to_id:
                 {}
             };

@@ -234,12 +234,12 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatchCassandra(cb)
     {
-        console.log('[INSERTMATCH] upserting into Cassandra');
         var cassandra = options.cassandra;
         if (!cassandra)
         {
             return cb();
         }
+        console.log('[INSERTMATCH] upserting into Cassandra');
         cleanRowCassandra(cassandra, 'matches', match, function(err, match)
         {
             if (err)

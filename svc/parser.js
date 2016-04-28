@@ -94,6 +94,7 @@ pQueue.process(1, function(job, cb)
         },
         "insertMatch": match.replay_blob_key ? function(cb)
         {
+            console.log('saving uploaded parse');
             //save uploaded replay parse in redis as a cached match
             match.match_id = match.upload.match_id;
             match.game_mode = match.upload.game_mode;
@@ -236,6 +237,7 @@ function runParse(match, job, cb)
         {
             if (e.type === 'epilogue')
             {
+                console.log('received epilogue');
                 incomplete = false;
             }
             entries.push(e);
