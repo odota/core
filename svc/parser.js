@@ -111,14 +111,11 @@ pQueue.process(1, function(job, cb)
         if (err)
         {
             console.error(err.stack || err);
-            if (err !== "404")
+            setTimeout(function()
             {
-                setTimeout(function()
-                {
-                    console.error('encountered exception, restarting');
-                    process.exit(1);
-                }, 1000);
-            }
+                console.error('encountered exception, restarting');
+                process.exit(1);
+            }, 1000);
         }
         return cb(err, match.match_id);
     });
@@ -175,6 +172,7 @@ function runParse(match, job, cb)
         exit('timeout');
     }, 300000);
     var url = match.url;
+    // Streams
     var inStream = progress(request(
     {
         url: url
