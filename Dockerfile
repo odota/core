@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:6.0.0
+FROM mhart/alpine-node:5.10.1
 
 # Tools
 RUN apk update && apk add git curl wget bash
