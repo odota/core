@@ -14,7 +14,6 @@ var insertMatch = queries.insertMatch;
 var getData = utility.getData;
 var addToQueue = queue.addToQueue;
 var mQueue = queue.getQueue('mmr');
-var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
 var trackedPlayers;
@@ -119,7 +118,7 @@ function scanApi(seq_num)
             {
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
-            logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
+            console.log("[API] seq_num:%s, matches:%s", seq_num, resp.length);
             async.each(resp, function(match, cb)
             {
                 if (config.ENABLE_PRO_PARSING && match.leagueid)

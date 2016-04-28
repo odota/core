@@ -6,18 +6,8 @@
 var config = require('../config');
 var constants = require('../constants');
 var request = require('request');
-var winston = require('winston');
 var BigNumber = require('big-number');
 var urllib = require('url');
-var transports = [];
-transports.push(new(winston.transports.Console)(
-{
-    'timestamp': true
-}));
-var logger = new(winston.Logger)(
-{
-    transports: transports
-});
 /**
  * Tokenizes an input string.
  *
@@ -228,7 +218,7 @@ function getData(url, cb)
         parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
     }
     var target = urllib.format(parse);
-    logger.info("getData: %s", target);
+    console.log("getData: %s", target);
     return setTimeout(function()
     {
         request(
@@ -254,7 +244,7 @@ function getData(url, cb)
                 }
                 else
                 {
-                    logger.info("invalid response, retrying: %s", target);
+                    console.log("invalid response, retrying: %s", target);
                     return getData(url, cb);
                 }
             }
@@ -778,7 +768,6 @@ function median(data)
 }
 module.exports = {
     tokenize: tokenize,
-    logger: logger,
     generateJob: generateJob,
     getData: getData,
     convert32to64: convert32to64,

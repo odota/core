@@ -18,7 +18,6 @@ var api = require('../routes/api');
 var donate = require('../routes/donate');
 var mmstats = require('../routes/mmstats');
 var request = require('request');
-var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
 var path = require('path');
@@ -123,7 +122,7 @@ app.use(function rateLimit(req, res, cb)
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || "";
     ip = ip.replace(/^.*:/, '').split(',')[0];
     var key = 'rate_limit:' + ip;
-    logger.info("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
+    console.log("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
     redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
     {
         if (err)

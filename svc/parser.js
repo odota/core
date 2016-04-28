@@ -23,14 +23,14 @@ var processExpand = require('../processors/processExpand');
 var startedAt = new Date();
 var request = require('request');
 var cp = require('child_process');
-var ndjson = require('ndjson');
-var spawn = cp.spawn;
 var progress = require('request-progress');
 var stream = require('stream');
 var pQueue = queue.getQueue('parse');
+var async = require('async');
+var JSONStream = require('JSONStream');
+var spawn = cp.spawn;
 var insertMatch = queries.insertMatch;
 var benchmarkMatch = queries.benchmarkMatch;
-var async = require('async');
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 //EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
@@ -209,7 +209,7 @@ function runParse(match, job, cb)
                 exit(code);
             }
         });
-        parseStream = ndjson.parse();
+        parseStream = JSONStream.parse();
         if (url && url.slice(-3) === "bz2")
         {
             bz = spawn("bunzip2");
