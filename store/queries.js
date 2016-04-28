@@ -247,8 +247,14 @@ function insertMatch(db, redis, match, options, cb)
                 return cb(err);
             }
             var obj = serialize(match);
-            var query = 'INSERT INTO matches JSON ?';
-            var arr = [JSON.stringify(obj)];
+            var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function(k)
+            {
+                return '?';
+            }).join(','));
+            var arr = Object.keys(obj).map(function(k)
+            {
+                return obj[k];
+            });
             cassandra.execute(query, arr,
             {
                 prepare: true
@@ -276,8 +282,14 @@ function insertMatch(db, redis, match, options, cb)
                             return cb(err);
                         }
                         var obj2 = serialize(pm);
-                        var query2 = 'INSERT INTO player_matches JSON ?';
-                        var arr2 = [JSON.stringify(obj2)];
+                        var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function(k)
+                        {
+                            return '?';
+                        }).join(','));
+                        var arr2 = Object.keys(obj2).map(function(k)
+                        {
+                            return obj2[k];
+                        });
                         cassandra.execute(query2, arr2,
                         {
                             prepare: true

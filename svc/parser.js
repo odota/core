@@ -65,13 +65,17 @@ pQueue.process(1, function(job, cb)
     var match = job.data.payload;
     async.series(
     {
-        "getDataSource": match.replay_blob_key ? function(cb)
+        "getDataSource": function(cb)
         {
-            match.url = "http://localhost:" + config.PARSER_PORT + "/redis/" + match.replay_blob_key;
-            cb();
-        } : function(cb)
-        {
-            getReplayUrl(db, redis, match, cb);
+            if (match.replay_blob_key)
+            {
+                match.url = "http://localhost:" + config.PARSER_PORT + "/redis/" + match.replay_blob_key;
+                cb();
+            }
+            else
+            {
+                getReplayUrl(db, redis, match, cb);
+            }
         },
         "runParse": function(cb)
         {
@@ -81,7 +85,6 @@ pQueue.process(1, function(job, cb)
                 {
                     return cb(err);
                 }
-                console.log('[PARSER] runParse complete');
                 //extend match object with parsed data, keep existing data if key conflict
                 //match.players was deleted earlier during insertion of api data
                 for (var key in parsed_data)
@@ -92,41 +95,16 @@ pQueue.process(1, function(job, cb)
                 cb(err);
             });
         },
-        "insertMatch": match.replay_blob_key ? function(cb)
+        "insertMatch": function(cb)
         {
-            console.log('saving uploaded parse');
-            //save uploaded replay parse in redis as a cached match
-            match.match_id = match.upload.match_id;
-            match.game_mode = match.upload.game_mode;
-            match.radiant_win = match.upload.radiant_win;
-            match.duration = match.upload.duration;
-            match.players.forEach(function(p, i)
+            if (match.replay_blob_key)
             {
-                utility.mergeObjects(p, match.upload.player_map[p.player_slot]);
-                p.gold_per_min = ~~(p.gold / match.duration * 60);
-                p.xp_per_min = ~~(p.xp / match.duration * 60);
-                p.duration = match.duration;
-                computeMatchData(p);
-            });
-            computeMatchData(match);
-            renderMatch(match);
-            benchmarkMatch(redis, match, function(err)
+                insertUploadedParse(match, cb);
+            }
+            else
             {
-                if (err)
-                {
-                    return cb(err);
-                }
-                redis.setex('match:' + match.replay_blob_key, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
-            });
-        } : function(cb)
-        {
-            console.log('insertMatch');
-            //fs.writeFileSync('output.json', JSON.stringify(match));
-            insertMatch(db, redis, match,
-            {
-                type: "parsed",
-                cassandra: cassandra,
-            }, cb);
+                insertStandardParse(match, cb);
+            }
         },
     }, function(err)
     {
@@ -146,107 +124,125 @@ pQueue.process(1, function(job, cb)
     });
 });
 
+function insertUploadedParse(match, cb)
+{
+    console.log('saving uploaded parse');
+    //save uploaded replay parse in redis as a cached match
+    match.match_id = match.upload.match_id;
+    match.game_mode = match.upload.game_mode;
+    match.radiant_win = match.upload.radiant_win;
+    match.duration = match.upload.duration;
+    match.players.forEach(function(p, i)
+    {
+        utility.mergeObjects(p, match.upload.player_map[p.player_slot]);
+        p.gold_per_min = ~~(p.gold / match.duration * 60);
+        p.xp_per_min = ~~(p.xp / match.duration * 60);
+        p.duration = match.duration;
+        computeMatchData(p);
+    });
+    computeMatchData(match);
+    renderMatch(match);
+    benchmarkMatch(redis, match, function(err)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        redis.setex('match:' + match.replay_blob_key, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
+    });
+}
+
+function insertStandardParse(match, cb)
+{
+    console.log('insertMatch');
+    //fs.writeFileSync('output.json', JSON.stringify(match));
+    insertMatch(db, redis, match,
+    {
+        type: "parsed",
+        cassandra: cassandra,
+    }, cb);
+}
+
 function runParse(match, job, cb)
 {
+    // Parse state
+    // Array buffer to store the events
+    var entries = [];
+    var incomplete = "incomplete";
+    var exited = false;
     var timeout = setTimeout(function()
     {
         exit('timeout');
     }, 300000);
     var url = match.url;
-    var inStream;
-    var parseStream;
-    var bz;
-    var parser;
-    var entries = [];
-    createInputStream();
-
-    function createInputStream()
+    var inStream = progress(request(
     {
-        inStream = progress(request(
+        url: url
+    }));
+    inStream.on('progress', function(state)
+    {
+        console.log(JSON.stringify(
         {
             url: url,
-            encoding: null,
-            timeout: 30000
-        })).on('progress', function(state)
+            state: state
+        }));
+        if (job)
         {
-            console.log(JSON.stringify(
-            {
-                url: url,
-                state: state
-            }));
-            if (job)
-            {
-                job.progress(state.percentage * 100);
-            }
-        }).on('response', function(response)
-        {
-            if (response.statusCode === 200)
-            {
-                forwardInput(inStream);
-            }
-            else
-            {
-                exit(response.statusCode.toString());
-            }
-        }).on('error', exit);
-    }
-
-    function forwardInput(inStream)
+            job.progress(state.percentage * 100);
+        }
+    }).on('response', function(response)
     {
-        parser = spawn("java", ["-jar",
-                    "-Xmx64m",
-                    "./java_parser/target/stats-0.1.0.jar"
-                ],
+        if (response.statusCode !== 200)
         {
-            //we may want to ignore stderr so the child doesn't stay open
-            stdio: ['pipe', 'pipe', 'pipe'],
-            encoding: 'utf8'
-        });
-        parser.on('close', (code) =>
-        {
-            if (code)
-            {
-                exit(code);
-            }
-        });
-        parseStream = JSONStream.parse();
-        if (url && url.slice(-3) === "bz2")
-        {
-            bz = spawn("bunzip2");
+            exit(response.statusCode.toString());
         }
-        else
-        {
-            var str = stream.PassThrough();
-            bz = {
-                stdin: str,
-                stdout: str
-            };
-        }
-        inStream.pipe(bz.stdin);
-        bz.stdout.pipe(parser.stdin);
-        bz.stdin.on('error', exit);
-        bz.stdout.on('error', exit);
-        parser.stdout.pipe(parseStream);
-        parser.stdin.on('error', exit);
-        parser.stdout.on('error', exit);
-        parser.stderr.on('data', function printStdErr(data)
-        {
-            console.log(data.toString());
-        });
-        parseStream.on('data', function handleStream(e)
-        {
-            if (e.type === 'epilogue')
-            {
-                console.log('received epilogue');
-                incomplete = false;
-            }
-            entries.push(e);
-        });
-        parseStream.on('end', exit);
-        parseStream.on('error', exit);
+    }).on('error', exit);
+    var bz;
+    if (url && url.slice(-3) === "bz2")
+    {
+        bz = spawn("bunzip2");
     }
-    var incomplete = "incomplete";
-    var exited = false;
+    else
+    {
+        var str = stream.PassThrough();
+        bz = {
+            stdin: str,
+            stdout: str
+        };
+    }
+    bz.stdin.on('error', exit);
+    bz.stdout.on('error', exit);
+    var parser = spawn("java", [
+        "-jar",
+        "-Xmx64m",
+        "./java_parser/target/stats-0.1.0.jar"
+        ],
+    {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        encoding: 'utf8'
+    });
+    parser.stdin.on('error', exit);
+    parser.stdout.on('error', exit);
+    var parseStream = JSONStream.parse();
+    parseStream.on('data', function handleStream(e)
+    {
+        if (e.type === 'epilogue')
+        {
+            console.log('received epilogue');
+            incomplete = false;
+        }
+        entries.push(e);
+    });
+    parseStream.on('end', exit);
+    parseStream.on('error', exit);
+    // Pipe together the streams
+    inStream.pipe(bz.stdin);
+    bz.stdout.pipe(parser.stdin);
+    parser.stdout.pipe(parseStream);
+    parser.stderr.on('data', function printStdErr(data)
+    {
+        console.log(data.toString());
+    });
 
     function exit(err)
     {
@@ -289,4 +285,3 @@ function runParse(match, job, cb)
         }
     }
 }
-

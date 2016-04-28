@@ -16,7 +16,7 @@ else if (args[0])
 {
     var pm2 = require('pm2');
     var async = require('async');
-    var manifest = require('./package.json');
+    var manifest = require('./pm2.json').apps;
     //if argument supplied use pm2 to run processes in that group
     pm2.connect(function()
     {
@@ -25,7 +25,7 @@ else if (args[0])
             if (args[0] === app.group)
             {
                 console.log(app.script, app.instances);
-                pm2.start('svc/' + app.script,
+                pm2.start(app.script,
                 {
                     instances: app.instances
                 }, cb);

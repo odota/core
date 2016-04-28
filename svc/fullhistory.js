@@ -1,7 +1,7 @@
 /**
  * Worker to fetch full match histories for players
  **/
-var config = require('./config');
+var config = require('../config');
 var constants = require('../constants.js');
 var utility = require('../util/utility');
 var redis = require('../store/redis');

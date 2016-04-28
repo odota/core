@@ -40,10 +40,11 @@ Quickstart
 * Get a terminal into the running container: `sudo docker exec -it yasp bash`
 * Build inside the container: `npm run build`
 * Start the services you want to run:
-  * `pm2 start svc/web.js --watch` The `--watch` flag tells pm2 to restart the server when it detects a file change.  Replace `web` with the name of the service you want to run.
+  * `pm2 start manifest.json` This starts the all services according to the manifest in the JSON file.
+  * `pm2 start svc/web.js --watch` This starts a specific service and watches it for changes.
   * `web,parser,requests,retriever` These are the minimal services for being able to open the site in a browser and request parses by ID (which is a useful end-to-end test).
-  * `pm2 logs web` You can use this command to inspect the output of the service.
-  * `pm2 delete all` Stop everything.
+  * `pm2 logs web` You can use this command to inspect the output of a service.
+  * `pm2 delete all` Stop and remove all the services.
 * Useful commands
   * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in order to automatically rebuild after making changes.
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
