@@ -46,14 +46,13 @@ gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-d
 #cassandra
 #seed node
 gcloud compute instances delete -q cassandra-1
-gcloud compute instances create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+gcloud compute instances create cassandra-1 --machine-type n1-highmem-4 --image container-vm --boot-disk-size 500GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 docker run --name cassandra --restart=always -d --net=host cassandra:3
 '
 #joining nodes
 gcloud compute instance-groups managed delete -q cassandra-group-1
 gcloud compute instance-templates delete -q cassandra-1
-gcloud compute instance-templates create cassandra-1 --machine-type n1-highmem-2 --image container-vm --boot-disk-size 200GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+gcloud compute instance-templates create cassandra-1 --machine-type n1-highmem-4 --image container-vm --boot-disk-size 500GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:3
 '
 gcloud compute instance-groups managed create "cassandra-group-1" --base-instance-name "cassandra-group-1" --template "cassandra-1" --size "1"
-gcloud compute instance-groups managed set-autoscaling "cassandra-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "1" --target-cpu-utilization "0.7"

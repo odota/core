@@ -185,3 +185,5 @@ CREATE TABLE notable_players (
   is_pro boolean,
   locked_until integer
 );
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO yasp;
