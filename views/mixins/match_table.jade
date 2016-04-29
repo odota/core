@@ -8,7 +8,7 @@ mixin match_table(matches, extended)
           th: abbr(title=tooltips.hero_id) Hero
           th: abbr(title=tooltips.result) R
           th: abbr(title=tooltips.game_mode) M
-          th: abbr(title=tooltips.skill) S
+          th.skill: abbr(title=tooltips.skill) S
           th.fromNow: abbr(title=tooltips.ended) E
           th.seconds: abbr(title=tooltips.duration) L
           th: abbr(title=tooltips.kills) K
@@ -31,7 +31,7 @@ mixin match_table(matches, extended)
                 =match.hero_id
             td(class=match.player_win ? "text-success" : "text-danger")=match.player_win ? "W" : "L"
             td.small=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
-            td.small=constants.skill[match.skill] || match.skill
+            td.small=match.skill
             td.small=match.start_time+match.duration
             td.rankable=match.duration
             td.rankable=match.kills
