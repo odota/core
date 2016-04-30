@@ -156,7 +156,8 @@ function scanApi(seq_num)
                                     account_id: p.account_id
                                 },
                                 {
-                                    attempts: 1
+                                    attempts: 1,
+                                    delay: 180000,
                                 }, cb);
                             }
                             else
