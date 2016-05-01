@@ -32,12 +32,13 @@ mixin match_table(matches)
                 =match.hero_id
             td(class=win ? "text-success" : "text-danger")=win ? "W" : "L"
             td.small=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
+
             td.small=match.start_time+match.duration
             td.rankable=match.duration
             if q.desc
               td.rankable=match[q.desc]
             else
-              td.small=constants.skill[match.skill] || match.skill
+              td.small=match.skill
               td.rankable=match.kills
               td.rankable=match.deaths
               td.rankable=match.assists
