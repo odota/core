@@ -11,6 +11,10 @@ var mQueue = queue.getQueue('mmr');
 var getData = utility.getData;
 var retrieverArr = config.RETRIEVER_HOST.split(",");
 mQueue.process(retrieverArr.length * 10, processMmr);
+mQueue.on('completed', function(job)
+{
+    job.remove();
+});
 
 function processMmr(job, cb)
 {
