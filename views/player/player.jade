@@ -88,6 +88,22 @@ append footer_assets
         },
         columnDefs: [
             {
+                targets: "skill",
+                render: function(data, type) {
+                    var skillIDs = {
+                        1: "Normal",
+                        2: "High",
+                        3: "Very High",
+                    };
+
+                    if (type === "display") {
+                        return (data in skillIDs ? skillIDs[data] : data);
+                    }
+
+                    return data;
+                }
+            },
+            {
                 "targets": "fromNow",
                 render: function(data, type) {
                     if (type === "display") {
