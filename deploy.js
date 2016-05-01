@@ -16,7 +16,7 @@ else if (args[0])
 {
     var pm2 = require('pm2');
     var async = require('async');
-    var manifest = require('./pm2.json').apps;
+    var manifest = require('./manifest.json').apps;
     //if argument supplied use pm2 to run processes in that group
     pm2.connect(function()
     {
