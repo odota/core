@@ -1,5 +1,8 @@
-//Group events in buffer
-module.exports = function processReduce(entries)
+/**
+ * A processor to reduce the event stream by grouping similar events.
+ * NOT CURRENTLY IN PRODUCTION USE
+ **/
+function processReduce(entries)
 {
     var reduceMap = {};
     //group by player_slot, type, targethero, targetillusion
@@ -15,4 +18,5 @@ module.exports = function processReduce(entries)
     }
     //var fs = require('fs');
     //fs.writeFileSync('./output3.json', JSON.stringify(reduceMap, null , 2));
-};
+}
+module.exports = processReduce;

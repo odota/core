@@ -284,11 +284,18 @@ public class Main {
         Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
         Entity dData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataDire");
         Entity rData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataRadiant");
-        if (grp != null) {
+        if (grp != null) 
+        {
             //System.err.println(grp);
             //dota_gamerules_data.m_iGameMode = 22
             //dota_gamerules_data.m_unMatchID64 = 1193091757
             time = Math.round((float) getEntityProperty(grp, "m_pGameRules.m_fGameTime", null));
+            
+            //initialize nextInterval value
+            if (nextInterval == 0)
+            {
+                nextInterval = time;
+            }
             //alternate to combat log for getting game zero time (looks like this is set at the same time as the game start, so it's not any better for streaming)
             /*
             int currGameStartTime = Math.round( (float) grp.getProperty("m_pGameRules.m_flGameStartTime"));
@@ -299,18 +306,21 @@ public class Main {
             }
             */
         }
-        if (pr != null) {
+        if (pr != null) 
+        {
             //Radiant coach shows up in vecPlayerTeamData as position 5
             //all the remaining dire entities are offset by 1 and so we miss reading the last one and don't get data for the first dire player
             //coaches appear to be on team 1, radiant is 2 and dire is 3?
             //construct an array of valid indices to get vecPlayerTeamData from
-            if (!init) {
+            if (!init) 
+            {
                 int added = 0;
                 int i = 0;
                 //according to @Decoud Valve seems to have fixed this issue and players should be in first 10 slots again
                 //sanity check of i to prevent infinite loop when <10 players?
                 while (added < numPlayers && i < 100) {
-                    try {
+                    try 
+                    {
                         //check each m_vecPlayerData to ensure the player's team is radiant or dire
                         int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
                         int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", i);
@@ -329,7 +339,8 @@ public class Main {
                             slot_to_playerslot.put(added, entry.value);
                         }
                     }
-                    catch(Exception e) {
+                    catch(Exception e) 
+                    {
                         //swallow the exception when an unexpected number of players (!=10)
                         //System.err.println(e);
                     }
@@ -339,9 +350,11 @@ public class Main {
                 init = true;
             }
 
-            if (time >= nextInterval) {
+            if (time >= nextInterval) 
+            {
                 //System.err.println(pr);
-                for (int i = 0; i < numPlayers; i++) {
+                for (int i = 0; i < numPlayers; i++) 
+                {
                     Integer hero = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
                     int handle = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
                     int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
@@ -355,21 +368,24 @@ public class Main {
                     entry.type = "interval";
                     entry.slot = i;
                     
-                    if (teamSlot >= 0) {
+                    if (teamSlot >= 0) 
+                    {
                         entry.gold = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
                         entry.lh = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
                         entry.xp = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);
                         entry.stuns = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
                     }
 
-                    try{
+                    try
+                    {
                         entry.level = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iLevel", validIndices[i]);
                         entry.kills = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iKills", validIndices[i]);
                         entry.deaths = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iDeaths", validIndices[i]);
                         entry.assists = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iAssists", validIndices[i]);
                         entry.denies = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iDenyCount", teamSlot);
                     }
-                    catch(Exception e){
+                    catch(Exception e)
+                    {
                         //swallow exceptions encountered while trying to get these additional values
                         //System.err.println(e);
                     }
@@ -380,7 +396,8 @@ public class Main {
                     //get the player's hero entity
                     Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
                     //get the hero's coordinates
-                    if (e != null) {
+                    if (e != null) 
+                    {
                         //System.err.println(e);
                         entry.x = getEntityProperty(e, "CBodyComponent.m_cellX", null);
                         entry.y = getEntityProperty(e, "CBodyComponent.m_cellY", null);
@@ -391,7 +408,8 @@ public class Main {
                         entry.life_state = getEntityProperty(e, "m_lifeState", null);
                         //System.err.format("%s: %s\n", entry.unit, entry.life_state);
                         //check if hero has been assigned to entity
-                        if (hero > 0) {
+                        if (hero > 0) 
+                        {
                             //get the hero's entity name, ex: CDOTA_Hero_Zuus
                             String unit = e.getDtClass().getDtName();
                             //grab the end of the name, lowercase it
@@ -408,7 +426,6 @@ public class Main {
                         }
                     }
                     output(entry);
-
                 }
                 nextInterval += INTERVAL;
             }

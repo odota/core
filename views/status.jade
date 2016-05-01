@@ -83,15 +83,10 @@ block content
             th Node
             th Count
         tbody
-          - var group = "parser"
-          - var total = 0;
-          each entry in result.parser
-            if true || entry.hostname.indexOf(group) === 0
-              - total += entry.count
-            else
-              tr
-                td=entry.hostname
-                td=entry.count
+          each entry in result.parser || {}
+            tr
+              td=entry.hostname
+              td=entry.count
           tr
             td
               a#collapse.panel-group(data-toggle="collapse", href="#group", aria-expanded="false" aria-controls="group") #{group}
@@ -117,7 +112,7 @@ block content
             th Node
             th Count
         tbody
-          each entry in result.retriever
+          each entry in result.retriever || {}
             tr
               td=entry.hostname
               td=entry.count

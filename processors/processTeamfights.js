@@ -1,5 +1,9 @@
-//Compute teamfights that occurred
-module.exports = function processTeamfights(entries, meta, populate)
+/**
+ * A processor to compute teamfights that occurred given an event stream
+ **/
+var populate = require('./populate');
+
+function processTeamfights(entries, meta)
 {
     var curr_teamfight;
     var teamfights = [];
@@ -156,4 +160,5 @@ module.exports = function processTeamfights(entries, meta, populate)
         }
     }
     return teamfights;
-};
+}
+module.exports = processTeamfights;

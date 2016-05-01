@@ -1,4 +1,4 @@
-mixin match_table(matches, extended)
+mixin match_table(matches)
   h3 Matches
   div
     table.table.table-condensed#matches.table-striped.rankable(style="border:1px solid #666;")
@@ -8,39 +8,41 @@ mixin match_table(matches, extended)
           th: abbr(title=tooltips.hero_id) Hero
           th: abbr(title=tooltips.result) R
           th: abbr(title=tooltips.game_mode) M
-          th.skill: abbr(title=tooltips.skill) S
           th.fromNow: abbr(title=tooltips.ended) E
           th.seconds: abbr(title=tooltips.duration) L
-          th: abbr(title=tooltips.kills) K
-          th: abbr(title=tooltips.deaths) D
-          th: abbr(title=tooltips.assists) A
-          if extended
-            th: abbr(title=tooltips.last_hits) LH
-            th: abbr(title=tooltips.gold_per_min) GPM
-          th
+          if q.desc
+            th: abbr(title=tooltips[q.desc])=prettyPrint(q.desc)
+          else
+            th: abbr(title=tooltips.skill) S
+            th: abbr(title=tooltips.kills) K
+            th: abbr(title=tooltips.deaths) D
+            th: abbr(title=tooltips.assists) A
+            th
 
       tbody.small
         each match in matches
           - var hero = constants.heroes[match.hero_id]
+          - var win = match.radiant_win === match.player_slot < 128
           tr
-            td: a(class=match.player_win ? "text-success" : "text-danger", href="/matches/"+match.match_id)=match.match_id
+            td: a(class=win ? "text-success" : "text-danger", href="/matches/"+match.match_id)=match.match_id
             td
               if hero
                 img.img-sm(src=hero.img, title=hero.localized_name)
               else
                 =match.hero_id
-            td(class=match.player_win ? "text-success" : "text-danger")=match.player_win ? "W" : "L"
+            td(class=win ? "text-success" : "text-danger")=win ? "W" : "L"
             td.small=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
-            td.small=match.skill
+
             td.small=match.start_time+match.duration
             td.rankable=match.duration
-            td.rankable=match.kills
-            td.rankable=match.deaths
-            td.rankable=match.assists
-            if extended
-              td.rankable=match.last_hits
-              td.rankable=match.gold_per_min
-            td
-              abbr(title=constants.tooltips["status_"+match.parse_status])		
+            if q.desc
+              td.rankable=match[q.desc]
+            else
+              td.small=match.skill
+              td.rankable=match.kills
+              td.rankable=match.deaths
+              td.rankable=match.assists
+              td
                 if match.parse_status === 2
-                  i.fa.fa-bar-chart
+                  abbr(title=constants.tooltips.status_2)
+                    i.fa.fa-bar-chart

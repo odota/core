@@ -1,3 +1,6 @@
+/**
+ * File managing constant values for the application
+ **/
 var fs = require('fs');
 var cfs = fs.readdirSync('./json');
 var countries = require('world-countries');
@@ -153,4 +156,5 @@ constants.cluster = cluster;
 constants.region = region;
 constants.anonymous_account_id = 4294967295;
 constants.map_url = '/public/images/map.png';
+constants.ICON_PATH = '/public/images/yasp-icon.svg'; //path to the icon
 module.exports = constants;

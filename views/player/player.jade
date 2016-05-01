@@ -14,7 +14,7 @@ block content
           if player.profile.loccountrycode && constants.countries[player.profile.loccountrycode]
             span: abbr(title=constants.countries[player.profile.loccountrycode].name.common): span.flag-icon(style="margin:5px;" class="flag-icon-"+player.profile.loccountrycode.toLowerCase())
           if player.profile.last_login
-            span: img.user(src=config.ICON_PATH, title="This user is registered!")
+            span: img.user(src=constants.ICON_PATH, title="This user is registered!")
           if player.profile.cheese
             div(style="margin-top:1%;")
               i.flaticon-1.small-cheese(style="display:inline-block")
@@ -73,19 +73,13 @@ block content
 append footer_assets
   script.
     $('#matches').dataTable({
-        "order": [
-                [0, "desc"]
-            ],
-        info: #{route === "matches"},
-        paging: #{route === "matches"},
+        "order": [],
+        info: false,
+        paging: false,
         pageLength: 20,
         lengthChange: false,
         searching: false,
         responsive: true,
-        "drawCallback":function(){
-            formatHtml();
-            tooltips();
-        },
         columnDefs: [
             {
                 targets: "skill",

@@ -1,26 +1,24 @@
+/**
+ * Main test script to run tests
+ **/
 var config = require('../config');
+var constants = require('../constants.js');
+var redis = require('../store/redis');
+var queue = require('../store/queue');
+var queries = require('../store/queries');
 config.PORT = ""; //use service defaults
 config.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
 config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
 config.ENABLE_MATCH_CACHE = 1;
-config.ENABLE_PLAYER_CACHE;
 config.FRONTEND_PORT = 5001;
 config.PARSER_PORT = 5201;
 var async = require('async');
-var redis = require('../redis');
-var queue = require('../queue');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
-var constants = require('../constants.js');
 var init_db = "postgres://postgres:postgres@localhost/postgres";
-/*
-var processApi = require('../processApi');
-var processFullHistory = require('../processFullHistory');
-var processMmr = require('../processMmr');
-*/
 var pQueue = queue.getQueue('parse');
 var supertest = require('supertest');
 var replay_dir = "./test/testfiles/";
@@ -30,7 +28,6 @@ var wait = 90000;
 // these are loaded later, as the database needs to be created when these are required
 var db;
 var app;
-var queries = require('../queries');
 //nock.disableNetConnect();
 //nock.enableNetConnect();
 //fake api response
@@ -52,7 +49,6 @@ nock('http://api.steampowered.com')
     })
     //fake full history
     .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, require('./history_api.json'));
-//TODO page 2 for fullhistory?
 //fake heroes list
 //.get('/IEconDOTA2_570/GetHeroes/v0001/').query(true).reply(200, require('./heroes_api.json')
 //fake leagues
@@ -120,9 +116,9 @@ before(function(done)
         },
         function(cb)
         {
-            db = require('../db');
-            app = require('../web');
-            require('../parser');
+            db = require('../store/db');
+            app = require('../svc/web');
+            require('../svc/parser');
             console.log("loading matches");
             async.mapSeries([require('./details_api.json').result], function(m, cb)
             {
@@ -163,7 +159,7 @@ describe("parser", function()
             nock("http://replay1.valve.net").get('/570/' + key).replyWithFile(200, replay_dir + key);
             var match = {
                 match_id: tests[key],
-                start_time: moment().format('X'),
+                start_time: Number(moment().format('X')),
                 slot_to_id:
                 {}
             };

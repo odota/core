@@ -1,6 +1,9 @@
-var utility = require('../utility');
-//Compute data requiring all players in a match for storage in match table
-module.exports = function processAllPlayers(entries)
+/**
+ * Compute data requiring all players in a match for storage in match table
+ **/
+var utility = require('../util/utility');
+
+function processAllPlayers(entries)
 {
     var goldAdvTime = {};
     var xpAdvTime = {};
@@ -29,4 +32,5 @@ module.exports = function processAllPlayers(entries)
         res.radiant_xp_adv.push(xpAdvTime[k]);
     });
     return res;
-};
+}
+module.exports = processAllPlayers;

@@ -107,7 +107,6 @@ CREATE TABLE yasp.player_caches (
   win text,
   lose text,
   radiant_win text,
-  player_win text,
   abandons text,
   start_time text,
   duration text,

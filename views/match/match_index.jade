@@ -42,7 +42,7 @@ block match_content
             td
               //img.img-sm(src=player.avatar)
               if (player.last_login)
-                img.user(src=config.ICON_PATH, title="This user is registered!")
+                img.user(src=constants.ICON_PATH, title="This user is registered!")
             td.text-muted.small=player.solo_competitive_rank
             td.rankable= player.level
             td.rankable= player.kills
