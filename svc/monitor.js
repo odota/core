@@ -96,7 +96,7 @@ var health = {
             result = JSON.parse(result[0]);
             return cb(err,
             {
-                metric: ~~(new Date() / 1000 - (result.start_time + result.duration)),
+                metric: ~~(new Date() - (result.start_time + result.duration) * 1000),
                 threshold: 60 * 60 * 1000,
             });
         });
