@@ -113,7 +113,10 @@ function updateCache(match, cb)
                 //join player with match to form player_match
                 for (var key in match)
                 {
-                    player_match[key] = match[key];
+                    if (key !== 'players')
+                    {
+                        player_match[key] = match[key];
+                    }
                 }
                 computeMatchData(player_match);
                 writeCache(player_match.account_id,
