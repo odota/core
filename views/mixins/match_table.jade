@@ -13,7 +13,7 @@ mixin match_table(matches)
           if q.desc
             th: abbr(title=tooltips[q.desc])=prettyPrint(q.desc)
           else
-            th: abbr(title=tooltips.skill) S
+            th.skill: abbr(title=tooltips.skill) S
             th: abbr(title=tooltips.kills) K
             th: abbr(title=tooltips.deaths) D
             th: abbr(title=tooltips.assists) A
