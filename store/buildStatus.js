@@ -114,7 +114,7 @@ module.exports = function buildStatus(db, redis, cb)
                         count: cnt
                     });
                 });
-            });
+            }, cb);
         },
         retriever: function(cb)
         {

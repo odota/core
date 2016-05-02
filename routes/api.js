@@ -15,6 +15,7 @@ var rQueue = queue.getQueue('request');
 var queries = require('../store/queries');
 var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
+var buildStatus = require('../store/buildStatus');
 const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {
@@ -114,7 +115,15 @@ module.exports = function(db, redis, cassandra)
     api.get('/picks/:n');
     api.get('/rankings/:hero_id');
     api.get('/faq');
-    api.get('/status');
+    api.get('/status', function (req, res, cb){
+      buildStatus(db, redis, function(err, status){
+          if (err)
+          {
+              return cb(err);
+          }
+          res.json(status);
+      })  
+    });
     //TODO will need to figure out how to do slugs if @albertcui insists on routing with them
     api.get('/blog/:n');
     //TODO @albertcui owns mmstats

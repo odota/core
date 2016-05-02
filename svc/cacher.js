@@ -22,7 +22,7 @@ cQueue.on('completed', function(job)
 function processCache(job, cb)
 {
     var match = job.data.payload;
-    console.log('match: %s', match.match_id);
+    console.log('match: %s, %s', match.match_id, match.origin);
     async.parallel(
     {
         "updateRankings": function(cb)
@@ -196,8 +196,9 @@ function updateRankings(match, cb)
             //temporary beta ranking implementation, do for all matches (not just ranked)
             if (score && utility.isSignificant(match))
             {
-                //redis.zincrby(['hero_rankings2', start, player.hero_id].join(':'), win ? score : 0, player.account_id);
-                //redis.expireat(['hero_rankings2', start, player.hero_id].join(':'), expire);
+                console.log(match.match_id, score);
+                redis.zincrby(['hero_rankings2', start, player.hero_id].join(':'), win ? score : 0, player.account_id);
+                redis.expireat(['hero_rankings2', start, player.hero_id].join(':'), expire);
             }
             if (match.lobby_type === 7)
             {

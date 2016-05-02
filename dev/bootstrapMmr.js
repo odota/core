@@ -1,8 +1,7 @@
 var JSONStream = require('JSONStream');
 var async = require('async');
-var db = require('../db');
-var redis = require('../redis');
-var queries = require('../queries');
+var db = require('../store/db');
+var redis = require('../store/redis');
 var args = process.argv.slice(2);
 var start_id = Number(args[0]) || 0;
 var conc = 0;
