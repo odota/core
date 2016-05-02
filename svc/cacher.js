@@ -194,10 +194,10 @@ function updateRankings(match, cb)
             var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
             var win = Number(utility.isRadiant(player) === player.radiant_win);
             //temporary beta ranking implementation, do for all matches (not just ranked)
-            if (score && utility.isSignificant(match));
+            if (score && utility.isSignificant(m))
             {
-                redis.zincrby(['hero_rankings2', start, player.hero_id].join(':'), win ? score : 0, player.account_id);
-                redis.expireat(['hero_rankings2', start, player.hero_id].join(':'), expire);
+                //redis.zincrby(['hero_rankings2', start, player.hero_id].join(':'), win ? score : 0, player.account_id);
+                //redis.expireat(['hero_rankings2', start, player.hero_id].join(':'), expire);
             }
             if (match.lobby_type === 7)
             {
