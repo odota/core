@@ -100,16 +100,19 @@ module.exports = function buildStatus(db, redis, cb)
         },
         parser: function(cb)
         {
-            redis.zcard("parser", function(err, cnt)
+            async.map(["parser"], function(zset, cb)
             {
-                if (err)
+                redis.zcard(zset, function(err, cnt)
                 {
-                    return cb(err);
-                }
-                return cb(err,
-                {
-                    hostname: "parser",
-                    count: cnt
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    return cb(err,
+                    {
+                        hostname: zset,
+                        count: cnt
+                    });
                 });
             });
         },

@@ -83,7 +83,7 @@ block content
             th Node
             th Count
         tbody
-          each entry in result.parser || {}
+          each entry in result.parser || []
             tr
               td=entry.hostname
               td=entry.count
@@ -112,7 +112,7 @@ block content
             th Node
             th Count
         tbody
-          each entry in result.retriever || {}
+          each entry in result.retriever || []
             tr
               td=entry.hostname
               td=entry.count
