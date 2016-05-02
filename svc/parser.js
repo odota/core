@@ -27,7 +27,7 @@ var progress = require('request-progress');
 var stream = require('stream');
 var pQueue = queue.getQueue('parse');
 var async = require('async');
-var JSONStream = require('JSONStream');
+var ndjson = require('ndjson');
 var spawn = cp.spawn;
 var insertMatch = queries.insertMatch;
 var benchmarkMatch = queries.benchmarkMatch;
@@ -221,7 +221,7 @@ function runParse(match, job, cb)
     });
     parser.stdin.on('error', exit);
     parser.stdout.on('error', exit);
-    var parseStream = JSONStream.parse();
+    var parseStream = ndjson.parse();
     parseStream.on('data', function handleStream(e)
     {
         if (e.type === 'epilogue')
