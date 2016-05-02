@@ -35,10 +35,7 @@ gcloud compute instance-groups managed create "backend-group-1" --base-instance-
 gcloud compute instance-groups managed delete -q parser-group-1
 gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-for i in $(seq 1 $(nproc));
-do
-    sudo docker run -d --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest 
-done
+sudo docker run -d --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest 
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
 gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "100" --min-num-replicas "4" --target-cpu-utilization "0.8"
