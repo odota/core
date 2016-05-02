@@ -20,7 +20,7 @@ else if (args[0])
     //if argument supplied use pm2 to run processes in that group
     pm2.connect(function()
     {
-        async.each(manifest.svc, function start(app, cb)
+        async.each(manifest, function start(app, cb)
         {
             if (args[0] === app.group)
             {
