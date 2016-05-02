@@ -3,6 +3,7 @@
  **/
 var async = require('async');
 var queue = require('./queue');
+var config = require('../config');
 module.exports = function buildStatus(db, redis, cb)
 {
     console.time('status');
@@ -97,57 +98,41 @@ module.exports = function buildStatus(db, redis, cb)
                 }));
             });
         },
-        /*
         parser: function(cb)
         {
-            redis.keys("parser:*", function(err, result)
+            redis.zcard("parser", function(err, cnt)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                async.map(result, function(zset, cb)
+                return cb(err,
                 {
-                    redis.zcard(zset, function(err, cnt)
-                    {
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        return cb(err,
-                        {
-                            hostname: zset.substring("parser:".length),
-                            count: cnt
-                        });
-                    });
-                }, cb);
+                    hostname: "parser",
+                    count: cnt
+                });
             });
         },
-        */
         retriever: function(cb)
         {
-            redis.keys("retriever:*", function(err, result)
+            async.map(config.RETRIEVER_HOST.split(',').map(function(r)
             {
-                if (err)
+                return "retriever:" + r.split('.')[0];
+            }), function(zset, cb)
+            {
+                redis.zcard(zset, function(err, cnt)
                 {
-                    return cb(err);
-                }
-                async.map(result, function(zset, cb)
-                {
-                    redis.zcard(zset, function(err, cnt)
+                    if (err)
                     {
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        return cb(err,
-                        {
-                            hostname: zset.substring("retriever:".length),
-                            count: cnt
-                        });
+                        return cb(err);
+                    }
+                    return cb(err,
+                    {
+                        hostname: zset.substring("retriever:".length),
+                        count: cnt
                     });
-                }, cb);
-            });
+                });
+            }, cb);
         },
         queue: function(cb)
         {

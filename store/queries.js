@@ -343,8 +343,7 @@ function insertMatch(db, redis, match, options, cb)
         }
         if (options.type === "parsed")
         {
-            var hostname = os.hostname();
-            redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
+            redis.zadd("parser", moment().format('X'), match.match_id);
             if (match.start_time)
             {
                 redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);

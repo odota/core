@@ -107,27 +107,16 @@ invokeInterval(function cleanup(cb)
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("alias_hits", 0, moment().subtract(1, 'day').format('X'));
-    var cleans = ["parser", "retriever"];
+    redis.zremrangebyscore("parser", 0, moment().subtract(1, 'day').format('X'));
+    config.RETRIEVER_HOST.split(',').map(function(r)
+    {
+        return "retriever:" + r.split('.')[0];
+    }).forEach(function(retkey)
+    {
+        redis.zremrangebyscore(retkey, 0, moment().subtract(1, 'day').format('X'));
+    });
     async.parallel(
     {
-        "counts": function(cb)
-        {
-            async.each(cleans, function(key, cb)
-            {
-                redis.keys(key + ":*", function(err, result)
-                {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    result.forEach(function(zset)
-                    {
-                        redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'));
-                    });
-                    cb(err);
-                });
-            }, cb);
-        },
         "picks": function(cb)
         {
             redis.get('picks_match_count', function(err, count)
@@ -183,38 +172,7 @@ invokeInterval(function notablePlayers(cb)
         }, cb);
     });
 }, 10 * 60 * 1000);
-/*
-invokeInterval(function loadPickCounts(cb)
-{
-    var keys = ['picks', 'picks_wins'];
-    async.each(keys, function(base, cb)
-    {
-        //load counts into zset
-        redis.keys(base + ':*', function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            async.eachSeries(result, function(key, cb)
-            {
-                redis.zcard(key, function(err, card)
-                {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    var spl = key.split(':');
-                    var length = spl[1];
-                    var pick = spl[2];
-                    redis.zadd(base + '_counts:' + length, card, pick);
-                    cb(err);
-                });
-            });
-        });
-    }, cb);
-}, 60 * 60 * 1000);
-*/
+
 function invokeInterval(func, delay)
 {
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
