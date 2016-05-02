@@ -467,7 +467,7 @@ function generatePositionData(d, p)
     return d;
 }
 
-function isSignificant(constants, m)
+function isSignificant(m)
 {
     return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined && m.duration > 60 * 5);
 }

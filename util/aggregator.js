@@ -48,7 +48,7 @@ function aggregator(matches, fields, existing)
     for (var i = 0; i < matches2.length; i++)
     {
         var m = matches2[i];
-        var significant = isSignificant(constants, m);
+        var significant = isSignificant(m);
         for (var key in fields)
         {
             var isDup = false;
