@@ -40,7 +40,7 @@ Quickstart
 * Get a terminal into the running container: `sudo docker exec -it yasp bash`
 * Build inside the container: `npm run build`
 * Start the services you want to run:
-  * `pm2 start manifest.json` This starts the all services according to the manifest in the JSON file.
+  * `pm2 start pm2.json` This starts the all services according to the manifest in the JSON file.
   * `pm2 start svc/web.js --watch` This starts a specific service and watches it for changes.
   * `web,parser,requests,retriever` These are the minimal services for being able to open the site in a browser and request parses by ID (which is a useful end-to-end test).
   * `pm2 logs web` You can use this command to inspect the output of a service.
