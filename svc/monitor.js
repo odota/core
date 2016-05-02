@@ -91,7 +91,7 @@ var health = {
             }
             if (!result[0])
             {
-                return cb();
+                return cb("no data");
             }
             result = JSON.parse(result[0]);
             return cb(err,
@@ -127,7 +127,7 @@ var health = {
             return cb(err,
             {
                 metric: result.rows[0].pg_database_size,
-                threshold: 5300000000000
+                threshold: 5500000000000
             });
         });
     }
