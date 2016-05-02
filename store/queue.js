@@ -22,11 +22,6 @@ if (conn_info.auth)
     options.redis.auth = conn_info.auth.replace(/.*?:/, '');
 }
 
-function extractType(key)
-{
-    return key.split(":")[1];
-}
-
 function generateKey(type, state)
 {
     return ["bull", type, state].join(":");
@@ -57,25 +52,15 @@ function addToQueue(queue, payload, options, cb)
 
 function getCounts(redis, cb)
 {
-    redis.keys('bull:*:id', function(err, result)
+    var types = ["request", "mmr", "parse", "cache"];
+    async.map(types, getQueueCounts, function(err, result)
     {
-        if (err)
+        var obj = {};
+        result.forEach(function(r, i)
         {
-            return cb(err);
-        }
-        var types = result.map(function(e)
-        {
-            return extractType(e);
+            obj[types[i]] = r;
         });
-        async.map(types, getQueueCounts, function(err, result)
-        {
-            var obj = {};
-            result.forEach(function(r, i)
-            {
-                obj[types[i]] = r;
-            });
-            cb(err, obj);
-        });
+        cb(err, obj);
     });
 
     function getQueueCounts(type, cb)
@@ -108,31 +93,20 @@ function getCounts(redis, cb)
 
 function cleanup(redis, cb)
 {
-    redis.keys('bull:*:id', function(err, result)
+    var types = ["request", "mmr", "parse", "cache"];
+    async.each(types, function(key, cb)
     {
-        if (err)
+        var queue = getQueue(key);
+        async.each(['completed', 'failed', 'delayed'], function(type, cb)
         {
-            console.error('queue cleanup failed');
-            console.error(err);
-        }
-        var types = result.map(function(e)
-        {
-            return extractType(e);
-        });
-        async.each(types, function(key, cb)
-        {
-            var queue = getQueue(key);
-            async.each(['completed', 'failed', 'delayed'], function(type, cb)
+            queue.clean(24 * 60 * 60 * 1000, type);
+            queue.once('cleaned', function(job, type)
             {
-                queue.clean(24 * 60 * 60 * 1000, type);
-                queue.once('cleaned', function(job, type)
-                {
-                    console.log('cleaned %s %s jobs from queue %s', job.length, type, key);
-                    cb();
-                });
-            }, cb);
+                console.log('cleaned %s %s jobs from queue %s', job.length, type, key);
+                cb();
+            });
         }, cb);
-    });
+    }, cb);
 }
 module.exports = {
     getQueue: getQueue,

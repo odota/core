@@ -710,28 +710,22 @@ function getPlayer(db, account_id, cb)
 
 function getDistributions(redis, cb)
 {
-    redis.keys('distribution:*', function(err, results)
+    var keys = ["distribution:mmr", "distribution:country_mmr"];
+    var result = {};
+    async.each(keys, function(r, cb)
     {
-        if (err)
+        redis.get(r, function(err, blob)
         {
-            return cb(err);
-        }
-        var result = {};
-        async.each(results, function(r, cb)
-        {
-            redis.get(r, function(err, blob)
+            if (err)
             {
-                if (err)
-                {
-                    return cb(err);
-                }
-                result[r.split(':')[1]] = JSON.parse(blob);
-                cb(err);
-            });
-        }, function(err)
-        {
-            return cb(err, result);
+                return cb(err);
+            }
+            result[r.split(':')[1]] = JSON.parse(blob);
+            cb(err);
         });
+    }, function(err)
+    {
+        return cb(err, result);
     });
 }
 
