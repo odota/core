@@ -333,7 +333,7 @@ function insertMatch(db, redis, match, options, cb)
         };
         if (types[options.type])
         {
-            redis.rpush(types[options.type], JSON.stringify(
+            redis.lpush(types[options.type], JSON.stringify(
             {
                 match_id: match.match_id,
                 duration: match.duration,
