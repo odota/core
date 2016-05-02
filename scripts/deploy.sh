@@ -3,7 +3,10 @@ DATETIME=$(date +%s)
 
 if [ "$1" = "parser" ] || [[ $# -eq 0 ]]; then
 gcloud compute instance-templates create parser-$DATETIME --machine-type n1-highcpu-2 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-sudo docker run -d --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest
+for i in $(seq 1 $(nproc));
+do
+    sudo docker run -d --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest 
+done
 '
 gcloud alpha compute rolling-updates start --group parser-group-1 --template parser-$DATETIME
 fi
