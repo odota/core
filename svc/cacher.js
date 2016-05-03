@@ -287,9 +287,9 @@ function updateMatchRating(match, cb)
             {
                 if (player.account_id && player.account_id !== constants.anonymous_account_id)
                 {
-                    //push into list, limit to 50 elements
+                    //push into list, limit elements
                     redis.lpush('mmr_estimates:' + player.account_id, avg);
-                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 49);
+                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 24);
                 }
             });
             cb();
