@@ -132,12 +132,12 @@ function incrCounts(match)
             }).join(',');
             //redis.zadd('picks:' + i + ":" + g, moment().format('X'), match.match_id);
             redis.zincrby('picks_counts:' + i, 1, g);
-            redis.expireat('picks_counts' + i, expire);
+            redis.expireat('picks_counts:' + i, expire);
             if (win)
             {
                 //redis.zadd('picks_wins:' + i + ":" + g, moment().format('X'), match.match_id);
                 redis.zincrby('picks_wins_counts:' + i, 1, g);
-                redis.expireat('picks_wins_counts' + i, expire);
+                redis.expireat('picks_wins_counts:' + i, expire);
             }
         });
     }
