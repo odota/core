@@ -95,7 +95,6 @@ CREATE TABLE yasp.player_matches (
   game_mode int,
   parse_status int,
 );
-CREATE INDEX on yasp.player_matches(account_id);
 
 CREATE TABLE yasp.player_caches (
   PRIMARY KEY (account_id, match_id),

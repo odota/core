@@ -9,13 +9,6 @@ module.exports = function buildStatus(db, redis, cb)
     console.time('status');
     async.series(
     {
-        matches: function(cb)
-        {
-            db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='matches';").asCallback(function(err, count)
-            {
-                extractCount(err, count, cb);
-            });
-        },
         players: function(cb)
         {
             db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='players';").asCallback(function(err, count)

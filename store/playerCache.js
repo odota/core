@@ -138,10 +138,15 @@ function updateCache(match, cb)
 
 function validateCache(db, redis, account_id, cache, cb)
 {
-    if (!cache || !enabled || config.ENABLE_CASSANDRA_MATCH_STORE_READ)
+    if (!cache || !enabled)
     {
-        console.log('player cache validation skipped due to not needed');
+        console.log('player cache validation failed due to not enabled (!ENABLE_PLAYER_CACHE)');
         return cb();
+    }
+    if (config.ENABLE_CASSANDRA_MATCH_STORE_READ)
+    {
+        console.log('player cache validation bypassed due to not needed (CASSANDRA_MATCH_STORE_READ)');
+        return cb(null, true);
     }
     //set key in redis to mark cache audited, don't do it again until timeout
     redis.get('player_cache_audit:' + account_id, function(err, result)

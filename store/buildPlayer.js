@@ -142,7 +142,31 @@ function buildPlayer(options, cb)
                 }
                 if (!valid)
                 {
-                    return cacheMiss();
+                    console.log("player cache miss %s", player.account_id);
+                    console.time("[PLAYER] getPlayerMatches " + account_id);
+                    getPlayerMatches(db, queryObj, options, function(err, results)
+                    {
+                        console.timeEnd("[PLAYER] getPlayerMatches " + account_id);
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        //save the cache if complete data
+                        if (!filter_exists && player.account_id !== constants.anonymous_account_id)
+                        {
+                            console.time("[PLAYER] writeCache " + account_id);
+                            writeCache(player.account_id, results, function(err)
+                            {
+                                if (err)
+                                {
+                                    console.error(err);
+                                }
+                                console.timeEnd("[PLAYER] writeCache " + account_id);
+                            });
+                        }
+                        //don't need to wait for cache write
+                        processResults(err, results);
+                    });
                 }
                 else
                 {
@@ -152,35 +176,6 @@ function buildPlayer(options, cb)
                 }
             });
         });
-
-        function cacheMiss()
-        {
-            console.log("player cache miss %s", player.account_id);
-            console.time("[PLAYER] getPlayerMatches " + account_id);
-            getPlayerMatches(db, queryObj, options, function(err, results)
-            {
-                console.timeEnd("[PLAYER] getPlayerMatches " + account_id);
-                if (err)
-                {
-                    return cb(err);
-                }
-                //save the cache if complete data
-                if (!filter_exists && player.account_id !== constants.anonymous_account_id)
-                {
-                    console.time("[PLAYER] writeCache " + account_id);
-                    writeCache(player.account_id, results, function(err)
-                    {
-                        if (err)
-                        {
-                            console.error(err);
-                        }
-                        console.timeEnd("[PLAYER] writeCache " + account_id);
-                    });
-                }
-                //don't need to wait for cache write
-                processResults(err, results);
-            });
-        }
 
         function processResults(err, cache)
         {
