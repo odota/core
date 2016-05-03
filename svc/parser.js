@@ -111,11 +111,16 @@ pQueue.process(1, function(job, cb)
         if (err)
         {
             console.error(err.stack || err);
-            setTimeout(function()
+            /*
+            if (err !== "404")
             {
-                console.error('encountered exception, restarting');
-                process.exit(1);
-            }, 1000);
+                setTimeout(function()
+                {
+                    console.error('encountered exception, restarting');
+                    process.exit(1);
+                }, 1000);
+            }
+            */
         }
         return cb(err, match.match_id);
     });
