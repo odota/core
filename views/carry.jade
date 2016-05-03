@@ -38,7 +38,7 @@ block content
       #alert.alert.alert-danger(role="alert", style="display:none;")
       .col-md-6.carry-col.carry-col-media1st
         h3 Buy some Cheese. Help pay for servers.
-        p $1/Cheese. It's worth it. 
+        p Just <strong>$1 per (digital) Cheese</strong>. It's worth it. 
           br
           | Payment processing is done through Stripe or Paypal. We never see your credit card information. 
         if user
@@ -85,6 +85,10 @@ block content
                 |  via Stripe
           .col-md-6
             #paypal-container(style="display:inline-block;")
+        .row
+          .col-md-12
+            <br>
+            p Need support? Send us an email at <a href="mailto:support@yasp.co?Subject=YASP%20Cheese" target="_top">support@yasp.co</a>.
         #cancel-info(style="display:none; margin-top: 14px")
           p 
             i.fa.fa-info-circle.carry-info-icon
