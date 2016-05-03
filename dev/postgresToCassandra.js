@@ -1,3 +1,6 @@
+var args = process.argv.slice(2);
+var start_id = Number(args[0]) || 0;
+var end_id = Number(args[1]) || 2400000000;
 var JSONStream = require('JSONStream');
 var constants = require('../constants');
 var db = require('../store/db');
@@ -8,9 +11,6 @@ var utility = require('../util/utility');
 var async = require('async');
 var updateCache = playerCache.updateCache;
 var serialize = utility.serialize;
-var args = process.argv.slice(2);
-var start_id = Number(args[0]) || 0;
-var end_id = Number(args[1]) || 2400000000;
 const cluster = require('cluster');
 var bucket_size = 100000000;
 if (cluster.isMaster)
@@ -45,11 +45,11 @@ else
             throw err;
         }
         result = result ? Number(result) : bucket;
-        process(result);
+        run(result);
     });
 }
 
-function process(start_id)
+function run(start_id)
 {
     var stream = db.select().from('matches').where('match_id', '>=', start_id).where('match_id', '<', start_id + bucket_size).orderBy("match_id", "asc").stream();
     stream.on('end', exit);

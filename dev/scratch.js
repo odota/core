@@ -1,5 +1,6 @@
-var cp = require('child_process');
-cp.execSync('curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env');
+console.log(process.argv);
+//var cp = require('child_process');
+//cp.execSync('curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env');
 /*
 var utility = require('../utility');
 var queueReq = utility.queueReq;
