@@ -5,6 +5,7 @@ var config = require('../config');
 var constants = require('../constants.js');
 var redis = require('../store/redis');
 var queue = require('../store/queue');
+//var cassandra = require('../store/cassandra');
 var queries = require('../store/queries');
 config.PORT = ""; //use service defaults
 config.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
@@ -12,6 +13,7 @@ config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
 config.ENABLE_MATCH_CACHE = 1;
+//config.ENABLE_PLAYER_CACHE = 1;
 config.FRONTEND_PORT = 5001;
 config.PARSER_PORT = 5201;
 var async = require('async');
@@ -234,6 +236,20 @@ describe("web", function()
             it('/players/:valid/' + t, function(done)
             {
                 supertest(app).get('/players/120269134/' + t).expect(200).end(function(err, res)
+                {
+                    done(err);
+                });
+            });
+        });
+    });
+    describe("player page tests with filter", function()
+    {
+        var tests = Object.keys(constants.player_pages);
+        tests.forEach(function(t)
+        {
+            it('/players/:valid/' + t, function(done)
+            {
+                supertest(app).get('/players/120269134/' + t + "?hero_id=1").expect(200).end(function(err, res)
                 {
                     done(err);
                 });

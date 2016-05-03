@@ -3,6 +3,7 @@ language: node_js
 services:
 - docker
 - redis-server
+- cassandra
 node_js:
 - 'node'
 before_install:
