@@ -115,39 +115,7 @@ invokeInterval(function cleanup(cb)
     {
         redis.zremrangebyscore(retkey, 0, moment().subtract(1, 'day').format('X'));
     });
-    async.parallel(
-    {
-        "picks": function(cb)
-        {
-            redis.get('picks_match_count', function(err, count)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                count = Number(count);
-                if (count > 10000000)
-                {
-                    redis.keys('picks_*', function(err, keys)
-                    {
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        keys.forEach(function(k)
-                        {
-                            redis.del(k);
-                        });
-                        cb(err);
-                    });
-                }
-                else
-                {
-                    cb(err);
-                }
-            });
-        }
-    }, cb);
+    cb();
 }, 60 * 60 * 1000);
 invokeInterval(function cleanQueues(cb)
 {

@@ -43,7 +43,7 @@ var defaults = {
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
-    "BENCHMARK_RETENTION_HOURS": 3, //hours in block to retain benchmark data
+    "BENCHMARK_RETENTION_HOURS": 2, //hours in block to retain benchmark data
     "MATCH_RATING_RETENTION_HOURS": 24, //hours in block to retain match rating data
     "PROVIDER": "", //The cloud provider used by the application (determines how environment data is downloaded)
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
