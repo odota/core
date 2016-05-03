@@ -89,6 +89,7 @@ function processCache(job, cb)
 
 function incrCounts(match)
 {
+    var expire = moment().add(1, 'week').startOf('week').format('X');
     //count match for telemetry
     redis.zadd("added_match", moment().format('X'), match.match_id);
     //increment picks
@@ -117,7 +118,6 @@ function incrCounts(match)
         addToPickResults(k_combinations(radiant, i), i, match.radiant_win, match);
         addToPickResults(k_combinations(dire, i), i, !match.radiant_win, match);
     }
-    var expire = moment().add(1, 'week').startOf('week').format('X');
     redis.incr('picks_match_count');
     redis.expireat('picks_match_count', expire);
 
