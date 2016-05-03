@@ -239,7 +239,7 @@ function insertMatch(db, redis, match, options, cb)
         {
             return cb();
         }
-        console.log('[INSERTMATCH] upserting into Cassandra');
+        //console.log('[INSERTMATCH] upserting into Cassandra');
         cleanRowCassandra(cassandra, 'matches', match, function(err, match)
         {
             if (err)
@@ -326,7 +326,7 @@ function insertMatch(db, redis, match, options, cb)
 
     function telemetry(cb)
     {
-        console.log('[INSERTMATCH] updating telemetry');
+        //console.log('[INSERTMATCH] updating telemetry');
         var types = {
             "api": 'matches_last_added',
             "parsed": 'matches_last_parsed'

@@ -45,7 +45,7 @@ function addToQueue(queue, payload, options, cb)
         }
     }).then(function(queuejob)
     {
-        console.log("created %s jobId: %s", queue.name, queuejob.jobId);
+        //console.log("created %s jobId: %s", queue.name, queuejob.jobId);
         cb(null, queuejob);
     }).catch(cb);
 }
