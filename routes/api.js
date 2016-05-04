@@ -306,6 +306,8 @@ module.exports = function(db, redis, cassandra)
             redis.subscribe('logParse:' + req.params.match_id);
             redis.on('message', function(channel, message)
             {
+                //unsubscribe on end
+                //end http stream
                 console.log(channel, message);
             });
         });
