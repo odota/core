@@ -277,6 +277,11 @@ function runParse(match, job, cb)
         {
             return cb(err);
         }
+        else if (job.data.logParse)
+        {
+            //return empty parsed_data
+            return cb(null, {});
+        }
         else
         {
             try
