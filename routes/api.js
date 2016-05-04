@@ -314,17 +314,22 @@ module.exports = function(db, redis, cassandra)
             {
                 return cb(err);
             }
-            redis.subscribe('logParse:' + identifier + ':' + req.params.match_id);
-            redis.on('message', function(channel, message)
+            res.setHeader('Content-Type', 'text/event-stream');
+            res.setHeader('Cache-Control', 'no-cache');
+            var subscriber = require('../store/pubsub')();
+            subscriber.subscribe('logParse:' + identifier + ':' + req.params.match_id);
+            subscriber.on('message', function(channel, message)
             {
                 if (message === "END")
                 {
-                    redis.unsubscribe('logParse:' + identifier + ':' + req.params.match_id);
+                    subscriber.unsubscribe('logParse:' + identifier + ':' + req.params.match_id);
+                    subscriber.quit();
                     res.end();
                 }
                 else
                 {
                     res.write(message);
+                    res.flush();
                 }
             });
         });

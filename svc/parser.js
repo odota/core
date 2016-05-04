@@ -232,13 +232,15 @@ function runParse(match, job, cb)
     parser.stdout.on('error', exit);
     if (job.data.logParse)
     {
+        var publisher = require('../store/pubsub')();
         parser.stdout.on('data', function(data)
         {
-            redis.publish('logParse:' + job.data.logParse + ':' + match.match_id, data);
+            publisher.publish('logParse:' + job.data.logParse + ':' + match.match_id, data);
         });
         parser.stdout.on('end', function(data)
         {
-            redis.publish('logParse:' + job.data.logParse + ':' + match.match_id, "END");
+            publisher.publish('logParse:' + job.data.logParse + ':' + match.match_id, "END");
+            publisher.quit();
         });
     }
     parser.stderr.on('data', function printStdErr(data)
