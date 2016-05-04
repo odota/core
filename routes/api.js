@@ -317,19 +317,22 @@ module.exports = function(db, redis, cassandra)
             }
             res.setHeader('Content-Type', 'text/event-stream');
             res.setHeader('Cache-Control', 'no-cache');
-            subscriber.subscribe('logParse:' + identifier + ':' + req.params.match_id);
+            var thisChannel = 'logParse:' + identifier + ':' + req.params.match_id;
+            subscriber.subscribe(;
             subscriber.on('message', function(channel, message)
             {
-                if (message === "END")
+                if (channel === thisChannel)
                 {
-                    subscriber.unsubscribe('logParse:' + identifier + ':' + req.params.match_id);
-                    subscriber.quit();
-                    res.end();
-                }
-                else
-                {
-                    res.write(message);
-                    res.flush();
+                    if (message === "END")
+                    {
+                        subscriber.unsubscribe('logParse:' + identifier + ':' + req.params.match_id);
+                        res.end();
+                    }
+                    else
+                    {
+                        res.write(message);
+                        res.flush();
+                    }
                 }
             });
         });
