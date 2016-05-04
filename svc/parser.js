@@ -21,6 +21,7 @@ var processParsedData = require('../processors/processParsedData');
 var processMetadata = require('../processors/processMetadata');
 var processExpand = require('../processors/processExpand');
 var startedAt = new Date();
+var publisher = require('redis').createClient(config.REDIS_URL);
 var request = require('request');
 var cp = require('child_process');
 var progress = require('request-progress');
@@ -232,7 +233,6 @@ function runParse(match, job, cb)
     parser.stdout.on('error', exit);
     if (job.data.logParse)
     {
-        var publisher = require('../store/pubsub')();
         parser.stdout.on('data', function(data)
         {
             publisher.publish('logParse:' + job.data.logParse + ':' + match.match_id, data);

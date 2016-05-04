@@ -17,8 +17,9 @@ var queries = require('../store/queries');
 var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
 var buildStatus = require('../store/buildStatus');
-const crypto = require('crypto');
 var utility = require('../util/utility');
+var subscriber = require('redis').createClient(config.REDIS_URL);
+const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {
     api.get('/items', function(req, res)
@@ -316,7 +317,6 @@ module.exports = function(db, redis, cassandra)
             }
             res.setHeader('Content-Type', 'text/event-stream');
             res.setHeader('Cache-Control', 'no-cache');
-            var subscriber = require('../store/pubsub')();
             subscriber.subscribe('logParse:' + identifier + ':' + req.params.match_id);
             subscriber.on('message', function(channel, message)
             {
