@@ -62,7 +62,8 @@ module.exports = function(db, redis, cassandra)
             {
                 cb(null, constants.match_pages);
             },
-            player_fields: function(cb){
+            player_fields: function(cb)
+            {
                 cb(null, constants.player_fields);
             },
         }, function(err, result)
@@ -115,14 +116,16 @@ module.exports = function(db, redis, cassandra)
     api.get('/picks/:n');
     api.get('/rankings/:hero_id');
     api.get('/faq');
-    api.get('/status', function (req, res, cb){
-      buildStatus(db, redis, function(err, status){
-          if (err)
-          {
-              return cb(err);
-          }
-          res.json(status);
-      })  
+    api.get('/status', function(req, res, cb)
+    {
+        buildStatus(db, redis, function(err, status)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(status);
+        })
     });
     //TODO will need to figure out how to do slugs if @albertcui insists on routing with them
     api.get('/blog/:n');
@@ -144,14 +147,12 @@ module.exports = function(db, redis, cassandra)
         {
             return cb(400);
         }
-        
         queries.searchPlayer(db, req.query.q, function(err, result)
         {
             if (err)
             {
-               return cb(err);
+                return cb(err);
             }
-
             res.json(result);
         });
     });
@@ -287,6 +288,27 @@ module.exports = function(db, redis, cassandra)
                 });
             }
         }).catch(cb);
+    });
+    api.get('/logs/:match_id', function(req, res, cb)
+    {
+        queue.addToQueue(pQueue,
+        {
+            match_id: req.params.match_id
+        },
+        {
+            logParse: true
+        }, function(err)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            redis.subscribe('logParse:' + req.params.match_id);
+            redis.on('message', function(channel, message)
+            {
+                console.log(channel, message);
+            });
+        });
     });
     return api;
 };

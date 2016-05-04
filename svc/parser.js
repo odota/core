@@ -62,6 +62,7 @@ app.listen(config.PARSER_PORT);
 pQueue.process(1, function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
+    console.log(job);
     var match = job.data.payload;
     async.series(
     {
