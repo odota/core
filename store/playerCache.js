@@ -100,10 +100,13 @@ function updateCache(match, cb)
         {
             players.forEach(function(p)
             {
-                //add account id to each player so we know what caches to update
-                p.account_id = match.pgroup[p.player_slot].account_id;
-                //add hero_id to each player so we update records with hero played
-                p.hero_id = match.pgroup[p.player_slot].hero_id;
+                if (match.pgroup[p.player_slot])
+                {
+                    //add account id to each player so we know what caches to update
+                    p.account_id = match.pgroup[p.player_slot].account_id;
+                    //add hero_id to each player so we update records with hero played
+                    p.hero_id = match.pgroup[p.player_slot].hero_id;
+                }
             });
         }
         async.eachSeries(players, function(player_match, cb)
