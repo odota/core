@@ -62,7 +62,6 @@ app.listen(config.PARSER_PORT);
 pQueue.process(1, function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
-    console.log(job);
     var match = job.data.payload;
     async.series(
     {
@@ -98,7 +97,11 @@ pQueue.process(1, function(job, cb)
         },
         "insertMatch": function(cb)
         {
-            if (match.replay_blob_key)
+            if (job.data.logParse)
+            {
+                cb();
+            }
+            else if (match.replay_blob_key)
             {
                 insertUploadedParse(match, cb);
             }
@@ -227,6 +230,10 @@ function runParse(match, job, cb)
     });
     parser.stdin.on('error', exit);
     parser.stdout.on('error', exit);
+    parser.stderr.on('data', function printStdErr(data)
+    {
+        console.log(data.toString());
+    });
     var parseStream = ndjson.parse();
     parseStream.on('data', function handleStream(e)
     {
@@ -235,18 +242,18 @@ function runParse(match, job, cb)
             console.log('received epilogue');
             incomplete = false;
         }
+        if (job.data.logParse)
+        {
+            redis.publish('logParse:' + job.data.logParse + ':' + match.match_id, JSON.stringify(e));
+        }
         entries.push(e);
     });
     parseStream.on('end', exit);
     parseStream.on('error', exit);
-    // Pipe together the streams
+    // Pipe streams together
     inStream.pipe(bz.stdin);
     bz.stdout.pipe(parser.stdin);
     parser.stdout.pipe(parseStream);
-    parser.stderr.on('data', function printStdErr(data)
-    {
-        console.log(data.toString());
-    });
 
     function exit(err)
     {
@@ -255,7 +262,7 @@ function runParse(match, job, cb)
             return;
         }
         exited = true;
-        err = err || incomplete;
+        err = err || incomplete || !job.data.logParse;
         clearTimeout(timeout);
         if (err)
         {

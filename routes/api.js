@@ -12,6 +12,7 @@ var multer = require('multer')(
 });
 var queue = require('../store/queue');
 var rQueue = queue.getQueue('request');
+var pQueue = queue.getQueue('parse');
 var queries = require('../store/queries');
 var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
@@ -291,24 +292,29 @@ module.exports = function(db, redis, cassandra)
     });
     api.get('/logs/:match_id', function(req, res, cb)
     {
+        var timestamp = +new Date();
         queue.addToQueue(pQueue,
         {
-            match_id: req.params.match_id
+            match_id: req.params.match_id,
+            logParse: timestamp,
         },
         {
-            logParse: true
+            attempts: 1,
         }, function(err)
         {
             if (err)
             {
                 return cb(err);
             }
-            redis.subscribe('logParse:' + req.params.match_id);
+            redis.subscribe('logParse:' + timestamp + ':' + req.params.match_id);
             redis.on('message', function(channel, message)
             {
-                //unsubscribe on end
-                //end http stream
-                console.log(channel, message);
+                res.write(message);
+                if (JSON.parse(message).type === "epilogue")
+                {
+                    redis.unsubscribe('logParse:' + timestamp + ':' + req.params.match_id);
+                    res.end();
+                }
             });
         });
     });
