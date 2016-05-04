@@ -318,7 +318,7 @@ module.exports = function(db, redis, cassandra)
             res.setHeader('Content-Type', 'text/event-stream');
             res.setHeader('Cache-Control', 'no-cache');
             var thisChannel = 'logParse:' + identifier + ':' + req.params.match_id;
-            subscriber.subscribe(;
+            subscriber.subscribe(thisChannel);
             subscriber.on('message', function(channel, message)
             {
                 if (channel === thisChannel)
