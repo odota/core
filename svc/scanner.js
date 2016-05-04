@@ -69,8 +69,9 @@ function start()
     {
         scanApi(config.START_SEQ_NUM);
     }
-    else
+    else if (config.NODE_ENV !== "production")
     {
+        //never do this in production to avoid skipping sequence number if we didn't pull .env properly
         var container = generateJob("api_history",
         {});
         getData(container.url, function(err, data)
@@ -82,6 +83,10 @@ function start()
             }
             scanApi(data.result.matches[0].match_seq_num);
         });
+    }
+    else
+    {
+        throw "failed to initialize sequence number";
     }
 }
 
