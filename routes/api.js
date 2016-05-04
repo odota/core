@@ -18,6 +18,7 @@ var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
 var buildStatus = require('../store/buildStatus');
 const crypto = require('crypto');
+var utility = require('../util/utility');
 module.exports = function(db, redis, cassandra)
 {
     api.get('/items', function(req, res)
@@ -292,11 +293,18 @@ module.exports = function(db, redis, cassandra)
     });
     api.get('/logs/:match_id', function(req, res, cb)
     {
-        var timestamp = +new Date();
+        if (config.LOGPARSE_SECRET && req.query.key !== config.LOGPARSE_SECRET)
+        {
+            return res.status(403).json(
+            {
+                error: "invalid key"
+            });
+        }
+        var identifier = utility.generateUUID();
         queue.addToQueue(pQueue,
         {
             match_id: req.params.match_id,
-            logParse: timestamp,
+            logParse: identifier,
         },
         {
             attempts: 1,
@@ -306,14 +314,17 @@ module.exports = function(db, redis, cassandra)
             {
                 return cb(err);
             }
-            redis.subscribe('logParse:' + timestamp + ':' + req.params.match_id);
+            redis.subscribe('logParse:' + identifier + ':' + req.params.match_id);
             redis.on('message', function(channel, message)
             {
-                res.write(message);
-                if (JSON.parse(message).type === "epilogue")
+                if (message === "END")
                 {
-                    redis.unsubscribe('logParse:' + timestamp + ':' + req.params.match_id);
+                    redis.unsubscribe('logParse:' + identifier + ':' + req.params.match_id);
                     res.end();
+                }
+                else
+                {
+                    res.write(message);
                 }
             });
         });

@@ -230,6 +230,17 @@ function runParse(match, job, cb)
     });
     parser.stdin.on('error', exit);
     parser.stdout.on('error', exit);
+    if (job.data.logParse)
+    {
+        parser.stdout.on('data', function(data)
+        {
+            redis.publish('logParse:' + job.data.logParse + ':' + match.match_id, data);
+        });
+        parser.stdout.on('end', function(data)
+        {
+            redis.publish('logParse:' + job.data.logParse + ':' + match.match_id, "END");
+        });
+    }
     parser.stderr.on('data', function printStdErr(data)
     {
         console.log(data.toString());
@@ -241,10 +252,6 @@ function runParse(match, job, cb)
         {
             console.log('received epilogue');
             incomplete = false;
-        }
-        if (job.data.logParse)
-        {
-            redis.publish('logParse:' + job.data.logParse + ':' + match.match_id, JSON.stringify(e));
         }
         entries.push(e);
     });

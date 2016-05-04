@@ -767,30 +767,42 @@ function median(data)
     if (data.length % 2) return data[half];
     else return (data[half - 1] + data[half]) / 2.0;
 }
+
+function generateUUID() {
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+}
+
 module.exports = {
-    tokenize: tokenize,
-    generateJob: generateJob,
-    getData: getData,
-    convert32to64: convert32to64,
-    convert64to32: convert64to32,
-    isRadiant: isRadiant,
-    mergeObjects: mergeObjects,
-    mode: mode,
-    generatePositionData: generatePositionData,
-    getParseSchema: getParseSchema,
-    isSignificant: isSignificant,
-    max: max,
-    min: min,
-    preprocessQuery: preprocessQuery,
-    getAggs: getAggs,
-    reduceAggregable: reduceAggregable,
-    serialize: serialize,
-    getAlphaHeroes: getAlphaHeroes,
-    prettyPrint: prettyPrint,
-    getStartOfBlockHours: getStartOfBlockHours,
-    percentToTextClass: percentToTextClass,
-    average: average,
-    stdDev: stdDev,
-    median: median,
+    tokenize,
+    generateJob,
+    getData,
+    convert32to64,
+    convert64to32,
+    isRadiant,
+    mergeObjects,
+    mode,
+    generatePositionData,
+    getParseSchema,
+    isSignificant,
+    max,
+    min,
+    preprocessQuery,
+    getAggs,
+    reduceAggregable,
+    serialize,
     deserialize,
+    getAlphaHeroes,
+    prettyPrint,
+    getStartOfBlockHours,
+    percentToTextClass,
+    average,
+    stdDev,
+    median,
+    generateUUID,
 };
