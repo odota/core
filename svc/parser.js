@@ -271,7 +271,7 @@ function runParse(match, job, cb)
             return;
         }
         exited = true;
-        err = err || incomplete || !job.data.logParse;
+        err = err || incomplete;
         clearTimeout(timeout);
         if (err)
         {
