@@ -20,6 +20,7 @@ mixin teammate_table(rows, short)
             if (teammate.last_login)
               img.user(src=constants.ICON_PATH, title="This user is registered!")
             a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+            span.small(style="margin-left:1em;"): a.text-muted(href='./matches?included_account_id='+teammate.account_id) (Matches)
           td=teammate.last_played
           td.rankable= teammate.with_games
           td.rankable

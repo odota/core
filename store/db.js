@@ -12,7 +12,11 @@ console.error('connecting %s', config.POSTGRES_URL);
 var db = require('knex')(
 {
   client: 'pg',
-  connection: config.POSTGRES_URL
+  connection: config.POSTGRES_URL,
+  pool:
+  {
+    max: 20,
+  },
 });
 db.client.pool.on('error', function(err)
 {
