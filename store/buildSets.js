@@ -7,6 +7,8 @@ module.exports = function buildSets(db, redis, cb) {
     async.parallel({
         //players in this set have their matches parsed
         "trackedPlayers": function(cb) {
+            //TODO replace redis.keys() with this
+            //redis.zrangebyscore('visitors', moment().subtract(config.UNTRACK_DAYS, 'days'), 'inf', function(err, result){
             redis.keys("visit:*", function(err, result) {
                 var t = {};
                 result.forEach(function(redis_key) {

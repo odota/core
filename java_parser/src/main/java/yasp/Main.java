@@ -282,6 +282,9 @@ public class Main {
     @UsesEntities
     @OnTickStart
     public void onTickStart(Context ctx, boolean synthetic) {
+        //TODO check engine to decide whether to use s1 or s2 entities
+        //ctx.getEngineType()
+        
         //s1 DT_DOTAGameRulesProxy
         Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
         Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");

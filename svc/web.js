@@ -46,6 +46,7 @@ passport.deserializeUser(function(account_id, done)
         account_id: account_id
     }).asCallback(function(err, player)
     {
+        redis.zadd('visitors', moment().format('X'), account_id);
         redis.setex("visit:" + account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, account_id);
         done(err, player);
     });
@@ -71,10 +72,7 @@ passport.use(new SteamStrategy(
             var vanityUrl = s[s.length - 2];
             redis.set("vanity:" + vanityUrl, player.account_id);
         }
-        buildSets(db, redis, function(err)
-        {
-            return cb(err, player);
-        });
+        return cb(err, player);
     });
 }));
 //APP config
