@@ -11,8 +11,7 @@ module.exports = function buildSets(db, redis, cb) {
         "trackedPlayers": function(cb) {
             redis.zrangebyscore('visitors', moment().subtract(config.UNTRACK_DAYS, 'days').format('X'), '+inf', function(err, result){
                 var t = {};
-                result.forEach(function(redis_key) {
-                    var account_id = redis_key.split(":")[1];
+                result.forEach(function(account_id) {
                     t[account_id] = true;
                 });
                 //console.log(t);
