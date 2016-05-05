@@ -1048,9 +1048,9 @@ function searchPlayer(db, query, cb)
             db.raw(`
                     SELECT * FROM
                     (SELECT account_id, personaname, avatarfull, similarity(personaname, ?)
-                    FROM players WHERE personaname % ? LIMIT 1000) search
+                    FROM players WHERE personaname ILIKE ? LIMIT 1000) search
                     ORDER BY similarity DESC LIMIT 200
-                    `, [query, query]).asCallback(function(err, result)
+                    `, [query, '%'+query+'%']).asCallback(function(err, result)
             {
                 if (err)
                 {
