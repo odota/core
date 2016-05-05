@@ -47,7 +47,6 @@ passport.deserializeUser(function(account_id, done)
     }).asCallback(function(err, player)
     {
         redis.zadd('visitors', moment().format('X'), account_id);
-        redis.setex("visit:" + account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, account_id);
         done(err, player);
     });
 });

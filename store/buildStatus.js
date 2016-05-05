@@ -32,7 +32,7 @@ module.exports = function buildStatus(db, redis, cb)
         */
         tracked_players: function(cb)
         {
-            redis.zcount('visitors', moment().subtract(config.UNTRACK_DAYS, 'days'), 'inf', cb);
+            redis.zcount('visitors', moment().subtract(config.UNTRACK_DAYS, 'days').format('X'), '+inf', cb);
         },
         donated_players: function(cb)
         {
