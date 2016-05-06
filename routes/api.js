@@ -81,22 +81,14 @@ module.exports = function()
     api.get('/faq');
     api.get('/status', function(req, res, cb)
     {
-<<<<<<< HEAD
         buildStatus(function(err, status)
-=======
-        buildStatus(db, redis, function(err, status)
->>>>>>> stream_api
         {
             if (err)
             {
                 return cb(err);
             }
             res.json(status);
-<<<<<<< HEAD
         });
-=======
-        })
->>>>>>> stream_api
     });
     //TODO will need to figure out how to do slugs if @albertcui insists on routing with them
     api.get('/blog/:n');
@@ -118,11 +110,7 @@ module.exports = function()
         {
             return cb(400);
         }
-<<<<<<< HEAD
         queries.searchPlayer(req.query.q, function(err, result)
-=======
-        queries.searchPlayer(db, req.query.q, function(err, result)
->>>>>>> stream_api
         {
             if (err)
             {
