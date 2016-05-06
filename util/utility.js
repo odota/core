@@ -218,7 +218,7 @@ function getData(url, cb)
         parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
     }
     var target = urllib.format(parse);
-    console.log("getData: %s", target);
+    console.log("%s - getData: %s", new Date(), target);
     return setTimeout(function()
     {
         request(
@@ -266,7 +266,7 @@ function getData(url, cb)
                     }
                     else
                     {
-                        logger.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
+                        console.log.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
                         return getData(url, cb);
                     }
                 }
