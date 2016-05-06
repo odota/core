@@ -3,8 +3,8 @@
  **/
 var config = require('../config');
 var constants = require('../constants');
-var db = require('../store/db');
-var redis = require('../store/redis');
+var db = require('./db');
+var redis = require('./redis');
 var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 var utility = require('../util/utility');
 var compute = require('../util/compute');
@@ -1026,16 +1026,15 @@ function mmrEstimate(db, redis, account_id, cb)
     });
 }
 /**
- * @param db - databse object
  * @param search - object to for where parameter of query
  * @param cb - callback
  */
-function findPlayer(db, search, cb)
+function findPlayer(search, cb)
 {
     db.first(['account_id', 'personaname', 'avatarfull']).from('players').where(search).asCallback(cb);
 }
 
-function searchPlayer(db, query, cb)
+function searchPlayer(query, cb)
 {
     async.parallel(
     {
@@ -1047,7 +1046,7 @@ function searchPlayer(db, query, cb)
             }
             else
             {
-                findPlayer(db,
+                findPlayer(
                 {
                     account_id: Number(query)
                 }, callback);
@@ -1116,6 +1115,48 @@ function getMatchRating(redis, match, cb)
         cb(err, avg);
     });
 }
+
+function getMetadata(options, cb)
+{
+    async.parallel(
+    {
+        banner: function(cb)
+        {
+            redis.get("banner", cb);
+        },
+        cheese: function(cb)
+        {
+            redis.get("cheese_goal", function(err, result)
+            {
+                return cb(err,
+                {
+                    cheese: result,
+                    goal: config.GOAL
+                });
+            });
+        },
+        user: function(cb)
+        {
+            cb(null, options.user);
+        },
+        navbar_pages: function(cb)
+        {
+            cb(null, constants.navbar_pages);
+        },
+        player_pages: function(cb)
+        {
+            cb(null, constants.player_pages);
+        },
+        match_pages: function(cb)
+        {
+            cb(null, constants.match_pages);
+        },
+        player_fields: function(cb)
+        {
+            cb(null, constants.player_fields);
+        },
+    }, cb);
+}
 module.exports = {
     getSets,
     insertPlayer,
@@ -1139,4 +1180,5 @@ module.exports = {
     mmrEstimate,
     searchPlayer,
     getMatchRating,
+    getMetadata,
 };

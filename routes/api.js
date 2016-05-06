@@ -32,43 +32,9 @@ module.exports = function()
     });
     api.get('/metadata', function(req, res, cb)
     {
-        async.parallel(
+        queries.getMetadata(
         {
-            banner: function(cb)
-            {
-                redis.get("banner", cb);
-            },
-            cheese: function(cb)
-            {
-                redis.get("cheese_goal", function(err, result)
-                {
-                    return cb(err,
-                    {
-                        cheese: result,
-                        goal: config.GOAL
-                    });
-                });
-            },
-            user: function(cb)
-            {
-                cb(null, req.user);
-            },
-            navbar_pages: function(cb)
-            {
-                cb(null, constants.navbar_pages);
-            },
-            player_pages: function(cb)
-            {
-                cb(null, constants.player_pages);
-            },
-            match_pages: function(cb)
-            {
-                cb(null, constants.match_pages);
-            },
-            player_fields: function(cb)
-            {
-                cb(null, constants.player_fields);
-            },
+            user: req.user
         }, function(err, result)
         {
             if (err)
@@ -115,7 +81,7 @@ module.exports = function()
     api.get('/faq');
     api.get('/status', function(req, res, cb)
     {
-        buildStatus(db, redis, function(err, status)
+        buildStatus(function(err, status)
         {
             if (err)
             {
@@ -144,7 +110,7 @@ module.exports = function()
         {
             return cb(400);
         }
-        queries.searchPlayer(db, req.query.q, function(err, result)
+        queries.searchPlayer(req.query.q, function(err, result)
         {
             if (err)
             {
@@ -288,16 +254,20 @@ module.exports = function()
     });
     api.get('/logs/:match_id', function(req, res, cb)
     {
-        db.select('log').from('match_logs').where({match_id: req.params.match_id}).asCallback(function(err, result){
-           if (err)
-           {
-               return cb(err);
-           }
-           if (!result.length)
-           {
-               return cb();
-           }
-           return res.send(result[0].log);
+        db.select('log').from('match_logs').where(
+        {
+            match_id: req.params.match_id
+        }).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            if (!result.length)
+            {
+                return cb();
+            }
+            return res.send(result[0].log);
         });
     });
     return api;

@@ -274,7 +274,7 @@ app.get('/request', function(req, res)
 });
 app.route('/status').get(function(req, res, next)
 {
-    status(db, redis, function(err, result)
+    status(function(err, result)
     {
         if (err)
         {
@@ -420,7 +420,7 @@ app.get('/search', function(req, res, cb)
 {
     if (req.query.q)
     {
-        queries.searchPlayer(db, req.query.q, function(err, result)
+        queries.searchPlayer(req.query.q, function(err, result)
         {
             if (err)
             {
@@ -431,7 +431,7 @@ app.get('/search', function(req, res, cb)
                 query: req.query.q,
                 result: result
             });
-        })
+        });
     }
     else
     {
