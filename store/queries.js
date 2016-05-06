@@ -1,16 +1,18 @@
 /**
  * Provides functions to get/insert data into data stores.
  **/
+var config = require('../config');
+var constants = require('../constants');
+var db = require('./db');
+var redis = require('./redis');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 var utility = require('../util/utility');
 var compute = require('../util/compute');
 var benchmarks = require('../util/benchmarks');
 var filter = require('../util/filter');
-var config = require('../config');
-var constants = require('../constants');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
 var async = require('async');
-var os = require('os');
 var convert64to32 = utility.convert64to32;
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
@@ -24,7 +26,7 @@ var deserialize = utility.deserialize;
 var columnInfo = {};
 var cassandraColumnInfo = {};
 
-function getSets(redis, cb)
+function getSets(cb)
 {
     async.parallel(
     {
@@ -234,7 +236,6 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatchCassandra(cb)
     {
-        var cassandra = options.cassandra;
         if (!cassandra)
         {
             return cb();
@@ -407,6 +408,14 @@ function insertMatchSkill(db, row, cb)
     }, cb);
 }
 
+function insertMatchLogs(row, cb)
+{
+    upsert(db, 'match_logs', row,
+    {
+        match_id: row.match_id
+    }, cb);
+}
+
 function getMatch(db, redis, match_id, options, cb)
 {
     db.first(['matches.match_id', 'match_skill.skill', 'radiant_win', 'start_time', 'duration', 'tower_status_dire', 'tower_status_radiant', 'barracks_status_dire', 'barracks_status_radiant', 'cluster', 'lobby_type', 'leagueid', 'game_mode', 'picks_bans', 'parse_status', 'chat', 'teamfights', 'objectives', 'radiant_gold_adv', 'radiant_xp_adv', 'version']).from('matches').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').where(
@@ -428,9 +437,9 @@ function getMatch(db, redis, match_id, options, cb)
             {
                 "players": function(cb)
                 {
-                    if (options.cassandra)
+                    if (cassandra)
                     {
-                        options.cassandra.execute(`SELECT * FROM player_matches where match_id = ?`, [Number(match_id)],
+                        cassandra.execute(`SELECT * FROM player_matches where match_id = ?`, [Number(match_id)],
                         {
                             prepare: true,
                             fetchSize: 10,
@@ -590,7 +599,7 @@ function benchmarkMatch(redis, m, cb)
 function getPlayerMatches(db, queryObj, options, cb)
 {
     var stream;
-    if (options.cassandra)
+    if (cassandra)
     {
         //remove any compound names
         queryObj.project = queryObj.project.map(function(k)
@@ -608,7 +617,7 @@ function getPlayerMatches(db, queryObj, options, cb)
         {
             return !(k in extraProps);
         });
-        stream = options.cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
+        stream = cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
         {
             prepare: true,
             fetchSize: 1000,
@@ -629,7 +638,7 @@ function getPlayerMatches(db, queryObj, options, cb)
     });
     stream.on('data', function(m)
     {
-        if (options.cassandra)
+        if (cassandra)
         {
             m = deserialize(m);
         }
@@ -1016,16 +1025,15 @@ function mmrEstimate(db, redis, account_id, cb)
     });
 }
 /**
- * @param db - databse object
  * @param search - object to for where parameter of query
  * @param cb - callback
  */
-function findPlayer(db, search, cb)
+function findPlayer(search, cb)
 {
     db.first(['account_id', 'personaname', 'avatarfull']).from('players').where(search).asCallback(cb);
 }
 
-function searchPlayer(db, query, cb)
+function searchPlayer(query, cb)
 {
     async.parallel(
     {
@@ -1037,7 +1045,7 @@ function searchPlayer(db, query, cb)
             }
             else
             {
-                findPlayer(db,
+                findPlayer(
                 {
                     account_id: Number(query)
                 }, callback);
@@ -1106,12 +1114,55 @@ function getMatchRating(redis, match, cb)
         cb(err, avg);
     });
 }
+
+function getMetadata(options, cb)
+{
+    async.parallel(
+    {
+        banner: function(cb)
+        {
+            redis.get("banner", cb);
+        },
+        cheese: function(cb)
+        {
+            redis.get("cheese_goal", function(err, result)
+            {
+                return cb(err,
+                {
+                    cheese: result,
+                    goal: config.GOAL
+                });
+            });
+        },
+        user: function(cb)
+        {
+            cb(null, options.user);
+        },
+        navbar_pages: function(cb)
+        {
+            cb(null, constants.navbar_pages);
+        },
+        player_pages: function(cb)
+        {
+            cb(null, constants.player_pages);
+        },
+        match_pages: function(cb)
+        {
+            cb(null, constants.match_pages);
+        },
+        player_fields: function(cb)
+        {
+            cb(null, constants.player_fields);
+        },
+    }, cb);
+}
 module.exports = {
     getSets,
     insertPlayer,
     insertMatch,
     insertPlayerRating,
     insertMatchSkill,
+    insertMatchLogs,
     getMatch,
     getPlayerMatches,
     getPlayerRatings,
@@ -1128,4 +1179,5 @@ module.exports = {
     mmrEstimate,
     searchPlayer,
     getMatchRating,
+    getMetadata,
 };

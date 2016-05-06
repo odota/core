@@ -9,7 +9,6 @@ var buildSets = require('../store/buildSets');
 var redis = require('../store/redis');
 var status = require('../store/buildStatus');
 var db = require('../store/db');
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
 var queries = require('../store/queries');
 var matches = require('../routes/matches');
 var hyperopia = require('../routes/hyperopia');
@@ -211,7 +210,7 @@ app.route('/logout').get(function(req, res)
     req.session = null;
     res.redirect('/');
 });
-app.use('/api', api(db, redis, cassandra));
+app.use('/api', api());
 app.use(function(req, res, cb)
 {
     if (config.ENABLE_SPA_MODE)
@@ -275,7 +274,7 @@ app.get('/request', function(req, res)
 });
 app.route('/status').get(function(req, res, next)
 {
-    status(db, redis, function(err, result)
+    status(function(err, result)
     {
         if (err)
         {
@@ -299,8 +298,8 @@ app.route('/privacyterms').get(function(req, res)
 {
     res.redirect("/faq");
 });
-app.use('/matches', matches(db, redis, cassandra));
-app.use('/players', players(db, redis, cassandra));
+app.use('/matches', matches());
+app.use('/players', players());
 app.use('/names/:vanityUrl', function(req, res, cb)
 {
     redis.get("vanity:" + req.params.vanityUrl, function(err, result)
@@ -421,7 +420,7 @@ app.get('/search', function(req, res, cb)
 {
     if (req.query.q)
     {
-        queries.searchPlayer(db, req.query.q, function(err, result)
+        queries.searchPlayer(req.query.q, function(err, result)
         {
             if (err)
             {
@@ -432,7 +431,7 @@ app.get('/search', function(req, res, cb)
                 query: req.query.q,
                 result: result
             });
-        })
+        });
     }
     else
     {

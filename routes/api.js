@@ -13,11 +13,14 @@ var multer = require('multer')(
 var queue = require('../store/queue');
 var rQueue = queue.getQueue('request');
 var queries = require('../store/queries');
+var db = require('../store/db');
+var redis = require('../store/redis');
 var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
 var buildStatus = require('../store/buildStatus');
+var utility = require('../util/utility');
 const crypto = require('crypto');
-module.exports = function(db, redis, cassandra)
+module.exports = function()
 {
     api.get('/items', function(req, res)
     {
@@ -29,42 +32,9 @@ module.exports = function(db, redis, cassandra)
     });
     api.get('/metadata', function(req, res, cb)
     {
-        async.parallel(
+        queries.getMetadata(
         {
-            banner: function(cb)
-            {
-                redis.get("banner", cb);
-            },
-            cheese: function(cb)
-            {
-                redis.get("cheese_goal", function(err, result)
-                {
-                    return cb(err,
-                    {
-                        cheese: result,
-                        goal: config.GOAL
-                    });
-                });
-            },
-            user: function(cb)
-            {
-                cb(null, req.user);
-            },
-            navbar_pages: function(cb)
-            {
-                cb(null, constants.navbar_pages);
-            },
-            player_pages: function(cb)
-            {
-                cb(null, constants.player_pages);
-            },
-            match_pages: function(cb)
-            {
-                cb(null, constants.match_pages);
-            },
-            player_fields: function(cb){
-                cb(null, constants.player_fields);
-            },
+            user: req.user
         }, function(err, result)
         {
             if (err)
@@ -78,9 +48,6 @@ module.exports = function(db, redis, cassandra)
     {
         buildMatch(
         {
-            db: db,
-            redis: redis,
-            cassandra: cassandra,
             match_id: req.params.match_id
         }, function(err, match)
         {
@@ -95,9 +62,6 @@ module.exports = function(db, redis, cassandra)
     {
         buildPlayer(
         {
-            db: db,
-            redis: redis,
-            cassandra: cassandra,
             account_id: req.params.account_id,
             info: req.params.info,
             subkey: req.params.subkey,
@@ -115,14 +79,16 @@ module.exports = function(db, redis, cassandra)
     api.get('/picks/:n');
     api.get('/rankings/:hero_id');
     api.get('/faq');
-    api.get('/status', function (req, res, cb){
-      buildStatus(db, redis, function(err, status){
-          if (err)
-          {
-              return cb(err);
-          }
-          res.json(status);
-      })  
+    api.get('/status', function(req, res, cb)
+    {
+        buildStatus(function(err, status)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(status);
+        });
     });
     //TODO will need to figure out how to do slugs if @albertcui insists on routing with them
     api.get('/blog/:n');
@@ -144,14 +110,12 @@ module.exports = function(db, redis, cassandra)
         {
             return cb(400);
         }
-        
-        queries.searchPlayer(db, req.query.q, function(err, result)
+        queries.searchPlayer(req.query.q, function(err, result)
         {
             if (err)
             {
-               return cb(err);
+                return cb(err);
             }
-
             res.json(result);
         });
     });
@@ -287,6 +251,24 @@ module.exports = function(db, redis, cassandra)
                 });
             }
         }).catch(cb);
+    });
+    api.get('/logs/:match_id', function(req, res, cb)
+    {
+        db.select('log').from('match_logs').where(
+        {
+            match_id: req.params.match_id
+        }).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            if (!result.length)
+            {
+                return cb();
+            }
+            return res.send(result[0].log);
+        });
     });
     return api;
 };

@@ -5,7 +5,9 @@ var config = require('../config');
 var queue = require('./queue');
 var async = require('async');
 var moment = require('moment');
-module.exports = function buildStatus(db, redis, cb)
+var db = require('./db');
+var redis = require('./redis');
+module.exports = function buildStatus(cb)
 {
     console.time('status');
     async.series(

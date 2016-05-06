@@ -3,12 +3,12 @@
  **/
 var config = require('../config');
 var queries = require('./queries');
+var db = require('../store/db');
+var redis = require('../store/redis');
 var getMatch = queries.getMatch;
 
 function buildMatch(options, cb)
 {
-    var db = options.db;
-    var redis = options.redis;
     var match_id = options.match_id;
     var key = "match:" + match_id;
     redis.get(key, function(err, reply)
