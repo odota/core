@@ -185,3 +185,8 @@ CREATE TABLE notable_players (
   is_pro boolean,
   locked_until integer
 );
+
+CREATE TABLE match_logs (
+   match_id bigint PRIMARY KEY,
+   log text
+);

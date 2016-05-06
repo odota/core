@@ -407,6 +407,14 @@ function insertMatchSkill(db, row, cb)
     }, cb);
 }
 
+function insertMatchLogs(db, row, cb)
+{
+    upsert(db, 'match_logs', row,
+    {
+        match_id: row.match_id
+    }, cb);
+}
+
 function getMatch(db, redis, match_id, options, cb)
 {
     db.first(['matches.match_id', 'match_skill.skill', 'radiant_win', 'start_time', 'duration', 'tower_status_dire', 'tower_status_radiant', 'barracks_status_dire', 'barracks_status_radiant', 'cluster', 'lobby_type', 'leagueid', 'game_mode', 'picks_bans', 'parse_status', 'chat', 'teamfights', 'objectives', 'radiant_gold_adv', 'radiant_xp_adv', 'version']).from('matches').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').where(
@@ -1112,6 +1120,7 @@ module.exports = {
     insertMatch,
     insertPlayerRating,
     insertMatchSkill,
+    insertMatchLogs,
     getMatch,
     getPlayerMatches,
     getPlayerRatings,
