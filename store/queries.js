@@ -486,6 +486,7 @@ function getMatch(db, redis, match_id, options, cb)
                 }
                 var players = result.players;
                 var ab_upgrades = JSON.parse(result.ab_upgrades);
+                match.replay_url = result.replay_url;
                 async.each(players, function(p, cb)
                 {
                     //denormalized columns
