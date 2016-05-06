@@ -105,12 +105,12 @@ function doCleanRow(err, schema, row, cb)
     {
         return cb(err);
     }
-    var obj = {};
-    for (var key in row)
+    var obj = Object.assign({}, row);
+    for (var key in obj)
     {
-        if ((key in schema))
+        if (!(key in schema))
         {
-            obj[key] = row[key];
+            delete obj[key];
         }
     }
     return cb(err, obj);

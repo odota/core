@@ -30,7 +30,7 @@ var defaults = {
     "PROXY_PORT": "5300",
     "WORK_PORT": "5400",
     "SCANNER_PORT": "5500",
-    "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp", //connection string for PostgreSQL
+    "POSTGRES_URL": "postgresql://postgres:postgres@localhost/yasp", //connection string for PostgreSQL
     "REDIS_URL": "redis://127.0.0.1:6379/0", //connection string for Redis
     "CASSANDRA_URL": "cassandra://localhost/yasp", //connection string for Cassandra
     "RETRIEVER_HOST": "localhost:5100", //The host of the retriever (access to Dota 2 GC data)
