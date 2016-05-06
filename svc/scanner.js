@@ -95,7 +95,7 @@ function scanApi(seq_num)
     {
         start_at_match_seq_num: seq_num
     });
-    queries.getSets(redis, function(err, result)
+    queries.getSets(function(err, result)
     {
         if (err)
         {

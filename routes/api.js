@@ -82,8 +82,6 @@ module.exports = function()
     {
         buildMatch(
         {
-            db: db,
-            redis: redis,
             match_id: req.params.match_id
         }, function(err, match)
         {
@@ -98,8 +96,6 @@ module.exports = function()
     {
         buildPlayer(
         {
-            db: db,
-            redis: redis,
             account_id: req.params.account_id,
             info: req.params.info,
             subkey: req.params.subkey,
@@ -126,7 +122,7 @@ module.exports = function()
                 return cb(err);
             }
             res.json(status);
-        })
+        });
     });
     //TODO will need to figure out how to do slugs if @albertcui insists on routing with them
     api.get('/blog/:n');

@@ -6,7 +6,7 @@ var querystring = require('querystring');
 //list of fields that are numerical (continuous).  These define the possible categories for histograms, trends, and records
 var player_fields = constants.player_fields;
 var playerPages = constants.player_pages;
-module.exports = function(db, redis)
+module.exports = function()
 {
     players.get('/:account_id/:info?/:subkey?', function(req, res, cb)
     {
@@ -15,8 +15,6 @@ module.exports = function(db, redis)
         var subkey = req.params.subkey || "kills";
         buildPlayer(
         {
-            db: db,
-            redis: redis,
             account_id: req.params.account_id,
             info: info,
             subkey: subkey,

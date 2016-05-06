@@ -298,8 +298,8 @@ app.route('/privacyterms').get(function(req, res)
 {
     res.redirect("/faq");
 });
-app.use('/matches', matches(db, redis));
-app.use('/players', players(db, redis));
+app.use('/matches', matches());
+app.use('/players', players());
 app.use('/names/:vanityUrl', function(req, res, cb)
 {
     redis.get("vanity:" + req.params.vanityUrl, function(err, result)

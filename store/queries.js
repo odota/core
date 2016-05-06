@@ -1,6 +1,8 @@
 /**
  * Provides functions to get/insert data into data stores.
  **/
+var config = require('../config');
+var constants = require('../constants');
 var db = require('../store/db');
 var redis = require('../store/redis');
 var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
@@ -8,8 +10,6 @@ var utility = require('../util/utility');
 var compute = require('../util/compute');
 var benchmarks = require('../util/benchmarks');
 var filter = require('../util/filter');
-var config = require('../config');
-var constants = require('../constants');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
 var async = require('async');
@@ -27,7 +27,7 @@ var deserialize = utility.deserialize;
 var columnInfo = {};
 var cassandraColumnInfo = {};
 
-function getSets(redis, cb)
+function getSets(cb)
 {
     async.parallel(
     {
