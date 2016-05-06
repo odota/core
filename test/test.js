@@ -260,7 +260,7 @@ describe("web", function()
     {
         it('/matches/:invalid', function(done)
         {
-            supertest(app).get('/matches/1').expect(500).end(function(err, res)
+            supertest(app).get('/matches/1').expect(404).end(function(err, res)
             {
                 done(err);
             });
