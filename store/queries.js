@@ -59,7 +59,7 @@ function cleanRow(db, table, row, cb)
 {
     if (columnInfo[table])
     {
-        return del(null, columnInfo[table], row, cb);
+        return doCleanRow(null, columnInfo[table], row, cb);
     }
     else
     {
@@ -70,7 +70,7 @@ function cleanRow(db, table, row, cb)
                 return cb(err);
             }
             columnInfo[table] = result;
-            return del(err, columnInfo[table], row, cb);
+            return doCleanRow(err, columnInfo[table], row, cb);
         });
     }
 }
@@ -79,7 +79,7 @@ function cleanRowCassandra(cassandra, table, row, cb)
 {
     if (cassandraColumnInfo[table])
     {
-        return del(null, cassandraColumnInfo[table], row, cb);
+        return doCleanRow(null, cassandraColumnInfo[table], row, cb);
     }
     else
     {
@@ -94,30 +94,31 @@ function cleanRowCassandra(cassandra, table, row, cb)
             {
                 cassandraColumnInfo[table][r.column_name] = 1;
             });
-            return del(err, cassandraColumnInfo[table], row, cb);
+            return doCleanRow(err, cassandraColumnInfo[table], row, cb);
         });
     }
 }
 
-function del(err, schema, row, cb)
+function doCleanRow(err, schema, row, cb)
 {
     if (err)
     {
         return cb(err);
     }
+    var obj = {};
     for (var key in row)
     {
-        if (!(key in schema))
+        if ((key in schema))
         {
-            delete row[key];
+            obj[key] = row[key];
         }
     }
-    return cb(err, row);
+    return cb(err, obj);
 }
 
 function upsert(db, table, row, conflict, cb)
 {
-    cleanRow(db, table, row, function(err)
+    cleanRow(db, table, row, function(err, row)
     {
         if (err)
         {

@@ -92,6 +92,7 @@ pQueue.process(1, function(job, cb)
                     match[key] = match[key] || parsed_data[key];
                 }
                 match.parse_status = 2;
+                console.log(job.data.logParse, log.length)
                 if (log)
                 {
                     queries.insertMatchLogs(db, 
@@ -266,10 +267,6 @@ function runParse(match, job, cb)
     inStream.pipe(bz.stdin);
     bz.stdout.pipe(parser.stdin);
     parser.stdout.pipe(parseStream);
-    parser.stderr.on('data', function printStdErr(data)
-    {
-        console.log(data.toString());
-    });
 
     function exit(err)
     {
