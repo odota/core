@@ -41,13 +41,10 @@ passport.serializeUser(function(user, done)
 });
 passport.deserializeUser(function(account_id, done)
 {
-    db.first().from('players').where(
+    redis.zadd('visitors', moment().format('X'), account_id);
+    done(null,
     {
         account_id: account_id
-    }).asCallback(function(err, player)
-    {
-        redis.zadd('visitors', moment().format('X'), account_id);
-        done(err, player);
     });
 });
 passport.use(new SteamStrategy(

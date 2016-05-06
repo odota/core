@@ -256,14 +256,12 @@ module.exports = function(db, redis) {
     })
     donate.route('/thanks').get(function(req, res) {
         var cheeseCount = req.session.cheeseAmount || 0;
-        var cheeseTotal = req.user ? (req.user.cheese || 0) : cheeseCount;
         var subscription = req.session.subscription;
         var cancel = req.session.cancel;
         
         clearPaymentSessions(req);
         res.render("thanks", {
             cheeseCount: cheeseCount,
-            total: cheeseTotal,
             subscription: subscription,
             cancel: cancel
         });
