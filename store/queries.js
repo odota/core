@@ -1,6 +1,9 @@
 /**
  * Provides functions to get/insert data into data stores.
  **/
+var db = require('../store/db');
+var redis = require('../store/redis');
+var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 var utility = require('../util/utility');
 var compute = require('../util/compute');
 var benchmarks = require('../util/benchmarks');
@@ -234,7 +237,6 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatchCassandra(cb)
     {
-        var cassandra = options.cassandra;
         if (!cassandra)
         {
             return cb();
@@ -407,6 +409,14 @@ function insertMatchSkill(db, row, cb)
     }, cb);
 }
 
+function insertMatchLogs(row, cb)
+{
+    upsert(db, 'match_logs', row,
+    {
+        match_id: row.match_id
+    }, cb);
+}
+
 function getMatch(db, redis, match_id, options, cb)
 {
     db.first(['matches.match_id', 'match_skill.skill', 'radiant_win', 'start_time', 'duration', 'tower_status_dire', 'tower_status_radiant', 'barracks_status_dire', 'barracks_status_radiant', 'cluster', 'lobby_type', 'leagueid', 'game_mode', 'picks_bans', 'parse_status', 'chat', 'teamfights', 'objectives', 'radiant_gold_adv', 'radiant_xp_adv', 'version']).from('matches').leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id').where(
@@ -428,9 +438,9 @@ function getMatch(db, redis, match_id, options, cb)
             {
                 "players": function(cb)
                 {
-                    if (options.cassandra)
+                    if (cassandra)
                     {
-                        options.cassandra.execute(`SELECT * FROM player_matches where match_id = ?`, [Number(match_id)],
+                        cassandra.execute(`SELECT * FROM player_matches where match_id = ?`, [Number(match_id)],
                         {
                             prepare: true,
                             fetchSize: 10,
@@ -590,7 +600,7 @@ function benchmarkMatch(redis, m, cb)
 function getPlayerMatches(db, queryObj, options, cb)
 {
     var stream;
-    if (options.cassandra)
+    if (cassandra)
     {
         //remove any compound names
         queryObj.project = queryObj.project.map(function(k)
@@ -608,7 +618,7 @@ function getPlayerMatches(db, queryObj, options, cb)
         {
             return !(k in extraProps);
         });
-        stream = options.cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
+        stream = cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
         {
             prepare: true,
             fetchSize: 1000,
@@ -629,7 +639,7 @@ function getPlayerMatches(db, queryObj, options, cb)
     });
     stream.on('data', function(m)
     {
-        if (options.cassandra)
+        if (cassandra)
         {
             m = deserialize(m);
         }
@@ -1112,6 +1122,7 @@ module.exports = {
     insertMatch,
     insertPlayerRating,
     insertMatchSkill,
+    insertMatchLogs,
     getMatch,
     getPlayerMatches,
     getPlayerRatings,

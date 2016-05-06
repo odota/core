@@ -21,7 +21,6 @@ var processParsedData = require('../processors/processParsedData');
 var processMetadata = require('../processors/processMetadata');
 var processExpand = require('../processors/processExpand');
 var startedAt = new Date();
-var publisher = require('redis').createClient(config.REDIS_URL);
 var request = require('request');
 var cp = require('child_process');
 var progress = require('request-progress');
@@ -80,7 +79,7 @@ pQueue.process(1, function(job, cb)
         },
         "runParse": function(cb)
         {
-            runParse(match, job, function(err, parsed_data)
+            runParse(match, job, function(err, parsed_data, log)
             {
                 if (err)
                 {
@@ -93,16 +92,23 @@ pQueue.process(1, function(job, cb)
                     match[key] = match[key] || parsed_data[key];
                 }
                 match.parse_status = 2;
-                cb(err);
+                if (log)
+                {
+                    queries.insertMatchLogs(
+                    {
+                        match_id: match.match_id,
+                        log: log
+                    }, cb);
+                }
+                else
+                {
+                    cb(err);
+                }
             });
         },
         "insertMatch": function(cb)
         {
-            if (job.data.logParse)
-            {
-                cb();
-            }
-            else if (match.replay_blob_key)
+            if (match.replay_blob_key)
             {
                 insertUploadedParse(match, cb);
             }
@@ -175,6 +181,8 @@ function runParse(match, job, cb)
     // Parse state
     // Array buffer to store the events
     var entries = [];
+    // Empty string to hold raw log
+    var log = "";
     var incomplete = "incomplete";
     var exited = false;
     var timeout = setTimeout(function()
@@ -235,12 +243,7 @@ function runParse(match, job, cb)
     {
         parser.stdout.on('data', function(data)
         {
-            publisher.publish('logParse:' + job.data.logParse + ':' + match.match_id, data);
-        });
-        parser.stdout.on('end', function(data)
-        {
-            publisher.publish('logParse:' + job.data.logParse + ':' + match.match_id, "END");
-            publisher.quit();
+            log += data;
         });
     }
     parser.stderr.on('data', function printStdErr(data)
@@ -277,11 +280,6 @@ function runParse(match, job, cb)
         {
             return cb(err);
         }
-        else if (job.data.logParse)
-        {
-            //return empty parsed_data
-            return cb(null, {});
-        }
         else
         {
             try
@@ -301,7 +299,7 @@ function runParse(match, job, cb)
                 //processMultiKillStreaks();
                 //processReduce(res.expanded);
                 console.timeEnd(message);
-                return cb(err, parsed_data);
+                return cb(err, parsed_data, log);
             }
             catch (e)
             {

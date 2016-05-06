@@ -12,15 +12,15 @@ var multer = require('multer')(
 });
 var queue = require('../store/queue');
 var rQueue = queue.getQueue('request');
-var pQueue = queue.getQueue('parse');
 var queries = require('../store/queries');
+var db = require('../store/db');
+var redis = require('../store/redis');
 var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
 var buildStatus = require('../store/buildStatus');
 var utility = require('../util/utility');
-var subscriber = require('redis').createClient(config.REDIS_URL);
 const crypto = require('crypto');
-module.exports = function(db, redis, cassandra)
+module.exports = function()
 {
     api.get('/items', function(req, res)
     {
@@ -84,7 +84,6 @@ module.exports = function(db, redis, cassandra)
         {
             db: db,
             redis: redis,
-            cassandra: cassandra,
             match_id: req.params.match_id
         }, function(err, match)
         {
@@ -101,7 +100,6 @@ module.exports = function(db, redis, cassandra)
         {
             db: db,
             redis: redis,
-            cassandra: cassandra,
             account_id: req.params.account_id,
             info: req.params.info,
             subkey: req.params.subkey,
@@ -294,44 +292,16 @@ module.exports = function(db, redis, cassandra)
     });
     api.get('/logs/:match_id', function(req, res, cb)
     {
-        if (config.LOGPARSE_SECRET && req.query.key !== config.LOGPARSE_SECRET)
-        {
-            return res.status(403).json(
-            {
-                error: "invalid key"
-            });
-        }
-        var identifier = utility.generateUUID();
-        queue.addToQueue(pQueue,
-        {
-            match_id: req.params.match_id,
-            logParse: identifier,
-        },
-        {
-            attempts: 1,
-        }, function(err)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.setHeader('Content-Type', 'text/event-stream');
-            res.setHeader('Cache-Control', 'no-cache');
-            subscriber.subscribe('logParse:' + identifier + ':' + req.params.match_id);
-            subscriber.on('message', function(channel, message)
-            {
-                if (message === "END")
-                {
-                    subscriber.unsubscribe('logParse:' + identifier + ':' + req.params.match_id);
-                    subscriber.quit();
-                    res.end();
-                }
-                else
-                {
-                    res.write(message);
-                    res.flush();
-                }
-            });
+        db.select('log').from('match_logs').where({match_id: req.params.match_id}).asCallback(function(err, log){
+           if (err)
+           {
+               return cb(err);
+           }
+           if (!log)
+           {
+               return cb();
+           }
+           return res.send(log);
         });
     });
     return api;

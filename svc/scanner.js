@@ -6,7 +6,6 @@ var config = require('../config');
 var constants = require('../constants');
 var buildSets = require('../store/buildSets');
 var db = require('../store/db');
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 var redis = require('../store/redis');
 var queue = require('../store/queue');
 var queries = require('../store/queries');
@@ -130,6 +129,7 @@ function scanApi(seq_num)
                 {
                     //parse tournament games
                     match.parse_status = 0;
+                    match.logParse = true;
                 }
                 else if (match.players.some(function(p)
                     {
@@ -179,7 +179,6 @@ function scanApi(seq_num)
                         {
                             type: "api",
                             origin: "scanner",
-                            cassandra: cassandra,
                         }, close);
                     }
                     else
