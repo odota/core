@@ -292,16 +292,16 @@ module.exports = function()
     });
     api.get('/logs/:match_id', function(req, res, cb)
     {
-        db.select('log').from('match_logs').where({match_id: req.params.match_id}).asCallback(function(err, log){
+        db.select('log').from('match_logs').where({match_id: req.params.match_id}).asCallback(function(err, result){
            if (err)
            {
                return cb(err);
            }
-           if (!log)
+           if (!result.length)
            {
                return cb();
            }
-           return res.send(log);
+           return res.send(result[0].log);
         });
     });
     return api;

@@ -3,6 +3,8 @@
  **/
 var async = require('async');
 var constants = require('../constants.js');
+var db = require('../store/db');
+var redis = require('../store/redis');
 var queries = require("../store/queries");
 var utility = require('../util/utility');
 var aggregator = require('../util/aggregator');
@@ -73,8 +75,6 @@ var cacheFilters = ['heroes', 'teammates', 'hero_id', 'isRadiant', 'lane_role', 
 
 function buildPlayer(options, cb)
 {
-    var db = options.db;
-    var redis = options.redis;
     var account_id = options.account_id;
     var orig_account_id = account_id;
     var info = options.info || "index";
