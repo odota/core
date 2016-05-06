@@ -429,7 +429,7 @@ function getMatch(db, redis, match_id, options, cb)
         }
         else if (!match)
         {
-            return cb("match not found");
+            return cb();
         }
         else
         {

@@ -89,6 +89,10 @@ module.exports = function(db, redis, cassandra)
             {
                 return cb(err);
             }
+            if (!match)
+            {
+                return cb();
+            }
             res.json(match);
         });
     });
@@ -108,6 +112,10 @@ module.exports = function(db, redis, cassandra)
             if (err)
             {
                 return cb(err);
+            }
+            if (!player)
+            {
+                return cb();
             }
             res.json(player);
         });

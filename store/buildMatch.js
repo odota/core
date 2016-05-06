@@ -32,6 +32,10 @@ function buildMatch(options, cb)
                 {
                     return cb(err);
                 }
+                if (!match)
+                {
+                    return cb();
+                }
                 if (match.version && config.ENABLE_MATCH_CACHE)
                 {
                     redis.setex(key, 3600, JSON.stringify(match));
