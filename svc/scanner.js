@@ -130,7 +130,6 @@ function scanApi(seq_num)
                 {
                     //parse tournament games
                     match.parse_status = 0;
-                    match.logParse = true;
                 }
                 else if (match.players.some(function(p)
                     {

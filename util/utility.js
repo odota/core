@@ -117,7 +117,6 @@ function generateJob(type, payload)
                 title: [type, payload.match_id].join(),
                 type: type,
                 url: payload.url,
-                logParse: payload.logParse,
                 payload: payload
             };
         },

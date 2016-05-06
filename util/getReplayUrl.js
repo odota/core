@@ -15,7 +15,7 @@ module.exports = function getReplayUrl(db, redis, match, cb)
         console.log("replay %s url in job", match.match_id);
         return cb();
     }
-    redis.get('replay_url:' + match.match_id, function(err, replay_url)
+    redis.hget('replay_url', match.match_id, function(err, replay_url)
     {
         if (err)
         {
@@ -54,7 +54,7 @@ module.exports = function getReplayUrl(db, redis, match, cb)
                 if (body.match.replay_salt)
                 {
                     redis.zadd("retriever:" + metadata.hostname.split('.')[0], moment().format('X'), match.match_id);
-                    redis.setex('replay_url:'+match.match_id, 86400, url);
+                    redis.hset('replay_url', match.match_id, url);
                 }
                 return cb(err);
             });
