@@ -13,7 +13,6 @@ var filter = require('../util/filter');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
 var async = require('async');
-var os = require('os');
 var convert64to32 = utility.convert64to32;
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
