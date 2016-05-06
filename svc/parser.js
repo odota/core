@@ -288,7 +288,7 @@ function runParse(match, job, cb)
                 console.time(message);
                 var meta = processMetadata(entries);
                 var res = processExpand(entries, meta);
-                var parsed_data = processParsedData(res.parsed_data, meta);
+                var parsed_data = processParsedData(res.parsed_data);
                 var teamfights = processTeamfights(res.tf_data, meta);
                 var upload = processUploadProps(res.uploadProps, meta);
                 var ap = processAllPlayers(res.int_data);
