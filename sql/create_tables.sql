@@ -163,16 +163,6 @@ CREATE TABLE match_skill (
   skill integer
 );
 
-CREATE TABLE match_logs (
-  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
-  player_slot integer,
-  time integer,
-  type varchar(50),
-  key varchar(50),
-  value integer
-);
-CREATE INDEX on match_logs(match_id);
-
 CREATE TABLE notable_players (
   account_id bigint PRIMARY KEY,
   name varchar(255),
