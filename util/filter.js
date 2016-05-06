@@ -43,9 +43,9 @@ function filter(matches, filters)
         {
             return arr.every(function(k)
             {
-                for (var key in m.pgroup)
+                for (var key in m.teammates)
                 {
-                    if (m.pgroup[key].account_id === k)
+                    if (m.teammates[key].account_id === k)
                     {
                         return true;
                     }
@@ -57,9 +57,9 @@ function filter(matches, filters)
         {
             return arr.every(function(k)
             {
-                for (var key in m.pgroup)
+                for (var key in m.teammates)
                 {
-                    if (m.pgroup[key].account_id === k)
+                    if (m.teammates[key].account_id === k)
                     {
                         return false;
                     }
@@ -71,9 +71,9 @@ function filter(matches, filters)
         {
             return arr.every(function(k)
             {
-                for (var key in m.pgroup)
+                for (var key in m.heroes)
                 {
-                    if (m.pgroup[key].hero_id === k && isRadiant(m.pgroup[key]) === isRadiant(m))
+                    if (m.heroes[key].hero_id === k && isRadiant(m.heroes[key]) === isRadiant(m))
                     {
                         return true;
                     }
@@ -85,9 +85,9 @@ function filter(matches, filters)
         {
             return arr.every(function(k)
             {
-                for (var key in m.pgroup)
+                for (var key in m.heroes)
                 {
-                    if (m.pgroup[key].hero_id === k && isRadiant(m.pgroup[key]) !== isRadiant(m))
+                    if (m.heroes[key].hero_id === k && isRadiant(m.heroes[key]) !== isRadiant(m))
                     {
                         return true;
                     }

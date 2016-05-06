@@ -25,6 +25,7 @@ import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_ChatEv
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_LocationPing;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_SpectatorPlayerUnitOrders;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
+import skadistats.clarity.wire.s1.proto.S1UserMessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
 import skadistats.clarity.wire.s2.proto.S2DotaGcCommon.CMsgDOTAMatch;
 import java.util.Arrays;
@@ -69,6 +70,8 @@ public class Main {
         public Integer gold_reason;
         public Integer xp_reason;
         public String valuename;
+        public Float stun_duration;
+        public Float slow_duration;
         //entity fields
         public Integer gold;
         public Integer lh;
@@ -174,7 +177,6 @@ public class Main {
         output(entry);
     }
 
-    /*
     @OnMessage(CUserMsg_SayText2.class)
     public void onAllChatS1(Context ctx, CUserMsg_SayText2 message) {
         Entry entry = new Entry(time);
@@ -183,7 +185,6 @@ public class Main {
         entry.type = "chat";
         output(entry);
     }
-    */
 
     @OnMessage(CUserMessageSayText2.class)
     public void onAllChatS2(Context ctx, CUserMessageSayText2 message) {
@@ -233,6 +234,8 @@ public class Main {
             combatLogEntry.attackerillusion = cle.isAttackerIllusion();
             combatLogEntry.targetillusion = cle.isTargetIllusion();
             combatLogEntry.value = cle.getValue();
+            combatLogEntry.stun_duration = cle.getStunDuration();
+            combatLogEntry.slow_duration = cle.getSlowDuration();
             //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
             if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_PURCHASE) {
                 combatLogEntry.valuename = cle.getValueName();
@@ -279,6 +282,9 @@ public class Main {
     @UsesEntities
     @OnTickStart
     public void onTickStart(Context ctx, boolean synthetic) {
+        //TODO check engine to decide whether to use s1 or s2 entities
+        //ctx.getEngineType()
+        
         //s1 DT_DOTAGameRulesProxy
         Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
         Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");

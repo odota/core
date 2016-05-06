@@ -2,15 +2,16 @@
  * Function to build/cache sets of players
  **/
 var async = require('async');
+var moment = require('moment');
+var config = require('../config');
 module.exports = function buildSets(db, redis, cb) {
     console.log("rebuilding sets");
     async.parallel({
         //players in this set have their matches parsed
         "trackedPlayers": function(cb) {
-            redis.keys("visit:*", function(err, result) {
+            redis.zrangebyscore('visitors', moment().subtract(config.UNTRACK_DAYS, 'days').format('X'), '+inf', function(err, result){
                 var t = {};
-                result.forEach(function(redis_key) {
-                    var account_id = redis_key.split(":")[1];
+                result.forEach(function(account_id) {
                     t[account_id] = true;
                 });
                 //console.log(t);

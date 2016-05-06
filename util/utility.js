@@ -497,10 +497,6 @@ function preprocessQuery(query)
     query.filter_count = 0;
     var dbAble = {
         "account_id": 1,
-        "leagueid": 1,
-        "hero_id": 1,
-        "game_mode": 1,
-        "lobby_type": 1
     };
     //reserved keywords, don't treat these as filters
     var keywords = {

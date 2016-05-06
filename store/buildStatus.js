@@ -1,34 +1,25 @@
 /**
  * Function to build status data
  **/
-var async = require('async');
-var queue = require('./queue');
 var config = require('../config');
+var queue = require('./queue');
+var async = require('async');
+var moment = require('moment');
 module.exports = function buildStatus(db, redis, cb)
 {
     console.time('status');
     async.series(
     {
-        players: function(cb)
-        {
-            db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='players';").asCallback(function(err, count)
-            {
-                extractCount(err, count, cb);
-            });
-        },
         user_players: function(cb)
         {
             /*
+            //TODO bootstrap redis zset
             db.from('players').count().whereNotNull('last_login').asCallback(function(err, count)
             {
                 extractCount(err, count, cb);
             });
             */
-            redis.get("userPlayers", function(err, res)
-            {
-                res = res ? Object.keys(JSON.parse(res)).length : 0;
-                cb(err, res);
-            });
+            redis.zcard('visitors', cb);
         },
         /*
         full_history_players: function(cb)
@@ -41,11 +32,7 @@ module.exports = function buildStatus(db, redis, cb)
         */
         tracked_players: function(cb)
         {
-            redis.get("trackedPlayers", function(err, res)
-            {
-                res = res ? Object.keys(JSON.parse(res)).length : 0;
-                cb(err, res);
-            });
+            redis.zcount('visitors', moment().subtract(config.UNTRACK_DAYS, 'days').format('X'), '+inf', cb);
         },
         donated_players: function(cb)
         {
