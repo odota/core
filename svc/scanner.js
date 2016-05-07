@@ -177,7 +177,7 @@ function scanApi(seq_num)
                     {
                         return close(err);
                     }
-                    redis.zscore('matches_last_day', match.match_id, function(err, result)
+                    redis.get('scanner_insert:' + match.match_id, function(err, result)
                     {
                         //don't insert this match if we have it in the last day set
                         if (match.parse_status === 0 || match.parse_status === 3 && !result)
@@ -201,6 +201,10 @@ function scanApi(seq_num)
                         {
                             console.error("failed to insert match from scanApi %s", match.match_id);
                             console.error(err);
+                        }
+                        else
+                        {
+                            redis.setex('scanner_insert:' + match.match_id, 3600 * 6, 1);
                         }
                         return cb(err);
                     }
