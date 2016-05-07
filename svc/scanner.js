@@ -173,19 +173,27 @@ function scanApi(seq_num)
                     }, cb);
                 }, function(err)
                 {
-                    if (match.parse_status === 0 || match.parse_status === 3)
+                    if (err)
                     {
-                        insertMatch(db, redis, match,
+                        return close(err);
+                    }
+                    redis.zscore('matches_last_day', match.match_id, function(err, result)
+                    {
+                        //don't insert this match if we have it in the last day set
+                        if (match.parse_status === 0 || match.parse_status === 3 && !result)
                         {
-                            type: "api",
-                            origin: "scanner",
-                            cassandra: cassandra,
-                        }, close);
-                    }
-                    else
-                    {
-                        close(err);
-                    }
+                            insertMatch(db, redis, match,
+                            {
+                                type: "api",
+                                origin: "scanner",
+                                cassandra: cassandra,
+                            }, close);
+                        }
+                        else
+                        {
+                            close(err);
+                        }
+                    });
 
                     function close(err)
                     {
