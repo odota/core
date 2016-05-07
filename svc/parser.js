@@ -96,7 +96,6 @@ pQueue.process(1, function(job, cb)
                 {
                     insertStandardParse(parsed_data, cb);
                 }
-                cb(err);
             });
         },
     }, function(err)
