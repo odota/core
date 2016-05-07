@@ -189,7 +189,6 @@ describe("parser", function()
                                     assert(match.players);
                                     assert(match.players[0]);
                                     assert(match.players[0].lh_t);
-                                    assert(match.players[0].purchases);
                                     assert(match.teamfights);
                                     assert(match.radiant_gold_adv);
                                     return done();
