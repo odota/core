@@ -85,27 +85,19 @@ pQueue.process(1, function(job, cb)
                 {
                     return cb(err);
                 }
-                //extend match object with parsed data, keep existing data if key conflict
-                for (var key in parsed_data)
+                parsed_data.match_id = match.match_id;
+                parsed_data.pgroup = match.pgroup;
+                parsed_data.parse_status = 2;
+                if (match.replay_blob_key)
                 {
-                    match[key] = match[key] || parsed_data[key];
+                    insertUploadedParse(parsed_data, cb);
                 }
-                //specifically overwrite players since we now have parsed data for them
-                match.players = parsed_data.players;
-                match.parse_status = 2;
+                else
+                {
+                    insertStandardParse(parsed_data, cb);
+                }
                 cb(err);
             });
-        },
-        "insertMatch": function(cb)
-        {
-            if (match.replay_blob_key)
-            {
-                insertUploadedParse(match, cb);
-            }
-            else
-            {
-                insertStandardParse(match, cb);
-            }
         },
     }, function(err)
     {

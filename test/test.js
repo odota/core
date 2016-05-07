@@ -265,6 +265,7 @@ describe("web", function()
                 done(err);
             });
         });
+        //TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
         it('/matches/:valid', function(done)
         {
             supertest(app).get('/matches/1781962623').expect(200).end(function(err, res)
