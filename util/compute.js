@@ -298,6 +298,7 @@ function computeMatchData(pm)
             return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
         });
         pm.purchase_time = {};
+        pm.first_purchase_time = {};
         pm.item_win = {};
         pm.item_usage = {};
         for (var i = 0; i < pm.purchase_log.length; i++)
@@ -307,6 +308,10 @@ function computeMatchData(pm)
             if (!pm.purchase_time[k])
             {
                 pm.purchase_time[k] = 0;
+            }
+            // Store first purchase time for every item
+            if (!pm.first_purchase_time.hasOwnProperty(k)) {
+                pm.first_purchase_time[k] = time;
             }
             pm.purchase_time[k] += time;
             pm.item_usage[k] = 1;

@@ -150,9 +150,8 @@ function generatePlayerAnalysis(match, pm)
         {
             var flying_available = 180;
             var time;
-            if (pm.purchase && pm.purchase.flying_courier && pm.purchase_time)
-            {
-                time = pm.purchase_time.flying_courier;
+            if (pm.purchase && pm.first_purchase_time && pm.first_purchase_time.flying_courier) {
+                time = pm.first_purchase_time.flying_courier;
             }
             return {
                 grade: true,
