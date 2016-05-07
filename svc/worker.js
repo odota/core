@@ -101,22 +101,6 @@ invokeInterval(function buildDistributions(cb)
         });
     }
 }, 60 * 60 * 1000 * 6);
-invokeInterval(function cleanup(cb)
-{
-    redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("alias_hits", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("parser", 0, moment().subtract(1, 'day').format('X'));
-    config.RETRIEVER_HOST.split(',').map(function(r)
-    {
-        return "retriever:" + r.split('.')[0];
-    }).forEach(function(retkey)
-    {
-        redis.zremrangebyscore(retkey, 0, moment().subtract(1, 'day').format('X'));
-    });
-    cb();
-}, 60 * 60 * 1000);
 invokeInterval(function cleanQueues(cb)
 {
     queue.cleanup(redis, cb);

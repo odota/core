@@ -8,12 +8,23 @@ var moment = require('moment');
 module.exports = function buildStatus(db, redis, cb)
 {
     console.time('status');
+    redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
+    redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
+    redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
+    redis.zremrangebyscore("alias_hits", 0, moment().subtract(1, 'day').format('X'));
+    redis.zremrangebyscore("parser", 0, moment().subtract(1, 'day').format('X'));
+    config.RETRIEVER_HOST.split(',').map(function(r)
+    {
+        return "retriever:" + r.split('.')[0];
+    }).forEach(function(retkey)
+    {
+        redis.zremrangebyscore(retkey, 0, moment().subtract(1, 'day').format('X'));
+    });
     async.series(
     {
         user_players: function(cb)
         {
             /*
-            //TODO bootstrap redis zset
             db.from('players').count().whereNotNull('last_login').asCallback(function(err, count)
             {
                 extractCount(err, count, cb);

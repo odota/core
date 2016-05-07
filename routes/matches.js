@@ -20,6 +20,10 @@ module.exports = function(db, redis, cassandra)
             {
                 return cb(err);
             }
+            if (!match)
+            {
+                return cb();
+            }
             console.timeEnd("match page");
             var info = matchPages[req.params.info] ? req.params.info : "index";
             res.render("match/match_" + info,

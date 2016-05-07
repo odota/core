@@ -40,7 +40,6 @@ CREATE TABLE matches (
   teamfights json[],
   version integer
   );
-CREATE INDEX on matches(version);
 
 CREATE TABLE player_matches (
   PRIMARY KEY(match_id, player_slot),
@@ -162,16 +161,6 @@ CREATE TABLE match_skill (
   match_id bigint PRIMARY KEY,
   skill integer
 );
-
-CREATE TABLE match_logs (
-  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
-  player_slot integer,
-  time integer,
-  type varchar(50),
-  key varchar(50),
-  value integer
-);
-CREATE INDEX on match_logs(match_id);
 
 CREATE TABLE notable_players (
   account_id bigint PRIMARY KEY,

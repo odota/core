@@ -59,7 +59,7 @@ function cleanRow(db, table, row, cb)
 {
     if (columnInfo[table])
     {
-        return del(null, columnInfo[table], row, cb);
+        return doCleanRow(null, columnInfo[table], row, cb);
     }
     else
     {
@@ -70,7 +70,7 @@ function cleanRow(db, table, row, cb)
                 return cb(err);
             }
             columnInfo[table] = result;
-            return del(err, columnInfo[table], row, cb);
+            return doCleanRow(err, columnInfo[table], row, cb);
         });
     }
 }
@@ -79,7 +79,7 @@ function cleanRowCassandra(cassandra, table, row, cb)
 {
     if (cassandraColumnInfo[table])
     {
-        return del(null, cassandraColumnInfo[table], row, cb);
+        return doCleanRow(null, cassandraColumnInfo[table], row, cb);
     }
     else
     {
@@ -94,30 +94,32 @@ function cleanRowCassandra(cassandra, table, row, cb)
             {
                 cassandraColumnInfo[table][r.column_name] = 1;
             });
-            return del(err, cassandraColumnInfo[table], row, cb);
+            return doCleanRow(err, cassandraColumnInfo[table], row, cb);
         });
     }
 }
 
-function del(err, schema, row, cb)
+function doCleanRow(err, schema, row, cb)
 {
     if (err)
     {
         return cb(err);
     }
-    for (var key in row)
+    var obj = Object.assign(
+    {}, row);
+    for (var key in obj)
     {
         if (!(key in schema))
         {
-            delete row[key];
+            delete obj[key];
         }
     }
-    return cb(err, row);
+    return cb(err, obj);
 }
 
 function upsert(db, table, row, conflict, cb)
 {
-    cleanRow(db, table, row, function(err)
+    cleanRow(db, table, row, function(err, row)
     {
         if (err)
         {
@@ -420,7 +422,7 @@ function getMatch(db, redis, match_id, options, cb)
         }
         else if (!match)
         {
-            return cb("match not found");
+            return cb();
         }
         else
         {
@@ -472,6 +474,10 @@ function getMatch(db, redis, match_id, options, cb)
                 {
                     redis.get('ability_upgrades:' + match_id, cb);
                 },
+                "replay_url": function(cb)
+                {
+                    redis.hget('replay_url', match_id, cb);
+                },
             }, function(err, result)
             {
                 if (err)
@@ -480,6 +486,7 @@ function getMatch(db, redis, match_id, options, cb)
                 }
                 var players = result.players;
                 var ab_upgrades = JSON.parse(result.ab_upgrades);
+                match.replay_url = result.replay_url;
                 async.each(players, function(p, cb)
                 {
                     //denormalized columns

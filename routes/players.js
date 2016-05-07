@@ -28,6 +28,10 @@ module.exports = function(db, redis, cassandra)
             {
                 return cb(err);
             }
+            if (!player)
+            {
+                return cb();
+            }
             delete req.query.account_id;
             console.timeEnd("player " + req.params.account_id);
             res.render("player/player_" + info,

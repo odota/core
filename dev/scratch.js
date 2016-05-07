@@ -1,4 +1,8 @@
-console.log(process.argv);
+require('../store/db')('match_logs').columnInfo().asCallback(function(err, result)
+{
+    console.log(err, result);
+});
+//console.log(process.argv);
 //var cp = require('child_process');
 //cp.execSync('curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env');
 /*

@@ -226,6 +226,10 @@ function runParse(match, job, cb)
     });
     parser.stdin.on('error', exit);
     parser.stdout.on('error', exit);
+    parser.stderr.on('data', function printStdErr(data)
+    {
+        console.log(data.toString());
+    });
     var parseStream = ndjson.parse();
     parseStream.on('data', function handleStream(e)
     {
@@ -242,10 +246,6 @@ function runParse(match, job, cb)
     inStream.pipe(bz.stdin);
     bz.stdout.pipe(parser.stdin);
     parser.stdout.pipe(parseStream);
-    parser.stderr.on('data', function printStdErr(data)
-    {
-        console.log(data.toString());
-    });
 
     function exit(err)
     {
@@ -268,7 +268,7 @@ function runParse(match, job, cb)
                 console.time(message);
                 var meta = processMetadata(entries);
                 var res = processExpand(entries, meta);
-                var parsed_data = processParsedData(res.parsed_data, meta);
+                var parsed_data = processParsedData(res.parsed_data);
                 var teamfights = processTeamfights(res.tf_data, meta);
                 var upload = processUploadProps(res.uploadProps, meta);
                 var ap = processAllPlayers(res.int_data);

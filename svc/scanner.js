@@ -173,19 +173,34 @@ function scanApi(seq_num)
                     }, cb);
                 }, function(err)
                 {
-                    if (match.parse_status === 0 || match.parse_status === 3)
+                    if (err)
                     {
-                        insertMatch(db, redis, match,
+                        return close(err);
+                    }
+                    redis.get('scanner_insert:' + match.match_id, function(err, result)
+                    {
+                        //don't insert this match if we already processed it recently
+                        if (match.parse_status === 0 || match.parse_status === 3 && !result)
                         {
-                            type: "api",
-                            origin: "scanner",
-                            cassandra: cassandra,
-                        }, close);
-                    }
-                    else
-                    {
-                        close(err);
-                    }
+                            insertMatch(db, redis, match,
+                            {
+                                type: "api",
+                                origin: "scanner",
+                                cassandra: cassandra,
+                            }, function(err)
+                            {
+                                if (!err)
+                                {
+                                    redis.setex('scanner_insert:' + match.match_id, 3600 * 6, 1);
+                                }
+                                close(err);
+                            });
+                        }
+                        else
+                        {
+                            close(err);
+                        }
+                    });
 
                     function close(err)
                     {

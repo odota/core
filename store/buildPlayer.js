@@ -54,7 +54,7 @@ var aggs = {
     peers: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
     counts: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
-    //TODO only need one subkey
+    //TODO only need one subkey at a time
     histograms: basicAggs.concat(Object.keys(subkeys)),
     trends: basicAggs.concat(Object.keys(subkeys)),
     wardmap: basicAggs.concat(['obs', 'sen']),
@@ -66,7 +66,6 @@ var aggs = {
     hyperopia: basicAggs
 };
 //Fields to project from Cassandra player caches
-//TODO currently we do live significance check.  Persist it to store so we can project fewer fields?
 var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
 var cacheTable = ['hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
 var cacheFilters = ['heroes', 'teammates', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time'];
