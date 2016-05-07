@@ -8,7 +8,7 @@ append head
 
 block content
   .row
-    .col-md-5
+    .col-md-6
       h2 Match #{match.match_id}
         small
         br
@@ -17,7 +17,7 @@ block content
         if match.replay_url
           a(style="margin-left:1em;" href=match.replay_url, class="btn btn-sm btn-default") Download Replay
 
-    .col-md-7.table-responsive
+    .col-md-6.table-responsive
       h2
       table.table.table-condensed.small
         thead

@@ -86,11 +86,12 @@ pQueue.process(1, function(job, cb)
                     return cb(err);
                 }
                 //extend match object with parsed data, keep existing data if key conflict
-                //match.players was deleted earlier during insertion of api data
                 for (var key in parsed_data)
                 {
                     match[key] = match[key] || parsed_data[key];
                 }
+                //specifically overwrite players since we now have parsed data for them
+                match.players = parsed_data.players;
                 match.parse_status = 2;
                 cb(err);
             });
