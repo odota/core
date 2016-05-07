@@ -97,7 +97,7 @@ function run(start_id)
         {
             console.error(err);
         }
-        process.exit(Number(err));
+        process.exit(err ? 1 : 0);
     }
 
     function insertMatch(match, cb)
