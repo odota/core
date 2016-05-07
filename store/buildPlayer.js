@@ -96,9 +96,8 @@ function buildPlayer(options, cb)
     queryObj = preprocessQuery(queryObj);
     //1 filter expected for account id
     var filter_exists = queryObj.filter_count > 1;
-    //choose fields to project based on tab/filter
-    //we need to project everything to build a new cache/toplist, otherwise optimize and do a subset
-    queryObj.project = config.ENABLE_PLAYER_CACHE || queryObj.keywords.desc ? everything : projections[info];
+    //choose fields to project based on tab/filter, we need to project everything to build a new cache/toplist, otherwise optimize and do a subset
+    queryObj.project = everything;
     //choose fields to aggregate based on tab
     var obj = {};
     aggs[info].forEach(function(k)
