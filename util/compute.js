@@ -582,7 +582,7 @@ function renderMatch(m)
                 tfplayer.isRadiant = isRadiant(p);
                 tfplayer.personaname = p.personaname;
                 tfplayer.account_id = p.account_id;
-                tfplayer.participate = tfplayer.deaths > 0 || tfplayer.damage > 0;
+                tfplayer.participate = tfplayer.deaths > 0 || tfplayer.damage > 0 || tfplayer.healing > 0;
                 if (!p.teamfights_participated)
                 {
                     p.teamfights_participated = 0;

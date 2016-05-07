@@ -445,6 +445,7 @@ function processExpand(entries, meta)
             interval: 1,
             buyback_log: 1,
             damage: 1,
+            healing: 1,
             gold_reasons: 1,
             xp_reasons: 1,
             ability_uses: 1,

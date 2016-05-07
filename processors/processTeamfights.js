@@ -36,6 +36,7 @@ function processTeamfights(entries, meta)
                         deaths: 0,
                         buybacks: 0,
                         damage: 0,
+                        healing: 0,
                         gold_delta: 0,
                         xp_delta: 0
                     };
@@ -132,6 +133,19 @@ function processTeamfights(entries, meta)
                         if (tf.players[e.slot])
                         {
                             tf.players[e.slot].damage += e.value;
+                        }
+                    }
+                }
+                else if (e.type === "healing")
+                {
+                    //sum healing
+                    //check if healing dealt to hero and not illusion
+                    if (e.targethero && !e.targetillusion)
+                    {
+                        //check if the healing dealer could be assigned to a slot
+                        if (tf.players[e.slot])
+                        {
+                            tf.players[e.slot].healing += e.value;
                         }
                     }
                 }
