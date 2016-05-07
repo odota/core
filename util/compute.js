@@ -310,7 +310,8 @@ function computeMatchData(pm)
                 pm.purchase_time[k] = 0;
             }
             // Store first purchase time for every item
-            if (!pm.first_purchase_time.hasOwnProperty(k)) {
+            if (!pm.first_purchase_time.hasOwnProperty(k))
+            {
                 pm.first_purchase_time[k] = time;
             }
             pm.purchase_time[k] += time;
@@ -402,16 +403,17 @@ function renderMatch(m)
 {
     //do render-only processing (not needed for aggregation, only for match display)
     m.hero_combat = {
-        damage: {
+        damage:
+        {
             radiant: 0,
             dire: 0,
         },
-        kills: {
+        kills:
+        {
             radiant: 0,
             dire: 0,
         },
     };
-
     m.players.forEach(function(player_match, i)
     {
         //converts hashes to arrays and sorts them
@@ -491,53 +493,63 @@ function renderMatch(m)
                 player_match.objective_damage[identifier] = player_match.objective_damage[identifier] ? player_match.objective_damage[identifier] + player_match.damage[key] : player_match.damage[key];
             }
         }
-
-        // Compute combat k/d and damage tables
-        player_match.hero_combat = {
-            damage: {
-                total: 0,
-            },
-            taken: {
-                total: 0,
-            },
-            kills: {
-                total: 0,
-            },
-            deaths: {
-                total: 0,
-            },
-        };
-        m.players.forEach(function(other_pm) {
-            var team = (player_match.isRadiant) ? 'radiant' : 'dire';
-            var other_hero = constants.heroes[other_pm.hero_id];
-            var damage = 0;
-            var taken  = 0;
-            var kills  = 0;
-            var deaths = 0;
-
-            // Only care about enemy hero combat
-            if (player_match.isRadiant !== other_pm.isRadiant) {
-                damage  = (player_match.damage[other_hero.name]) ? player_match.damage[other_hero.name] : 0;
-                taken   = (player_match.damage_taken[other_hero.name]) ? player_match.damage_taken[other_hero.name] : 0;
-                kills   = (player_match.killed[other_hero.name]) ? player_match.killed[other_hero.name] : 0;
-                deaths  = (player_match.killed_by[other_hero.name]) ? player_match.killed_by[other_hero.name] : 0;
-            }
-
-            player_match.hero_combat.damage[other_hero.name] = damage;
-            player_match.hero_combat.taken[other_hero.name]  = taken;
-
-            player_match.hero_combat.damage.total += damage;
-            player_match.hero_combat.taken.total  += taken;
-
-            player_match.hero_combat.kills[other_hero.name]  = kills;
-            player_match.hero_combat.deaths[other_hero.name] = deaths;
-
-            player_match.hero_combat.kills.total  += kills;
-            player_match.hero_combat.deaths.total += deaths;
-
-            m.hero_combat.damage[team] += damage;
-            m.hero_combat.kills[team]  += kills;
-        });
+        try
+        {
+            // Compute combat k/d and damage tables
+            player_match.hero_combat = {
+                damage:
+                {
+                    total: 0,
+                },
+                taken:
+                {
+                    total: 0,
+                },
+                kills:
+                {
+                    total: 0,
+                },
+                deaths:
+                {
+                    total: 0,
+                },
+            };
+            m.players.forEach(function(other_pm)
+            {
+                var team = (player_match.isRadiant) ? 'radiant' : 'dire';
+                var other_hero = constants.heroes[other_pm.hero_id];
+                var damage = 0;
+                var taken = 0;
+                var kills = 0;
+                var deaths = 0;
+                // Only care about enemy hero combat
+                if (player_match.isRadiant !== other_pm.isRadiant && player_match.damage)
+                {
+                    damage = (player_match.damage[other_hero.name]) ? player_match.damage[other_hero.name] : 0;
+                    taken = (player_match.damage_taken[other_hero.name]) ? player_match.damage_taken[other_hero.name] : 0;
+                }
+                if (player_match.isRadiant !== other_pm.isRadiant && player_match.killed)
+                {
+                    kills = (player_match.killed[other_hero.name]) ? player_match.killed[other_hero.name] : 0;
+                    deaths = (player_match.killed_by[other_hero.name]) ? player_match.killed_by[other_hero.name] : 0;
+                }
+                player_match.hero_combat.damage[other_hero.name] = damage;
+                player_match.hero_combat.taken[other_hero.name] = taken;
+                player_match.hero_combat.damage.total += damage;
+                player_match.hero_combat.taken.total += taken;
+                player_match.hero_combat.kills[other_hero.name] = kills;
+                player_match.hero_combat.deaths[other_hero.name] = deaths;
+                player_match.hero_combat.kills.total += kills;
+                player_match.hero_combat.deaths.total += deaths;
+                m.hero_combat.damage[team] += damage;
+                m.hero_combat.kills[team] += kills;
+            });
+        }
+        catch (e)
+        {
+            console.error("error occurred while summing crosstables");
+            console.error(e);
+        }
     });
     console.time("generating player analysis");
     m.players.forEach(function(player_match, i)
