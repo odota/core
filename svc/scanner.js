@@ -179,7 +179,7 @@ function scanApi(seq_num)
                     }
                     redis.get('scanner_insert:' + match.match_id, function(err, result)
                     {
-                        //don't insert this match if we have it in the last day set
+                        //don't insert this match if we already processed it recently
                         if (match.parse_status === 0 || match.parse_status === 3 && !result)
                         {
                             insertMatch(db, redis, match,
@@ -187,7 +187,14 @@ function scanApi(seq_num)
                                 type: "api",
                                 origin: "scanner",
                                 cassandra: cassandra,
-                            }, close);
+                            }, function(err)
+                            {
+                                if (!err)
+                                {
+                                    redis.setex('scanner_insert:' + match.match_id, 3600 * 6, 1);
+                                }
+                                close(err);
+                            });
                         }
                         else
                         {
@@ -201,10 +208,6 @@ function scanApi(seq_num)
                         {
                             console.error("failed to insert match from scanApi %s", match.match_id);
                             console.error(err);
-                        }
-                        else
-                        {
-                            redis.setex('scanner_insert:' + match.match_id, 3600 * 6, 1);
                         }
                         return cb(err);
                     }
