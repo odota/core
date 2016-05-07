@@ -41,13 +41,9 @@ passport.serializeUser(function(user, done)
 });
 passport.deserializeUser(function(account_id, done)
 {
-    db.first().from('players').where(
+    done(null,
     {
         account_id: account_id
-    }).asCallback(function(err, player)
-    {
-        redis.zadd('visitors', moment().format('X'), account_id);
-        done(err, player);
     });
 });
 passport.use(new SteamStrategy(
@@ -149,6 +145,10 @@ app.use(function telemetry(req, res, cb)
     if (req.path.indexOf('/api') === 0)
     {
         redis.zadd("api_hits", moment().format('X'), moment().valueOf() + req.path);
+    }
+    if (req.user)
+    {
+        redis.zadd('visitors', moment().format('X'), req.user.account_id);
     }
     res.once('finish', function()
     {
