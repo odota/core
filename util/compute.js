@@ -356,50 +356,10 @@ function computeMatchData(pm)
     }
 }
 /**
- * Count the words that occur in a set of messages
- * - messages: the messages to create the counts over
- * - player_filter: if non-null, only count that player's messages
- **/
-function count_words(player_match, player_filter)
-{
-    var messages = player_match.chat;
-    // extract the message strings from the message objects
-    // extract individual words from the message strings
-    var chat_words = [];
-    messages.forEach(function(message)
-    {
-        // if there is no player_filter, or if the passed player's player_slot matches this message's parseSlot converted to player_slot, log it
-        var messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
-        if (!player_filter || (messageParseSlot === player_filter.player_slot))
-        {
-            chat_words.push(message.key);
-        }
-    });
-    chat_words = chat_words.join(' ');
-    var tokens = utility.tokenize(chat_words);
-    // count how frequently each word occurs
-    var counts = {};
-    for (var i = 0; i < tokens.length; i++)
-    {
-        //ignore the empty string
-        if (tokens[i])
-        {
-            if (!counts[tokens[i]])
-            {
-                counts[tokens[i]] = 0;
-            }
-            counts[tokens[i]] += 1;
-        }
-    }
-    // return the final counts
-    return counts;
-}
-/**
  * Renders display-only data for a match (doesn't need to be aggregated)
  **/
 function renderMatch(m)
 {
-    //do render-only processing (not needed for aggregation, only for match display)
     m.hero_combat = {
         damage:
         {
@@ -412,16 +372,17 @@ function renderMatch(m)
             dire: 0,
         },
     };
-    m.players.forEach(function(player_match, i)
+    //do render-only processing (not needed for aggregation, only for match display)
+    m.players.forEach(function(pm, i)
     {
         //converts hashes to arrays and sorts them
-        var targets = ["ability_uses", "item_uses", "damage_inflictor"];
+        var targets = ["ability_uses", "item_uses", "damage_inflictor", "damage_inflictor_received"];
         targets.forEach(function(target)
         {
-            if (player_match[target])
+            if (pm[target])
             {
                 var t = [];
-                for (var key in player_match[target])
+                for (var key in pm[target])
                 {
                     var a = constants.abilities[key];
                     var i = constants.items[key];
@@ -432,12 +393,12 @@ function renderMatch(m)
                     var result = {
                         img: def.img,
                         name: (!a && !i) ? "Auto Attack/Other" : key,
-                        val: player_match[target][key],
+                        val: pm[target][key],
                         className: a ? "ability" : i ? "item" : "img-sm"
                     };
-                    if (player_match.hero_hits)
+                    if (pm.hero_hits)
                     {
-                        result.hero_hits = player_match.hero_hits[key];
+                        result.hero_hits = pm.hero_hits[key];
                     }
                     t.push(result);
                 }
@@ -445,31 +406,31 @@ function renderMatch(m)
                 {
                     return b.val - a.val;
                 });
-                player_match[target + "_arr"] = t;
+                pm[target + "_arr"] = t;
             }
         });
         //filter interval data to only be >= 0
-        if (player_match.times)
+        if (pm.times)
         {
             var intervals = ["lh_t", "gold_t", "xp_t", "times"];
             intervals.forEach(function(key)
             {
-                player_match[key] = player_match[key].filter(function(el, i)
+                pm[key] = pm[key].filter(function(el, i)
                 {
-                    return player_match.times[i] >= 0;
+                    return pm.times[i] >= 0;
                 });
             });
         }
         //compute damage to towers/rax/roshan
-        if (player_match.damage)
+        if (pm.damage)
         {
             //npc_dota_goodguys_tower2_top
             //npc_dota_goodguys_melee_rax_top
             //npc_dota_roshan
             //npc_dota_neutral_giant_wolf
             //npc_dota_creep
-            player_match.objective_damage = {};
-            for (var key in player_match.damage)
+            pm.objective_damage = {};
+            for (var key in pm.damage)
             {
                 var identifier = null;
                 if (key.indexOf("tower") !== -1)
@@ -488,13 +449,13 @@ function renderMatch(m)
                 {
                     identifier = "fort";
                 }
-                player_match.objective_damage[identifier] = player_match.objective_damage[identifier] ? player_match.objective_damage[identifier] + player_match.damage[key] : player_match.damage[key];
+                pm.objective_damage[identifier] = pm.objective_damage[identifier] ? pm.objective_damage[identifier] + pm.damage[key] : pm.damage[key];
             }
         }
         try
         {
             // Compute combat k/d and damage tables
-            player_match.hero_combat = {
+            pm.hero_combat = {
                 damage:
                 {
                     total: 0,
@@ -514,31 +475,31 @@ function renderMatch(m)
             };
             m.players.forEach(function(other_pm)
             {
-                var team = (player_match.isRadiant) ? 'radiant' : 'dire';
+                var team = (pm.isRadiant) ? 'radiant' : 'dire';
                 var other_hero = constants.heroes[other_pm.hero_id];
                 var damage = 0;
                 var taken = 0;
                 var kills = 0;
                 var deaths = 0;
                 // Only care about enemy hero combat
-                if (player_match.isRadiant !== other_pm.isRadiant && player_match.damage)
+                if (pm.isRadiant !== other_pm.isRadiant && pm.damage)
                 {
-                    damage = (player_match.damage[other_hero.name]) ? player_match.damage[other_hero.name] : 0;
-                    taken = (player_match.damage_taken[other_hero.name]) ? player_match.damage_taken[other_hero.name] : 0;
+                    damage = (pm.damage[other_hero.name]) ? pm.damage[other_hero.name] : 0;
+                    taken = (pm.damage_taken[other_hero.name]) ? pm.damage_taken[other_hero.name] : 0;
                 }
-                if (player_match.isRadiant !== other_pm.isRadiant && player_match.killed)
+                if (pm.isRadiant !== other_pm.isRadiant && pm.killed)
                 {
-                    kills = (player_match.killed[other_hero.name]) ? player_match.killed[other_hero.name] : 0;
-                    deaths = (player_match.killed_by[other_hero.name]) ? player_match.killed_by[other_hero.name] : 0;
+                    kills = (pm.killed[other_hero.name]) ? pm.killed[other_hero.name] : 0;
+                    deaths = (pm.killed_by[other_hero.name]) ? pm.killed_by[other_hero.name] : 0;
                 }
-                player_match.hero_combat.damage[other_hero.name] = damage;
-                player_match.hero_combat.taken[other_hero.name] = taken;
-                player_match.hero_combat.damage.total += damage;
-                player_match.hero_combat.taken.total += taken;
-                player_match.hero_combat.kills[other_hero.name] = kills;
-                player_match.hero_combat.deaths[other_hero.name] = deaths;
-                player_match.hero_combat.kills.total += kills;
-                player_match.hero_combat.deaths.total += deaths;
+                pm.hero_combat.damage[other_hero.name] = damage;
+                pm.hero_combat.taken[other_hero.name] = taken;
+                pm.hero_combat.damage.total += damage;
+                pm.hero_combat.taken.total += taken;
+                pm.hero_combat.kills[other_hero.name] = kills;
+                pm.hero_combat.deaths[other_hero.name] = deaths;
+                pm.hero_combat.kills.total += kills;
+                pm.hero_combat.deaths.total += deaths;
                 m.hero_combat.damage[team] += damage;
                 m.hero_combat.kills[team] += kills;
             });
@@ -550,9 +511,9 @@ function renderMatch(m)
         }
     });
     console.time("generating player analysis");
-    m.players.forEach(function(player_match, i)
+    m.players.forEach(function(pm, i)
     {
-        player_match.analysis = generatePlayerAnalysis(m, player_match);
+        pm.analysis = generatePlayerAnalysis(m, pm);
     });
     console.timeEnd("generating player analysis");
     if (m.chat)
@@ -789,6 +750,45 @@ function generateTreemapData(match)
         });
     }
     return data;
+}
+/**
+ * Count the words that occur in a set of messages
+ * - messages: the messages to create the counts over
+ * - player_filter: if non-null, only count that player's messages
+ **/
+function count_words(player_match, player_filter)
+{
+    var messages = player_match.chat;
+    // extract the message strings from the message objects
+    // extract individual words from the message strings
+    var chat_words = [];
+    messages.forEach(function(message)
+    {
+        // if there is no player_filter, or if the passed player's player_slot matches this message's parseSlot converted to player_slot, log it
+        var messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
+        if (!player_filter || (messageParseSlot === player_filter.player_slot))
+        {
+            chat_words.push(message.key);
+        }
+    });
+    chat_words = chat_words.join(' ');
+    var tokens = utility.tokenize(chat_words);
+    // count how frequently each word occurs
+    var counts = {};
+    for (var i = 0; i < tokens.length; i++)
+    {
+        //ignore the empty string
+        if (tokens[i])
+        {
+            if (!counts[tokens[i]])
+            {
+                counts[tokens[i]] = 0;
+            }
+            counts[tokens[i]] += 1;
+        }
+    }
+    // return the final counts
+    return counts;
 }
 module.exports = {
     renderMatch,

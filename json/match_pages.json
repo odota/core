@@ -12,6 +12,11 @@
     "name": "Performances",
     "parsed": true
   },
+  "damage":
+  {
+    "name": "Damage",
+    "parsed": true
+  },
   "purchases":
   {
     "name": "Purchases",
