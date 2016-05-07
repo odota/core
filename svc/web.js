@@ -236,8 +236,22 @@ var poet = new Poet(app,
         '/post/:post': 'blog/post'
     }
 });
-poet.init();
-poet.addRoute('/blog/:id?', function(req, res)
+poet
+.addTemplate({
+  ext: 'md',
+  fn : function (options) { 
+      return require('json-front-matter').parse(options.source);
+  }
+}).init();
+poet.addRoute('/api/blog/:id?', function(req, res)
+{
+    var max = poet.helpers.getPostCount();
+    var id = Number(req.params.id) || max;
+    res.json(
+        poet.helpers.getPosts(max - id, max - id + 1)
+    );
+});
+/*poet.addRoute('/blog/:id?', function(req, res)
 {
     var max = poet.helpers.getPostCount();
     var id = Number(req.params.id) || max;
@@ -247,7 +261,7 @@ poet.addRoute('/blog/:id?', function(req, res)
         id: id,
         max: max
     });
-});
+});*/
 //END blog
 //START standard routes.  Don't need these in SPA
 app.route('/').get(function(req, res, next)

@@ -55,6 +55,7 @@
     "isomorphic-fetch": "^2.2.1",
     "jade": "^1.11.0",
     "jquery": "^2.2.0",
+    "json-front-matter": "^1.0.0",
     "knex": "^0.10.0",
     "material-ui": "^0.15.0-alpha.2",
     "moment": "^2.11.2",
