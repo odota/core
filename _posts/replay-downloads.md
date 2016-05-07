@@ -13,4 +13,13 @@ Today we're pushing out a few small changes:
   so that you can download it without having to open up the Dota 2 client. You'll have to decompress the replay
   using decompression software like [7-Zip](http://www.7-zip.org/).
 
+Also, courtesy of community developer [coreymaher](https://github.com/coreymaher):
+
+* Damage Done/Taken totals and kill/death totals are now on their respective match tables.
+* A pesky bug where our match analysis would give poor grades when items are repeatedly purchased
+ (like a late courier) has been fixed.
+
+One of YASP's greatest strengths is that our code is completely open source! Want to fix something or add a feature?
+You can do that! Check out our (Github)[https://github.com/yasp-dota/yasp].
+
 Thanks, and happy hunting!
