@@ -25,7 +25,6 @@ module.exports = function buildStatus(db, redis, cb)
         user_players: function(cb)
         {
             /*
-            //TODO bootstrap redis zset
             db.from('players').count().whereNotNull('last_login').asCallback(function(err, count)
             {
                 extractCount(err, count, cb);
