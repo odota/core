@@ -11,13 +11,12 @@ block content
     .col-md-5
       h2 Match #{match.match_id}
         small
-          //-
-            a(href="?json=1" title="View as JSON")
-              i.fa.fa-download
         br
         small(class=match.radiant_win ? "text-success" : "text-danger")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
         a(style="margin-left:1em;" href="/request#"+match.match_id, class="btn btn-sm" class=match.version ? "btn-success" : "btn-primary") #{match.version ? "Re-Parse Match" : "Request Parse"}
- 
+        if match.replay_url
+          a(style="margin-left:1em;" href=match.replay_url, class="btn btn-sm btn-default") Download Replay
+
     .col-md-7.table-responsive
       h2
       table.table.table-condensed.small
