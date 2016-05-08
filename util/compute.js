@@ -330,7 +330,7 @@ function computeMatchData(pm)
         pm.purchase_rapier = pm.purchase.rapier;
         pm.purchase_gem = pm.purchase.gem;
     }
-    if (pm.actions)
+    if (pm.actions && pm.duration)
     {
         var actions_sum = 0;
         for (var key in pm.actions)
@@ -340,7 +340,7 @@ function computeMatchData(pm)
         pm.actions_per_min = ~~(actions_sum / pm.duration * 60);
     }
     //compute throw/comeback levels
-    if (pm.radiant_gold_adv)
+    if (pm.radiant_gold_adv && pm.radiant_win !== undefined)
     {
         var radiant_gold_advantage = pm.radiant_gold_adv;
         pm.throw = pm.radiant_win !== isRadiant(pm) ? (isRadiant(pm) ? max(radiant_gold_advantage) : min(radiant_gold_advantage) * -1) : undefined;

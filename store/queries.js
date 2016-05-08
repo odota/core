@@ -349,8 +349,8 @@ function insertMatch(db, redis, match, options, cb)
             redis.lpush(types[options.type], JSON.stringify(
             {
                 match_id: match.match_id,
-                duration: match.duration || 0,
-                start_time: match.start_time || Number(moment().format('X')),
+                duration: match.duration,
+                start_time: match.start_time,
             }));
             redis.ltrim(types[options.type], 0, 9);
         }
@@ -380,6 +380,9 @@ function insertMatch(db, redis, match, options, cb)
             return queue.addToQueue(pQueue,
             {
                 match_id: match.match_id,
+                radiant_win: match.radiant_win,
+                start_time: match.start_time,
+                duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
             }, options, function(err, job2)
