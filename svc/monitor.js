@@ -81,26 +81,6 @@ var health = {
             });
         });
     },
-    parse_delay: function parse_delay(cb)
-    {
-        redis.lrange('matches_last_parsed', 0, 1, function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            if (!result[0])
-            {
-                return cb("no data");
-            }
-            result = JSON.parse(result[0]);
-            return cb(err,
-            {
-                metric: ~~(new Date() - (result.start_time + result.duration) * 1000),
-                threshold: 60 * 60 * 1000,
-            });
-        });
-    },
     redis_usage: function redis_usage(cb)
     {
         redis.info(function(err, info)

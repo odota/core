@@ -87,8 +87,6 @@ pQueue.process(1, function(job, cb)
                 }
                 parsed_data.match_id = match.match_id;
                 parsed_data.pgroup = match.pgroup;
-                parsed_data.start_time = match.start_time;
-                parsed_data.duration = match.duration;
                 parsed_data.parse_status = 2;
                 if (match.replay_blob_key)
                 {

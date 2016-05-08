@@ -140,13 +140,6 @@ module.exports = function buildStatus(db, redis, cb)
                 cb(err, generateCounts(arr, 1000));
             });
         },
-        parse_delay: function(cb)
-        {
-            redis.lrange("parse_delay", 0, -1, function(err, arr)
-            {
-                cb(err, generateCounts(arr, 60 * 60 * 1000));
-            });
-        },
         health: function(cb)
         {
             redis.hgetall('health', function(err, result)
