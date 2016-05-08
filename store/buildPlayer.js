@@ -66,8 +66,7 @@ var aggs = {
     hyperopia: basicAggs
 };
 //Fields to project from Cassandra player caches
-var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win'];
-var cacheTable = ['hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
+var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
 var cacheFilters = ['heroes', 'teammates', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time'];
 
 function buildPlayer(options, cb)
@@ -106,7 +105,7 @@ function buildPlayer(options, cb)
     });
     queryObj.js_agg = obj;
     //fields to project from the Cassandra cache
-    queryObj.cacheProject = Object.keys(queryObj.js_agg).concat(cacheProj).concat(cacheTable).concat(filter_exists ? cacheFilters : []);
+    queryObj.cacheProject = Object.keys(queryObj.js_agg).concat(cacheProj).concat(filter_exists ? cacheFilters : []).concat(query.desc ? query.desc : []);
     //Find player in db
     console.time("[PLAYER] getPlayer " + account_id);
     getPlayer(db, account_id, function(err, player)
