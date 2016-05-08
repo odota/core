@@ -387,6 +387,8 @@ function insertMatch(db, redis, match, options, cb)
                 match_id: match.match_id,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
+                start_time: match.start_time,
+                duration: match.duration,
             }, options, function(err, job2)
             {
                 cb(err, job2);
