@@ -50,13 +50,11 @@ docker run --name cassandra --restart=always -d --net=host cassandra:3
 sudo docker start cassandra
 '
 #cassandra joining nodes
-gcloud compute instance-groups managed delete -q cassandra-group-1
-gcloud compute instance-templates delete -q cassandra-1
-gcloud compute instance-templates create cassandra-1 --machine-type n1-highmem-4 --image container-vm --boot-disk-size 1000GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
+gcloud compute instances delete -q cassandra-2
+gcloud compute instances create cassandra-2 --machine-type n1-highmem-4 --image container-vm --boot-disk-size 1000GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:3
 sudo docker start cassandra
 '
-gcloud compute instance-groups managed create "cassandra-group-1" --base-instance-name "cassandra-group-1" --template "cassandra-1" --size "1"
 
 #task nodes
 gcloud compute instance-groups managed delete -q task-group-1
