@@ -153,6 +153,17 @@ function insertMatch(db, redis, match, options, cb)
             delete p.account_id;
         }
     });
+    //if we have a pgroup from earlier, use it to fill out hero_ids (used after parse)
+    if (players && match.pgroup)
+    {
+        players.forEach(function(p)
+        {
+            if (match.pgroup[p.player_slot])
+            {
+                p.hero_id = match.pgroup[p.player_slot].hero_id;
+            }
+        });
+    }
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
     if (players && !match.pgroup)
     {
@@ -371,7 +382,12 @@ function insertMatch(db, redis, match, options, cb)
         else
         {
             //queue it and finish, callback with the queued parse job
-            return queue.addToQueue(pQueue, match, options, function(err, job2)
+            return queue.addToQueue(pQueue,
+            {
+                match_id: match.match_id,
+                replay_blob_key: match.replay_blob_key,
+                pgroup: match.pgroup,
+            }, options, function(err, job2)
             {
                 cb(err, job2);
             });
@@ -1057,7 +1073,7 @@ function searchPlayer(db, query, cb)
                     (SELECT account_id, personaname, avatarfull, similarity(personaname, ?)
                     FROM players WHERE personaname ILIKE ? LIMIT 1000) search
                     ORDER BY similarity DESC LIMIT 200
-                    `, [query, '%'+query+'%']).asCallback(function(err, result)
+                    `, [query, '%' + query + '%']).asCallback(function(err, result)
             {
                 if (err)
                 {

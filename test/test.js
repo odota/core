@@ -13,7 +13,6 @@ config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
 config.ENABLE_MATCH_CACHE = 1;
-//config.ENABLE_PLAYER_CACHE = 1;
 config.FRONTEND_PORT = 5001;
 config.PARSER_PORT = 5201;
 var async = require('async');
@@ -265,6 +264,7 @@ describe("web", function()
                 done(err);
             });
         });
+        //TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
         it('/matches/:valid', function(done)
         {
             supertest(app).get('/matches/1781962623').expect(200).end(function(err, res)
