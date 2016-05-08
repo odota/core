@@ -179,7 +179,7 @@ describe("parser", function()
                             {
                                 clearInterval(poll);
                                 //ensure parse data got inserted
-                                queries.getMatch(db, redis, tests[key],
+                                queries.getMatch(db, redis, tests[key].match_id,
                                 {}, function(err, match)
                                 {
                                     if (err)
