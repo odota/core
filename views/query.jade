@@ -56,7 +56,12 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
           select.form-control(multiple name="win" data-placeholder="Any Result")#win
             option(value="1", selected=(q["win"] && q["win"][0]===1)) Wins
             option(value="0", selected=(q["win"] && q["win"][0]===0)) Losses
-            
+        .form-group
+          label Lane
+          select.form-control(multiple name="lane_role" data-placeholder="Any Lane")#lane_role		
+            each val, key in constants.lane_role		
+              option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
+
       .col-md-4
         .form-group
           label Patch

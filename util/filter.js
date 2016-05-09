@@ -31,6 +31,10 @@ function filter(matches, filters)
         {
             return m.start_time > (curtime - (key * 86400));
         },
+        lane_role: function(m, key)
+        {
+            return m.lane_role === key;
+        },
         hero_id: function(m, key)
         {
             return m.hero_id === key;
