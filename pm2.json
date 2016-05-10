@@ -44,7 +44,7 @@
       "script": "svc/fullhistory.js",
       "watch": true,
       "ignore_watch": ["node_modules", "public", "views"],
-      "group": "decommissioned",
+      "group": "core",
       "exec_mode": "cluster",
       "instances": 1
     },
