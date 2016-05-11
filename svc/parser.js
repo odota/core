@@ -90,6 +90,7 @@ pQueue.process(1, function(job, cb)
                 parsed_data.radiant_win = match.radiant_win;
                 parsed_data.start_time = match.start_time;
                 parsed_data.duration = match.duration;
+                parsed_data.replay_blob_key = match.replay_blob_key;
                 parsed_data.parse_status = 2;
                 if (match.replay_blob_key)
                 {
