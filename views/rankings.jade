@@ -15,8 +15,6 @@ block content
           tr
             th #
             th Name
-            th Matches
-            th Win%
             th Rating
             th Score
         tbody
@@ -27,8 +25,6 @@ block content
                 if player.loccountrycode && constants.countries[player.loccountrycode]
                   span: abbr(title=constants.countries[player.loccountrycode].name.common): span.flag-icon(style="margin-right:5px;" class="flag-icon-"+player.loccountrycode.toLowerCase())  
                 a(href="/players/"+player.account_id)=player.personaname || player.account_id
-              td.rankable=player.games
-              td.rankable #{(player.wins/player.games*100).toFixed(2)}%
               td.rankable=player.solo_competitive_rank
               td.rankable=Number(player.score).toFixed(0)
             

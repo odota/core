@@ -893,14 +893,6 @@ function getHeroRankings(db, redis, hero_id, options, cb)
                 {
                     redis.zscore('solo_competitive_rank', player.account_id, cb);
                 },
-                wins: function(cb)
-                {
-                    redis.hget(['wins', moment().startOf('quarter').format('X'), hero_id].join(':'), player.account_id, cb);
-                },
-                games: function(cb)
-                {
-                    redis.hget(['games', moment().startOf('quarter').format('X'), hero_id].join(':'), player.account_id, cb);
-                },
             }, function(err, result)
             {
                 if (err)
@@ -908,8 +900,6 @@ function getHeroRankings(db, redis, hero_id, options, cb)
                     return cb(err);
                 }
                 player.solo_competitive_rank = result.solo_competitive_rank;
-                player.wins = result.wins;
-                player.games = result.games;
                 cb(err);
             });
         }, function(err)

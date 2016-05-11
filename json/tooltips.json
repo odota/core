@@ -115,5 +115,5 @@
   "win_pct_as": "Win percentage as this hero",
   "win_pct_with": "Win percentage with this player/hero",
   "win_pct_against": "Win percentage against this player/hero",
-  "subheading_ranking": "Based on ranked matches. MMR must be visible in order to compute ranking. Rankings reset quarterly."
+  "subheading_ranking": "Based on wins and average visible MMR in matches played.  Rankings reset quarterly."
 }
