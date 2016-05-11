@@ -1,7 +1,7 @@
 /**
  * Queue an account_id for fullhistory
  **/
-var queue = require('../queue');
+var queue = require('../store/queue');
 var fhQueue = queue.getQueue('fullhistory');
 var player = {
     account_id: Number(process.argv[2])
