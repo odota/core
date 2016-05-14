@@ -20,6 +20,6 @@ Also, courtesy of community developer [coreymaher](https://github.com/coreymaher
  (like a late courier) has been fixed.
 
 One of YASP's greatest strengths is that our code is completely open source! Want to fix something or add a feature?
-You can do that! Check out our (Github)[https://github.com/yasp-dota/yasp].
+You can do that! Check out our [Github](https://github.com/yasp-dota/yasp).
 
 Thanks, and happy hunting!
