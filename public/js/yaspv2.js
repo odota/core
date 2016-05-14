@@ -80,7 +80,6 @@ render(<Provider store={store}>
 <Route path="mmstats" component={MMStats}/>
 <Route path="rankings/:hero_id" component={Ranking}/>
 <Route path="benchmarks/:hero_id" component={Benchmark}/>
-<Route path="faq" component={FAQ}/>
 <Route path="search" component={Search}/>
 <Route path="status" component={Status}/>
 */

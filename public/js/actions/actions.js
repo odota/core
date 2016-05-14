@@ -31,7 +31,6 @@ export function getEndpoint(name, options)
 //REQUEST_PICKS
 //REQUEST_CARRY
 //mmstats
-//faq
 //search
 //status
 //benchmarks

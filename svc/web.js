@@ -265,18 +265,6 @@ app.route('/status').get(function(req, res, next)
         });
     });
 });
-app.route('/faq').get(function(req, res)
-{
-    res.render("faq",
-    {
-        questions: poet.helpers.postsWithTag("faq").reverse()
-    });
-});
-// Kept for legacy reasons
-app.route('/privacyterms').get(function(req, res)
-{
-    res.redirect("/faq");
-});
 app.use('/matches', matches(db, redis, cassandra));
 app.use('/players', players(db, redis, cassandra));
 app.use('/names/:vanityUrl', function(req, res, cb)

@@ -123,7 +123,6 @@ module.exports = function(db, redis, cassandra)
     api.get('/distributions');
     api.get('/picks/:n');
     api.get('/rankings/:hero_id');
-    api.get('/faq');
     api.get('/status', function(req, res, cb)
     {
         buildStatus(db, redis, function(err, status)
