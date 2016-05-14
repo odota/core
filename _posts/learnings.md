@@ -15,14 +15,14 @@ Here are some of the things we learned along the way.  We hope this summary help
     * Our replay parsing library of choice.
     * Why'd we pick it?
       * Documentation is important.  It had the best examples/documentation of all the choices we looked at.
-      * Martin [@spheenik](https://github.com/spheenik) offers great support for his library.
+      * Martin [(@spheenik)](https://github.com/spheenik) offers great support for his library.
   * The idea was that we'd build some fun feature for ourselves, and be able to deploy it rapidly to hundreds of users.
   * No business plan/monetization.  We were still both in school at the time and not really interested in making a profit.
     * Still basically the same, we subsist on donations and lower the goal to match our hardware costs.
 
 ## Growth
   * We got 1000 users from the first [post](https://www.reddit.com/r/DotA2/comments/2sp595/introducing_yasp_a_free_opensource_stats_website/) in January 2015.  We were only expecting 100 or so.  Oops!
-  * The uncontrollable flood of frontpage.  Reddit can and will hug your site to death.  Once your post makes it to frontpage you can't really stop the influx.
+  * The uncontrollable flood of frontpage.  Reddit can and will hug your site to death.  Repeatedly.  Once your post makes it to frontpage you can't really stop the influx.
   * Either plan ahead before you go public or be prepared to explain the downtime/queue lengths.
   * Engage your users!
     * Twitter
