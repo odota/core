@@ -135,8 +135,6 @@ module.exports = function(db, redis, cassandra)
             res.json(status);
         });
     });
-    //TODO will need to figure out how to do slugs if @albertcui insists on routing with them
-    api.get('/blog/:n');
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     api.get('/banner');
