@@ -1,8 +1,7 @@
 {{{
   "title": "May Financial Report and Dynamic Ads",
-  "date": "5-15-2016",
-  "author": "Albert",
-  "draft": true
+  "date": "5-14-2016",
+  "author": "Albert"
 }}}
 
 Today, we're bringing back ads to YASP.
