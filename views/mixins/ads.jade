@@ -1,27 +1,9 @@
 mixin ad(type)
-  if !(user && user.cheese) && config.ENABLE_ADS
+  if config.ENABLE_ADS && cheese < config.GOAL
     if type==="banner1"
-      script.
-        //check adblocker
-        window.onload = function(){
-          setTimeout(function() { 
-            // We are targeting the first banner ad of AdSense
-            var ad = document.querySelector("ins.adsbygoogle");
-            
-            // If the ad contains no innerHTML, ad blockers are at work
-            if (ad && ad.innerHTML.replace(/\s/g, "").length == 0) {
-              // Since ad blocks hide ads using CSS too
-              ad.style.cssText = 'display:block !important; text-decoration:none;'; 
-              // You can put any text, image or even IFRAME tags here
-              ad.innerHTML = "<div class='alert alert-info text-center'>Blocking ads?  Please consider disabling your ad blocker or donating to help keep the service running.</div>";
-            }
-          }, 2000); // The ad blocker check is performed 2 seconds after the page load 
-        }; 
-      script(async='', src='//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js')
-      // responsive-1
-      ins.adsbygoogle(style='display:block', data-ad-client='ca-pub-5591574346816667', data-ad-slot='6152484630', data-ad-format='auto')
-      script.
-        (adsbygoogle = window.adsbygoogle || []).push({});
+      style .ad div { display: block !important; margin: 0 auto; }
+      .ad
+        script(src="http://cdn2-marketplace.vntsm.com/p.js?s=570778d053d855420d8b584d&r_id=7052123" type="text/javascript")
       hr
     else if type==="banner2"
       hr
