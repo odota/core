@@ -1,13 +1,12 @@
 {{{
-  "title": "Lessons learned from parsing 10 million replays",
+  "title": "Lessons Learned From Parsing 10 Million Replays",
   "date": "5-14-2016",
-  "author": "Howard",
-  "draft": true
+  "author": "Howard and Albert"
 }}}
 
 Working on this project has been a highly educational experience for both of us.
 
-Here are some of the things we learned along the way:
+Here are some of the things we learned along the way.  We hope this summary helps aspiring developers with their own projects!
 
 ## Origins
   * Started in August 2014
@@ -16,6 +15,7 @@ Here are some of the things we learned along the way:
     * Our replay parsing library of choice.
     * Why'd we pick it?
       * Documentation is important.  It had the best examples/documentation of all the choices we looked at.
+      * Martin [@spheenik](https://github.com/spheenik) offers great support for his library.
   * The idea was that we'd build some fun feature for ourselves, and be able to deploy it rapidly to hundreds of users.
   * No business plan/monetization.  We were still both in school at the time and not really interested in making a profit.
     * Still basically the same, we subsist on donations and lower the goal to match our hardware costs.
@@ -35,7 +35,7 @@ Here are some of the things we learned along the way:
 
 **Data volume**
   * People play a ton of Dota!  Some quick numbers:
-    * ~1.2 billion public matches total
+    * ~1.2 billion public matches total, as of May 2015
       * Why is the match ID up to 2.3 billion?  Not all IDs end up finishing as public games.
     * ~1.1 million matches a day, 1.4 million on weekends
     * Importing every match will take you a couple of months.  Don't do it lightly.
@@ -53,16 +53,18 @@ Here are some of the things we learned along the way:
 
 **Caching**
   * Cloudflare
-    * Use them or Akamai/some other CDN.  You don't want to serving up assets like images, CSS, and JS yourself.
+    * Use them or Akamai/some other CDN.  You don't want to serving up static assets like images, CSS, and JS yourself for millions of pageviews.
   * Redis
     * Redis makes a great cache for immutable data, like matches.  If someone posts a match link on Reddit and 1000 people click it, you only hit your DB once.  
     
 **Minimizing cost -- how to run as cheaply as possible**
   * No employees.  People cost way more than machines.
-    * Some quick math: A software engineer costs roughly 100,000 a year/8,000 a month.  In comparison the servers only cost 1,400/month.
+    * Some quick math: A software engineer costs roughly 100,000 a year/8,000 a month.  In comparison the servers only cost ~1,500/month.
     * This means you are going to have to know how to develop your site full-stack yourself.  Don't worry if you're new at this.  You can learn as you go!
-  * No marketing.
-    * Our plan was to build things and let users spread the news via word-of-mouth.  It won't cost you anything and users find it less intrusive.
+    * The tradeoff of not having employees and running an open-source project is that you'll have to review external pull requests, and work with the authors to get them up to your quality bar/style.
+      * Getting people to commit to features/dates is also harder.
+  * No marketing/advertising
+    * Our plan: Build things and let users spread the news via word-of-mouth.  It won't cost you anything and users find it less intrusive.
     * Avoids the need to spend money on ads or hiring people to advertise for you.
   * Free software.  There are tons of cool projects out there and you can get help from other users.
 
@@ -76,11 +78,15 @@ Here are some of the things we learned along the way:
     * http://dev.dota2.com/showthread.php?t=58317  A quick introduction to your available endpoints and what data you can get.
     * https://lab.xpaw.me/steam_api_documentation.html  Very cool interactive API explorer.
   * It can fail randomly and in weird ways.
-    * Seen: blobs with `{}`, blobs with `{status: 1}`, no response at all, etc.  Make sure to identify and handle all the edge cases.
+    * Seen: blobs with `{}`, blobs with `{status: 1}`, non-200 response codes, no response at all, etc.  Make sure to identify and handle all the edge cases.
+  * Documented limit is 100,000 API calls per day.  This is roughly one call per second.
+  * There is also an IP limit of about 5-6 calls per second.
 
 **Replay Parsing**
   * Even less supported than the API.
   * Your best bet is to ask the replay parser developer of your chosen library for help.
+  * Figuring out the raw binary format of the replay (a long series of protobuf messages) is a nontrivial task.
+    * Might be useful if you want to learn about it and enjoy low-level programming, but much easier to just use an existing library.
   * Replays come in .bz2 compressed format, averaging maybe 30MB each.
   * You probably won't able to store a large number of them, so parse them to reduce them to just the data you're interested in.
 
@@ -96,6 +102,7 @@ Here are some of the things we learned along the way:
 
 **Docker (containers)**
   * Run your external code (Postgres, Redis) separately.  You can spin up a new box and rapidly get them running/swap versions if desired.
+  * Makes it easy to move pieces of your infrastructure around.
   * Consistent development environment.  You know what you have running on your devbox will match production since it's all Dockerized.
   * Easy setup.  You can get new developers running with it fairly quickly, instead of having to figure out init scripts for 5 different platforms.
   * Early deployments consisted of us `ssh`ing into a box, `git pull`, then `pm2 reload all`.  You won't want to do this when you have more than 1 node.
@@ -127,15 +134,20 @@ Here are some of the things we learned along the way:
     * Postgres.  Migrated to this from Mongo.
       * \+ SQL, people know it!
         * You can assume most developers will be somewhat familiar/know how to do a query.  It's much harder to find people who are experts with some random NoSQL query language.
-      * \+ Reliable, but you need to learn how it works. or you'll run into issues and have to learn how to fix them on the fly
+      * \+ Reliable, but you need to learn how it works, or you'll run into issues and have to learn how to fix them on the fly while your site is down
       * \- Can require a ton of free space.  MVCC means every row that gets updated needs to be fully rewritten.  The old space doesn't get reused until a VACUUM occurs.
       * \- Things we learned about the hard way
         * shared_buffers.  128MB is way too low for production deployments.  Make sure you adjust this properly.
         * Postgres needs 30 bytes a row of overhead.  Keep in mind before splitting your data into lots of 2-column tables.
         * Postgres stores large field values with a technique called TOAST.  You can't have more than 4 billion of these.  Keep this in mind if you're storing a lot of JSON blobs.
         * Postgres will stop accepting writes if you do more than 2 billion transactions between vacuums.
-          * Got hit with this when the DB kept restarting and autovacuum couldn't get one off.
+          * Got hit with this when the DB kept restarting and autovacuum couldn't finish a run.
           * We also weren't transacting the match insert and the player_match inserts, so used 10x more transactions than necessary.
+      * \- It starts getting slow when you have billions of rows.
+    * Cassandra.  Currently using for really high-volume data, like matches/player_matches.
+      * \+ Horizontally scales.  Can just add extra nodes as needed.
+      * \- No native JSON support.  Need to store a lot of data as JSON text blobs that are deserialized on read.
+      * \- Restricted in the filtering/aggregation you can do.  Okay for us since we do our filtering/aggregations on the data we read out.
 
 **Telemetry**
   * You'll want to build yourself some kind of status page.
@@ -155,7 +167,7 @@ Here are some of the things we learned along the way:
   * Ask yourself, what's the worst that could happen if my database got leaked?
 * Automate things.  You don't want to be hunting down new strings, etc. every time Valve patches.  Find sources for this data and have scripts to update them.
 
-## Monetization - The Donation Nodel
+## Monetization - The Donation Model
   * Be prepared for good and bad months.
     * Typically if you release a feature, people will donate more in response, and if you don't, it will stagnate.
     * Use a subscription model if you want a steadier revenue stream.  Otherwise be prepared to pay out-of-pocket to cover bad months if you need to.
