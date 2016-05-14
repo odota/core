@@ -279,15 +279,7 @@ function insertMatch(db, redis, match, options, cb)
                 }
                 async.each(players || [], function(pm, cb)
                 {
-                    //denormalized columns for efficiency
                     pm.match_id = match.match_id;
-                    pm.radiant_win = match.radiant_win;
-                    pm.start_time = match.start_time;
-                    pm.duration = match.duration;
-                    pm.cluster = match.cluster;
-                    pm.lobby_type = match.lobby_type;
-                    pm.game_mode = match.game_mode;
-                    pm.parse_status = match.parse_status;
                     cleanRowCassandra(cassandra, 'player_matches', pm, function(err, pm)
                     {
                         if (err)
@@ -462,7 +454,7 @@ function getMatch(db, redis, match_id, options, cb)
                 match.replay_url = result.replay_url;
                 async.each(players, function(p, cb)
                 {
-                    //denormalized columns
+                    //match-level columns
                     p.radiant_win = match.radiant_win;
                     p.start_time = match.start_time;
                     p.duration = match.duration;
