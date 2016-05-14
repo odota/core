@@ -66,7 +66,6 @@
     "pg": "^4.4.4",
     "pg-query-stream": "^1.0.0",
     "pm2": "^1.1.1",
-    "poet": "^2.0.1",
     "qtip2": "3.0.2",
     "react": "^15.0.0",
     "react-addons-css-transition-group": "^15.0.0",
