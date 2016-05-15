@@ -62,15 +62,6 @@ Getting Help
 * Feel free to open a new issue to ask questions/get help!  This will send us an email and we usually can respond in minutes (if awake).
 * You can also find us on Discord, which we usually check every few hours.
 
-Architecture and Design
-----
-See the [wiki](https://github.com/yasp-dota/yasp/wiki/Architecture-and-Design).
-
-Docker examples
-----
-* Import a Postgres dump: `sudo docker exec -i postgres pg_restore -d yasp --clean < ../dump.pgdump`
-* Run a script in production: `sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c 'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/preloader.js'`
-
 History
 ----
 * Project started in August 2014
