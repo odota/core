@@ -107,7 +107,7 @@ var health = {
             return cb(err,
             {
                 metric: result.rows[0].pg_database_size,
-                threshold: 5500000000000
+                threshold: 5700000000000
             });
         });
     }
