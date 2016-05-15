@@ -266,11 +266,12 @@ function insertMatch(db, redis, match, options, cb)
             }).join(','));
             var arr = Object.keys(obj).map(function(k)
             {
-                return obj[k];
+                // boolean types need to be expressed as booleans, if strings the cassandra driver will always convert it to true, e.g. 'false'
+                return k === "radiant_win" ? JSON.parse(obj[k]) : obj[k];
             });
             cassandra.execute(query, arr,
             {
-                prepare: true
+                prepare: true,
             }, function(err, result)
             {
                 if (err)

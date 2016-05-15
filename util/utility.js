@@ -19,7 +19,6 @@ function tokenize(input)
 {
     return input.replace(/[^a-zA-Z- ]+/g, '').replace('/ {2,}/', ' ').toLowerCase().split(' ');
 }
-
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
  **/
@@ -165,7 +164,6 @@ function generateJob(type, payload)
     };
     return opts[type]();
 }
-
 /**
  * A wrapper around HTTP requests that handles:
  * proxying
@@ -627,11 +625,7 @@ function serialize(row)
     var obj = {};
     for (var key in row)
     {
-        if (typeof(row[key]) === "boolean")
-        {
-            obj[key] = row[key] ? 'true' : '';
-        }
-        else if (row[key] !== null && !Number.isNaN(row[key]) && row[key] !== undefined)
+        if (row[key] !== null && !Number.isNaN(row[key]) && row[key] !== undefined)
         {
             obj[key] = JSON.stringify(row[key]);
         }
@@ -646,7 +640,14 @@ function deserialize(row)
     var obj = {};
     row.keys().forEach(function(key)
     {
-        obj[key] = JSON.parse(row[key]);
+        try
+        {
+            obj[key] = JSON.parse(row[key]);
+        }
+        catch (e)
+        {
+            console.log('exception occurred during JSON parse: %s', e);
+        }
     });
     return obj;
 }
