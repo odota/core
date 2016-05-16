@@ -14,8 +14,6 @@ var getPlayerRankings = queries.getPlayerRankings;
 var generatePositionData = utility.generatePositionData;
 var preprocessQuery = utility.preprocessQuery;
 var readCache = playerCache.readCache;
-var writeCache = playerCache.writeCache;
-var validateCache = playerCache.validateCache;
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
@@ -120,59 +118,34 @@ function buildPlayer(options, cb)
             account_id: account_id,
             personaname: account_id
         };
-        console.time("[PLAYER] readCache " + account_id);
-        readCache(orig_account_id, queryObj, function(err, cache)
+        if (config.ENABLE_PLAYER_CACHE)
         {
-            console.timeEnd("[PLAYER] readCache " + account_id);
-            if (err)
+            console.time("[PLAYER] readCache " + account_id);
+            readCache(orig_account_id, queryObj, function(err, cache)
             {
-                return cb(err);
-            }
-            //check count of matches in db to validate cache
-            console.time("[PLAYER] validateCache " + account_id);
-            validateCache(db, redis, account_id, cache, function(err, valid)
-            {
-                console.timeEnd("[PLAYER] validateCache " + account_id);
+                console.timeEnd("[PLAYER] readCache " + account_id);
                 if (err)
                 {
                     return cb(err);
                 }
-                if (!valid)
-                {
-                    console.log("player cache miss %s", player.account_id);
-                    console.time("[PLAYER] getPlayerMatches " + account_id);
-                    getPlayerMatches(db, queryObj, options, function(err, results)
-                    {
-                        console.timeEnd("[PLAYER] getPlayerMatches " + account_id);
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        //save the cache if complete data
-                        if (!filter_exists && player.account_id !== constants.anonymous_account_id)
-                        {
-                            console.time("[PLAYER] writeCache " + account_id);
-                            writeCache(player.account_id, results, function(err)
-                            {
-                                if (err)
-                                {
-                                    console.error(err);
-                                }
-                                console.timeEnd("[PLAYER] writeCache " + account_id);
-                            });
-                        }
-                        //don't need to wait for cache write
-                        processResults(err, results);
-                    });
-                }
-                else
-                {
-                    console.log("player cache hit %s", player.account_id);
-                    options.cache = true;
-                    processResults(err, cache);
-                }
+                options.cache = true;
+                processResults(err, cache);
             });
-        });
+        }
+        else
+        {
+            console.time("[PLAYER] getPlayerMatches " + account_id);
+            getPlayerMatches(db, queryObj, options, function(err, results)
+            {
+                console.timeEnd("[PLAYER] getPlayerMatches " + account_id);
+                if (err)
+                {
+                    return cb(err);
+                }
+                //don't need to wait for cache write
+                processResults(err, results);
+            });
+        }
 
         function processResults(err, cache)
         {
