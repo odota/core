@@ -26,6 +26,7 @@ var replay_dir = "./test/testfiles/";
 var pg = require('pg');
 var fs = require('fs');
 var wait = 90000;
+var cassandra = require('../store/cassandra');
 // these are loaded later, as the database needs to be created when these are required
 var db;
 var app;
