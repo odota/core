@@ -22,7 +22,7 @@ var defaults = {
     "SESSION_SECRET": "secret to encrypt cookies with", //string to encrypt cookies
     "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login
     "WORK_URL": "http://localhost:5400", //url to request work from (for worker nodes)
-    "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
+    "START_SEQ_NUM": "", //truthy: use sequence number stored in redis, else: use approximate value from live API
     "NODE_ENV": "development",
     "FRONTEND_PORT": "5000",
     "RETRIEVER_PORT": "5100",
@@ -42,6 +42,7 @@ var defaults = {
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)
+    "SCANNER_PARALLELISM": 1, //Number of simultaneous API requests to make in scanner
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "BENCHMARK_RETENTION_HOURS": 2, //hours in block to retain benchmark data
     "MATCH_RATING_RETENTION_HOURS": 24, //hours in block to retain match rating data
