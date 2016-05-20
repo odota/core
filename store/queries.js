@@ -9,6 +9,8 @@ var config = require('../config');
 var constants = require('../constants');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
+var addToQueue = queue.addToQueue;
+var mQueue = queue.getQueue('mmr');
 var async = require('async');
 var os = require('os');
 var convert64to32 = utility.convert64to32;
@@ -199,7 +201,8 @@ function insertMatch(db, redis, match, options, cb)
         "upc": updatePlayerCaches,
         "cmc": clearMatchCache,
         "t": telemetry,
-        "dp": decideParse
+        "dm": decideMmr,
+        "dp": decideParse,
     }, function(err, results)
     {
         return cb(err, results.dp);
@@ -357,6 +360,29 @@ function insertMatch(db, redis, match, options, cb)
     function clearMatchCache(cb)
     {
         redis.del("match:" + match.match_id, cb);
+    }
+
+    function decideMmr(cb)
+    {
+        async.each(match.players, function(p, cb)
+        {
+            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in options.userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 3 === 0)))
+            {
+                addToQueue(mQueue,
+                {
+                    match_id: match.match_id,
+                    account_id: p.account_id
+                },
+                {
+                    attempts: 1,
+                    delay: 180000,
+                }, cb);
+            }
+            else
+            {
+                cb();
+            }
+        }, cb);
     }
 
     function decideParse(cb)

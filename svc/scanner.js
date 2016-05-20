@@ -3,71 +3,58 @@
  **/
 var utility = require('../util/utility');
 var config = require('../config');
-var constants = require('../constants');
 var buildSets = require('../store/buildSets');
 var db = require('../store/db');
 var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 var redis = require('../store/redis');
-var queue = require('../store/queue');
 var queries = require('../store/queries');
 var insertMatch = queries.insertMatch;
 var getData = utility.getData;
-var addToQueue = queue.addToQueue;
-var mQueue = queue.getQueue('mmr');
 var generateJob = utility.generateJob;
 var async = require('async');
 var trackedPlayers;
 var userPlayers;
-// Used to create endpoint for monitoring
-var express = require('express');
-var moment = require('moment');
-var app = express();
-var port = config.PORT || config.SCANNER_PORT;
-var startedAt = moment();
-app.route("/").get(function(req, res)
-{
-    redis.get("match_seq_num", function(err, result)
-    {
-        res.json(
-        {
-            started_at: startedAt.format(),
-            started_ago: startedAt.fromNow(),
-            match_seq_num: result || "NOT FOUND"
-        });
-    });
-});
-var server = app.listen(port, function()
-{
-    var host = server.address().address;
-    console.log('[SCANNER] listening at http://%s:%s', host, port);
-});
+var PARALLELISM = config.SCANNER_PARALLELISM;
+var PAGE_SIZE = 100;
 buildSets(db, redis, function(err)
 {
     if (err)
     {
         throw err;
     }
-    start();
+    for (var i = 0; i < PARALLELISM; i++)
+    {
+        start(i);
+    }
 });
 
-function start()
+function start(id)
 {
-    if (config.START_SEQ_NUM === "REDIS")
+    if (config.START_SEQ_NUM)
     {
-        redis.get("match_seq_num", function(err, result)
+        redis.hget("match_seq_num_hash", id, function(err, result)
         {
             if (err || !result)
             {
-                console.log('failed to get match_seq_num from redis, retrying');
-                return setTimeout(start, 10000);
+                console.log('failed to get match_seq_num from redis, trying sequence number of worker 0');
+                redis.hget("match_seq_num_hash", "0", function(err, result)
+                {
+                    if (err || !result)
+                    {
+                        console.log('failed to get worker 0 match_seq_num from redis, waiting to retry');
+                        return setTimeout(start, 10000);
+                    }
+                    //stagger
+                    result = Number(result);
+                    scanApi(result + id * PAGE_SIZE);
+                });
             }
-            result = Number(result);
-            scanApi(result);
+            else
+            {
+                result = Number(result);
+                scanApi(result);
+            }
         });
-    }
-    else if (config.START_SEQ_NUM)
-    {
-        scanApi(config.START_SEQ_NUM);
     }
     else if (config.NODE_ENV !== "production")
     {
@@ -88,94 +75,63 @@ function start()
     {
         throw "failed to initialize sequence number";
     }
-}
 
-function scanApi(seq_num)
-{
-    var container = generateJob("api_sequence",
+    function scanApi(seq_num)
     {
-        start_at_match_seq_num: seq_num
-    });
-    queries.getSets(redis, function(err, result)
-    {
-        if (err)
+        var container = generateJob("api_sequence",
         {
-            console.log("failed to getSets from redis");
-            return scanApi(seq_num);
-        }
-        //set local vars
-        trackedPlayers = result.trackedPlayers;
-        userPlayers = result.userPlayers;
-        getData(
-        {
-            url: container.url,
-            delay: Number(config.SCANNER_DELAY),
-            proxyAffinityRange: 4
-        }, function(err, data)
+            start_at_match_seq_num: seq_num
+        });
+        queries.getSets(redis, function(err, result)
         {
             if (err)
             {
+                console.log("failed to getSets from redis");
                 return scanApi(seq_num);
             }
-            var resp = data.result && data.result.matches ? data.result.matches : [];
-            var next_seq_num = seq_num;
-            if (resp.length)
+            //set local vars
+            trackedPlayers = result.trackedPlayers;
+            userPlayers = result.userPlayers;
+            getData(
             {
-                next_seq_num = resp[resp.length - 1].match_seq_num + 1;
-            }
-            console.log("[API] seq_num:%s, matches:%s", seq_num, resp.length);
-            async.each(resp, function(match, cb)
+                url: container.url,
+                delay: Number(config.SCANNER_DELAY),
+                proxyAffinityRange: PARALLELISM,
+            }, function(err, data)
             {
-                if (config.ENABLE_PRO_PARSING && match.leagueid)
+                if (err)
                 {
-                    //parse tournament games
-                    match.parse_status = 0;
+                    return scanApi(seq_num);
                 }
-                else if (match.players.some(function(p)
-                    {
-                        return (p.account_id in trackedPlayers);
-                    }))
+                var resp = data.result && data.result.matches ? data.result.matches : [];
+                var next_seq_num = seq_num;
+                if (resp.length === PAGE_SIZE)
                 {
-                    //queued
-                    match.parse_status = 0;
+                    next_seq_num = seq_num + PARALLELISM * PAGE_SIZE;
                 }
-                else if (match.players.some(function(p)
-                    {
-                        return (config.ENABLE_INSERT_ALL_MATCHES || p.account_id in userPlayers);
-                    }))
+                console.log("[API] seq_num:%s, matches:%s", seq_num, resp.length);
+                async.each(resp, function(match, cb)
                 {
-                    //skipped
-                    match.parse_status = 3;
-                }
-                async.each(match.players, function(p, cb)
-                {
-                    async.parallel(
+                    if (config.ENABLE_PRO_PARSING && match.leagueid)
                     {
-                        "decideMmr": function(cb)
+                        //parse tournament games
+                        match.parse_status = 0;
+                    }
+                    else if (match.players.some(function(p)
                         {
-                            if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 3 === 0)))
-                            {
-                                addToQueue(mQueue,
-                                {
-                                    match_id: match.match_id,
-                                    account_id: p.account_id
-                                },
-                                {
-                                    attempts: 1,
-                                    delay: 180000,
-                                }, cb);
-                            }
-                            else
-                            {
-                                cb();
-                            }
-                        }
-                    }, cb);
-                }, function(err)
-                {
-                    if (err)
+                            return (p.account_id in trackedPlayers);
+                        }))
                     {
-                        return close(err);
+                        //queued
+                        match.parse_status = 0;
+                    }
+                    else if (match.players.some(function(p)
+                        {
+                            return (config.ENABLE_INSERT_ALL_MATCHES || p.account_id in userPlayers);
+                        }))
+                    {
+                        //skipped
+                        match.parse_status = 3;
                     }
                     redis.get('scanner_insert:' + match.match_id, function(err, result)
                     {
@@ -187,11 +143,12 @@ function scanApi(seq_num)
                                 type: "api",
                                 origin: "scanner",
                                 cassandra: cassandra,
+                                userPlayers: userPlayers,
                             }, function(err)
                             {
                                 if (!err)
                                 {
-                                    redis.setex('scanner_insert:' + match.match_id, 3600 * 6, 1);
+                                    redis.setex('scanner_insert:' + match.match_id, 3600 * 8, 1);
                                 }
                                 close(err);
                             });
@@ -211,22 +168,22 @@ function scanApi(seq_num)
                         }
                         return cb(err);
                     }
+                }, function(err)
+                {
+                    if (err)
+                    {
+                        //something bad happened, retry this page
+                        console.error(err);
+                        return scanApi(seq_num);
+                    }
+                    else
+                    {
+                        redis.hset("match_seq_num_hash", id, next_seq_num);
+                        //completed inserting matches on this page
+                        return scanApi(next_seq_num);
+                    }
                 });
-            }, function(err)
-            {
-                if (err)
-                {
-                    //something bad happened, retry this page
-                    console.error(err);
-                    return scanApi(seq_num);
-                }
-                else
-                {
-                    redis.set("match_seq_num", next_seq_num);
-                    //completed inserting matches on this page
-                    return scanApi(next_seq_num);
-                }
             });
         });
-    });
+    }
 }
