@@ -74,11 +74,12 @@ function start()
             trackedPlayers = result.trackedPlayers;
             userPlayers = result.userPlayers;
             var arr = [];
+            var matchBuffer = {};
+            var completePages = {};
             for (var i = 0; i < parallelism; i++)
             {
                 arr.push(seq_num + i * PAGE_SIZE);
             }
-            var matchBuffer = {};
             var next_seq_num = seq_num;
             //async parallel calls
             async.each(arr, function(match_seq_num, cb)
@@ -101,8 +102,7 @@ function start()
                     var resp = data.result && data.result.matches ? data.result.matches : [];
                     if (resp.length >= PAGE_SIZE)
                     {
-                        //page is complete
-                        next_seq_num = Math.max(next_seq_num, resp[PAGE_SIZE - 1].match_seq_num + 1);
+                        completePages[arr.indexOf(match_seq_num)] = Math.max(next_seq_num, resp[PAGE_SIZE - 1].match_seq_num + 1);
                     }
                     console.log("[API] match_seq_num:%s, matches:%s", match_seq_num, resp.length);
                     resp.forEach(function(m)
@@ -189,6 +189,16 @@ function start()
                     }
                     else
                     {
+                        //find next seq num by last contiguous seq num (completed page)
+                        var next_seq_num = seq_num;
+                        for (var i = 0; i < parallelism; i++)
+                        {
+                            if (!completePages[i])
+                            {
+                                break;
+                            }
+                            next_seq_num = completePages[i];
+                        }
                         console.log("next_seq_num: %s", next_seq_num);
                         redis.set("match_seq_num", next_seq_num);
                         //completed inserting matches on this page
