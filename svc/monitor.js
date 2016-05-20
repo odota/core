@@ -65,7 +65,7 @@ var health = {
             }
             //get match_seq_num, compare with real seqnum
             var curr_seq_num = body.result.matches[0].match_seq_num;
-            redis.hget('match_seq_num_hash', "0", function(err, num)
+            redis.get('match_seq_num', function(err, num)
             {
                 if (err)
                 {
