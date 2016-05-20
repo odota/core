@@ -14,7 +14,7 @@ var generateJob = utility.generateJob;
 var async = require('async');
 var trackedPlayers;
 var userPlayers;
-var PARALLELISM = config.SCANNER_PARALLELISM;
+var parallelism = config.SCANNER_PARALLELISM;
 var PAGE_SIZE = 100;
 buildSets(db, redis, function(err)
 {
@@ -22,38 +22,23 @@ buildSets(db, redis, function(err)
     {
         throw err;
     }
-    for (var i = 0; i < PARALLELISM; i++)
-    {
-        start(i);
-    }
+    start();
 });
 
-function start(id)
+function start()
 {
     if (config.START_SEQ_NUM)
     {
-        redis.hget("match_seq_num_hash", id, function(err, result)
+        redis.get("match_seq_num", function(err, result)
         {
             if (err || !result)
             {
-                console.log('failed to get match_seq_num from redis, trying sequence number of worker 0');
-                redis.hget("match_seq_num_hash", "0", function(err, result)
-                {
-                    if (err || !result)
-                    {
-                        console.log('failed to get worker 0 match_seq_num from redis, waiting to retry');
-                        return setTimeout(start, 10000);
-                    }
-                    //stagger
-                    result = Number(result);
-                    scanApi(result + id * PAGE_SIZE);
-                });
+                console.log('failed to get match_seq_num from redis, waiting to retry');
+                return setTimeout(start, 10000);
             }
-            else
-            {
-                result = Number(result);
-                scanApi(result);
-            }
+            //stagger
+            result = Number(result);
+            scanApi(result);
         });
     }
     else if (config.NODE_ENV !== "production")
@@ -78,10 +63,6 @@ function start(id)
 
     function scanApi(seq_num)
     {
-        var container = generateJob("api_sequence",
-        {
-            start_at_match_seq_num: seq_num
-        });
         queries.getSets(redis, function(err, result)
         {
             if (err)
@@ -92,26 +73,54 @@ function start(id)
             //set local vars
             trackedPlayers = result.trackedPlayers;
             userPlayers = result.userPlayers;
-            getData(
+            var arr = [];
+            for (var i = 0; i < parallelism; i++)
             {
-                url: container.url,
-                delay: Number(config.SCANNER_DELAY),
-                proxyAffinityRange: PARALLELISM,
-            }, function(err, data)
+                arr.push(seq_num + i * PAGE_SIZE);
+            }
+            var matchBuffer = {};
+            var next_seq_num = seq_num;
+            //async parallel calls
+            async.each(arr, function(match_seq_num, cb)
+            {
+                var container = generateJob("api_sequence",
+                {
+                    start_at_match_seq_num: match_seq_num
+                });
+                getData(
+                {
+                    url: container.url,
+                    delay: Number(config.SCANNER_DELAY),
+                    proxyAffinityRange: parallelism,
+                }, function(err, data)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    var resp = data.result && data.result.matches ? data.result.matches : [];
+                    if (resp.length >= PAGE_SIZE)
+                    {
+                        //page is complete
+                        next_seq_num = Math.max(next_seq_num, resp[PAGE_SIZE - 1].match_seq_num + 1);
+                    }
+                    console.log("[API] match_seq_num:%s, matches:%s", match_seq_num, resp.length);
+                    resp.forEach(function(m)
+                    {
+                        matchBuffer[m.match_id] = m;
+                    });
+                    cb(err);
+                });
+            }, function(err)
             {
                 if (err)
                 {
                     return scanApi(seq_num);
                 }
-                var resp = data.result && data.result.matches ? data.result.matches : [];
-                var next_seq_num = seq_num;
-                if (resp.length === PAGE_SIZE)
+                console.log('%s distinct matches found in %s pages', Object.keys(matchBuffer).length, parallelism);
+                async.each(Object.keys(matchBuffer), function(k, cb)
                 {
-                    next_seq_num = seq_num + PARALLELISM * PAGE_SIZE;
-                }
-                console.log("[API] seq_num:%s, matches:%s", seq_num, resp.length);
-                async.each(resp, function(match, cb)
-                {
+                    var match = matchBuffer[k];
                     if (config.ENABLE_PRO_PARSING && match.leagueid)
                     {
                         //parse tournament games
@@ -133,6 +142,7 @@ function start(id)
                         //skipped
                         match.parse_status = 3;
                     }
+                    //check if match was previously processed
                     redis.get('scanner_insert:' + match.match_id, function(err, result)
                     {
                         //don't insert this match if we already processed it recently
@@ -148,6 +158,7 @@ function start(id)
                             {
                                 if (!err)
                                 {
+                                    //mark with long-lived key to indicate complete (persist between restarts)
                                     redis.setex('scanner_insert:' + match.match_id, 3600 * 8, 1);
                                 }
                                 close(err);
@@ -178,7 +189,8 @@ function start(id)
                     }
                     else
                     {
-                        redis.hset("match_seq_num_hash", id, next_seq_num);
+                        console.log("next_seq_num: %s", next_seq_num);
+                        redis.set("match_seq_num", next_seq_num);
                         //completed inserting matches on this page
                         return scanApi(next_seq_num);
                     }
