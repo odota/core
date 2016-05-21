@@ -227,28 +227,6 @@ app.use(function(req, res, cb)
     }
 });
 //END service/admin routes
-//START blog
-var Poet = require('poet');
-var poet = new Poet(app,
-{
-    routes:
-    {
-        '/post/:post': 'blog/post'
-    }
-});
-poet.init();
-poet.addRoute('/blog/:id?', function(req, res)
-{
-    var max = poet.helpers.getPostCount();
-    var id = Number(req.params.id) || max;
-    res.render('blog/blog',
-    {
-        posts: poet.helpers.getPosts(max - id, max - id + 1),
-        id: id,
-        max: max
-    });
-});
-//END blog
 //START standard routes.  Don't need these in SPA
 app.route('/').get(function(req, res, next)
 {
@@ -286,18 +264,6 @@ app.route('/status').get(function(req, res, next)
             result: result
         });
     });
-});
-app.route('/faq').get(function(req, res)
-{
-    res.render("faq",
-    {
-        questions: poet.helpers.postsWithTag("faq").reverse()
-    });
-});
-// Kept for legacy reasons
-app.route('/privacyterms').get(function(req, res)
-{
-    res.redirect("/faq");
 });
 app.use('/matches', matches(db, redis, cassandra));
 app.use('/players', players(db, redis, cassandra));
