@@ -143,7 +143,7 @@ function start()
                     }
                     //don't insert this match if we already processed it recently
                     //deduplicate matches in this page set
-                    if (match.parse_status === 0 || match.parse_status === 3 && !result && !matchBuffer[match.match_id])
+                    if ((match.parse_status === 0 || match.parse_status === 3) && !result && !matchBuffer[match.match_id])
                     {
                         matchBuffer[match.match_id] = 1;
                         insertMatch(db, redis, match,
