@@ -190,7 +190,7 @@ function insertMatch(db, redis, match, options, cb)
                 return au.ability;
             }) : null;
         });
-        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 1, JSON.stringify(ability_upgrades));
+        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * config.ABILITY_UPGRADE_RETENTION_HOURS, JSON.stringify(ability_upgrades));
     }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
@@ -210,6 +210,10 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatch(cb)
     {
+        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE)
+        {
+            return cb();
+        }
         db.transaction(function(trx)
         {
             upsert(trx, 'matches', match,

@@ -44,8 +44,9 @@ var defaults = {
     "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)
     "SCANNER_PARALLELISM": 1, //Number of simultaneous API requests to make in scanner
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
-    "BENCHMARK_RETENTION_HOURS": 2, //hours in block to retain benchmark data
-    "MATCH_RATING_RETENTION_HOURS": 24, //hours in block to retain match rating data
+    "BENCHMARK_RETENTION_HOURS": 1, //hours in block to retain benchmark data for percentile
+    "MATCH_RATING_RETENTION_HOURS": 12, //hours in block to retain match rating data for percentile
+    "ABILITY_UPGRADE_RETENTION_HOURS": 12, //hours to retain match ability upgrade data
     "PROVIDER": "", //The cloud provider used by the application (determines how environment data is downloaded)
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
@@ -55,7 +56,8 @@ var defaults = {
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
     "ENABLE_SPA_MODE": "", //set to enable single page application mode for web (all routes serve the SPA page by default)
-    "ENABLE_CASSANDRA_MATCH_STORE_READ": "", //set to enable reading match data to cassandra
+    "ENABLE_POSTGRES_MATCH_STORE_WRITE": "1", //set to enable writing match data to postgres (default on)
+    "ENABLE_CASSANDRA_MATCH_STORE_READ": "", //set to enable reading match data from cassandra
     "ENABLE_CASSANDRA_MATCH_STORE_WRITE": "", //set to enable writing match data to cassandra
 };
 //ensure that process.env has all values in defaults, but prefer the process.env value
