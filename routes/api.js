@@ -136,16 +136,6 @@ module.exports = function(db, redis, cassandra)
     });
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
-    api.get('/banner');
-    api.get('/cheese', function(req, res)
-    {
-        //TODO implement this
-        res.json(
-        {
-            cheese: 1,
-            goal: 2
-        });
-    });
     api.get('/search', function(req, res, cb)
     {
         if (!req.query.q)
