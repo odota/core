@@ -123,7 +123,6 @@ module.exports = function(db, redis, cassandra)
     api.get('/distributions');
     api.get('/picks/:n');
     api.get('/rankings/:hero_id');
-    api.get('/faq');
     api.get('/status', function(req, res, cb)
     {
         buildStatus(db, redis, function(err, status)
@@ -135,8 +134,6 @@ module.exports = function(db, redis, cassandra)
             res.json(status);
         });
     });
-    //TODO will need to figure out how to do slugs if @albertcui insists on routing with them
-    api.get('/blog/:n');
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     api.get('/banner');

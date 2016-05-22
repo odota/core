@@ -229,37 +229,6 @@ div .dataTables_processing {
     z-index: 60000;
 }
 
-
-/* Blog */
-
-#panel-chart {
-    padding: 10px;
-}
-
-.panel-title {
-    text-transform: none;
-    font-size: 15px;
-    letter-spacing: 0px;
-}
-
-.blog-heading {
-    font-size: 20px;
-}
-
-.blog-panel {
-    margin-bottom: 30px;
-}
-
-.blog-date {
-    margin-bottom: 0px;
-}
-
-.blog-panel img {
-    margin: 0 auto;
-    display: block;
-    max-width: 100%;
-}
-
 .theme-blue {
     color: #BBF0FD;
 }
