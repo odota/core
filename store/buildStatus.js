@@ -11,7 +11,6 @@ module.exports = function buildStatus(db, redis, cb)
     redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("alias_hits", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("parser", 0, moment().subtract(1, 'day').format('X'));
     config.RETRIEVER_HOST.split(',').map(function(r)
     {
@@ -60,10 +59,6 @@ module.exports = function buildStatus(db, redis, cb)
         matches_last_day: function(cb)
         {
             redis.zcard("added_match", cb);
-        },
-        alias_hits: function(cb)
-        {
-            redis.zcard("alias_hits", cb);
         },
         api_hits: function(cb)
         {
