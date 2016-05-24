@@ -1,5 +1,5 @@
 mixin ad(type)
-  if cheese < config.GOAL
+  if Number(cheese || 0) < Number(config.GOAL || 0)
     if type==="banner1"
       style .ad div { display: block !important; margin: 0 auto; }
       .ad
