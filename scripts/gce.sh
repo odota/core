@@ -57,7 +57,7 @@ sudo docker start cassandra
 gcloud compute instance-groups managed delete -q task-group-1
 gcloud compute instance-templates delete -q task-1
 gcloud compute instance-templates create task-1 --preemptible --machine-type n1-highcpu-8 --image container-vm --boot-disk-size 50GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c "curl -H \"Metadata-Flavor: Google\" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/postgresToCassandra.js"
+sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c "curl -H \"Metadata-Flavor: Google\" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/postgresToCassandra.js 0 2300000000"
 '
 gcloud compute instance-groups managed create "task-group-1" --base-instance-name "task-group-1" --template "task-1" --size "1"
 

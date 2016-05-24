@@ -598,13 +598,19 @@ function getMatch(db, redis, match_id, options, cb)
                 //get personanames
                 async.map(result, function(r, cb)
                 {
-                    db.raw(`SELECT personaname FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function(err, names)
+                    db.raw(`SELECT personaname, last_login FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function(err, names)
                     {
                         if (err)
                         {
                             return cb(err);
                         }
-                        r.personaname = names.rows[0] ? names.rows[0].personaname : null;
+                        if (names.rows[0])
+                        {
+                            for (var key in names.rows[0])
+                            {
+                                r[key] = names.rows[0][key];
+                            }
+                        }
                         return cb(err, r);
                     });
                 }, cb);
