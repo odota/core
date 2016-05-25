@@ -62,6 +62,10 @@ Getting Help
 * Feel free to open a new issue to ask questions/get help!  This will send us an email and we usually can respond in minutes (if awake).
 * You can also find us on Discord, which we usually check every few hours.
 
+Help Wanted
+----
+* UI/web design experts.  We want to improve the user interface and would appreciate any expertise you can contribute.
+
 History
 ----
 * Project started in August 2014
