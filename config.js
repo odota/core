@@ -63,7 +63,7 @@ var defaults = {
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults)
 {
-    process.env[key] = process.env[key] || defaults[key];
+    process.env[key] = (key in process.env) ? process.env[key] : defaults[key];
 }
 if (process.env.NODE_ENV === "development")
 {
