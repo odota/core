@@ -16,7 +16,7 @@ block match_content
             - var p = match.players[adjSlot] || {}
             - var slot_color = constants.player_colors[p.player_slot]
             - p.team = entry.team===2 || entry.team===0 || entry.key<64 || p.isRadiant
-            - p.personaname = p.personaname
+            - p.personaname = p.personaname || "Anonymous"
             tr
               td.format-seconds(data-format-seconds=entry.time)=entry.time
               td=entry.key ? constants.barracks_value[entry.key] + " " + objective : objective
