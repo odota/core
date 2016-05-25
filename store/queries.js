@@ -320,7 +320,7 @@ function insertMatch(db, redis, match, options, cb)
             return cb();
         }
         var copy = JSON.parse(JSON.stringify(match));
-        copy.players = players;
+        copy.players = JSON.parse(JSON.stringify(players));
         copy.insert_type = options.type;
         copy.origin = options.origin;
         updateCache(copy, function(err)
