@@ -408,7 +408,12 @@ function insertMatch(db, redis, match, options, cb)
                 duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
-            }, options, function(err, job2)
+            },
+            {
+                lifo: options.lifo,
+                attempts: options.attempts,
+                backoff: options.backoff,
+            }, function(err, job2)
             {
                 cb(err, job2);
             });
