@@ -210,9 +210,9 @@ app.use(function(req, res, cb)
 {
     if (config.ENABLE_SPA_MODE)
     {
-        res.sendFile('../public/build/index.html',
+        res.sendFile('index.html',
         {
-            root: __dirname
+            root: path.join(__dirname, '../public/build')
         });
     }
     else
