@@ -158,3 +158,7 @@ CREATE TABLE yasp.player_caches (
   parse_status text,
   skill text,
 );
+
+ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
+ALTER TABLE player_matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
+ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
