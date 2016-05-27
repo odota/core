@@ -12,7 +12,7 @@ export const userActions = {
   ERROR
 };
 
-const getUserRequest = () => ({ type: REQUST });
+const getUserRequest = () => ({ type: REQUEST });
 
 const getUserOk = (payload) => ({
   type: OK,

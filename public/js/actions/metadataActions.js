@@ -12,7 +12,7 @@ export const metadataActions = {
   ERROR
 };
 
-const getMetadataRequest = () => ({ type: REQUST });
+const getMetadataRequest = () => ({ type: REQUEST });
 
 const getMetadataOk = (payload) => ({
   type: OK,
