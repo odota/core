@@ -506,40 +506,77 @@ function getMatch(db, redis, match_id, options, cb)
                         return cb(err);
                     }
                     match.players = players;
-                    computeMatchData(match);
-                    renderMatch(match);
-                    getMatchRating(redis, match, function(err, avg)
-                    {
+                    computeMates(match, function(err){
                         if (err)
                         {
                             return cb(err);
                         }
-                        var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
-                        redis.zcard(key, function(err, card)
+                        computeMatchData(match);
+                        renderMatch(match);
+                        getMatchRating(redis, match, function(err, avg)
                         {
                             if (err)
                             {
                                 return cb(err);
                             }
-                            redis.zcount(key, 0, avg, function(err, count)
+                            var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
+                            redis.zcard(key, function(err, card)
                             {
                                 if (err)
                                 {
                                     return cb(err);
                                 }
-                                match.rating = avg;
-                                match.rating_percentile = Number(count) / Number(card);
-                                benchmarkMatch(redis, match, function(err)
+                                redis.zcount(key, 0, avg, function(err, count)
                                 {
-                                    return cb(err, match);
+                                    if (err)
+                                    {
+                                        return cb(err);
+                                    }
+                                    match.rating = avg;
+                                    match.rating_percentile = Number(count) / Number(card);
+                                    benchmarkMatch(redis, match, function(err)
+                                    {
+                                        return cb(err, match);
+                                    });
                                 });
                             });
                         });
+
                     });
+
                 });
             });
         }
     });
+
+    function computeMates(match, cb) {
+        var accsIds = match.players
+            .filter(function(p){ return p.account_id != null; })
+            .map(function(p){ return Number(p.account_id); });
+
+        db.raw('SELECT p1.account_id AS account_id1, ' +
+        'p2.account_id as account_id2, ' +
+        'count(*) AS count ' +
+        'FROM public.player_matches p1 ' +
+        'JOIN public.player_matches p2 ON p1.match_id = p2.match_id ' +
+        'WHERE p1.account_id in (' + accsIds.join(',') + ' ) ' +
+        'AND p2.account_id in (' + accsIds.join(',') + ') ' +
+        'AND p1.account_id <> p2.account_id ' +
+        'GROUP BY p1.account_id, p2.account_id ' +
+        'HAVING COUNT(*) > 1').asCallback(function(err, result) {
+            if (err)
+            {
+                return cb(err);
+            }
+            match.playedwith = {};
+            for (var i = 0; i < result.rows.length; i++) {
+                var row = result.rows[i];
+                match.playedwith[String(row.account_id1) + String(row.account_id2)] = row.count;
+            }
+            cb();
+        });
+    }
+
 
     function getMatchData(match_id, cb)
     {

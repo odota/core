@@ -1,0 +1,22 @@
+extend match
+block match_content
+    .row
+        .col-md-12
+            +data_table({id: "playedwith", heading: "Played With"})
+
+
+                tr
+                    td
+                    each player, i in match.players
+                        +hero_td(player)
+                each player1, i in match.players
+                    tr
+                        +hero_td(player1)
+                        each player2 in match.players
+                            td
+                                - var count = match.playedwith[String(player1.account_id) + String(player2.account_id)]
+                                if (count)
+                                    abbr(title=player1.personaname + " has " + count + " matches with " + player2.personaname)
+                                        span.small: a.text-muted(href="/players/" + player1.account_id + '/matches?included_account_id='+player2.account_id)
+                                            =count + " matches"
+                                           

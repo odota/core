@@ -61,5 +61,10 @@
   {
     "name": "Chat",
     "parsed": true
+  },
+  "mates":
+  {
+    "name": "Mates",
+    "new-feature": true
   }
 }
