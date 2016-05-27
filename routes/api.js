@@ -20,17 +20,15 @@ const crypto = require('crypto');
 var swagger = require('../json/swagger.json');
 module.exports = function(db, redis, cassandra)
 {
+    api.use(function(req, res, cb)
+    {
+        res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+        res.header('Access-Control-Allow-Credentials', 'true');
+        cb();
+    });
     api.get('/swagger.json', function(req, res)
     {
         res.json(swagger);
-    });
-    api.get('/items', function(req, res)
-    {
-        res.json(constants.items[req.query.name]);
-    });
-    api.get('/abilities', function(req, res)
-    {
-        res.json(constants.abilities[req.query.name]);
     });
     api.get('/metadata', function(req, res, cb)
     {
@@ -79,6 +77,14 @@ module.exports = function(db, redis, cassandra)
             }
             res.json(result);
         });
+    });
+    api.get('/items', function(req, res)
+    {
+        res.json(constants.items[req.query.name]);
+    });
+    api.get('/abilities', function(req, res)
+    {
+        res.json(constants.abilities[req.query.name]);
     });
     api.get('/matches/:match_id/:info?', function(req, res, cb)
     {

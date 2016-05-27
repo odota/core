@@ -59,7 +59,7 @@ export function fetchData(name, options)
     // that is passed on as the return value of the dispatch method.
     // In this case, we return a promise to wait for.
     // This is not required by thunk middleware, but it is convenient for us.
-    return fetch(getEndpoint(name, options)).then(response => response.json()).then(json =>
+    return fetch(getEndpoint(name, options), {credentials: 'include'}).then(response => response.json()).then(json =>
       // We can dispatch many times!
       // Here, we update the app state with the results of the API call.
       dispatch(responseData(name, json)));
