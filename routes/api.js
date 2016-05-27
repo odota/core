@@ -19,13 +19,11 @@ var buildStatus = require('../store/buildStatus');
 const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {
-    api.get('/items', function(req, res)
+    api.use(function(req, res, cb)
     {
-        res.json(constants.items[req.query.name]);
-    });
-    api.get('/abilities', function(req, res)
-    {
-        res.json(constants.abilities[req.query.name]);
+        res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+        res.header('Access-Control-Allow-Credentials', 'true');
+        cb();
     });
     api.get('/metadata', function(req, res, cb)
     {
@@ -74,6 +72,14 @@ module.exports = function(db, redis, cassandra)
             }
             res.json(result);
         });
+    });
+    api.get('/items', function(req, res)
+    {
+        res.json(constants.items[req.query.name]);
+    });
+    api.get('/abilities', function(req, res)
+    {
+        res.json(constants.abilities[req.query.name]);
     });
     api.get('/matches/:match_id/:info?', function(req, res, cb)
     {
@@ -136,16 +142,6 @@ module.exports = function(db, redis, cassandra)
     });
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
-    api.get('/banner');
-    api.get('/cheese', function(req, res)
-    {
-        //TODO implement this
-        res.json(
-        {
-            cheese: 1,
-            goal: 2
-        });
-    });
     api.get('/search', function(req, res, cb)
     {
         if (!req.query.q)

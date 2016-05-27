@@ -264,7 +264,7 @@ function getData(url, cb)
                     }
                     else
                     {
-                        console.log.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
+                        console.log("invalid data, retrying: %s, %s", target, JSON.stringify(body));
                         return getData(url, cb);
                     }
                 }

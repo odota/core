@@ -35,15 +35,13 @@ function getQueue(type)
 function addToQueue(queue, payload, options, cb)
 {
     var job = generateJob(queue.name, payload);
-    queue.add(job,
+    options.attempts = options.attempts || 15;
+    options.backoff = options.backoff ||
     {
-        attempts: options.attempts || 15,
-        backoff:
-        {
-            delay: 60 * 1000,
-            type: 'exponential'
-        }
-    }).then(function(queuejob)
+        delay: 60 * 1000,
+        type: 'exponential'
+    };
+    queue.add(job, options).then(function(queuejob)
     {
         //console.log("created %s jobId: %s", queue.name, queuejob.jobId);
         cb(null, queuejob);

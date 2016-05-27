@@ -13,7 +13,7 @@ gcloud compute http-health-checks delete -q lb-check
 gcloud compute instance-groups managed delete -q web-group-1
 gcloud compute instance-templates delete -q web-1
 gcloud compute instance-templates create web-1 --machine-type g1-small --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
-sudo docker run -d --restart=always --net=host -e FRONTEND_PORT=80 -e PROVIDER=gce -e ROLE=web yasp/yasp:latest
+sudo docker run -d --restart=always --net=host -e FRONTEND_PORT=80 -e PROVIDER=gce -e ROLE=web yasp/yasp:latest sh -c "node deploy.js"
 '
 gcloud compute instance-groups managed create "web-group-1" --base-instance-name "web-group-1" --template "web-1" --size "0"
 
@@ -26,7 +26,7 @@ gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down
 #backend
 gcloud compute instance-groups managed delete -q backend-group-1
 gcloud compute instance-templates delete -q backend-1
-gcloud compute instance-templates create backend-1 --machine-type n1-standard-2 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
+gcloud compute instance-templates create backend-1 --machine-type n1-highcpu-4 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
 sudo docker run -d --name yasp --restart=always --net=host -e PROVIDER=gce yasp/yasp:latest sh -c "node deploy.js core"
 '
 gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"
@@ -35,10 +35,7 @@ gcloud compute instance-groups managed create "backend-group-1" --base-instance-
 gcloud compute instance-groups managed delete -q parser-group-1
 gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-for i in $(seq 1 $(nproc));
-do
-    sudo docker run -d --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest 
-done
+    sudo docker run -d --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest sh -c "node deploy.js --max-old-space-size=800"
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
 gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "100" --min-num-replicas "4" --target-cpu-utilization "0.8"
@@ -60,7 +57,7 @@ sudo docker start cassandra
 gcloud compute instance-groups managed delete -q task-group-1
 gcloud compute instance-templates delete -q task-1
 gcloud compute instance-templates create task-1 --preemptible --machine-type n1-highcpu-8 --image container-vm --boot-disk-size 50GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c "curl -H \"Metadata-Flavor: Google\" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/postgresToCassandra.js"
+sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c "curl -H \"Metadata-Flavor: Google\" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/postgresToCassandra.js 0 2300000000"
 '
 gcloud compute instance-groups managed create "task-group-1" --base-instance-name "task-group-1" --template "task-1" --size "1"
 

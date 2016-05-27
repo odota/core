@@ -1,5 +1,6 @@
 /**
  * Queue an account_id for fullhistory
+ * node tasks/fullhistory :account_id
  **/
 var queue = require('../store/queue');
 var fhQueue = queue.getQueue('fullhistory');

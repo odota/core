@@ -190,7 +190,7 @@ function insertMatch(db, redis, match, options, cb)
                 return au.ability;
             }) : null;
         });
-        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * 24 * 1, JSON.stringify(ability_upgrades));
+        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * config.ABILITY_UPGRADE_RETENTION_HOURS, JSON.stringify(ability_upgrades));
     }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
@@ -210,6 +210,10 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatch(cb)
     {
+        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE)
+        {
+            return cb();
+        }
         db.transaction(function(trx)
         {
             upsert(trx, 'matches', match,
@@ -316,7 +320,7 @@ function insertMatch(db, redis, match, options, cb)
             return cb();
         }
         var copy = JSON.parse(JSON.stringify(match));
-        copy.players = players;
+        copy.players = JSON.parse(JSON.stringify(players));
         copy.insert_type = options.type;
         copy.origin = options.origin;
         updateCache(copy, function(err)
@@ -404,7 +408,12 @@ function insertMatch(db, redis, match, options, cb)
                 duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
-            }, options, function(err, job2)
+            },
+            {
+                lifo: options.lifo,
+                attempts: options.attempts,
+                backoff: options.backoff,
+            }, function(err, job2)
             {
                 cb(err, job2);
             });
@@ -631,13 +640,19 @@ function getMatch(db, redis, match_id, options, cb)
                 //get personanames
                 async.map(result, function(r, cb)
                 {
-                    db.raw(`SELECT personaname FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function(err, names)
+                    db.raw(`SELECT personaname, last_login FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function(err, names)
                     {
                         if (err)
                         {
                             return cb(err);
                         }
-                        r.personaname = names.rows[0] ? names.rows[0].personaname : null;
+                        if (names.rows[0])
+                        {
+                            for (var key in names.rows[0])
+                            {
+                                r[key] = names.rows[0][key];
+                            }
+                        }
                         return cb(err, r);
                     });
                 }, cb);
