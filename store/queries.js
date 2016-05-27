@@ -515,7 +515,7 @@ function getMatch(db, redis, match_id, options, cb)
                         return cb(err);
                     }
                     match.players = players;
-                    computeMates(match, function(err){
+                    computePlayedWith(match, function(err){
                         if (err)
                         {
                             return cb(err);
@@ -558,7 +558,7 @@ function getMatch(db, redis, match_id, options, cb)
         }
     });
 
-    function computeMates(match, cb) {
+    function computePlayedWith(match, cb) {
         var accsIds = match.players
             .filter(function(p){ return p.account_id != null; })
             .map(function(p){ return Number(p.account_id); });
