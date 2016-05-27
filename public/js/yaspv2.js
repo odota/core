@@ -18,8 +18,10 @@ import
   createStore, applyMiddleware, combineReducers
 }
 from 'redux';
-import reducers from './reducers/reducers';
-import * as Actions from './actions/actions';
+// import reducers from './reducers/reducers';
+import appReducer, { REDUCER_KEY } from './reducers';
+// import * as Actions from './actions/actions';
+import { getMetadata } from './actions';
 import thunkMiddleware from 'redux-thunk';
 import createLogger from 'redux-logger';
 import
@@ -39,19 +41,20 @@ require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2m
 //require('../../node_modules/bootswatch/darkly/bootstrap.css');
 //require('../css/yasp.css');
 const loggerMiddleware = createLogger();
-var reducer = combineReducers(Object.assign(
+const reducer = combineReducers(Object.assign(
 {},
 {
-  reducers: reducers,
+  [REDUCER_KEY]: appReducer,
 },
 {
   routing: routerReducer,
 }));
-var store = createStore(reducer, applyMiddleware(thunkMiddleware, // lets us dispatch() functions
+const store = createStore(reducer, applyMiddleware(thunkMiddleware, // lets us dispatch() functions
   loggerMiddleware // neat middleware that logs actions
 ));
 // Fetch metadata (used on all pages)
-store.dispatch(Actions.fetchData(Actions.METADATA));
+// store.dispatch(Actions.fetchData(Actions.METADATA));
+store.dispatch(getMetadata());
 // Create an enhanced history that syncs navigation events with the store
 const history = syncHistoryWithStore(browserHistory, store);
 //history.listen(function(location) {Actions.routeChange(location)});
