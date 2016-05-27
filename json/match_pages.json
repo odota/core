@@ -61,5 +61,10 @@
   {
     "name": "Chat",
     "parsed": true
+  },
+  "playedwith":
+  {
+    "name": "Played with",
+    "new-feature": true
   }
 }
