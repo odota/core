@@ -17,8 +17,13 @@ var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
 var buildStatus = require('../store/buildStatus');
 const crypto = require('crypto');
+var swagger = require('../json/swagger.json');
 module.exports = function(db, redis, cassandra)
 {
+    api.get('/swagger.json', function(req, res)
+    {
+        res.json(swagger);
+    });
     api.get('/items', function(req, res)
     {
         res.json(constants.items[req.query.name]);

@@ -1,0 +1,98 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "YASP API",
+        "description": "Provides Dota 2 data",
+        "version": "1.0.0"
+    },
+    "host": "yasp.co",
+    "schemes": [
+        "https"
+    ],
+    "basePath": "/api",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/items": {
+            "get": {
+                "summary": "An in-game item",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Internal name of the item",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "description": "Returns item data",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An object with item data",
+                        "schema": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "description": "Item ID"
+                                },
+                                "img": {
+                                    "type": "string",
+                                    "description": "Image"
+                                },
+                                "dname": {
+                                    "type": "string",
+                                    "description": "Localized Name"
+                                },
+                                "qual": {
+                                    "type": "string"
+                                },
+                                "cost": {
+                                    "type": "integer",
+                                    "description": "Cost"
+                                },
+                                "desc": {
+                                    "type": "string",
+                                    "description": "Description"
+                                },
+                                "notes": {
+                                    "type": "string",
+                                    "description": "Notes"
+                                },
+                                "attrib": {
+                                    "type": "string",
+                                    "description": "Attributes"
+                                },
+                                "mc": {
+                                    "type": "integer",
+                                    "description": "Mana cost"
+                                },
+                                "cd": {
+                                    "type": "boolean",
+                                    "description": "Cooldown"
+                                },
+                                "lore": {
+                                    "type": "string",
+                                    "description": "Lore"
+                                },
+                                "components": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "description": "Component name"
+                                    }
+                                },
+                                "created": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
