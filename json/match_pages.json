@@ -62,9 +62,9 @@
     "name": "Chat",
     "parsed": true
   },
-  "mates":
+  "playedwith":
   {
-    "name": "Mates",
+    "name": "Played with",
     "new-feature": true
   }
 }
