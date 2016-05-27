@@ -381,7 +381,7 @@ app.get('/search', function(req, res, cb)
                 query: req.query.q,
                 result: result
             });
-        })
+        });
     }
     else
     {
