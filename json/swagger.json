@@ -1,0 +1,262 @@
+{
+    "swagger": "2.0",
+    "info":
+    {
+        "title": "YASP API",
+        "description": "Provides Dota 2 data.  NOTE: Please use the official Steam WebAPI when possible.  This thread is a good reference to help you get started: http://dev.dota2.com/showthread.php?t=58317",
+        "version": "1.0.0"
+    },
+    "host": "yasp.co",
+    "schemes": [
+        "https"
+    ],
+    "basePath": "/api",
+    "produces": [
+        "application/json"
+    ],
+    "paths":
+    {
+        "/metadata":
+        {
+            "get":
+            {
+                "tags": ["metadata"],
+                "summary": "Site metadata",
+                "description": "Returns current site metadata",
+                "produces": [
+                    "application/json"
+                ],
+                "responses":
+                {
+                    "200":
+                    {
+                        "description": "Current site metadata",
+                        "schema":
+                        {
+                            "properties":
+                            {
+                                "banner":
+                                {
+                                    "type": "string",
+                                    "description": "The current banner message"
+                                },
+                                "cheese":
+                                {},
+                                "user":
+                                {},
+                                "navbar_pages":
+                                {},
+                                "player_pages":
+                                {},
+                                "match_pages":
+                                {},
+                                "player_fields":
+                                {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/items":
+        {
+            "get":
+            {
+                "tags": ["items"],
+                "summary": "An in-game item",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Internal name of the item",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "description": "Returns item data",
+                "produces": [
+                    "application/json"
+                ],
+                "responses":
+                {
+                    "200":
+                    {
+                        "description": "An object with item data",
+                        "schema":
+                        {
+                            "properties":
+                            {
+                                "id":
+                                {
+                                    "type": "integer",
+                                    "description": "Item ID"
+                                },
+                                "img":
+                                {
+                                    "type": "string",
+                                    "description": "Image"
+                                },
+                                "dname":
+                                {
+                                    "type": "string",
+                                    "description": "Localized Name"
+                                },
+                                "qual":
+                                {
+                                    "type": "string"
+                                },
+                                "cost":
+                                {
+                                    "type": "integer",
+                                    "description": "Cost"
+                                },
+                                "desc":
+                                {
+                                    "type": "string",
+                                    "description": "Description"
+                                },
+                                "notes":
+                                {
+                                    "type": "string",
+                                    "description": "Notes"
+                                },
+                                "attrib":
+                                {
+                                    "type": "string",
+                                    "description": "Attributes"
+                                },
+                                "mc":
+                                {
+                                    "type": "integer",
+                                    "description": "Mana cost"
+                                },
+                                "cd":
+                                {
+                                    "type": "boolean",
+                                    "description": "Cooldown"
+                                },
+                                "lore":
+                                {
+                                    "type": "string",
+                                    "description": "Lore"
+                                },
+                                "components":
+                                {
+                                    "type": "array",
+                                    "items":
+                                    {
+                                        "type": "string",
+                                        "description": "Component name"
+                                    }
+                                },
+                                "created":
+                                {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/abilities":
+        {
+            "get":
+            {
+                "tags": ["abilities"],
+                "summary": "A hero ability",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Internal name of the ability",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "description": "Returns ability data",
+                "produces": [
+                    "application/json"
+                ],
+                "responses":
+                {
+                    "200":
+                    {
+                        "description": "An object with ability data",
+                        "schema":
+                        {
+                            "properties":
+                            {}
+                        }
+                    }
+                }
+            }
+        },
+        "/matches":
+        {
+            "get":
+            {
+                "tags": ["matches"],
+                "summary": "A Dota 2 match",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Internal name of the ability",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "description": "Returns ability data",
+                "produces": [
+                    "application/json"
+                ],
+                "responses":
+                {
+                    "200":
+                    {
+                        "description": "An object with ability data",
+                        "schema":
+                        {
+                            "properties":
+                            {}
+                        }
+                    }
+                }
+            }
+        },
+        "/players":
+        {
+            "get":
+            {
+                "tags": ["players"],
+                "summary": "A Dota 2 player",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Internal name of the ability",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "description": "Returns ability data",
+                "produces": [
+                    "application/json"
+                ],
+                "responses":
+                {
+                    "200":
+                    {
+                        "description": "An object with ability data",
+                        "schema":
+                        {
+                            "properties":
+                            {}
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -17,6 +17,7 @@ var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
 var buildStatus = require('../store/buildStatus');
 const crypto = require('crypto');
+var swagger = require('../json/swagger.json');
 module.exports = function(db, redis, cassandra)
 {
     api.use(function(req, res, cb)
@@ -24,6 +25,10 @@ module.exports = function(db, redis, cassandra)
         res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
         res.header('Access-Control-Allow-Credentials', 'true');
         cb();
+    });
+    api.get('/swagger.json', function(req, res)
+    {
+        res.json(swagger);
     });
     api.get('/metadata', function(req, res, cb)
     {

@@ -1,8 +1,7 @@
 /**
  * Webpack configuration file
  **/
-var webpack = require('webpack');
-var config = require('./config');
+var API_URL = "https://yasp.co";
 module.exports = {
     entry:
     {
@@ -58,35 +57,41 @@ module.exports = {
         contentBase: 'public/build',
         progress: true,
         host: "0.0.0.0",
+        port: 5000,
         proxy:
         {
             //api
             '/api/*':
             {
-                target: config.ROOT_URL,
+                target: API_URL,
                 secure: false,
+                changeOrigin: true,
             },
             //images
             '/apps/*':
             {
-                target: config.ROOT_URL,
+                target: API_URL,
                 secure: false,
+                changeOrigin: true,
             },
             //auth
             '/login':
             {
-                target: config.ROOT_URL,
+                target: API_URL,
                 secure: false,
+                changeOrigin: true,
             },
             '/logout':
             {
-                target: config.ROOT_URL,
+                target: API_URL,
                 secure: false,
+                changeOrigin: true,
             },
             '/return':
             {
-                target: config.ROOT_URL,
+                target: API_URL,
                 secure: false,
+                changeOrigin: true,
             },
         },
         historyApiFallback: true
