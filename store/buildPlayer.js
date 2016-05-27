@@ -5,12 +5,15 @@ var async = require('async');
 var constants = require('../constants.js');
 var queries = require("../store/queries");
 var utility = require('../util/utility');
+var compute = require('../util/compute');
+var computeMatchData = compute.computeMatchData;
+var deserialize = utility.deserialize;
 var aggregator = require('../util/aggregator');
+var filter = require('../util/filter');
 var config = require('../config');
 var playerCache = require('../store/playerCache');
-var getPlayerMatches = queries.getPlayerMatches;
-var getPlayer = queries.getPlayer;
-var getPlayerRankings = queries.getPlayerRankings;
+var util = require('util');
+var moment = require('moment');
 var generatePositionData = utility.generatePositionData;
 var preprocessQuery = utility.preprocessQuery;
 var readCache = playerCache.readCache;
@@ -251,7 +254,7 @@ function buildPlayer(options, cb)
                 {
                     if (info === "rating")
                     {
-                        queries.getPlayerRatings(db, account_id, cb);
+                        getPlayerRatings(db, account_id, cb);
                     }
                     else
                     {
@@ -432,5 +435,126 @@ function fillSkill(db, matches, options, cb)
         console.timeEnd('[PLAYER] fillSkill');
         return cb(err, matches);
     });
+}
+
+function getPlayerMatches(db, queryObj, options, cb)
+{
+    var stream;
+    if (options.cassandra)
+    {
+        //remove any compound names
+        queryObj.project = queryObj.project.map(function(k)
+        {
+            var split = k.split('.');
+            return split[split.length - 1];
+        });
+        var extraProps = {
+            chat: false,
+            radiant_gold_adv: false,
+            pgroup: false,
+        };
+        //remove props not in cassandra table
+        queryObj.project = queryObj.project.filter(function(k)
+        {
+            return !(k in extraProps);
+        });
+        stream = options.cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
+        {
+            prepare: true,
+            fetchSize: 1000,
+            autoPage: true,
+        });
+    }
+    else
+    {
+        stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
+    }
+    var matches = [];
+    stream.on('end', function(err)
+    {
+        cb(err,
+        {
+            raw: matches
+        });
+    });
+    stream.on('data', function(m)
+    {
+        if (options.cassandra)
+        {
+            m = deserialize(m);
+        }
+        computeMatchData(m);
+        if (filter([m], queryObj.js_select).length)
+        {
+            matches.push(m);
+        }
+    });
+    stream.on('error', function(err)
+    {
+        throw err;
+    });
+}
+
+function getPlayerRatings(db, account_id, cb)
+{
+    console.time('[PLAYER] getPlayerRatings ' + account_id);
+    if (!Number.isNaN(account_id))
+    {
+        db.from('player_ratings').where(
+        {
+            account_id: Number(account_id)
+        }).orderBy('time', 'asc').asCallback(function(err, result)
+        {
+            console.timeEnd('[PLAYER] getPlayerRatings ' + account_id);
+            cb(err, result);
+        });
+    }
+    else
+    {
+        cb();
+    }
+}
+
+function getPlayerRankings(redis, account_id, cb)
+{
+    console.time('[PLAYER] getPlayerRankings ' + account_id);
+    async.map(Object.keys(constants.heroes), function(hero_id, cb)
+    {
+        redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), function(err, card)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), account_id, function(err, rank)
+            {
+                cb(err,
+                {
+                    hero_id: hero_id,
+                    rank: rank,
+                    card: card
+                });
+            });
+        });
+    }, function(err, result)
+    {
+        console.timeEnd('[PLAYER] getPlayerRankings ' + account_id);
+        cb(err, result);
+    });
+}
+
+function getPlayer(db, account_id, cb)
+{
+    if (!Number.isNaN(account_id))
+    {
+        db.first().from('players').where(
+        {
+            account_id: Number(account_id)
+        }).asCallback(cb);
+    }
+    else
+    {
+        cb();
+    }
 }
 module.exports = buildPlayer;

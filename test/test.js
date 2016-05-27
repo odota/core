@@ -27,6 +27,7 @@ var pg = require('pg');
 var fs = require('fs');
 var wait = 90000;
 var cassandra = require('../store/cassandra');
+var buildMatch = require('../store/buildMatch');
 // these are loaded later, as the database needs to be created when these are required
 var db;
 var app;
@@ -180,8 +181,12 @@ describe("parser", function()
                             {
                                 clearInterval(poll);
                                 //ensure parse data got inserted
-                                queries.getMatch(db, redis, tests[key].match_id,
-                                {}, function(err, match)
+                                buildMatch(
+                                {
+                                    db: db,
+                                    redis: redis,
+                                    match_id: tests[key].match_id
+                                }, function(err, match)
                                 {
                                     if (err)
                                     {
