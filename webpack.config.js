@@ -6,13 +6,12 @@ module.exports = {
     entry:
     {
         'yasp': './public/js/yasp.js',
-        'yaspv2': './public/js/yaspv2.js'
     },
     output:
     {
         filename: '[name].min.js',
         path: './public/build/',
-        publicPath: "/public/build/"
+        publicPath: "/public/build/",
     },
     module:
     {
@@ -52,48 +51,4 @@ module.exports = {
             }
         ]
     },
-    devServer:
-    {
-        contentBase: 'public/build',
-        progress: true,
-        host: "0.0.0.0",
-        port: 5000,
-        proxy:
-        {
-            //api
-            '/api/*':
-            {
-                target: API_URL,
-                secure: false,
-                changeOrigin: true,
-            },
-            //images
-            '/apps/*':
-            {
-                target: API_URL,
-                secure: false,
-                changeOrigin: true,
-            },
-            //auth
-            '/login':
-            {
-                target: API_URL,
-                secure: false,
-                changeOrigin: true,
-            },
-            '/logout':
-            {
-                target: API_URL,
-                secure: false,
-                changeOrigin: true,
-            },
-            '/return':
-            {
-                target: API_URL,
-                secure: false,
-                changeOrigin: true,
-            },
-        },
-        historyApiFallback: true
-    }
 };
