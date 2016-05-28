@@ -41,7 +41,7 @@ function filter(matches, filters)
         },
         isRadiant: function(m, key)
         {
-            return Number(m.isRadiant) === key;
+            return Number(utility.isRadiant(m)) === key;
         },
         included_account_id: function(m, key, arr)
         {

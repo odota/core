@@ -29,14 +29,11 @@
   "items": {
     "name": "Items"
   },
-  "skills": {
-    "name": "Skills"
-  },
   "wordcloud": {
     "name": "Wordcloud"
   },
   "rating": {
-    "name": "Rating"
+    "name": "MMR"
   },
   "rankings": {
     "name": "Rankings",

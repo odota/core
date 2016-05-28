@@ -25,7 +25,7 @@ var countCats = player_fields.countCats;
 //set query.project based on this
 var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'radiant_win', 'leaver_status', 'cluster', 'parse_status', 'pgroup'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
-var others = ['purchase', 'lane_pos', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
+var others = ['purchase', 'lane_pos', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'chat'];
 var everything = basic.concat(advanced).concat(others);
 var projections = {
     index: basic,
@@ -38,7 +38,6 @@ var projections = {
     trends: basic.concat(advanced).concat(['purchase']),
     wardmap: basic.concat(['obs', 'sen']),
     items: basic.concat(['purchase', 'purchase_log', 'item_uses']),
-    skills: basic.concat(['hero_hits', 'ability_uses']),
     wordcloud: basic.concat('chat'),
     rating: basic,
     rankings: basic,
@@ -47,20 +46,19 @@ var projections = {
 //Fields to aggregate on
 //optimize by only aggregating certain columns based on tab
 //set query.js_agg based on this
-var basicAggs = ['match_id', 'version', 'abandons', 'win', 'lose'];
+var basicAggs = ['match_id', 'version', 'win', 'lose'];
 var aggs = {
     index: basicAggs.concat('heroes'),
     matches: basicAggs,
     heroes: basicAggs.concat('heroes'),
     peers: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
-    counts: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
     //TODO only need one subkey at a time
+    counts: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
     histograms: basicAggs.concat(Object.keys(subkeys)),
     trends: basicAggs.concat(Object.keys(subkeys)),
     wardmap: basicAggs.concat(['obs', 'sen']),
     items: basicAggs.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']),
-    skills: basicAggs.concat(['hero_hits', 'ability_uses']),
     wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
     rating: basicAggs,
     rankings: basicAggs,
@@ -68,7 +66,7 @@ var aggs = {
 };
 //Fields to project from Cassandra player caches
 var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
-var cacheFilters = ['heroes', 'teammates', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
+var cacheFilters = ['heroes', 'teammates', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
 
 function buildPlayer(options, cb)
 {
