@@ -595,7 +595,6 @@ function getAggs()
         pings: "parsed",
         stuns: "parsed",
         lane_efficiency_pct: "parsed",
-        parse_status: "parsed",
         skill: "skill"
     };
 }

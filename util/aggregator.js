@@ -15,10 +15,6 @@ function aggregator(matches, fields, existing)
         {},
         heroes:
         {},
-        match_ids:
-        {},
-        parsed_match_ids:
-        {},
     };
     for (var key in fields)
     {
@@ -53,25 +49,11 @@ function aggregator(matches, fields, existing)
         var significant = isSignificant(pm);
         for (var key in fields)
         {
-            var isDup = false;
-            if (getAggs()[key] === "api")
-            {
-                isDup = isDup || (pm.match_id in aggData.match_ids);
-            }
-            else if (getAggs()[key] === "parsed")
-            {
-                isDup = isDup || (pm.match_id in aggData.parsed_match_ids);
-            }
-            if (significant && !isDup)
+            if (significant)
             {
                 //execute the aggregation function for each specified field
                 standardAgg(key, pm[key], pm);
             }
-        }
-        aggData.match_ids[pm.match_id] = 1;
-        if (pm.version)
-        {
-            aggData.parsed_match_ids[pm.match_id] = 1;
         }
     }
     return aggData;

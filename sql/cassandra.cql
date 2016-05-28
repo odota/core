@@ -19,7 +19,6 @@ CREATE TABLE yasp.matches (
   game_mode int,
   engine int,
   picks_bans text,
-  parse_status int,
   chat text,
   objectives text,
   radiant_gold_adv text,
@@ -147,7 +146,6 @@ CREATE TABLE yasp.player_caches (
   pings text,
   stuns text,
   lane_efficiency_pct text,
-  parse_status text,
   skill text,
 );
 

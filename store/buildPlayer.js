@@ -23,7 +23,7 @@ var countCats = player_fields.countCats;
 //Fields to project from player_match table
 //optimize by only projecting certain columns based on tab
 //set query.project based on this
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'radiant_win', 'leaver_status', 'cluster', 'parse_status', 'pgroup'];
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'radiant_win', 'leaver_status', 'cluster', 'pgroup'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
 var others = ['purchase', 'lane_pos', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'chat'];
 var everything = basic.concat(advanced).concat(others);
@@ -43,10 +43,13 @@ var projections = {
     rankings: basic,
     hyperopia: basic
 };
+//Fields to project from Cassandra player caches
+var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min'];
+var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
 //Fields to aggregate on
 //optimize by only aggregating certain columns based on tab
 //set query.js_agg based on this
-var basicAggs = ['match_id', 'version', 'win', 'lose'];
+var basicAggs = ['match_id', 'win', 'lose'];
 var aggs = {
     index: basicAggs.concat('heroes'),
     matches: basicAggs,
@@ -64,9 +67,6 @@ var aggs = {
     rankings: basicAggs,
     hyperopia: basicAggs
 };
-//Fields to project from Cassandra player caches
-var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
-var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
 
 function buildPlayer(options, cb)
 {
@@ -187,7 +187,7 @@ function buildPlayer(options, cb)
                 {
                     if (info === "index" || info === "matches")
                     {
-                        var project = ["match_id", "player_slot", "hero_id", "game_mode", "kills", "deaths", "assists", "parse_status", "skill", "radiant_win", "start_time", "duration"].concat(queryObj.keywords.desc || []);
+                        var project = ["match_id", "player_slot", "hero_id", "game_mode", "kills", "deaths", "assists", "version", "skill", "radiant_win", "start_time", "duration"].concat(queryObj.keywords.desc || []);
                         var limit = Number(queryObj.keywords.limit) || 20;
                         //project
                         matches = matches.map(function(pm)

@@ -43,6 +43,6 @@ mixin match_table(matches)
               td.rankable=match.deaths
               td.rankable=match.assists
               td
-                if match.parse_status === 2
+                if match.version
                   abbr(title=constants.tooltips.status_2)
                     i.fa.fa-bar-chart
