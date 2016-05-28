@@ -8,16 +8,16 @@ var isRadiant = utility.isRadiant;
 var generatePositionData = utility.generatePositionData;
 var sentiment = require('sentiment');
 var ancients = {
-    npc_dota_neutral_black_drake: 1,
-    npc_dota_neutral_black_dragon: 1,
-    npc_dota_neutral_blue_dragonspawn_sorcerer: 1,
-    npc_dota_neutral_blue_dragonspawn_overseer: 1,
-    npc_dota_neutral_granite_golem: 1,
-    npc_dota_neutral_elder_jungle_stalker: 1,
-    npc_dota_neutral_rock_golem: 1,
-    npc_dota_neutral_small_thunder_lizard: 1,
-    npc_dota_neutral_jungle_stalker: 1,
-    npc_dota_neutral_big_thunder_lizard: 1,
+    "npc_dota_neutral_black_drake": 1,
+    "npc_dota_neutral_black_dragon": 1,
+    "npc_dota_neutral_blue_dragonspawn_sorcerer": 1,
+    "npc_dota_neutral_blue_dragonspawn_overseer": 1,
+    "npc_dota_neutral_granite_golem": 1,
+    "npc_dota_neutral_elder_jungle_stalker": 1,
+    "npc_dota_neutral_rock_golem": 1,
+    "npc_dota_neutral_small_thunder_lizard": 1,
+    "npc_dota_neutral_jungle_stalker": 1,
+    "npc_dota_neutral_big_thunder_lizard": 1,
 };
 var specific = {
     "npc_dota_beastmaster_boar_#": "Boar",
@@ -68,11 +68,10 @@ for (var key in specific)
     }
 }
 /**
- * Computes additional stats from stored data for a player_match
+ * Computes additional properties from a match/player_match
  **/
 function computeMatchData(pm)
 {
-    //WARNING: Don't store fields that mutate based on self_hero in Cassandra.  It isn't set post-parse and the cache update will write incorrect data.
     var self_hero = constants.heroes[pm.hero_id];
     // Compute patch based on start_time
     if (pm.start_time)
@@ -117,7 +116,6 @@ function computeMatchData(pm)
     if (pm.pgroup)
     {
         pm.heroes = pm.pgroup;
-        pm.teammates = pm.pgroup;
     }
     else
     {

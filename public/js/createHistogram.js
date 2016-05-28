@@ -108,8 +108,7 @@ window.createHistogram = function createHistogram(counts, win_counts, label)
                         t = Number(t) / scalef;
                         //these labels are times and need to be formatted
                         var times = {
-                            "duration": 1,
-                            "first_blood_time": 1
+                            "duration": 1
                         };
                         if (times[label])
                         {

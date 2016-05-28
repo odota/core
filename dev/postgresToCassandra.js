@@ -58,6 +58,7 @@ function run(start_id)
     {
         stream.pause();
         redis.set('postgresToCassandra:' + bucket, match.match_id);
+        delete match.parse_status;
         insertMatch(match, function(err)
         {
             if (err)
