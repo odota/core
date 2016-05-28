@@ -7,6 +7,7 @@ var queries = require('./queries');
 var compute = require('../util/compute');
 var utility = require('../util/utility');
 var benchmarkMatch = queries.benchmarkMatch;
+var getMatchRating = queries.getMatchRating;
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
 var deserialize = utility.deserialize;
@@ -230,35 +231,5 @@ function getMatch(db, redis, match_id, options, cb)
             }).leftJoin('players', 'player_matches.account_id', 'players.account_id').orderBy("player_slot", "asc").asCallback(cb);
         }
     }
-}
-
-function getMatchRating(redis, match, cb)
-{
-    async.map(match.players, function(player, cb)
-    {
-        if (!player.account_id)
-        {
-            return cb();
-        }
-        redis.zscore('solo_competitive_rank', player.account_id, cb);
-    }, function(err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        var filt = result.filter(function(r)
-        {
-            return r;
-        });
-        var avg = ~~(filt.map(function(r)
-        {
-            return Number(r);
-        }).reduce(function(a, b)
-        {
-            return a + b;
-        }, 0) / filt.length);
-        cb(err, avg);
-    });
 }
 module.exports = buildMatch;

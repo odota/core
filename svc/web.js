@@ -93,17 +93,6 @@ var sessOptions = {
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(function(req, res, next)
-{
-    if (req.headers.host.match(/^www/) !== null)
-    {
-        res.redirect(req.protocol + '://' + req.headers.host.replace(/^www\./, '') + req.url);
-    }
-    else
-    {
-        next();
-    }
-});
 app.use(function rateLimit(req, res, cb)
 {
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || "";
@@ -219,11 +208,6 @@ app.use('/api', api(db, redis, cassandra));
 //TODO remove these with SPA
 app.route('/').get(function(req, res, next)
 {
-    if (config.UI_HOST)
-    {
-        return res.redirect(config.UI_HOST);
-    }
-    //TODO remove this with SPA
     if (req.user)
     {
         res.redirect('/players/' + req.user.account_id);
@@ -403,6 +387,10 @@ app.use('/', mmstats(redis));
 app.use('/', donate(db, redis));
 app.use(function(req, res, next)
 {
+    if (config.UI_HOST)
+    {
+        return res.redirect(config.UI_HOST + req.url);
+    }
     var err = new Error("Not Found");
     err.status = 404;
     return next(err);
