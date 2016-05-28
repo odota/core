@@ -158,6 +158,7 @@ app.use(function telemetry(req, res, cb)
     });
     cb();
 });
+//TODO can remove this middleware with SPA
 app.use(function getMetadata(req, res, cb)
 {
     async.parallel(
@@ -197,7 +198,14 @@ app.route('/return').get(passport.authenticate('steam',
     failureRedirect: '/'
 }), function(req, res, next)
 {
-    res.redirect('/players/' + req.user.account_id);
+    if (config.UI_HOST)
+    {
+        return res.redirect(config.UI_HOST + '/players/' + req.user.account_id);
+    }
+    else
+    {
+        res.redirect('/players/' + req.user.account_id);
+    }
 });
 app.route('/logout').get(function(req, res)
 {
@@ -206,24 +214,16 @@ app.route('/logout').get(function(req, res)
     res.redirect('/');
 });
 app.use('/api', api(db, redis, cassandra));
-app.use(function(req, res, cb)
-{
-    if (config.ENABLE_SPA_MODE)
-    {
-        res.sendFile('index.html',
-        {
-            root: path.join(__dirname, '../public/build')
-        });
-    }
-    else
-    {
-        return cb();
-    }
-});
 //END service/admin routes
-//START standard routes.  Don't need these in SPA
+//START standard routes.
+//TODO remove these with SPA
 app.route('/').get(function(req, res, next)
 {
+    if (config.UI_HOST)
+    {
+        return res.redirect(config.UI_HOST);
+    }
+    //TODO remove this with SPA
     if (req.user)
     {
         res.redirect('/players/' + req.user.account_id);
@@ -397,9 +397,10 @@ app.get('/april/:year?', function(req, res, cb)
     });
 });
 app.use('/april/2016/hyperopia', hyperopia(db));
-app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));
 //END standard routes
+//TODO keep donate routes around for legacy until @albertcui can reimplement in SPA?
+app.use('/', donate(db, redis));
 app.use(function(req, res, next)
 {
     var err = new Error("Not Found");

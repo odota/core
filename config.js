@@ -10,7 +10,7 @@ dotenv.load();
 var defaults = {
     "STEAM_API_KEY": "", //for API reqs, in worker
     "STEAM_USER": "", //for getting replay salt/profile data, in retriever
-    "STEAM_PASS": "", //make sure to wrap in double quotes if it contains special characters
+    "STEAM_PASS": "", //make sure to wrap in double quotes in .env if it contains special characters
     "RECAPTCHA_PUBLIC_KEY": "", //for preventing automated requests, in web
     "RECAPTCHA_SECRET_KEY": "",
     "STRIPE_SECRET": "", //for donations, in web
@@ -48,6 +48,7 @@ var defaults = {
     "MATCH_RATING_RETENTION_HOURS": 12, //hours in block to retain match rating data for percentile
     "ABILITY_UPGRADE_RETENTION_HOURS": 12, //hours to retain match ability upgrade data
     "PROVIDER": "", //The cloud provider used by the application (determines how environment data is downloaded)
+    "UI_HOST": "", //The host of the UI, redirect traffic from / and /return here
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
@@ -55,7 +56,6 @@ var defaults = {
     "ENABLE_PLAYER_CACHE": "", // set to enable caching players (Cassandra)
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
-    "ENABLE_SPA_MODE": "", //set to enable single page application mode for web (all routes serve the SPA page by default)
     "ENABLE_POSTGRES_MATCH_STORE_WRITE": "1", //set to enable writing match data to postgres (default on)
     "ENABLE_CASSANDRA_MATCH_STORE_READ": "", //set to enable reading match data from cassandra
     "ENABLE_CASSANDRA_MATCH_STORE_WRITE": "", //set to enable writing match data to cassandra
