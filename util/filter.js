@@ -47,9 +47,9 @@ function filter(matches, filters)
         {
             return arr.every(function(k)
             {
-                for (var key in m.teammates)
+                for (var key in m.heroes)
                 {
-                    if (m.teammates[key].account_id === k)
+                    if (m.heroes[key].account_id === k)
                     {
                         return true;
                     }
@@ -61,9 +61,9 @@ function filter(matches, filters)
         {
             return arr.every(function(k)
             {
-                for (var key in m.teammates)
+                for (var key in m.heroes)
                 {
-                    if (m.teammates[key].account_id === k)
+                    if (m.heroes[key].account_id === k)
                     {
                         return false;
                     }

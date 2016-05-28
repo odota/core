@@ -51,7 +51,7 @@ var aggs = {
     index: basicAggs.concat('heroes'),
     matches: basicAggs,
     heroes: basicAggs.concat('heroes'),
-    peers: basicAggs.concat('teammates'),
+    peers: basicAggs.concat('heroes'),
     activity: basicAggs.concat('start_time'),
     //TODO only need one subkey at a time
     counts: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
@@ -66,7 +66,7 @@ var aggs = {
 };
 //Fields to project from Cassandra player caches
 var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
-var cacheFilters = ['heroes', 'teammates', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
+var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
 
 function buildPlayer(options, cb)
 {
@@ -143,7 +143,6 @@ function buildPlayer(options, cb)
                 {
                     return cb(err);
                 }
-                //don't need to wait for cache write
                 processResults(err, results);
             });
         }

@@ -47,29 +47,31 @@ function aggregator(matches, fields, existing)
     });
     for (var i = 0; i < matches2.length; i++)
     {
-        var m = matches2[i];
-        var significant = isSignificant(m);
+        var pm = matches2[i];
+        pm.win = Number(isRadiant(pm) === pm.radiant_win);
+        pm.lose = Number(isRadiant(pm) === pm.radiant_win) ? 0 : 1;
+        var significant = isSignificant(pm);
         for (var key in fields)
         {
             var isDup = false;
             if (getAggs()[key] === "api")
             {
-                isDup = isDup || (m.match_id in aggData.match_ids);
+                isDup = isDup || (pm.match_id in aggData.match_ids);
             }
             else if (getAggs()[key] === "parsed")
             {
-                isDup = isDup || (m.match_id in aggData.parsed_match_ids);
+                isDup = isDup || (pm.match_id in aggData.parsed_match_ids);
             }
             if (significant && !isDup)
             {
                 //execute the aggregation function for each specified field
-                standardAgg(key, m[key], m);
+                standardAgg(key, pm[key], pm);
             }
         }
-        aggData.match_ids[m.match_id] = 1;
-        if (m.version)
+        aggData.match_ids[pm.match_id] = 1;
+        if (pm.version)
         {
-            aggData.parsed_match_ids[m.match_id] = 1;
+            aggData.parsed_match_ids[pm.match_id] = 1;
         }
     }
     return aggData;
@@ -120,7 +122,7 @@ function aggregator(matches, fields, existing)
             aggObj.avgs.push(~~(aggObj.sum / aggObj.n * 100) / 100);
         }
     }
-};
+}
 
 function aggHeroes(aggData, m)
 {
@@ -188,7 +190,7 @@ function aggTeammates(aggData, m)
 {
     var teammates = aggData.teammates;
     var player_win = isRadiant(m) === m.radiant_win;
-    var group = m.teammates ||
+    var group = m.heroes ||
     {};
     for (var key in group)
     {

@@ -68,11 +68,10 @@ for (var key in specific)
     }
 }
 /**
- * Computes additional stats from stored data for a player_match
+ * Computes additional properties from a match/player_match
  **/
 function computeMatchData(pm)
 {
-    //WARNING: Don't store fields that mutate based on self_hero in Cassandra.  It isn't set post-parse and the cache update will write incorrect data.
     var self_hero = constants.heroes[pm.hero_id];
     // Compute patch based on start_time
     if (pm.start_time)
@@ -117,7 +116,6 @@ function computeMatchData(pm)
     if (pm.pgroup)
     {
         pm.heroes = pm.pgroup;
-        pm.teammates = pm.pgroup;
     }
     else
     {
