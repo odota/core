@@ -1,19 +1,17 @@
 /**
  * Webpack configuration file
  **/
-var webpack = require('webpack');
-var config = require('./config');
+var API_URL = "https://yasp.co";
 module.exports = {
     entry:
     {
         'yasp': './public/js/yasp.js',
-        'yaspv2': './public/js/yaspv2.js'
     },
     output:
     {
         filename: '[name].min.js',
         path: './public/build/',
-        publicPath: "/public/build/"
+        publicPath: "/public/build/",
     },
     module:
     {
@@ -53,42 +51,4 @@ module.exports = {
             }
         ]
     },
-    devServer:
-    {
-        contentBase: 'public/build',
-        progress: true,
-        host: "0.0.0.0",
-        proxy:
-        {
-            //api
-            '/api/*':
-            {
-                target: config.ROOT_URL,
-                secure: false,
-            },
-            //images
-            '/apps/*':
-            {
-                target: config.ROOT_URL,
-                secure: false,
-            },
-            //auth
-            '/login':
-            {
-                target: config.ROOT_URL,
-                secure: false,
-            },
-            '/logout':
-            {
-                target: config.ROOT_URL,
-                secure: false,
-            },
-            '/return':
-            {
-                target: config.ROOT_URL,
-                secure: false,
-            },
-        },
-        historyApiFallback: true
-    }
 };

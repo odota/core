@@ -433,7 +433,7 @@ function renderMatch(m)
                     def = a || i || def;
                     var result = {
                         img: def.img,
-                        name: key === "undefined" ? "Auto Attack/Other" : key,
+                        name: (!a && !i) ? "Auto Attack/Other" : key,
                         val: player_match[target][key],
                         className: a ? "ability" : i ? "item" : "img-sm"
                     };
