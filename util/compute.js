@@ -8,16 +8,16 @@ var isRadiant = utility.isRadiant;
 var generatePositionData = utility.generatePositionData;
 var sentiment = require('sentiment');
 var ancients = {
-    npc_dota_neutral_black_drake: 1,
-    npc_dota_neutral_black_dragon: 1,
-    npc_dota_neutral_blue_dragonspawn_sorcerer: 1,
-    npc_dota_neutral_blue_dragonspawn_overseer: 1,
-    npc_dota_neutral_granite_golem: 1,
-    npc_dota_neutral_elder_jungle_stalker: 1,
-    npc_dota_neutral_rock_golem: 1,
-    npc_dota_neutral_small_thunder_lizard: 1,
-    npc_dota_neutral_jungle_stalker: 1,
-    npc_dota_neutral_big_thunder_lizard: 1,
+    "npc_dota_neutral_black_drake": 1,
+    "npc_dota_neutral_black_dragon": 1,
+    "npc_dota_neutral_blue_dragonspawn_sorcerer": 1,
+    "npc_dota_neutral_blue_dragonspawn_overseer": 1,
+    "npc_dota_neutral_granite_golem": 1,
+    "npc_dota_neutral_elder_jungle_stalker": 1,
+    "npc_dota_neutral_rock_golem": 1,
+    "npc_dota_neutral_small_thunder_lizard": 1,
+    "npc_dota_neutral_jungle_stalker": 1,
+    "npc_dota_neutral_big_thunder_lizard": 1,
 };
 var specific = {
     "npc_dota_beastmaster_boar_#": "Boar",
