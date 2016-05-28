@@ -20,29 +20,6 @@ var readCache = playerCache.readCache;
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
-//Fields to project from player_match table
-//optimize by only projecting certain columns based on tab
-//set query.project based on this
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'radiant_win', 'leaver_status', 'cluster', 'pgroup'];
-var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
-var others = ['purchase', 'lane_pos', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'chat'];
-var everything = basic.concat(advanced).concat(others);
-var projections = {
-    index: basic,
-    matches: basic,
-    heroes: basic,
-    peers: basic,
-    activity: basic,
-    counts: basic.concat(advanced).concat(['purchase', 'kill_streaks', 'multi_kills', 'lane_pos']),
-    histograms: basic.concat(advanced).concat(['purchase']),
-    trends: basic.concat(advanced).concat(['purchase']),
-    wardmap: basic.concat(['obs', 'sen']),
-    items: basic.concat(['purchase', 'purchase_log', 'item_uses']),
-    wordcloud: basic.concat('chat'),
-    rating: basic,
-    rankings: basic,
-    hyperopia: basic
-};
 //Fields to project from Cassandra player caches
 var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min'];
 var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
@@ -54,10 +31,11 @@ var aggs = {
     index: basicAggs.concat('heroes'),
     matches: basicAggs,
     heroes: basicAggs.concat('heroes'),
-    peers: basicAggs.concat('heroes'),
+    peers: basicAggs.concat(['heroes', 'teammates']),
     activity: basicAggs.concat('start_time'),
     //TODO only need one subkey at a time
-    counts: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
+    records: basicAggs.concat(Object.keys(subkeys)),
+    counts: basicAggs.concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
     histograms: basicAggs.concat(Object.keys(subkeys)),
     trends: basicAggs.concat(Object.keys(subkeys)),
     wardmap: basicAggs.concat(['obs', 'sen']),
@@ -95,7 +73,7 @@ function buildPlayer(options, cb)
     //1 filter expected for account id
     var filter_exists = queryObj.filter_count > 1;
     //choose fields to project based on tab/filter, we need to project everything to build a new cache/toplist, otherwise optimize and do a subset
-    queryObj.project = everything;
+    //queryObj.project = everything;
     //choose fields to aggregate based on tab
     var obj = {};
     aggs[info].forEach(function(k)
@@ -335,7 +313,7 @@ function buildPlayer(options, cb)
                 },
                 aggData: function(cb)
                 {
-                    if (info === "histograms" || info === "counts" || info === "trends" || info === "items" || info === "skills")
+                    if (info === "histograms" || info === "counts" || info === "trends" || info === "items" || info === "skills" || info === "records")
                     {
                         return cb(null, aggData);
                     }

@@ -1,0 +1,34 @@
+extend player
+
+block playercontent
+    .row
+      .col-md-12
+        h3 Records
+        table.table.table-condensed.table-striped.small
+          thead
+            tr
+              th Stat
+              th Hero
+              th Record
+              th Set
+              th Games
+              th Total
+              th Mean
+          tbody
+            each v, key in histograms
+              if key in player.aggData
+                - var val = player.aggData[key]
+                - var avg = val.sum/val.n
+                tr
+                  td: abbr(title=tooltips[key])= prettyPrint(key)
+                  td
+                    - var hero = constants.heroes[val.max_match.hero_id]
+                    if hero
+                      img.img-sm(src=hero.img, title=hero.localized_name)
+                    else
+                      val.max_match.hero_id
+                  td(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{val.max}
+                  td: a(href=val.max_match.match_id ? "/matches/"+ val.max_match.match_id : "#", title=val.max_match.start_time ? moment.unix(val.max_match.start_time).format("ddd D MMMM YYYY, HH:mm:ss Z") : "") #{val.max_match.start_time ? moment.unix(val.max_match.start_time).fromNow() : "never"}
+                  td #{val.n}
+                  td(class=(key in times ? "format-seconds" : "format"), data-format-seconds=val.sum) #{val.sum}
+                  td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg) #{avg.toFixed(2)}

@@ -60,8 +60,3 @@ gcloud compute instance-templates create task-1 --preemptible --machine-type n1-
 sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c "curl -H \"Metadata-Flavor: Google\" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/postgresToCassandra.js 0 2300000000"
 '
 gcloud compute instance-groups managed create "task-group-1" --base-instance-name "task-group-1" --template "task-1" --size "1"
-
-#Import a Postgres dump:
-sudo docker exec -i postgres pg_restore -d yasp --clean < ../dump.pgdump
-#Run a script in production:
-sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c 'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/preloader.js'

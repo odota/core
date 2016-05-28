@@ -49,3 +49,8 @@ sudo apt-get -y install redis-server postgresql-9.5
 
 #clean up old versions
 sudo apt-get -y purge postgresql-9.3
+
+#Import a Postgres dump:
+sudo docker exec -i postgres pg_restore -d yasp -U postgres --clean < ../dump.pgdump
+#Run a script in production:
+sudo docker run -d --name task --restart=always --net=host yasp/yasp:latest sh -c 'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/yasp/.env && node dev/preloader.js'
