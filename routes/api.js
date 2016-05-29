@@ -53,22 +53,6 @@ module.exports = function(db, redis, cassandra)
             {
                 cb(null, req.user);
             },
-            navbar_pages: function(cb)
-            {
-                cb(null, constants.navbar_pages);
-            },
-            player_pages: function(cb)
-            {
-                cb(null, constants.player_pages);
-            },
-            match_pages: function(cb)
-            {
-                cb(null, constants.match_pages);
-            },
-            player_fields: function(cb)
-            {
-                cb(null, constants.player_fields);
-            },
         }, function(err, result)
         {
             if (err)
