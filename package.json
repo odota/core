@@ -9,7 +9,7 @@
     "test": "test/run.sh",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "ncu": "npm-check-updates -u",
-    "webpack": "webpack -p",
+    "webpack": "webpack -p --bail",
     "watch": "webpack --watch",
     "mocha": "mocha",
     "maven": "mvn -q -f java_parser/pom.xml clean install -U",

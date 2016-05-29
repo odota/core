@@ -22,28 +22,29 @@ var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
 //Fields to project from Cassandra player caches
 var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min'];
-var cacheFilters = ['lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
+var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time'];
 //Fields to aggregate on
 //optimize by only aggregating certain columns based on tab
 //set query.js_agg based on this
-var basicAggs = ['match_id', 'version', 'abandons', 'win', 'lose'];
+var basicAggs = ['match_id', 'win', 'lose'];
 var aggs = {
     index: basicAggs.concat('heroes'),
     matches: basicAggs,
     heroes: basicAggs.concat('heroes'),
-    peers: basicAggs.concat('teammates'),
+    peers: basicAggs.concat(['heroes', 'teammates']),
     activity: basicAggs.concat('start_time'),
-    counts: basicAggs.concat(Object.keys(subkeys)).concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
     //TODO only need one subkey at a time
+    records: basicAggs.concat(Object.keys(subkeys)),
+    counts: basicAggs.concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
     histograms: basicAggs.concat(Object.keys(subkeys)),
     trends: basicAggs.concat(Object.keys(subkeys)),
     wardmap: basicAggs.concat(['obs', 'sen']),
     items: basicAggs.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']),
-    skills: basicAggs.concat(['hero_hits', 'ability_uses']),
     wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
     rating: basicAggs,
     rankings: basicAggs,
 };
+
 function buildPlayer(options, cb)
 {
     var db = options.db;
@@ -121,7 +122,6 @@ function buildPlayer(options, cb)
                 {
                     return cb(err);
                 }
-                //don't need to wait for cache write
                 processResults(err, results);
             });
         }
@@ -166,7 +166,7 @@ function buildPlayer(options, cb)
                 {
                     if (info === "index" || info === "matches")
                     {
-                        var project = ["match_id", "player_slot", "hero_id", "game_mode", "kills", "deaths", "assists", "parse_status", "skill", "radiant_win", "start_time", "duration"].concat(queryObj.keywords.desc || []);
+                        var project = ["match_id", "player_slot", "hero_id", "game_mode", "kills", "deaths", "assists", "version", "skill", "radiant_win", "start_time", "duration"].concat(queryObj.keywords.desc || []);
                         var limit = Number(queryObj.keywords.limit) || 20;
                         //project
                         matches = matches.map(function(pm)
@@ -314,7 +314,7 @@ function buildPlayer(options, cb)
                 },
                 aggData: function(cb)
                 {
-                    if (info === "histograms" || info === "counts" || info === "trends" || info === "items" || info === "skills")
+                    if (info === "histograms" || info === "counts" || info === "trends" || info === "items" || info === "skills" || info === "records")
                     {
                         return cb(null, aggData);
                     }
