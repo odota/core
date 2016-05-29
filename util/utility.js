@@ -418,10 +418,9 @@ function getParseSchema()
                 {},
                 "life_state":
                 {},
-                //below not in sql schema
                 "healing":
                 {},
-                "modifier_applied":
+                "damage_inflictor_received":
                 {},
                 /*
                 "kill_streaks_log": [], // an array of kill streak values

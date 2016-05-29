@@ -25,6 +25,11 @@ module.exports = function(db, redis, cassandra)
         res.header('Access-Control-Allow-Credentials', 'true');
         cb();
     });
+    api.get('/constants', function(req, res, cb)
+    {
+        res.header('Cache-Control', 'max-age=604800, public');
+        res.json(constants);
+    });
     api.get('/metadata', function(req, res, cb)
     {
         async.parallel(
