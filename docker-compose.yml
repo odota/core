@@ -1,0 +1,23 @@
+# Does not set up Cassandra
+
+version: '2'
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile-postgres
+    network_mode: host
+  cache:
+    image: redis:3
+    network_mode: host
+  web:
+    build: .
+    command: ./docker/docker-web.sh
+    ports:
+      - "5000"
+    volumes:
+      - .:/usr/src/yasp
+    network_mode: host
+    depends_on:
+      - db
+      - cache

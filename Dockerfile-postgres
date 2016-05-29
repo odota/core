@@ -1,0 +1,3 @@
+FROM postgres:9.5
+RUN psql -U postgres < sql/init.sql
+RUN psql -U postgres yasp < sql/create_tables.sql
