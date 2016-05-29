@@ -20,30 +20,9 @@ var readCache = playerCache.readCache;
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
-//Fields to project from player_match table
-//optimize by only projecting certain columns based on tab
-//set query.project based on this
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'radiant_win', 'leaver_status', 'cluster', 'parse_status', 'pgroup'];
-var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
-var others = ['purchase', 'lane_pos', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
-var everything = basic.concat(advanced).concat(others);
-var projections = {
-    index: basic,
-    matches: basic,
-    heroes: basic,
-    peers: basic,
-    activity: basic,
-    counts: basic.concat(advanced).concat(['purchase', 'kill_streaks', 'multi_kills', 'lane_pos']),
-    histograms: basic.concat(advanced).concat(['purchase']),
-    trends: basic.concat(advanced).concat(['purchase']),
-    wardmap: basic.concat(['obs', 'sen']),
-    items: basic.concat(['purchase', 'purchase_log', 'item_uses']),
-    skills: basic.concat(['hero_hits', 'ability_uses']),
-    wordcloud: basic.concat('chat'),
-    rating: basic,
-    rankings: basic,
-    hyperopia: basic
-};
+//Fields to project from Cassandra player caches
+var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min'];
+var cacheFilters = ['lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
 //Fields to aggregate on
 //optimize by only aggregating certain columns based on tab
 //set query.js_agg based on this
@@ -64,12 +43,7 @@ var aggs = {
     wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
     rating: basicAggs,
     rankings: basicAggs,
-    hyperopia: basicAggs
 };
-//Fields to project from Cassandra player caches
-var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min', 'parse_status'];
-var cacheFilters = ['heroes', 'teammates', 'hero_id', 'isRadiant', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time', 'lane_role'];
-
 function buildPlayer(options, cb)
 {
     var db = options.db;
@@ -96,8 +70,6 @@ function buildPlayer(options, cb)
     queryObj = preprocessQuery(queryObj);
     //1 filter expected for account id
     var filter_exists = queryObj.filter_count > 1;
-    //choose fields to project based on tab/filter, we need to project everything to build a new cache/toplist, otherwise optimize and do a subset
-    queryObj.project = everything;
     //choose fields to aggregate based on tab
     var obj = {};
     aggs[info].forEach(function(k)
@@ -106,7 +78,11 @@ function buildPlayer(options, cb)
     });
     queryObj.js_agg = obj;
     //fields to project from the Cassandra cache
-    queryObj.cacheProject = Object.keys(queryObj.js_agg).concat(cacheProj).concat(filter_exists ? cacheFilters : []).concat(query.desc ? query.desc : []);
+    queryObj.cacheProject = cacheProj.concat(Object.keys(queryObj.js_agg).filter(function(k)
+    {
+        //project fields needed for aggregation, but remove computed fields that don't exist
+        return (k !== "win" && k !== "lose" && k !== "teammates");
+    })).concat(filter_exists ? cacheFilters : []).concat(query.desc ? query.desc : []);
     //Find player in db
     console.time("[PLAYER] getPlayer " + account_id);
     getPlayer(db, account_id, function(err, player)
