@@ -115,7 +115,17 @@ module.exports = function(db, redis, cassandra)
             res.json(player);
         });
     });
-    api.get('/distributions');
+    api.get('/distributions', function(req, res, cb)
+    {
+        queries.getDistributions(redis, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
     api.get('/picks/:n');
     api.get('/rankings/:hero_id');
     api.get('/status', function(req, res, cb)
