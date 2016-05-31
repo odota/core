@@ -80,7 +80,7 @@ app.locals.getAggs = utility.getAggs;
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function(req, res)
 {
-    res.set('Cache-Control', 'max-age=604800, public');
+    res.header('Cache-Control', 'max-age=604800, public');
     request("http://cdn.dota2.com/apps/dota2/images/" + req.params.group_name + "/" + req.params.image_name).pipe(res);
 });
 app.use("/public", express.static(path.join(__dirname, '/../public')));

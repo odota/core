@@ -58,6 +58,17 @@ function processExpand(entries, meta)
                     expand(m);
                 }
             }
+            if (e.attackerhero && e.targethero && !e.targetillusion && e.key !== e.unit)
+            {
+                var inf_rec = {
+                    type: "damage_inflictor_received",
+                    time: e.time,
+                    unit: e.key,
+                    key: translate(e.inflictor),
+                    value: e.value
+                };
+                expand(inf_rec);
+            }
         },
         "DOTA_COMBATLOG_HEAL": function(e)
         {
@@ -478,16 +489,17 @@ function processExpand(entries, meta)
     }
     return res;
     /**
-     * Strips off "item_" from strings
+     * Strips off "item_" from strings, and nullifies dota_unknown.  Does not mutate the original string.
      **/
     function translate(input)
     {
-        if (input)
+        if (input === "dota_unknown")
         {
-            if (input.indexOf("item_") === 0)
-            {
-                input = input.slice(5);
-            }
+            return null;
+        }
+        if (input && input.indexOf("item_") === 0)
+        {
+            return input.slice(5);
         }
         return input;
     }
@@ -519,5 +531,4 @@ function processExpand(entries, meta)
         }
     }
 }
-
 module.exports = processExpand;

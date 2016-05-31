@@ -15,6 +15,7 @@ block match_content
               th: abbr(title=tooltips.lhten) LH@10
               th: abbr(title=tooltips.stuns) Stuns
               th: abbr(title=tooltips.time_dead) Dead
+              th: abbr(title=tooltips.max_hero_hit) Biggest Hit
           tr.activate(data-index=i, data-type="lane_pos", class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             td #{constants.lane_ids[player.lane] || "-"} (#{constants.lane_role[player.lane_role] || "-"})
@@ -24,27 +25,6 @@ block match_content
             td.rankable #{player.lh_t && player.lh_t[10] ? player.lh_t[10] : "-"}
             td.rankable #{Number(player.stuns).toFixed(2)}
             td.rankable.negative.format-seconds(data-format-seconds=player.life_state_dead) #{player.life_state_dead || "-"}
-    .col-md-6
-      h3 Laning Map
-      #map.table-responsive
-        img.mapContainer(src=constants.map_url, alt="map")
-
-  +ad("banner2")
-
-  .row
-    .col-md-12
-      +data_table({id:"utilization", heading: "Utilization"})
-        each player, i in match.players
-          +data_table_header(i, match)
-            tr
-              th: abbr(title=tooltips.hero_id) Hero
-              th: abbr(title=tooltips.max_hero_hit) Biggest Hit
-              th: abbr(title=tooltips.ability_uses) Skill Use (Hits)
-              th: abbr(title=tooltips.item_uses) Item Use
-              th: abbr(title=tooltips.damage_inflictor) Damage Inflictors
-
-          tr(class = player.isRadiant ? "radiant" : "dire")
-            +hero_td(player)
             td.nowrap
               - player.max_hero_hit = player.max_hero_hit || {}
               - var ability = constants.abilities[player.max_hero_hit.inflictor]
@@ -62,7 +42,25 @@ block match_content
                 span.img-text: img.img-md(src=hero.img, title=hero.localized_name)
               else
                 =player.max_hero_hit.key
+    .col-md-6
+      h3 Laning Map
+      #map.table-responsive
+        img.mapContainer(src=constants.map_url, alt="map")
 
+  +ad("banner2")
+
+  .row
+    .col-md-12
+      +data_table({id:"utilization", heading: "Utilization"})
+        each player, i in match.players
+          +data_table_header(i, match)
+            tr
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.ability_uses) Skill Use (Hits)
+              th: abbr(title=tooltips.item_uses) Item Use
+
+          tr(class = player.isRadiant ? "radiant" : "dire")
+            +hero_td(player)
             td.table-img
               each ability in player.ability_uses_arr || []
                 span.img-text
@@ -74,11 +72,6 @@ block match_content
                 span.img-text
                   img.img-sm.item(src=item.img, title=item.name)
                   div #{item.val}
-            td.table-img
-              each item in player.damage_inflictor_arr || []
-                span.img-text
-                  img.img-sm(class=item.className src=item.img, title=item.name)
-                  div.format #{item.val}
 
 append footer_assets
   script.

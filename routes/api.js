@@ -25,6 +25,11 @@ module.exports = function(db, redis, cassandra)
         res.header('Access-Control-Allow-Credentials', 'true');
         cb();
     });
+    api.get('/constants', function(req, res, cb)
+    {
+        res.header('Cache-Control', 'max-age=604800, public');
+        res.json(constants);
+    });
     api.get('/metadata', function(req, res, cb)
     {
         async.parallel(
@@ -47,22 +52,6 @@ module.exports = function(db, redis, cassandra)
             user: function(cb)
             {
                 cb(null, req.user);
-            },
-            navbar_pages: function(cb)
-            {
-                cb(null, constants.navbar_pages);
-            },
-            player_pages: function(cb)
-            {
-                cb(null, constants.player_pages);
-            },
-            match_pages: function(cb)
-            {
-                cb(null, constants.match_pages);
-            },
-            player_fields: function(cb)
-            {
-                cb(null, constants.player_fields);
             },
         }, function(err, result)
         {
@@ -126,7 +115,17 @@ module.exports = function(db, redis, cassandra)
             res.json(player);
         });
     });
-    api.get('/distributions');
+    api.get('/distributions', function(req, res, cb)
+    {
+        queries.getDistributions(redis, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
     api.get('/picks/:n');
     api.get('/rankings/:hero_id');
     api.get('/status', function(req, res, cb)

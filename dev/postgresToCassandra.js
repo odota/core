@@ -51,7 +51,7 @@ else
 
 function run(start_id)
 {
-    var stream = db.select().from('matches').where('match_id', '>=', start_id).where('match_id', '<', start_id + bucket_size).orderBy("match_id", "asc").stream();
+    var stream = db.select().from('matches').where('match_id', '>=', start_id).where('match_id', '<', bucket + bucket_size).orderBy("match_id", "asc").stream();
     stream.on('end', exit);
     stream.pipe(JSONStream.parse());
     stream.on('data', function(match)

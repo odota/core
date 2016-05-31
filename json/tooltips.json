@@ -90,7 +90,8 @@
   "max_hero_hit": "Largest instance of damage on a hero",
   "ability_uses": "Skills used (Number of damage instances on enemy heroes)",
   "item_uses": "Items used",
-  "damage_inflictor": "Damage dealt to heroes by items/abilities",
+  "damage_inflictor": "Damage dealt to heroes by items/skills",
+  "damage_inflictor_received": "Damage received from heroes by items/skills",
   "teamfight_participation": "Radiant participation/Dire participation",
   "teamfight_score": "Radiant kills/Dire kills",
   "teamfight_radiant_gold_adv": "Net gold advantage for Radiant",
@@ -115,5 +116,16 @@
   "win_pct_as": "Win percentage as this hero",
   "win_pct_with": "Win percentage with this player/hero",
   "win_pct_against": "Win percentage against this player/hero",
-  "subheading_ranking": "Based on wins and average visible MMR in matches played.  Rankings reset quarterly."
+  "subheading_ranking": "Based on wins and average visible MMR in matches played.  Rankings reset quarterly.",
+  "buy_cheese": "Buy some cheese. Help pay for servers. Reaching the goal every month keeps us running.",
+  "cheese_goal": "Monthly Cheese Goal",
+  "cheese_button_text": "Help us out",
+  "open_source": "An open source volunteer project",
+  "privacy_terms": "Privacy/Terms",
+  "follow_on": "Follow on",
+  "dota2_api": "Dota 2 API powered by",
+  "parsing_by": "Parsing by",
+  "cheese_by": "Cheese icon by",
+  "app_name": "YASP",
+  "error_message": "Whoops! Something went wrong."
 }
