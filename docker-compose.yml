@@ -5,14 +5,14 @@ services:
   db:
     build:
       context: .
-      dockerfile: Dockerfile-postgres
+      dockerfile: docker/postgres.dockerfile
     network_mode: host
   cache:
     image: redis:3
     network_mode: host
   web:
     build: .
-    command: ./docker/docker-web.sh
+    command: ./docker/main-launch.sh basic
     ports:
       - "5000"
     volumes:
