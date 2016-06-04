@@ -9,11 +9,7 @@ npm run build
 case $1 in
     'basic')
         # This is enough to open the site in a browser and request parses by ID.
-        # web.js will be watched for changes 
-        pm2 start svc/web.js --watch
-        pm2 start svc/parser.js
-        pm2 start svc/requests.js
-        pm2 start svc/retriever.js
+        pm2 start docker/main-pm2-basic-profile.json
     ;;
     'everything')
         pm2 start pm2.json
