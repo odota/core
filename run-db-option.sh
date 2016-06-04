@@ -19,5 +19,12 @@ function run_db_1 {
     docker exec -i $NAME psql -U postgres yasp < sql/create_tables.sql
 }
 
+function run_db_2 {
+    docker-compose -f docker-compose.yml -f docker/db-options/launch_only/docker-compose.override.yml up -d db 
+    sleep 10
+    docker exec -i "$NAME"_1 psql -U postgres < sql/init.sql
+    docker exec -i "$NAME"_1 psql -U postgres yasp < sql/create_tables.sql
+}
+
 wipe
-run_db_1
+run_db_2

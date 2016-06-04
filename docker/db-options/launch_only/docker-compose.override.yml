@@ -1,0 +1,6 @@
+version: '2'
+services:
+  db:
+    build:
+      context: .
+      dockerfile: docker/db-options/launch_only/postgres.dockerfile
