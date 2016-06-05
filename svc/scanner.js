@@ -94,7 +94,6 @@ function start()
                 {
                     url: container.url,
                     delay: Number(config.SCANNER_DELAY),
-                    proxyAffinityRange: parallelism,
                 }, function(err, data)
                 {
                     if (err)

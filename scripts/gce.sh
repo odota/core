@@ -2,9 +2,9 @@
 gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 
 #core (infra)
-gcloud compute instances delete -q core-1
-gcloud compute instances create core-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 200GB --boot-disk-type pd-ssd --tags "http-server"
-gcloud compute instances add-metadata core-1 --metadata-from-file startup-script=./scripts/core.sh
+gcloud compute instances delete -q postgres-1
+gcloud compute instances create postgres-1 --machine-type n1-highmem-8 --image container-vm --disk name=disk-redis --disk name=disk-postgres --boot-disk-size 10GB --boot-disk-type pd-ssd
+gcloud compute instances add-metadata postgres-1 --metadata-from-file startup-script=./scripts/postgres.sh
 
 #web, health check, loadbalancer
 gcloud compute forwarding-rules delete -q lb-rule
@@ -49,7 +49,7 @@ sudo docker start cassandra
 #cassandra joining nodes
 gcloud compute instances delete -q cassandra-2
 gcloud compute instances create cassandra-2 --machine-type n1-highmem-4 --image container-vm --boot-disk-size 1000GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=core-1 cassandra:3
+docker run --name cassandra --restart=always -d --net=host -e CASSANDRA_SEEDS=cassandra-1 cassandra:3
 sudo docker start cassandra
 '
 
