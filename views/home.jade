@@ -11,16 +11,18 @@ block page_content
   #top.header.alt.vert
     .container
       br
-      br
       h1.home YASP
       p.lead Yet Another Stats Page
-      div &nbsp;
       a.btn.btn-default.btn-lg(href='/login')
         img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
         h4 Start parsing my matches
       div &nbsp;
       a.btn.btn-default.btn-lg(href="/request")
         h4 Parse a match by ID<br>(no login required)
+      div &nbsp;
+      a.btn.btn-default.btn-lg(href="https://www.jist.tv/create.php?source=dota2")
+        img.small(src='/public/images/jist-dark-logo.png')
+        h4 Get a video of your match
       
   section.main
     a.arrow-wrap(href='#philosophy')
