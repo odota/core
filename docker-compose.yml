@@ -12,7 +12,7 @@ services:
     network_mode: host
   web:
     build: .
-    command: ./docker/main-launch.sh basic
+    command: ./docker/main-launch.sh basic # change 'basic' to 'everything' to launch all services
     ports:
       - "5000"
     volumes:
