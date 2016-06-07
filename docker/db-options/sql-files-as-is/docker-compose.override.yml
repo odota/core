@@ -1,6 +1,0 @@
-version: '2'
-services:
-  db:
-    build:
-      context: .
-      dockerfile: docker/db-options/sql-files-as-is/postgres.dockerfile
