@@ -1,7 +1,0 @@
-apiVersion: v1
-data:
-  redis.conf: {{data}}
-kind: Secret
-metadata:
-  name: redis-config
-type: Opaque

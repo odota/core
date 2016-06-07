@@ -16,6 +16,8 @@ var queries = require('../store/queries');
 var buildMatch = require('../store/buildMatch');
 var buildPlayer = require('../store/buildPlayer');
 var buildStatus = require('../store/buildStatus');
+var playerCache = require('../store/playerCache');
+var readCache = playerCache.readCache;
 const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {
@@ -115,6 +117,23 @@ module.exports = function(db, redis, cassandra)
             res.json(player);
         });
     });
+    /*
+    api.get('/player_matches/:account_id', function(req, res, cb)
+    {
+        readCache(req.params.account_id,
+        {
+            cacheProject: req.query.project || ['match_id'],
+        }, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            //TODO fillskill
+            res.json(cache.raw);
+        });
+    });
+    */
     api.get('/distributions', function(req, res, cb)
     {
         queries.getDistributions(redis, function(err, result)
