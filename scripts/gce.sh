@@ -16,7 +16,7 @@ gcloud compute instances add-metadata redis-1 --metadata-from-file startup-scrip
 #cassandra
 gcloud compute --project "peaceful-parity-87002" disks create "disk-cassandra-4" --size "2000" --zone "us-central1-b" --type "pd-standard"
 gcloud compute instances delete -q cassandra-4
-gcloud compute instances create cassandra-4 --machine-type n1-highmem-4 --image container-vm --boot-disk-size 10GB --boot-disk-type pd-ssd --disk "name=disk-cassandra-3,device-name=persistent-disk-1" 
+gcloud compute instances create cassandra-4 --machine-type n1-highmem-4 --image container-vm --boot-disk-size 10GB --boot-disk-type pd-ssd --disk "name=disk-cassandra-4,device-name=persistent-disk-1" 
 gcloud compute instances add-metadata cassandra-4 --metadata-from-file startup-script=./scripts/cassandra.sh
 
 #web, health check, loadbalancer
