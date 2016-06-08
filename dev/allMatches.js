@@ -1,6 +1,6 @@
-var utility = require('../utility');
-var generateJob = utility.generateJob;
 var async = require('async');
+var utility = require('../util/utility');
+var generateJob = utility.generateJob;
 var getData = utility.getData;
 var db = require('../store/db');
 var redis = require('../store/redis');
@@ -20,7 +20,6 @@ const cluster = require('cluster');
 //bucket idspace into groups of 100000000
 //save progress to redis key complete_history:n
 var bucket_size = 100000000;
-var columnInfo = {};
 if (cluster.isMaster)
 {
     // Fork workers.
@@ -83,7 +82,7 @@ function getPage(match_seq_num, bucket)
             var matches = body.result.matches;
             async.each(matches, function(match, cb)
             {
-                insertMatch(db, redis,
+                insertMatch(db, redis, match,
                 {
                     skipCounts: true,
                     skipAbilityUpgrades: true,
