@@ -9,13 +9,13 @@ npm run build
 case $1 in
     'basic')
         # This is enough to open the site in a browser and request parses by ID.
-        pm2 start docker/main-pm2-basic-profile.json
+        pm2 start profiles/basic.json
     ;;
     'everything')
-        pm2 start pm2.json
+        pm2 start profiles/everything.json
     ;;
     *)
-        pm2 start pm2.json
+        pm2 start profiles/everything.json
     ;;
 esac
 
