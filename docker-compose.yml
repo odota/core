@@ -1,5 +1,8 @@
 # Does not set up Cassandra
 
+# You don't usually need to edit this file.
+# If it does not fit your personal use case, docker-compose.override.yml is a preferred way to go.
+
 version: '2'
 services:
   db:
@@ -12,7 +15,11 @@ services:
     network_mode: host
   web:
     build: .
-    command: ./docker/main-launch.sh basic # change 'basic' to 'everything' to launch all services
+    # 'basic' to launch basic configuration as in profiles/basic.json
+    # 'everything' to launch all the services as in profiles/everything.json
+    # 'custom-profile' to launch all services as in profiles/custom.json (you'll have to provide it)
+    # or just override the whole command with your script if existing does not fit your needs
+    command: ./docker/main-launch.sh basic 
     ports:
       - "5000"
     volumes:

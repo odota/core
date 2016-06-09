@@ -28,3 +28,4 @@ yasp.sql
 Procfile.dev
 
 docker-compose.override.yml
+profiles/custom.json

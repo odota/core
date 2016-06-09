@@ -2,7 +2,7 @@
 
 # main-launch.sh
 # Script run in the main container
-# If this scripts exits, so does the main container
+# If this script exits, so does the main container
 
 npm run build
 
@@ -13,6 +13,10 @@ case $1 in
     ;;
     'everything')
         pm2 start profiles/everything.json
+    ;;
+    'custom-profile')
+        # To use this option you'll have to provide your custom.json profile. It's gitignored.
+        pm2 start profiles/custom.json
     ;;
     *)
         pm2 start profiles/everything.json
