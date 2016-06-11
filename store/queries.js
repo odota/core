@@ -193,6 +193,7 @@ function insertMatch(db, redis, match, options, cb)
     {
         "u": upsertMatch,
         "uc": upsertMatchCassandra,
+        "uml": upsertMatchLogs,
         "upc": updatePlayerCaches,
         "uct": updateCounts,
         "cmc": clearMatchCache,
@@ -309,6 +310,45 @@ function insertMatch(db, redis, match, options, cb)
         });
     }
 
+    function upsertMatchLogs(cb)
+    {
+        if (!match.logs)
+        {
+            return cb();
+        }
+        else
+        {
+            db.transaction(function(trx)
+            {
+                trx.raw(`DELETE FROM match_logs where match_id = ?`, [match.match_id]).asCallback(function(err)
+                {
+                    if (err)
+                    {
+                        return exit(err);
+                    }
+                    async.eachLimit(match.logs, 10000, function(e, cb)
+                    {
+                        trx('match_logs').insert(e).asCallback(cb);
+                    }, exit);
+                });
+
+                function exit(err)
+                {
+                    if (err)
+                    {
+                        console.error(err);
+                        trx.rollback(err);
+                    }
+                    else
+                    {
+                        trx.commit();
+                    }
+                    cb(err);
+                }
+            });
+        }
+    }
+
     function updatePlayerCaches(cb)
     {
         var copy = createMatchCopy(match, players, options);
@@ -400,6 +440,7 @@ function insertMatch(db, redis, match, options, cb)
                 duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
+                leagueid: match.leagueid,
             },
             {
                 lifo: options.lifo,

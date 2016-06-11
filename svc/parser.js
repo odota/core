@@ -263,8 +263,7 @@ function runParse(match, job, cb)
                 var message = "time spent on post-processing match ";
                 console.time(message);
                 var meta = processMetadata(entries);
-                var logs = processReduce(entries);
-                console.log('logs: %s', logs.length);
+                var logs = match.leagueid ? processReduce(entries, match) : undefined;
                 var res = processExpand(entries, meta);
                 var parsed_data = processParsedData(res.parsed_data);
                 var teamfights = processTeamfights(res.tf_data, meta);
@@ -274,6 +273,7 @@ function runParse(match, job, cb)
                 parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
                 parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
                 parsed_data.upload = upload;
+                parsed_data.logs = logs;
                 //processMultiKillStreaks();
                 console.timeEnd(message);
                 return cb(err, parsed_data);

@@ -2,16 +2,8 @@
  * A processor to reduce the event stream by grouping similar events.
  * NOT CURRENTLY IN PRODUCTION USE
  **/
-function processReduce(entries)
+function processReduce(entries, match)
 {
-    var reduceMap = {};
-    //group by player_slot, type, targethero, targetillusion
-    for (var i = 0; i < entries.length; i++)
-    {
-        var e = entries[i];
-        reduceMap[e.type] = reduceMap[e.type] ? reduceMap[e.type] + 1 : 1;
-    }
-    console.log(reduceMap);
     return entries.filter(function(e)
     {
         if (e.type === "actions")
@@ -22,7 +14,18 @@ function processReduce(entries)
         {
             return false;
         }
+        if (!e.time)
+        {
+            return false;
+        }
         return true;
+    }).map(function(e)
+    {
+        return Object.assign(
+        {}, e,
+        {
+            match_id: match.match_id
+        });
     });
 }
 module.exports = processReduce;
