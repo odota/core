@@ -8,15 +8,21 @@ function processReduce(entries)
     //group by player_slot, type, targethero, targetillusion
     for (var i = 0; i < entries.length; i++)
     {
-        //group big categories: actions, combat log damage
         var e = entries[i];
-        var identifier = [e.player_slot, e.type, e.key].join(":");
-        e.value = e.value || 1;
-        //var identifier = e.type;
-        //e.value = 1;
-        reduceMap[identifier] = reduceMap[identifier] ? reduceMap[identifier] + e.value : e.value || 1;
+        reduceMap[e.type] = reduceMap[e.type] ? reduceMap[e.type] + 1 : 1;
     }
-    //var fs = require('fs');
-    //fs.writeFileSync('./output3.json', JSON.stringify(reduceMap, null , 2));
+    console.log(reduceMap);
+    return entries.filter(function(e)
+    {
+        if (e.type === "actions")
+        {
+            return false;
+        }
+        if (e.type === "interval" && e.time % 60 !== 0)
+        {
+            return false;
+        }
+        return true;
+    });
 }
 module.exports = processReduce;
