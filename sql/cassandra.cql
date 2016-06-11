@@ -87,6 +87,7 @@ CREATE TABLE player_matches (
   kill_streaks text,
   multi_kills text,
   life_state text,
+  damage_inflictor_received text,
 );
 
 CREATE TABLE player_caches (
