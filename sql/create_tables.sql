@@ -30,7 +30,6 @@ CREATE TABLE matches (
   --dire_team_complete integer,
   --radiant_team_id integer,
   --dire_team_id integer,
-  pgroup json,
   --parsed data below
   chat json[],
   objectives json[],

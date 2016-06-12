@@ -416,35 +416,7 @@ function fillSkill(db, matches, options, cb)
 function getPlayerMatches(db, queryObj, options, cb)
 {
     var stream;
-    if (options.cassandra)
-    {
-        //remove any compound names
-        queryObj.project = queryObj.project.map(function(k)
-        {
-            var split = k.split('.');
-            return split[split.length - 1];
-        });
-        var extraProps = {
-            chat: false,
-            radiant_gold_adv: false,
-            pgroup: false,
-        };
-        //remove props not in cassandra table
-        queryObj.project = queryObj.project.filter(function(k)
-        {
-            return !(k in extraProps);
-        });
-        stream = options.cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
-        {
-            prepare: true,
-            fetchSize: 1000,
-            autoPage: true,
-        });
-    }
-    else
-    {
-        stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
-    }
+    stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
     var matches = [];
     stream.on('end', function(err)
     {
@@ -455,10 +427,6 @@ function getPlayerMatches(db, queryObj, options, cb)
     });
     stream.on('data', function(m)
     {
-        if (options.cassandra)
-        {
-            m = deserialize(m);
-        }
         computeMatchData(m);
         if (filter([m], queryObj.js_select).length)
         {
