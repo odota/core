@@ -1,3 +1,4 @@
+#!/bin/bash
 #deploy
 DATETIME=$(date +%s)
 
