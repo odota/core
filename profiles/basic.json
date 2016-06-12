@@ -1,0 +1,37 @@
+{
+  "apps": [
+    {
+      "script": "svc/web.js",
+      "watch": true,
+      "ignore_watch": ["node_modules", "public", "views"],
+      "group": "web",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/parser.js",
+      "watch": false,
+      "ignore_watch": ["node_modules", "public", "views"],
+      "group": "parser",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/requests.js",
+      "watch": false,
+      "ignore_watch": ["node_modules", "public", "views"],
+      "group": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/retriever.js",
+      "watch": false,
+      "ignore_watch": ["node_modules", "public", "views"],
+      "group": "retriever",
+      "exec_mode": "cluster",
+      "instances": 1
+    }
+
+  ]
+}
