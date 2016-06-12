@@ -59,8 +59,6 @@ function run(start_id)
         stream.pause();
         redis.set('postgresToCassandra:' + bucket, match.match_id);
         delete match.parse_status;
-        var pgroup = match.pgroup;
-        delete match.pgroup;
         insertMatch(match, function(err)
         {
             if (err)
@@ -81,7 +79,6 @@ function run(start_id)
                         return exit(err);
                     }
                     match.players = pms;
-                    match.pgroup = pgroup;
                     updateCache(match, function(err)
                     {
                         if (err)
@@ -108,6 +105,7 @@ function run(start_id)
     function insertMatch(match, cb)
     {
         var obj = serialize(match);
+        delete obj.pgroup;
         var query = "INSERT INTO yasp.matches JSON ?";
         cassandra.execute(query, [JSON.stringify(obj)],
         {
