@@ -28,10 +28,10 @@ var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type',
 //set query.js_agg based on this
 var basicAggs = ['match_id', 'win', 'lose'];
 var aggs = {
-    index: basicAggs.concat('heroes'),
+    index: basicAggs.concat('hero_id'),
     matches: basicAggs,
     heroes: basicAggs.concat('heroes'),
-    peers: basicAggs.concat(['heroes', 'teammates']),
+    peers: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
     //TODO only need one subkey at a time
     records: basicAggs.concat(Object.keys(subkeys)),
@@ -43,6 +43,11 @@ var aggs = {
     wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
     rating: basicAggs,
     rankings: basicAggs,
+};
+var deps = {
+    "teammates": "heroes",
+    "win": "radiant_win",
+    "lose": "radiant_win",
 };
 
 function buildPlayer(options, cb)
@@ -79,10 +84,9 @@ function buildPlayer(options, cb)
     });
     queryObj.js_agg = obj;
     //fields to project from the Cassandra cache
-    queryObj.cacheProject = cacheProj.concat(Object.keys(queryObj.js_agg).filter(function(k)
+    queryObj.cacheProject = cacheProj.concat(Object.keys(queryObj.js_agg).map(function(k)
     {
-        //project fields needed for aggregation, but remove computed fields that don't exist
-        return (k !== "win" && k !== "lose" && k !== "teammates");
+        return deps[k] || k;
     })).concat(filter_exists ? cacheFilters : []).concat(query.desc ? query.desc : []);
     //Find player in db
     console.time("[PLAYER] getPlayer " + account_id);
@@ -190,26 +194,34 @@ function buildPlayer(options, cb)
                 heroes_list: function(cb)
                 {
                     //convert heroes hash to array and sort
-                    if (aggData.heroes)
+                    var heroes_list = [];
+                    if (aggData.hero_id)
                     {
-                        var heroes_list = [];
+                        for (var id in aggData.hero_id.counts)
+                        {
+                            heroes_list.push(
+                            {
+                                hero_id: id,
+                                games: aggData.hero_id.counts[id],
+                                win: aggData.hero_id.win_counts[id]
+                            });
+                        }
+                    }
+                    else if (aggData.heroes)
+                    {
                         var heroes = aggData.heroes;
                         for (var id in heroes)
                         {
                             var h = heroes[id];
                             heroes_list.push(h);
                         }
-                        heroes_list.sort(function(a, b)
-                        {
-                            return b.games - a.games;
-                        });
-                        heroes_list = heroes_list.slice(0, info === "index" ? 20 : undefined);
-                        cb(null, heroes_list);
                     }
-                    else
+                    heroes_list.sort(function(a, b)
                     {
-                        return cb(null, []);
-                    }
+                        return b.games - a.games;
+                    });
+                    heroes_list = heroes_list.slice(0, info === "index" ? 20 : undefined);
+                    return cb(null, heroes_list);
                 },
                 teammate_list: function(cb)
                 {
