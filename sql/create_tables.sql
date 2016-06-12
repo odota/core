@@ -1,4 +1,5 @@
 CREATE EXTENSION pg_trgm;
+CREATE EXTENSION tsm_system_rows;
 
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
