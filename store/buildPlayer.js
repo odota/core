@@ -28,10 +28,10 @@ var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type',
 //set query.js_agg based on this
 var basicAggs = ['match_id', 'win', 'lose'];
 var aggs = {
-    index: basicAggs.concat('heroes'),
+    index: basicAggs.concat('hero_id'),
     matches: basicAggs,
     heroes: basicAggs.concat('heroes'),
-    peers: basicAggs.concat(['heroes', 'teammates']),
+    peers: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
     //TODO only need one subkey at a time
     records: basicAggs.concat(Object.keys(subkeys)),
@@ -43,6 +43,11 @@ var aggs = {
     wordcloud: basicAggs.concat(['my_word_counts', 'all_word_counts']),
     rating: basicAggs,
     rankings: basicAggs,
+};
+var deps = {
+    "teammates": "heroes",
+    "win": "radiant_win",
+    "lose": "radiant_win",
 };
 
 function buildPlayer(options, cb)
@@ -79,10 +84,9 @@ function buildPlayer(options, cb)
     });
     queryObj.js_agg = obj;
     //fields to project from the Cassandra cache
-    queryObj.cacheProject = cacheProj.concat(Object.keys(queryObj.js_agg).filter(function(k)
+    queryObj.cacheProject = cacheProj.concat(Object.keys(queryObj.js_agg).map(function(k)
     {
-        //project fields needed for aggregation, but remove computed fields that don't exist
-        return (k !== "win" && k !== "lose" && k !== "teammates");
+        return deps[k] || k;
     })).concat(filter_exists ? cacheFilters : []).concat(query.desc ? query.desc : []);
     //Find player in db
     console.time("[PLAYER] getPlayer " + account_id);
@@ -190,26 +194,34 @@ function buildPlayer(options, cb)
                 heroes_list: function(cb)
                 {
                     //convert heroes hash to array and sort
-                    if (aggData.heroes)
+                    var heroes_list = [];
+                    if (aggData.hero_id)
                     {
-                        var heroes_list = [];
+                        for (var id in aggData.hero_id.counts)
+                        {
+                            heroes_list.push(
+                            {
+                                hero_id: id,
+                                games: aggData.hero_id.counts[id],
+                                win: aggData.hero_id.win_counts[id]
+                            });
+                        }
+                    }
+                    else if (aggData.heroes)
+                    {
                         var heroes = aggData.heroes;
                         for (var id in heroes)
                         {
                             var h = heroes[id];
                             heroes_list.push(h);
                         }
-                        heroes_list.sort(function(a, b)
-                        {
-                            return b.games - a.games;
-                        });
-                        heroes_list = heroes_list.slice(0, info === "index" ? 20 : undefined);
-                        cb(null, heroes_list);
                     }
-                    else
+                    heroes_list.sort(function(a, b)
                     {
-                        return cb(null, []);
-                    }
+                        return b.games - a.games;
+                    });
+                    heroes_list = heroes_list.slice(0, info === "index" ? 20 : undefined);
+                    return cb(null, heroes_list);
                 },
                 teammate_list: function(cb)
                 {
@@ -416,35 +428,7 @@ function fillSkill(db, matches, options, cb)
 function getPlayerMatches(db, queryObj, options, cb)
 {
     var stream;
-    if (options.cassandra)
-    {
-        //remove any compound names
-        queryObj.project = queryObj.project.map(function(k)
-        {
-            var split = k.split('.');
-            return split[split.length - 1];
-        });
-        var extraProps = {
-            chat: false,
-            radiant_gold_adv: false,
-            pgroup: false,
-        };
-        //remove props not in cassandra table
-        queryObj.project = queryObj.project.filter(function(k)
-        {
-            return !(k in extraProps);
-        });
-        stream = options.cassandra.stream(util.format(`SELECT %s FROM player_matches where account_id = ?`, queryObj.project.join(',')), [queryObj.db_select.account_id],
-        {
-            prepare: true,
-            fetchSize: 1000,
-            autoPage: true,
-        });
-    }
-    else
-    {
-        stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
-    }
+    stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
     var matches = [];
     stream.on('end', function(err)
     {
@@ -455,10 +439,6 @@ function getPlayerMatches(db, queryObj, options, cb)
     });
     stream.on('data', function(m)
     {
-        if (options.cassandra)
-        {
-            m = deserialize(m);
-        }
         computeMatchData(m);
         if (filter([m], queryObj.js_select).length)
         {
