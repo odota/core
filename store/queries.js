@@ -194,6 +194,7 @@ function insertMatch(db, redis, match, options, cb)
         "u": upsertMatch,
         "uc": upsertMatchCassandra,
         "upc": updatePlayerCaches,
+        "uct": updateCounts,
         "cmc": clearMatchCache,
         "t": telemetry,
         "dm": decideMmr,
@@ -249,11 +250,11 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatchCassandra(cb)
     {
-        var cassandra = options.cassandra;
-        if (!cassandra)
+        if (!config.ENABLE_CASSANDRA_MATCH_STORE_WRITE)
         {
             return cb();
         }
+        var cassandra = options.cassandra;
         //console.log('[INSERTMATCH] upserting into Cassandra');
         cleanRowCassandra(cassandra, 'matches', match, function(err, match)
         {
@@ -269,7 +270,7 @@ function insertMatch(db, redis, match, options, cb)
             var arr = Object.keys(obj).map(function(k)
             {
                 // boolean types need to be expressed as booleans, if strings the cassandra driver will always convert it to true, e.g. 'false'
-                return k === "radiant_win" ? JSON.parse(obj[k]) : obj[k];
+                return (obj[k] === "true" || obj[k] === "false") ? JSON.parse(obj[k]) : obj[k];
             });
             cassandra.execute(query, arr,
             {
@@ -310,26 +311,22 @@ function insertMatch(db, redis, match, options, cb)
 
     function updatePlayerCaches(cb)
     {
-        if (options.skipCacheUpdate)
+        var copy = createMatchCopy(match, players, options);
+        updateCache(copy, cb);
+    }
+
+    function updateCounts(cb)
+    {
+        if (options.skipCounts)
         {
             return cb();
         }
-        var copy = JSON.parse(JSON.stringify(match));
-        copy.players = JSON.parse(JSON.stringify(players));
-        copy.insert_type = options.type;
-        copy.origin = options.origin;
-        updateCache(copy, function(err)
+        var copy = createMatchCopy(match, players, options);
+        //add to queue for counts
+        queue.addToQueue(cQueue, copy,
         {
-            if (err)
-            {
-                return cb(err);
-            }
-            //add to queue for counts
-            queue.addToQueue(cQueue, copy,
-            {
-                attempts: 1
-            }, cb);
-        });
+            attempts: 1
+        }, cb);
     }
 
     function telemetry(cb)
@@ -416,6 +413,15 @@ function insertMatch(db, redis, match, options, cb)
     }
 }
 
+function createMatchCopy(match, players, options)
+{
+    var copy = JSON.parse(JSON.stringify(match));
+    copy.players = JSON.parse(JSON.stringify(players));
+    copy.insert_type = options.type;
+    copy.origin = options.origin;
+    return copy;
+}
+
 function insertPlayer(db, player, cb)
 {
     if (player.steamid)
@@ -445,7 +451,6 @@ function insertMatchSkill(db, row, cb)
         match_id: row.match_id
     }, cb);
 }
-
 /**
  * Benchmarks a match against stored data in Redis.
  **/
@@ -879,7 +884,6 @@ function searchPlayer(db, query, cb)
         cb(null, ret);
     });
 }
-
 module.exports = {
     getSets,
     insertPlayer,
