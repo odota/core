@@ -26,7 +26,7 @@ gcloud compute http-health-checks delete -q lb-check
 gcloud compute instance-groups managed delete -q web-group-1
 gcloud compute instance-templates delete -q web-1
 gcloud compute instance-templates create web-1 --machine-type g1-small --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
-sudo docker run -d --name=web --restart=always --net=host -e FRONTEND_PORT=80 -e PROVIDER=gce -e ROLE=web yasp/yasp:latest sh -c "node deploy.js"
+sudo docker run -d --name=web --restart=always --net=host -e FRONTEND_PORT=80 -e PROVIDER=gce -e ROLE=web yasp/yasp:latest sh -c "npm start"
 sudo docker start web
 '
 gcloud compute instance-groups managed create "web-group-1" --base-instance-name "web-group-1" --template "web-1" --size "0"
@@ -40,7 +40,7 @@ gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down
 gcloud compute instance-groups managed delete -q backend-group-1
 gcloud compute instance-templates delete -q backend-1
 gcloud compute instance-templates create backend-1 --machine-type n1-highcpu-4 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
-sudo docker run -d --name yasp --restart=always --net=host -e PROVIDER=gce yasp/yasp:latest sh -c "node deploy.js core"
+sudo docker run -d --name yasp --restart=always --net=host -e PROVIDER=gce -e GROUP=core yasp/yasp:latest sh -c "npm start"
 sudo docker start yasp
 '
 gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"
@@ -49,7 +49,7 @@ gcloud compute instance-groups managed create "backend-group-1" --base-instance-
 gcloud compute instance-groups managed delete -q parser-group-1
 gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image container-vm --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
-    sudo docker run -d --name=parser --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest sh -c "node deploy.js"
+    sudo docker run -d --name=parser --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest sh -c "npm start"
     sudo docker start parser
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
