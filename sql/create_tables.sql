@@ -1,4 +1,5 @@
 CREATE EXTENSION pg_trgm;
+CREATE EXTENSION tsm_system_rows;
 
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
@@ -30,7 +31,6 @@ CREATE TABLE matches (
   --dire_team_complete integer,
   --radiant_team_id integer,
   --dire_team_id integer,
-  pgroup json,
   --parsed data below
   chat json[],
   objectives json[],
@@ -100,7 +100,8 @@ CREATE TABLE player_matches (
   killed_by json,
   kill_streaks json,
   multi_kills json,
-  life_state json
+  life_state json,
+  damage_inflictor_received json
   --disabled due to incompatibility
   --kill_streaks_log json[][], --an array of kill streak values
   --multi_kill_id_vals integer[] --an array of multi kill values (the length of each multi kill)

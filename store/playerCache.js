@@ -19,7 +19,7 @@ function readCache(account_id, options, cb)
 {
     if (enabled)
     {
-        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', options.cacheProject.join(','));
+        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', options.cacheProject.join(','));
         var matches = [];
         return cassandra.stream(query, [account_id],
         {

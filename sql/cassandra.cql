@@ -26,7 +26,6 @@ CREATE TABLE matches (
   radiant_xp_adv text,
   teamfights text,
   version int,
-  pgroup text,
 );
 
 CREATE TABLE player_matches (
@@ -88,6 +87,7 @@ CREATE TABLE player_matches (
   kill_streaks text,
   multi_kills text,
   life_state text,
+  damage_inflictor_received text,
 );
 
 CREATE TABLE player_caches (

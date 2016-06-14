@@ -15,7 +15,7 @@ var db = require('knex')(
   connection: config.POSTGRES_URL,
   pool:
   {
-    max: 20,
+    max: 5,
   },
 });
 db.client.pool.on('error', function(err)
