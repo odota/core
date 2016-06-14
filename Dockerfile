@@ -1,21 +1,22 @@
-FROM mhart/alpine-node:5.10.1
+FROM mhart/alpine-node:6.2.1
 
 # Tools
 RUN apk update && apk add git curl wget bash
 
 # Java
-# RUN apk update && apk add openjdk8=8.77.03-r0
+# as of 2016-06-12, running on alpine openjdk causes a unsatisfiedlinkerror crash in Java
+#RUN apk update && apk add openjdk8=8.92.14-r1
 # Here we install GNU libc (aka glibc) and set C.UTF-8 locale as default.
 
-RUN ALPINE_GLIBC_BASE_URL="https://github.com/andyshinn/alpine-pkg-glibc/releases/download" && \
-    ALPINE_GLIBC_PACKAGE_VERSION="2.23-r1" && \
+RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases/download" && \
+    ALPINE_GLIBC_PACKAGE_VERSION="2.23-r2" && \
     ALPINE_GLIBC_BASE_PACKAGE_FILENAME="glibc-$ALPINE_GLIBC_PACKAGE_VERSION.apk" && \
     ALPINE_GLIBC_BIN_PACKAGE_FILENAME="glibc-bin-$ALPINE_GLIBC_PACKAGE_VERSION.apk" && \
     ALPINE_GLIBC_I18N_PACKAGE_FILENAME="glibc-i18n-$ALPINE_GLIBC_PACKAGE_VERSION.apk" && \
     apk add --no-cache --virtual=build-dependencies wget ca-certificates && \
     wget \
-        "https://raw.githubusercontent.com/andyshinn/alpine-pkg-glibc/master/andyshinn.rsa.pub" \
-        -O "/etc/apk/keys/andyshinn.rsa.pub" && \
+        "https://github.com/sgerrand/alpine-pkg-glibc/releases/download/$ALPINE_GLIBC_PACKAGE_VERSION/sgerrand.rsa.pub" \
+        -O "/etc/apk/keys/sgerrand.rsa.pub" && \
     wget \
         "$ALPINE_GLIBC_BASE_URL/$ALPINE_GLIBC_PACKAGE_VERSION/$ALPINE_GLIBC_BASE_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_BASE_URL/$ALPINE_GLIBC_PACKAGE_VERSION/$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" \
@@ -25,7 +26,7 @@ RUN ALPINE_GLIBC_BASE_URL="https://github.com/andyshinn/alpine-pkg-glibc/release
         "$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_I18N_PACKAGE_FILENAME" && \
     \
-    rm "/etc/apk/keys/andyshinn.rsa.pub" && \
+    rm "/etc/apk/keys/sgerrand.rsa.pub" && \
     /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 C.UTF-8 || true && \
     echo "export LANG=C.UTF-8" > /etc/profile.d/locale.sh && \
     \
@@ -91,7 +92,8 @@ RUN apk add --no-cache --virtual=build-dependencies wget ca-certificates && \
     rm "/tmp/"*
 
 # Maven
-# RUN apk update && apk add maven=3.3.9-r0
+# as of 2016-06-12 maven apk is still in edge branch and not accessible by default
+#RUN apk update && apk add maven=3.3.9-r0
 ENV MAVEN_HOME="/usr/share/maven"
 ENV MAVEN_VERSION="3.3.9"
 RUN cd / && \
@@ -115,4 +117,4 @@ RUN npm run webpack
 
 ENV PATH /usr/src/yasp/node_modules/pm2/bin:$PATH
 
-CMD [ "node", "deploy.js" ]
+CMD [ "npm", "start" ]

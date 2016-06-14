@@ -17,7 +17,8 @@
     "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
     "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
-    "updateconstants": "node tasks/updateconstants"
+    "updateconstants": "node tasks/updateconstants",
+    "dockerbuild": "sudo docker build -t yasp/yasp ."
   },
   "repository": {
     "type": "git",
@@ -92,9 +93,5 @@
     "supertest": "^1.1.0",
     "url-loader": "^0.5.7",
     "webpack": "^1.12.12"
-  },
-  "engines": {
-    "node": "6.0.0",
-    "npm": "3.8.8"
   }
 }

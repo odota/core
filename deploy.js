@@ -2,6 +2,7 @@
  * Deployment entry point for the application.
  **/
 var args = process.argv.slice(2);
+var group = args[0] || process.env.GROUP;
 var cp = require('child_process');
 if (process.env.PROVIDER === "gce")
 {
@@ -12,17 +13,16 @@ if (process.env.ROLE)
     //if role variable is set just run that script
     require('./svc/' + process.env.ROLE + ".js");
 }
-else if (args[0])
+else if (group)
 {
     var pm2 = require('pm2');
     var async = require('async');
     var manifest = require('./profiles/everything.json').apps;
-    //if argument supplied use pm2 to run processes in that group
     pm2.connect(function()
     {
         async.each(manifest, function start(app, cb)
         {
-            if (args[0] === app.group)
+            if (group === app.group)
             {
                 console.log(app.script, app.instances);
                 pm2.start(app.script,
