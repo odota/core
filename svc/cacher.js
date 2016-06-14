@@ -186,7 +186,7 @@ function updateRankings(match, cb)
         {
             return cb(err);
         }
-        var score = (avg && !Number.isNaN(avg)) ? Math.pow(avg, 6) / Math.pow(10, 18) : undefined;
+        var score = (avg && !Number.isNaN(avg)) ? Math.pow(~~(avg/100), 6) : undefined;
         async.each(match.players, function(player, cb)
         {
             if (!player.account_id || player.account_id === constants.anonymous_account_id)
