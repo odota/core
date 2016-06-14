@@ -145,9 +145,9 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/rankings/:hero_id', function(req, res, cb)
+    api.get('/rankings', function(req, res, cb)
     {
-        queries.getHeroRankings(db, redis, req.params.hero_id,
+        queries.getHeroRankings(db, redis, req.query.hero_id,
         {}, function(err, result)
         {
             if (err)
@@ -157,11 +157,11 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/benchmarks/:hero_id', function(req, res, cb)
+    api.get('/benchmarks', function(req, res, cb)
     {
         queries.getBenchmarks(db, redis,
         {
-            hero_id: req.params.hero_id
+            hero_id: req.query.hero_id
         }, function(err, result)
         {
             if (err)
