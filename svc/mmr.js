@@ -10,7 +10,7 @@ var config = require('../config');
 var mQueue = queue.getQueue('mmr');
 var getData = utility.getData;
 var retrieverArr = config.RETRIEVER_HOST.split(",");
-mQueue.process(retrieverArr.length * 10, processMmr);
+mQueue.process(retrieverArr.length * config.MMR_PARALLELISM, processMmr);
 mQueue.on('completed', function(job)
 {
     job.remove();

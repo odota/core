@@ -44,6 +44,8 @@ var defaults = {
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)
     "SCANNER_PARALLELISM": 1, //Number of simultaneous API requests to make in scanner
+    "MMR_PARALLELISM": 15,
+    "PARSER_PARALLELISM": 1,
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "BENCHMARK_RETENTION_HOURS": 1, //hours in block to retain benchmark data for percentile
     "MATCH_RATING_RETENTION_HOURS": 12, //hours in block to retain match rating data for percentile
