@@ -142,7 +142,7 @@ app.use(function telemetry(req, res, cb)
         };
         */
         redis.lpush("load_times", timeEnd - timeStart);
-        redis.ltrim("load_times", 0, 10000);
+        redis.ltrim("load_times", 0, 9999);
     });
     cb();
 });
