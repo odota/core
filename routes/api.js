@@ -145,8 +145,32 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/picks/:n');
-    api.get('/rankings/:hero_id');
+    api.get('/rankings', function(req, res, cb)
+    {
+        queries.getHeroRankings(db, redis, req.query.hero_id,
+        {}, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
+    api.get('/benchmarks', function(req, res, cb)
+    {
+        queries.getBenchmarks(db, redis,
+        {
+            hero_id: req.query.hero_id
+        }, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
     api.get('/status', function(req, res, cb)
     {
         buildStatus(db, redis, function(err, status)
@@ -158,8 +182,6 @@ module.exports = function(db, redis, cassandra)
             res.json(status);
         });
     });
-    //TODO @albertcui owns mmstats
-    api.get('/mmstats');
     api.get('/search', function(req, res, cb)
     {
         if (!req.query.q)
@@ -308,5 +330,9 @@ module.exports = function(db, redis, cassandra)
             }
         }).catch(cb);
     });
+    //TODO implement
+    api.get('/picks/:n');
+    //TODO @albertcui owns mmstats
+    api.get('/mmstats');
     return api;
 };

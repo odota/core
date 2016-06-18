@@ -80,7 +80,6 @@ app.locals.getAggs = utility.getAggs;
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function(req, res)
 {
-    res.header('Cache-Control', 'max-age=604800, public');
     request("http://cdn.dota2.com/apps/dota2/images/" + req.params.group_name + "/" + req.params.image_name).pipe(res);
 });
 app.use("/public", express.static(path.join(__dirname, '/../public')));
@@ -143,7 +142,7 @@ app.use(function telemetry(req, res, cb)
         };
         */
         redis.lpush("load_times", timeEnd - timeStart);
-        redis.ltrim("load_times", 0, 10000);
+        redis.ltrim("load_times", 0, 9999);
     });
     cb();
 });

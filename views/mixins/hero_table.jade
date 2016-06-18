@@ -19,8 +19,9 @@ mixin hero_table(rows, short)
         - var hero = constants.heroes[h.hero_id]
         tr
           td.text-left.small
-            img.img-sm(src=hero.img, title=hero.localized_name)
-            =hero.localized_name
+            if hero
+              img.img-sm(src=hero.img, title=hero.localized_name)
+              =hero.localized_name
           td.rankable=h.games
           td.rankable
             +progress_bar(h.win, h.games)

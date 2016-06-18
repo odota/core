@@ -1,4 +1,5 @@
 CREATE EXTENSION pg_trgm;
+CREATE EXTENSION tsm_system_rows;
 
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
@@ -30,7 +31,6 @@ CREATE TABLE matches (
   --dire_team_complete integer,
   --radiant_team_id integer,
   --dire_team_id integer,
-  pgroup json,
   --parsed data below
   chat json[],
   objectives json[],

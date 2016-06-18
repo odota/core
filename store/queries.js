@@ -199,6 +199,7 @@ function insertMatch(db, redis, match, options, cb)
         "cmc": clearMatchCache,
         "t": telemetry,
         "dm": decideMmr,
+        "dpro": decideProfile,
         "dp": decideParse,
     }, function(err, results)
     {
@@ -402,7 +403,7 @@ function insertMatch(db, redis, match, options, cb)
     {
         async.each(match.players, function(p, cb)
         {
-            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in options.userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 3 === 0)))
+            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id && p.account_id !== constants.anonymous_account_id && (p.account_id in options.userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 3 === 0)))
             {
                 addToQueue(mQueue,
                 {
@@ -418,6 +419,19 @@ function insertMatch(db, redis, match, options, cb)
             {
                 cb();
             }
+        }, cb);
+    }
+
+    function decideProfile(cb)
+    {
+        async.each(match.players, function(p, cb)
+        {
+            if (options.origin === "scanner" && p.account_id && p.account_id !== constants.anonymous_account_id)
+            {
+                redis.lpush('profilerQueue', p.account_id);
+                redis.ltrim('profilerQueue', 0, 99);
+            }
+            cb();
         }, cb);
     }
 

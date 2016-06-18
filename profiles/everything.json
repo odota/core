@@ -3,7 +3,7 @@
     {
       "script": "svc/skill.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -11,7 +11,7 @@
     {
       "script": "svc/mmr.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -19,7 +19,7 @@
     {
       "script": "svc/profiler.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -27,7 +27,7 @@
     {
       "script": "svc/scanner.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -35,7 +35,7 @@
     {
       "script": "svc/worker.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -43,7 +43,7 @@
     {
       "script": "svc/fullhistory.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -51,7 +51,7 @@
     {
       "script": "svc/requests.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -59,7 +59,7 @@
     {
       "script": "svc/cacher.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -67,7 +67,7 @@
     {
       "script": "svc/monitor.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "core",
       "exec_mode": "cluster",
       "instances": 1
@@ -75,7 +75,7 @@
     {
       "script": "svc/web.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "web",
       "exec_mode": "cluster",
       "instances": 1
@@ -83,7 +83,7 @@
     {
       "script": "svc/retriever.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "retriever",
       "exec_mode": "cluster",
       "instances": 1
@@ -91,7 +91,7 @@
     {
       "script": "svc/proxy.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "proxy",
       "exec_mode": "cluster",
       "instances": 1
@@ -99,7 +99,7 @@
     {
       "script": "svc/parser.js",
       "watch": true,
-      "ignore_watch": ["node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "parser",
       "exec_mode": "cluster",
       "instances": 1
