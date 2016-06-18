@@ -136,7 +136,7 @@ module.exports = function(db, redis, cassandra)
     */
     api.get('/match_logs/:match_id', function(req, res, cb)
     {
-        db.raw(`SELECT * FROM match_logs WHERE match_id = ?`, [req.params.match_id]).asCallback(function(err, result)
+        db.raw(`SELECT * FROM match_logs WHERE match_id = ? ORDER BY time asc`, [req.params.match_id]).asCallback(function(err, result)
         {
             if (err)
             {

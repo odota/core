@@ -238,7 +238,9 @@ function insertMatch(db, redis, match, options, cb)
                 //TODO insert picks/bans
                 //TODO remove dota_unknown to save space
                 //TODO figure out whehter to store expanded or raw data
-
+/*
+"picks_bans":[{"is_pick":false,"hero_id":41,"team":1,"order":0},{"is_pick":false,"hero_id":38,"team":0,"order":1},{"is_pick":false,"hero_id":6,"team":1,"order":2},{"is_pick":false,"hero_id":62,"team":0,"order":3},{"is_pick":true,"hero_id":29,"team":1,"order":4},{"is_pick":true,"hero_id":20,"team":0,"order":5},{"is_pick":true,"hero_id":65,"team":0,"order":6},{"is_pick":true,"hero_id":87,"team":1,"order":7},{"is_pick":false,"hero_id":93,"team":0,"order":8},{"is_pick":false,"hero_id":74,"team":1,"order":9},{"is_pick":false,"hero_id":110,"team":0,"order":10},{"is_pick":false,"hero_id":54,"team":1,"order":11},{"is_pick":true,"hero_id":18,"team":0,"order":12},{"is_pick":true,"hero_id":107,"team":1,"order":13},{"is_pick":true,"hero_id":103,"team":0,"order":14},{"is_pick":true,"hero_id":49,"team":1,"order":15},{"is_pick":false,"hero_id":63,"team":0,"order":16},{"is_pick":false,"hero_id":98,"team":1,"order":17},{"is_pick":true,"hero_id":67,"team":1,"order":18},{"is_pick":true,"hero_id":8,"team":0,"order":19}]
+*/
                 function exit(err)
                 {
                     if (err)

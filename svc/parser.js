@@ -267,7 +267,7 @@ function runParse(match, job, cb)
                 var message = "time spent on post-processing match ";
                 console.time(message);
                 var meta = processMetadata(entries);
-                var logs = match.leagueid ? processReduce(entries, match) : undefined;
+                var logs = match.leagueid ? processReduce(entries, match, meta) : undefined;
                 var res = processExpand(entries, meta);
                 var parsed_data = processParsedData(res.parsed_data);
                 var teamfights = processTeamfights(res.tf_data, meta);
