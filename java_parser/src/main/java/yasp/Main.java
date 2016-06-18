@@ -70,8 +70,8 @@ public class Main {
         public Integer gold_reason;
         public Integer xp_reason;
         public String valuename;
-        public Float stun_duration;
-        public Float slow_duration;
+        //public Float stun_duration;
+        //public Float slow_duration;
         //entity fields
         public Integer gold;
         public Integer lh;
@@ -234,8 +234,8 @@ public class Main {
             combatLogEntry.attackerillusion = cle.isAttackerIllusion();
             combatLogEntry.targetillusion = cle.isTargetIllusion();
             combatLogEntry.value = cle.getValue();
-            combatLogEntry.stun_duration = cle.getStunDuration();
-            combatLogEntry.slow_duration = cle.getSlowDuration();
+            //combatLogEntry.stun_duration = cle.getStunDuration();
+            //combatLogEntry.slow_duration = cle.getSlowDuration();
             //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
             if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_PURCHASE) {
                 combatLogEntry.valuename = cle.getValueName();

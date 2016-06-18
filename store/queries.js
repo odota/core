@@ -208,7 +208,7 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatch(cb)
     {
-        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE)
+        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !match.leagueid)
         {
             return cb();
         }
@@ -232,6 +232,10 @@ function insertMatch(db, redis, match, options, cb)
                         player_slot: pm.player_slot
                     }, cb);
                 }, exit);
+                //TODO create table for picks/bans
+                //TODO insert picks/bans
+                //TODO remove dota_unknown to save space
+                //TODO figure out whehter to store expanded or raw data
 
                 function exit(err)
                 {

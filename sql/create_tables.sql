@@ -199,8 +199,6 @@ CREATE TABLE match_logs (
   gold_reason int,
   xp_reason int,
   valuename varchar(100),
-  stun_duration real,
-  slow_duration real,
   gold int,
   lh int,
   xp int,
