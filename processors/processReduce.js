@@ -1,6 +1,5 @@
 /**
- * A processor to reduce the event stream by grouping similar events.
- * NOT CURRENTLY IN PRODUCTION USE
+ * A processor to reduce the event stream to only logs we want to persist
  **/
 function processReduce(entries, match, meta)
 {
@@ -39,12 +38,14 @@ function processReduce(entries, match, meta)
         delete e2.targetsourcename;
         return e2;
     });
+    /*
     var count = {};
     result.forEach(function(r)
     {
         count[r.type] = (count[r.type] || 0) + 1;
     });
     console.log(count);
+    */
     return result;
 }
 

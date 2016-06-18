@@ -449,7 +449,7 @@ function processExpand(entries, meta)
     //null means all types
     var reqs = {
         parsed_data: null,
-        expanded: null,
+        //expanded: null,
         tf_data:
         {
             killed: 1,
