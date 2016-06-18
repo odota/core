@@ -232,6 +232,8 @@ function insertMatch(db, redis, match, options, cb)
                         player_slot: pm.player_slot
                     }, cb);
                 }, exit);
+                //TODO create leagues table
+                //TODO create worker task to get leagues
                 //TODO create table for picks/bans
                 //TODO insert picks/bans
                 //TODO remove dota_unknown to save space

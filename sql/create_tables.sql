@@ -176,7 +176,7 @@ CREATE TABLE notable_players (
 );
 
 CREATE TABLE match_logs (
-  match_id bigint,
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
   time int,
   type varchar(100),
   team int,
