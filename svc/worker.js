@@ -124,6 +124,36 @@ invokeInterval(function notablePlayers(cb)
         }, cb);
     });
 }, 10 * 60 * 1000);
+invokeInterval(function leagues(cb)
+{
+    utility.getData('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/leagues.json', function(err, leagues)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        utility.getData('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.json', function(err, items)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var arr = [];
+            for (var key in leagues)
+            {
+                arr.push(
+                {
+                    leagueid: key,
+                    ticket: leagues[key].ticket,
+                    banner: leagues[key].banner,
+                    tier: leagues[key].tier,
+                    name: items.items_game.items[key].name
+                });
+            }
+            db('leagues').insert(arr).asCallback(cb);
+        });
+    });
+}, 10 * 60 * 1000);
 
 function invokeInterval(func, delay)
 {

@@ -221,3 +221,20 @@ CREATE INDEX ON match_logs(match_id, attackername_slot) WHERE attackername_slot 
 CREATE INDEX ON match_logs(match_id, targetname_slot) WHERE targetname_slot IS NOT NULL;
 CREATE INDEX ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS NOT NULL;
 CREATE INDEX ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
+
+CREATE TABLE picks_bans(
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
+  is_pick boolean,
+  hero_id int,
+  team smallint,
+  order smallint,
+  PRIMARY KEY (match_id, order)
+);
+
+CREATE TABLE leagues(
+  leagueid bigint PRIMARY KEY,
+  ticket varchar(255),
+  banner varchar(255),
+  tier varchar(255),
+  name varchar(255)
+)

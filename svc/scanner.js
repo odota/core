@@ -112,12 +112,7 @@ function start()
 
             function processMatch(match, cb)
             {
-                if (config.ENABLE_PRO_PARSING && match.leagueid)
-                {
-                    //parse tournament games
-                    match.parse_status = 0;
-                }
-                else if (match.players.some(function(p)
+                if (match.players.some(function(p)
                     {
                         return (p.account_id in trackedPlayers);
                     }))

@@ -191,6 +191,7 @@ function insertMatch(db, redis, match, options, cb)
     //we want to insert into matches, then insert into player_matches for each entry in players
     async.series(
     {
+        "ipm": isProMatch,
         "u": upsertMatch,
         "uc": upsertMatchCassandra,
         "uml": upsertMatchLogs,
@@ -206,23 +207,38 @@ function insertMatch(db, redis, match, options, cb)
         return cb(err, results.dp);
     });
 
+    function isProMatch(cb)
+    {
+        //TODO check redis/postgres for professional/premium league
+        match.isProMatch = match.leagueid >= 0;
+        cb();
+    }
+
     function upsertMatch(cb)
     {
-        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !match.leagueid)
+        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !match.isProMatch)
         {
             return cb();
         }
         db.transaction(function(trx)
         {
-            upsert(trx, 'matches', match,
+            async.series(
             {
-                match_id: match.match_id
-            }, function(err)
+                "im": insertMatch,
+                "ipm": insertPlayerMatches,
+                "ipb": insertPicksBans
+            }, exit);
+
+            function insertMatch(cb)
             {
-                if (err)
+                upsert(trx, 'matches', match,
                 {
-                    return exit(err);
-                }
+                    match_id: match.match_id
+                }, cb);
+            }
+
+            function insertPlayerMatches(cb)
+            {
                 async.each(players || [], function(pm, cb)
                 {
                     pm.match_id = match.match_id;
@@ -231,30 +247,37 @@ function insertMatch(db, redis, match, options, cb)
                         match_id: pm.match_id,
                         player_slot: pm.player_slot
                     }, cb);
-                }, exit);
-                //TODO create leagues table
-                //TODO create worker task to get leagues
-                //TODO create table for picks/bans
-                //TODO insert picks/bans
-                //TODO remove dota_unknown to save space
-                //TODO figure out whehter to store expanded or raw data
-/*
-"picks_bans":[{"is_pick":false,"hero_id":41,"team":1,"order":0},{"is_pick":false,"hero_id":38,"team":0,"order":1},{"is_pick":false,"hero_id":6,"team":1,"order":2},{"is_pick":false,"hero_id":62,"team":0,"order":3},{"is_pick":true,"hero_id":29,"team":1,"order":4},{"is_pick":true,"hero_id":20,"team":0,"order":5},{"is_pick":true,"hero_id":65,"team":0,"order":6},{"is_pick":true,"hero_id":87,"team":1,"order":7},{"is_pick":false,"hero_id":93,"team":0,"order":8},{"is_pick":false,"hero_id":74,"team":1,"order":9},{"is_pick":false,"hero_id":110,"team":0,"order":10},{"is_pick":false,"hero_id":54,"team":1,"order":11},{"is_pick":true,"hero_id":18,"team":0,"order":12},{"is_pick":true,"hero_id":107,"team":1,"order":13},{"is_pick":true,"hero_id":103,"team":0,"order":14},{"is_pick":true,"hero_id":49,"team":1,"order":15},{"is_pick":false,"hero_id":63,"team":0,"order":16},{"is_pick":false,"hero_id":98,"team":1,"order":17},{"is_pick":true,"hero_id":67,"team":1,"order":18},{"is_pick":true,"hero_id":8,"team":0,"order":19}]
-*/
-                function exit(err)
+                }, cb);
+            }
+
+            function insertPicksBans(cb)
+            {
+                async.each(match.picks_bans || [], function(p, cb)
                 {
-                    if (err)
+                    //order is a reserved keyword
+                    p.ord = p.order;
+                    p.match_id = match.match_id;
+                    upsert(trx, 'picks_bans', p,
                     {
-                        console.error(err);
-                        trx.rollback(err);
-                    }
-                    else
-                    {
-                        trx.commit();
-                    }
-                    cb(err);
+                        match_id: p.match_id,
+                        ord: p.ord
+                    }, cb);
+                }, cb);
+            }
+
+            function exit(err)
+            {
+                if (err)
+                {
+                    console.error(err);
+                    trx.rollback(err);
                 }
-            });
+                else
+                {
+                    trx.commit();
+                }
+                cb(err);
+            }
         });
     }
 
@@ -462,7 +485,7 @@ function insertMatch(db, redis, match, options, cb)
                 duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
-                leagueid: match.leagueid,
+                isProMatch: match.isProMatch,
             },
             {
                 lifo: options.lifo,
