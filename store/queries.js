@@ -209,9 +209,11 @@ function insertMatch(db, redis, match, options, cb)
 
     function isProMatch(cb)
     {
-        //TODO check redis/postgres for professional/premium league
-        match.isProMatch = match.leagueid >= 0;
-        cb();
+        redis.sismember('pro_leagueids', match.league_id, function(err, result)
+        {
+            match.isProMatch = Boolean(Number(result));
+            cb(err);
+        });
     }
 
     function upsertMatch(cb)

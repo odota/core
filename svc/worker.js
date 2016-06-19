@@ -126,31 +126,38 @@ invokeInterval(function notablePlayers(cb)
 }, 10 * 60 * 1000);
 invokeInterval(function leagues(cb)
 {
-    utility.getData('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/leagues.json', function(err, leagues)
+    var container = utility.generateJob("api_leagues",
+    {});
+    utility.getData(container.url, function(err, api_leagues)
     {
         if (err)
         {
             return cb(err);
         }
-        utility.getData('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.json', function(err, items)
+        utility.getData('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/leagues.json', function(err, leagues)
         {
             if (err)
             {
                 return cb(err);
             }
-            var arr = [];
-            for (var key in leagues)
+            async.each(api_leagues.result.leagues, function(l, cb)
             {
-                arr.push(
+                if (leagues[l.leagueid])
                 {
-                    leagueid: key,
-                    ticket: leagues[key].ticket,
-                    banner: leagues[key].banner,
-                    tier: leagues[key].tier,
-                    name: items.items_game.items[key].name
-                });
-            }
-            db('leagues').insert(arr).asCallback(cb);
+                    l.tier = leagues[l.leagueid].tier;
+                    l.ticket = leagues[l.leagueid].ticket;
+                    l.banner = leagues[l.leagueid].banner;
+                }
+                l.name = l.description.substring("#DOTA_Item_Desc_".length).split('_').join(' ');
+                if (l.tier === "professional" || l.tier === "premium")
+                {
+                    redis.sadd('pro_leagueids', l.leagueid);
+                }
+                queries.upsert(db, 'leagues', l,
+                {
+                    leagueid: l.league_id
+                }, cb);
+            }, cb);
         });
     });
 }, 10 * 60 * 1000);

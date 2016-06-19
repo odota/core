@@ -227,8 +227,8 @@ CREATE TABLE picks_bans(
   is_pick boolean,
   hero_id int,
   team smallint,
-  order smallint,
-  PRIMARY KEY (match_id, order)
+  ord smallint,
+  PRIMARY KEY (match_id, ord)
 );
 
 CREATE TABLE leagues(
