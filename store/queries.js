@@ -191,7 +191,7 @@ function insertMatch(db, redis, match, options, cb)
     //we want to insert into matches, then insert into player_matches for each entry in players
     async.series(
     {
-        "ipm": isProMatch,
+        "dlp": decideLogParse,
         "u": upsertMatch,
         "uc": upsertMatchCassandra,
         "upc": updatePlayerCaches,
@@ -205,14 +205,14 @@ function insertMatch(db, redis, match, options, cb)
     {
         return cb(err, results.dp);
     });
-
-    function isProMatch(cb)
+    
+    function decideLogParse(cb)
     {
         if (match.leagueid)
         {
             redis.sismember('pro_leagueids', match.leagueid, function(err, result)
             {
-                match.isProMatch = Boolean(Number(result));
+                options.doLogParse = options.doLogParse || Boolean(Number(result));
                 cb(err);
             });
         }
@@ -224,7 +224,7 @@ function insertMatch(db, redis, match, options, cb)
 
     function upsertMatch(cb)
     {
-        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !match.isProMatch)
+        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !options.doLogParse)
         {
             return cb();
         }
@@ -458,9 +458,10 @@ function insertMatch(db, redis, match, options, cb)
         }, cb);
     }
 
+
     function decideParse(cb)
     {
-        if (match.parse_status !== 0)
+        if (options.skipParse)
         {
             //not parsing this match
             //this isn't a error, although we want to report that we refused to parse back to user if it was a request
@@ -477,7 +478,7 @@ function insertMatch(db, redis, match, options, cb)
                 duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
-                isProMatch: match.isProMatch,
+                doLogParse: options.doLogParse,
             },
             {
                 lifo: options.lifo,

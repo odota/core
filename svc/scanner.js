@@ -112,21 +112,22 @@ function start()
 
             function processMatch(match, cb)
             {
+                var insert = false;
+                var skipParse = true;
                 if (match.players.some(function(p)
                     {
                         return (p.account_id in trackedPlayers);
                     }))
                 {
-                    //queued
-                    match.parse_status = 0;
+                    insert = true;
+                    skipParse = false;
                 }
                 else if (match.players.some(function(p)
                     {
                         return (config.ENABLE_INSERT_ALL_MATCHES || p.account_id in userPlayers);
                     }))
                 {
-                    //skipped
-                    match.parse_status = 3;
+                    insert = true;
                 }
                 //check if match was previously processed
                 redis.get('scanner_insert:' + match.match_id, function(err, result)
@@ -137,7 +138,7 @@ function start()
                     }
                     //don't insert this match if we already processed it recently
                     //deduplicate matches in this page set
-                    if ((match.parse_status === 0 || match.parse_status === 3) && !result && !matchBuffer[match.match_id])
+                    if (insert && !result && !matchBuffer[match.match_id])
                     {
                         matchBuffer[match.match_id] = 1;
                         insertMatch(db, redis, match,
@@ -146,6 +147,7 @@ function start()
                             origin: "scanner",
                             cassandra: cassandra,
                             userPlayers: userPlayers,
+                            skipParse: skipParse,
                         }, function(err)
                         {
                             if (!err)

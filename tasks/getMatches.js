@@ -28,11 +28,11 @@ getData(
     if (body.result)
     {
         var match = body.result;
-        match.parse_status = 0;
         insertMatch(db, redis, match,
         {
             skipCounts: true,
             skipAbilityUpgrades: true,
+            skipParse: false,
             cassandra: cassandra,
         }, function(err)
         {

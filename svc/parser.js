@@ -91,7 +91,6 @@ pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
                 parsed_data.start_time = match.start_time;
                 parsed_data.duration = match.duration;
                 parsed_data.replay_blob_key = match.replay_blob_key;
-                parsed_data.parse_status = 2;
                 if (match.replay_blob_key)
                 {
                     insertUploadedParse(parsed_data, cb);
@@ -267,7 +266,7 @@ function runParse(match, job, cb)
                 var message = "time spent on post-processing match ";
                 console.time(message);
                 var meta = processMetadata(entries);
-                var logs = match.isProMatch ? processReduce(entries, match, meta) : undefined;
+                var logs = match.doLogParse ? processReduce(entries, match, meta) : undefined;
                 var res = processExpand(entries, meta);
                 var parsed_data = processParsedData(res.parsed_data);
                 var teamfights = processTeamfights(res.tf_data, meta);
