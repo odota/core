@@ -157,6 +157,7 @@ function insertStandardParse(match, cb)
     {
         type: "parsed",
         cassandra: cassandra,
+        skipParse: true,
     }, cb);
 }
 
