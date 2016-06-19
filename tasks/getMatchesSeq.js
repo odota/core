@@ -86,6 +86,7 @@ function getPage(match_seq_num, bucket)
                 {
                     skipCounts: true,
                     skipAbilityUpgrades: true,
+                    skipParse: true,
                     cassandra: cassandra,
                 }, cb);
             }, function(err)
