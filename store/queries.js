@@ -194,7 +194,6 @@ function insertMatch(db, redis, match, options, cb)
         "ipm": isProMatch,
         "u": upsertMatch,
         "uc": upsertMatchCassandra,
-        "uml": upsertMatchLogs,
         "upc": updatePlayerCaches,
         "uct": updateCounts,
         "cmc": clearMatchCache,
@@ -233,12 +232,13 @@ function insertMatch(db, redis, match, options, cb)
         {
             async.series(
             {
-                "im": insertMatch,
-                "ipm": insertPlayerMatches,
-                "ipb": insertPicksBans
+                "m": upsertMatch,
+                "pm": upsertPlayerMatches,
+                "pb": upsertPicksBans,
+                "l": upsertMatchLogs,
             }, exit);
 
-            function insertMatch(cb)
+            function upsertMatch(cb)
             {
                 upsert(trx, 'matches', match,
                 {
@@ -246,7 +246,7 @@ function insertMatch(db, redis, match, options, cb)
                 }, cb);
             }
 
-            function insertPlayerMatches(cb)
+            function upsertPlayerMatches(cb)
             {
                 async.each(players || [], function(pm, cb)
                 {
@@ -259,7 +259,7 @@ function insertMatch(db, redis, match, options, cb)
                 }, cb);
             }
 
-            function insertPicksBans(cb)
+            function upsertPicksBans(cb)
             {
                 async.each(match.picks_bans || [], function(p, cb)
                 {
@@ -272,6 +272,28 @@ function insertMatch(db, redis, match, options, cb)
                         ord: p.ord
                     }, cb);
                 }, cb);
+            }
+
+            function upsertMatchLogs(cb)
+            {
+                if (!match.logs)
+                {
+                    return cb();
+                }
+                else
+                {
+                    trx.raw(`DELETE FROM match_logs WHERE match_id = ?`, [match.match_id]).asCallback(function(err)
+                    {
+                        if (err)
+                        {
+                            return exit(err);
+                        }
+                        async.eachLimit(match.logs, 100, function(e, cb)
+                        {
+                            trx('match_logs').insert(e).asCallback(cb);
+                        }, cb);
+                    });
+                }
             }
 
             function exit(err)
@@ -349,45 +371,6 @@ function insertMatch(db, redis, match, options, cb)
                 }, cb);
             });
         });
-    }
-
-    function upsertMatchLogs(cb)
-    {
-        if (!match.logs)
-        {
-            return cb();
-        }
-        else
-        {
-            db.transaction(function(trx)
-            {
-                trx.raw(`DELETE FROM match_logs where match_id = ?`, [match.match_id]).asCallback(function(err)
-                {
-                    if (err)
-                    {
-                        return exit(err);
-                    }
-                    async.eachLimit(match.logs, 10000, function(e, cb)
-                    {
-                        trx('match_logs').insert(e).asCallback(cb);
-                    }, exit);
-                });
-
-                function exit(err)
-                {
-                    if (err)
-                    {
-                        console.error(err);
-                        trx.rollback(err);
-                    }
-                    else
-                    {
-                        trx.commit();
-                    }
-                    cb(err);
-                }
-            });
-        }
     }
 
     function updatePlayerCaches(cb)
