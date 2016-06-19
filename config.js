@@ -54,7 +54,6 @@ var defaults = {
     "UI_HOST": "", //The host of the UI, redirect traffic from / and /return here
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
-    "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches (Redis)
     "ENABLE_PLAYER_CACHE": "", // set to enable caching players (Cassandra)
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches

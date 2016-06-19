@@ -209,11 +209,18 @@ function insertMatch(db, redis, match, options, cb)
 
     function isProMatch(cb)
     {
-        redis.sismember('pro_leagueids', match.league_id, function(err, result)
+        if (match.leagueid)
         {
-            match.isProMatch = Boolean(Number(result));
-            cb(err);
-        });
+            redis.sismember('pro_leagueids', match.leagueid, function(err, result)
+            {
+                match.isProMatch = Boolean(Number(result));
+                cb(err);
+            });
+        }
+        else
+        {
+            cb();
+        }
     }
 
     function upsertMatch(cb)
