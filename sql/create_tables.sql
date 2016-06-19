@@ -39,6 +39,7 @@ CREATE TABLE matches (
   teamfights json[],
   version integer
   );
+CREATE INDEX on matches(leagueid) WHERE leagueid > 0;
 
 CREATE TABLE player_matches (
   PRIMARY KEY(match_id, player_slot),

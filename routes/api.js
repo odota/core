@@ -136,7 +136,25 @@ module.exports = function(db, redis, cassandra)
     */
     api.get('/match_logs/:match_id', function(req, res, cb)
     {
-        db.raw(`SELECT * FROM match_logs WHERE match_id = ? ORDER BY time asc`, [req.params.match_id]).asCallback(function(err, result)
+        db.raw(`SELECT * FROM match_logs WHERE match_id = ? ORDER BY time ASC`, [req.params.match_id]).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result.rows);
+        });
+    });
+    api.get('/pro_matches', function(req, res, cb)
+    {
+        db.raw(`
+        SELECT match_id, start_time, duration, ma.leagueid, name
+        FROM matches ma
+        JOIN leagues le
+        ON ma.leagueid = le.leagueid
+        WHERE ma.leagueid > 0
+        ORDER BY match_id DESC
+        `).asCallback(function(err, result)
         {
             if (err)
             {
