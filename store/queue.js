@@ -6,6 +6,7 @@ var config = require('../config');
 var bull = require('bull');
 var url = require('url');
 var async = require('async');
+var types = ["request", "mmr", "parse", "cache", "fullhistory"];
 // parse the url
 var conn_info = url.parse(config.REDIS_URL, true /* parse query string */ );
 if (conn_info.protocol !== 'redis:')
@@ -50,7 +51,6 @@ function addToQueue(queue, payload, options, cb)
 
 function getCounts(redis, cb)
 {
-    var types = ["request", "mmr", "parse", "cache"];
     async.map(types, getQueueCounts, function(err, result)
     {
         var obj = {};
@@ -91,7 +91,6 @@ function getCounts(redis, cb)
 
 function cleanup(redis, cb)
 {
-    var types = ["request", "mmr", "parse", "cache"];
     async.each(types, function(key, cb)
     {
         var queue = getQueue(key);
