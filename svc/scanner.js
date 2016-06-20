@@ -13,7 +13,6 @@ var getData = utility.getData;
 var generateJob = utility.generateJob;
 var async = require('async');
 var trackedPlayers;
-var userPlayers;
 var parallelism = config.SCANNER_PARALLELISM;
 var PAGE_SIZE = 100;
 buildSets(db, redis, function(err)
@@ -72,7 +71,6 @@ function start()
             }
             //set local vars
             trackedPlayers = result.trackedPlayers;
-            userPlayers = result.userPlayers;
             var arr = [];
             var matchBuffer = {};
             var completePages = {};
@@ -122,10 +120,7 @@ function start()
                     insert = true;
                     skipParse = false;
                 }
-                else if (match.players.some(function(p)
-                    {
-                        return (config.ENABLE_INSERT_ALL_MATCHES || p.account_id in userPlayers);
-                    }))
+                else if (config.ENABLE_INSERT_ALL_MATCHES)
                 {
                     insert = true;
                 }
@@ -146,7 +141,6 @@ function start()
                             type: "api",
                             origin: "scanner",
                             cassandra: cassandra,
-                            userPlayers: userPlayers,
                             skipParse: skipParse,
                         }, function(err)
                         {

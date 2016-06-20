@@ -32,13 +32,6 @@ function getSets(redis, cb)
                 cb(err, JSON.parse(tps || "{}"));
             });
         },
-        "userPlayers": function(cb)
-        {
-            redis.get("userPlayers", function(err, ups)
-            {
-                cb(err, JSON.parse(ups || "{}"));
-            });
-        },
         "donators": function(cb)
         {
             redis.get("donators", function(err, ds)
@@ -426,7 +419,7 @@ function insertMatch(db, redis, match, options, cb)
     {
         async.each(match.players, function(p, cb)
         {
-            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id && p.account_id !== constants.anonymous_account_id && (p.account_id in options.userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 3 === 0)))
+            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id && p.account_id !== constants.anonymous_account_id && config.ENABLE_RANDOM_MMR_UPDATE)
             {
                 addToQueue(mQueue,
                 {
