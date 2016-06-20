@@ -248,7 +248,7 @@ function updateMatchRating(match, cb)
                 {
                     //push into list, limit elements
                     redis.lpush('mmr_estimates:' + player.account_id, avg);
-                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 19);
+                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 14);
                 }
             });
             cb();
