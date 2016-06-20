@@ -9,6 +9,10 @@ function processReduce(entries, match, meta)
         {
             return false;
         }
+        if (e.type === "DOTA_COMBATLOG_MODIFIER_REMOVE")
+        {
+            return false;
+        }
         if (e.type === "interval" && e.time % 60 !== 0)
         {
             return false;

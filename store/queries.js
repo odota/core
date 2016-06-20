@@ -279,9 +279,9 @@ function insertMatch(db, redis, match, options, cb)
                     {
                         if (err)
                         {
-                            return exit(err);
+                            return cb(err);
                         }
-                        async.eachLimit(match.logs, 100, function(e, cb)
+                        async.eachLimit(match.logs, 10000, function(e, cb)
                         {
                             trx('match_logs').insert(e).asCallback(cb);
                         }, cb);
