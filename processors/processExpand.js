@@ -425,24 +425,30 @@ function processExpand(entries, meta)
         },
         "obs": function(e)
         {
-            //key is a JSON array of position data
-            e.key = JSON.parse(e.key);
-            e.posData = true;
-            expand(e);
             var e2 = JSON.parse(JSON.stringify(e));
-            e2.posData = false;
             e2.type = "obs_log";
             expand(e2);
+            var e4 = JSON.parse(JSON.stringify(e));
+            e4.type = "log";
+            expand(e4);
+            var e3 = JSON.parse(JSON.stringify(e));
+            //key is a JSON array of position data
+            e3.key = JSON.parse(e3.key);
+            e3.posData = true;
+            expand(e3);
         },
         "sen": function(e)
         {
-            e.key = JSON.parse(e.key);
-            e.posData = true;
-            expand(e);
             var e2 = JSON.parse(JSON.stringify(e));
-            e2.posData = false;
             e2.type = "sen_log";
             expand(e2);
+            var e4 = JSON.parse(JSON.stringify(e));
+            e4.type = "log";
+            expand(e4);
+            var e3 = JSON.parse(JSON.stringify(e));
+            e3.key = JSON.parse(e3.key);
+            e3.posData = true;
+            expand(e3);
         }
     };
     //define the types we want to put into each array

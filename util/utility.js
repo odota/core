@@ -357,6 +357,7 @@ function getParseSchema()
         "teamfights": [],
         "objectives": [],
         "chat": [],
+        "log": [],
         "radiant_gold_adv": [],
         "radiant_xp_adv": [],
         "players": Array.apply(null, new Array(10)).map(function()

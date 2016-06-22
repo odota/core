@@ -37,7 +37,8 @@ CREATE TABLE matches (
   radiant_gold_adv integer[],
   radiant_xp_adv integer[],
   teamfights json[],
-  version integer
+  version integer,
+  log json[]
   );
 
 CREATE TABLE player_matches (
