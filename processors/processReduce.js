@@ -13,6 +13,13 @@ function processReduce(entries, match, meta)
         {
             return false;
         }
+        if (e.type === "DOTA_COMBATLOG_DAMAGE" || e.type === "DOTA_COMBATLOG_MODIFIER_ADD" || e.type === "DOTA_COMBATLOG_HEAL")
+        {
+            if (!e.targethero || e.targetillusion)
+            {
+                return false;
+            }
+        }
         if (e.type === "interval" && e.time % 60 !== 0)
         {
             return false;
