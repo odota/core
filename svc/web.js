@@ -136,13 +136,18 @@ app.use(function telemetry(req, res, cb)
     res.once('finish', function()
     {
         var timeEnd = new Date();
+        var elapsed = timeEnd - timeStart;
+        if (elapsed > 1000)
+        {
+            console.log("[SLOWLOG] %s, %s", req.path, elapsed);
+        }
         /*
         var obj = JSON.stringify({
             path: req.path,
             time: timeEnd - timeStart
         };
         */
-        redis.lpush("load_times", timeEnd - timeStart);
+        redis.lpush("load_times", elapsed);
         redis.ltrim("load_times", 0, 9999);
     });
     cb();
