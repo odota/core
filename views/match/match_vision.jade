@@ -14,7 +14,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire", data-index=ind, data-type="obs").activate
             +hero_td(player)
             td.rankable.lane-position #{player.purchase_ward_observer || "-"}
-            td.rankable.lane-position #{player.obs_log && player.obs_log.length ? player.obs_log.length : "-"}
+            td.rankable.lane-position #{player.obs_log && player.obs_log.length ? player.obs_log.filter(function(l){return !l.entityleft;}).length : "-"}
             td.rankable.lane-position #{player.observer_kills || "-"}
     
     .col-md-4
@@ -29,7 +29,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire", data-index=ind, data-type="sen").activate
             +hero_td(player)
             td.rankable.lane-position #{player.purchase_ward_sentry || "-"}
-            td.rankable.lane-position #{player.sen_log && player.sen_log.length ? player.sen_log.length : "-"}
+            td.rankable.lane-position #{player.sen_log && player.sen_log.length ? player.sen_log.filter(function(l){return !l.entityleft;}).length : "-"}
             td.rankable.lane-position #{player.sentry_kills || "-"}
         
     .col-md-4

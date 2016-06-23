@@ -91,7 +91,6 @@ pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
                 parsed_data.start_time = match.start_time;
                 parsed_data.duration = match.duration;
                 parsed_data.replay_blob_key = match.replay_blob_key;
-                parsed_data.parse_status = 2;
                 if (match.replay_blob_key)
                 {
                     insertUploadedParse(parsed_data, cb);
@@ -158,6 +157,7 @@ function insertStandardParse(match, cb)
     {
         type: "parsed",
         cassandra: cassandra,
+        skipParse: true,
     }, cb);
 }
 
@@ -245,7 +245,7 @@ function runParse(match, job, cb)
         }
         entries.push(e);
     });
-    request.debug = true
+    request.debug = true;
 
     function exit(err)
     {
@@ -267,6 +267,7 @@ function runParse(match, job, cb)
                 var message = "time spent on post-processing match ";
                 console.time(message);
                 var meta = processMetadata(entries);
+                var logs = processReduce(entries, match, meta);
                 var res = processExpand(entries, meta);
                 var parsed_data = processParsedData(res.parsed_data);
                 var teamfights = processTeamfights(res.tf_data, meta);
@@ -276,8 +277,8 @@ function runParse(match, job, cb)
                 parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
                 parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
                 parsed_data.upload = upload;
+                parsed_data.logs = logs;
                 //processMultiKillStreaks();
-                //processReduce(res.expanded);
                 console.timeEnd(message);
                 return cb(err, parsed_data);
             }
