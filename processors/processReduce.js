@@ -3,6 +3,11 @@
  **/
 function processReduce(entries, match, meta)
 {
+    //for now, disable log parsing for regular matches
+    if (!match.doLogParse)
+    {
+        return;
+    }
     var basicLogTypes = {
         "obs": 1,
         "sen": 1,
