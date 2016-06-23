@@ -90,6 +90,7 @@ function processFullHistory(job, cb)
                         type: "api",
                         cassandra: cassandra,
                         skipAbilityUpgrades: true,
+                        skipParse: true,
                     }, cb);
                 });
             }, function(err)

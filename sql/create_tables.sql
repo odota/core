@@ -39,6 +39,7 @@ CREATE TABLE matches (
   teamfights json[],
   version integer
   );
+CREATE INDEX on matches(leagueid) WHERE leagueid > 0;
 
 CREATE TABLE player_matches (
   PRIMARY KEY(match_id, player_slot),
@@ -174,3 +175,67 @@ CREATE TABLE notable_players (
   is_pro boolean,
   locked_until integer
 );
+
+CREATE TABLE match_logs (
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
+  time int,
+  type varchar(100),
+  team smallint,
+  unit varchar(100),
+  key varchar(1000),
+  value int,
+  slot smallint,
+  player_slot smallint,
+  player1 int,
+  player2 int,
+  attackerhero boolean,
+  targethero boolean,
+  attackerillusion boolean,
+  targetillusion boolean,
+  inflictor varchar(100),
+  gold_reason smallint,
+  xp_reason smallint,
+  valuename varchar(100),
+  gold int,
+  lh int,
+  xp int,
+  x smallint,
+  y smallint,
+  stuns real,
+  hero_id smallint,
+  life_state smallint,
+  level smallint,
+  kills smallint,
+  deaths smallint,
+  assists smallint,
+  denies smallint,
+  attackername_slot smallint,
+  targetname_slot smallint,
+  sourcename_slot smallint,
+  targetsourcename_slot smallint,
+  player1_slot smallint
+);
+CREATE INDEX ON match_logs(match_id);
+CREATE INDEX ON match_logs(match_id, player_slot) WHERE player_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, player1_slot) WHERE player1_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, attackername_slot) WHERE attackername_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, targetname_slot) WHERE targetname_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
+
+CREATE TABLE picks_bans(
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
+  is_pick boolean,
+  hero_id int,
+  team smallint,
+  ord smallint,
+  PRIMARY KEY (match_id, ord)
+);
+
+CREATE TABLE leagues(
+  leagueid bigint PRIMARY KEY,
+  ticket varchar(255),
+  banner varchar(255),
+  tier varchar(255),
+  name varchar(255)
+)
