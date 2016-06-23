@@ -428,9 +428,6 @@ function processExpand(entries, meta)
             var e2 = JSON.parse(JSON.stringify(e));
             e2.type = "obs_log";
             expand(e2);
-            var e4 = JSON.parse(JSON.stringify(e));
-            e4.type = "log";
-            expand(e4);
             var e3 = JSON.parse(JSON.stringify(e));
             //key is a JSON array of position data
             e3.key = JSON.parse(e3.key);
@@ -442,14 +439,11 @@ function processExpand(entries, meta)
             var e2 = JSON.parse(JSON.stringify(e));
             e2.type = "sen_log";
             expand(e2);
-            var e4 = JSON.parse(JSON.stringify(e));
-            e4.type = "log";
-            expand(e4);
             var e3 = JSON.parse(JSON.stringify(e));
             e3.key = JSON.parse(e3.key);
             e3.posData = true;
             expand(e3);
-        }
+        },
     };
     //define the types we want to put into each array
     //null means all types

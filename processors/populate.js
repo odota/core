@@ -7,9 +7,6 @@ function populate(e, container)
         case 'player_slot':
             container.players[e.key].player_slot = e.value;
             break;
-        case 'log':
-            container.log.push(JSON.parse(JSON.stringify(e)));
-            break;
         case 'chat':
             container.chat.push(JSON.parse(JSON.stringify(e)));
             break;
@@ -92,5 +89,4 @@ function populate(e, container)
             break;
     }
 }
-
 module.exports = populate;

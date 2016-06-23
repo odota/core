@@ -455,7 +455,14 @@ public class Main {
             entry.x = x;
             entry.y = y;
             entry.z = z;
-            entry.type = isObserver ? "obs" : "sen";
+            if (entityLeft)
+            {
+                entry.type = isObserver ? "obs_left" : "sen_left";
+            }
+            else
+            {
+                entry.type = isObserver ? "obs" : "sen";
+            }
             entry.key = Arrays.toString(pos);
             entry.entityleft = entityLeft;
             entry.ehandle = e.getHandle();

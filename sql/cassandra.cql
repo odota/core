@@ -25,8 +25,7 @@ CREATE TABLE matches (
   radiant_gold_adv text,
   radiant_xp_adv text,
   teamfights text,
-  version int,
-  log text,
+  version int
 );
 
 CREATE TABLE player_matches (
