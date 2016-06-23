@@ -9,8 +9,6 @@ block match_content
             tr
               th: abbr(title=tooltips.hero_id) Hero
               th: abbr(title=tooltips.lane) Lane
-              //th: abbr(title=tooltips.used_ward_observer) Observer
-              //th: abbr(title=tooltips.used_ward_sentry) Sentry
               th: abbr(title=tooltips.lane_efficiency) EFF@10
               th: abbr(title=tooltips.lhten) LH@10
               th: abbr(title=tooltips.stuns) Stuns
@@ -19,8 +17,6 @@ block match_content
           tr.activate(data-index=i, data-type="lane_pos", class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             td #{constants.lane_ids[player.lane] || "-"} (#{constants.lane_role[player.lane_role] || "-"})
-            //td.activate(data-index=i, data-type="obs") #{player.obs_log.length || "-"}
-            //td.activate(data-index=i, data-type="sen") #{player.sen_log.length || "-"}
             td.rankable #{(Number(player.lane_efficiency)*100).toFixed(2)}
             td.rankable #{player.lh_t && player.lh_t[10] ? player.lh_t[10] : "-"}
             td.rankable #{Number(Math.max(player.stuns, 0)).toFixed(2)}

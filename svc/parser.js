@@ -245,7 +245,7 @@ function runParse(match, job, cb)
         }
         entries.push(e);
     });
-    request.debug = true
+    request.debug = true;
 
     function exit(err)
     {
@@ -267,7 +267,7 @@ function runParse(match, job, cb)
                 var message = "time spent on post-processing match ";
                 console.time(message);
                 var meta = processMetadata(entries);
-                var logs = match.doLogParse ? processReduce(entries, match, meta) : undefined;
+                var logs = processReduce(entries, match, meta);
                 var res = processExpand(entries, meta);
                 var parsed_data = processParsedData(res.parsed_data);
                 var teamfights = processTeamfights(res.tf_data, meta);

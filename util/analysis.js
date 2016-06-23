@@ -4,6 +4,7 @@
  **/
 var util = require('util');
 var constants = require('../constants.js');
+
 function generatePlayerAnalysis(match, pm)
 {
     //define condition check for each advice point
@@ -150,7 +151,8 @@ function generatePlayerAnalysis(match, pm)
         {
             var flying_available = 180;
             var time;
-            if (pm.purchase && pm.first_purchase_time && pm.first_purchase_time.flying_courier) {
+            if (pm.purchase && pm.first_purchase_time && pm.first_purchase_time.flying_courier)
+            {
                 time = pm.first_purchase_time.flying_courier;
             }
             return {
@@ -172,7 +174,7 @@ function generatePlayerAnalysis(match, pm)
         wards: function(m, pm)
         {
             var ward_cooldown = 60 * 7;
-            var wards = pm.obs_log ? pm.obs_log.length : 0;
+            var wards = getObsWardsPlaced(pm);
             //divide game length by ward cooldown
             //2 wards respawn every interval
             //split responsibility between 2 supports
@@ -304,7 +306,19 @@ function generatePlayerAnalysis(match, pm)
 
     function isSupport(pm)
     {
-        return pm.obs_log && pm.obs_log.length >= 2 && pm.lh_t && pm.lh_t[10] < 20;
+        return getObsWardsPlaced(pm) >= 2 && pm.lh_t && pm.lh_t[10] < 20;
+    }
+
+    function getObsWardsPlaced(pm)
+    {
+        if (!pm.obs_log)
+        {
+            return 0;
+        }
+        return pm.obs_log.filter(function(l)
+        {
+            return !l.entityleft;
+        }).length;
     }
 
     function isRoshHero(pm)
