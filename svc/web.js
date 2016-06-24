@@ -98,7 +98,7 @@ app.use(function rateLimit(req, res, cb)
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || "";
     ip = ip.replace(/^.*:/, '').split(',')[0];
     var key = 'rate_limit:' + ip;
-    console.log("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
+    console.log("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.originalUrl, ip);
     redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
     {
         if (err)
@@ -121,13 +121,9 @@ app.use(function rateLimit(req, res, cb)
 app.use(function telemetry(req, res, cb)
 {
     var timeStart = new Date();
-    if (req.path.indexOf('/names') === 0)
+    if (req.originalUrl.indexOf('/api') === 0)
     {
-        redis.zadd("alias_hits", moment().format('X'), moment().valueOf() + req.path);
-    }
-    if (req.path.indexOf('/api') === 0)
-    {
-        redis.zadd("api_hits", moment().format('X'), moment().valueOf() + req.path);
+        redis.zadd("api_hits", moment().format('X'), req.originalUrl);
     }
     if (req.user)
     {
@@ -139,14 +135,8 @@ app.use(function telemetry(req, res, cb)
         var elapsed = timeEnd - timeStart;
         if (elapsed > 1000)
         {
-            console.log("[SLOWLOG] %s, %s", req.path, elapsed);
+            console.log("[SLOWLOG] %s, %s", req.originalUrl, elapsed);
         }
-        /*
-        var obj = JSON.stringify({
-            path: req.path,
-            time: timeEnd - timeStart
-        };
-        */
         redis.lpush("load_times", elapsed);
         redis.ltrim("load_times", 0, 9999);
     });
@@ -404,7 +394,7 @@ app.use(function(err, req, res, next)
 {
     res.status(err.status || 500);
     console.log(err);
-    redis.zadd("error_500", moment().format('X'), req.path);
+    redis.zadd("error_500", moment().format('X'), req.originalUrl);
     if (config.NODE_ENV !== "development")
     {
         return res.render('error/' + (err.status === 404 ? '404' : '500'),
