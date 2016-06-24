@@ -198,7 +198,7 @@ function insertMatch(db, redis, match, options, cb)
     {
         return cb(err, results.dp);
     });
-    
+
     function decideLogParse(cb)
     {
         if (match.leagueid)
@@ -450,7 +450,6 @@ function insertMatch(db, redis, match, options, cb)
             cb();
         }, cb);
     }
-
 
     function decideParse(cb)
     {
@@ -725,7 +724,7 @@ function expectedWin(rates)
     return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
 }
 
-function getTop(db, redis, cb)
+function getProPlayers(db, redis, cb)
 {
     db.raw(`
     SELECT * from notable_players
@@ -735,14 +734,7 @@ function getTop(db, redis, cb)
         {
             return cb(err);
         }
-        getLeaderboard(db, redis, 'solo_competitive_rank', 500, function(err, result2)
-        {
-            return cb(err,
-            {
-                notables: result.rows,
-                leaderboard: result2
-            });
-        });
+        return cb(err, result.rows);
     });
 }
 
@@ -964,7 +956,7 @@ module.exports = {
     insertMatchSkill,
     getDistributions,
     getPicks,
-    getTop,
+    getProPlayers,
     getHeroRankings,
     getBenchmarks,
     benchmarkMatch,

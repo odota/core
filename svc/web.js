@@ -288,17 +288,6 @@ app.get('/picks/:n?', function(req, res, cb)
         });
     });
 });
-app.get('/top', function(req, res, cb)
-{
-    queries.getTop(db, redis, function(err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        res.render('top', result);
-    });
-});
 app.get('/rankings/:hero_id?', function(req, res, cb)
 {
     if (!req.params.hero_id)
@@ -388,6 +377,7 @@ app.use(function(req, res, next)
 {
     if (config.UI_HOST)
     {
+        //route not found, redirect to SPA
         return res.redirect(config.UI_HOST + req.url);
     }
     var err = new Error("Not Found");
