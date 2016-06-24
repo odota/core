@@ -226,7 +226,8 @@ function processExpand(entries, meta)
             //multikill
             e.unit = e.attackername;
             //add the "minimum value", as of 2016-02-06
-            e.key = e.value + 2;
+            //remove the "minimum value", as of 2016-06-23
+            e.key = e.value;
             e.value = 1;
             e.type = "multi_kills";
             expand(e);
@@ -236,7 +237,8 @@ function processExpand(entries, meta)
             //killstreak
             e.unit = e.attackername;
             //add the "minimum value", as of 2016-02-06
-            e.key = e.value + 3;
+            //remove the "minimum value", as of 2016-06-23
+            e.key = e.value;
             e.value = 1;
             e.type = "kill_streaks";
             expand(e);
