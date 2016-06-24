@@ -10,6 +10,7 @@ import skadistats.clarity.model.FieldPath;
 import skadistats.clarity.model.s1.GameRulesStateType;
 import skadistats.clarity.processor.entities.Entities;
 import skadistats.clarity.processor.entities.OnEntityEntered;
+import skadistats.clarity.processor.entities.OnEntityLeft;
 import skadistats.clarity.processor.entities.UsesEntities;
 import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
@@ -78,6 +79,7 @@ public class Main {
         public Integer xp;
         public Integer x;
         public Integer y;
+        public Integer z;
         public Float stuns;
         public Integer hero_id;
         public Integer life_state;
@@ -87,7 +89,9 @@ public class Main {
         public Integer assists;
         public Integer denies;
         //public Boolean hasPredictedVictory;
-    
+        public Boolean entityleft;
+        public Integer ehandle;
+        
         public Entry() {
         }
         
@@ -255,28 +259,12 @@ public class Main {
 
     @OnEntityEntered
     public void onEntityEntered(Context ctx, Entity e) {
-        //CDOTA_NPC_Observer_Ward
-        //CDOTA_NPC_Observer_Ward_TrueSight
-        //s1 "DT_DOTA_NPC_Observer_Ward"
-        //s1 "DT_DOTA_NPC_Observer_Ward_TrueSight"
-        boolean isObserver = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward");
-        boolean isSentry = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward_TrueSight");
-        if (isObserver || isSentry) {
-            //System.err.println(e);
-            Entry entry = new Entry(time);
-            Integer x = getEntityProperty(e, "CBodyComponent.m_cellX", null);
-            Integer y = getEntityProperty(e, "CBodyComponent.m_cellY", null);
-            Integer[] pos = {x, y};
-            entry.type = isObserver ? "obs" : "sen";
-            entry.key = Arrays.toString(pos);
-            //System.err.println(entry.key);
-            Integer owner = getEntityProperty(e, "m_hOwnerEntity", null);
-            Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-            entry.slot = ownerEntity != null ? (Integer) getEntityProperty(ownerEntity, "m_iPlayerID", null) : null;
-            //2/3 radiant/dire
-            //entry.team = e.getProperty("m_iTeamNum");
-            output(entry);
-        }
+        processWardEntity(ctx, e, false);
+    }
+    
+    @OnEntityLeft
+    public void onEntityLeft(Context ctx, Entity e) {
+        processWardEntity(ctx, e, true);
     }
 
     @UsesEntities
@@ -447,6 +435,45 @@ public class Main {
         }
         FieldPath fp = e.getDtClass().getFieldPathForName(property);
         return e.getPropertyForFieldPath(fp);
+    }
+    
+    public void processWardEntity(Context ctx, Entity e, boolean entityLeft)
+    {
+        //CDOTA_NPC_Observer_Ward
+        //CDOTA_NPC_Observer_Ward_TrueSight
+        //s1 "DT_DOTA_NPC_Observer_Ward"
+        //s1 "DT_DOTA_NPC_Observer_Ward_TrueSight"
+        boolean isObserver = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward");
+        boolean isSentry = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward_TrueSight");
+        if (isObserver || isSentry) {
+            //System.err.println(e);
+            Entry entry = new Entry(time);
+            Integer x = getEntityProperty(e, "CBodyComponent.m_cellX", null);
+            Integer y = getEntityProperty(e, "CBodyComponent.m_cellY", null);
+            Integer z = getEntityProperty(e, "CBodyComponent.m_cellZ", null);
+            Integer[] pos = {x, y};
+            entry.x = x;
+            entry.y = y;
+            entry.z = z;
+            if (entityLeft)
+            {
+                entry.type = isObserver ? "obs_left" : "sen_left";
+            }
+            else
+            {
+                entry.type = isObserver ? "obs" : "sen";
+            }
+            entry.key = Arrays.toString(pos);
+            entry.entityleft = entityLeft;
+            entry.ehandle = e.getHandle();
+            //System.err.println(entry.key);
+            Integer owner = getEntityProperty(e, "m_hOwnerEntity", null);
+            Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
+            entry.slot = ownerEntity != null ? (Integer) getEntityProperty(ownerEntity, "m_iPlayerID", null) : null;
+            //2/3 radiant/dire
+            //entry.team = e.getProperty("m_iTeamNum");
+            output(entry);
+        }
     }
 
     public void run(String[] args) throws Exception {

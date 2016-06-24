@@ -124,7 +124,7 @@ function upsert(db, table, row, conflict, cb)
             return util.format("%s=%s", key, "EXCLUDED." + key);
         });
         var query = util.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
-        //require('fs').writeFileSync('output.json', query);
+        //console.log(query.toString());
         db.raw(query, Object.keys(row).map(function(key)
         {
             return row[key];
@@ -161,7 +161,7 @@ function insertMatch(db, redis, match, options, cb)
         players.forEach(function(p, i)
         {
             match.pgroup[p.player_slot] = {
-                account_id: p.account_id,
+                account_id: p.account_id || null,
                 hero_id: p.hero_id,
                 player_slot: p.player_slot
             };

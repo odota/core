@@ -3,32 +3,50 @@
  **/
 function processReduce(entries, match, meta)
 {
+    //for now, disable log parsing for regular matches
+    if (!match.doLogParse)
+    {
+        return;
+    }
+    var basicLogTypes = {
+        "obs": 1,
+        "sen": 1,
+        "obs_left": 1,
+        "sen_left": 1,
+    };
     var result = entries.filter(function(e)
     {
-        if (e.type === "actions")
+        if (match.doLogParse)
         {
-            return false;
-        }
-        if (e.type === "DOTA_COMBATLOG_MODIFIER_REMOVE")
-        {
-            return false;
-        }
-        if (e.type === "DOTA_COMBATLOG_DAMAGE" || e.type === "DOTA_COMBATLOG_MODIFIER_ADD" || e.type === "DOTA_COMBATLOG_HEAL")
-        {
-            if (!e.targethero || e.targetillusion)
+            if (e.type === "actions")
             {
                 return false;
             }
+            if (e.type === "DOTA_COMBATLOG_MODIFIER_REMOVE")
+            {
+                return false;
+            }
+            if (e.type === "DOTA_COMBATLOG_DAMAGE" || e.type === "DOTA_COMBATLOG_MODIFIER_ADD" || e.type === "DOTA_COMBATLOG_HEAL")
+            {
+                if (!e.targethero || e.targetillusion)
+                {
+                    return false;
+                }
+            }
+            if (e.type === "interval" && e.time % 60 !== 0)
+            {
+                return false;
+            }
+            if (!e.time)
+            {
+                return false;
+            }
+            return true;
         }
-        if (e.type === "interval" && e.time % 60 !== 0)
+        else
         {
-            return false;
+            return (e.type in basicLogTypes);
         }
-        if (!e.time)
-        {
-            return false;
-        }
-        return true;
     }).map(function(e)
     {
         var e2 = Object.assign(
