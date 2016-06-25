@@ -10,6 +10,7 @@ var computeMatchData = compute.computeMatchData;
 var filter = require('../util/filter');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
+var readCache = playerCache.readCache;
 var addToQueue = queue.addToQueue;
 var mQueue = queue.getQueue('mmr');
 var async = require('async');
@@ -989,30 +990,41 @@ function fillSkill(db, matches, options, cb)
     });
 }
 
-function getPlayerMatches(db, queryObj, options, cb)
+function getPlayerMatches(db, account_id, queryObj, cb)
 {
-    var stream;
-    stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
-    var matches = [];
-    stream.on('end', function(err)
+    if (config.ENABLE_PLAYER_CACHE)
     {
-        cb(err,
+        readCache(account_id, queryObj, function(err, matches)
         {
-            raw: matches
+            if (err)
+            {
+                return cb(err);
+            }
+            cb(err, matches);
         });
-    });
-    stream.on('data', function(m)
+    }
+    else
     {
-        computeMatchData(m);
-        if (filter([m], queryObj.js_select).length)
+        var stream;
+        stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
+        var matches = [];
+        stream.on('end', function(err)
         {
-            matches.push(m);
-        }
-    });
-    stream.on('error', function(err)
-    {
-        throw err;
-    });
+            cb(err, matches);
+        });
+        stream.on('data', function(m)
+        {
+            computeMatchData(m);
+            if (filter([m], queryObj.js_select).length)
+            {
+                matches.push(m);
+            }
+        });
+        stream.on('error', function(err)
+        {
+            throw err;
+        });
+    }
 }
 
 function getPlayerRatings(db, account_id, cb)
@@ -1077,7 +1089,6 @@ function getPlayer(db, account_id, cb)
         cb();
     }
 }
-
 module.exports = {
     getSets,
     insertPlayer,

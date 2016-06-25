@@ -13,11 +13,9 @@ var multer = require('multer')(
 var queue = require('../store/queue');
 var rQueue = queue.getQueue('request');
 var queries = require('../store/queries');
-var getPlayer = queries.getPlayer;
 var buildMatch = require('../store/buildMatch');
 var buildStatus = require('../store/buildStatus');
 var playerCache = require('../store/playerCache');
-var readCache = playerCache.readCache;
 const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {
@@ -93,6 +91,28 @@ module.exports = function(db, redis, cassandra)
             res.json(match);
         });
     });
+    api.use('/players', function(req, res, cb)
+    {
+        //TODO precheck, preprocess query for players
+        if (Number.isNaN(req.params.account_id))
+        {
+            return cb("non-numeric account_id");
+        }
+        /*
+        var queryObj = {
+        select: query
+    };
+    account_id = Number(account_id);
+    //select player_matches with this account_id
+    queryObj.select.account_id = account_id;
+    queryObj = preprocessQuery(queryObj);
+    //1 filter expected for account id
+    var filter_exists = queryObj.filter_count > 1;
+    queryObj.js_agg = obj;
+    */
+    //TODO filters need to be mapped to dependent columns somewhere
+    });
+    //basic player data
     api.get('/players/:account_id', function(req, res, cb)
     {
         var account_id = Number(req.params.account_id);
@@ -100,7 +120,7 @@ module.exports = function(db, redis, cassandra)
         {
             profile: function(cb)
             {
-                getPlayer(db, account_id, cb);
+                queries.getPlayer(db, account_id, cb);
             },
             solo_competitive_rank: function(cb)
             {
@@ -129,7 +149,7 @@ module.exports = function(db, redis, cassandra)
     api.get('/players/:account_id/wardmap', function(req, res, cb) {});
     api.get('/players/:account_id/peers', function(req, res, cb) {});
     api.get('/players/:account_id/histograms/:field', function(req, res, cb) {});
-    //TODO aggregate the below on client side?
+    //TODO aggregate the below on client side using /matches?
     //w/l
     //activity
     //heroes
@@ -137,9 +157,9 @@ module.exports = function(db, redis, cassandra)
     //items
     api.get('/players/:account_id/matches', function(req, res, cb)
     {
-        //TODO support filters/limit/sort
-        readCache(req.params.account_id,
+        queries.getPlayerMatches(db, req.params.account_id,
         {
+            //TODO support filters/limit/sort
             cacheProject: ['match_id'].concat(req.query.project)
         }, function(err, cache)
         {
@@ -148,7 +168,7 @@ module.exports = function(db, redis, cassandra)
                 return cb(err);
             }
             //TODO fillskill
-            res.json(cache.raw);
+            res.json(cache);
         });
     });
     //non-match based

@@ -6,11 +6,8 @@ var constants = require('../constants.js');
 var queries = require("../store/queries");
 var utility = require('../util/utility');
 var aggregator = require('../util/aggregator');
-var config = require('../config');
-var playerCache = require('../store/playerCache');
 var generatePositionData = utility.generatePositionData;
 var preprocessQuery = utility.preprocessQuery;
-var readCache = playerCache.readCache;
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
@@ -47,7 +44,7 @@ var deps = {
     "win": "radiant_win",
     "lose": "radiant_win",
 };
-
+//TODO decommission this and aggregator with SPA
 function buildPlayer(options, cb)
 {
     var db = options.db;
@@ -55,7 +52,6 @@ function buildPlayer(options, cb)
     var account_id = options.account_id;
     var orig_account_id = account_id;
     var info = options.info || "index";
-    var subkey = options.subkey;
     var query = options.query;
     if (Number.isNaN(account_id))
     {
@@ -100,41 +96,14 @@ function buildPlayer(options, cb)
             account_id: account_id,
             personaname: account_id
         };
-        if (config.ENABLE_PLAYER_CACHE)
-        {
-            console.time("[PLAYER] readCache " + account_id);
-            readCache(orig_account_id, queryObj, function(err, cache)
-            {
-                console.timeEnd("[PLAYER] readCache " + account_id);
-                if (err)
-                {
-                    return cb(err);
-                }
-                options.cache = true;
-                processResults(err, cache);
-            });
-        }
-        else
-        {
-            console.time("[PLAYER] getPlayerMatches " + account_id);
-            getPlayerMatches(db, queryObj, options, function(err, results)
-            {
-                console.timeEnd("[PLAYER] getPlayerMatches " + account_id);
-                if (err)
-                {
-                    return cb(err);
-                }
-                processResults(err, results);
-            });
-        }
+        getPlayerMatches(db, orig_account_id, queryObj, processResults);
 
-        function processResults(err, cache)
+        function processResults(err, matches)
         {
             if (err)
             {
                 return cb(err);
             }
-            var matches = cache.raw;
             var desc = queryObj.keywords.desc || "match_id";
             var limit = queryObj.keywords.limit ? Number(queryObj.keywords.limit) : undefined;
             //sort

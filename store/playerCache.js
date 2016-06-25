@@ -41,10 +41,7 @@ function readCache(account_id, options, cb)
         }).on('end', function(err)
         {
             //stream ended, there aren't any more rows
-            return cb(err,
-            {
-                raw: matches,
-            });
+            return cb(err, matches);
         }).on('error', function(err)
         {
             throw err;
