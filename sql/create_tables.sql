@@ -21,17 +21,16 @@ CREATE TABLE matches (
   game_mode integer,
   engine integer,
   picks_bans json[],
-  --radiant_team_name varchar(255),
-  --dire_team_name varchar(255),
-  --radiant_captain integer,
-  --dire_captain integer,
-  --radiant_logo integer
-  --dire_logo integer,
-  --radiant_team_complete integer,
-  --dire_team_complete integer,
-  --radiant_team_id integer,
-  --dire_team_id integer,
-  --parsed data below
+  radiant_team_id integer,
+  dire_team_id integer,
+  radiant_team_name varchar(255),
+  dire_team_name varchar(255),
+  radiant_team_complete smallint,
+  dire_team_complete smallint,
+  radiant_captain bigint,
+  dire_captain bigint,
+  radiant_logo bigint,
+  dire_logo bigint,
   chat json[],
   objectives json[],
   radiant_gold_adv integer[],
@@ -102,9 +101,6 @@ CREATE TABLE player_matches (
   multi_kills json,
   life_state json,
   damage_inflictor_received json
-  --disabled due to incompatibility
-  --kill_streaks_log json[][], --an array of kill streak values
-  --multi_kill_id_vals integer[] --an array of multi kill values (the length of each multi kill)
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 
