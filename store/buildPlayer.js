@@ -2,12 +2,12 @@
  * Functions to build player object
  **/
 var async = require('async');
+var config = require('../config.js');
 var constants = require('../constants.js');
 var queries = require("../store/queries");
 var utility = require('../util/utility');
 var aggregator = require('../util/aggregator');
 var generatePositionData = utility.generatePositionData;
-var preprocessQuery = utility.preprocessQuery;
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
@@ -78,7 +78,7 @@ function buildPlayer(options, cb)
     });
     queryObj.js_agg = obj;
     //fields to project from the Cassandra cache
-    queryObj.cacheProject = cacheProj.concat(Object.keys(queryObj.js_agg).map(function(k)
+    queryObj.project = cacheProj.concat(Object.keys(queryObj.js_agg).map(function(k)
     {
         return deps[k] || k;
     })).concat(filter_exists ? cacheFilters : []).concat(query.desc ? query.desc : []);
@@ -96,7 +96,7 @@ function buildPlayer(options, cb)
             account_id: account_id,
             personaname: account_id
         };
-        getPlayerMatches(db, orig_account_id, queryObj, processResults);
+        getPlayerMatches(orig_account_id, queryObj, processResults);
 
         function processResults(err, matches)
         {
@@ -357,5 +357,61 @@ function generateTeammateArrayFromHash(db, input, player, cb)
         console.timeEnd('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
         cb(err, teammates_arr);
     });
+}
+
+function preprocessQuery(query)
+{
+    //check if we already processed to ensure idempotence
+    if (query.processed)
+    {
+        return;
+    }
+    //select,the query received, build the mongo query and the js filter based on this
+    query.db_select = {};
+    query.filter = {};
+    query.keywords = {};
+    query.filter_count = 0;
+    var dbAble = {
+        "account_id": 1,
+    };
+    //reserved keywords, don't treat these as filters
+    var keywords = {
+        "desc": 1,
+        "project": 1,
+        "limit": 1,
+    };
+    for (var key in query.select)
+    {
+        if (!keywords[key])
+        {
+            //arrayify the element
+            query.select[key] = [].concat(query.select[key]).map(function(e)
+            {
+                if (typeof e === "object")
+                {
+                    //just return the object if it's an array or object
+                    return e;
+                }
+                //numberify this element
+                return Number(e);
+            });
+            if (dbAble[key])
+            {
+                query.db_select[key] = query.select[key][0];
+            }
+            query.filter[key] = query.select[key];
+            query.filter_count += 1;
+        }
+        else
+        {
+            query.keywords[key] = query.select[key];
+        }
+    }
+    //absolute limit for number of matches to extract
+    query.limit = config.PLAYER_MATCH_LIMIT;
+    //mark this query processed
+    query.processed = true;
+    //console.log(query);
+    return query;
 }
 module.exports = buildPlayer;

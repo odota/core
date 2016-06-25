@@ -479,62 +479,6 @@ function min(array)
     return Math.min.apply(null, array);
 }
 
-function preprocessQuery(query)
-{
-    //check if we already processed to ensure idempotence
-    if (query.processed)
-    {
-        return;
-    }
-    //select,the query received, build the mongo query and the js filter based on this
-    query.db_select = {};
-    query.js_select = {};
-    query.keywords = {};
-    query.filter_count = 0;
-    var dbAble = {
-        "account_id": 1,
-    };
-    //reserved keywords, don't treat these as filters
-    var keywords = {
-        "desc": 1,
-        "project": 1,
-        "limit": 1,
-    };
-    for (var key in query.select)
-    {
-        if (!keywords[key])
-        {
-            //arrayify the element
-            query.select[key] = [].concat(query.select[key]).map(function(e)
-            {
-                if (typeof e === "object")
-                {
-                    //just return the object if it's an array or object
-                    return e;
-                }
-                //numberify this element
-                return Number(e);
-            });
-            if (dbAble[key])
-            {
-                query.db_select[key] = query.select[key][0];
-            }
-            query.js_select[key] = query.select[key];
-            query.filter_count += 1;
-        }
-        else
-        {
-            query.keywords[key] = query.select[key];
-        }
-    }
-    //absolute limit for number of matches to extract
-    query.limit = config.PLAYER_MATCH_LIMIT;
-    //mark this query processed
-    query.processed = true;
-    //console.log(query);
-    return query;
-}
-
 function getAggs()
 {
     return {
@@ -771,7 +715,6 @@ module.exports = {
     isSignificant: isSignificant,
     max: max,
     min: min,
-    preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
     serialize: serialize,

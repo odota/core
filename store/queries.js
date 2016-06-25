@@ -990,41 +990,9 @@ function fillSkill(db, matches, options, cb)
     });
 }
 
-function getPlayerMatches(db, account_id, queryObj, cb)
+function getPlayerMatches(account_id, queryObj, cb)
 {
-    if (config.ENABLE_PLAYER_CACHE)
-    {
-        readCache(account_id, queryObj, function(err, matches)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            cb(err, matches);
-        });
-    }
-    else
-    {
-        var stream;
-        stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
-        var matches = [];
-        stream.on('end', function(err)
-        {
-            cb(err, matches);
-        });
-        stream.on('data', function(m)
-        {
-            computeMatchData(m);
-            if (filter([m], queryObj.js_select).length)
-            {
-                matches.push(m);
-            }
-        });
-        stream.on('error', function(err)
-        {
-            throw err;
-        });
-    }
+    readCache(account_id, queryObj, cb);
 }
 
 function getPlayerRatings(db, account_id, cb)

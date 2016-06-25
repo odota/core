@@ -93,24 +93,43 @@ module.exports = function(db, redis, cassandra)
     });
     api.use('/players', function(req, res, cb)
     {
-        //TODO precheck, preprocess query for players
         if (Number.isNaN(req.params.account_id))
         {
             return cb("non-numeric account_id");
         }
-        /*
         var queryObj = {
-        select: query
-    };
-    account_id = Number(account_id);
-    //select player_matches with this account_id
-    queryObj.select.account_id = account_id;
-    queryObj = preprocessQuery(queryObj);
-    //1 filter expected for account id
-    var filter_exists = queryObj.filter_count > 1;
-    queryObj.js_agg = obj;
-    */
-    //TODO filters need to be mapped to dependent columns somewhere
+            project: [].concat(req.query.project),
+            filter: req.query,
+        };
+        var filterDeps = {
+            win: ['player_slot', 'radiant_win'],
+            patch: ['patch'],
+            game_mode: ['game_mode'],
+            lobby_type: ['lobby_type'],
+            region: ['region'],
+            date: ['start_time'],
+            lane_role: ['lane_role'],
+            hero_id: ['hero_id'],
+            isRadiant: ['player_slot'],
+            included_account_id: ['heroes'],
+            excluded_account_id: ['heroes'],
+            with_hero_id: ['player_slot', 'heroes'],
+            against_hero_id: ['player_slot', 'heroes'],
+            significant: ['duration', 'game_mode', 'lobby_type', 'radiant_win'],
+        };
+        //TODO add significant to filter if server-side aggregation
+        for (var key in req.query)
+        {
+            //numberify and arrayify everything in query string
+            req.query[key] = [].concat(req.query[key]).map(function(e)
+            {
+                return isNaN(Number(e)) ? e : Number(e);
+            });
+            //tack onto req.query.project required projections due to filters
+            queryObj.project = queryObj.project.concat(filterDeps[key] || []);
+        }
+        req.queryObj = queryObj;
+        cb();
     });
     //basic player data
     api.get('/players/:account_id', function(req, res, cb)
@@ -143,31 +162,39 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    //TODO implement below
-    api.get('/players/:account_id/wordcloud', function(req, res, cb) {});
-    api.get('/players/:account_id/records', function(req, res, cb) {});
-    api.get('/players/:account_id/wardmap', function(req, res, cb) {});
-    api.get('/players/:account_id/peers', function(req, res, cb) {});
-    api.get('/players/:account_id/histograms/:field', function(req, res, cb) {});
-    //TODO aggregate the below on client side using /matches?
-    //w/l
-    //activity
-    //heroes
-    //trends
-    //items
-    api.get('/players/:account_id/matches', function(req, res, cb)
+    //TODO implement below endpoints
+    api.get('/players/:account_id/wordcloud', function(req, res, cb)
     {
-        queries.getPlayerMatches(db, req.params.account_id,
-        {
-            //TODO support filters/limit/sort
-            cacheProject: ['match_id'].concat(req.query.project)
-        }, function(err, cache)
+        req.queryObj.project.concat('my_word_counts', 'all_word_counts');
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            //TODO fillskill
+            //TODO aggregate
+            res.json(cache);
+        });
+    });
+    api.get('/players/:account_id/wl', function(req, res, cb) {});
+    api.get('/players/:account_id/records', function(req, res, cb) {});
+    api.get('/players/:account_id/wardmap', function(req, res, cb) {});
+    api.get('/players/:account_id/heroes', function(req, res, cb) {});
+    api.get('/players/:account_id/peers', function(req, res, cb) {});
+    api.get('/players/:account_id/items', function(req, res, cb) {});
+    api.get('/players/:account_id/histograms/:field', function(req, res, cb) {});
+    //TODO activity (just project start_time, radiant_win, player_slot)
+    //TODO trends (just project a single field)
+    api.get('/players/:account_id/matches', function(req, res, cb)
+    {
+        console.log(req.queryObj);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            //TODO fillskill if required
             res.json(cache);
         });
     });

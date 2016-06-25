@@ -98,7 +98,11 @@ function filter(matches, filters)
                 }
                 return false;
             });
-        }
+        },
+        significant: function(m, key, arr)
+        {
+            return Number(utility.isSignificant(m)) === key;
+        },
     };
     var curtime = Math.floor(Date.now() / 1000);
     var filtered = [];
