@@ -3,7 +3,7 @@
  **/
 var config = require('../config');
 var constants = require('../constants');
-var enabled = true;
+var enabled = config.NODE_ENV !== "test";
 var compute = require('../util/compute');
 var computeMatchData = compute.computeMatchData;
 var filter = require('../util/filter');
