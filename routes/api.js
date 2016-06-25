@@ -13,8 +13,8 @@ var multer = require('multer')(
 var queue = require('../store/queue');
 var rQueue = queue.getQueue('request');
 var queries = require('../store/queries');
+var getPlayer = queries.getPlayer;
 var buildMatch = require('../store/buildMatch');
-var buildPlayer = require('../store/buildPlayer');
 var buildStatus = require('../store/buildStatus');
 var playerCache = require('../store/playerCache');
 var readCache = playerCache.readCache;
@@ -93,36 +93,54 @@ module.exports = function(db, redis, cassandra)
             res.json(match);
         });
     });
-    api.get('/players/:account_id/:info?/:subkey?', function(req, res, cb)
+    api.get('/players/:account_id', function(req, res, cb)
     {
-        buildPlayer(
+        var account_id = Number(req.params.account_id);
+        async.parallel(
         {
-            db: db,
-            redis: redis,
-            cassandra: cassandra,
-            account_id: req.params.account_id,
-            info: req.params.info,
-            subkey: req.params.subkey,
-            query: req.query
-        }, function(err, player)
+            profile: function(cb)
+            {
+                getPlayer(db, account_id, cb);
+            },
+            solo_competitive_rank: function(cb)
+            {
+                redis.zscore('solo_competitive_rank', account_id, cb);
+            },
+            competitive_rank: function(cb)
+            {
+                redis.zscore('competitive_rank', account_id, cb);
+            },
+            mmr_estimate: function(cb)
+            {
+                queries.mmrEstimate(db, redis, account_id, cb);
+            },
+        }, function(err, result)
         {
             if (err)
             {
                 return cb(err);
             }
-            if (!player)
-            {
-                return cb();
-            }
-            res.json(player);
+            res.json(result);
         });
     });
-    /*
-    api.get('/player_matches/:account_id', function(req, res, cb)
+    //TODO implement below
+    api.get('/players/:account_id/wordcloud', function(req, res, cb) {});
+    api.get('/players/:account_id/records', function(req, res, cb) {});
+    api.get('/players/:account_id/wardmap', function(req, res, cb) {});
+    api.get('/players/:account_id/peers', function(req, res, cb) {});
+    api.get('/players/:account_id/histograms/:field', function(req, res, cb) {});
+    //TODO aggregate the below on client side?
+    //w/l
+    //activity
+    //heroes
+    //trends
+    //items
+    api.get('/players/:account_id/matches', function(req, res, cb)
     {
+        //TODO support filters/limit/sort
         readCache(req.params.account_id,
         {
-            cacheProject: req.query.project || ['match_id'],
+            cacheProject: ['match_id'].concat(req.query.project)
         }, function(err, cache)
         {
             if (err)
@@ -133,7 +151,29 @@ module.exports = function(db, redis, cassandra)
             res.json(cache.raw);
         });
     });
-    */
+    //non-match based
+    api.get('/players/:account_id/ratings', function(req, res, cb)
+    {
+        queries.getPlayerRatings(db, req.params.account_id, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
+    api.get('/players/:account_id/rankings', function(req, res, cb)
+    {
+        queries.getPlayerRankings(redis, req.params.account_id, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
     /*
     api.get('/match_logs/:match_id', function(req, res, cb)
     {

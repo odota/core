@@ -5,21 +5,20 @@ var async = require('async');
 var constants = require('../constants.js');
 var queries = require("../store/queries");
 var utility = require('../util/utility');
-var compute = require('../util/compute');
-var computeMatchData = compute.computeMatchData;
-var deserialize = utility.deserialize;
 var aggregator = require('../util/aggregator');
-var filter = require('../util/filter');
 var config = require('../config');
 var playerCache = require('../store/playerCache');
-var util = require('util');
-var moment = require('moment');
 var generatePositionData = utility.generatePositionData;
 var preprocessQuery = utility.preprocessQuery;
 var readCache = playerCache.readCache;
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
+var getPlayer = queries.getPlayer;
+var getPlayerMatches = queries.getPlayerMatches;
+var getPlayerRankings = queries.getPlayerRankings;
+var getPlayerRatings = queries.getPlayerRatings;
+var fillSkill = queries.fillSkill;
 //Fields to project from Cassandra player caches
 var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min'];
 var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time'];
@@ -33,7 +32,6 @@ var aggs = {
     heroes: basicAggs.concat('heroes'),
     peers: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
-    //TODO only need one subkey at a time
     records: basicAggs.concat(Object.keys(subkeys)),
     counts: basicAggs.concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
     histograms: basicAggs.concat(Object.keys(subkeys)),
@@ -390,131 +388,5 @@ function generateTeammateArrayFromHash(db, input, player, cb)
         console.timeEnd('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
         cb(err, teammates_arr);
     });
-}
-
-function fillSkill(db, matches, options, cb)
-{
-    //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
-    console.time('[PLAYER] fillSkill');
-    //get skill data for matches within cache expiry (might not have skill data)
-    /*
-    var recents = matches.filter(function(m)
-    {
-        return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
-    });
-    */
-    //just get skill for last N matches (faster)
-    var recents = matches.slice(0, 30);
-    var skillMap = {};
-    db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
-    {
-        return m.match_id;
-    })).asCallback(function(err, rows)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        console.log("fillSkill recents: %s, results: %s", recents.length, rows.length);
-        rows.forEach(function(match)
-        {
-            skillMap[match.match_id] = match.skill;
-        });
-        matches.forEach(function(m)
-        {
-            m.skill = m.skill || skillMap[m.match_id];
-        });
-        console.timeEnd('[PLAYER] fillSkill');
-        return cb(err, matches);
-    });
-}
-
-function getPlayerMatches(db, queryObj, options, cb)
-{
-    var stream;
-    stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
-    var matches = [];
-    stream.on('end', function(err)
-    {
-        cb(err,
-        {
-            raw: matches
-        });
-    });
-    stream.on('data', function(m)
-    {
-        computeMatchData(m);
-        if (filter([m], queryObj.js_select).length)
-        {
-            matches.push(m);
-        }
-    });
-    stream.on('error', function(err)
-    {
-        throw err;
-    });
-}
-
-function getPlayerRatings(db, account_id, cb)
-{
-    console.time('[PLAYER] getPlayerRatings ' + account_id);
-    if (!Number.isNaN(account_id))
-    {
-        db.from('player_ratings').where(
-        {
-            account_id: Number(account_id)
-        }).orderBy('time', 'asc').asCallback(function(err, result)
-        {
-            console.timeEnd('[PLAYER] getPlayerRatings ' + account_id);
-            cb(err, result);
-        });
-    }
-    else
-    {
-        cb();
-    }
-}
-
-function getPlayerRankings(redis, account_id, cb)
-{
-    console.time('[PLAYER] getPlayerRankings ' + account_id);
-    async.map(Object.keys(constants.heroes), function(hero_id, cb)
-    {
-        redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), function(err, card)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), account_id, function(err, rank)
-            {
-                cb(err,
-                {
-                    hero_id: hero_id,
-                    rank: rank,
-                    card: card
-                });
-            });
-        });
-    }, function(err, result)
-    {
-        console.timeEnd('[PLAYER] getPlayerRankings ' + account_id);
-        cb(err, result);
-    });
-}
-
-function getPlayer(db, account_id, cb)
-{
-    if (!Number.isNaN(account_id))
-    {
-        db.first().from('players').where(
-        {
-            account_id: Number(account_id)
-        }).asCallback(cb);
-    }
-    else
-    {
-        cb();
-    }
 }
 module.exports = buildPlayer;

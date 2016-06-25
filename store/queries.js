@@ -5,6 +5,9 @@ var utility = require('../util/utility');
 var benchmarks = require('../util/benchmarks');
 var config = require('../config');
 var constants = require('../constants');
+var compute = require('../util/compute');
+var computeMatchData = compute.computeMatchData;
+var filter = require('../util/filter');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
 var addToQueue = queue.addToQueue;
@@ -948,6 +951,133 @@ function searchPlayer(db, query, cb)
         cb(null, ret);
     });
 }
+
+function fillSkill(db, matches, options, cb)
+{
+    //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
+    console.time('[PLAYER] fillSkill');
+    //get skill data for matches within cache expiry (might not have skill data)
+    /*
+    var recents = matches.filter(function(m)
+    {
+        return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+    });
+    */
+    //just get skill for last N matches (faster)
+    var recents = matches.slice(0, 20);
+    var skillMap = {};
+    db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
+    {
+        return m.match_id;
+    })).asCallback(function(err, rows)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        console.log("fillSkill recents: %s, results: %s", recents.length, rows.length);
+        rows.forEach(function(match)
+        {
+            skillMap[match.match_id] = match.skill;
+        });
+        matches.forEach(function(m)
+        {
+            m.skill = m.skill || skillMap[m.match_id];
+        });
+        console.timeEnd('[PLAYER] fillSkill');
+        return cb(err, matches);
+    });
+}
+
+function getPlayerMatches(db, queryObj, options, cb)
+{
+    var stream;
+    stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
+    var matches = [];
+    stream.on('end', function(err)
+    {
+        cb(err,
+        {
+            raw: matches
+        });
+    });
+    stream.on('data', function(m)
+    {
+        computeMatchData(m);
+        if (filter([m], queryObj.js_select).length)
+        {
+            matches.push(m);
+        }
+    });
+    stream.on('error', function(err)
+    {
+        throw err;
+    });
+}
+
+function getPlayerRatings(db, account_id, cb)
+{
+    console.time('[PLAYER] getPlayerRatings ' + account_id);
+    if (!Number.isNaN(account_id))
+    {
+        db.from('player_ratings').where(
+        {
+            account_id: Number(account_id)
+        }).orderBy('time', 'asc').asCallback(function(err, result)
+        {
+            console.timeEnd('[PLAYER] getPlayerRatings ' + account_id);
+            cb(err, result);
+        });
+    }
+    else
+    {
+        cb();
+    }
+}
+
+function getPlayerRankings(redis, account_id, cb)
+{
+    console.time('[PLAYER] getPlayerRankings ' + account_id);
+    async.map(Object.keys(constants.heroes), function(hero_id, cb)
+    {
+        redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), function(err, card)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), account_id, function(err, rank)
+            {
+                cb(err,
+                {
+                    hero_id: hero_id,
+                    rank: rank,
+                    card: card
+                });
+            });
+        });
+    }, function(err, result)
+    {
+        console.timeEnd('[PLAYER] getPlayerRankings ' + account_id);
+        cb(err, result);
+    });
+}
+
+function getPlayer(db, account_id, cb)
+{
+    if (!Number.isNaN(account_id))
+    {
+        db.first().from('players').where(
+        {
+            account_id: Number(account_id)
+        }).asCallback(cb);
+    }
+    else
+    {
+        cb();
+    }
+}
+
 module.exports = {
     getSets,
     insertPlayer,
@@ -965,4 +1095,9 @@ module.exports = {
     getLeaderboard,
     mmrEstimate,
     searchPlayer,
+    fillSkill,
+    getPlayerMatches,
+    getPlayerRatings,
+    getPlayerRankings,
+    getPlayer,
 };
