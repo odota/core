@@ -18,20 +18,6 @@ module.exports = function buildSets(db, redis, cb) {
                 cb(err, t);
             });
         },
-        //users in this set have their matches added
-        "userPlayers": function(cb) {
-            db.select(['account_id']).from('players').whereNotNull('last_login').asCallback(function(err, docs) {
-                if (err) {
-                    return cb(err);
-                }
-                var t = {};
-                docs.forEach(function(player) {
-                    t[player.account_id] = true;
-                });
-                //console.log(t);
-                cb(err, t);
-            });
-        },
         //users in this set are added to the trackedPlayers set
         "donators": function(cb) {
             db.select(['account_id']).from('players').where('cheese', '>', 0).asCallback(function(err, docs) {

@@ -128,7 +128,8 @@ before(function(done)
             {
                 queries.insertMatch(db, redis, m,
                 {
-                    type: "api"
+                    type: "api",
+                    skipParse: true,
                 }, cb);
             }, cb);
         },
