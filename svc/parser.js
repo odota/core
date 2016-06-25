@@ -158,6 +158,7 @@ function insertStandardParse(match, cb)
         type: "parsed",
         cassandra: cassandra,
         skipParse: true,
+        doLogParse: match.doLogParse,
     }, cb);
 }
 

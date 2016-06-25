@@ -16,7 +16,11 @@ function processReduce(entries, match, meta)
     };
     var result = entries.filter(function(e)
     {
-        if (match.doLogParse)
+        if (!match.doLogParse)
+        {
+            return (e.type in basicLogTypes);
+        }
+        else
         {
             if (e.type === "actions")
             {
@@ -42,10 +46,6 @@ function processReduce(entries, match, meta)
                 return false;
             }
             return true;
-        }
-        else
-        {
-            return (e.type in basicLogTypes);
         }
     }).map(function(e)
     {
