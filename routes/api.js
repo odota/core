@@ -192,7 +192,33 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    //TODO api.get('/players/:account_id/wl', function(req, res, cb) {});
+    api.get('/players/:account_id/wl', function(req, res, cb)
+    {
+        var result = {
+            win: 0,
+            lose: 0,
+        };
+        req.queryObj.project = req.queryObj.project.concat('player_slot', 'radiant_win');
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                if (utility.isRadiant(m) == m.radiant_win)
+                {
+                    result.win += 1;
+                }
+                else
+                {
+                    result.lose += 1;
+                }
+            });
+            res.json(result);
+        });
+    });
     //TODO api.get('/players/:account_id/records', function(req, res, cb) {});
     //TODO api.get('/players/:account_id/wardmap', function(req, res, cb) {});
     //TODO api.get('/players/:account_id/heroes', function(req, res, cb) {});

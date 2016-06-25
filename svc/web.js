@@ -133,7 +133,7 @@ app.use(function telemetry(req, res, cb)
     {
         var timeEnd = new Date();
         var elapsed = timeEnd - timeStart;
-        if (elapsed > 1000)
+        if (elapsed > 1000 || config.NODE_ENV === "development")
         {
             console.log("[SLOWLOG] %s, %s", req.originalUrl, elapsed);
         }
