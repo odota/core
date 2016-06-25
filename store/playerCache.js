@@ -49,7 +49,7 @@ function readCache(account_id, options, cb)
     }
     else
     {
-        return cb();
+        return cb(null, []);
     }
 }
 

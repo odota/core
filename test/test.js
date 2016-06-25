@@ -15,6 +15,7 @@ config.ENABLE_MATCH_CACHE = 1;
 config.FRONTEND_PORT = 5001;
 config.PARSER_PORT = 5201;
 config.ENABLE_CASSANDRA_MATCH_STORE_WRITE = "";
+config.ENABLE_CASSANDRA_MATCH_STORE_READ = "";
 var async = require('async');
 var nock = require('nock');
 var moment = require('moment');

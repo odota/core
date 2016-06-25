@@ -198,7 +198,7 @@ function buildPlayer(options, cb)
                 {
                     if (info === "peers")
                     {
-                        generateTeammateArrayFromHash(db, aggData.teammates, player, cb);
+                        queries.generateTeammateArrayFromHash(db, aggData.teammates, player, cb);
                     }
                     else
                     {
@@ -308,54 +308,6 @@ function buildPlayer(options, cb)
                 }
             }, cb);
         }
-    });
-}
-
-function generateTeammateArrayFromHash(db, input, player, cb)
-{
-    if (!input)
-    {
-        return cb();
-    }
-    console.time('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
-    var teammates_arr = [];
-    var teammates = input;
-    for (var id in teammates)
-    {
-        var tm = teammates[id];
-        id = Number(id);
-        //don't include if anonymous, self or if few games together
-        if (id && id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5))
-        {
-            teammates_arr.push(tm);
-        }
-    }
-    teammates_arr.sort(function(a, b)
-    {
-        return b.games - a.games;
-    });
-    //limit to 200 max players
-    teammates_arr = teammates_arr.slice(0, 200);
-    async.each(teammates_arr, function(t, cb)
-    {
-        db.first().from('players').where(
-        {
-            account_id: t.account_id
-        }).asCallback(function(err, row)
-        {
-            if (err || !row)
-            {
-                return cb(err);
-            }
-            t.personaname = row.personaname;
-            t.last_login = row.last_login;
-            t.avatar = row.avatar;
-            cb(err);
-        });
-    }, function(err)
-    {
-        console.timeEnd('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
-        cb(err, teammates_arr);
     });
 }
 
