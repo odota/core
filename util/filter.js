@@ -39,7 +39,7 @@ function filter(matches, filters)
         {
             return m.hero_id === key;
         },
-        isRadiant: function(m, key)
+        is_radiant: function(m, key)
         {
             return Number(utility.isRadiant(m)) === key;
         },

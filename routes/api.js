@@ -147,7 +147,7 @@ module.exports = function(db, redis, cassandra)
             date: ['start_time'],
             lane_role: ['lane_role'],
             hero_id: ['hero_id'],
-            isRadiant: ['player_slot'],
+            is_radiant: ['player_slot'],
             included_account_id: ['heroes'],
             excluded_account_id: ['heroes'],
             with_hero_id: ['player_slot', 'heroes'],
