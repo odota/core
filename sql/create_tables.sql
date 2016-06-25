@@ -241,4 +241,4 @@ CREATE TABLE leagues(
   banner varchar(255),
   tier varchar(255),
   name varchar(255)
-)
+);
