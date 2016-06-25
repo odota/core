@@ -3,7 +3,7 @@
  **/
 var config = require('../config');
 var constants = require('../constants');
-var enabled = config.NODE_ENV !== "test";
+var enabled = config.ENABLE_CASSANDRA_MATCH_STORE_READ;
 var compute = require('../util/compute');
 var computeMatchData = compute.computeMatchData;
 var filter = require('../util/filter');

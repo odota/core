@@ -5,7 +5,6 @@ var config = require('../config');
 var constants = require('../constants.js');
 var redis = require('../store/redis');
 var queue = require('../store/queue');
-//var cassandra = require('../store/cassandra');
 var queries = require('../store/queries');
 config.PORT = ""; //use service defaults
 config.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
@@ -15,6 +14,7 @@ config.NODE_ENV = "test";
 config.ENABLE_MATCH_CACHE = 1;
 config.FRONTEND_PORT = 5001;
 config.PARSER_PORT = 5201;
+config.ENABLE_CASSANDRA_MATCH_STORE_WRITE = "";
 var async = require('async');
 var nock = require('nock');
 var moment = require('moment');
@@ -26,7 +26,7 @@ var replay_dir = "./test/testfiles/";
 var pg = require('pg');
 var fs = require('fs');
 var wait = 90000;
-var cassandra = require('../store/cassandra');
+//var cassandra = require('../store/cassandra');
 var buildMatch = require('../store/buildMatch');
 // these are loaded later, as the database needs to be created when these are required
 var db;

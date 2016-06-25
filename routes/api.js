@@ -134,7 +134,7 @@ module.exports = function(db, redis, cassandra)
             req.query.significant = [1];
         }
         var queryObj = {
-            project: [].concat(req.query.project || []),
+            project: ['match_id'].concat(req.query.project || []),
             filter: req.query ||
             {},
         };
@@ -230,21 +230,31 @@ module.exports = function(db, redis, cassandra)
     api.get('/players/:account_id/matches', function(req, res, cb)
     {
         console.log(req.queryObj);
+        //TODO support limit/offset/sort
         queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            queries.fillSkill(db, cache,
-            {}, function(err)
+            if (req.queryObj.project.indexOf('skill') !== -1)
+            {
+                queries.fillSkill(db, cache,
+                {}, render);
+            }
+            else
+            {
+                render();
+            }
+
+            function render(err)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                res.json(cache);
-            });
+                return res.json(cache);
+            }
         });
     });
     //non-match based
