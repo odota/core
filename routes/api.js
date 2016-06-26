@@ -436,14 +436,68 @@ module.exports = function(db, redis, cassandra)
             });
         });
     });
-    //TODO 
-    api.get('/players/:account_id/items', function(req, res, cb) {});
-    //TODO 
-    api.get('/players/:account_id/activity', function(req, res, cb) {});
-    //TODO 
-    api.get('/players/:account_id/histograms/:field', function(req, res, cb) {});
-    //TODO 
-    api.get('/players/:account_id/trends/:field', function(req, res, cb) {});
+    api.get('/players/:account_id/items', function(req, res, cb)
+    {
+        req.queryObj.project = req.queryObj.project.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(cache);
+        });
+    });
+    api.get('/players/:account_id/activity', function(req, res, cb)
+    {
+        req.queryObj.project = req.queryObj.project.concat(['start_time']);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(cache);
+        });
+    });
+    api.get('/players/:account_id/histograms/:field', function(req, res, cb)
+    {
+        var result = {};
+        var field = req.params.field;
+        req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot', req.params.field);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                if (!result[~~m[field]])
+                {
+                    result[~~m[field]] = {
+                        games: 0,
+                        win: 0
+                    };
+                }
+                result[~~m[field]].games += 1;
+                result[~~m[field]].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+            });
+            res.json(result);
+        });
+    });
+    api.get('/players/:account_id/trends/:field', function(req, res, cb)
+    {
+        req.queryObj.project = req.queryObj.project.concat('hero_id', req.params.field);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(cache);
+        });
+    });
     api.get('/players/:account_id/matches', function(req, res, cb)
     {
         console.log(req.queryObj);
