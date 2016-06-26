@@ -161,6 +161,43 @@ invokeInterval(function leagues(cb)
         });
     });
 }, 10 * 60 * 1000);
+invokeInterval(function teams(cb)
+{
+    db.raw(`select distinct radiant_team_id from matches tablesample bernoulli(100) limit 100`).asCallback(function(err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        async.eachSeries(result.rows, function(m, cb)
+        {
+            if (!m.radiant_team_id)
+            {
+                return cb();
+            }
+            var container = utility.generateJob("api_teams",
+            {
+                team_id: m.radiant_team_id || 2,
+            });
+            utility.getData(container.url, function(err, body)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                if (!body.teams)
+                {
+                    return cb();
+                }
+                var t = body.teams[0];
+                queries.upsert(db, 'teams', t,
+                {
+                    team_id: t.team_id
+                }, cb);
+            });
+        }, cb);
+    });
+}, 60 * 1000);
 
 function invokeInterval(func, delay)
 {

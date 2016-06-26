@@ -30,10 +30,10 @@ Quickstart (Docker)
 * Start the external dependencies in separate containers.
   * `sudo docker run -d --name postgres --net=host postgres:9.5`
   * `sudo docker run -d --name redis --net=host redis:3`
-  * (optional) `sudo docker run -d --name cassandra --net=host cassandra:3`
+  * `sudo docker run -d --name cassandra --net=host cassandra:3`
 * Initialize Postgres: `sudo docker exec -i postgres psql -U postgres < sql/init.sql`
 * Create tables: `sudo docker exec -i postgres psql -U postgres yasp < sql/create_tables.sql`
-* Set up Cassandra (optional): `sudo docker exec -i cassandra cqlsh < sql/cassandra.cql`
+* Set up Cassandra: `sudo docker exec -i cassandra cqlsh < sql/cassandra.cql`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
   * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.

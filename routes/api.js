@@ -10,14 +10,15 @@ var multer = require('multer')(
     inMemory: true,
     fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
-var queue = require('../store/queue');
-var rQueue = queue.getQueue('request');
-var queries = require('../store/queries');
-var buildMatch = require('../store/buildMatch');
-var buildPlayer = require('../store/buildPlayer');
-var buildStatus = require('../store/buildStatus');
-var playerCache = require('../store/playerCache');
-var readCache = playerCache.readCache;
+const queue = require('../store/queue');
+const rQueue = queue.getQueue('request');
+const queries = require('../store/queries');
+const buildMatch = require('../store/buildMatch');
+const buildStatus = require('../store/buildStatus');
+var player_fields = constants.player_fields;
+var subkeys = player_fields.subkeys;
+var countCats = player_fields.countCats;
+const utility = require('../util/utility');
 const crypto = require('crypto');
 module.exports = function(db, redis, cassandra)
 {
@@ -93,47 +94,463 @@ module.exports = function(db, redis, cassandra)
             res.json(match);
         });
     });
-    api.get('/players/:account_id/:info?/:subkey?', function(req, res, cb)
+    //basic player data
+    api.get('/players/:account_id', function(req, res, cb)
     {
-        buildPlayer(
+        var account_id = Number(req.params.account_id);
+        async.parallel(
         {
-            db: db,
-            redis: redis,
-            cassandra: cassandra,
-            account_id: req.params.account_id,
-            info: req.params.info,
-            subkey: req.params.subkey,
-            query: req.query
-        }, function(err, player)
+            profile: function(cb)
+            {
+                queries.getPlayer(db, account_id, cb);
+            },
+            solo_competitive_rank: function(cb)
+            {
+                redis.zscore('solo_competitive_rank', account_id, cb);
+            },
+            competitive_rank: function(cb)
+            {
+                redis.zscore('competitive_rank', account_id, cb);
+            },
+            mmr_estimate: function(cb)
+            {
+                queries.mmrEstimate(db, redis, account_id, cb);
+            },
+        }, function(err, result)
         {
             if (err)
             {
                 return cb(err);
             }
-            if (!player)
-            {
-                return cb();
-            }
-            res.json(player);
+            res.json(result);
         });
     });
-    /*
-    api.get('/player_matches/:account_id', function(req, res, cb)
+    api.use('/players/:account_id/:info?', function(req, res, cb)
     {
-        readCache(req.params.account_id,
+        if (Number.isNaN(req.params.account_id))
         {
-            cacheProject: req.query.project || ['match_id'],
-        }, function(err, cache)
+            return cb("non-numeric account_id");
+        }
+        if (req.params.info !== "matches")
+        {
+            req.query.significant = [1];
+        }
+        var queryObj = {
+            project: ['match_id'].concat(req.query.project || []),
+            filter: req.query ||
+            {},
+        };
+        var filterDeps = {
+            win: ['player_slot', 'radiant_win'],
+            patch: ['patch'],
+            game_mode: ['game_mode'],
+            lobby_type: ['lobby_type'],
+            region: ['region'],
+            date: ['start_time'],
+            lane_role: ['lane_role'],
+            hero_id: ['hero_id'],
+            is_radiant: ['player_slot'],
+            included_account_id: ['heroes'],
+            excluded_account_id: ['heroes'],
+            with_hero_id: ['player_slot', 'heroes'],
+            against_hero_id: ['player_slot', 'heroes'],
+            significant: ['duration', 'game_mode', 'lobby_type', 'radiant_win'],
+        };
+        for (var key in req.query)
+        {
+            //numberify and arrayify everything in query
+            req.query[key] = [].concat(req.query[key]).map(function(e)
+            {
+                return isNaN(Number(e)) ? e : Number(e);
+            });
+            //tack onto req.query.project required projections due to filters
+            queryObj.project = queryObj.project.concat(filterDeps[key] || []);
+        }
+        req.queryObj = queryObj;
+        cb();
+    });
+    api.get('/players/:account_id/wordcloud', function(req, res, cb)
+    {
+        var result = {
+            my_word_counts:
+            {},
+            all_word_counts:
+            {},
+        };
+        req.queryObj.project = req.queryObj.project.concat(Object.keys(result));
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            //TODO fillskill
-            res.json(cache.raw);
+            cache.forEach(function(m)
+            {
+                for (var key in result)
+                {
+                    utility.mergeObjects(result[key], m[key]);
+                }
+            });
+            res.json(result);
         });
     });
-    */
+    api.get('/players/:account_id/wardmap', function(req, res, cb)
+    {
+        var result = {
+            obs:
+            {},
+            sen:
+            {},
+        };
+        req.queryObj.project = req.queryObj.project.concat(Object.keys(result));
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                for (var key in result)
+                {
+                    utility.mergeObjects(result[key], m[key]);
+                }
+            });
+            //generally position data function is used to generate heatmap data for each player in a natch
+            //we use it here to generate a single heatmap for aggregated counts
+            var d = {
+                "obs": true,
+                "sen": true
+            };
+            utility.generatePositionData(d, result);
+            res.json(d);
+        });
+    });
+    api.get('/players/:account_id/wl', function(req, res, cb)
+    {
+        var result = {
+            win: 0,
+            lose: 0,
+        };
+        req.queryObj.project = req.queryObj.project.concat('player_slot', 'radiant_win');
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                if (utility.isRadiant(m) == m.radiant_win)
+                {
+                    result.win += 1;
+                }
+                else
+                {
+                    result.lose += 1;
+                }
+            });
+            res.json(result);
+        });
+    });
+    api.get('/players/:account_id/records', function(req, res, cb)
+    {
+        var result = {};
+        req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys)).concat('hero_id', 'start_time');
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                for (var key in subkeys)
+                {
+                    if (!result[key] || m[key] > result[key][key])
+                    {
+                        result[key] = m;
+                    }
+                }
+            });
+            res.json(result);
+        });
+    });
+    api.get('/players/:account_id/counts', function(req, res, cb)
+    {
+        var result = {};
+        for (var key in countCats)
+        {
+            result[key] = {};
+        }
+        req.queryObj.project = req.queryObj.project.concat(Object.keys(countCats));
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                for (var key in countCats)
+                {
+                    result[key][~~m[key]] = result[key][~~m[key]] ? result[key][~~m[key]] + 1 : 1;
+                }
+            });
+            res.json(result);
+        });
+    });
+    api.get('/players/:account_id/heroes', function(req, res, cb)
+    {
+        var heroes = {};
+        //prefill heroes with every hero
+        for (var hero_id in constants.heroes)
+        {
+            var hero = {
+                hero_id: hero_id,
+                last_played: 0,
+                games: 0,
+                win: 0,
+                with_games: 0,
+                with_win: 0,
+                against_games: 0,
+                against_win: 0
+            };
+            heroes[hero_id] = hero;
+        }
+        req.queryObj.project = req.queryObj.project.concat('heroes', 'account_id', 'start_time', 'player_slot', 'radiant_win');
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                var isRadiant = utility.isRadiant;
+                var player_win = isRadiant(m) === m.radiant_win;
+                var group = m.heroes ||
+                {};
+                for (var key in group)
+                {
+                    var tm = group[key];
+                    var tm_hero = tm.hero_id;
+                    //don't count invalid heroes
+                    if (tm_hero in heroes)
+                    {
+                        if (isRadiant(tm) === isRadiant(m))
+                        {
+                            if (tm.account_id === m.account_id)
+                            {
+                                //console.log("self %s", tm_hero, tm.account_id, m.account_id);
+                                heroes[tm_hero].games += 1;
+                                heroes[tm_hero].win += player_win ? 1 : 0;
+                                if (m.start_time > heroes[tm_hero].last_played)
+                                {
+                                    heroes[tm_hero].last_played = m.start_time;
+                                }
+                            }
+                            else
+                            {
+                                //console.log("teammate %s", tm_hero);
+                                heroes[tm_hero].with_games += 1;
+                                heroes[tm_hero].with_win += player_win ? 1 : 0;
+                            }
+                        }
+                        else
+                        {
+                            //console.log("opp %s", tm_hero);
+                            heroes[tm_hero].against_games += 1;
+                            heroes[tm_hero].against_win += player_win ? 1 : 0;
+                        }
+                    }
+                }
+            });
+            res.json(heroes);
+        });
+    });
+    api.get('/players/:account_id/peers', function(req, res, cb)
+    {
+        var teammates = {};
+        var isRadiant = utility.isRadiant;
+        req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                var player_win = isRadiant(m) === m.radiant_win;
+                var group = m.heroes ||
+                {};
+                for (var key in group)
+                {
+                    var tm = group[key];
+                    //count teammate players
+                    if (!teammates[tm.account_id])
+                    {
+                        teammates[tm.account_id] = {
+                            account_id: tm.account_id,
+                            last_played: 0,
+                            win: 0,
+                            games: 0,
+                            with_win: 0,
+                            with_games: 0,
+                            against_win: 0,
+                            against_games: 0
+                        };
+                    }
+                    if (m.start_time > teammates[tm.account_id].last_played)
+                    {
+                        teammates[tm.account_id].last_played = m.start_time;
+                    }
+                    //played with
+                    teammates[tm.account_id].games += 1;
+                    teammates[tm.account_id].win += player_win ? 1 : 0;
+                    if (isRadiant(tm) === isRadiant(m))
+                    {
+                        //played with
+                        teammates[tm.account_id].with_games += 1;
+                        teammates[tm.account_id].with_win += player_win ? 1 : 0;
+                    }
+                    else
+                    {
+                        //played against
+                        teammates[tm.account_id].against_games += 1;
+                        teammates[tm.account_id].against_win += player_win ? 1 : 0;
+                    }
+                }
+            });
+            queries.generateTeammateArrayFromHash(db, teammates,
+            {
+                account_id: req.params.account_id
+            }, function(err, result)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                res.json(result);
+            });
+        });
+    });
+    api.get('/players/:account_id/items', function(req, res, cb)
+    {
+        req.queryObj.project = req.queryObj.project.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(cache);
+        });
+    });
+    api.get('/players/:account_id/activity', function(req, res, cb)
+    {
+        req.queryObj.project = req.queryObj.project.concat(['start_time']);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(cache);
+        });
+    });
+    api.get('/players/:account_id/histograms/:field', function(req, res, cb)
+    {
+        var result = {};
+        var field = req.params.field;
+        req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot', req.params.field);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            cache.forEach(function(m)
+            {
+                if (!result[~~m[field]])
+                {
+                    result[~~m[field]] = {
+                        games: 0,
+                        win: 0
+                    };
+                }
+                result[~~m[field]].games += 1;
+                result[~~m[field]].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+            });
+            res.json(result);
+        });
+    });
+    api.get('/players/:account_id/trends/:field', function(req, res, cb)
+    {
+        req.queryObj.project = req.queryObj.project.concat('hero_id', req.params.field);
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(cache);
+        });
+    });
+    api.get('/players/:account_id/matches', function(req, res, cb)
+    {
+        console.log(req.queryObj);
+        //TODO support limit/offset/sort
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            if (req.queryObj.project.indexOf('skill') !== -1)
+            {
+                queries.fillSkill(db, cache,
+                {}, render);
+            }
+            else
+            {
+                render();
+            }
+
+            function render(err)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                return res.json(cache);
+            }
+        });
+    });
+    //non-match based
+    api.get('/players/:account_id/ratings', function(req, res, cb)
+    {
+        queries.getPlayerRatings(db, req.params.account_id, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
+    api.get('/players/:account_id/rankings', function(req, res, cb)
+    {
+        queries.getPlayerRankings(redis, req.params.account_id, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
     /*
     api.get('/match_logs/:match_id', function(req, res, cb)
     {

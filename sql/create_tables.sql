@@ -238,3 +238,9 @@ CREATE TABLE leagues(
   tier varchar(255),
   name varchar(255)
 );
+
+CREATE TABLE teams(
+  team_id bigint PRIMARY KEY,
+  name varchar(255),
+  tag varchar(255)
+);

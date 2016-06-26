@@ -55,7 +55,6 @@ var defaults = {
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches (Redis)
-    "ENABLE_PLAYER_CACHE": "", // set to enable caching players (Cassandra)
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
     "ENABLE_POSTGRES_MATCH_STORE_WRITE": "1", //set to enable writing match data to postgres (default on)
