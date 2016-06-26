@@ -110,6 +110,15 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
+        "api_teams": function()
+        {
+            return {
+                url: api_url + "/IDOTA2Teams_570/GetTeamInfo/v1/?key=" + api_key + "&team_id=" + payload.team_id,
+                title: [type].join(),
+                type: "api",
+                payload: payload,
+            };
+        },
         "parse": function()
         {
             return {
@@ -233,7 +242,7 @@ function getData(url, cb)
                 //non-retryable
                 return cb(body);
             }
-            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos))
+            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams))
             {
                 //invalid response
                 if (url.noRetry)

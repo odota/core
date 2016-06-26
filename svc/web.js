@@ -123,6 +123,7 @@ app.use(function telemetry(req, res, cb)
     var timeStart = new Date();
     if (req.originalUrl.indexOf('/api') === 0)
     {
+        console.log('api')
         redis.zadd("api_hits", moment().format('X'), req.originalUrl);
     }
     if (req.user)
