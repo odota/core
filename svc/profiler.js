@@ -2,8 +2,10 @@
  * Worker to fetch updated player profiles
  **/
 var constants = require('../constants');
+var config = require('../config');
 var queries = require('../store/queries');
 var db = require('../store/db');
+var redis = require('../store/redis');
 var utility = require('../util/utility');
 var insertPlayer = queries.insertPlayer;
 var getData = utility.getData;
@@ -24,25 +26,22 @@ function start()
 
 function getSummaries(cb)
 {
-    db.raw(`
-        SELECT account_id 
-        FROM players 
-        TABLESAMPLE SYSTEM_ROWS(100)
-    `).asCallback(function(err, results)
+    redis.lrange('profilerQueue', 0, -1, function(err, results)
     {
         if (err)
         {
             return cb(err);
         }
-        if (results.rows.length === 0)
+        console.log('players sampled: %s', results.length);
+        results = results.map(function(account_id)
         {
-            console.log('No account_ids found...');
-            return cb();
-        }
-        console.log('players sampled: %s', results.rows.length);
+            return {
+                account_id: account_id
+            };
+        });
         var container = utility.generateJob("api_summaries",
         {
-            players: results.rows
+            players: results
         });
         getData(container.url, function(err, body)
         {

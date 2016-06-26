@@ -32,13 +32,6 @@ function getSets(redis, cb)
                 cb(err, JSON.parse(tps || "{}"));
             });
         },
-        "userPlayers": function(cb)
-        {
-            redis.get("userPlayers", function(err, ups)
-            {
-                cb(err, JSON.parse(ups || "{}"));
-            });
-        },
         "donators": function(cb)
         {
             redis.get("donators", function(err, ds)
@@ -131,7 +124,7 @@ function upsert(db, table, row, conflict, cb)
             return util.format("%s=%s", key, "EXCLUDED." + key);
         });
         var query = util.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
-        //require('fs').writeFileSync('output.json', query);
+        //console.log(query.toString());
         db.raw(query, Object.keys(row).map(function(key)
         {
             return row[key];
@@ -168,7 +161,7 @@ function insertMatch(db, redis, match, options, cb)
         players.forEach(function(p, i)
         {
             match.pgroup[p.player_slot] = {
-                account_id: p.account_id,
+                account_id: p.account_id || null,
                 hero_id: p.hero_id,
                 player_slot: p.player_slot
             };
@@ -191,6 +184,7 @@ function insertMatch(db, redis, match, options, cb)
     //we want to insert into matches, then insert into player_matches for each entry in players
     async.series(
     {
+        "dlp": decideLogParse,
         "u": upsertMatch,
         "uc": upsertMatchCassandra,
         "upc": updatePlayerCaches,
@@ -198,29 +192,55 @@ function insertMatch(db, redis, match, options, cb)
         "cmc": clearMatchCache,
         "t": telemetry,
         "dm": decideMmr,
+        "dpro": decideProfile,
         "dp": decideParse,
     }, function(err, results)
     {
         return cb(err, results.dp);
     });
 
+    function decideLogParse(cb)
+    {
+        if (match.leagueid)
+        {
+            redis.sismember('pro_leagueids', match.leagueid, function(err, result)
+            {
+                options.doLogParse = options.doLogParse || Boolean(Number(result));
+                cb(err);
+            });
+        }
+        else
+        {
+            cb();
+        }
+    }
+
     function upsertMatch(cb)
     {
-        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE)
+        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !options.doLogParse)
         {
             return cb();
         }
         db.transaction(function(trx)
         {
-            upsert(trx, 'matches', match,
+            async.series(
             {
-                match_id: match.match_id
-            }, function(err)
+                "m": upsertMatch,
+                "pm": upsertPlayerMatches,
+                "pb": upsertPicksBans,
+                "l": upsertMatchLogs,
+            }, exit);
+
+            function upsertMatch(cb)
             {
-                if (err)
+                upsert(trx, 'matches', match,
                 {
-                    return exit(err);
-                }
+                    match_id: match.match_id
+                }, cb);
+            }
+
+            function upsertPlayerMatches(cb)
+            {
                 async.each(players || [], function(pm, cb)
                 {
                     pm.match_id = match.match_id;
@@ -229,22 +249,59 @@ function insertMatch(db, redis, match, options, cb)
                         match_id: pm.match_id,
                         player_slot: pm.player_slot
                     }, cb);
-                }, exit);
+                }, cb);
+            }
 
-                function exit(err)
+            function upsertPicksBans(cb)
+            {
+                async.each(match.picks_bans || [], function(p, cb)
                 {
-                    if (err)
+                    //order is a reserved keyword
+                    p.ord = p.order;
+                    p.match_id = match.match_id;
+                    upsert(trx, 'picks_bans', p,
                     {
-                        console.error(err);
-                        trx.rollback(err);
-                    }
-                    else
-                    {
-                        trx.commit();
-                    }
-                    cb(err);
+                        match_id: p.match_id,
+                        ord: p.ord
+                    }, cb);
+                }, cb);
+            }
+
+            function upsertMatchLogs(cb)
+            {
+                if (!match.logs)
+                {
+                    return cb();
                 }
-            });
+                else
+                {
+                    trx.raw(`DELETE FROM match_logs WHERE match_id = ?`, [match.match_id]).asCallback(function(err)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        async.eachLimit(match.logs, 10000, function(e, cb)
+                        {
+                            trx('match_logs').insert(e).asCallback(cb);
+                        }, cb);
+                    });
+                }
+            }
+
+            function exit(err)
+            {
+                if (err)
+                {
+                    console.error(err);
+                    trx.rollback(err);
+                }
+                else
+                {
+                    trx.commit();
+                }
+                cb(err);
+            }
         });
     }
 
@@ -362,7 +419,7 @@ function insertMatch(db, redis, match, options, cb)
     {
         async.each(match.players, function(p, cb)
         {
-            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in options.userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 3 === 0)))
+            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id && p.account_id !== constants.anonymous_account_id && config.ENABLE_RANDOM_MMR_UPDATE)
             {
                 addToQueue(mQueue,
                 {
@@ -381,9 +438,22 @@ function insertMatch(db, redis, match, options, cb)
         }, cb);
     }
 
+    function decideProfile(cb)
+    {
+        async.each(match.players, function(p, cb)
+        {
+            if (options.origin === "scanner" && p.account_id && p.account_id !== constants.anonymous_account_id)
+            {
+                redis.lpush('profilerQueue', p.account_id);
+                redis.ltrim('profilerQueue', 0, 99);
+            }
+            cb();
+        }, cb);
+    }
+
     function decideParse(cb)
     {
-        if (match.parse_status !== 0)
+        if (options.skipParse)
         {
             //not parsing this match
             //this isn't a error, although we want to report that we refused to parse back to user if it was a request
@@ -400,6 +470,7 @@ function insertMatch(db, redis, match, options, cb)
                 duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
+                doLogParse: options.doLogParse,
             },
             {
                 lifo: options.lifo,
@@ -653,7 +724,7 @@ function expectedWin(rates)
     return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
 }
 
-function getTop(db, redis, cb)
+function getProPlayers(db, redis, cb)
 {
     db.raw(`
     SELECT * from notable_players
@@ -663,14 +734,7 @@ function getTop(db, redis, cb)
         {
             return cb(err);
         }
-        getLeaderboard(db, redis, 'solo_competitive_rank', 500, function(err, result2)
-        {
-            return cb(err,
-            {
-                notables: result.rows,
-                leaderboard: result2
-            });
-        });
+        return cb(err, result.rows);
     });
 }
 
@@ -892,7 +956,7 @@ module.exports = {
     insertMatchSkill,
     getDistributions,
     getPicks,
-    getTop,
+    getProPlayers,
     getHeroRankings,
     getBenchmarks,
     benchmarkMatch,

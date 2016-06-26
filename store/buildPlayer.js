@@ -199,12 +199,16 @@ function buildPlayer(options, cb)
                     {
                         for (var id in aggData.hero_id.counts)
                         {
-                            heroes_list.push(
+                            //exclude invalid hero_ids
+                            if (Number(id))
                             {
-                                hero_id: id,
-                                games: aggData.hero_id.counts[id],
-                                win: aggData.hero_id.win_counts[id]
-                            });
+                                heroes_list.push(
+                                {
+                                    hero_id: id,
+                                    games: aggData.hero_id.counts[id],
+                                    win: aggData.hero_id.win_counts[id]
+                                });
+                            }
                         }
                     }
                     else if (aggData.heroes)

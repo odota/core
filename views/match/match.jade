@@ -32,7 +32,6 @@ block content
             th Percentile
         tbody
           tr
-            //td= constants.parse_status[match.parse_status]
             td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
             td= constants.region[match.region] ? constants.region[match.region] : match.region
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")

@@ -134,6 +134,93 @@ module.exports = function(db, redis, cassandra)
         });
     });
     */
+    /*
+    api.get('/match_logs/:match_id', function(req, res, cb)
+    {
+        db.raw(`SELECT * FROM match_logs WHERE match_id = ? ORDER BY time ASC`, [req.params.match_id]).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result.rows);
+        });
+    });
+    */
+    api.get('/pro_matches', function(req, res, cb)
+    {
+        db.raw(`
+        SELECT match_id, start_time, duration, ma.leagueid, name
+        FROM matches ma
+        JOIN leagues le
+        ON ma.leagueid = le.leagueid
+        WHERE ma.leagueid > 0
+        ORDER BY match_id DESC
+        `).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result.rows);
+        });
+    });
+    api.get('/pro_players', function(req, res, cb)
+    {
+        queries.getProPlayers(db, redis, function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result);
+        });
+    });
+    api.get('/drafts', function(req, res, cb)
+    {
+        db.raw(`
+        SELECT pb.hero_id,
+        sum(case when ((pm.player_slot < 128) = m.radiant_win) then 1 else 0 end) wins, 
+        sum(case when is_pick is true then 1 else 0 end) picks,
+        sum(case when is_pick is false then 1 else 0 end) bans
+        FROM picks_bans pb
+        LEFT JOIN matches m
+        ON pb.match_id = m.match_id
+        LEFT JOIN player_matches pm
+        ON pb.hero_id = pm.hero_id
+        AND pm.match_id = m.match_id
+        GROUP BY pb.hero_id;
+        `).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result.rows);
+        });
+    });
+    api.get('/pick_order', function(req, res, cb)
+    {
+        db.raw(`SELECT hero_id, ord, count( * ) FROM picks_bans WHERE is_pick is true GROUP BY hero_id, ord;`).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result.rows);
+        });
+    });
+    api.get('/leagues', function(req, res, cb)
+    {
+        db.raw(`SELECT * FROM leagues ORDER BY leagueid DESC`).asCallback(function(err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(result.rows);
+        });
+    });
     api.get('/distributions', function(req, res, cb)
     {
         queries.getDistributions(redis, function(err, result)
@@ -145,9 +232,9 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/rankings/:hero_id', function(req, res, cb)
+    api.get('/rankings', function(req, res, cb)
     {
-        queries.getHeroRankings(db, redis, req.params.hero_id,
+        queries.getHeroRankings(db, redis, req.query.hero_id,
         {}, function(err, result)
         {
             if (err)
@@ -157,11 +244,11 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/benchmarks/:hero_id', function(req, res, cb)
+    api.get('/benchmarks', function(req, res, cb)
     {
         queries.getBenchmarks(db, redis,
         {
-            hero_id: req.params.hero_id
+            hero_id: req.query.hero_id
         }, function(err, result)
         {
             if (err)
