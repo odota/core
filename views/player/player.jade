@@ -63,7 +63,7 @@ block content
         - var mostRecentMatchId = Math.max(Math.max.apply(null, player.matches.map(function(m){return m.match_id;})),-1)
         - var playerSteamId = typeof(user) !== 'undefined' ? user.account_id : player.account_id
         - var playerMmr = Math.max(player.solo_competitive_rank || -1, player.competitive_rank || -1)
-        a(href="#{'https://dotacoach.org/Hire/Yasp?matchID=' + mostRecentMatchId + '&playerSteamId=' + userSteamId + '&playerMmr=' + playerMmr}", class="btn btn-sm btn-default")
+        a(href="#{'https://dotacoach.org/Hire/Yasp?matchID=' + mostRecentMatchId + '&playerSteamId=' + playerSteamId + '&playerMmr=' + playerMmr}", class="btn btn-sm btn-default")
           img(src='/public/images/dotacoach-32x24.png', style="margin: -2px; padding-right: 4px;")
           | Ask a Coach
 
