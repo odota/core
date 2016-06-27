@@ -91,6 +91,7 @@ pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
                 parsed_data.start_time = match.start_time;
                 parsed_data.duration = match.duration;
                 parsed_data.replay_blob_key = match.replay_blob_key;
+                parsed_data.doLogParse = match.doLogParse;
                 if (match.replay_blob_key)
                 {
                     insertUploadedParse(parsed_data, cb);

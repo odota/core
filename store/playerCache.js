@@ -3,7 +3,7 @@
  **/
 var config = require('../config');
 var constants = require('../constants');
-var enabled = config.ENABLE_PLAYER_CACHE;
+var enabled = config.ENABLE_CASSANDRA_MATCH_STORE_READ;
 var compute = require('../util/compute');
 var computeMatchData = compute.computeMatchData;
 var filter = require('../util/filter');
@@ -19,7 +19,7 @@ function readCache(account_id, options, cb)
 {
     if (enabled)
     {
-        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', options.cacheProject.join(','));
+        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', options.project.join(','));
         var matches = [];
         return cassandra.stream(query, [account_id],
         {
@@ -33,7 +33,7 @@ function readCache(account_id, options, cb)
             while (m = this.read())
             {
                 m = deserialize(m);
-                if (filter([m], options.js_select).length)
+                if (filter([m], options.filter).length)
                 {
                     matches.push(m);
                 }
@@ -41,10 +41,7 @@ function readCache(account_id, options, cb)
         }).on('end', function(err)
         {
             //stream ended, there aren't any more rows
-            return cb(err,
-            {
-                raw: matches,
-            });
+            return cb(err, matches);
         }).on('error', function(err)
         {
             throw err;
@@ -52,7 +49,7 @@ function readCache(account_id, options, cb)
     }
     else
     {
-        return cb();
+        return cb(null, []);
     }
 }
 

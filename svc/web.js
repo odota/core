@@ -123,6 +123,7 @@ app.use(function telemetry(req, res, cb)
     var timeStart = new Date();
     if (req.originalUrl.indexOf('/api') === 0)
     {
+        console.log('api')
         redis.zadd("api_hits", moment().format('X'), req.originalUrl);
     }
     if (req.user)
@@ -133,7 +134,7 @@ app.use(function telemetry(req, res, cb)
     {
         var timeEnd = new Date();
         var elapsed = timeEnd - timeStart;
-        if (elapsed > 1000)
+        if (elapsed > 1000 || config.NODE_ENV === "development")
         {
             console.log("[SLOWLOG] %s, %s", req.originalUrl, elapsed);
         }

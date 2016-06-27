@@ -2,24 +2,20 @@
  * Functions to build player object
  **/
 var async = require('async');
+var config = require('../config.js');
 var constants = require('../constants.js');
 var queries = require("../store/queries");
 var utility = require('../util/utility');
-var compute = require('../util/compute');
-var computeMatchData = compute.computeMatchData;
-var deserialize = utility.deserialize;
 var aggregator = require('../util/aggregator');
-var filter = require('../util/filter');
-var config = require('../config');
-var playerCache = require('../store/playerCache');
-var util = require('util');
-var moment = require('moment');
 var generatePositionData = utility.generatePositionData;
-var preprocessQuery = utility.preprocessQuery;
-var readCache = playerCache.readCache;
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
+var getPlayer = queries.getPlayer;
+var getPlayerMatches = queries.getPlayerMatches;
+var getPlayerRankings = queries.getPlayerRankings;
+var getPlayerRatings = queries.getPlayerRatings;
+var fillSkill = queries.fillSkill;
 //Fields to project from Cassandra player caches
 var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min'];
 var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time'];
@@ -33,7 +29,6 @@ var aggs = {
     heroes: basicAggs.concat('heroes'),
     peers: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
-    //TODO only need one subkey at a time
     records: basicAggs.concat(Object.keys(subkeys)),
     counts: basicAggs.concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
     histograms: basicAggs.concat(Object.keys(subkeys)),
@@ -49,7 +44,7 @@ var deps = {
     "win": "radiant_win",
     "lose": "radiant_win",
 };
-
+//TODO decommission this and aggregator with SPA
 function buildPlayer(options, cb)
 {
     var db = options.db;
@@ -57,7 +52,6 @@ function buildPlayer(options, cb)
     var account_id = options.account_id;
     var orig_account_id = account_id;
     var info = options.info || "index";
-    var subkey = options.subkey;
     var query = options.query;
     if (Number.isNaN(account_id))
     {
@@ -84,7 +78,7 @@ function buildPlayer(options, cb)
     });
     queryObj.js_agg = obj;
     //fields to project from the Cassandra cache
-    queryObj.cacheProject = cacheProj.concat(Object.keys(queryObj.js_agg).map(function(k)
+    queryObj.project = cacheProj.concat(Object.keys(queryObj.js_agg).map(function(k)
     {
         return deps[k] || k;
     })).concat(filter_exists ? cacheFilters : []).concat(query.desc ? query.desc : []);
@@ -102,41 +96,14 @@ function buildPlayer(options, cb)
             account_id: account_id,
             personaname: account_id
         };
-        if (config.ENABLE_PLAYER_CACHE)
-        {
-            console.time("[PLAYER] readCache " + account_id);
-            readCache(orig_account_id, queryObj, function(err, cache)
-            {
-                console.timeEnd("[PLAYER] readCache " + account_id);
-                if (err)
-                {
-                    return cb(err);
-                }
-                options.cache = true;
-                processResults(err, cache);
-            });
-        }
-        else
-        {
-            console.time("[PLAYER] getPlayerMatches " + account_id);
-            getPlayerMatches(db, queryObj, options, function(err, results)
-            {
-                console.timeEnd("[PLAYER] getPlayerMatches " + account_id);
-                if (err)
-                {
-                    return cb(err);
-                }
-                processResults(err, results);
-            });
-        }
+        getPlayerMatches(orig_account_id, queryObj, processResults);
 
-        function processResults(err, cache)
+        function processResults(err, matches)
         {
             if (err)
             {
                 return cb(err);
             }
-            var matches = cache.raw;
             var desc = queryObj.keywords.desc || "match_id";
             var limit = queryObj.keywords.limit ? Number(queryObj.keywords.limit) : undefined;
             //sort
@@ -231,7 +198,7 @@ function buildPlayer(options, cb)
                 {
                     if (info === "peers")
                     {
-                        generateTeammateArrayFromHash(db, aggData.teammates, player, cb);
+                        queries.generateTeammateArrayFromHash(db, aggData.teammates, player, cb);
                     }
                     else
                     {
@@ -344,177 +311,59 @@ function buildPlayer(options, cb)
     });
 }
 
-function generateTeammateArrayFromHash(db, input, player, cb)
+function preprocessQuery(query)
 {
-    if (!input)
+    //check if we already processed to ensure idempotence
+    if (query.processed)
     {
-        return cb();
+        return;
     }
-    console.time('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
-    var teammates_arr = [];
-    var teammates = input;
-    for (var id in teammates)
+    //select,the query received, build the mongo query and the js filter based on this
+    query.db_select = {};
+    query.filter = {};
+    query.keywords = {};
+    query.filter_count = 0;
+    var dbAble = {
+        "account_id": 1,
+    };
+    //reserved keywords, don't treat these as filters
+    var keywords = {
+        "desc": 1,
+        "project": 1,
+        "limit": 1,
+    };
+    for (var key in query.select)
     {
-        var tm = teammates[id];
-        id = Number(id);
-        //don't include if anonymous, self or if few games together
-        if (id && id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5))
+        if (!keywords[key])
         {
-            teammates_arr.push(tm);
-        }
-    }
-    teammates_arr.sort(function(a, b)
-    {
-        return b.games - a.games;
-    });
-    //limit to 200 max players
-    teammates_arr = teammates_arr.slice(0, 200);
-    async.each(teammates_arr, function(t, cb)
-    {
-        db.first().from('players').where(
-        {
-            account_id: t.account_id
-        }).asCallback(function(err, row)
-        {
-            if (err || !row)
+            //arrayify the element
+            query.select[key] = [].concat(query.select[key]).map(function(e)
             {
-                return cb(err);
-            }
-            t.personaname = row.personaname;
-            t.last_login = row.last_login;
-            t.avatar = row.avatar;
-            cb(err);
-        });
-    }, function(err)
-    {
-        console.timeEnd('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
-        cb(err, teammates_arr);
-    });
-}
-
-function fillSkill(db, matches, options, cb)
-{
-    //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
-    console.time('[PLAYER] fillSkill');
-    //get skill data for matches within cache expiry (might not have skill data)
-    /*
-    var recents = matches.filter(function(m)
-    {
-        return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
-    });
-    */
-    //just get skill for last N matches (faster)
-    var recents = matches.slice(0, 30);
-    var skillMap = {};
-    db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
-    {
-        return m.match_id;
-    })).asCallback(function(err, rows)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        console.log("fillSkill recents: %s, results: %s", recents.length, rows.length);
-        rows.forEach(function(match)
-        {
-            skillMap[match.match_id] = match.skill;
-        });
-        matches.forEach(function(m)
-        {
-            m.skill = m.skill || skillMap[m.match_id];
-        });
-        console.timeEnd('[PLAYER] fillSkill');
-        return cb(err, matches);
-    });
-}
-
-function getPlayerMatches(db, queryObj, options, cb)
-{
-    var stream;
-    stream = db.select(queryObj.project).from('player_matches').where(queryObj.db_select).limit(queryObj.limit).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').stream();
-    var matches = [];
-    stream.on('end', function(err)
-    {
-        cb(err,
-        {
-            raw: matches
-        });
-    });
-    stream.on('data', function(m)
-    {
-        computeMatchData(m);
-        if (filter([m], queryObj.js_select).length)
-        {
-            matches.push(m);
-        }
-    });
-    stream.on('error', function(err)
-    {
-        throw err;
-    });
-}
-
-function getPlayerRatings(db, account_id, cb)
-{
-    console.time('[PLAYER] getPlayerRatings ' + account_id);
-    if (!Number.isNaN(account_id))
-    {
-        db.from('player_ratings').where(
-        {
-            account_id: Number(account_id)
-        }).orderBy('time', 'asc').asCallback(function(err, result)
-        {
-            console.timeEnd('[PLAYER] getPlayerRatings ' + account_id);
-            cb(err, result);
-        });
-    }
-    else
-    {
-        cb();
-    }
-}
-
-function getPlayerRankings(redis, account_id, cb)
-{
-    console.time('[PLAYER] getPlayerRankings ' + account_id);
-    async.map(Object.keys(constants.heroes), function(hero_id, cb)
-    {
-        redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), function(err, card)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), account_id, function(err, rank)
-            {
-                cb(err,
+                if (typeof e === "object")
                 {
-                    hero_id: hero_id,
-                    rank: rank,
-                    card: card
-                });
+                    //just return the object if it's an array or object
+                    return e;
+                }
+                //numberify this element
+                return Number(e);
             });
-        });
-    }, function(err, result)
-    {
-        console.timeEnd('[PLAYER] getPlayerRankings ' + account_id);
-        cb(err, result);
-    });
-}
-
-function getPlayer(db, account_id, cb)
-{
-    if (!Number.isNaN(account_id))
-    {
-        db.first().from('players').where(
+            if (dbAble[key])
+            {
+                query.db_select[key] = query.select[key][0];
+            }
+            query.filter[key] = query.select[key];
+            query.filter_count += 1;
+        }
+        else
         {
-            account_id: Number(account_id)
-        }).asCallback(cb);
+            query.keywords[key] = query.select[key];
+        }
     }
-    else
-    {
-        cb();
-    }
+    //absolute limit for number of matches to extract
+    query.limit = config.PLAYER_MATCH_LIMIT;
+    //mark this query processed
+    query.processed = true;
+    //console.log(query);
+    return query;
 }
 module.exports = buildPlayer;
