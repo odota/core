@@ -27,6 +27,7 @@
   "DOTA_UNIT_ORDER_CAST_NO_TARGET": "Number of times the player cast on no target",
   "DOTA_UNIT_ORDER_MOVE_TO_POSITION_short": "Move (P)",
   "DOTA_UNIT_ORDER_MOVE_TO_TARGET_short": "Move (T)",
+  "DOTA_UNIT_ORDER_MOVE_TO_DIRECTION_short": "Move (D)",
   "DOTA_UNIT_ORDER_ATTACK_MOVE_short": "Attack (M)",
   "DOTA_UNIT_ORDER_ATTACK_TARGET_short": "Attack (T)",
   "DOTA_UNIT_ORDER_CAST_POSITION_short": "Cast (P)",
