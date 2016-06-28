@@ -366,7 +366,13 @@ module.exports = function(db, redis, cassandra)
                     }
                 }
             });
-            res.json(heroes);
+            res.json(Object.keys(heroes).map(function(k)
+            {
+                return heroes[k];
+            }).sort(function(a, b)
+            {
+                return b.games - a.games;
+            }));
         });
     });
     api.get('/players/:account_id/peers', function(req, res, cb)
