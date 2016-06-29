@@ -20,6 +20,7 @@ var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
 const utility = require('../util/utility');
 const crypto = require('crypto');
+const util = require('util');
 module.exports = function(db, redis, cassandra)
 {
     api.use(function(req, res, cb)
@@ -557,10 +558,24 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    /*
-    api.get('/match_logs/:match_id', function(req, res, cb)
+    api.get('/match_logs', function(req, res, cb)
     {
-        db.raw(`SELECT * FROM match_logs WHERE match_id = ? ORDER BY time ASC`, [req.params.match_id]).asCallback(function(err, result)
+        var projection = ["account_id", "sum(value) as sum"];
+        var slot_match = "ml.sourcename_slot";
+        var group = "account_id";
+        var selection = "type = 'DOTA_COMBATLOG_DAMAGE'";
+        var sort = "sum desc";
+        var q = db.raw(util.format(`SELECT %s FROM match_logs ml
+        JOIN player_matches pm
+        ON ml.match_id = pm.match_id
+        AND %s = pm.player_slot
+        JOIN matches m
+        ON ml.match_id = m.match_id
+        WHERE %s
+        GROUP BY %s
+        ORDER BY %s`, projection.join(','), slot_match, selection, group, sort));
+        console.log(q.toString());
+        q.asCallback(function(err, result)
         {
             if (err)
             {
@@ -569,7 +584,6 @@ module.exports = function(db, redis, cassandra)
             res.json(result.rows);
         });
     });
-    */
     api.get('/pro_matches', function(req, res, cb)
     {
         db.raw(`

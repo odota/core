@@ -53,11 +53,11 @@ function processReduce(entries, match, meta)
         {}, e,
         {
             match_id: match.match_id,
-            attackername_slot: meta.hero_to_slot[e.attackername],
-            targetname_slot: meta.hero_to_slot[e.targetname],
-            sourcename_slot: meta.hero_to_slot[e.sourcename],
-            targetsourcename_slot: meta.hero_to_slot[e.targetname],
-            player1_slot: meta.slot_to_playerslot[e.player1],
+            attackername_slot: meta.slot_to_playerslot[meta.hero_to_slot[e.attackername]],
+            targetname_slot: meta.slot_to_playerslot[meta.hero_to_slot[e.targetname]],
+            sourcename_slot: meta.slot_to_playerslot[meta.hero_to_slot[e.sourcename]],
+            targetsourcename_slot: meta.slot_to_playerslot[meta.hero_to_slot[e.targetname]],
+            player1_slot: meta.slot_to_playerslot[meta.slot_to_playerslot[e.player1]],
             player_slot: e.player_slot || meta.slot_to_playerslot[e.slot],
             inflictor: translate(e.inflictor),
         });
