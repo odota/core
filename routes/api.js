@@ -562,20 +562,69 @@ module.exports = function(db, redis, cassandra)
     });
     api.get('/match_logs', function(req, res, cb)
     {
-        var projection = ["account_id", "sum(value) as sum"];
-        var slot_match = "ml.sourcename_slot";
-        var group = "account_id";
-        var selection = "type = 'DOTA_COMBATLOG_DAMAGE'";
-        var sort = "sum desc";
-        var q = db.raw(util.format(`SELECT %s FROM match_logs ml
+        if (req.query.q)
+        {
+            //TODO nlp the query!
+            var spl = req.query.q.split(' ');
+            spl.forEach(function(word, i)
+            {
+                //TODO fuzzy match the tokens
+                if (word === "fastest")
+                {
+                    // use the next word
+                    req.query.fastest = spl[i + 1];
+                }
+                if (word === "most")
+                {
+                    req.query.most = spl[i + 1];
+                }
+            });
+        }
+        if (req.query.fastest)
+        {
+            var projection = ["time", "player_matches.match_id", "player_matches.account_id", "name", "valuename"];
+            var slot_match = "match_logs.targetname_slot";
+            var selection = {"type": 'DOTA_COMBATLOG_PURCHASE', "valuename":'item_'+req.query.fastest};
+            var group = '';
+            var sort = "time asc";
+        }
+        else if (req.query.most)
+        {
+            req.query.most = req.query.most.toUpperCase();
+            //damage, heal
+            var projection = ["player_matches.account_id", "name", "sum(value) as sum"];
+            var slot_match = "match_logs.sourcename_slot";
+            var selection = {"type": 'DOTA_COMBATLOG_'+ req.query.most};
+            var group = "player_matches.account_id,name";
+            var sort = "sum desc";
+        }
+        /*
+        var q = db.raw(`SELECT %s FROM match_logs ml
         JOIN player_matches pm
         ON ml.match_id = pm.match_id
         AND %s = pm.player_slot
         JOIN matches m
         ON ml.match_id = m.match_id
+        JOIN notable_players np
+        ON pm.account_id = np.account_id
         WHERE %s
         GROUP BY %s
-        ORDER BY %s`, projection.join(','), slot_match, selection, group, sort));
+        ORDER BY %s`, projection.join(','), slot_match, selection, group, sort);
+        */
+        var q = db
+        .select(db.raw(projection))
+        .from('match_logs')
+        .join('player_matches', {'match_logs.match_id': 'player_matches.match_id', [slot_match]: 'player_matches.player_slot'})
+        .join('matches', 'match_logs.match_id', 'matches.match_id')
+        .join('notable_players', 'player_matches.account_id', 'notable_players.account_id')
+        .where(selection)
+        .modify(function(qb){
+            if (group)
+            {
+                qb.groupBy(db.raw(group));
+            }
+        })
+        .orderByRaw(db.raw(sort));
         console.log(q.toString());
         q.asCallback(function(err, result)
         {
@@ -583,7 +632,11 @@ module.exports = function(db, redis, cassandra)
             {
                 return cb(err);
             }
-            res.json(result.rows);
+            res.json(
+            {
+                sql: q.toString(),
+                result: result
+            });
         });
     });
     api.get('/pro_matches', function(req, res, cb)
