@@ -139,6 +139,8 @@ module.exports = function(db, redis, cassandra)
             project: ['match_id'].concat(req.query.project || []),
             filter: req.query ||
             {},
+            limit: Number(req.query.limit),
+            offset: Number(req.query.offset),
         };
         var filterDeps = {
             win: ['player_slot', 'radiant_win'],
@@ -507,7 +509,7 @@ module.exports = function(db, redis, cassandra)
     api.get('/players/:account_id/matches', function(req, res, cb)
     {
         console.log(req.queryObj);
-        //TODO support limit/offset/sort
+        req.queryObj.project = req.queryObj.project.concat('hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'kills', 'deaths', 'assists');
         queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
         {
             if (err)
