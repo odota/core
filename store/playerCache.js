@@ -15,11 +15,11 @@ var deserialize = utility.deserialize;
 var util = require('util');
 var reduceAggregable = utility.reduceAggregable;
 
-function readCache(account_id, options, cb)
+function readCache(account_id, queryObj, cb)
 {
     if (enabled)
     {
-        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', options.project.join(','));
+        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', queryObj.project.join(','));
         var matches = [];
         return cassandra.stream(query, [account_id],
         {
@@ -33,7 +33,7 @@ function readCache(account_id, options, cb)
             while (m = this.read())
             {
                 m = deserialize(m);
-                if (filter([m], options.filter).length)
+                if (filter([m], queryObj.filter).length)
                 {
                     matches.push(m);
                 }
@@ -41,6 +41,8 @@ function readCache(account_id, options, cb)
         }).on('end', function(err)
         {
             //stream ended, there aren't any more rows
+            //TODO apply sort
+            matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
             return cb(err, matches);
         }).on('error', function(err)
         {
