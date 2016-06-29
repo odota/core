@@ -509,7 +509,7 @@ module.exports = function(db, redis, cassandra)
     api.get('/players/:account_id/matches', function(req, res, cb)
     {
         console.log(req.queryObj);
-        req.queryObj.project = req.queryObj.project.concat('hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'kills', 'deaths', 'assists');
+        req.queryObj.project = req.queryObj.project.concat('hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists');
         queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
         {
             if (err)
