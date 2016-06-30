@@ -566,7 +566,7 @@ module.exports = function(db, redis, cassandra)
             'Which players have done the most damage to heroes?': `
             SELECT pm.account_id, name, sum(value) as sum
             FROM match_logs ml
-            JOIN player_matches pm.account_id
+            JOIN player_matches pm
             ON ml.sourcename_slot = pm.player_slot
             AND ml.match_id = pm.match_id
             JOIN matches m
@@ -574,14 +574,14 @@ module.exports = function(db, redis, cassandra)
             JOIN notable_players np
             ON pm.account_id = np.account_id
             WHERE type = 'DOTA_COMBATLOG_DAMAGE'
-            GROUP BY pm.account_id
+            GROUP BY pm.account_id, name
             ORDER BY sum desc;
             `,
             'Which players have taken the most damage from heroes?':
             `
             SELECT pm.account_id, name, sum(value) as sum
             FROM match_logs ml
-            JOIN player_matches pm.account_id
+            JOIN player_matches pm
             ON ml.targetname_slot = pm.player_slot
             AND ml.match_id = pm.match_id
             JOIN matches m
@@ -589,7 +589,7 @@ module.exports = function(db, redis, cassandra)
             JOIN notable_players np
             ON pm.account_id = np.account_id
             WHERE type = 'DOTA_COMBATLOG_DAMAGE'
-            GROUP BY pm.account_id
+            GROUP BY pm.account_id, name
             ORDER BY sum desc;
             `,
             'Which players have had the most last hits at 10 minutes?':
