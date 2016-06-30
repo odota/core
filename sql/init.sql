@@ -1,2 +1,4 @@
 ALTER USER postgres PASSWORD 'postgres';
+CREATE USER readonly PASSWORD 'readonly';
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly;
 CREATE DATABASE yasp;

@@ -560,146 +560,90 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/match_logs', function(req, res, cb)
+    api.get('/explorer', function(req, res, cb)
     {
-        if (req.query.q)
-        {
-            //TODO nlp the query!
-            var spl = req.query.q.split(' ');
-            spl.forEach(function(word, i)
-            {
-                //TODO fuzzy match the tokens
-                if (word === "fastest")
-                {
-                    // use the next word
-                    req.query.fastest = spl[i + 1];
-                }
-                if (word === "most")
-                {
-                    req.query.most = spl[i + 1];
-                }
-            });
-        }
-        if (req.query.fastest)
-        {
-            var projection = ["time", "player_matches.match_id", "player_matches.account_id", "name", "valuename"];
-            var slot_match = "match_logs.targetname_slot";
-            var selection = {"type": 'DOTA_COMBATLOG_PURCHASE', "valuename":'item_'+req.query.fastest};
-            var group = '';
-            var sort = "time asc";
-        }
-        else if (req.query.most)
-        {
-            req.query.most = req.query.most.toUpperCase();
-            //damage, heal
-            var projection = ["player_matches.account_id", "name", "sum(value) as sum"];
-            var slot_match = "match_logs.sourcename_slot";
-            var selection = {"type": 'DOTA_COMBATLOG_'+ req.query.most};
-            var group = "player_matches.account_id,name";
-            var sort = "sum desc";
-        }
-        /*
-        var q = db.raw(`SELECT %s FROM match_logs ml
-        JOIN player_matches pm
-        ON ml.match_id = pm.match_id
-        AND %s = pm.player_slot
-        JOIN matches m
-        ON ml.match_id = m.match_id
-        JOIN notable_players np
-        ON pm.account_id = np.account_id
-        WHERE %s
-        GROUP BY %s
-        ORDER BY %s`, projection.join(','), slot_match, selection, group, sort);
-        */
-        var q = db
-        .select(db.raw(projection))
-        .from('match_logs')
-        .join('player_matches', {'match_logs.match_id': 'player_matches.match_id', [slot_match]: 'player_matches.player_slot'})
-        .join('matches', 'match_logs.match_id', 'matches.match_id')
-        .join('notable_players', 'player_matches.account_id', 'notable_players.account_id')
-        .where(selection)
-        .modify(function(qb){
-            if (group)
-            {
-                qb.groupBy(db.raw(group));
-            }
-        })
-        .orderByRaw(db.raw(sort));
-        console.log(q.toString());
+        var qs = {
+            'Which players have done the most damage to heroes?': `
+            SELECT pm.account_id, name, sum(value) as sum
+            FROM match_logs ml
+            JOIN player_matches pm.account_id
+            ON ml.sourcename_slot = pm.player_slot
+            AND ml.match_id = pm.match_id
+            JOIN matches m
+            ON m.match_id = ml.match_id
+            JOIN notable_players np
+            ON pm.account_id = np.account_id
+            WHERE type = 'DOTA_COMBATLOG_DAMAGE'
+            GROUP BY pm.account_id
+            ORDER BY sum desc;
+            `,
+            'Which players have taken the most damage from heroes?':
+            `
+            SELECT pm.account_id, name, sum(value) as sum
+            FROM match_logs ml
+            JOIN player_matches pm.account_id
+            ON ml.targetname_slot = pm.player_slot
+            AND ml.match_id = pm.match_id
+            JOIN matches m
+            ON m.match_id = ml.match_id
+            JOIN notable_players np
+            ON pm.account_id = np.account_id
+            WHERE type = 'DOTA_COMBATLOG_DAMAGE'
+            GROUP BY pm.account_id
+            ORDER BY sum desc;
+            `,
+            'Which players have had the most last hits at 10 minutes?':
+            `
+            SELECT lh, pm.account_id, name
+            FROM match_logs ml
+            JOIN player_matches pm
+            ON ml.player_slot = pm.player_slot
+            AND ml.match_id = pm.match_id
+            JOIN notable_players np
+            ON pm.account_id = np.account_id
+            WHERE time = 600
+            ORDER BY lh desc;
+            `,
+            'Which players have done the most healing to heroes?': ``,
+            'What are the fastest courier upgrade times?': ``,
+            'Which player has played the most pro games?': ``,
+            'Which heroes have been picked and banned this month?': `
+            SELECT pb.hero_id,
+            sum(case when ((pm.player_slot < 128) = m.radiant_win) then 1 else 0 end) wins, 
+            sum(case when is_pick is true then 1 else 0 end) picks,
+            sum(case when is_pick is false then 1 else 0 end) bans
+            FROM picks_bans pb
+            LEFT JOIN matches m
+            ON pb.match_id = m.match_id
+            LEFT JOIN player_matches pm
+            ON pb.hero_id = pm.hero_id
+            AND pm.match_id = m.match_id
+            GROUP BY pb.hero_id;
+            `,
+            'What are the most recent pro matches?':
+            `
+            SELECT match_id, start_time, duration, ma.leagueid, name
+            FROM matches ma
+            JOIN leagues le
+            ON ma.leagueid = le.leagueid
+            WHERE ma.leagueid > 0
+            ORDER BY match_id DESC;
+            `,
+            'Who are the current pro players?':
+            `
+            SELECT * from notable_players;
+            `,
+        };
+        var knex = require('knex')({client: 'pg', connection: "readonly:readonly@localhost/yasp"});
+        var q = knex.raw(req.query.q).timeout(30000);
         q.asCallback(function(err, result)
         {
-            if (err)
-            {
-                return cb(err);
-            }
             res.json(
             {
                 sql: q.toString(),
+                error: err,
                 result: result
             });
-        });
-    });
-    api.get('/pro_matches', function(req, res, cb)
-    {
-        db.raw(`
-        SELECT match_id, start_time, duration, ma.leagueid, name
-        FROM matches ma
-        JOIN leagues le
-        ON ma.leagueid = le.leagueid
-        WHERE ma.leagueid > 0
-        ORDER BY match_id DESC
-        `).asCallback(function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(result.rows);
-        });
-    });
-    api.get('/pro_players', function(req, res, cb)
-    {
-        queries.getProPlayers(db, redis, function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(result);
-        });
-    });
-    api.get('/drafts', function(req, res, cb)
-    {
-        db.raw(`
-        SELECT pb.hero_id,
-        sum(case when ((pm.player_slot < 128) = m.radiant_win) then 1 else 0 end) wins, 
-        sum(case when is_pick is true then 1 else 0 end) picks,
-        sum(case when is_pick is false then 1 else 0 end) bans
-        FROM picks_bans pb
-        LEFT JOIN matches m
-        ON pb.match_id = m.match_id
-        LEFT JOIN player_matches pm
-        ON pb.hero_id = pm.hero_id
-        AND pm.match_id = m.match_id
-        GROUP BY pb.hero_id;
-        `).asCallback(function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(result.rows);
-        });
-    });
-    api.get('/pick_order', function(req, res, cb)
-    {
-        db.raw(`SELECT hero_id, ord, count( * ) FROM picks_bans WHERE is_pick is true GROUP BY hero_id, ord;`).asCallback(function(err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(result.rows);
         });
     });
     api.get('/leagues', function(req, res, cb)
