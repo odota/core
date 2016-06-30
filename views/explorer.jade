@@ -1,0 +1,34 @@
+extends layout
+
+block content
+  style.
+      #editor { 
+      width:800px;
+      height:400px;
+      }
+  <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/mode-pgsql.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ext-beautify.js"></script>
+  .row
+    .col-md-12
+      h3=q
+      if error
+        pre.text-danger !{JSON.stringify(error, null, 2)}
+      h4 SQL
+      //pre: code=sql
+      #editor=sql
+      button.btn.btn-primary(onclick="reload()") Query!
+      h4 Result
+      pre=JSON.stringify(result, null, 2)
+  script.
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.getSession().setMode("ace/mode/sql");
+    editor.setShowPrintMargin(false);
+    //var beautify = ace.require("ace/ext/beautify"); // get reference to extension
+    //var editor = ace.edit("editor"); // get reference to editor
+    //beautify.beautify(editor.session);
+    function reload()
+    {
+        window.location.href=("/explorer?sql="+editor.getValue());
+    }

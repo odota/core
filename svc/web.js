@@ -357,6 +357,13 @@ app.get('/search', function(req, res, cb)
         res.render('search');
     }
 });
+app.get('/explorer', function(req, res, cb)
+{
+    queries.queryRaw(req.query, function(err, result)
+    {
+        return res.render('explorer', Object.assign({}, result, err));
+    });
+});
 app.get('/april/:year?', function(req, res, cb)
 {
     return res.render('plusplus',
