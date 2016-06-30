@@ -3,21 +3,23 @@ extends layout
 block content
   style.
       #editor { 
-      width:800px;
+      width:500px;
       height:400px;
       }
   <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/mode-pgsql.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ext-beautify.js"></script>
+  <script src="https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/vkbeautify/vkbeautify.0.99.00.beta.js"></script>
   .row
-    .col-md-12
-      h3=q
+    h3=q || "Custom Query"
+    .col-md-6
       if error
         pre.text-danger !{JSON.stringify(error, null, 2)}
       h4 SQL
       //pre: code=sql
       #editor=sql
       button.btn.btn-primary(onclick="reload()") Query!
+    .col-md-6
       h4 Result
       pre=JSON.stringify(result, null, 2)
   script.
@@ -25,10 +27,8 @@ block content
     editor.setTheme("ace/theme/monokai");
     editor.getSession().setMode("ace/mode/sql");
     editor.setShowPrintMargin(false);
-    //var beautify = ace.require("ace/ext/beautify"); // get reference to extension
-    //var editor = ace.edit("editor"); // get reference to editor
-    //beautify.beautify(editor.session);
+    editor.setValue(vkbeautify.sql(editor.getValue()));
     function reload()
     {
-        window.location.href=("/explorer?sql="+editor.getValue());
+        window.location.href=("/explorer?sql="+editor.getValue().replace(/\n/g, " "));
     }
