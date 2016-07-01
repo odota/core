@@ -11,6 +11,10 @@
   "peers": {
     "name": "Peers"
   },
+  "pros": {
+    "name": "Pros",
+    "new-feature": true
+  },
   "activity": {
     "name": "Activity"
   },

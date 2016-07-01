@@ -2,7 +2,8 @@ extend player
 include /mixins/teammate_table
 
 block playercontent
-  h3 Peers
+  h3 Pros 
+    small Games played with professional players
   .row
     .col-md-12.table-responsive
       +teammate_table(player.teammate_list)
