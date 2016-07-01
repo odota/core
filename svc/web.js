@@ -359,10 +359,7 @@ app.get('/search', function(req, res, cb)
 });
 app.get('/explorer', function(req, res, cb)
 {
-    queries.queryRaw(req.query, function(err, result)
-    {
-        return res.render('explorer', Object.assign({}, result, err));
-    });
+    return res.render('explorer');
 });
 app.get('/april/:year?', function(req, res, cb)
 {

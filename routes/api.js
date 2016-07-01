@@ -21,6 +21,7 @@ var countCats = player_fields.countCats;
 const utility = require('../util/utility');
 const crypto = require('crypto');
 const util = require('util');
+const bodyParser = require('body-parser');
 module.exports = function(db, redis, cassandra)
 {
     api.use(function(req, res, cb)
@@ -564,7 +565,25 @@ module.exports = function(db, redis, cassandra)
     {
         queries.queryRaw(req.query, function(err, result)
         {
-            res.json(Object.assign({}, result, err));
+            res.json(Object.assign(
+            {}, result, err));
+        });
+    });
+    api.post('/explorer/query', bodyParser.json(), function(req, res, cb)
+    {
+        console.log(req.body);
+        const hash = crypto.createHash('md5');
+        hash.update(JSON.stringify(req.body));
+        var key = hash.digest('hex');
+        req.body.id = key;
+        redis.setex('query:' + key, 60 * 60, JSON.stringify(req.body));
+        res.json(req.body);
+    });
+    api.get('/explorer/query/:qid?', function(req, res, cb)
+    {
+        redis.get('query:' + req.params.qid, function(err, result)
+        {
+            res.json(JSON.parse(result));
         });
     });
     api.get('/leagues', function(req, res, cb)
