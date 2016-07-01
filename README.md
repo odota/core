@@ -25,7 +25,6 @@ Quickstart (Docker)
 * Install Docker: `curl -sSL https://get.docker.com/ | sh`
 * Clone the repo: `git clone https://github.com/yasp-dota/yasp`
 * Go into the directory: `cd yasp`
-* Build the Docker container: `sudo docker build -t yasp/yasp .`
 * Start a new container running the image, and map your local directory into the container: `sudo docker run -v $(pwd):/usr/src/yasp -di --name yasp --net=host yasp/yasp:latest`
 * Start the external dependencies in separate containers.
   * `sudo docker run -d --name postgres --net=host postgres:9.5`
@@ -48,6 +47,7 @@ Quickstart (Docker)
 * Useful commands
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
   * `node tasks/updateconstants` pulls latest constants data and saves to `json` directory.
+  * `sudo docker build -t yasp/yasp .` rebuilds the Docker image.  If you are editing the `Dockerfile`, do this to ensure it works.
 * Get some starter data
   * You can request some parses by ID to get some parsed data.  
   * You can also run `scanner` with `ENABLE_INSERT_ALL_MATCHES=1` in your `.env` to get some matches from the API.
