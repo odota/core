@@ -1109,36 +1109,29 @@ function generateTeammateArrayFromHash(db, input, player, cb)
 function queryRaw(input, cb)
 {
     var sql = input.sql || translateNQL(input.q);
-    if (sql)
+    var knex = require('knex')(
     {
-        var knex = require('knex')(
+        client: 'pg',
+        connection: "readonly:readonly@localhost/yasp",
+        pool:
         {
-            client: 'pg',
-            connection: "readonly:readonly@localhost/yasp",
-            pool:
-            {
-                min: 1,
-                max: 1,
-            },
-        });
-        var q = knex.raw(sql).timeout(30000);
-        q.asCallback(function(err, result)
-        {
-            knex.destroy(function()
-            {
-                cb(err,
-                {
-                    q: input.q,
-                    sql: input.sql,
-                    result: result
-                });
-            });
-        });
-    }
-    else
+            min: 1,
+            max: 1,
+        },
+    });
+    var q = knex.raw(sql).timeout(30000);
+    q.asCallback(function(err, result)
     {
-        cb();
-    }
+        knex.destroy(function()
+        {
+            cb(err, Object.assign(
+            {}, input,
+            {
+                result: result,
+                err: err ? err.stack : err,
+            }));
+        });
+    });
 }
 
 function translateNQL(input)

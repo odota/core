@@ -561,18 +561,7 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/explorer', function(req, res, cb)
-    {
-        queries.queryRaw(req.query, function(err, result)
-        {
-            if (err)
-            {
-                result.err = err.stack || err;
-            }
-            res.json(result);
-        });
-    });
-    api.post('/explorer/query', bodyParser.json(
+    api.post('/explorer', bodyParser.json(
     {
         limit: '100kb'
     }), function(req, res, cb)
@@ -581,20 +570,46 @@ module.exports = function(db, redis, cassandra)
         const hash = crypto.createHash('md5');
         hash.update(JSON.stringify(req.body));
         var key = hash.digest('hex');
-        req.body.id = key;
-        redis.setex('query:' + key, 60 * 60, JSON.stringify(req.body));
-        res.json(req.body);
-    });
-    api.get('/explorer/query/:qid?', function(req, res, cb)
-    {
-        redis.get('query:' + req.params.qid, function(err, result)
+        var obj = Object.assign(
+        {}, req.body,
+        {
+            id: key
+        });
+        redis.setex('query:' + key, 60 * 60, JSON.stringify(obj));
+        queries.queryRaw(obj, function(err, result)
         {
             if (err)
             {
-                return cb(err);
+                console.err(err);
             }
-            res.json(JSON.parse(result));
+            res.json(result);
         });
+    });
+    api.get('/explorer/:qid?', function(req, res, cb)
+    {
+        if (req.params.qid)
+        {
+            redis.get('query:' + req.params.qid, function(err, result)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                var q = JSON.parse(result);
+                queries.queryRaw(q, function(err, result)
+                {
+                    if (err)
+                    {
+                        console.err(err);
+                    }
+                    res.json(result);
+                });
+            });
+        }
+        else
+        {
+            //TODO handle sql/nql queries
+        }
     });
     api.get('/leagues', function(req, res, cb)
     {

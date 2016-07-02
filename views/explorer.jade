@@ -15,7 +15,6 @@ block content
       //pre: code=sql
       #editor=sql
       button.btn.btn-primary(onclick="query()") Query
-      button.btn.btn-success(onclick="share()") Share
       h4 Result
       pre#result= (err || result)
   script.
@@ -27,40 +26,29 @@ block content
     var qid = window.location.href.split('explorer/')[1];
     if (qid)
     {
-       fetch('/api/explorer/query/'+qid).then(function(response) {
+       fetch('/api/explorer/'+qid).then(function(response) {
           return response.json();
           })
-        .then(function(json){
-            //TODO set query name
-            editor.setValue(json.query);
-            query();
-        });
+        .then(handleResponse);
     }
     function query()
     {
-        fetch('/api/explorer?sql='+getSqlString())
-        .then(function(response) {
-          return response.json();
-          })
-        .then(function(json){
-          document.getElementById('result').innerHTML = JSON.stringify(json, null, 2);
-        });
-    }
-    function share()
-    {
-      fetch('/api/explorer/query', {
+      fetch('/api/explorer', {
       	method: 'post',
       	headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-      	body: JSON.stringify({name: '', query: getSqlString()})
+      	body: JSON.stringify({name: '', sql: editor.getValue()})
       }).then(function(response){
         return response.json();
       })
-      .then(function(json){
-         window.history.pushState('', '', '/explorer/'+json.id);
-      });
+      .then(handleResponse);
+    }
+    function handleResponse(json){
+        editor.setValue(json.sql);
+        document.getElementById('result').innerHTML = JSON.stringify(json, null, 2);
+        window.history.pushState('', '', '/explorer/'+json.id);
     }
     function getSqlString()
     {
