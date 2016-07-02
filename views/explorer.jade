@@ -3,19 +3,19 @@ extends layout
 block content
   style.
       #editor { 
-      width:500px;
-      height:400px;
+      width:100%;
+      height:200px;
       }
   <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
   .row
-    h3 Professional Dota 2 Data Explorer
-    .col-md-6
+    h3 Data Explorer 
+      small Includes data from professional Dota 2 matches
+    .col-md-12
       h4 SQL
       //pre: code=sql
       #editor=sql
       button.btn.btn-primary(onclick="query()") Query
       button.btn.btn-success(onclick="share()") Share
-    .col-md-6
       h4 Result
       pre#result= (err || result)
   script.
@@ -24,11 +24,10 @@ block content
     editor.getSession().setMode("ace/mode/sql");
     editor.setShowPrintMargin(false);
     
-    var uq = parseUrlQueryString(window.location.href);
-    console.log(uq);
-    if (uq.qid)
+    var qid = window.location.href.split('explorer/')[1];
+    if (qid)
     {
-       fetch('/api/explorer/query/'+uq.qid).then(function(response) {
+       fetch('/api/explorer/query/'+qid).then(function(response) {
           return response.json();
           })
         .then(function(json){
@@ -60,19 +59,10 @@ block content
         return response.json();
       })
       .then(function(json){
-         window.history.pushState('', '', '?qid='+json.id);
+         window.history.pushState('', '', '/explorer/'+json.id);
       });
     }
     function getSqlString()
     {
         return editor.getValue().replace(/\n/g, " ");
-    }
-    function parseUrlQueryString(a)
-    {
-      var b = {};
-      var qs = a.split("?")[1].split("&");
-      qs.forEach(function(q){var s = q.split('=');
-        b[s[0]] = decodeURIComponent(s[1]);
-      });
-      return b;
     }

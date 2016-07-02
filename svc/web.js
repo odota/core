@@ -357,7 +357,7 @@ app.get('/search', function(req, res, cb)
         res.render('search');
     }
 });
-app.get('/explorer', function(req, res, cb)
+app.get('/explorer/:qid?', function(req, res, cb)
 {
     return res.render('explorer');
 });

@@ -565,11 +565,17 @@ module.exports = function(db, redis, cassandra)
     {
         queries.queryRaw(req.query, function(err, result)
         {
-            res.json(Object.assign(
-            {}, result, err));
+            if (err)
+            {
+                result.err = err.stack || err;
+            }
+            res.json(result);
         });
     });
-    api.post('/explorer/query', bodyParser.json(), function(req, res, cb)
+    api.post('/explorer/query', bodyParser.json(
+    {
+        limit: '100kb'
+    }), function(req, res, cb)
     {
         console.log(req.body);
         const hash = crypto.createHash('md5');
@@ -583,6 +589,10 @@ module.exports = function(db, redis, cassandra)
     {
         redis.get('query:' + req.params.qid, function(err, result)
         {
+            if (err)
+            {
+                return cb(err);
+            }
             res.json(JSON.parse(result));
         });
     });
