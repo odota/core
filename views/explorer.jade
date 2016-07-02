@@ -23,10 +23,10 @@ block content
     editor.getSession().setMode("ace/mode/sql");
     editor.setShowPrintMargin(false);
     
-    var qid = window.location.href.split('explorer/')[1];
-    if (qid)
+    var id = parseUrlQueryString(window.location.href).id;
+    if (id)
     {
-       fetch('/api/explorer/'+qid).then(function(response) {
+       fetch('/api/explorer?id='+id).then(function(response) {
           return response.json();
           })
         .then(handleResponse);
@@ -48,9 +48,18 @@ block content
     function handleResponse(json){
         editor.setValue(json.sql);
         document.getElementById('result').innerHTML = JSON.stringify(json, null, 2);
-        window.history.pushState('', '', '/explorer/'+json.id);
+        window.history.pushState('', '', '?id='+json.id);
     }
     function getSqlString()
     {
         return editor.getValue().replace(/\n/g, " ");
+    }
+    function parseUrlQueryString(a)		
+    {		
+      var b = {};		
+      var qs = a.split("?")[1].split("&");		
+      qs.forEach(function(q){var s = q.split('=');		
+        b[s[0]] = decodeURIComponent(s[1]);		
+      });		
+      return b;
     }

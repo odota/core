@@ -563,7 +563,7 @@ module.exports = function(db, redis, cassandra)
     });
     api.post('/explorer', bodyParser.json(
     {
-        limit: '100kb'
+        limit: '10kb'
     }), function(req, res, cb)
     {
         console.log(req.body);
@@ -580,16 +580,16 @@ module.exports = function(db, redis, cassandra)
         {
             if (err)
             {
-                console.err(err);
+                console.error(err);
             }
             res.json(result);
         });
     });
-    api.get('/explorer/:qid?', function(req, res, cb)
+    api.get('/explorer', function(req, res, cb)
     {
-        if (req.params.qid)
+        if (req.query.id)
         {
-            redis.get('query:' + req.params.qid, function(err, result)
+            redis.get('query:' + req.query.id, function(err, result)
             {
                 if (err)
                 {
@@ -600,7 +600,7 @@ module.exports = function(db, redis, cassandra)
                 {
                     if (err)
                     {
-                        console.err(err);
+                        console.error(err);
                     }
                     res.json(result);
                 });
