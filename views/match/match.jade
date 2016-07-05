@@ -12,10 +12,11 @@ block content
       h2 Match #{match.match_id} 
         small(class=match.radiant_win ? "text-success" : "text-danger")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
         br
-        a(style="margin-left:1em;" href="/request#"+match.match_id, class="btn btn-sm" class=match.version ? "btn-success" : "btn-primary") #{match.version ? "Re-Parse Match" : "Request Parse"}
+        a(href="/request#"+match.match_id, class="btn btn-sm" class=match.version ? "btn-success" : "btn-primary") #{match.version ? "Re-Parse" : "Parse"}
         if match.replay_url
           a(style="margin-left:1em;" href=match.replay_url, class="btn btn-sm btn-default") 
-            i(class="fa fa-download" aria-hidden="true")
+            i(class="fa fa-download", style="margin-right: 3px;", aria-hidden="true")
+            | Replay
           a(style="margin-left:1em;" href="#{'https://www.jist.tv/create.php?dota2-match-url=' + match.replay_url}", class="btn btn-sm btn-default")
             | Get Video With
             img(src='/public/images/jist-white-logo.png', style="height: 17px")
