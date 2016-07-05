@@ -60,7 +60,7 @@ block content
             if (player.win+player.lose)
               span (#{(player.win/(player.win+player.lose)*100).toFixed(2)}%)
     .col-md-2
-        a(href="#{'https://dotacoach.org/Hire/Yasp?matchID=' + Math.max(Math.max.apply(null, player.matches.map(function(m){return m.match_id;})),-1) + '&playerSteamId=' + (user ? user.account_id : player.profile.account_id) + '&playerMmr=' + Math.max(player.solo_competitive_rank || -1, player.competitive_rank || -1)}", class="btn btn-sm btn-default")
+        a(href="#{'https://dotacoach.org/Hire/Yasp?matchID=' + Math.max(Math.max.apply(null, player.matches.map(function(m){return m.match_id;})),-1) + '&userSteamId=' + (user ? user.account_id : '') + '&playerSteamId=' + player.profile.account_id + '&playerMmr=' + Math.max(player.solo_competitive_rank || -1, player.competitive_rank || -1)}", class="btn btn-sm btn-default")
           img(src='/public/images/dotacoach-32x24.png', style="margin: -2px; padding-right: 4px;")
           | Ask a Coach
 
