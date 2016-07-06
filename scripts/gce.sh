@@ -44,6 +44,7 @@ sudo docker run -d --name yasp --restart=always --net=host -e PROVIDER=gce -e GR
 sudo docker start yasp
 '
 gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"
+gcloud compute instance-groups managed set-autoscaling "backend-group-1" --cool-down-period "60" --max-num-replicas "1" --min-num-replicas "1" --target-cpu-utilization "0.6"
 
 #parsers
 gcloud compute instance-groups managed delete -q parser-group-1

@@ -61,10 +61,6 @@ function processReduce(entries, match, meta)
             player_slot: e.player_slot || meta.slot_to_playerslot[e.slot],
             inflictor: translate(e.inflictor),
         });
-        delete e2.attackername;
-        delete e2.targetname;
-        delete e2.sourcename;
-        delete e2.targetsourcename;
         return e2;
     });
     /*
