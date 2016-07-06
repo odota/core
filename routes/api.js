@@ -28,6 +28,7 @@ module.exports = function(db, redis, cassandra)
     api.use(function(req, res, cb)
     {
         res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+        res.header('Access-Control-Allow-Headers', 'origin, content-type, accept');
         res.header('Access-Control-Allow-Credentials', 'true');
         cb();
     });

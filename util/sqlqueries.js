@@ -116,5 +116,13 @@ module.exports = [
         "query": `
             SELECT * from notable_players;
             `,
+    },
+    {
+        "name": "What columns are available in the database?",
+        "query": `
+        SELECT *
+        FROM information_schema.columns
+        WHERE table_schema = 'public';
+        `,
     }
     ];
