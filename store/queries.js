@@ -1106,31 +1106,18 @@ function generateTeammateArrayFromHash(db, input, player, cb)
     });
 }
 
-function queryRaw(input, cb)
+function queryRaw(input, options, cb)
 {
     var sql = input.sql || translateNQL(input.q);
-    var knex = require('knex')(
-    {
-        client: 'pg',
-        connection: "readonly:readonly@localhost/yasp",
-        pool:
-        {
-            min: 1,
-            max: 1,
-        },
-    });
-    var q = knex.raw(sql).timeout(30000);
+    var q = options.db.raw(sql).timeout(30000);
     q.asCallback(function(err, result)
     {
-        knex.destroy(function()
+        cb(err, Object.assign(
+        {}, input,
         {
-            cb(err, Object.assign(
-            {}, input,
-            {
-                result: result,
-                err: err ? err.stack : err,
-            }));
-        });
+            result: result,
+            err: err ? err.stack : err,
+        }));
     });
 }
 

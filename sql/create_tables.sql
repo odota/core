@@ -244,3 +244,10 @@ CREATE TABLE teams(
   name varchar(255),
   tag varchar(255)
 );
+
+CREATE TABLE queries(
+  id bigserial PRIMARY KEY,
+  name varchar(255),
+  nql text,
+  sql text
+);

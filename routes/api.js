@@ -15,6 +15,7 @@ const rQueue = queue.getQueue('request');
 const queries = require('../store/queries');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
+const readonly = require('../store/readonly');
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
@@ -567,36 +568,42 @@ module.exports = function(db, redis, cassandra)
     }), function(req, res, cb)
     {
         console.log(req.body);
-        const hash = crypto.createHash('md5');
-        hash.update(JSON.stringify(req.body));
-        var key = hash.digest('hex');
-        var obj = Object.assign(
-        {}, req.body,
-        {
-            id: key
-        });
-        redis.setex('query:' + key, 60 * 60, JSON.stringify(obj));
-        queries.queryRaw(obj, function(err, result)
+        db('queries').insert(req.body).returning('*').asCallback(function(err, obj)
         {
             if (err)
             {
-                console.error(err);
+                return cb(err);
             }
-            res.json(result);
+            queries.queryRaw(obj[0],
+            {
+                db: readonly
+            }, function(err, result)
+            {
+                if (err)
+                {
+                    console.error(err);
+                }
+                res.json(result);
+            });
         });
     });
     api.get('/explorer', function(req, res, cb)
     {
         if (req.query.id)
         {
-            redis.get('query:' + req.query.id, function(err, result)
+            db.select().from('queries').where(
+            {
+                id: req.query.id
+            }).asCallback(function(err, result)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                var q = JSON.parse(result);
-                queries.queryRaw(q, function(err, result)
+                queries.queryRaw(result[0],
+                {
+                    db: readonly
+                }, function(err, result)
                 {
                     if (err)
                     {
