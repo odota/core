@@ -1,6 +1,6 @@
 module.exports = [
     {
-        "name": 'Which players have done the most damage to heroes?',
+        "name": 'Players, most damage dealt',
         "query": `
             SELECT pm.account_id, name, sum(value) as sum
             FROM match_logs ml
@@ -17,7 +17,7 @@ module.exports = [
             `,
     },
     {
-        "name": 'Which players have taken the most damage from heroes?',
+        "name": 'Players, most damage taken',
         "query": `
             SELECT pm.account_id, name, sum(value) as sum
             FROM match_logs ml
@@ -34,7 +34,7 @@ module.exports = [
             `,
     },
     {
-        "name": 'Which players have had the most last hits at 10 minutes?',
+        "name": 'Players, most LH@10',
         "query": `
             SELECT lh, pm.account_id, name
             FROM match_logs ml
@@ -48,13 +48,13 @@ module.exports = [
             `,
     },
     {
-        "name": 'Which players have done the most healing to heroes?',
+        "name": 'Players, most healing',
         "query": `
         
         `,
     },
     {
-        "name": 'What are the fastest Manta timings?',
+        "name": 'Players, fastest Manta',
         "query": `
             SELECT time, valuename, pm.account_id, name, m.match_id, leagueid
             FROM match_logs ml
@@ -72,7 +72,7 @@ module.exports = [
         `,
     },
     {
-        "name": 'Which player has played the most pro games?',
+        "name": 'Players, most pro games',
         "query": `
             SELECT pm.account_id, np.name, count(*)
             FROM player_matches pm
@@ -83,7 +83,7 @@ module.exports = [
         `,
     },
     {
-        "name": 'Which heroes have been picked and banned the most?',
+        "name": 'Heroes, most picked/banned',
         "query": `
             SELECT pb.hero_id,
             sum(case when ((pm.player_slot < 128) = m.radiant_win) then 1 else 0 end) wins, 
@@ -100,7 +100,7 @@ module.exports = [
             `,
     },
     {
-        "name": 'What are the most recent pro matches?',
+        "name": 'Matches, most recent',
         "query": `
             SELECT match_id, start_time, duration, ma.leagueid, name
             FROM matches ma
@@ -112,13 +112,13 @@ module.exports = [
             `,
     },
     {
-        "name": 'Who are the current pro players?',
+        "name": 'Players',
         "query": `
             SELECT * from notable_players;
             `,
     },
     {
-        "name": "What columns are available in the database?",
+        "name": "Metadata, available columns",
         "query": `
         SELECT *
         FROM information_schema.columns
