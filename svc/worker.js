@@ -163,7 +163,7 @@ invokeInterval(function leagues(cb)
 }, 10 * 60 * 1000);
 invokeInterval(function teams(cb)
 {
-    db.raw(`select distinct radiant_team_id from matches tablesample bernoulli(100) limit 100`).asCallback(function(err, result)
+    db.raw(`select distinct radiant_team_id from matches`).asCallback(function(err, result)
     {
         if (err)
         {
@@ -197,7 +197,7 @@ invokeInterval(function teams(cb)
             });
         }, cb);
     });
-}, 60 * 1000);
+}, 60 * 60 * 1000);
 
 function invokeInterval(func, delay)
 {
