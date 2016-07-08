@@ -92,7 +92,7 @@ var health = {
             return cb(err,
             {
                 metric: redis.server_info.used_memory,
-                threshold: 16000000000
+                threshold: 13000000000
             });
         });
     },
@@ -107,7 +107,7 @@ var health = {
             return cb(err,
             {
                 metric: result.rows[0].pg_database_size,
-                threshold: 100000000000
+                threshold: 150000000000
             });
         });
     }
