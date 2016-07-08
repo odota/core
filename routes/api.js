@@ -593,10 +593,10 @@ module.exports = function (db, redis, cassandra)
     {
         if (req.query.id)
         {
-            if (req.query.id.charAt(0) === "e")
+            if (isNaN(req.query.id))
             {
                 return runQuery(null, [Object.assign(
-                {}, sqlqueries[Number(req.query.id.slice(1))],
+                {}, sqlqueries[req.query.id],
                 {
                     id: req.query.id
                 })]);
@@ -638,12 +638,12 @@ module.exports = function (db, redis, cassandra)
     });
     api.get('/explorer/examples', function (req, res, cb)
     {
-        res.json(sqlqueries.map(function (q, i)
+        res.json(Object.keys(sqlqueries).map(function(k, i)
         {
             return Object.assign(
-            {}, q,
+            {}, sqlqueries[k],
             {
-                id: "e" + i
+                id: k
             });
         }));
     });
