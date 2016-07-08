@@ -20,34 +20,35 @@ var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
 const utility = require('../util/utility');
+const sqlqueries = require('../util/sqlqueries');
 const crypto = require('crypto');
 const util = require('util');
 const bodyParser = require('body-parser');
-module.exports = function(db, redis, cassandra)
+module.exports = function (db, redis, cassandra)
 {
-    api.use(function(req, res, cb)
+    api.use(function (req, res, cb)
     {
         res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
         res.header('Access-Control-Allow-Headers', 'origin, content-type, accept');
         res.header('Access-Control-Allow-Credentials', 'true');
         cb();
     });
-    api.get('/constants', function(req, res, cb)
+    api.get('/constants', function (req, res, cb)
     {
         res.header('Cache-Control', 'max-age=604800, public');
         res.json(constants);
     });
-    api.get('/metadata', function(req, res, cb)
+    api.get('/metadata', function (req, res, cb)
     {
         async.parallel(
         {
-            banner: function(cb)
+            banner: function (cb)
             {
                 redis.get("banner", cb);
             },
-            cheese: function(cb)
+            cheese: function (cb)
             {
-                redis.get("cheese_goal", function(err, result)
+                redis.get("cheese_goal", function (err, result)
                 {
                     return cb(err,
                     {
@@ -56,11 +57,11 @@ module.exports = function(db, redis, cassandra)
                     });
                 });
             },
-            user: function(cb)
+            user: function (cb)
             {
                 cb(null, req.user);
             },
-        }, function(err, result)
+        }, function (err, result)
         {
             if (err)
             {
@@ -69,15 +70,15 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/items', function(req, res)
+    api.get('/items', function (req, res)
     {
         res.json(constants.items[req.query.name]);
     });
-    api.get('/abilities', function(req, res)
+    api.get('/abilities', function (req, res)
     {
         res.json(constants.abilities[req.query.name]);
     });
-    api.get('/matches/:match_id/:info?', function(req, res, cb)
+    api.get('/matches/:match_id/:info?', function (req, res, cb)
     {
         buildMatch(
         {
@@ -85,7 +86,7 @@ module.exports = function(db, redis, cassandra)
             redis: redis,
             cassandra: cassandra,
             match_id: req.params.match_id
-        }, function(err, match)
+        }, function (err, match)
         {
             if (err)
             {
@@ -99,28 +100,28 @@ module.exports = function(db, redis, cassandra)
         });
     });
     //basic player data
-    api.get('/players/:account_id', function(req, res, cb)
+    api.get('/players/:account_id', function (req, res, cb)
     {
         var account_id = Number(req.params.account_id);
         async.parallel(
         {
-            profile: function(cb)
+            profile: function (cb)
             {
                 queries.getPlayer(db, account_id, cb);
             },
-            solo_competitive_rank: function(cb)
+            solo_competitive_rank: function (cb)
             {
                 redis.zscore('solo_competitive_rank', account_id, cb);
             },
-            competitive_rank: function(cb)
+            competitive_rank: function (cb)
             {
                 redis.zscore('competitive_rank', account_id, cb);
             },
-            mmr_estimate: function(cb)
+            mmr_estimate: function (cb)
             {
                 queries.mmrEstimate(db, redis, account_id, cb);
             },
-        }, function(err, result)
+        }, function (err, result)
         {
             if (err)
             {
@@ -129,7 +130,7 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.use('/players/:account_id/:info?', function(req, res, cb)
+    api.use('/players/:account_id/:info?', function (req, res, cb)
     {
         if (Number.isNaN(req.params.account_id))
         {
@@ -165,7 +166,7 @@ module.exports = function(db, redis, cassandra)
         for (var key in req.query)
         {
             //numberify and arrayify everything in query
-            req.query[key] = [].concat(req.query[key]).map(function(e)
+            req.query[key] = [].concat(req.query[key]).map(function (e)
             {
                 return isNaN(Number(e)) ? e : Number(e);
             });
@@ -175,7 +176,7 @@ module.exports = function(db, redis, cassandra)
         req.queryObj = queryObj;
         cb();
     });
-    api.get('/players/:account_id/wordcloud', function(req, res, cb)
+    api.get('/players/:account_id/wordcloud', function (req, res, cb)
     {
         var result = {
             my_word_counts:
@@ -184,13 +185,13 @@ module.exports = function(db, redis, cassandra)
             {},
         };
         req.queryObj.project = req.queryObj.project.concat(Object.keys(result));
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache.forEach(function(m)
+            cache.forEach(function (m)
             {
                 for (var key in result)
                 {
@@ -200,7 +201,7 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/players/:account_id/wardmap', function(req, res, cb)
+    api.get('/players/:account_id/wardmap', function (req, res, cb)
     {
         var result = {
             obs:
@@ -209,13 +210,13 @@ module.exports = function(db, redis, cassandra)
             {},
         };
         req.queryObj.project = req.queryObj.project.concat(Object.keys(result));
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache.forEach(function(m)
+            cache.forEach(function (m)
             {
                 for (var key in result)
                 {
@@ -232,20 +233,20 @@ module.exports = function(db, redis, cassandra)
             res.json(d);
         });
     });
-    api.get('/players/:account_id/wl', function(req, res, cb)
+    api.get('/players/:account_id/wl', function (req, res, cb)
     {
         var result = {
             win: 0,
             lose: 0,
         };
         req.queryObj.project = req.queryObj.project.concat('player_slot', 'radiant_win');
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache.forEach(function(m)
+            cache.forEach(function (m)
             {
                 if (utility.isRadiant(m) == m.radiant_win)
                 {
@@ -259,17 +260,17 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/players/:account_id/records', function(req, res, cb)
+    api.get('/players/:account_id/records', function (req, res, cb)
     {
         var result = {};
         req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys)).concat('hero_id', 'start_time');
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache.forEach(function(m)
+            cache.forEach(function (m)
             {
                 for (var key in subkeys)
                 {
@@ -282,7 +283,7 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/players/:account_id/counts', function(req, res, cb)
+    api.get('/players/:account_id/counts', function (req, res, cb)
     {
         var result = {};
         for (var key in countCats)
@@ -290,13 +291,13 @@ module.exports = function(db, redis, cassandra)
             result[key] = {};
         }
         req.queryObj.project = req.queryObj.project.concat(Object.keys(countCats));
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache.forEach(function(m)
+            cache.forEach(function (m)
             {
                 for (var key in countCats)
                 {
@@ -306,7 +307,7 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/players/:account_id/heroes', function(req, res, cb)
+    api.get('/players/:account_id/heroes', function (req, res, cb)
     {
         var heroes = {};
         //prefill heroes with every hero
@@ -325,13 +326,13 @@ module.exports = function(db, redis, cassandra)
             heroes[hero_id] = hero;
         }
         req.queryObj.project = req.queryObj.project.concat('heroes', 'account_id', 'start_time', 'player_slot', 'radiant_win');
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache.forEach(function(m)
+            cache.forEach(function (m)
             {
                 var isRadiant = utility.isRadiant;
                 var player_win = isRadiant(m) === m.radiant_win;
@@ -372,27 +373,27 @@ module.exports = function(db, redis, cassandra)
                     }
                 }
             });
-            res.json(Object.keys(heroes).map(function(k)
+            res.json(Object.keys(heroes).map(function (k)
             {
                 return heroes[k];
-            }).sort(function(a, b)
+            }).sort(function (a, b)
             {
                 return b.games - a.games;
             }));
         });
     });
-    api.get('/players/:account_id/peers', function(req, res, cb)
+    api.get('/players/:account_id/peers', function (req, res, cb)
     {
         var teammates = {};
         var isRadiant = utility.isRadiant;
         req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache.forEach(function(m)
+            cache.forEach(function (m)
             {
                 var player_win = isRadiant(m) === m.radiant_win;
                 var group = m.heroes ||
@@ -438,7 +439,7 @@ module.exports = function(db, redis, cassandra)
             queries.generateTeammateArrayFromHash(db, teammates,
             {
                 account_id: req.params.account_id
-            }, function(err, result)
+            }, function (err, result)
             {
                 if (err)
                 {
@@ -448,10 +449,10 @@ module.exports = function(db, redis, cassandra)
             });
         });
     });
-    api.get('/players/:account_id/items', function(req, res, cb)
+    api.get('/players/:account_id/items', function (req, res, cb)
     {
         req.queryObj.project = req.queryObj.project.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
@@ -460,10 +461,10 @@ module.exports = function(db, redis, cassandra)
             res.json(cache);
         });
     });
-    api.get('/players/:account_id/activity', function(req, res, cb)
+    api.get('/players/:account_id/activity', function (req, res, cb)
     {
         req.queryObj.project = req.queryObj.project.concat(['start_time']);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
@@ -472,18 +473,18 @@ module.exports = function(db, redis, cassandra)
             res.json(cache);
         });
     });
-    api.get('/players/:account_id/histograms/:field', function(req, res, cb)
+    api.get('/players/:account_id/histograms/:field', function (req, res, cb)
     {
         var result = {};
         var field = req.params.field;
         req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot', req.params.field);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
-            cache.forEach(function(m)
+            cache.forEach(function (m)
             {
                 if (!result[~~m[field]])
                 {
@@ -498,10 +499,10 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/players/:account_id/trends/:field', function(req, res, cb)
+    api.get('/players/:account_id/trends/:field', function (req, res, cb)
     {
         req.queryObj.project = req.queryObj.project.concat('hero_id', req.params.field);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
@@ -510,11 +511,11 @@ module.exports = function(db, redis, cassandra)
             res.json(cache);
         });
     });
-    api.get('/players/:account_id/matches', function(req, res, cb)
+    api.get('/players/:account_id/matches', function (req, res, cb)
     {
         console.log(req.queryObj);
         req.queryObj.project = req.queryObj.project.concat('hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists');
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
@@ -541,9 +542,9 @@ module.exports = function(db, redis, cassandra)
         });
     });
     //non-match based
-    api.get('/players/:account_id/ratings', function(req, res, cb)
+    api.get('/players/:account_id/ratings', function (req, res, cb)
     {
-        queries.getPlayerRatings(db, req.params.account_id, function(err, result)
+        queries.getPlayerRatings(db, req.params.account_id, function (err, result)
         {
             if (err)
             {
@@ -552,9 +553,9 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/players/:account_id/rankings', function(req, res, cb)
+    api.get('/players/:account_id/rankings', function (req, res, cb)
     {
-        queries.getPlayerRankings(redis, req.params.account_id, function(err, result)
+        queries.getPlayerRankings(redis, req.params.account_id, function (err, result)
         {
             if (err)
             {
@@ -566,10 +567,10 @@ module.exports = function(db, redis, cassandra)
     api.post('/explorer', bodyParser.json(
     {
         limit: '10kb'
-    }), function(req, res, cb)
+    }), function (req, res, cb)
     {
         console.log(req.body);
-        db('queries').insert(req.body).returning('*').asCallback(function(err, obj)
+        db('queries').insert(req.body).returning('*').asCallback(function (err, obj)
         {
             if (err)
             {
@@ -578,7 +579,7 @@ module.exports = function(db, redis, cassandra)
             queries.queryRaw(obj[0],
             {
                 db: readonly
-            }, function(err, result)
+            }, function (err, result)
             {
                 if (err)
                 {
@@ -588,40 +589,67 @@ module.exports = function(db, redis, cassandra)
             });
         });
     });
-    api.get('/explorer', function(req, res, cb)
+    api.get('/explorer', function (req, res, cb)
     {
         if (req.query.id)
         {
-            db.select().from('queries').where(
+            if (req.query.id.charAt(0) === "e")
             {
-                id: req.query.id
-            }).asCallback(function(err, result)
+                return runQuery(null, [Object.assign(
+                {}, sqlqueries[Number(req.query.id.slice(1))],
+                {
+                    id: req.query.id
+                })]);
+            }
+            else
             {
-                if (err)
+                db.select().from('queries').where(
                 {
-                    return cb(err);
-                }
-                queries.queryRaw(result[0],
-                {
-                    db: readonly
-                }, function(err, result)
-                {
-                    if (err)
-                    {
-                        console.error(err);
-                    }
-                    res.json(result);
-                });
-            });
+                    id: req.query.id
+                }).asCallback(runQuery);
+            }
         }
         else
         {
             //TODO handle sql/nql queries
+            res.json(
+            {});
+        }
+
+        function runQuery(err, q)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            console.log(q);
+            queries.queryRaw(q[0],
+            {
+                db: readonly
+            }, function (err, result)
+            {
+                if (err)
+                {
+                    console.error(err);
+                }
+                res.json(result);
+            });
         }
     });
-    api.get('/leagues', function(req, res, cb)
+    api.get('/explorer/examples', function (req, res, cb)
     {
-        db.raw(`SELECT * FROM leagues ORDER BY leagueid DESC`).asCallback(function(err, result)
+        res.json(sqlqueries.map(function (q, i)
+        {
+            return Object.assign(
+            {}, q,
+            {
+                id: "e" + i
+            });
+        }));
+    });
+    api.get('/leagues', function (req, res, cb)
+    {
+        db.raw(`SELECT * FROM leagues ORDER BY leagueid DESC`).asCallback(function (err, result)
         {
             if (err)
             {
@@ -630,9 +658,9 @@ module.exports = function(db, redis, cassandra)
             res.json(result.rows);
         });
     });
-    api.get('/distributions', function(req, res, cb)
+    api.get('/distributions', function (req, res, cb)
     {
-        queries.getDistributions(redis, function(err, result)
+        queries.getDistributions(redis, function (err, result)
         {
             if (err)
             {
@@ -641,10 +669,10 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/rankings', function(req, res, cb)
+    api.get('/rankings', function (req, res, cb)
     {
         queries.getHeroRankings(db, redis, req.query.hero_id,
-        {}, function(err, result)
+        {}, function (err, result)
         {
             if (err)
             {
@@ -653,12 +681,12 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/benchmarks', function(req, res, cb)
+    api.get('/benchmarks', function (req, res, cb)
     {
         queries.getBenchmarks(db, redis,
         {
             hero_id: req.query.hero_id
-        }, function(err, result)
+        }, function (err, result)
         {
             if (err)
             {
@@ -667,9 +695,9 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/status', function(req, res, cb)
+    api.get('/status', function (req, res, cb)
     {
-        buildStatus(db, redis, function(err, status)
+        buildStatus(db, redis, function (err, status)
         {
             if (err)
             {
@@ -678,13 +706,13 @@ module.exports = function(db, redis, cassandra)
             res.json(status);
         });
     });
-    api.get('/search', function(req, res, cb)
+    api.get('/search', function (req, res, cb)
     {
         if (!req.query.q)
         {
             return cb(400);
         }
-        queries.searchPlayer(db, req.query.q, function(err, result)
+        queries.searchPlayer(db, req.query.q, function (err, result)
         {
             if (err)
             {
@@ -693,9 +721,9 @@ module.exports = function(db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/health/:metric?', function(req, res, cb)
+    api.get('/health/:metric?', function (req, res, cb)
     {
-        redis.hgetall('health', function(err, result)
+        redis.hgetall('health', function (err, result)
         {
             if (err)
             {
@@ -717,7 +745,7 @@ module.exports = function(db, redis, cassandra)
             }
         });
     });
-    api.post('/request_job', multer.single("replay_blob"), function(req, res, next)
+    api.post('/request_job', multer.single("replay_blob"), function (req, res, next)
     {
         request.post("https://www.google.com/recaptcha/api/siteverify",
         {
@@ -726,7 +754,7 @@ module.exports = function(db, redis, cassandra)
                 secret: rc_secret,
                 response: req.body.response
             }
-        }, function(err, resp, body)
+        }, function (err, resp, body)
         {
             if (err)
             {
@@ -778,7 +806,7 @@ module.exports = function(db, redis, cassandra)
                 queue.addToQueue(rQueue, match,
                 {
                     attempts: 1
-                }, function(err, job)
+                }, function (err, job)
                 {
                     res.json(
                     {
@@ -800,13 +828,13 @@ module.exports = function(db, redis, cassandra)
             }
         });
     });
-    api.get('/request_job', function(req, res, cb)
+    api.get('/request_job', function (req, res, cb)
     {
-        rQueue.getJob(req.query.id).then(function(job)
+        rQueue.getJob(req.query.id).then(function (job)
         {
             if (job)
             {
-                job.getState().then(function(state)
+                job.getState().then(function (state)
                 {
                     return res.json(
                     {
