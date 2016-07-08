@@ -48,7 +48,7 @@ ORDER BY sum desc;
     {
         "name": 'Players, most LH@10',
         "sql": `
-SELECT lh, pm.account_id, pm.match_id, m.leagueid, name
+SELECT lh, np.name, pm.hero_id, pm.match_id, le.name as leaguename
 FROM match_logs ml
 JOIN player_matches pm
 ON ml.player_slot = pm.player_slot
@@ -57,6 +57,8 @@ JOIN notable_players np
 ON pm.account_id = np.account_id
 JOIN matches m
 ON pm.match_id = m.match_id
+JOIN leagues le
+ON m.leagueid = le.leagueid
 WHERE type = 'interval'
 AND time = 600
 ORDER BY lh desc;
