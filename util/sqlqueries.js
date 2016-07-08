@@ -94,7 +94,7 @@ ORDER BY time ASC
 LIMIT 100;
         `,
     },
-    "players_most games":
+    "players_most_games":
     {
         "name": 'Players, most pro games',
         "sql": `
