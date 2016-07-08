@@ -1,4 +1,11 @@
 module.exports = {
+    "players":
+    {
+        "name": 'Players',
+        "sql": `
+SELECT * from notable_players;
+            `,
+    },
     /*
     "players_most_damage":
     {
@@ -50,7 +57,8 @@ JOIN notable_players np
 ON pm.account_id = np.account_id
 JOIN matches m
 ON pm.match_id = m.match_id
-WHERE time = 600
+WHERE type = 'interval'
+AND time = 600
 AND lh IS NOT NULL
 ORDER BY lh desc;
             `,
@@ -137,13 +145,7 @@ ORDER BY match_id DESC
 LIMIT 100;
             `,
     },
-    "players":
-    {
-        "name": 'Players',
-        "sql": `
-SELECT * from notable_players;
-            `,
-    },
+    /*
     "metadata_columns":
     {
         "name": "Metadata, columns",
@@ -152,5 +154,6 @@ SELECT *
 FROM information_schema.columns
 WHERE table_schema = 'public';
         `,
+        */
     },
 };
