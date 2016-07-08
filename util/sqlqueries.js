@@ -48,20 +48,16 @@ ORDER BY sum desc;
     {
         "name": 'Players, most LH@10',
         "sql": `
-SELECT lh, np.name, pm.hero_id, pm.match_id, le.name as leaguename
-FROM match_logs ml
+SELECT lh_t[10], np.name, m.match_id, le.name as leaguename
+FROM matches m
 JOIN player_matches pm
-ON ml.player_slot = pm.player_slot
-AND ml.match_id = pm.match_id
+ON m.match_id = pm.match_id
 JOIN notable_players np
 ON pm.account_id = np.account_id
-JOIN matches m
-ON pm.match_id = m.match_id
 JOIN leagues le
 ON m.leagueid = le.leagueid
-WHERE type = 'interval'
-AND time = 600
-ORDER BY lh desc;
+ORDER BY lh_t DESC NULLS LAST
+LIMIT 100;
             `,
     },
     /*
@@ -137,10 +133,14 @@ ORDER BY picks DESC;
     {
         "name": 'Matches, most recent',
         "sql": `
-SELECT match_id, start_time, duration, ma.leagueid, name
+SELECT match_id, t1.name AS radiant_team_name, t2.name AS dire_team_name, le.name, start_time, duration
 FROM matches ma
 JOIN leagues le
 ON ma.leagueid = le.leagueid
+LEFT JOIN teams t1
+ON radiant_team_id = t1.team_id
+LEFT JOIN teams t2
+ON dire_team_id = t2.team_id
 WHERE ma.leagueid > 0
 ORDER BY match_id DESC
 LIMIT 100;
