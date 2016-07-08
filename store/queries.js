@@ -992,6 +992,7 @@ function fillSkill(db, matches, options, cb)
 
 function getPlayerMatches(account_id, queryObj, cb)
 {
+    //TODO support reading from postgres?
     readCache(account_id, queryObj, cb);
 }
 
