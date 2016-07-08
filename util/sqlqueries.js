@@ -59,7 +59,6 @@ JOIN matches m
 ON pm.match_id = m.match_id
 WHERE type = 'interval'
 AND time = 600
-AND lh IS NOT NULL
 ORDER BY lh desc;
             `,
     },
@@ -154,6 +153,6 @@ SELECT *
 FROM information_schema.columns
 WHERE table_schema = 'public';
         `,
-        */
     },
+    */
 };
