@@ -148,7 +148,7 @@ invokeInterval(function leagues(cb)
                     l.ticket = leagues[l.leagueid].ticket;
                     l.banner = leagues[l.leagueid].banner;
                 }
-                l.name = l.description.substring("#DOTA_Item_Desc_".length).split('_').join(' ');
+                l.name = l.name.substring("#DOTA_Item_".length).split('_').join(' ');
                 if (l.tier === "professional" || l.tier === "premium")
                 {
                     redis.sadd('pro_leagueids', l.leagueid);

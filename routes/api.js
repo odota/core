@@ -15,7 +15,7 @@ const rQueue = queue.getQueue('request');
 const queries = require('../store/queries');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
-const readonly = require('../store/readonly');
+const queryRaw = require('../store/queryRaw');
 var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
@@ -576,10 +576,7 @@ module.exports = function (db, redis, cassandra)
             {
                 return cb(err);
             }
-            queries.queryRaw(obj[0],
-            {
-                db: readonly
-            }, function (err, result)
+            queryRaw(obj[0], function (err, result)
             {
                 if (err)
                 {
@@ -623,10 +620,7 @@ module.exports = function (db, redis, cassandra)
                 return cb(err);
             }
             console.log(q);
-            queries.queryRaw(q[0],
-            {
-                db: readonly
-            }, function (err, result)
+            queryRaw(q[0], function (err, result)
             {
                 if (err)
                 {

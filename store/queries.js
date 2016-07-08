@@ -1106,26 +1106,6 @@ function generateTeammateArrayFromHash(db, input, player, cb)
     });
 }
 
-function queryRaw(input, options, cb)
-{
-    var sql = input.sql || translateNQL(input.q);
-    var q = options.db.raw(sql).timeout(30000);
-    q.asCallback(function(err, result)
-    {
-        cb(err, Object.assign(
-        {}, input,
-        {
-            result: result,
-            err: err ? err.stack : err,
-        }));
-    });
-}
-
-function translateNQL(input)
-{
-    //TODO @nicholashh to implement this
-    return "";
-}
 module.exports = {
     getSets,
     insertPlayer,
@@ -1149,5 +1129,4 @@ module.exports = {
     getPlayerRankings,
     getPlayer,
     generateTeammateArrayFromHash,
-    queryRaw,
 };
