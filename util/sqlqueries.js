@@ -158,6 +158,21 @@ GROUP BY pm.account_id, np.name
 ORDER BY count DESC;
             `,
     },
+    "player_most_midas":
+    {
+                "name": "Players, most pro games on Nature's Prophet",
+        "sql": `
+SELECT pm.account_id, np.name,
+sum((purchase->>'hand_of_midas')::int)
+FROM player_matches pm
+JOIN notable_players np
+ON pm.account_id = np.account_id
+JOIN matches m
+ON pm.match_id = m.match_id
+GROUP BY pm.account_id, np.name
+ORDER BY sum DESC NULLS LAST;
+            `,
+    },
     "heroes_most_picked_banned":
     {
         "name": "Heroes, most picked/banned",
@@ -175,6 +190,16 @@ AND pm.match_id = m.match_id
 GROUP BY pb.hero_id
 ORDER BY picks DESC;
             `,
+    },
+    "heroes_most_midas":
+    {
+        "name": "",
+        "sql": `
+SELECT hero_id, sum((purchase->>'hand_of_midas')::int)
+FROM player_matches
+GROUP by hero_id
+ORDER by sum DESC NULLS LAST;
+    `,
     },
     "matches_most_recent":
     {
@@ -194,14 +219,14 @@ LIMIT 100;
             `,
     },
     /*
-    "metadata_columns":
-    {
-        "name": "Metadata, columns",
-        "sql": `
-SELECT *
-FROM information_schema.columns
-WHERE table_schema = "public";
-        `,
-    },
-    */
+        "metadata_columns":
+        {
+            "name": "Metadata, columns",
+            "sql": `
+    SELECT *
+    FROM information_schema.columns
+    WHERE table_schema = "public";
+            `,
+        },
+        */
 };
