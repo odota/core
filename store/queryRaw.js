@@ -1,9 +1,10 @@
+const config = require('../config');
 module.exports = function queryRaw(input, cb)
 {
   var knex = require('knex')(
   {
     client: 'pg',
-    connection: "readonly:readonly@localhost/yasp",
+    connection: config.READONLY_POSTGRES_URL,
     pool:
     {
       min: 1,
