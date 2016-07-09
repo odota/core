@@ -205,7 +205,7 @@ function insertMatch(db, redis, match, options, cb)
 
     function decideLogParse(cb)
     {
-        if (match.leagueid)
+        if (match.leagueid && match.human_players === 10)
         {
             redis.sismember('pro_leagueids', match.leagueid, function(err, result)
             {
@@ -992,6 +992,7 @@ function fillSkill(db, matches, options, cb)
 
 function getPlayerMatches(account_id, queryObj, cb)
 {
+    //TODO support reading from postgres?
     readCache(account_id, queryObj, cb);
 }
 
@@ -1057,7 +1058,6 @@ function getPlayer(db, account_id, cb)
         cb();
     }
 }
-
 
 function generateTeammateArrayFromHash(db, input, player, cb)
 {

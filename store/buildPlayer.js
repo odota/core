@@ -139,7 +139,7 @@ function buildPlayer(options, cb)
                     if (info === "index" || info === "matches")
                     {
                         var project = ["match_id", "player_slot", "hero_id", "game_mode", "kills", "deaths", "assists", "version", "skill", "radiant_win", "start_time", "duration"].concat(queryObj.keywords.desc || []);
-                        var limit = Number(queryObj.keywords.limit) || 20;
+                        var limit = Number(queryObj.keywords.limit) || (info === "index" ? 20 : undefined);
                         //project
                         matches = matches.map(function(pm)
                         {

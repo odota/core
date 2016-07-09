@@ -148,7 +148,7 @@ invokeInterval(function leagues(cb)
                     l.ticket = leagues[l.leagueid].ticket;
                     l.banner = leagues[l.leagueid].banner;
                 }
-                l.name = l.description.substring("#DOTA_Item_Desc_".length).split('_').join(' ');
+                l.name = l.name.substring("#DOTA_Item_".length).split('_').join(' ');
                 if (l.tier === "professional" || l.tier === "premium")
                 {
                     redis.sadd('pro_leagueids', l.leagueid);
@@ -163,7 +163,7 @@ invokeInterval(function leagues(cb)
 }, 10 * 60 * 1000);
 invokeInterval(function teams(cb)
 {
-    db.raw(`select distinct radiant_team_id from matches tablesample bernoulli(100) limit 100`).asCallback(function(err, result)
+    db.raw(`select distinct radiant_team_id from matches`).asCallback(function(err, result)
     {
         if (err)
         {
@@ -197,7 +197,7 @@ invokeInterval(function teams(cb)
             });
         }, cb);
     });
-}, 60 * 1000);
+}, 60 * 60 * 1000);
 
 function invokeInterval(func, delay)
 {

@@ -39,7 +39,7 @@ function generateJob(type, payload)
         "api_history": function()
         {
             return {
-                url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : "") + (payload.leagueid ? "&league_id=" + payload.leagueid : ""),
+                url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : "") + (payload.leagueid ? "&league_id=" + payload.leagueid : "") + (payload.start_at_match_id ? "&start_at_match_id=" + payload.start_at_match_id : ""),
                 title: [type, payload.account_id].join(),
                 type: "api",
                 payload: payload
@@ -217,7 +217,7 @@ function getData(url, cb)
         //add no proxy option
         proxies.push(null);
         proxy = proxies[Math.floor(Math.random() * proxies.length)];
-        console.log(proxies, proxy);
+        console.error(proxies, proxy);
         */
         //choose a steam api host
         var api_hosts = config.STEAM_API_HOST.split(",");
@@ -225,7 +225,7 @@ function getData(url, cb)
         parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
     }
     var target = urllib.format(parse);
-    console.log("%s - getData: %s", new Date(), target);
+    console.error("%s - getData: %s", new Date(), target);
     return setTimeout(function()
     {
         request(
@@ -251,7 +251,7 @@ function getData(url, cb)
                 }
                 else
                 {
-                    console.log("invalid response, retrying: %s", target);
+                    console.error("invalid response, retrying: %s", target);
                     return getData(url, cb);
                 }
             }
@@ -273,7 +273,7 @@ function getData(url, cb)
                     }
                     else
                     {
-                        console.log("invalid data, retrying: %s, %s", target, JSON.stringify(body));
+                        console.error("invalid data, retrying: %s, %s", target, JSON.stringify(body));
                         return getData(url, cb);
                     }
                 }
@@ -589,7 +589,7 @@ function deserialize(row)
         }
         catch (e)
         {
-            console.log('exception occurred during JSON parse: %s', e);
+            console.error('exception occurred during JSON parse: %s', e);
         }
     });
     return obj;
