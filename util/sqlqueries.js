@@ -160,7 +160,7 @@ ORDER BY count DESC;
     },
     "player_most_midas":
     {
-                "name": "Players, most pro games on Nature's Prophet",
+        "name": "Players, most Hand of Midas built",
         "sql": `
 SELECT pm.account_id, np.name,
 sum((purchase->>'hand_of_midas')::int)
@@ -173,6 +173,24 @@ GROUP BY pm.account_id, np.name
 ORDER BY sum DESC NULLS LAST;
             `,
     },
+    /*
+    "players_most_chat":
+    {
+        "name": "Players, most all chat messages",
+        "sql": `
+SELECT pm.account_id, np.name, count(*)
+FROM player_matches pm
+JOIN notable_players np
+ON pm.account_id = np.account_id
+JOIN match_logs ml
+ON ml.match_id = pm.match_id
+AND ml.player_slot = pm.player_slot
+WHERE type = 'chat'
+GROUP BY pm.account_id, np.name
+ORDER BY count DESC NULLS LAST;
+            `,        
+    },
+    */
     "heroes_most_picked_banned":
     {
         "name": "Heroes, most picked/banned",
@@ -193,7 +211,7 @@ ORDER BY picks DESC;
     },
     "heroes_most_midas":
     {
-        "name": "",
+        "name": "Heroes, most Hand of Midas built",
         "sql": `
 SELECT hero_id, sum((purchase->>'hand_of_midas')::int)
 FROM player_matches
