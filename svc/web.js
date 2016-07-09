@@ -357,6 +357,10 @@ app.get('/search', function(req, res, cb)
         res.render('search');
     }
 });
+app.get('/explorer/:qid?', function(req, res, cb)
+{
+    return res.render('explorer');
+});
 app.get('/april/:year?', function(req, res, cb)
 {
     return res.render('plusplus',

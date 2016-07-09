@@ -1,0 +1,68 @@
+extends layout
+
+block content
+  style.
+      #editor {
+      width:100%;
+      height:200px;
+      }
+  <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
+  .row
+    h3 Data Explorer 
+      small Explore data from professional Dota 2 matches
+    .col-md-12
+      div
+        input.form-control#name(type='text' placeholder="Name this query")
+      h4 SQL
+      //pre: code=sql
+      #editor=sql
+      button.btn.btn-primary(onclick="query()") Query
+      h4 Result
+      pre#result= (err || result)
+  script.
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.getSession().setMode("ace/mode/sql");
+    editor.setShowPrintMargin(false);
+    
+    var id = parseUrlQueryString(window.location.href).id;
+    if (id)
+    {
+       fetch('/api/explorer?id='+id).then(function(response) {
+          return response.json();
+          })
+        .then(handleResponse);
+    }
+    function query()
+    {
+      fetch('/api/explorer', {
+      	method: 'post',
+      	headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+      	body: JSON.stringify({name: document.getElementById('name').value, sql: editor.getValue()})
+      }).then(function(response){
+        return response.json();
+      })
+      .then(handleResponse);
+    }
+    function handleResponse(json){
+        editor.setValue(json.sql);
+        document.getElementById('name').value = json.name;
+        document.getElementById('result').innerHTML = JSON.stringify(json, null, 2);
+        window.history.pushState('', '', '?id='+json.id);
+    }
+    function getSqlString()
+    {
+        return editor.getValue().replace(/\n/g, " ");
+    }
+    function parseUrlQueryString(a)		
+    {		
+      var b = {};		
+      var qs = a.split("?")[1].split("&");		
+      qs.forEach(function(q){var s = q.split('=');		
+        b[s[0]] = decodeURIComponent(s[1]);		
+      });		
+      return b;
+    }
