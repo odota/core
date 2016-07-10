@@ -14,7 +14,7 @@ function processReduce(entries, match, meta)
         "obs_left": 1,
         "sen_left": 1,
     };
-    var result = entries.filter(function(e)
+    var result = entries.filter(function (e)
     {
         if (!match.doLogParse)
         {
@@ -30,12 +30,25 @@ function processReduce(entries, match, meta)
             {
                 return false;
             }
+            if (e.type === "DOTA_COMBATLOG_XP" || e.type === "DOTA_COMBATLOG_GOLD")
+            {
+                return false;
+            }
+            /*
+            if (e.type === "DOTA_COMBATLOG_ABILITY" || e.type === "DOTA_COMBATLOG_ITEM")
+            {
+                return false;
+            }
+            */
             if (e.type === "DOTA_COMBATLOG_DAMAGE" || e.type === "DOTA_COMBATLOG_MODIFIER_ADD" || e.type === "DOTA_COMBATLOG_HEAL")
             {
+                return false;
+                /*
                 if (!e.targethero || e.targetillusion)
                 {
                     return false;
                 }
+                */
             }
             if (e.type === "interval" && e.time % 60 !== 0)
             {
@@ -47,7 +60,7 @@ function processReduce(entries, match, meta)
             }
             return true;
         }
-    }).map(function(e)
+    }).map(function (e)
     {
         var e2 = Object.assign(
         {}, e,

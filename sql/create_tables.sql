@@ -256,3 +256,9 @@ CREATE TABLE queries(
   nql text,
   sql text
 );
+
+CREATE TABLE heroes(
+  id int PRIMARY KEY,
+  name text,
+  localized_name text
+);
