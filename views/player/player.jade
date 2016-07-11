@@ -49,7 +49,7 @@ block content
                   span: abbr(title="95% confidence interval: +/- " + (player.mmr_estimate.stdDev ? (player.mmr_estimate.stdDev*2).toFixed(0) : 0) + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
                 else
                   ="N/A"
-    .col-md-4
+    .col-md-2
       h4
         span.text-primary
           i.fa.fa-trophy
@@ -59,7 +59,11 @@ block content
             span.text-danger(style="margin:0 4px;") #{player.lose}
             if (player.win+player.lose)
               span (#{(player.win/(player.win+player.lose)*100).toFixed(2)}%)
-    
+    .col-md-2
+        a(href="#{'https://dotacoach.org/Hire/Yasp?matchID=' + Math.max(Math.max.apply(null, player.matches.map(function(m){return m.match_id;})),-1) + '&userSteamId=' + (user ? user.account_id : '') + '&playerSteamId=' + player.profile.account_id + '&playerMmr=' + Math.max(player.solo_competitive_rank || -1, player.competitive_rank || -1)}", class="btn btn-sm btn-default")
+          img(src='/public/images/dotacoach-32x24.png', style="margin: -2px; padding-right: 4px;")
+          | Ask a Coach
+
   .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive
       ul.nav.nav-tabs
