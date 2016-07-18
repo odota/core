@@ -19,7 +19,8 @@
     "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
     "resetrankings": "redis-cli keys 'hero_rankings*' | xargs redis-cli del",
     "updateconstants": "node tasks/updateconstants",
-    "dockerbuild": "sudo docker build -t yasp/yasp ."
+    "dockerbuild": "sudo docker build -t yasp/yasp .",
+    "reparse": "cat dev/matches.csv | xargs tasks/getMatch.js"
   },
   "repository": {
     "type": "git",
