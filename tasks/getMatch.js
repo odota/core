@@ -33,6 +33,7 @@ getData(
             skipAbilityUpgrades: true,
             skipParse: false,
             cassandra: cassandra,
+            attempts: 1,
         }, function(err)
         {
             if (err)
