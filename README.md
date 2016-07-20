@@ -72,6 +72,9 @@ Getting Help
 ----
 * Feel free to open a new issue to ask questions/get help!
 * You can also find us on Discord if you'd like real-time help.
+* The following blog posts may help you understand the codebase/architecture:
+  * General Learnings: https://blog.yasp.co/2016/05/13/learnings/
+  * Architecture: https://blog.yasp.co/2016/05/15/architecture/
 
 Help Wanted
 ----
