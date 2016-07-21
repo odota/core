@@ -1,7 +1,7 @@
 var Chance = require('chance');
 var express = require('express');
 var matches = express.Router();
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var matchPages = constants.match_pages;
 var playerSlots = [0, 1, 2, 3, 4, 128, 129, 130, 131, 132];
 var item_ids = Object.keys(constants.items);

@@ -2,7 +2,7 @@
  * Provides methods for storing player match data in a faster caching layer
  **/
 var config = require('../config');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var enabled = config.ENABLE_CASSANDRA_MATCH_STORE_READ;
 var compute = require('../util/compute');
 var computeMatchData = compute.computeMatchData;

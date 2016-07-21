@@ -1,5 +1,5 @@
 var utility = require('../utility');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var mergeObjects = utility.mergeObjects;
 var db = require("../db");
 var async = require('async');

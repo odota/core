@@ -1,6 +1,6 @@
 var JSONStream = require('JSONStream');
 var config = require('../config');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var db = require('../db');
 var request = require('request');
 var args = process.argv.slice(2);
