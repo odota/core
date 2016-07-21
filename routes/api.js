@@ -589,21 +589,10 @@ module.exports = function (db, redis, cassandra)
     {
         if (req.query.id)
         {
-            if (isNaN(req.query.id))
+            db.select().from('queries').where(
             {
-                return runQuery(null, [Object.assign(
-                {}, sqlqueries[req.query.id],
-                {
-                    id: req.query.id
-                })]);
-            }
-            else
-            {
-                db.select().from('queries').where(
-                {
-                    id: req.query.id
-                }).asCallback(runQuery);
-            }
+                id: req.query.id
+            }).asCallback(runQuery);
         }
         else
         {
