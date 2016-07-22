@@ -69,6 +69,9 @@ parseServer.on('exit', function ()
 {
     throw new Error("restarting due to parse server exit");
 });
+process.on('exit', function(){
+   parseServer.kill(); 
+});
 pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
 {
     console.log("parse job: %s", job.jobId);
