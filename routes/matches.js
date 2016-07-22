@@ -1,4 +1,4 @@
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var buildMatch = require('../store/buildMatch');
 var express = require('express');
 var matches = express.Router();

@@ -3,7 +3,7 @@
  **/
 var async = require('async');
 var config = require('../config.js');
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var queries = require("../store/queries");
 var utility = require('../util/utility');
 var aggregator = require('../util/aggregator');

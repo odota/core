@@ -1,64 +1,14 @@
 var utility = require('./utility');
 var generatePlayerAnalysis = require('./analysis');
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var mode = utility.mode;
 var max = utility.max;
 var min = utility.min;
 var isRadiant = utility.isRadiant;
 var generatePositionData = utility.generatePositionData;
 var sentiment = require('sentiment');
-var ancients = {
-    "npc_dota_neutral_black_drake": 1,
-    "npc_dota_neutral_black_dragon": 1,
-    "npc_dota_neutral_blue_dragonspawn_sorcerer": 1,
-    "npc_dota_neutral_blue_dragonspawn_overseer": 1,
-    "npc_dota_neutral_granite_golem": 1,
-    "npc_dota_neutral_elder_jungle_stalker": 1,
-    "npc_dota_neutral_rock_golem": 1,
-    "npc_dota_neutral_small_thunder_lizard": 1,
-    "npc_dota_neutral_jungle_stalker": 1,
-    "npc_dota_neutral_big_thunder_lizard": 1,
-};
-var specific = {
-    "npc_dota_beastmaster_boar_#": "Boar",
-    "npc_dota_lesser_eidolon": "Eidolon",
-    "npc_dota_eidolon": "Eidolon",
-    "npc_dota_greater_eidolon": "Eidolon",
-    "npc_dota_dire_eidolon": "Eidolon",
-    "npc_dota_invoker_forged_spirit": "Forged Spirit",
-    "npc_dota_furion_treant_large": "Greater Treant",
-    "npc_dota_beastmaster_hawk_#": "Hawk",
-    "npc_dota_lycan_wolf#": "Lycan Wolf",
-    "npc_dota_neutral_mud_golem_split_doom": "Doom Shard",
-    "npc_dota_broodmother_spiderling": "Spiderling",
-    "npc_dota_broodmother_spiderite": "Spiderite",
-    "npc_dota_furion_treant": "Treant",
-    "npc_dota_unit_undying_zombie": "Zombie",
-    "npc_dota_unit_undying_zombie_torso": "Zombie",
-    "npc_dota_brewmaster_earth_#": "Earth Brewling",
-    "npc_dota_brewmaster_fire_#": "Fire Brewling",
-    "npc_dota_lone_druid_bear#": "Spirit Bear",
-    "npc_dota_brewmaster_storm_#": "Storm Brewling",
-    "npc_dota_visage_familiar#": "Familiar",
-    "npc_dota_warlock_golem_#": "Warlock's Golem",
-    "npc_dota_warlock_golem_scepter_#": "Warlock's Golem",
-    "npc_dota_witch_doctor_death_ward": "Death Ward",
-    "npc_dota_tusk_frozen_sigil#": "Frozen Sigil",
-    "npc_dota_juggernaut_healing_ward": "Healing Ward",
-    "npc_dota_techies_land_mine": "Land Mine",
-    "npc_dota_shadow_shaman_ward_#": "Mass Serpent Ward",
-    "npc_dota_pugna_nether_ward_#": "Nether Ward",
-    "npc_dota_venomancer_plague_ward_#": "Plague Ward",
-    "npc_dota_rattletrap_cog": "Power Cog",
-    "npc_dota_templar_assassin_psionic_trap": "Psionic Trap",
-    "npc_dota_techies_remote_mine": "Remote Mine",
-    "npc_dota_techies_stasis_trap": "Stasis Trap",
-    "npc_dota_phoenix_sun": "Supernova",
-    "npc_dota_unit_tombstone#": "Tombstone",
-    "npc_dota_treant_eyes": "Eyes in the Forest",
-    "npc_dota_gyrocopter_homing_missile": "Homing Missile",
-    "npc_dota_weaver_swarm": "The Swarm"
-};
+var ancients = constants.ancients;
+var specific = constants.specific;
 var expanded = {};
 for (var key in specific)
 {

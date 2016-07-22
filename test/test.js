@@ -2,7 +2,7 @@
  * Main test script to run tests
  **/
 var config = require('../config');
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var redis = require('../store/redis');
 var queue = require('../store/queue');
 var queries = require('../store/queries');

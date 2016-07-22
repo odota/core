@@ -38,5 +38,17 @@ require('./resize.js');
 require('./requestForm.js');
 require('./queryForm.js');
 window.constants = {
-    player_colors: require('../../json/player_colors.json')
+  player_colors:
+  {
+    "0": "#2E6AE6",
+    "1": "#5DE6AD",
+    "2": "#AD00AD",
+    "3": "#DCD90A",
+    "4": "#E66200",
+    "128": "#E67AB0",
+    "129": "#92A440",
+    "130": "#5CC5E0",
+    "131": "#00771F",
+    "132": "#956000"
+  }
 };

@@ -2,7 +2,7 @@
  * Worker running tasks on timed intervals
  **/
 var config = require('../config');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var redis = require('../store/redis');
 var queue = require('../store/queue');
 var db = require('../store/db');

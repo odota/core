@@ -2,7 +2,7 @@
  * Worker to handle counting and caching tasks performed when a match is inserted or parsed.
  * All operations in this worker should deal with ephemeral data (can be reconstructed from persistent data stores)
  **/
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var config = require('../config');
 var redis = require('../store/redis');
 var queue = require('../store/queue');

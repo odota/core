@@ -3,7 +3,7 @@
  * Serves web/API requests
  **/
 var config = require('../config');
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var utility = require('../util/utility');
 var buildSets = require('../store/buildSets');
 var redis = require('../store/redis');
