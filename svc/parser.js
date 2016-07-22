@@ -59,6 +59,16 @@ app.get('/redis/:key', function(req, res, cb)
 });
 app.listen(config.PARSER_PORT);
 //END EXPRESS
+// Start Java parse server
+spawn("java", [
+    "-jar",
+    "-Xmx256m",
+    "./java_parser/target/stats-0.1.0.jar",
+    ],
+{
+    stdio: ['pipe', 'pipe', 'pipe'],
+    encoding: 'utf8'
+});
 pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
@@ -215,6 +225,7 @@ function runParse(match, job, cb)
     bz.stdin.on('error', exit);
     bz.stdout.on('error', exit);
     inStream.pipe(bz.stdin);
+    /*
     var parser = spawn("java", [
         "-jar",
         "-Xmx128m",
@@ -231,9 +242,12 @@ function runParse(match, job, cb)
         console.log(data.toString());
     });
     bz.stdout.pipe(parser.stdin);
+    */
+    var parser = request.post('http://localhost:8000');
+    bz.stdout.pipe(parser);
     const parseStream = readline.createInterface(
     {
-        input: parser.stdout
+        input: parser
     });
     parseStream.on('line', function handleStream(e)
     {
