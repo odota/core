@@ -38,7 +38,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 app.use(bodyParser.json());
-app.get('/', function(req, res)
+app.get('/', function (req, res)
 {
     res.json(
     {
@@ -46,9 +46,9 @@ app.get('/', function(req, res)
         started_at: startedAt
     });
 });
-app.get('/redis/:key', function(req, res, cb)
+app.get('/redis/:key', function (req, res, cb)
 {
-    redis.get(new Buffer('upload_blob:' + req.params.key), function(err, result)
+    redis.get(new Buffer('upload_blob:' + req.params.key), function (err, result)
     {
         if (err)
         {
@@ -60,22 +60,22 @@ app.get('/redis/:key', function(req, res, cb)
 app.listen(config.PARSER_PORT);
 //END EXPRESS
 // Start Java parse server
-spawn("java", [
-    "-jar",
-    "-Xmx256m",
-    "./java_parser/target/stats-0.1.0.jar",
-    ],
+var parseServer = spawn("java", ["-jar", "-Xmx256m", "./java_parser/target/stats-0.1.0.jar", ],
 {
     stdio: ['pipe', 'pipe', 'pipe'],
     encoding: 'utf8'
 });
-pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
+parseServer.on('exit', function ()
+{
+    throw new Error("restarting due to parse server exit");
+});
+pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
 {
     console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
     async.series(
     {
-        "getDataSource": function(cb)
+        "getDataSource": function (cb)
         {
             if (match.replay_blob_key)
             {
@@ -87,9 +87,9 @@ pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
                 getReplayUrl(db, redis, match, cb);
             }
         },
-        "runParse": function(cb)
+        "runParse": function (cb)
         {
-            runParse(match, job, function(err, parsed_data)
+            runParse(match, job, function (err, parsed_data)
             {
                 if (err)
                 {
@@ -112,7 +112,7 @@ pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
                 }
             });
         },
-    }, function(err)
+    }, function (err)
     {
         if (err)
         {
@@ -140,7 +140,7 @@ function insertUploadedParse(match, cb)
     match.game_mode = match.upload.game_mode;
     match.radiant_win = match.upload.radiant_win;
     match.duration = match.upload.duration;
-    match.players.forEach(function(p, i)
+    match.players.forEach(function (p, i)
     {
         utility.mergeObjects(p, match.upload.player_map[p.player_slot]);
         p.gold_per_min = ~~(p.gold / match.duration * 60);
@@ -150,7 +150,7 @@ function insertUploadedParse(match, cb)
     });
     computeMatchData(match);
     renderMatch(match);
-    benchmarkMatch(redis, match, function(err)
+    benchmarkMatch(redis, match, function (err)
     {
         if (err)
         {
@@ -180,7 +180,7 @@ function runParse(match, job, cb)
     var entries = [];
     var incomplete = "incomplete";
     var exited = false;
-    var timeout = setTimeout(function()
+    var timeout = setTimeout(function ()
     {
         exit('timeout');
     }, 300000);
@@ -191,7 +191,7 @@ function runParse(match, job, cb)
         url: url,
         encoding: null,
     }));
-    inStream.on('progress', function(state)
+    inStream.on('progress', function (state)
     {
         console.log(JSON.stringify(
         {
@@ -202,7 +202,7 @@ function runParse(match, job, cb)
         {
             job.progress(state.percentage * 100);
         }
-    }).on('response', function(response)
+    }).on('response', function (response)
     {
         if (response.statusCode !== 200)
         {
