@@ -1,4 +1,4 @@
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var utility = require('../util/utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;

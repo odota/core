@@ -2,7 +2,7 @@
  * Worker to fetch full match histories for players
  **/
 var config = require('../config');
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var utility = require('../util/utility');
 var redis = require('../store/redis');
 var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;

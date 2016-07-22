@@ -1,7 +1,7 @@
 /**
  * Worker to fetch updated player profiles
  **/
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var config = require('../config');
 var queries = require('../store/queries');
 var db = require('../store/db');

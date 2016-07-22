@@ -9,10 +9,14 @@ YASP (Yet Another Stats Page)
 
 Overview
 ----
-
 * This project aims to provide free, open source, highly detailed match and player statistics for the Dota 2 community.
 * Data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
-* See [here](http://yasp.co/matches/1912366402) for an example of our match analysis (this match may not have the latest features as we're constantly adding new things).
+* Public data is available through a REST API and published data dumps.
+
+Funding
+----
+* A public, hosted deployment of this code is funded by contributions from community members and corporate sponsors.
+* Interested community developers maintain the codebase without compensation, reducing operating costs.
 
 Tech Stack
 ----
@@ -68,6 +72,9 @@ Getting Help
 ----
 * Feel free to open a new issue to ask questions/get help!
 * You can also find us on Discord if you'd like real-time help.
+* The following blog posts may help you understand the codebase/architecture:
+  * General Learnings: https://blog.yasp.co/2016/05/13/learnings/
+  * Architecture: https://blog.yasp.co/2016/05/15/architecture/
 
 Help Wanted
 ----

@@ -2,7 +2,7 @@
  * Provides methods for storing player match data in a faster caching layer
  **/
 var config = require('../config');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var enabled = config.ENABLE_CASSANDRA_MATCH_STORE_READ;
 var compute = require('../util/compute');
 var computeMatchData = compute.computeMatchData;
@@ -26,7 +26,7 @@ function readCache(account_id, queryObj, cb)
             prepare: true,
             fetchSize: 1000,
             autoPage: true,
-        }).on('readable', function()
+        }).on('readable', function ()
         {
             //readable is emitted as soon a row is received and parsed
             var m;
@@ -38,13 +38,19 @@ function readCache(account_id, queryObj, cb)
                     matches.push(m);
                 }
             }
-        }).on('end', function(err)
+        }).on('end', function (err)
         {
             //stream ended, there aren't any more rows
-            //TODO apply sort
+            if (queryObj.sort)
+            {
+                matches.sort(function (a, b)
+                {
+                    return b[queryObj.sort] - a[queryObj.sort];
+                });
+            }
             matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
             return cb(err, matches);
-        }).on('error', function(err)
+        }).on('error', function (err)
         {
             throw err;
         });
@@ -61,21 +67,21 @@ function writeCache(account_id, cache, cb)
     {
         //console.log("saving player cache to cassandra %s", account_id);
         //upsert matches into store
-        return async.each(cache.raw, function(m, cb)
+        return async.each(cache.raw, function (m, cb)
         {
             m = serialize(reduceAggregable(m));
-            var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function(k)
+            var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function (k)
             {
                 return '?';
             }).join(','));
-            cassandra.execute(query, Object.keys(m).map(function(k)
+            cassandra.execute(query, Object.keys(m).map(function (k)
             {
                 return m[k];
             }),
             {
                 prepare: true
             }, cb);
-        }, function(err)
+        }, function (err)
         {
             if (err)
             {
@@ -97,7 +103,7 @@ function updateCache(match, cb)
         var players = match.players;
         if (match.pgroup && players)
         {
-            players.forEach(function(p)
+            players.forEach(function (p)
             {
                 if (match.pgroup[p.player_slot])
                 {
@@ -108,7 +114,7 @@ function updateCache(match, cb)
                 }
             });
         }
-        async.eachSeries(players, function(player_match, cb)
+        async.eachSeries(players, function (player_match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
@@ -137,7 +143,6 @@ function updateCache(match, cb)
         return cb();
     }
 }
-
 module.exports = {
     readCache: readCache,
     writeCache: writeCache,

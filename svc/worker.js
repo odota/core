@@ -2,7 +2,7 @@
  * Worker running tasks on timed intervals
  **/
 var config = require('../config');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var redis = require('../store/redis');
 var queue = require('../store/queue');
 var db = require('../store/db');
@@ -15,7 +15,7 @@ var moment = require('moment');
 var fs = require('fs');
 var sql = {};
 var sqlq = fs.readdirSync('./sql');
-sqlq.forEach(function(f)
+sqlq.forEach(function (f)
 {
     sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
 });
@@ -32,11 +32,11 @@ invokeInterval(function buildDistributions(cb)
 {
     async.parallel(
     {
-        "country_mmr": function(cb)
+        "country_mmr": function (cb)
         {
-            var mapFunc = function(results)
+            var mapFunc = function (results)
             {
-                results.rows = results.rows.map(function(r)
+                results.rows = results.rows.map(function (r)
                 {
                     var ref = constants.countries[r.loccountrycode];
                     r.common = ref ? ref.name.common : r.loccountrycode;
@@ -45,11 +45,11 @@ invokeInterval(function buildDistributions(cb)
             };
             loadData("country_mmr", mapFunc, cb);
         },
-        "mmr": function(cb)
+        "mmr": function (cb)
         {
-            var mapFunc = function(results)
+            var mapFunc = function (results)
             {
-                var sum = results.rows.reduce(function(prev, current)
+                var sum = results.rows.reduce(function (prev, current)
                 {
                     return {
                         count: prev.count + current.count
@@ -58,9 +58,9 @@ invokeInterval(function buildDistributions(cb)
                 {
                     count: 0
                 });
-                results.rows = results.rows.map(function(r, i)
+                results.rows = results.rows.map(function (r, i)
                 {
-                    r.cumulative_sum = results.rows.slice(0, i + 1).reduce(function(prev, current)
+                    r.cumulative_sum = results.rows.slice(0, i + 1).reduce(function (prev, current)
                     {
                         return {
                             count: prev.count + current.count
@@ -75,7 +75,7 @@ invokeInterval(function buildDistributions(cb)
             };
             loadData("mmr", mapFunc, cb);
         }
-    }, function(err, result)
+    }, function (err, result)
     {
         if (err)
         {
@@ -90,7 +90,7 @@ invokeInterval(function buildDistributions(cb)
 
     function loadData(key, mapFunc, cb)
     {
-        db.raw(sql[key]).asCallback(function(err, results)
+        db.raw(sql[key]).asCallback(function (err, results)
         {
             if (err)
             {
@@ -109,13 +109,13 @@ invokeInterval(function notablePlayers(cb)
 {
     var container = utility.generateJob("api_notable",
     {});
-    utility.getData(container.url, function(err, body)
+    utility.getData(container.url, function (err, body)
     {
         if (err)
         {
             return cb(err);
         }
-        async.each(body.player_infos, function(p, cb)
+        async.each(body.player_infos, function (p, cb)
         {
             queries.upsert(db, 'notable_players', p,
             {
@@ -128,19 +128,19 @@ invokeInterval(function leagues(cb)
 {
     var container = utility.generateJob("api_leagues",
     {});
-    utility.getData(container.url, function(err, api_leagues)
+    utility.getData(container.url, function (err, api_leagues)
     {
         if (err)
         {
             return cb(err);
         }
-        utility.getData('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/leagues.json', function(err, leagues)
+        utility.getData('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/leagues.json', function (err, leagues)
         {
             if (err)
             {
                 return cb(err);
             }
-            async.each(api_leagues.result.leagues, function(l, cb)
+            async.each(api_leagues.result.leagues, function (l, cb)
             {
                 if (leagues[l.leagueid])
                 {
@@ -163,13 +163,13 @@ invokeInterval(function leagues(cb)
 }, 10 * 60 * 1000);
 invokeInterval(function teams(cb)
 {
-    db.raw(`select distinct radiant_team_id from matches`).asCallback(function(err, result)
+    db.raw(`select distinct radiant_team_id from matches`).asCallback(function (err, result)
     {
         if (err)
         {
             return cb(err);
         }
-        async.eachSeries(result.rows, function(m, cb)
+        async.eachSeries(result.rows, function (m, cb)
         {
             if (!m.radiant_team_id)
             {
@@ -179,7 +179,7 @@ invokeInterval(function teams(cb)
             {
                 team_id: m.radiant_team_id || 2,
             });
-            utility.getData(container.url, function(err, body)
+            utility.getData(container.url, function (err, body)
             {
                 if (err)
                 {
@@ -198,13 +198,24 @@ invokeInterval(function teams(cb)
         }, cb);
     });
 }, 60 * 60 * 1000);
+invokeInterval(function heroes(cb)
+{
+    async.eachSeries(Object.keys(constants.heroes), function (hero_id, cb)
+    {
+        const hero = constants.heroes[hero_id];
+        queries.upsert(db, 'heroes', hero,
+        {
+            id: hero.id
+        }, cb);
+    });
+}, 60 * 60 * 1000);
 
 function invokeInterval(func, delay)
 {
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
     (function invoker()
     {
-        redis.get('worker:' + func.name, function(err, fresh)
+        redis.get('worker:' + func.name, function (err, fresh)
         {
             if (err)
             {
@@ -219,7 +230,7 @@ function invokeInterval(func, delay)
             {
                 console.log("running %s", func.name);
                 console.time(func.name);
-                func(function(err)
+                func(function (err)
                 {
                     if (err)
                     {

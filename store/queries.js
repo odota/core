@@ -4,10 +4,7 @@
 var utility = require('../util/utility');
 var benchmarks = require('../util/benchmarks');
 var config = require('../config');
-var constants = require('../constants');
-var compute = require('../util/compute');
-var computeMatchData = compute.computeMatchData;
-var filter = require('../util/filter');
+var constants = require('dotaconstants');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
 var readCache = playerCache.readCache;
@@ -21,7 +18,6 @@ var cQueue = queue.getQueue('cache');
 var pQueue = queue.getQueue('parse');
 var updateCache = playerCache.updateCache;
 var serialize = utility.serialize;
-var deserialize = utility.deserialize;
 var columnInfo = {};
 var cassandraColumnInfo = {};
 
@@ -922,11 +918,13 @@ function searchPlayer(db, query, cb)
         personaname: function(callback)
         {
             db.raw(`
-                    SELECT * FROM
-                    (SELECT account_id, personaname, avatarfull, similarity(personaname, ?)
-                    FROM players WHERE personaname ILIKE ? LIMIT 1000) search
-                    ORDER BY similarity DESC LIMIT 200
-                    `, [query, '%' + query + '%']).asCallback(function(err, result)
+                    SELECT * FROM 
+                    (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS sml 
+                    FROM players 
+                    WHERE personaname % ? 
+                    LIMIT 1000) search 
+                    ORDER BY sml DESC;
+                    `, [query, query]).asCallback(function(err, result)
             {
                 if (err)
                 {

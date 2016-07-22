@@ -3,7 +3,7 @@
  * Serves web/API requests
  **/
 var config = require('../config');
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var utility = require('../util/utility');
 var buildSets = require('../store/buildSets');
 var redis = require('../store/redis');
@@ -105,7 +105,7 @@ app.use(function rateLimit(req, res, cb)
         {
             return cb(err);
         }
-        if (resp[0] > 5 && config.NODE_ENV !== "test")
+        if (resp[0] > 8 && config.NODE_ENV !== "test")
         {
             return res.status(429).json(
             {

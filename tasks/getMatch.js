@@ -1,4 +1,3 @@
-var async = require('async');
 var utility = require('../util/utility');
 var generateJob = utility.generateJob;
 var getData = utility.getData;
@@ -34,6 +33,7 @@ getData(
             skipAbilityUpgrades: true,
             skipParse: false,
             cassandra: cassandra,
+            attempts: 1,
         }, function(err)
         {
             if (err)

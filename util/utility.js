@@ -4,7 +4,7 @@
  * A bare Node installation should be able to require() this file without errors.
  **/
 var config = require('../config');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var request = require('request');
 var BigNumber = require('big-number');
 var urllib = require('url');

@@ -1,7 +1,7 @@
 var express = require('express');
 var async = require('async');
 var api = express.Router();
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var config = require('../config');
 var request = require('request');
 var rc_secret = config.RECAPTCHA_SECRET_KEY;
@@ -20,7 +20,6 @@ var player_fields = constants.player_fields;
 var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
 const utility = require('../util/utility');
-const sqlqueries = require('../util/sqlqueries');
 const crypto = require('crypto');
 const util = require('util');
 const bodyParser = require('body-parser');
@@ -138,12 +137,14 @@ module.exports = function (db, redis, cassandra)
         }
         if (req.params.info !== "matches")
         {
+            //we want to show insignificant matches in match view
             req.query.significant = [1];
         }
         var queryObj = {
-            project: ['match_id'].concat(req.query.project || []),
+            project: ['match_id'].concat(req.query.project || []).concat([req.query.sort] || []),
             filter: req.query ||
             {},
+            sort: req.query.sort,
             limit: Number(req.query.limit),
             offset: Number(req.query.offset),
         };
@@ -619,21 +620,10 @@ module.exports = function (db, redis, cassandra)
     {
         if (req.query.id)
         {
-            if (isNaN(req.query.id))
+            db.select().from('queries').where(
             {
-                return runQuery(null, [Object.assign(
-                {}, sqlqueries[req.query.id],
-                {
-                    id: req.query.id
-                })]);
-            }
-            else
-            {
-                db.select().from('queries').where(
-                {
-                    id: req.query.id
-                }).asCallback(runQuery);
-            }
+                id: req.query.id
+            }).asCallback(runQuery);
         }
         else
         {
@@ -658,17 +648,6 @@ module.exports = function (db, redis, cassandra)
                 res.json(result);
             });
         }
-    });
-    api.get('/explorer/examples', function (req, res, cb)
-    {
-        res.json(Object.keys(sqlqueries).map(function(k, i)
-        {
-            return Object.assign(
-            {}, sqlqueries[k],
-            {
-                id: k
-            });
-        }));
     });
     api.get('/leagues', function (req, res, cb)
     {

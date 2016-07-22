@@ -1,4 +1,4 @@
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var express = require('express');
 var mmstats = express.Router();
 var async = require('async');

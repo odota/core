@@ -3,7 +3,7 @@
  * Returns an analysis object
  **/
 var util = require('util');
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 
 function generatePlayerAnalysis(match, pm)
 {
