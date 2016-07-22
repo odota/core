@@ -137,12 +137,14 @@ module.exports = function (db, redis, cassandra)
         }
         if (req.params.info !== "matches")
         {
+            //we want to show insignificant matches in match view
             req.query.significant = [1];
         }
         var queryObj = {
-            project: ['match_id'].concat(req.query.project || []),
+            project: ['match_id'].concat(req.query.project || []).concat([req.query.sort] || []),
             filter: req.query ||
             {},
+            sort: req.query.sort,
             limit: Number(req.query.limit),
             offset: Number(req.query.offset),
         };
