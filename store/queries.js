@@ -922,7 +922,7 @@ function searchPlayer(db, query, cb)
                     (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS sml 
                     FROM players 
                     WHERE personaname % ? 
-                    LIMIT 1000) search 
+                    LIMIT 500) search 
                     ORDER BY sml DESC;
                     `, [query, query]).asCallback(function(err, result)
             {
