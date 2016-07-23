@@ -3,7 +3,7 @@
  * Serves web/API requests
  **/
 var config = require('../config');
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var utility = require('../util/utility');
 var buildSets = require('../store/buildSets');
 var redis = require('../store/redis');
@@ -98,14 +98,14 @@ app.use(function rateLimit(req, res, cb)
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || "";
     ip = ip.replace(/^.*:/, '').split(',')[0];
     var key = 'rate_limit:' + ip;
-    console.log("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.path, ip);
+    console.log("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.originalUrl, ip);
     redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
     {
         if (err)
         {
             return cb(err);
         }
-        if (resp[0] > 5 && config.NODE_ENV !== "test")
+        if (resp[0] > 8 && config.NODE_ENV !== "test")
         {
             return res.status(429).json(
             {
@@ -121,13 +121,10 @@ app.use(function rateLimit(req, res, cb)
 app.use(function telemetry(req, res, cb)
 {
     var timeStart = new Date();
-    if (req.path.indexOf('/names') === 0)
+    if (req.originalUrl.indexOf('/api') === 0)
     {
-        redis.zadd("alias_hits", moment().format('X'), moment().valueOf() + req.path);
-    }
-    if (req.path.indexOf('/api') === 0)
-    {
-        redis.zadd("api_hits", moment().format('X'), moment().valueOf() + req.path);
+        console.log('api')
+        redis.zadd("api_hits", moment().format('X'), req.originalUrl);
     }
     if (req.user)
     {
@@ -136,14 +133,13 @@ app.use(function telemetry(req, res, cb)
     res.once('finish', function()
     {
         var timeEnd = new Date();
-        /*
-        var obj = JSON.stringify({
-            path: req.path,
-            time: timeEnd - timeStart
-        };
-        */
-        redis.lpush("load_times", timeEnd - timeStart);
-        redis.ltrim("load_times", 0, 10000);
+        var elapsed = timeEnd - timeStart;
+        if (elapsed > 1000 || config.NODE_ENV === "development")
+        {
+            console.log("[SLOWLOG] %s, %s", req.originalUrl, elapsed);
+        }
+        redis.lpush("load_times", elapsed);
+        redis.ltrim("load_times", 0, 9999);
     });
     cb();
 });
@@ -289,17 +285,6 @@ app.get('/picks/:n?', function(req, res, cb)
         });
     });
 });
-app.get('/top', function(req, res, cb)
-{
-    queries.getTop(db, redis, function(err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        res.render('top', result);
-    });
-});
 app.get('/rankings/:hero_id?', function(req, res, cb)
 {
     if (!req.params.hero_id)
@@ -372,6 +357,10 @@ app.get('/search', function(req, res, cb)
         res.render('search');
     }
 });
+app.get('/explorer/:qid?', function(req, res, cb)
+{
+    return res.render('explorer');
+});
 app.get('/april/:year?', function(req, res, cb)
 {
     return res.render('plusplus',
@@ -389,6 +378,7 @@ app.use(function(req, res, next)
 {
     if (config.UI_HOST)
     {
+        //route not found, redirect to SPA
         return res.redirect(config.UI_HOST + req.url);
     }
     var err = new Error("Not Found");
@@ -399,7 +389,7 @@ app.use(function(err, req, res, next)
 {
     res.status(err.status || 500);
     console.log(err);
-    redis.zadd("error_500", moment().format('X'), req.path);
+    redis.zadd("error_500", moment().format('X'), req.originalUrl);
     if (config.NODE_ENV !== "development")
     {
         return res.render('error/' + (err.status === 404 ? '404' : '500'),

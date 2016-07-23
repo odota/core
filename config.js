@@ -31,6 +31,7 @@ var defaults = {
     "WORK_PORT": "5400",
     "SCANNER_PORT": "5500",
     "POSTGRES_URL": "postgresql://postgres:postgres@localhost/yasp", //connection string for PostgreSQL
+    "READONLY_POSTGRES_URL": "postgresql://readonly:readonly@localhost/yasp", //readonly connection string for PostgreSQL
     "REDIS_URL": "redis://127.0.0.1:6379/0", //connection string for Redis
     "CASSANDRA_URL": "cassandra://localhost/yasp", //connection string for Cassandra
     "RETRIEVER_HOST": "localhost:5100", //The host of the retriever (access to Dota 2 GC data)
@@ -39,10 +40,13 @@ var defaults = {
     "PROXY_URLS": "", //comma separated list of proxy urls to use
     "STEAM_API_HOST": "api.steampowered.com", //the list of hosts to fetch Steam API data from
     "ROLE": "", //for specifying the file that should be run when deploy.js is invoked
+    "GROUP": "", //for specifying the group of apps that should be run when deploy.js is invoked
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)
     "SCANNER_PARALLELISM": 1, //Number of simultaneous API requests to make in scanner
+    "MMR_PARALLELISM": 15,
+    "PARSER_PARALLELISM": 1,
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "BENCHMARK_RETENTION_HOURS": 1, //hours in block to retain benchmark data for percentile
     "MATCH_RATING_RETENTION_HOURS": 12, //hours in block to retain match rating data for percentile
@@ -51,9 +55,7 @@ var defaults = {
     "UI_HOST": "", //The host of the UI, redirect traffic from / and /return here
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
-    "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches (Redis)
-    "ENABLE_PLAYER_CACHE": "", // set to enable caching players (Cassandra)
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
     "ENABLE_POSTGRES_MATCH_STORE_WRITE": "1", //set to enable writing match data to postgres (default on)

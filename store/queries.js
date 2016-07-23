@@ -4,9 +4,10 @@
 var utility = require('../util/utility');
 var benchmarks = require('../util/benchmarks');
 var config = require('../config');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var queue = require('./queue');
 var playerCache = require('./playerCache');
+var readCache = playerCache.readCache;
 var addToQueue = queue.addToQueue;
 var mQueue = queue.getQueue('mmr');
 var async = require('async');
@@ -17,7 +18,6 @@ var cQueue = queue.getQueue('cache');
 var pQueue = queue.getQueue('parse');
 var updateCache = playerCache.updateCache;
 var serialize = utility.serialize;
-var deserialize = utility.deserialize;
 var columnInfo = {};
 var cassandraColumnInfo = {};
 
@@ -30,13 +30,6 @@ function getSets(redis, cb)
             redis.get("trackedPlayers", function(err, tps)
             {
                 cb(err, JSON.parse(tps || "{}"));
-            });
-        },
-        "userPlayers": function(cb)
-        {
-            redis.get("userPlayers", function(err, ups)
-            {
-                cb(err, JSON.parse(ups || "{}"));
             });
         },
         "donators": function(cb)
@@ -131,7 +124,7 @@ function upsert(db, table, row, conflict, cb)
             return util.format("%s=%s", key, "EXCLUDED." + key);
         });
         var query = util.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
-        //require('fs').writeFileSync('output.json', query);
+        //console.log(query.toString());
         db.raw(query, Object.keys(row).map(function(key)
         {
             return row[key];
@@ -168,7 +161,7 @@ function insertMatch(db, redis, match, options, cb)
         players.forEach(function(p, i)
         {
             match.pgroup[p.player_slot] = {
-                account_id: p.account_id,
+                account_id: p.account_id || null,
                 hero_id: p.hero_id,
                 player_slot: p.player_slot
             };
@@ -191,35 +184,63 @@ function insertMatch(db, redis, match, options, cb)
     //we want to insert into matches, then insert into player_matches for each entry in players
     async.series(
     {
+        "dlp": decideLogParse,
         "u": upsertMatch,
         "uc": upsertMatchCassandra,
         "upc": updatePlayerCaches,
+        "uct": updateCounts,
         "cmc": clearMatchCache,
         "t": telemetry,
         "dm": decideMmr,
+        "dpro": decideProfile,
         "dp": decideParse,
     }, function(err, results)
     {
         return cb(err, results.dp);
     });
 
+    function decideLogParse(cb)
+    {
+        if (match.leagueid && match.human_players === 10)
+        {
+            redis.sismember('pro_leagueids', match.leagueid, function(err, result)
+            {
+                options.doLogParse = options.doLogParse || Boolean(Number(result));
+                cb(err);
+            });
+        }
+        else
+        {
+            cb();
+        }
+    }
+
     function upsertMatch(cb)
     {
-        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE)
+        if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !options.doLogParse)
         {
             return cb();
         }
         db.transaction(function(trx)
         {
-            upsert(trx, 'matches', match,
+            async.series(
             {
-                match_id: match.match_id
-            }, function(err)
+                "m": upsertMatch,
+                "pm": upsertPlayerMatches,
+                "pb": upsertPicksBans,
+                "l": upsertMatchLogs,
+            }, exit);
+
+            function upsertMatch(cb)
             {
-                if (err)
+                upsert(trx, 'matches', match,
                 {
-                    return exit(err);
-                }
+                    match_id: match.match_id
+                }, cb);
+            }
+
+            function upsertPlayerMatches(cb)
+            {
                 async.each(players || [], function(pm, cb)
                 {
                     pm.match_id = match.match_id;
@@ -228,32 +249,69 @@ function insertMatch(db, redis, match, options, cb)
                         match_id: pm.match_id,
                         player_slot: pm.player_slot
                     }, cb);
-                }, exit);
+                }, cb);
+            }
 
-                function exit(err)
+            function upsertPicksBans(cb)
+            {
+                async.each(match.picks_bans || [], function(p, cb)
                 {
-                    if (err)
+                    //order is a reserved keyword
+                    p.ord = p.order;
+                    p.match_id = match.match_id;
+                    upsert(trx, 'picks_bans', p,
                     {
-                        console.error(err);
-                        trx.rollback(err);
-                    }
-                    else
-                    {
-                        trx.commit();
-                    }
-                    cb(err);
+                        match_id: p.match_id,
+                        ord: p.ord
+                    }, cb);
+                }, cb);
+            }
+
+            function upsertMatchLogs(cb)
+            {
+                if (!match.logs)
+                {
+                    return cb();
                 }
-            });
+                else
+                {
+                    trx.raw(`DELETE FROM match_logs WHERE match_id = ?`, [match.match_id]).asCallback(function(err)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        async.eachLimit(match.logs, 10000, function(e, cb)
+                        {
+                            trx('match_logs').insert(e).asCallback(cb);
+                        }, cb);
+                    });
+                }
+            }
+
+            function exit(err)
+            {
+                if (err)
+                {
+                    console.error(err);
+                    trx.rollback(err);
+                }
+                else
+                {
+                    trx.commit();
+                }
+                cb(err);
+            }
         });
     }
 
     function upsertMatchCassandra(cb)
     {
-        var cassandra = options.cassandra;
-        if (!cassandra)
+        if (!config.ENABLE_CASSANDRA_MATCH_STORE_WRITE)
         {
             return cb();
         }
+        var cassandra = options.cassandra;
         //console.log('[INSERTMATCH] upserting into Cassandra');
         cleanRowCassandra(cassandra, 'matches', match, function(err, match)
         {
@@ -269,7 +327,7 @@ function insertMatch(db, redis, match, options, cb)
             var arr = Object.keys(obj).map(function(k)
             {
                 // boolean types need to be expressed as booleans, if strings the cassandra driver will always convert it to true, e.g. 'false'
-                return k === "radiant_win" ? JSON.parse(obj[k]) : obj[k];
+                return (obj[k] === "true" || obj[k] === "false") ? JSON.parse(obj[k]) : obj[k];
             });
             cassandra.execute(query, arr,
             {
@@ -310,26 +368,22 @@ function insertMatch(db, redis, match, options, cb)
 
     function updatePlayerCaches(cb)
     {
-        if (options.skipCacheUpdate)
+        var copy = createMatchCopy(match, players, options);
+        updateCache(copy, cb);
+    }
+
+    function updateCounts(cb)
+    {
+        if (options.skipCounts)
         {
             return cb();
         }
-        var copy = JSON.parse(JSON.stringify(match));
-        copy.players = JSON.parse(JSON.stringify(players));
-        copy.insert_type = options.type;
-        copy.origin = options.origin;
-        updateCache(copy, function(err)
+        var copy = createMatchCopy(match, players, options);
+        //add to queue for counts
+        queue.addToQueue(cQueue, copy,
         {
-            if (err)
-            {
-                return cb(err);
-            }
-            //add to queue for counts
-            queue.addToQueue(cQueue, copy,
-            {
-                attempts: 1
-            }, cb);
-        });
+            attempts: 1
+        }, cb);
     }
 
     function telemetry(cb)
@@ -365,7 +419,7 @@ function insertMatch(db, redis, match, options, cb)
     {
         async.each(match.players, function(p, cb)
         {
-            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && (p.account_id in options.userPlayers || (config.ENABLE_RANDOM_MMR_UPDATE && match.match_id % 3 === 0)))
+            if (options.origin === "scanner" && match.lobby_type === 7 && p.account_id && p.account_id !== constants.anonymous_account_id && config.ENABLE_RANDOM_MMR_UPDATE)
             {
                 addToQueue(mQueue,
                 {
@@ -384,9 +438,22 @@ function insertMatch(db, redis, match, options, cb)
         }, cb);
     }
 
+    function decideProfile(cb)
+    {
+        async.each(match.players, function(p, cb)
+        {
+            if (options.origin === "scanner" && p.account_id && p.account_id !== constants.anonymous_account_id)
+            {
+                redis.lpush('profilerQueue', p.account_id);
+                redis.ltrim('profilerQueue', 0, 99);
+            }
+            cb();
+        }, cb);
+    }
+
     function decideParse(cb)
     {
-        if (match.parse_status !== 0)
+        if (options.skipParse)
         {
             //not parsing this match
             //this isn't a error, although we want to report that we refused to parse back to user if it was a request
@@ -403,6 +470,7 @@ function insertMatch(db, redis, match, options, cb)
                 duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
+                doLogParse: options.doLogParse,
             },
             {
                 lifo: options.lifo,
@@ -414,6 +482,15 @@ function insertMatch(db, redis, match, options, cb)
             });
         }
     }
+}
+
+function createMatchCopy(match, players, options)
+{
+    var copy = JSON.parse(JSON.stringify(match));
+    copy.players = JSON.parse(JSON.stringify(players));
+    copy.insert_type = options.type;
+    copy.origin = options.origin;
+    return copy;
 }
 
 function insertPlayer(db, player, cb)
@@ -445,7 +522,6 @@ function insertMatchSkill(db, row, cb)
         match_id: row.match_id
     }, cb);
 }
-
 /**
  * Benchmarks a match against stored data in Redis.
  **/
@@ -648,7 +724,7 @@ function expectedWin(rates)
     return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
 }
 
-function getTop(db, redis, cb)
+function getProPlayers(db, redis, cb)
 {
     db.raw(`
     SELECT * from notable_players
@@ -658,14 +734,7 @@ function getTop(db, redis, cb)
         {
             return cb(err);
         }
-        getLeaderboard(db, redis, 'solo_competitive_rank', 500, function(err, result2)
-        {
-            return cb(err,
-            {
-                notables: result.rows,
-                leaderboard: result2
-            });
-        });
+        return cb(err, result.rows);
     });
 }
 
@@ -849,11 +918,13 @@ function searchPlayer(db, query, cb)
         personaname: function(callback)
         {
             db.raw(`
-                    SELECT * FROM
-                    (SELECT account_id, personaname, avatarfull, similarity(personaname, ?)
-                    FROM players WHERE personaname ILIKE ? LIMIT 1000) search
-                    ORDER BY similarity DESC LIMIT 200
-                    `, [query, '%' + query + '%']).asCallback(function(err, result)
+                    SELECT * FROM 
+                    (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS sml 
+                    FROM players 
+                    WHERE personaname % ? 
+                    LIMIT 1000) search 
+                    ORDER BY sml DESC;
+                    `, [query, query]).asCallback(function(err, result)
             {
                 if (err)
                 {
@@ -880,6 +951,160 @@ function searchPlayer(db, query, cb)
     });
 }
 
+function fillSkill(db, matches, options, cb)
+{
+    //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
+    console.time('[PLAYER] fillSkill');
+    //get skill data for matches within cache expiry (might not have skill data)
+    /*
+    var recents = matches.filter(function(m)
+    {
+        return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+    });
+    */
+    //just get skill for last N matches (faster)
+    var recents = matches.slice(0, 20);
+    var skillMap = {};
+    db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(function(m)
+    {
+        return m.match_id;
+    })).asCallback(function(err, rows)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        console.log("fillSkill recents: %s, results: %s", recents.length, rows.length);
+        rows.forEach(function(match)
+        {
+            skillMap[match.match_id] = match.skill;
+        });
+        matches.forEach(function(m)
+        {
+            m.skill = m.skill || skillMap[m.match_id];
+        });
+        console.timeEnd('[PLAYER] fillSkill');
+        return cb(err, matches);
+    });
+}
+
+function getPlayerMatches(account_id, queryObj, cb)
+{
+    //TODO support reading from postgres?
+    readCache(account_id, queryObj, cb);
+}
+
+function getPlayerRatings(db, account_id, cb)
+{
+    console.time('[PLAYER] getPlayerRatings ' + account_id);
+    if (!Number.isNaN(account_id))
+    {
+        db.from('player_ratings').where(
+        {
+            account_id: Number(account_id)
+        }).orderBy('time', 'asc').asCallback(function(err, result)
+        {
+            console.timeEnd('[PLAYER] getPlayerRatings ' + account_id);
+            cb(err, result);
+        });
+    }
+    else
+    {
+        cb();
+    }
+}
+
+function getPlayerRankings(redis, account_id, cb)
+{
+    console.time('[PLAYER] getPlayerRankings ' + account_id);
+    async.map(Object.keys(constants.heroes), function(hero_id, cb)
+    {
+        redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), function(err, card)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), account_id, function(err, rank)
+            {
+                cb(err,
+                {
+                    hero_id: hero_id,
+                    rank: rank,
+                    card: card
+                });
+            });
+        });
+    }, function(err, result)
+    {
+        console.timeEnd('[PLAYER] getPlayerRankings ' + account_id);
+        cb(err, result);
+    });
+}
+
+function getPlayer(db, account_id, cb)
+{
+    if (!Number.isNaN(account_id))
+    {
+        db.first().from('players').where(
+        {
+            account_id: Number(account_id)
+        }).asCallback(cb);
+    }
+    else
+    {
+        cb();
+    }
+}
+
+function generateTeammateArrayFromHash(db, input, player, cb)
+{
+    if (!input)
+    {
+        return cb();
+    }
+    console.time('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
+    var teammates_arr = [];
+    var teammates = input;
+    for (var id in teammates)
+    {
+        var tm = teammates[id];
+        id = Number(id);
+        //don't include if anonymous, self or if few games together
+        if (id && id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5))
+        {
+            teammates_arr.push(tm);
+        }
+    }
+    teammates_arr.sort(function(a, b)
+    {
+        return b.games - a.games;
+    });
+    //limit to 200 max players
+    teammates_arr = teammates_arr.slice(0, 200);
+    async.each(teammates_arr, function(t, cb)
+    {
+        db.first().from('players').where(
+        {
+            account_id: t.account_id
+        }).asCallback(function(err, row)
+        {
+            if (err || !row)
+            {
+                return cb(err);
+            }
+            t.personaname = row.personaname;
+            t.last_login = row.last_login;
+            t.avatar = row.avatar;
+            cb(err);
+        });
+    }, function(err)
+    {
+        console.timeEnd('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
+        cb(err, teammates_arr);
+    });
+}
+
 module.exports = {
     getSets,
     insertPlayer,
@@ -888,7 +1113,7 @@ module.exports = {
     insertMatchSkill,
     getDistributions,
     getPicks,
-    getTop,
+    getProPlayers,
     getHeroRankings,
     getBenchmarks,
     benchmarkMatch,
@@ -897,4 +1122,10 @@ module.exports = {
     getLeaderboard,
     mmrEstimate,
     searchPlayer,
+    fillSkill,
+    getPlayerMatches,
+    getPlayerRatings,
+    getPlayerRankings,
+    getPlayer,
+    generateTeammateArrayFromHash,
 };

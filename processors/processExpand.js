@@ -226,7 +226,8 @@ function processExpand(entries, meta)
             //multikill
             e.unit = e.attackername;
             //add the "minimum value", as of 2016-02-06
-            e.key = e.value + 2;
+            //remove the "minimum value", as of 2016-06-23
+            e.key = e.value;
             e.value = 1;
             e.type = "multi_kills";
             expand(e);
@@ -236,7 +237,8 @@ function processExpand(entries, meta)
             //killstreak
             e.unit = e.attackername;
             //add the "minimum value", as of 2016-02-06
-            e.key = e.value + 3;
+            //remove the "minimum value", as of 2016-06-23
+            e.key = e.value;
             e.value = 1;
             e.type = "kill_streaks";
             expand(e);
@@ -425,25 +427,25 @@ function processExpand(entries, meta)
         },
         "obs": function(e)
         {
-            //key is a JSON array of position data
-            e.key = JSON.parse(e.key);
-            e.posData = true;
-            expand(e);
             var e2 = JSON.parse(JSON.stringify(e));
-            e2.posData = false;
             e2.type = "obs_log";
             expand(e2);
+            var e3 = JSON.parse(JSON.stringify(e));
+            //key is a JSON array of position data
+            e3.key = JSON.parse(e3.key);
+            e3.posData = true;
+            expand(e3);
         },
         "sen": function(e)
         {
-            e.key = JSON.parse(e.key);
-            e.posData = true;
-            expand(e);
             var e2 = JSON.parse(JSON.stringify(e));
-            e2.posData = false;
             e2.type = "sen_log";
             expand(e2);
-        }
+            var e3 = JSON.parse(JSON.stringify(e));
+            e3.key = JSON.parse(e3.key);
+            e3.posData = true;
+            expand(e3);
+        },
     };
     //define the types we want to put into each array
     //null means all types

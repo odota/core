@@ -1,4 +1,4 @@
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var utility = require('../util/utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
@@ -44,6 +44,7 @@ function aggregator(matches, fields, existing)
     for (var i = 0; i < matches2.length; i++)
     {
         var pm = matches2[i];
+        //computed properties
         pm.win = Number(isRadiant(pm) === pm.radiant_win);
         pm.lose = Number(isRadiant(pm) === pm.radiant_win) ? 0 : 1;
         var significant = isSignificant(pm);

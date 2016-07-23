@@ -4,7 +4,7 @@
  * A bare Node installation should be able to require() this file without errors.
  **/
 var config = require('../config');
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var request = require('request');
 var BigNumber = require('big-number');
 var urllib = require('url');
@@ -39,7 +39,7 @@ function generateJob(type, payload)
         "api_history": function()
         {
             return {
-                url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : "") + (payload.leagueid ? "&league_id=" + payload.leagueid : ""),
+                url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : "") + (payload.leagueid ? "&league_id=" + payload.leagueid : "") + (payload.start_at_match_id ? "&start_at_match_id=" + payload.start_at_match_id : ""),
                 title: [type, payload.account_id].join(),
                 type: "api",
                 payload: payload
@@ -108,6 +108,15 @@ function generateJob(type, payload)
                 title: [type].join(),
                 type: "api",
                 payload: payload
+            };
+        },
+        "api_teams": function()
+        {
+            return {
+                url: api_url + "/IDOTA2Teams_570/GetTeamInfo/v1/?key=" + api_key + "&team_id=" + payload.team_id,
+                title: [type].join(),
+                type: "api",
+                payload: payload,
             };
         },
         "parse": function()
@@ -208,7 +217,7 @@ function getData(url, cb)
         //add no proxy option
         proxies.push(null);
         proxy = proxies[Math.floor(Math.random() * proxies.length)];
-        console.log(proxies, proxy);
+        console.error(proxies, proxy);
         */
         //choose a steam api host
         var api_hosts = config.STEAM_API_HOST.split(",");
@@ -216,7 +225,7 @@ function getData(url, cb)
         parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
     }
     var target = urllib.format(parse);
-    console.log("%s - getData: %s", new Date(), target);
+    console.error("%s - getData: %s", new Date(), target);
     return setTimeout(function()
     {
         request(
@@ -233,7 +242,7 @@ function getData(url, cb)
                 //non-retryable
                 return cb(body);
             }
-            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos))
+            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams))
             {
                 //invalid response
                 if (url.noRetry)
@@ -242,7 +251,7 @@ function getData(url, cb)
                 }
                 else
                 {
-                    console.log("invalid response, retrying: %s", target);
+                    console.error("invalid response, retrying: %s", target);
                     return getData(url, cb);
                 }
             }
@@ -264,7 +273,7 @@ function getData(url, cb)
                     }
                     else
                     {
-                        console.log("invalid data, retrying: %s, %s", target, JSON.stringify(body));
+                        console.error("invalid data, retrying: %s, %s", target, JSON.stringify(body));
                         return getData(url, cb);
                     }
                 }
@@ -479,62 +488,6 @@ function min(array)
     return Math.min.apply(null, array);
 }
 
-function preprocessQuery(query)
-{
-    //check if we already processed to ensure idempotence
-    if (query.processed)
-    {
-        return;
-    }
-    //select,the query received, build the mongo query and the js filter based on this
-    query.db_select = {};
-    query.js_select = {};
-    query.keywords = {};
-    query.filter_count = 0;
-    var dbAble = {
-        "account_id": 1,
-    };
-    //reserved keywords, don't treat these as filters
-    var keywords = {
-        "desc": 1,
-        "project": 1,
-        "limit": 1,
-    };
-    for (var key in query.select)
-    {
-        if (!keywords[key])
-        {
-            //arrayify the element
-            query.select[key] = [].concat(query.select[key]).map(function(e)
-            {
-                if (typeof e === "object")
-                {
-                    //just return the object if it's an array or object
-                    return e;
-                }
-                //numberify this element
-                return Number(e);
-            });
-            if (dbAble[key])
-            {
-                query.db_select[key] = query.select[key][0];
-            }
-            query.js_select[key] = query.select[key];
-            query.filter_count += 1;
-        }
-        else
-        {
-            query.keywords[key] = query.select[key];
-        }
-    }
-    //absolute limit for number of matches to extract
-    query.limit = config.PLAYER_MATCH_LIMIT;
-    //mark this query processed
-    query.processed = true;
-    //console.log(query);
-    return query;
-}
-
 function getAggs()
 {
     return {
@@ -636,7 +589,7 @@ function deserialize(row)
         }
         catch (e)
         {
-            console.log('exception occurred during JSON parse: %s', e);
+            console.error('exception occurred during JSON parse: %s', e);
         }
     });
     return obj;
@@ -771,7 +724,6 @@ module.exports = {
     isSignificant: isSignificant,
     max: max,
     min: min,
-    preprocessQuery: preprocessQuery,
     getAggs: getAggs,
     reduceAggregable: reduceAggregable,
     serialize: serialize,

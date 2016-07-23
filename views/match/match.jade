@@ -9,14 +9,20 @@ append head
 block content
   .row
     .col-md-6
-      h2 Match #{match.match_id}
-        small
-        br
+      h2 Match #{match.match_id} 
         small(class=match.radiant_win ? "text-success" : "text-danger")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-        a(style="margin-left:1em;" href="/request#"+match.match_id, class="btn btn-sm" class=match.version ? "btn-success" : "btn-primary") #{match.version ? "Re-Parse Match" : "Request Parse"}
+        br
+        a(href="/request#"+match.match_id, class="btn btn-sm" class=match.version ? "btn-success" : "btn-primary") #{match.version ? "Re-Parse" : "Parse"}
         if match.replay_url
-          a(style="margin-left:1em;" href=match.replay_url, class="btn btn-sm btn-default") Download Replay
-
+          a(style="margin-left:1em;" href=match.replay_url, class="btn btn-sm btn-default") 
+            i(class="fa fa-download", style="margin-right: 3px;", aria-hidden="true")
+            | Replay
+          a(style="margin-left:1em;" href="#{'https://www.jist.tv/create.php?dota2-match-url=' + match.replay_url}", class="btn btn-sm btn-default")
+            | Get Video With
+            img(src='/public/images/jist-white-logo.png', style="height: 17px")
+        a(style="margin-left:1em;" href="#{'https://dotacoach.org/Hire/Yasp?matchID=' + match.match_id + '&userSteamId=' + (user ? user.account_id : '') + '&playerMmr=' + match.rating}", class="btn btn-sm btn-default")
+          img(src='/public/images/dotacoach-32x24.png', style="margin: -2px; padding-right: 4px;")
+          | Ask a Coach
     .col-md-6.table-responsive
       h2
       table.table.table-condensed.small
@@ -31,7 +37,6 @@ block content
             th Percentile
         tbody
           tr
-            //td= constants.parse_status[match.parse_status]
             td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
             td= constants.region[match.region] ? constants.region[match.region] : match.region
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")

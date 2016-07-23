@@ -4,21 +4,7 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
     if config.NODE_ENV==="development"
       //pre=JSON.stringify(q)
     .row
-      .col-md-12.form-inline.text-center
-        h4
-          | Select top 
-          span
-            .form-group
-              input.form-control(style="width: 5em;" name="limit" data-placeholder="" value=q.limit)#limit
-          |  matches by 
-          span
-            .form-group
-              select.form-control(multiple, name="desc", data-placeholder="Match ID")#desc
-                each val, key in histograms
-                  option(value=key, selected=(q.desc===key))=prettyPrint(key)
-          |  where 
-    .row
-      .col-md-4
+      .col-md-3
         .form-group
           label The Team Included
           select.form-control(name="with_hero_id" multiple, data-placeholder="Team: Any Hero")#with_hero_id
@@ -40,7 +26,7 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
             each entry in q.excluded_account_id || []
               option(value=entry, selected=q.excluded_account_id && q.excluded_account_id.indexOf(entry)!==-1)=entry
               
-      .col-md-4
+      .col-md-3
         .form-group
           label Hero
           select.form-control(multiple name="hero_id" data-placeholder="Any Hero")#hero_id
@@ -48,9 +34,9 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
               option(value=entry.id, selected=(q["hero_id"] && q["hero_id"][0]===entry.id))=entry.localized_name
         .form-group  
           label Faction
-          select.form-control(multiple name="isRadiant" data-placeholder="Any Faction")#isRadiant
-            option(value="1", selected=(q["isRadiant"] && q["isRadiant"][0]===1)) Radiant
-            option(value="0", selected=(q["isRadiant"] && q["isRadiant"][0]===0)) Dire
+          select.form-control(multiple name="is_radiant" data-placeholder="Any Faction")#is_radiant
+            option(value="1", selected=(q["is_radiant"] && q["is_radiant"][0]===1)) Radiant
+            option(value="0", selected=(q["is_radiant"] && q["is_radiant"][0]===0)) Dire
         .form-group
           label Result
           select.form-control(multiple name="win" data-placeholder="Any Result")#win
@@ -62,7 +48,7 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
             each val, key in constants.lane_role		
               option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
               
-      .col-md-4
+      .col-md-3
         .form-group
           label Patch
           select.form-control(multiple name="patch" data-placeholder="Any Patch")#patch
@@ -90,6 +76,16 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
           select.form-control(multiple name="region" data-placeholder="Any Region")#region
             each name, id in constants.region
               option(value=id, selected=(q.region && q.region[0]===Number(id)))=name
+      .col-md-3
+        .form-group
+          label Order by
+          select.form-control(multiple, name="desc", data-placeholder="Match ID")#desc
+            each val, key in histograms
+              option(value=key, selected=(q.desc===key))=prettyPrint(key)
+        .form-group
+          label Limit
+          input.form-control(name="limit" placeholder="No limit" value=q.limit)#limit
+
     hr
     .row
       .col-md-2.col-md-offset-4.text-center

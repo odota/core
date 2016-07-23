@@ -29,13 +29,13 @@ function processRequest(job, cb)
             }
             //match details response
             var match = body.result;
-            match.parse_status = 0;
             insertMatch(db, redis, match,
             {
                 type: "api",
                 attempts: 1,
                 lifo: true,
                 cassandra: cassandra,
+                skipParse: false,
             }, waitParse);
         });
     }

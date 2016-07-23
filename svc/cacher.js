@@ -2,7 +2,7 @@
  * Worker to handle counting and caching tasks performed when a match is inserted or parsed.
  * All operations in this worker should deal with ephemeral data (can be reconstructed from persistent data stores)
  **/
-var constants = require('../constants');
+var constants = require('dotaconstants');
 var config = require('../config');
 var redis = require('../store/redis');
 var queue = require('../store/queue');
@@ -186,7 +186,7 @@ function updateRankings(match, cb)
         {
             return cb(err);
         }
-        var score = (avg && !Number.isNaN(avg)) ? Math.pow(avg, 5) / 1000000000000 : undefined;
+        var match_score = (avg && !Number.isNaN(avg)) ? Math.pow(Math.max(avg/1000, 1), 6) : undefined;
         async.each(match.players, function(player, cb)
         {
             if (!player.account_id || player.account_id === constants.anonymous_account_id)
@@ -197,10 +197,10 @@ function updateRankings(match, cb)
             var start = moment().startOf('quarter').format('X');
             var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
             var win = Number(utility.isRadiant(player) === player.radiant_win);
-            if (score && utility.isSignificant(match))
+            var player_score = win ? match_score : 0;
+            if (player_score && utility.isSignificant(match))
             {
-                console.log(match.match_id, score);
-                redis.zincrby(['hero_rankings', start, player.hero_id].join(':'), win ? score : 0, player.account_id);
+                redis.zincrby(['hero_rankings', start, player.hero_id].join(':'), player_score, player.account_id);
                 redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);
             }
             cb();
@@ -248,7 +248,7 @@ function updateMatchRating(match, cb)
                 {
                     //push into list, limit elements
                     redis.lpush('mmr_estimates:' + player.account_id, avg);
-                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 24);
+                    redis.ltrim('mmr_estimates:' + player.account_id, 0, 14);
                 }
             });
             cb();

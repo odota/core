@@ -32,7 +32,7 @@ window.queryForm = function()
         maximumSelectionLength: 1,
         theme: "bootstrap",
     });
-    $("#isRadiant").select2(
+    $("#is_radiant").select2(
     {
         maximumSelectionLength: 1,
         theme: "bootstrap",

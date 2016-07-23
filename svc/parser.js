@@ -27,7 +27,7 @@ var progress = require('request-progress');
 var stream = require('stream');
 var pQueue = queue.getQueue('parse');
 var async = require('async');
-var ndjson = require('ndjson');
+const readline = require('readline');
 var spawn = cp.spawn;
 var insertMatch = queries.insertMatch;
 var benchmarkMatch = queries.benchmarkMatch;
@@ -59,7 +59,7 @@ app.get('/redis/:key', function(req, res, cb)
 });
 app.listen(config.PARSER_PORT);
 //END EXPRESS
-pQueue.process(1, function(job, cb)
+pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
 {
     console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
@@ -91,7 +91,7 @@ pQueue.process(1, function(job, cb)
                 parsed_data.start_time = match.start_time;
                 parsed_data.duration = match.duration;
                 parsed_data.replay_blob_key = match.replay_blob_key;
-                parsed_data.parse_status = 2;
+                parsed_data.doLogParse = match.doLogParse;
                 if (match.replay_blob_key)
                 {
                     insertUploadedParse(parsed_data, cb);
@@ -158,6 +158,8 @@ function insertStandardParse(match, cb)
     {
         type: "parsed",
         cassandra: cassandra,
+        skipParse: true,
+        doLogParse: match.doLogParse,
     }, cb);
 }
 
@@ -176,7 +178,8 @@ function runParse(match, job, cb)
     // Streams
     var inStream = progress(request(
     {
-        url: url
+        url: url,
+        encoding: null,
     }));
     inStream.on('progress', function(state)
     {
@@ -211,10 +214,11 @@ function runParse(match, job, cb)
     }
     bz.stdin.on('error', exit);
     bz.stdout.on('error', exit);
+    inStream.pipe(bz.stdin);
     var parser = spawn("java", [
         "-jar",
-        "-Xmx64m",
-        "./java_parser/target/stats-0.1.0.jar"
+        "-Xmx128m",
+        "./java_parser/target/stats-0.1.0.jar",
         ],
     {
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -226,22 +230,24 @@ function runParse(match, job, cb)
     {
         console.log(data.toString());
     });
-    var parseStream = ndjson.parse();
-    parseStream.on('data', function handleStream(e)
+    bz.stdout.pipe(parser.stdin);
+    const parseStream = readline.createInterface(
     {
+        input: parser.stdout
+    });
+    parseStream.on('line', function handleStream(e)
+    {
+        e = JSON.parse(e);
         if (e.type === 'epilogue')
         {
             console.log('received epilogue');
             incomplete = false;
+            parseStream.close();
+            exit();
         }
         entries.push(e);
     });
-    parseStream.on('end', exit);
-    parseStream.on('error', exit);
-    // Pipe together the streams
-    inStream.pipe(bz.stdin);
-    bz.stdout.pipe(parser.stdin);
-    parser.stdout.pipe(parseStream);
+    request.debug = true;
 
     function exit(err)
     {
@@ -263,6 +269,7 @@ function runParse(match, job, cb)
                 var message = "time spent on post-processing match ";
                 console.time(message);
                 var meta = processMetadata(entries);
+                var logs = processReduce(entries, match, meta);
                 var res = processExpand(entries, meta);
                 var parsed_data = processParsedData(res.parsed_data);
                 var teamfights = processTeamfights(res.tf_data, meta);
@@ -272,8 +279,8 @@ function runParse(match, job, cb)
                 parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
                 parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
                 parsed_data.upload = upload;
+                parsed_data.logs = logs;
                 //processMultiKillStreaks();
-                //processReduce(res.expanded);
                 console.timeEnd(message);
                 return cb(err, parsed_data);
             }

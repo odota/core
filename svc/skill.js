@@ -1,7 +1,7 @@
 /**
  * Worker checking the GetMatchHistory endpoint to get skill data for matches
  **/
-var constants = require('../constants.js');
+var constants = require('dotaconstants');
 var config = require('../config.js');
 var utility = require('../util/utility');
 var db = require('../store/db');
@@ -60,7 +60,6 @@ function getPageData(start, options, cb)
     utility.getData(
     {
         url: container.url,
-        proxyAffinityRange: 4,
     }, function(err, data)
     {
         if (err)

@@ -16,7 +16,10 @@
     "build": "npm install && npm run maven && npm run webpack",
     "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
-    "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del"
+    "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
+    "resetrankings": "redis-cli keys 'hero_rankings*' | xargs redis-cli del",
+    "dockerbuild": "sudo docker build -t yasp/yasp .",
+    "reparse": "cat matches.csv | xargs -n1 node tasks/getMatch.js"
   },
   "repository": {
     "type": "git",
@@ -44,6 +47,7 @@
     "datatables-bootstrap3-plugin": "^0.4.0",
     "dota2": "^3.0.0",
     "dota2-minimap-hero-sprites": "^2.0.0",
+    "dotaconstants": "yasp-dota/dotaconstants#79ea5f1",
     "dotenv": "^2.0.0",
     "express": "^4.13.4",
     "express-session": "^1.13.0",
@@ -51,14 +55,11 @@
     "font-awesome": "^4.5.0",
     "heatmap.js": "2.0.0",
     "http-proxy": "^1.13.1",
-    "isomorphic-fetch": "^2.2.1",
     "jade": "^1.11.0",
     "jquery": "^2.2.0",
-    "knex": "^0.10.0",
-    "material-ui": "^0.15.0-alpha.2",
+    "knex": "^0.11.7",
     "moment": "^2.11.2",
     "multer": "^1.1.0",
-    "ndjson": "^1.4.3",
     "numeral": "^1.5.3",
     "passport": "0.3.2",
     "passport-steam": "1.0.1",
@@ -92,9 +93,5 @@
     "supertest": "^1.1.0",
     "url-loader": "^0.5.7",
     "webpack": "^1.12.12"
-  },
-  "engines": {
-    "node": "6.0.0",
-    "npm": "3.8.8"
   }
 }

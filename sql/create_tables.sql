@@ -1,4 +1,5 @@
 CREATE EXTENSION pg_trgm;
+CREATE EXTENSION tsm_system_rows;
 
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
@@ -20,18 +21,16 @@ CREATE TABLE matches (
   game_mode integer,
   engine integer,
   picks_bans json[],
-  --radiant_team_name varchar(255),
-  --dire_team_name varchar(255),
-  --radiant_captain integer,
-  --dire_captain integer,
-  --radiant_logo integer
-  --dire_logo integer,
-  --radiant_team_complete integer,
-  --dire_team_complete integer,
-  --radiant_team_id integer,
-  --dire_team_id integer,
-  pgroup json,
-  --parsed data below
+  radiant_team_id integer,
+  dire_team_id integer,
+  radiant_team_name varchar(255),
+  dire_team_name varchar(255),
+  radiant_team_complete smallint,
+  dire_team_complete smallint,
+  radiant_captain bigint,
+  dire_captain bigint,
+  radiant_logo bigint,
+  dire_logo bigint,
   chat json[],
   objectives json[],
   radiant_gold_adv integer[],
@@ -39,6 +38,7 @@ CREATE TABLE matches (
   teamfights json[],
   version integer
   );
+CREATE INDEX on matches(leagueid) WHERE leagueid > 0;
 
 CREATE TABLE player_matches (
   PRIMARY KEY(match_id, player_slot),
@@ -99,10 +99,8 @@ CREATE TABLE player_matches (
   killed_by json,
   kill_streaks json,
   multi_kills json,
-  life_state json
-  --disabled due to incompatibility
-  --kill_streaks_log json[][], --an array of kill streak values
-  --multi_kill_id_vals integer[] --an array of multi kill values (the length of each multi kill)
+  life_state json,
+  damage_inflictor_received json
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 
@@ -172,4 +170,95 @@ CREATE TABLE notable_players (
   is_locked boolean,
   is_pro boolean,
   locked_until integer
+);
+
+CREATE TABLE match_logs (
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
+  time int,
+  type varchar(100),
+  team smallint,
+  unit varchar(100),
+  key varchar(1000),
+  value int,
+  slot smallint,
+  player_slot smallint,
+  player1 int,
+  player2 int,
+  attackerhero boolean,
+  targethero boolean,
+  attackerillusion boolean,
+  targetillusion boolean,
+  inflictor varchar(100),
+  gold_reason smallint,
+  xp_reason smallint,
+  attackername varchar(100),
+  targetname varchar(100),
+  sourcename varchar(100),
+  targetsourcename varchar(100),
+  valuename varchar(100),
+  gold int,
+  lh int,
+  xp int,
+  x smallint,
+  y smallint,
+  z smallint,
+  entityleft boolean,
+  ehandle int,
+  stuns real,
+  hero_id smallint,
+  life_state smallint,
+  level smallint,
+  kills smallint,
+  deaths smallint,
+  assists smallint,
+  denies smallint,
+  attackername_slot smallint,
+  targetname_slot smallint,
+  sourcename_slot smallint,
+  targetsourcename_slot smallint,
+  player1_slot smallint
+);
+CREATE INDEX ON match_logs(match_id);
+CREATE INDEX ON match_logs(match_id, player_slot) WHERE player_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, player1_slot) WHERE player1_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, attackername_slot) WHERE attackername_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, targetname_slot) WHERE targetname_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
+CREATE INDEX on match_logs(type);
+
+CREATE TABLE picks_bans(
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
+  is_pick boolean,
+  hero_id int,
+  team smallint,
+  ord smallint,
+  PRIMARY KEY (match_id, ord)
+);
+
+CREATE TABLE leagues(
+  leagueid bigint PRIMARY KEY,
+  ticket varchar(255),
+  banner varchar(255),
+  tier varchar(255),
+  name varchar(255)
+);
+
+CREATE TABLE teams(
+  team_id bigint PRIMARY KEY,
+  name varchar(255),
+  tag varchar(255)
+);
+
+CREATE TABLE queries(
+  id bigserial PRIMARY KEY,
+  name varchar(255),
+  nql text,
+  sql text
+);
+
+CREATE TABLE heroes(
+  id int PRIMARY KEY,
+  name text,
+  localized_name text
 );

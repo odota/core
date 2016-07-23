@@ -13,7 +13,6 @@ var getData = utility.getData;
 var generateJob = utility.generateJob;
 var async = require('async');
 var trackedPlayers;
-var userPlayers;
 var parallelism = config.SCANNER_PARALLELISM;
 var PAGE_SIZE = 100;
 buildSets(db, redis, function(err)
@@ -72,7 +71,6 @@ function start()
             }
             //set local vars
             trackedPlayers = result.trackedPlayers;
-            userPlayers = result.userPlayers;
             var arr = [];
             var matchBuffer = {};
             var completePages = {};
@@ -94,7 +92,6 @@ function start()
                 {
                     url: container.url,
                     delay: Number(config.SCANNER_DELAY),
-                    proxyAffinityRange: parallelism,
                 }, function(err, data)
                 {
                     if (err)
@@ -113,26 +110,19 @@ function start()
 
             function processMatch(match, cb)
             {
-                if (config.ENABLE_PRO_PARSING && match.leagueid)
-                {
-                    //parse tournament games
-                    match.parse_status = 0;
-                }
-                else if (match.players.some(function(p)
+                var insert = false;
+                var skipParse = true;
+                if (match.players.some(function(p)
                     {
                         return (p.account_id in trackedPlayers);
                     }))
                 {
-                    //queued
-                    match.parse_status = 0;
+                    insert = true;
+                    skipParse = false;
                 }
-                else if (match.players.some(function(p)
-                    {
-                        return (config.ENABLE_INSERT_ALL_MATCHES || p.account_id in userPlayers);
-                    }))
+                else if (config.ENABLE_INSERT_ALL_MATCHES)
                 {
-                    //skipped
-                    match.parse_status = 3;
+                    insert = true;
                 }
                 //check if match was previously processed
                 redis.get('scanner_insert:' + match.match_id, function(err, result)
@@ -143,7 +133,7 @@ function start()
                     }
                     //don't insert this match if we already processed it recently
                     //deduplicate matches in this page set
-                    if ((match.parse_status === 0 || match.parse_status === 3) && !result && !matchBuffer[match.match_id])
+                    if (insert && !result && !matchBuffer[match.match_id])
                     {
                         matchBuffer[match.match_id] = 1;
                         insertMatch(db, redis, match,
@@ -151,7 +141,7 @@ function start()
                             type: "api",
                             origin: "scanner",
                             cassandra: cassandra,
-                            userPlayers: userPlayers,
+                            skipParse: skipParse,
                         }, function(err)
                         {
                             if (!err)

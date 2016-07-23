@@ -1,9 +1,0 @@
-apiVersion: v1
-data:
-  postgresql.conf: {{conf}}
-  hba.conf: {{hba}}
-  ident.conf: #empty
-kind: Secret
-metadata:
-  name: postgres-config
-type: Opaque

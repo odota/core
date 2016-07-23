@@ -2,8 +2,8 @@
  * Provides methods for storing player match data in a faster caching layer
  **/
 var config = require('../config');
-var constants = require('../constants');
-var enabled = config.ENABLE_PLAYER_CACHE;
+var constants = require('dotaconstants');
+var enabled = config.ENABLE_CASSANDRA_MATCH_STORE_READ;
 var compute = require('../util/compute');
 var computeMatchData = compute.computeMatchData;
 var filter = require('../util/filter');
@@ -15,44 +15,49 @@ var deserialize = utility.deserialize;
 var util = require('util');
 var reduceAggregable = utility.reduceAggregable;
 
-function readCache(account_id, options, cb)
+function readCache(account_id, queryObj, cb)
 {
     if (enabled)
     {
-        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ?', options.cacheProject.join(','));
+        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', queryObj.project.join(','));
         var matches = [];
         return cassandra.stream(query, [account_id],
         {
             prepare: true,
             fetchSize: 1000,
             autoPage: true,
-        }).on('readable', function()
+        }).on('readable', function ()
         {
             //readable is emitted as soon a row is received and parsed
             var m;
             while (m = this.read())
             {
                 m = deserialize(m);
-                if (filter([m], options.js_select).length)
+                if (filter([m], queryObj.filter).length)
                 {
                     matches.push(m);
                 }
             }
-        }).on('end', function(err)
+        }).on('end', function (err)
         {
             //stream ended, there aren't any more rows
-            return cb(err,
+            if (queryObj.sort)
             {
-                raw: matches,
-            });
-        }).on('error', function(err)
+                matches.sort(function (a, b)
+                {
+                    return b[queryObj.sort] - a[queryObj.sort];
+                });
+            }
+            matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
+            return cb(err, matches);
+        }).on('error', function (err)
         {
             throw err;
         });
     }
     else
     {
-        return cb();
+        return cb(null, []);
     }
 }
 
@@ -62,21 +67,21 @@ function writeCache(account_id, cache, cb)
     {
         //console.log("saving player cache to cassandra %s", account_id);
         //upsert matches into store
-        return async.each(cache.raw, function(m, cb)
+        return async.each(cache.raw, function (m, cb)
         {
             m = serialize(reduceAggregable(m));
-            var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function(k)
+            var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function (k)
             {
                 return '?';
             }).join(','));
-            cassandra.execute(query, Object.keys(m).map(function(k)
+            cassandra.execute(query, Object.keys(m).map(function (k)
             {
                 return m[k];
             }),
             {
                 prepare: true
             }, cb);
-        }, function(err)
+        }, function (err)
         {
             if (err)
             {
@@ -98,7 +103,7 @@ function updateCache(match, cb)
         var players = match.players;
         if (match.pgroup && players)
         {
-            players.forEach(function(p)
+            players.forEach(function (p)
             {
                 if (match.pgroup[p.player_slot])
                 {
@@ -109,7 +114,7 @@ function updateCache(match, cb)
                 }
             });
         }
-        async.eachSeries(players, function(player_match, cb)
+        async.eachSeries(players, function (player_match, cb)
         {
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
             {
@@ -138,7 +143,6 @@ function updateCache(match, cb)
         return cb();
     }
 }
-
 module.exports = {
     readCache: readCache,
     writeCache: writeCache,
