@@ -246,7 +246,7 @@ function runParse(match, job, cb)
     });
     bz.stdout.pipe(parser.stdin);
     */
-    var parser = request.post('http://localhost:8000');
+    var parser = request.post('http://localhost:'+config.PARSE_SERVER_PORT);
     bz.stdout.pipe(parser);
     const parseStream = readline.createInterface(
     {
