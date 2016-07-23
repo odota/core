@@ -30,6 +30,7 @@ var defaults = {
     "PROXY_PORT": "5300",
     "WORK_PORT": "5400",
     "SCANNER_PORT": "5500",
+    "PARSE_SERVER_PORT": "5600",
     "POSTGRES_URL": "postgresql://postgres:postgres@localhost/yasp", //connection string for PostgreSQL
     "READONLY_POSTGRES_URL": "postgresql://readonly:readonly@localhost/yasp", //readonly connection string for PostgreSQL
     "REDIS_URL": "redis://127.0.0.1:6379/0", //connection string for Redis
