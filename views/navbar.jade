@@ -9,9 +9,10 @@
           span.icon-bar
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav
+      - constants.navbar_pages.api { "name": "API", "path": "//swagger.yasp.co"}
         each val, key in constants.navbar_pages
           if !val.hide || config.NODE_ENV === "development"
-            li(id='nav-#{key}'): a(href="/"+key, class=val["new-feature"] ? "new-feature" : "")=val.name
+            li(id='nav-#{key}'): a(href=val.path || ("/"+key), class=val["new-feature"] ? "new-feature" : "")=val.name
 
       ul.nav.navbar-nav.navbar-right
         if user
