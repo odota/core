@@ -21,7 +21,6 @@ var subkeys = player_fields.subkeys;
 var countCats = player_fields.countCats;
 const utility = require('../util/utility');
 const crypto = require('crypto');
-const util = require('util');
 const bodyParser = require('body-parser');
 module.exports = function (db, redis, cassandra)
 {
@@ -141,7 +140,7 @@ module.exports = function (db, redis, cassandra)
             req.query.significant = [1];
         }
         var queryObj = {
-            project: ['match_id'].concat(req.query.project || []).concat([req.query.sort] || []),
+            project: ['match_id'].concat(req.query.project || []).concat(req.query.sort || []),
             filter: req.query ||
             {},
             sort: req.query.sort,
