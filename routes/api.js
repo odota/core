@@ -541,6 +541,30 @@ module.exports = function (db, redis, cassandra)
             }
         });
     });
+    api.get('/players/:account_id/extrema', function (req, res, cb)
+    {
+        var isRadiant = utility.isRadiant;
+        req.queryObj.project = ['*'];
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            //TODO this won't work due to not having tower/barracks status stored in player_caches
+            var result = {
+                mega_creep_comebacks: cache.filter(function (m)
+                {
+                    return m.radiant_win === isRadiant(m) && ((isRadiant(m) && m.barracks_status_radiant === 0) || (!isRadiant(m) && m.barracks_status_dire === 0));
+                }),
+                mega_creep_throws: cache.filter(function (m)
+                {
+                    return m.radiant_win !== isRadiant(m) && ((isRadiant(m) && m.barracks_status_dire === 0) || (!isRadiant(m) && m.barracks_status_radiant === 0));
+                })
+            };
+            res.json(result);
+        });
+    });
     //non-match based
     api.get('/players/:account_id/ratings', function (req, res, cb)
     {
