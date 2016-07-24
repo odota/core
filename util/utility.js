@@ -27,7 +27,7 @@ function generateJob(type, payload)
     var api_url = "http://api.steampowered.com";
     var api_key;
     var opts = {
-        "api_details": function()
+        "api_details": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
@@ -36,7 +36,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_history": function()
+        "api_history": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : "") + (payload.leagueid ? "&league_id=" + payload.leagueid : "") + (payload.start_at_match_id ? "&start_at_match_id=" + payload.start_at_match_id : ""),
@@ -45,10 +45,10 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_summaries": function()
+        "api_summaries": function ()
         {
             return {
-                url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.players.map(function(p)
+                url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.players.map(function (p)
                 {
                     return convert32to64(p.account_id).toString();
                 }).join(),
@@ -57,7 +57,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_sequence": function()
+        "api_sequence": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + api_key + "&start_at_match_seq_num=" + payload.start_at_match_seq_num,
@@ -65,7 +65,7 @@ function generateJob(type, payload)
                 type: "api"
             };
         },
-        "api_heroes": function()
+        "api_heroes": function ()
         {
             return {
                 url: api_url + "/IEconDOTA2_570/GetHeroes/v0001/?key=" + api_key + "&language=" + payload.language,
@@ -74,7 +74,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_leagues": function()
+        "api_leagues": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetLeagueListing/v0001/?key=" + api_key,
@@ -83,7 +83,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_skill": function()
+        "api_skill": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistory/v0001/?key=" + api_key + "&start_at_match_id=" + payload.start_at_match_id + "&skill=" + payload.skill + "&hero_id=" + payload.hero_id + "&min_players=10",
@@ -92,7 +92,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_live": function()
+        "api_live": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=" + api_key,
@@ -101,7 +101,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_notable": function()
+        "api_notable": function ()
         {
             return {
                 url: api_url + "/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=" + api_key,
@@ -110,7 +110,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_teams": function()
+        "api_teams": function ()
         {
             return {
                 url: api_url + "/IDOTA2Teams_570/GetTeamInfo/v1/?key=" + api_key + "&team_id=" + payload.team_id,
@@ -119,7 +119,7 @@ function generateJob(type, payload)
                 payload: payload,
             };
         },
-        "parse": function()
+        "parse": function ()
         {
             return {
                 title: [type, payload.match_id].join(),
@@ -128,7 +128,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "request": function()
+        "request": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
@@ -138,7 +138,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "fullhistory": function()
+        "fullhistory": function ()
         {
             return {
                 title: [type, payload.account_id].join(),
@@ -146,7 +146,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "mmr": function()
+        "mmr": function ()
         {
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
@@ -154,7 +154,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "cache": function()
+        "cache": function ()
         {
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
@@ -162,7 +162,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "rank": function()
+        "rank": function ()
         {
             return {
                 title: [type, payload.account_id, payload.hero_id].join(),
@@ -226,7 +226,7 @@ function getData(url, cb)
     }
     var target = urllib.format(parse);
     console.error("%s - getData: %s", new Date(), target);
-    return setTimeout(function()
+    return setTimeout(function ()
     {
         request(
         {
@@ -234,7 +234,7 @@ function getData(url, cb)
             url: target,
             json: true,
             timeout: 30000
-        }, function(err, res, body)
+        }, function (err, res, body)
         {
             if (body && body.error)
             {
@@ -368,7 +368,7 @@ function getParseSchema()
         "chat": [],
         "radiant_gold_adv": [],
         "radiant_xp_adv": [],
-        "players": Array.apply(null, new Array(10)).map(function()
+        "players": Array.apply(null, new Array(10)).map(function ()
         {
             return {
                 "player_slot": 0,
@@ -581,7 +581,7 @@ function serialize(row)
 function deserialize(row)
 {
     var obj = {};
-    row.keys().forEach(function(key)
+    row.keys().forEach(function (key)
     {
         try
         {
@@ -599,10 +599,10 @@ function deserialize(row)
  **/
 function getAlphaHeroes()
 {
-    var alpha_heroes = Object.keys(constants.heroes).map(function(id)
+    var alpha_heroes = Object.keys(constants.heroes).map(function (id)
     {
         return constants.heroes[id];
-    }).sort(function(a, b)
+    }).sort(function (a, b)
     {
         return a.localized_name < b.localized_name ? -1 : 1;
     });
@@ -613,18 +613,18 @@ function getAlphaHeroes()
  **/
 function prettyPrint(str)
 {
-    return str.split("_").map(function(s)
+    return str.split("_").map(function (s)
     {
         switch (s)
         {
-            case "xp":
-                return "XP";
-            case "kda":
-                return "KDA";
-            case "tpscroll":
-                return "TP Scroll";
-            default:
-                return s.charAt(0).toUpperCase() + s.slice(1);
+        case "xp":
+            return "XP";
+        case "kda":
+            return "KDA";
+        case "tpscroll":
+            return "TP Scroll";
+        default:
+            return s.charAt(0).toUpperCase() + s.slice(1);
         }
     }).join(" ");
 }
@@ -680,7 +680,7 @@ function percentToTextClass(pct)
 
 function average(data)
 {
-    return ~~(data.reduce(function(a, b)
+    return ~~(data.reduce(function (a, b)
     {
         return a + b;
     }, 0) / data.length);
@@ -689,7 +689,7 @@ function average(data)
 function stdDev(data)
 {
     var avg = average(data);
-    var squareDiffs = data.map(function(value)
+    var squareDiffs = data.map(function (value)
     {
         var diff = value - avg;
         var sqrDiff = diff * diff;
@@ -702,7 +702,7 @@ function stdDev(data)
 
 function median(data)
 {
-    data.sort(function(a, b)
+    data.sort(function (a, b)
     {
         return a - b;
     });
@@ -710,29 +710,46 @@ function median(data)
     if (data.length % 2) return data[half];
     else return (data[half - 1] + data[half]) / 2.0;
 }
+
+function getPatchIndex(start_time)
+{
+    var date = new Date(start_time * 1000);
+    for (var i = 1; i < constants.patch.length; i++)
+    {
+        var pd = new Date(constants.patch[i].date);
+        //stop when patch date is past the start time
+        if (pd > date)
+        {
+            break;
+        }
+    }
+    //use the value of i before the break, started at 1 to avoid negative index
+    return i - 1;
+}
 module.exports = {
-    tokenize: tokenize,
-    generateJob: generateJob,
-    getData: getData,
-    convert32to64: convert32to64,
-    convert64to32: convert64to32,
-    isRadiant: isRadiant,
-    mergeObjects: mergeObjects,
-    mode: mode,
-    generatePositionData: generatePositionData,
-    getParseSchema: getParseSchema,
-    isSignificant: isSignificant,
-    max: max,
-    min: min,
-    getAggs: getAggs,
-    reduceAggregable: reduceAggregable,
-    serialize: serialize,
-    getAlphaHeroes: getAlphaHeroes,
-    prettyPrint: prettyPrint,
-    getStartOfBlockHours: getStartOfBlockHours,
-    percentToTextClass: percentToTextClass,
-    average: average,
-    stdDev: stdDev,
-    median: median,
+    tokenize,
+    generateJob,
+    getData,
+    convert32to64,
+    convert64to32,
+    isRadiant,
+    mergeObjects,
+    mode,
+    generatePositionData,
+    getParseSchema,
+    isSignificant,
+    max,
+    min,
+    getAggs,
+    reduceAggregable,
+    serialize,
+    getAlphaHeroes,
+    prettyPrint,
+    getStartOfBlockHours,
+    percentToTextClass,
+    average,
+    stdDev,
+    median,
     deserialize,
+    getPatchIndex,
 };
