@@ -264,6 +264,6 @@ CREATE TABLE heroes(
 );
 
 CREATE TABLE match_patch(
-  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE PRIMARY KEY,
   patch text
 );
