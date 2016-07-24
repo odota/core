@@ -262,3 +262,8 @@ CREATE TABLE heroes(
   name text,
   localized_name text
 );
+
+CREATE TABLE match_patch(
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE PRIMARY KEY,
+  patch text
+);
