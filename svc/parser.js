@@ -65,6 +65,10 @@ var parseServer = spawn("java", ["-jar", "-Xmx256m", "./java_parser/target/stats
     stdio: ['pipe', 'pipe', 'pipe'],
     encoding: 'utf8'
 });
+parseServer.stderr.on('data', function printStdErr(data)
+{
+    console.log(data.toString());
+});
 parseServer.on('exit', function ()
 {
     throw new Error("restarting due to parse server exit");
@@ -186,7 +190,7 @@ function runParse(match, job, cb)
     var timeout = setTimeout(function ()
     {
         exit('timeout');
-    }, 300000);
+    }, 180000);
     var url = match.url;
     // Streams
     var inStream = progress(request(
