@@ -27,22 +27,21 @@ function getSets(redis, cb)
     {
         "trackedPlayers": function (cb)
         {
-            redis.get("trackedPlayers", function (err, tps)
+            redis.zrange('donators', '-inf', '+inf', function (err, ids)
             {
-                cb(err, JSON.parse(tps || "{}"));
+                if (err)
+                {
+                    return cb(err);
+                }
+                var result = {};
+                ids.forEach(function (id)
+                {
+                    result[id] = 1;
+                });
+                return cb(err, result);
             });
         },
-        "donators": function (cb)
-        {
-            redis.get("donators", function (err, ds)
-            {
-                cb(err, JSON.parse(ds || "{}"));
-            });
-        }
-    }, function (err, results)
-    {
-        cb(err, results);
-    });
+    }, cb);
 }
 
 function cleanRow(db, table, row, cb)
