@@ -20,7 +20,7 @@ module.exports = function buildSets(db, redis, cb)
                 }
                 docs.forEach(function (player)
                 {
-                    redis.zadd('tracked', moment().format('X'), player.account_id);
+                    redis.zadd('tracked', moment().add(1, 'month').format('X'), player.account_id);
                 });
                 cb(err);
             });
