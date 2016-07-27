@@ -27,7 +27,7 @@ function getSets(redis, cb)
     {
         "trackedPlayers": function (cb)
         {
-            redis.zrange('donators', '-inf', '+inf', function (err, ids)
+            redis.zrange('tracked', 0, -1, function (err, ids)
             {
                 if (err)
                 {
