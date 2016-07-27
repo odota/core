@@ -107,6 +107,10 @@ module.exports = function (db, redis, cassandra)
             {
                 queries.getPlayer(db, account_id, cb);
             },
+            tracked_until: function (cb)
+            {
+                redis.zscore('tracked', account_id, cb);  
+            },
             solo_competitive_rank: function (cb)
             {
                 redis.zscore('solo_competitive_rank', account_id, cb);
