@@ -45,6 +45,10 @@ module.exports = function buildSets(db, redis, cb) {
                     result.trackedPlayers[key2] = true;
                 }
             }
+            for (var key3 in result[key])
+            {
+                redis.zadd('tracked', moment().format('X'), key3);
+            }
             redis.set(key, JSON.stringify(result[key]));
         }
         console.log('set build complete');
