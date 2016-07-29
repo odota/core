@@ -731,6 +731,7 @@ OR t.name LIKE 'Vici_Gaming Reborn'
 OR t.name LIKE 'TNC Pro Team'
 OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
+HAVING count(*) > 5
 ORDER BY avg DESC
 LIMIT 100
 `,
@@ -764,6 +765,7 @@ OR t.name LIKE 'Vici_Gaming Reborn'
 OR t.name LIKE 'TNC Pro Team'
 OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
+HAVING count(*) > 5
 ORDER BY avg ASC
 LIMIT 100
 `,
@@ -797,6 +799,7 @@ OR t.name LIKE 'Vici_Gaming Reborn'
 OR t.name LIKE 'TNC Pro Team'
 OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
+HAVING count(*) > 5
 ORDER BY avg DESC
 LIMIT 100
 `,
@@ -830,6 +833,7 @@ OR t.name LIKE 'Vici_Gaming Reborn'
 OR t.name LIKE 'TNC Pro Team'
 OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
+HAVING count(*) > 5
 ORDER BY avg DESC
 LIMIT 100
 `,
@@ -863,6 +867,7 @@ OR t.name LIKE 'Vici_Gaming Reborn'
 OR t.name LIKE 'TNC Pro Team'
 OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
+HAVING count(*) > 5
 ORDER BY avg DESC
 LIMIT 100
 `,
@@ -896,6 +901,7 @@ OR t.name LIKE 'Vici_Gaming Reborn'
 OR t.name LIKE 'TNC Pro Team'
 OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
+HAVING count(*) > 5
 ORDER BY count DESC
 LIMIT 100
 `,
@@ -914,10 +920,13 @@ ORDER BY pb.match_id DESC
 LIMIT 1500) x
 `,
     tournament_kills_in_game: `
-SELECT max(kills)
+SELECT sum(kills)
 FROM (SELECT * FROM player_matches pm
 ORDER BY pm.match_id DESC
 LIMIT 1500) x
+GROUP BY match_id
+ORDER BY sum DESC
+LIMIT 1;
 `,
     tournament_longest_game: `
 SELECT max(duration) as seconds
@@ -964,7 +973,7 @@ app.get('/ti6predictions', function (req, res, cb)
 {
     redis.get('ti6predictions', function (err, result)
     {
-        if (err || !result)
+        if (err || !result || config.NODE_ENV === "development")
         {
             var obj = {};
             async.eachSeries(Object.keys(sqlqs), function (k, cb)
