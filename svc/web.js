@@ -962,21 +962,39 @@ LIMIT 1500) x
 };
 app.get('/ti6predictions', function (req, res, cb)
 {
-    //TODO redis cache
-    var obj = {};
-    async.eachSeries(Object.keys(sqlqs), function (k, cb) {
-        db.raw(sqlqs[k]).asCallback(function(err, result){
-            console.log(k);
-            obj[k] = result;
-            cb(err);
-        });
-    }, function (err)
+    redis.get('ti6predictions', function (err, result)
     {
-        if (err)
+        if (err || !result)
         {
-            return cb(err);
+            var obj = {};
+            async.eachSeries(Object.keys(sqlqs), function (k, cb)
+            {
+                db.raw(sqlqs[k]).asCallback(function (err, result)
+                {
+                    console.log(k);
+                    obj[k] = result;
+                    cb(err);
+                });
+            }, function (err)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                redis.setex('ti6predictions', 3600, JSON.stringify(obj));
+                res.render('ti6predictions',
+                {
+                    predictions: obj
+                });
+            });
         }
-        res.render('ti6predictions', {predictions: obj});
+        else
+        {
+            res.render('ti6predictions',
+            {
+                predictions: JSON.parse(result)
+            });
+        }
     });
 });
 app.get('/april/:year?', function (req, res, cb)
