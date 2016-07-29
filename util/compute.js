@@ -26,18 +26,7 @@ function computeMatchData(pm)
     // Compute patch based on start_time
     if (pm.start_time)
     {
-        var date = new Date(pm.start_time * 1000);
-        for (var i = 1; i < constants.patch.length; i++)
-        {
-            var pd = new Date(constants.patch[i].date);
-            //stop when patch date is past the start time
-            if (pd > date)
-            {
-                break;
-            }
-        }
-        //use the value of i before the break, started at 1 to avoid negative index
-        pm.patch = i - 1;
+        pm.patch = utility.getPatchIndex(pm.start_time);
     }
     if (pm.cluster)
     {
@@ -293,6 +282,7 @@ function computeMatchData(pm)
         pm.life_state_dead = (pm.life_state[1] || 0) + (pm.life_state[2] || 0);
     }
 }
+//TODO this function can be moved to client side
 /**
  * Renders display-only data for a match (doesn't need to be aggregated)
  **/

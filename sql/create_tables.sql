@@ -74,6 +74,7 @@ CREATE TABLE player_matches (
   times integer[],
   gold_t integer[],
   lh_t integer[],
+  dn_t integer[],
   xp_t integer[],
   obs_log json[],
   sen_log json[],
@@ -261,4 +262,9 @@ CREATE TABLE heroes(
   id int PRIMARY KEY,
   name text,
   localized_name text
+);
+
+CREATE TABLE match_patch(
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE PRIMARY KEY,
+  patch text
 );

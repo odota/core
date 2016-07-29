@@ -413,6 +413,11 @@ function processExpand(entries, meta)
                     e7.type = "lh_t";
                     e7.value = e7.lh;
                     expand(e7);
+                    var e8 = JSON.parse(JSON.stringify(e));
+                    e8.interval = true;
+                    e8.type = "dn_t";
+                    e8.value = e8.denies;
+                    expand(e8);
                 }
             }
             // store player position for the first 10 minutes

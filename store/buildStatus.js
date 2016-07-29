@@ -12,16 +12,16 @@ module.exports = function buildStatus(db, redis, cb)
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("parser", 0, moment().subtract(1, 'day').format('X'));
-    config.RETRIEVER_HOST.split(',').map(function(r)
+    config.RETRIEVER_HOST.split(',').map(function (r)
     {
         return "retriever:" + r.split('.')[0];
-    }).forEach(function(retkey)
+    }).forEach(function (retkey)
     {
         redis.zremrangebyscore(retkey, 0, moment().subtract(1, 'day').format('X'));
     });
     async.series(
     {
-        user_players: function(cb)
+        user_players: function (cb)
         {
             /*
             db.from('players').count().whereNotNull('last_login').asCallback(function(err, count)
@@ -40,55 +40,47 @@ module.exports = function buildStatus(db, redis, cb)
             });
         },
         */
-        tracked_players: function(cb)
+        tracked_players: function (cb)
         {
-            redis.zcount('visitors', moment().subtract(config.UNTRACK_DAYS, 'days').format('X'), '+inf', cb);
+            redis.zcard('tracked', cb);
         },
-        donated_players: function(cb)
-        {
-            redis.get("donators", function(err, res)
-            {
-                res = res ? Object.keys(JSON.parse(res)).length : 0;
-                cb(err, res);
-            });
-        },
-        error_500: function(cb)
+        error_500: function (cb)
         {
             redis.zcard("error_500", cb);
         },
-        matches_last_day: function(cb)
+        matches_last_day: function (cb)
         {
             redis.zcard("added_match", cb);
         },
-        api_hits: function(cb)
+        api_hits: function (cb)
         {
             redis.zcard("api_hits", cb);
         },
-        last_added: function(cb)
+        last_added: function (cb)
         {
-            redis.lrange('matches_last_added', 0, -1, function(err, result)
+            redis.lrange('matches_last_added', 0, -1, function (err, result)
             {
-                return cb(err, result.map(function(r)
+                return cb(err, result.map(function (r)
                 {
                     return JSON.parse(r);
                 }));
             });
         },
-        last_parsed: function(cb)
+        last_parsed: function (cb)
         {
-            redis.lrange('matches_last_parsed', 0, -1, function(err, result)
+            redis.lrange('matches_last_parsed', 0, -1, function (err, result)
             {
-                return cb(err, result.map(function(r)
+                return cb(err, result.map(function (r)
                 {
                     return JSON.parse(r);
                 }));
             });
         },
-        parser: function(cb)
+        parser: function (cb)
         {
-            async.map(["parser"], function(zset, cb)
+            async.map(["parser"], function (zset, cb)
             {
-                redis.zcard(zset, function(err, cnt)
+                redis.zcard(zset, function (err, cnt)
                 {
                     if (err)
                     {
@@ -102,14 +94,14 @@ module.exports = function buildStatus(db, redis, cb)
                 });
             }, cb);
         },
-        retriever: function(cb)
+        retriever: function (cb)
         {
-            async.map(config.RETRIEVER_HOST.split(',').map(function(r)
+            async.map(config.RETRIEVER_HOST.split(',').map(function (r)
             {
                 return "retriever:" + r.split('.')[0];
-            }), function(zset, cb)
+            }), function (zset, cb)
             {
-                redis.zcard(zset, function(err, cnt)
+                redis.zcard(zset, function (err, cnt)
                 {
                     if (err)
                     {
@@ -123,21 +115,21 @@ module.exports = function buildStatus(db, redis, cb)
                 });
             }, cb);
         },
-        queue: function(cb)
+        queue: function (cb)
         {
             //generate object with properties as queue types, each mapped to json object mapping state to count
             queue.getCounts(redis, cb);
         },
-        load_times: function(cb)
+        load_times: function (cb)
         {
-            redis.lrange("load_times", 0, -1, function(err, arr)
+            redis.lrange("load_times", 0, -1, function (err, arr)
             {
                 cb(err, generateCounts(arr, 1000));
             });
         },
-        health: function(cb)
+        health: function (cb)
         {
-            redis.hgetall('health', function(err, result)
+            redis.hgetall('health', function (err, result)
             {
                 if (err)
                 {
@@ -151,7 +143,7 @@ module.exports = function buildStatus(db, redis, cb)
                 {});
             });
         }
-    }, function(err, results)
+    }, function (err, results)
     {
         cb(err, results);
     });
@@ -159,7 +151,7 @@ module.exports = function buildStatus(db, redis, cb)
     function generateCounts(arr, cap)
     {
         var res = {};
-        arr.forEach(function(e)
+        arr.forEach(function (e)
         {
             e = Math.min(e, cap);
             res[e] = res[e] ? res[e] + 1 : 1;

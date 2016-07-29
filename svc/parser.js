@@ -38,7 +38,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 app.use(bodyParser.json());
-app.get('/', function(req, res)
+app.get('/', function (req, res)
 {
     res.json(
     {
@@ -46,9 +46,9 @@ app.get('/', function(req, res)
         started_at: startedAt
     });
 });
-app.get('/redis/:key', function(req, res, cb)
+app.get('/redis/:key', function (req, res, cb)
 {
-    redis.get(new Buffer('upload_blob:' + req.params.key), function(err, result)
+    redis.get(new Buffer('upload_blob:' + req.params.key), function (err, result)
     {
         if (err)
         {
@@ -59,13 +59,30 @@ app.get('/redis/:key', function(req, res, cb)
 });
 app.listen(config.PARSER_PORT);
 //END EXPRESS
-pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
+// Start Java parse server
+var parseServer = spawn("java", ["-jar", "-Xmx256m", "./java_parser/target/stats-0.1.0.jar", config.PARSE_SERVER_PORT],
+{
+    stdio: ['pipe', 'pipe', 'pipe'],
+    encoding: 'utf8'
+});
+parseServer.stderr.on('data', function printStdErr(data)
+{
+    console.log(data.toString());
+});
+parseServer.on('exit', function ()
+{
+    throw new Error("restarting due to parse server exit");
+});
+process.on('exit', function(){
+   parseServer.kill(); 
+});
+pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
 {
     console.log("parse job: %s", job.jobId);
     var match = job.data.payload;
     async.series(
     {
-        "getDataSource": function(cb)
+        "getDataSource": function (cb)
         {
             if (match.replay_blob_key)
             {
@@ -77,9 +94,9 @@ pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
                 getReplayUrl(db, redis, match, cb);
             }
         },
-        "runParse": function(cb)
+        "runParse": function (cb)
         {
-            runParse(match, job, function(err, parsed_data)
+            runParse(match, job, function (err, parsed_data)
             {
                 if (err)
                 {
@@ -102,7 +119,7 @@ pQueue.process(config.PARSER_PARALLELISM, function(job, cb)
                 }
             });
         },
-    }, function(err)
+    }, function (err)
     {
         if (err)
         {
@@ -130,7 +147,7 @@ function insertUploadedParse(match, cb)
     match.game_mode = match.upload.game_mode;
     match.radiant_win = match.upload.radiant_win;
     match.duration = match.upload.duration;
-    match.players.forEach(function(p, i)
+    match.players.forEach(function (p, i)
     {
         utility.mergeObjects(p, match.upload.player_map[p.player_slot]);
         p.gold_per_min = ~~(p.gold / match.duration * 60);
@@ -140,7 +157,7 @@ function insertUploadedParse(match, cb)
     });
     computeMatchData(match);
     renderMatch(match);
-    benchmarkMatch(redis, match, function(err)
+    benchmarkMatch(redis, match, function (err)
     {
         if (err)
         {
@@ -170,10 +187,10 @@ function runParse(match, job, cb)
     var entries = [];
     var incomplete = "incomplete";
     var exited = false;
-    var timeout = setTimeout(function()
+    var timeout = setTimeout(function ()
     {
         exit('timeout');
-    }, 300000);
+    }, 180000);
     var url = match.url;
     // Streams
     var inStream = progress(request(
@@ -181,7 +198,7 @@ function runParse(match, job, cb)
         url: url,
         encoding: null,
     }));
-    inStream.on('progress', function(state)
+    inStream.on('progress', function (state)
     {
         console.log(JSON.stringify(
         {
@@ -192,7 +209,7 @@ function runParse(match, job, cb)
         {
             job.progress(state.percentage * 100);
         }
-    }).on('response', function(response)
+    }).on('response', function (response)
     {
         if (response.statusCode !== 200)
         {
@@ -215,6 +232,7 @@ function runParse(match, job, cb)
     bz.stdin.on('error', exit);
     bz.stdout.on('error', exit);
     inStream.pipe(bz.stdin);
+    /*
     var parser = spawn("java", [
         "-jar",
         "-Xmx128m",
@@ -231,9 +249,12 @@ function runParse(match, job, cb)
         console.log(data.toString());
     });
     bz.stdout.pipe(parser.stdin);
+    */
+    var parser = request.post('http://localhost:'+config.PARSE_SERVER_PORT);
+    bz.stdout.pipe(parser);
     const parseStream = readline.createInterface(
     {
-        input: parser.stdout
+        input: parser
     });
     parseStream.on('line', function handleStream(e)
     {

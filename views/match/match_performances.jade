@@ -11,6 +11,7 @@ block match_content
               th: abbr(title=tooltips.lane) Lane
               th: abbr(title=tooltips.lane_efficiency) EFF@10
               th: abbr(title=tooltips.lhten) LH@10
+              th: abbr(title=tooltips.dnten) DN@10
               th: abbr(title=tooltips.stuns) Stuns
               th: abbr(title=tooltips.time_dead) Dead
               th: abbr(title=tooltips.max_hero_hit) Biggest Hit
@@ -19,6 +20,7 @@ block match_content
             td #{constants.lane_ids[player.lane] || "-"} (#{constants.lane_role[player.lane_role] || "-"})
             td.rankable #{(Number(player.lane_efficiency)*100).toFixed(2)}
             td.rankable #{player.lh_t && player.lh_t[10] ? player.lh_t[10] : "-"}
+            td.rankable #{player.dn_t && player.dn_t[10] ? player.dn_t[10] : "-"}
             td.rankable #{Number(Math.max(player.stuns, 0)).toFixed(2)}
             td.rankable.negative.format-seconds(data-format-seconds=player.life_state_dead) #{player.life_state_dead || "-"}
             td.nowrap
