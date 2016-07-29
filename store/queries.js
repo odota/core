@@ -228,6 +228,7 @@ function insertMatch(db, redis, match, options, cb)
                 "pm": upsertPlayerMatches,
                 "pb": upsertPicksBans,
                 "mp": upsertMatchPatch,
+                "utm": upsertTeamMatch,
                 "l": upsertMatchLogs,
             }, exit);
 
@@ -284,6 +285,37 @@ function insertMatch(db, redis, match, options, cb)
                 {
                     return cb();
                 }
+            }
+
+            function upsertTeamMatch(cb)
+            {
+                var arr = [];
+                if (match.radiant_team_id)
+                {
+                    arr.push(
+                    {
+                        team_id: match.radiant_team_id,
+                        match_id: match.match_id,
+                        radiant: true
+                    });
+                }
+                if (match.dire_team_id)
+                {
+                    arr.push(
+                    {
+                        team_id: match.dire_team_id,
+                        match_id: match.match_id,
+                        radiant: false
+                    });
+                }
+                async.each(arr, function (tm, cb)
+                {
+                    upsert(trx, 'team_match', tm,
+                    {
+                        team_id: tm.team_id,
+                        match_id: tm.match_id
+                    }, cb);
+                }, cb);
             }
 
             function upsertMatchLogs(cb)
@@ -1131,23 +1163,22 @@ function generateProPlayersArrayFromHash(db, input, player, cb)
         return cb();
     }
     var teammates = input;
-    db.select().from('notable_players').asCallback(function(err, result)
+    db.select().from('notable_players').asCallback(function (err, result)
     {
-        var arr = result.map(function(r)
+        var arr = result.map(function (r)
         {
             return Object.assign(
             {}, r, teammates[r.account_id]);
-        }).filter(function(r)
+        }).filter(function (r)
         {
             return r.games;
-        }).sort(function(a, b)
+        }).sort(function (a, b)
         {
             return b.games - a.games;
         });
         cb(err, arr);
     });
 }
-
 module.exports = {
     getSets,
     insertPlayer,

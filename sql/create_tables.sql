@@ -268,3 +268,10 @@ CREATE TABLE match_patch(
   match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE PRIMARY KEY,
   patch text
 );
+
+CREATE TABLE team_match(
+  team_id bigint,
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
+  radiant boolean,
+  PRIMARY KEY(team_id, match_id)
+);
