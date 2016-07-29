@@ -380,6 +380,7 @@ function getParseSchema()
                 "times": [],
                 "gold_t": [],
                 "lh_t": [],
+                "dn_t": [],
                 "xp_t": [],
                 "obs_log": [],
                 "sen_log": [],

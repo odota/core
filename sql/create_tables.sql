@@ -74,6 +74,7 @@ CREATE TABLE player_matches (
   times integer[],
   gold_t integer[],
   lh_t integer[],
+  dn_t integer[],
   xp_t integer[],
   obs_log json[],
   sen_log json[],
