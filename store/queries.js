@@ -1123,6 +1123,31 @@ function generateTeammateArrayFromHash(db, input, player, cb)
         cb(err, teammates_arr);
     });
 }
+
+function generateProPlayersArrayFromHash(db, input, player, cb)
+{
+    if (!input)
+    {
+        return cb();
+    }
+    var teammates = input;
+    db.select().from('notable_players').asCallback(function(err, result)
+    {
+        var arr = result.map(function(r)
+        {
+            return Object.assign(
+            {}, r, teammates[r.account_id]);
+        }).filter(function(r)
+        {
+            return r.games;
+        }).sort(function(a, b)
+        {
+            return b.games - a.games;
+        });
+        cb(err, arr);
+    });
+}
+
 module.exports = {
     getSets,
     insertPlayer,
@@ -1146,4 +1171,5 @@ module.exports = {
     getPlayerRankings,
     getPlayer,
     generateTeammateArrayFromHash,
+    generateProPlayersArrayFromHash,
 };
