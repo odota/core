@@ -60,6 +60,7 @@ CREATE TABLE player_matches (
   times text,
   gold_t text,
   lh_t text,
+  dn_t text,
   xp_t text,
   obs_log text,
   sen_log text,

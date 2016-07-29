@@ -28,6 +28,7 @@ var aggs = {
     matches: basicAggs,
     heroes: basicAggs.concat('heroes'),
     peers: basicAggs.concat('teammates'),
+    pros: basicAggs.concat('teammates'),
     activity: basicAggs.concat('start_time'),
     records: basicAggs.concat(Object.keys(subkeys)),
     counts: basicAggs.concat(Object.keys(countCats)).concat(['multi_kills', 'kill_streaks', 'lane_role']),
@@ -199,6 +200,10 @@ function buildPlayer(options, cb)
                     if (info === "peers")
                     {
                         queries.generateTeammateArrayFromHash(db, aggData.teammates, player, cb);
+                    }
+                    else if (info === "pros")
+                    {
+                        queries.generateProPlayersArrayFromHash(db, aggData.teammates, player, cb);
                     }
                     else
                     {

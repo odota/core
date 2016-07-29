@@ -388,8 +388,6 @@ module.exports = function (db, redis, cassandra)
     });
     api.get('/players/:account_id/peers', function (req, res, cb)
     {
-        var teammates = {};
-        var isRadiant = utility.isRadiant;
         req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
         queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
@@ -397,50 +395,31 @@ module.exports = function (db, redis, cassandra)
             {
                 return cb(err);
             }
-            cache.forEach(function (m)
-            {
-                var player_win = isRadiant(m) === m.radiant_win;
-                var group = m.heroes ||
-                {};
-                for (var key in group)
-                {
-                    var tm = group[key];
-                    //count teammate players
-                    if (!teammates[tm.account_id])
-                    {
-                        teammates[tm.account_id] = {
-                            account_id: tm.account_id,
-                            last_played: 0,
-                            win: 0,
-                            games: 0,
-                            with_win: 0,
-                            with_games: 0,
-                            against_win: 0,
-                            against_games: 0
-                        };
-                    }
-                    if (m.start_time > teammates[tm.account_id].last_played)
-                    {
-                        teammates[tm.account_id].last_played = m.start_time;
-                    }
-                    //played with
-                    teammates[tm.account_id].games += 1;
-                    teammates[tm.account_id].win += player_win ? 1 : 0;
-                    if (isRadiant(tm) === isRadiant(m))
-                    {
-                        //played with
-                        teammates[tm.account_id].with_games += 1;
-                        teammates[tm.account_id].with_win += player_win ? 1 : 0;
-                    }
-                    else
-                    {
-                        //played against
-                        teammates[tm.account_id].against_games += 1;
-                        teammates[tm.account_id].against_win += player_win ? 1 : 0;
-                    }
-                }
-            });
+            var teammates = countPeers(cache);
             queries.generateTeammateArrayFromHash(db, teammates,
+            {
+                account_id: req.params.account_id
+            }, function(err, result)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                res.json(result);
+            });
+        });
+    });
+    api.get('/players/:account_id/pros', function(req, res, cb)
+    {
+        req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var teammates = countPeers(cache);
+            queries.generateProPlayersArrayFromHash(db, teammates,
             {
                 account_id: req.params.account_id
             }, function (err, result)
@@ -453,7 +432,57 @@ module.exports = function (db, redis, cassandra)
             });
         });
     });
-    api.get('/players/:account_id/items', function (req, res, cb)
+
+    function countPeers(matches)
+    {
+        var teammates = {};
+        var isRadiant = utility.isRadiant;
+        matches.forEach(function(m)
+        {
+            var player_win = isRadiant(m) === m.radiant_win;
+            var group = m.heroes ||
+            {};
+            for (var key in group)
+            {
+                var tm = group[key];
+                //count teammate players
+                if (!teammates[tm.account_id])
+                {
+                    teammates[tm.account_id] = {
+                        account_id: tm.account_id,
+                        last_played: 0,
+                        win: 0,
+                        games: 0,
+                        with_win: 0,
+                        with_games: 0,
+                        against_win: 0,
+                        against_games: 0
+                    };
+                }
+                if (m.start_time > teammates[tm.account_id].last_played)
+                {
+                    teammates[tm.account_id].last_played = m.start_time;
+                }
+                //played with
+                teammates[tm.account_id].games += 1;
+                teammates[tm.account_id].win += player_win ? 1 : 0;
+                if (isRadiant(tm) === isRadiant(m))
+                {
+                    //played with
+                    teammates[tm.account_id].with_games += 1;
+                    teammates[tm.account_id].with_win += player_win ? 1 : 0;
+                }
+                else
+                {
+                    //played against
+                    teammates[tm.account_id].against_games += 1;
+                    teammates[tm.account_id].against_win += player_win ? 1 : 0;
+                }
+            }
+        });
+        return teammates;
+    }
+    api.get('/players/:account_id/items', function(req, res, cb)
     {
         req.queryObj.project = req.queryObj.project.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']);
         queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
