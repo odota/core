@@ -11,7 +11,7 @@ block content
         table.table
           tr
             each row in val.fields
-              th=row.name
+              th=row.name === "localized_name" ? "Name" : row.name
           each row in val.rows.slice(0, 10)
             tr
               each val2, key2 in row

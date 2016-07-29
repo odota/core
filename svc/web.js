@@ -394,7 +394,8 @@ JOIN matches m
 ON pm.match_id = m.match_id
 WHERE patch = '6.88'
 GROUP BY h.localized_name
-ORDER BY win_pct DESC;
+HAVING count(*) > 5
+ORDER BY win_pct DESC
 `,
     hero_highest_kill_avg: `
 SELECT h.localized_name, 
@@ -406,7 +407,8 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 WHERE patch = '6.88'
 GROUP BY h.localized_name
-ORDER BY avg DESC;
+HAVING count(*) > 5
+ORDER BY avg DESC
 `,
     hero_highest_assist_avg: `
 SELECT h.localized_name, 
@@ -418,7 +420,8 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 WHERE patch = '6.88'
 GROUP BY h.localized_name
-ORDER BY avg DESC;
+HAVING count(*) > 5
+ORDER BY avg DESC
 `,
     hero_lowest_death_avg: `
 SELECT h.localized_name, 
@@ -430,7 +433,8 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 WHERE patch = '6.88'
 GROUP BY h.localized_name
-ORDER BY avg ASC;
+HAVING count(*) > 5
+ORDER BY avg ASC
 `,
     hero_highest_last_hits_avg: `
 SELECT h.localized_name, 
@@ -442,7 +446,8 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 WHERE patch = '6.88'
 GROUP BY h.localized_name
-ORDER BY avg DESC;
+HAVING count(*) > 5
+ORDER BY avg DESC
 `,
     hero_highest_gpm_avg: `
 SELECT h.localized_name, 
@@ -454,8 +459,8 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 WHERE patch = '6.88'
 GROUP BY h.localized_name
+HAVING count(*) > 5
 ORDER BY avg DESC
-LIMIT 100
 `,
     team_most_kills: `
 SELECT t.name,
@@ -468,6 +473,24 @@ ON np.team_id = t.team_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY t.team_id
 ORDER BY avg DESC
 LIMIT 100
@@ -483,6 +506,24 @@ ON np.team_id = t.team_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY t.team_id
 ORDER BY avg ASC
 LIMIT 100
@@ -498,6 +539,24 @@ ON np.team_id = t.team_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY t.team_id
 ORDER BY avg DESC
 LIMIT 100
@@ -515,6 +574,24 @@ ON mp.match_id = pm.match_id
 JOIN matches m
 ON pm.match_id = m.match_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY t.team_id
 ORDER BY avg DESC
 LIMIT 100
@@ -532,6 +609,24 @@ ON mp.match_id = pm.match_id
 JOIN matches m
 ON pm.match_id = m.match_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY t.team_id
 ORDER BY avg ASC
 LIMIT 100
@@ -549,6 +644,24 @@ ON mp.match_id = pm.match_id
 JOIN heroes h
 ON pm.hero_id = h.id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY t.team_id
 ORDER BY count DESC
 LIMIT 100
@@ -566,6 +679,24 @@ ON mp.match_id = pm.match_id
 JOIN heroes h
 ON pm.hero_id = h.id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY t.team_id
 ORDER BY count ASC
 LIMIT 100
@@ -578,7 +709,27 @@ JOIN notable_players np
 ON pm.account_id = np.account_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
+JOIN teams t
+ON np.team_id = t.team_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
 ORDER BY avg DESC
 LIMIT 100
@@ -591,7 +742,27 @@ JOIN notable_players np
 ON pm.account_id = np.account_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
+JOIN teams t
+ON np.team_id = t.team_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
 ORDER BY avg ASC
 LIMIT 100
@@ -604,7 +775,27 @@ JOIN notable_players np
 ON pm.account_id = np.account_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
+JOIN teams t
+ON np.team_id = t.team_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
 ORDER BY avg DESC
 LIMIT 100
@@ -617,7 +808,27 @@ JOIN notable_players np
 ON pm.account_id = np.account_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
+JOIN teams t
+ON np.team_id = t.team_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
 ORDER BY avg DESC
 LIMIT 100
@@ -630,7 +841,27 @@ JOIN notable_players np
 ON pm.account_id = np.account_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
+JOIN teams t
+ON np.team_id = t.team_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
 ORDER BY avg DESC
 LIMIT 100
@@ -643,7 +874,27 @@ JOIN notable_players np
 ON pm.account_id = np.account_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
+JOIN teams t
+ON np.team_id = t.team_id
 WHERE patch = '6.88'
+AND (t.name LIKE 'OG Dota2'
+OR t.name LIKE 'Team Liquid'
+OR t.name LIKE 'Newbee'
+OR t.name LIKE 'LGD - GAMING'
+OR t.name LIKE 'MVP Phoenix'
+OR t.name LIKE 'Natus Vincere'
+OR t.name LIKE 'Evil Geniuses'
+OR t.name LIKE 'the wings gaming'
+OR t.name LIKE 'Team Secret'
+OR t.name LIKE 'Digital Chaos'
+OR t.name LIKE 'Alliance'
+OR t.name LIKE 'Fnatic'
+OR t.name LIKE 'compLexity Gaming'
+OR t.name LIKE 'EHOME'
+OR t.name LIKE 'Execration'
+OR t.name LIKE 'Vici_Gaming Reborn'
+OR t.name LIKE 'TNC Pro Team'
+OR t.name LIKE 'Escape Gaming')
 GROUP BY np.name
 ORDER BY count DESC
 LIMIT 100
