@@ -458,7 +458,7 @@ ORDER BY avg DESC
 LIMIT 100
 `,
     team_most_kills: `
-SELECT t.name, t.team_id,
+SELECT t.name,
 avg(kills)
 FROM player_matches pm
 JOIN notable_players np
@@ -473,7 +473,7 @@ ORDER BY avg DESC
 LIMIT 100
 `,
     team_least_deaths: `
-SELECT t.name, t.team_id,
+SELECT t.name,
 avg(deaths)
 FROM player_matches pm
 JOIN notable_players np
@@ -488,7 +488,7 @@ ORDER BY avg ASC
 LIMIT 100
 `,
     team_most_assists: `
-SELECT t.name, t.team_id,
+SELECT t.name,
 avg(assists)
 FROM player_matches pm
 JOIN notable_players np
@@ -502,8 +502,8 @@ GROUP BY t.team_id
 ORDER BY avg DESC
 LIMIT 100
 `,
-    team_longest: `
-SELECT t.name, t.team_id,
+    team_longest_match: `
+SELECT t.name,
 avg(m.duration)
 FROM player_matches pm
 JOIN notable_players np
@@ -519,8 +519,8 @@ GROUP BY t.team_id
 ORDER BY avg DESC
 LIMIT 100
 `,
-    team_shortest: `
-SELECT t.name, t.team_id,
+    team_shortest_match: `
+SELECT t.name,
 avg(duration)
 FROM player_matches pm
 JOIN notable_players np
@@ -537,7 +537,7 @@ ORDER BY avg ASC
 LIMIT 100
 `,
     team_most_heroes: `
-SELECT t.name, t.team_id,
+SELECT t.name,
 count(distinct h.localized_name)
 FROM player_matches pm
 JOIN notable_players np
@@ -554,7 +554,7 @@ ORDER BY count DESC
 LIMIT 100
 `,
     team_least_heroes: `
-SELECT t.name, t.team_id,
+SELECT t.name,
 count(distinct h.localized_name)
 FROM player_matches pm
 JOIN notable_players np
@@ -648,28 +648,25 @@ GROUP BY np.name
 ORDER BY count DESC
 LIMIT 100
 `,
-    tournament_games_played: `
-SELECT 120 as games
-`,
     tournament_heroes_picked: `
 SELECT count(distinct hero_id)
 FROM (SELECT * FROM picks_bans pb
 WHERE is_pick IS TRUE
 ORDER BY pb.match_id DESC
-LIMIT 1200) x
+LIMIT 1500) x
 `,
     tournament_heroes_banned: `
 SELECT count(distinct hero_id)
 FROM (SELECT * FROM picks_bans pb
 WHERE is_pick IS FALSE
 ORDER BY pb.match_id DESC
-LIMIT 1200) x
+LIMIT 1500) x
 `,
-    tournament_kills_game: `
+    tournament_kills_in_game: `
 SELECT max(kills)
 FROM (SELECT * FROM player_matches pm
 ORDER BY pm.match_id DESC
-LIMIT 1200) x
+LIMIT 1500) x
 `,
     tournament_longest_game: `
 SELECT max(duration) as seconds
@@ -677,7 +674,7 @@ FROM (SELECT * FROM player_matches pm
 JOIN matches m 
 ON pm.match_id = m.match_id
 ORDER BY pm.match_id DESC
-LIMIT 1200) x
+LIMIT 1500) x
 `,
     tournament_shortest_game: `
 SELECT min(duration) as seconds
@@ -685,31 +682,31 @@ FROM (SELECT * FROM player_matches pm
 JOIN matches m 
 ON pm.match_id = m.match_id
 ORDER BY pm.match_id DESC
-LIMIT 1200) x
+LIMIT 1500) x
 `,
-    tournament_most_kills_hero: `
+    tournament_most_kills_on_hero: `
 SELECT max(kills)
 FROM (SELECT * FROM player_matches pm
 ORDER BY pm.match_id DESC
-LIMIT 1200) x
+LIMIT 1500) x
 `,
-    tournament_most_deaths_hero: `
+    tournament_most_deaths_on_hero: `
 SELECT max(deaths)
 FROM (SELECT * FROM player_matches pm
 ORDER BY pm.match_id DESC
-LIMIT 1200) x
+LIMIT 1500) x
 `,
-    tournament_most_assists_hero: `
+    tournament_most_assists_on_hero: `
 SELECT max(assists)
 FROM (SELECT * FROM player_matches pm
 ORDER BY pm.match_id DESC
-LIMIT 1200) x
+LIMIT 1400) x
 `,
-    tournament_highest_gpm_hero: `
+    tournament_highest_gpm_on_hero: `
 SELECT max(gold_per_min)
 FROM (SELECT * FROM player_matches pm
 ORDER BY pm.match_id DESC
-LIMIT 1200) x
+LIMIT 1500) x
 `,
 };
 app.get('/ti6predictions', function (req, res, cb)
