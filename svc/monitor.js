@@ -4,13 +4,14 @@
 var config = require('../config');
 var redis = require('../store/redis');
 var db = require('../store/db');
+var cassandra = require('../store/cassandra');
 var utility = require('../util/utility');
 var request = require('request');
 var api_key = config.STEAM_API_KEY.split(',')[0];
 var health = {
     random_player: function random_player(cb)
     {
-        db.raw(`select account_id from players tablesample system(1) limit 1`).asCallback(function(err, result)
+        db.raw(`select account_id from players tablesample system(1) limit 1`).asCallback(function (err, result)
         {
             if (err)
             {
@@ -20,7 +21,7 @@ var health = {
             {
                 return cb();
             }
-            request(config.ROOT_URL + "/api/players/" + result.rows[0].account_id, function(err, resp, body)
+            request(config.ROOT_URL + "/api/players/" + result.rows[0].account_id, function (err, resp, body)
             {
                 var fail = err || resp.statusCode !== 200;
                 return cb(fail,
@@ -33,7 +34,7 @@ var health = {
     },
     steam_api: function steam_api(cb)
     {
-        request("http://api.steampowered.com" + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key, function(err, resp, body)
+        request("http://api.steampowered.com" + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key, function (err, resp, body)
         {
             if (err || resp.statusCode !== 200)
             {
@@ -57,7 +58,7 @@ var health = {
     seq_num_delay: function seq_num_delay(cb)
     {
         utility.getData(utility.generateJob("api_history",
-        {}).url, function(err, body)
+        {}).url, function (err, body)
         {
             if (err)
             {
@@ -65,7 +66,7 @@ var health = {
             }
             //get match_seq_num, compare with real seqnum
             var curr_seq_num = body.result.matches[0].match_seq_num;
-            redis.get('match_seq_num', function(err, num)
+            redis.get('match_seq_num', function (err, num)
             {
                 if (err)
                 {
@@ -83,7 +84,7 @@ var health = {
     },
     redis_usage: function redis_usage(cb)
     {
-        redis.info(function(err, info)
+        redis.info(function (err, info)
         {
             if (err)
             {
@@ -92,13 +93,13 @@ var health = {
             return cb(err,
             {
                 metric: redis.server_info.used_memory,
-                threshold: 13000000000
+                threshold: 13 * Math.pow(10, 9),
             });
         });
     },
     postgres_usage: function postgres_usage(cb)
     {
-        db.raw(`select pg_database_size('yasp')`).asCallback(function(err, result)
+        db.raw(`select pg_database_size('yasp')`).asCallback(function (err, result)
         {
             if (err)
             {
@@ -107,10 +108,30 @@ var health = {
             return cb(err,
             {
                 metric: result.rows[0].pg_database_size,
-                threshold: 200000000000
+                threshold: 2 * Math.pow(10, 11),
             });
         });
-    }
+    },
+    cassandra_usage: function cassandra_usage(cb)
+    {
+        cassandra.execute(`select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = 'yasp'`, function (err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var size = 0;
+            result.rows.forEach(function (r)
+            {
+                size += r.mean_partition_size * r.partitions_count * 0.4;
+            });
+            return cb(err,
+            {
+                metric: size,
+                threshold: 8 * Math.pow(10, 12),
+            });
+        });
+    },
 };
 for (var key in health)
 {
@@ -124,7 +145,7 @@ function invokeInterval(func)
     {
         console.log("running %s", func.name);
         console.time(func.name);
-        func(function(err, result)
+        func(function (err, result)
         {
             if (err)
             {
