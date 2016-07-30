@@ -651,9 +651,9 @@ GROUP BY t.team_id
 ORDER BY avg ASC
 LIMIT 100
 `,
-    team_most_heroes_per_match: `
+    team_most_heroes: `
 SELECT t.name,
-count(distinct h.localized_name)/count(*)::float as count
+count(distinct h.localized_name)
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
@@ -688,9 +688,9 @@ GROUP BY t.team_id
 ORDER BY count DESC
 LIMIT 100
 `,
-    team_least_heroes_per_match: `
+    team_least_heroes: `
 SELECT t.name,
-count(distinct h.localized_name)/count(*)::float as count
+count(distinct h.localized_name)
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
@@ -905,9 +905,9 @@ HAVING count(*) > 5
 ORDER BY avg DESC
 LIMIT 100
 `,
-    player_most_heroes_per_match: `
+    player_most_heroes: `
 SELECT np.name,
-count(distinct pm.hero_id)/count(*)::float as count
+count(distinct pm.hero_id)
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
