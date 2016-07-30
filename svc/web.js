@@ -653,7 +653,7 @@ LIMIT 100
 `,
     team_most_heroes_per_match: `
 SELECT t.name,
-count(distinct h.localized_name)/count(*) as count
+count(distinct h.localized_name)/count(*)::float as count
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
@@ -690,7 +690,7 @@ LIMIT 100
 `,
     team_least_heroes_per_match: `
 SELECT t.name,
-count(distinct h.localized_name)/count(*) as count
+count(distinct h.localized_name)/count(*)::float as count
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
@@ -907,7 +907,7 @@ LIMIT 100
 `,
     player_most_heroes_per_match: `
 SELECT np.name,
-count(distinct pm.hero_id)/count(*) as count
+count(distinct pm.hero_id)/count(*)::float as count
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
