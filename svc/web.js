@@ -365,8 +365,10 @@ JOIN heroes h
 ON pb.hero_id = h.id
 JOIN match_patch mp
 ON mp.match_id = pb.match_id
+JOIN matches m
+on mp.match_id = m.match_id
 WHERE is_pick IS TRUE
-AND patch = '6.88'
+AND to_timestamp(m.start_time) > '2016-07-01'
 GROUP BY h.localized_name
 ORDER BY count DESC;
 `,
@@ -377,14 +379,16 @@ JOIN heroes h
 ON pb.hero_id = h.id
 JOIN match_patch mp
 ON mp.match_id = pb.match_id
+JOIN matches m
+on mp.match_id = m.match_id
 WHERE is_pick IS FALSE
-AND patch = '6.88'
+AND to_timestamp(m.start_time) > '2016-07-01'
 GROUP BY h.localized_name
 ORDER BY count DESC;
 `,
     hero_highest_win_rate: `
 SELECT h.localized_name, 
-sum(case when ((pm.player_slot < 128) = m.radiant_win) then 1 else 0 end)/count(*)::float win_pct
+sum(case when ((pm.player_slot < 128) = m.radiant_win) then 1 else 0 end)/count(*)::float winrate
 FROM player_matches pm
 JOIN heroes h
 ON pm.hero_id = h.id
@@ -392,10 +396,10 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN matches m
 ON pm.match_id = m.match_id
-WHERE patch = '6.88'
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 GROUP BY h.localized_name
 HAVING count(*) > 5
-ORDER BY win_pct DESC
+ORDER BY winrate DESC
 `,
     hero_highest_kill_avg: `
 SELECT h.localized_name, 
@@ -405,7 +409,9 @@ JOIN heroes h
 ON pm.hero_id = h.id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 GROUP BY h.localized_name
 HAVING count(*) > 5
 ORDER BY avg DESC
@@ -418,7 +424,9 @@ JOIN heroes h
 ON pm.hero_id = h.id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 GROUP BY h.localized_name
 HAVING count(*) > 5
 ORDER BY avg DESC
@@ -431,7 +439,9 @@ JOIN heroes h
 ON pm.hero_id = h.id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 GROUP BY h.localized_name
 HAVING count(*) > 5
 ORDER BY avg ASC
@@ -444,7 +454,9 @@ JOIN heroes h
 ON pm.hero_id = h.id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 GROUP BY h.localized_name
 HAVING count(*) > 5
 ORDER BY avg DESC
@@ -457,7 +469,9 @@ JOIN heroes h
 ON pm.hero_id = h.id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 GROUP BY h.localized_name
 HAVING count(*) > 5
 ORDER BY avg DESC
@@ -472,7 +486,9 @@ LEFT JOIN teams t
 ON np.team_id = t.team_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -505,7 +521,9 @@ LEFT JOIN teams t
 ON np.team_id = t.team_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -538,7 +556,9 @@ LEFT JOIN teams t
 ON np.team_id = t.team_id
 JOIN match_patch mp
 ON mp.match_id = pm.match_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -573,7 +593,7 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN matches m
 ON pm.match_id = m.match_id
-WHERE patch = '6.88'
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -608,7 +628,7 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN matches m
 ON pm.match_id = m.match_id
-WHERE patch = '6.88'
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -631,9 +651,9 @@ GROUP BY t.team_id
 ORDER BY avg ASC
 LIMIT 100
 `,
-    team_most_heroes: `
+    team_most_heroes_per_match: `
 SELECT t.name,
-count(distinct h.localized_name)
+count(distinct h.localized_name)/count(*) as count
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
@@ -643,7 +663,9 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN heroes h
 ON pm.hero_id = h.id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -666,9 +688,9 @@ GROUP BY t.team_id
 ORDER BY count DESC
 LIMIT 100
 `,
-    team_least_heroes: `
+    team_least_heroes_per_match: `
 SELECT t.name,
-count(distinct h.localized_name)
+count(distinct h.localized_name)/count(*) as count
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
@@ -678,7 +700,9 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN heroes h
 ON pm.hero_id = h.id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -711,7 +735,9 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN teams t
 ON np.team_id = t.team_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -745,7 +771,9 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN teams t
 ON np.team_id = t.team_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -779,7 +807,9 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN teams t
 ON np.team_id = t.team_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -813,7 +843,9 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN teams t
 ON np.team_id = t.team_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -847,7 +879,9 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN teams t
 ON np.team_id = t.team_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -871,9 +905,9 @@ HAVING count(*) > 5
 ORDER BY avg DESC
 LIMIT 100
 `,
-    player_most_heroes: `
+    player_most_heroes_per_match: `
 SELECT np.name,
-count(distinct pm.hero_id)
+count(distinct pm.hero_id)/count(*) as count
 FROM player_matches pm
 JOIN notable_players np
 ON pm.account_id = np.account_id
@@ -881,7 +915,9 @@ JOIN match_patch mp
 ON mp.match_id = pm.match_id
 JOIN teams t
 ON np.team_id = t.team_id
-WHERE patch = '6.88'
+JOIN matches m
+on mp.match_id = m.match_id
+WHERE to_timestamp(m.start_time) > '2016-07-01'
 AND (t.name LIKE 'OG Dota2'
 OR t.name LIKE 'Team Liquid'
 OR t.name LIKE 'Newbee'
@@ -960,7 +996,7 @@ LIMIT 1500) x
 SELECT max(assists)
 FROM (SELECT * FROM player_matches pm
 ORDER BY pm.match_id DESC
-LIMIT 1400) x
+LIMIT 1500) x
 `,
     tournament_highest_gpm_on_hero: `
 SELECT max(gold_per_min)

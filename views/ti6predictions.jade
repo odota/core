@@ -2,7 +2,7 @@ extends layout
 
 block content
   h3 TI6 Predictions 
-    small Based on 6.88 professional match data
+    small Based on premium/professional league match data since July 1
   .row
     each val, key in predictions
       .col-md-3
@@ -11,7 +11,7 @@ block content
         table.table
           tr
             each row in val.fields
-              th=row.name === "localized_name" ? "Name" : row.name
+              th=row.name === "localized_name" ? "name" : row.name
           each row in val.rows.slice(0, 10)
             tr
               each val2, key2 in row
