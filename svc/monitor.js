@@ -123,7 +123,7 @@ var health = {
             var size = 0;
             result.rows.forEach(function (r)
             {
-                size += r.mean_partition_size * r.partitions_count * 0.4;
+                size += r.mean_partition_size * r.partitions_count * 0.5 * 4;
             });
             return cb(err,
             {
