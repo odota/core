@@ -32,7 +32,7 @@ function start()
           {
             console.error(err);
           }
-          if (!body.result.matches)
+          if (!body || !body.result || !body.result.matches)
           {
             return cb('failed to get matches for %s', account_id);
           }
