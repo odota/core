@@ -34,7 +34,7 @@ function start()
           }
           if (!body || !body.result || !body.result.matches)
           {
-            return cb('failed to get matches for %s', account_id);
+            return cb();
           }
           // Get matches with recent seqnums
           var matches = body.result.matches.filter(function (m)
