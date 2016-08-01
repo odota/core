@@ -32,6 +32,10 @@ function start()
           {
             console.error(err);
           }
+          if (!body.result.matches)
+          {
+            return cb('failed to get matches for %s', account_id);
+          }
           // Get matches with recent seqnums
           var matches = body.result.matches.filter(function (m)
           {
@@ -71,7 +75,7 @@ function start()
               }
               else
               {
-                throw body;
+                console.error(body);
               }
             });
           }, cb);
