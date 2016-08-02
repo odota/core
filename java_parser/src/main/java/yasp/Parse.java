@@ -107,6 +107,11 @@ public class Parse {
         //public Boolean hasPredictedVictory;
         public Boolean entityleft;
         public Integer ehandle;
+        public Integer obs_placed;
+        public Integer sen_placed;
+        public Integer creeps_stacked;
+        public Integer camps_stacked;
+        public Integer rune_pickups;
         
         public Entry() {
         }
@@ -300,6 +305,12 @@ public class Parse {
         Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
         Entity dData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataDire");
         Entity rData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataRadiant");
+        
+        if (rData != null) {
+        System.err.println(rData);
+        System.exit(0);
+        }
+        
         if (grp != null) 
         {
             //System.err.println(grp);
@@ -399,6 +410,11 @@ public class Parse {
                         entry.deaths = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iDeaths", validIndices[i]);
                         entry.assists = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iAssists", validIndices[i]);
                         entry.denies = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iDenyCount", teamSlot);
+                        entry.obs_placed = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iObserverWardsPlaced", teamSlot);
+                        entry.sen_placed = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iSentryWardsPlaced", teamSlot);
+                        entry.creeps_stacked = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iCreepsStacked", teamSlot);
+                        entry.camps_stacked = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iCampsStacked", teamSlot);
+                        entry.rune_pickups = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iRunePickups", teamSlot);
                     }
                     catch(Exception e)
                     {

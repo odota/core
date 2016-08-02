@@ -275,3 +275,9 @@ CREATE TABLE team_match(
   radiant boolean,
   PRIMARY KEY(team_id, match_id)
 );
+
+ALTER TABLE player_matches ADD obs_placed int;
+ALTER TABLE player_matches ADD sen_placed int;
+ALTER TABLE player_matches ADD creeps_stacked int;
+ALTER TABLE player_matches ADD camps_stacked int;
+ALTER TABLE player_matches ADD rune_pickups int;

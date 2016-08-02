@@ -51,7 +51,7 @@ function populate(e, container)
             }
             else if (e.max)
             {
-                //check if value is greater than what was stored
+                //check if value is greater than what was stored in value prop
                 if (e.value > t.value)
                 {
                     container.players[e.slot][e.type] = e;

@@ -67,14 +67,22 @@ var parseServer = spawn("java", ["-jar", "-Xmx256m", "./java_parser/target/stats
 });
 parseServer.stderr.on('data', function printStdErr(data)
 {
-    console.log(data.toString());
+    if (config.NODE_ENV === 'development')
+    {
+        require('fs').appendFileSync('./parser.log', data);
+    }
+    else
+    {
+        console.log(data.toString());
+    }
 });
 parseServer.on('exit', function ()
 {
     throw new Error("restarting due to parse server exit");
 });
-process.on('exit', function(){
-   parseServer.kill(); 
+process.on('exit', function ()
+{
+    parseServer.kill();
 });
 pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
 {
@@ -250,7 +258,7 @@ function runParse(match, job, cb)
     });
     bz.stdout.pipe(parser.stdin);
     */
-    var parser = request.post('http://localhost:'+config.PARSE_SERVER_PORT);
+    var parser = request.post('http://localhost:' + config.PARSE_SERVER_PORT);
     bz.stdout.pipe(parser);
     const parseStream = readline.createInterface(
     {

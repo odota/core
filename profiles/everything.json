@@ -73,6 +73,14 @@
       "instances": 1
     },
     {
+      "script": "svc/backupscanner.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "core",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
       "script": "svc/web.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],

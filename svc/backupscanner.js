@@ -12,30 +12,30 @@ start();
 
 function start()
 {
-  redis.get('match_seq_num', function (err, seq_num)
+  redis.zrange('tracked', 0, -1, function (err, account_ids)
   {
-    redis.zrange('tracked', 0, -1, function (err, account_ids)
+    async.eachLimit(account_ids, 15, function (account_id, cb)
     {
-      async.eachLimit(account_ids, 10, function (account_id, cb)
+      var ajob = generateJob('api_history',
       {
-        var ajob = generateJob('api_history',
+        account_id: account_id
+      });
+      getData(
+      {
+        url: ajob.url,
+        delay: delay
+      }, function (err, body)
+      {
+        if (err)
         {
-          account_id: account_id
-        });
-        getData(
+          console.error(err);
+        }
+        if (!body || !body.result || !body.result.matches)
         {
-          url: ajob.url,
-          delay: delay
-        }, function (err, body)
+          return cb('failed to get matches for %s', account_id);
+        }
+        redis.get('match_seq_num', function (err, seq_num)
         {
-          if (err)
-          {
-            console.error(err);
-          }
-          if (!body || !body.result || !body.result.matches)
-          {
-            return cb('failed to get matches for %s', account_id);
-          }
           // Get matches with recent seqnums
           var matches = body.result.matches.filter(function (m)
           {

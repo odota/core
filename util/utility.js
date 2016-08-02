@@ -372,6 +372,11 @@ function getParseSchema()
         {
             return {
                 "player_slot": 0,
+                "obs_placed": 0,
+                "sen_placed": 0,
+                "creeps_stacked": 0,
+                "camps_stacked": 0,
+                "rune_pickups": 0,
                 "stuns": 0,
                 "max_hero_hit":
                 {
