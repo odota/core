@@ -69,12 +69,9 @@ parseServer.stderr.on('data', function printStdErr(data)
 {
     if (config.NODE_ENV === 'development')
     {
-        require('fs').appendFileSync('./parser.log', data);
+        //require('fs').appendFileSync('./parser.log', data);
     }
-    else
-    {
-        console.log(data.toString());
-    }
+    console.log(data.toString());
 });
 parseServer.on('exit', function ()
 {

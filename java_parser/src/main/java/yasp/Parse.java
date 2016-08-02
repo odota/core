@@ -306,11 +306,6 @@ public class Parse {
         Entity dData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataDire");
         Entity rData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataRadiant");
         
-        if (rData != null) {
-        System.err.println(rData);
-        System.exit(0);
-        }
-        
         if (grp != null) 
         {
             //System.err.println(grp);

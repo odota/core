@@ -281,3 +281,8 @@ ALTER TABLE player_matches ADD sen_placed int;
 ALTER TABLE player_matches ADD creeps_stacked int;
 ALTER TABLE player_matches ADD camps_stacked int;
 ALTER TABLE player_matches ADD rune_pickups int;
+ALTER TABLE match_logs ADD obs_placed int;
+ALTER TABLE match_logs ADD sen_placed int;
+ALTER TABLE match_logs ADD creeps_stacked int;
+ALTER TABLE match_logs ADD camps_stacked int;
+ALTER TABLE match_logs ADD rune_pickups int;

@@ -32,7 +32,7 @@ function start()
         }
         if (!body || !body.result || !body.result.matches)
         {
-          return cb('failed to get matches for %s', account_id);
+          return cb();
         }
         redis.get('match_seq_num', function (err, seq_num)
         {
