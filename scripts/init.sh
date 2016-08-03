@@ -42,7 +42,7 @@ sudo add-apt-repository -y ppa:chris-lea/redis-server
 sudo apt-get -y update
 sudo apt-get -y install redis-server postgresql-9.5
 
-#cassandra not needed for small deployments
+#cassandra
 #sudo rm -f /etc/apt/sources.list.d/cassandra.sources.list
 #echo "deb http://debian.datastax.com/community stable main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
 #sudo apt-get -y install cassandra

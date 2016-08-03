@@ -3,9 +3,9 @@
   "description": "Open source Dota 2 replay parsing and statistics",
   "version": "6.0.0",
   "license": "GPL-3.0",
-  "main": "deploy.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node deploy",
+    "start": "node index",
     "test": "test/run.sh",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "ncu": "npm-check-updates -u",
