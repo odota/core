@@ -78,6 +78,8 @@ CREATE TABLE player_matches (
   xp_t integer[],
   obs_log json[],
   sen_log json[],
+  obs_left_log json[],
+  sen_left_log json[],
   purchase_log json[],
   kills_log json[],
   buyback_log json[],
@@ -301,6 +303,8 @@ ALTER TABLE player_matches ADD sen_placed int;
 ALTER TABLE player_matches ADD creeps_stacked int;
 ALTER TABLE player_matches ADD camps_stacked int;
 ALTER TABLE player_matches ADD rune_pickups int;
+ALTER TABLE player_matches ADD obs_left_log json[];
+ALTER TABLE player_matches ADD sen_left_log json[];
 ALTER TABLE match_logs ADD obs_placed int;
 ALTER TABLE match_logs ADD sen_placed int;
 ALTER TABLE match_logs ADD creeps_stacked int;

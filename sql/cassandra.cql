@@ -64,6 +64,8 @@ CREATE TABLE player_matches (
   xp_t text,
   obs_log text,
   sen_log text,
+  obs_left_log text,
+  sen_left_log text,
   purchase_log text,
   kills_log text,
   buyback_log text,
@@ -166,4 +168,6 @@ ALTER TABLE player_matches ADD sen_placed int;
 ALTER TABLE player_matches ADD creeps_stacked int;
 ALTER TABLE player_matches ADD camps_stacked int;
 ALTER TABLE player_matches ADD rune_pickups int;
+ALTER TABLE player_matches ADD obs_left_log text;
+ALTER TABLE player_matches ADD sen_left_log text;
 */

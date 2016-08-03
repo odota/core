@@ -450,6 +450,18 @@ function processExpand(entries, meta)
             e3.posData = true;
             expand(e3);
         },
+        "obs_left": function (e)
+        {
+            var e2 = JSON.parse(JSON.stringify(e));
+            e2.type = "obs_left_log";
+            expand(e2);
+        },
+        "sen_left": function (e)
+        {
+            var e2 = JSON.parse(JSON.stringify(e));
+            e2.type = "sen_left_log";
+            expand(e2);
+        },
     };
     //define the types we want to put into each array
     //null means all types

@@ -159,7 +159,7 @@ describe("parser", function()
                 {
                     match_id: 1781962623,
                     cluster: 1,
-                    replay_salt: key.split(".")[0].split("_")[1],
+                    replay_salt: 0,
                     series_id: 0,
                     series_type: 0,
                     players: [],

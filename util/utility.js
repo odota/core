@@ -389,6 +389,8 @@ function getParseSchema()
                 "xp_t": [],
                 "obs_log": [],
                 "sen_log": [],
+                "obs_left_log": [],
+                "sen_left_log": [],
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
