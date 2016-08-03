@@ -49,10 +49,13 @@ module.exports = function getGCData(db, redis, match, cb)
                 redis.zadd("retriever:" + metadata.hostname.split('.')[0], moment().format('X'), match.match_id);
                 match.url = buildReplayUrl(match.match_id, body.match.cluster, body.match.replay_salt);
                 const parties = {};
-                body.match.players.forEach(function (p)
+                if (body.match.players)
                 {
-                    parties[p.player_slot] = p.party_id.low;
-                });
+                    body.match.players.forEach(function (p)
+                    {
+                        parties[p.player_slot] = p.party_id.low;
+                    });
+                }
                 // Persist GC data to database
                 queries.upsert(db, 'match_gcdata',
                 {
