@@ -10,84 +10,111 @@ const insertMatch = queries.insertMatch;
 const delay = 1000;
 start();
 
-function start()
+function start(err)
 {
-  redis.zrange('tracked', 0, -1, function (err, account_ids)
+  if (err)
   {
-    async.eachLimit(account_ids, 15, function (account_id, cb)
+    throw err;
+  }
+  queries.getSets(redis, function (err, result)
+  {
+    if (err)
     {
-      var ajob = generateJob('api_history',
+      throw err;
+    }
+    async.eachLimit(Object.keys(result.trackedPlayers), 20, processPlayer, start);
+  });
+}
+
+function processPlayer(account_id, cb)
+{
+  var ajob = generateJob('api_history',
+  {
+    account_id: account_id
+  });
+  getData(
+  {
+    url: ajob.url,
+    delay: delay
+  }, function (err, body)
+  {
+    if (err)
+    {
+      console.error(err);
+    }
+    if (!body || !body.result || !body.result.matches)
+    {
+      // Skip this player on this iteration
+      return cb();
+    }
+    // Get matches with recent seqnums
+    var matches = body.result.matches.filter(function (m)
+    {
+      return m.match_seq_num > 2219926940;
+    }).map(function (m)
+    {
+      return m.match_id;
+    });
+    async.eachLimit(matches, 1, processMatch, cb);
+  });
+}
+
+function processMatch(match_id, cb)
+{
+  // Check if exists
+  redis.get('scanner_insert:' + match_id, function (err, res)
+  {
+    if (err)
+    {
+      return cb(err);
+    }
+    if (res)
+    {
+      return cb();
+    }
+    else
+    {
+      var job = generateJob("api_details",
       {
-        account_id: account_id
+        match_id: match_id
       });
+      var url = job.url;
       getData(
       {
-        url: ajob.url,
+        url: url,
         delay: delay
       }, function (err, body)
       {
         if (err)
         {
-          console.error(err);
+          throw err;
         }
-        if (!body || !body.result || !body.result.matches)
+        if (!body.result)
         {
           return cb();
         }
-        redis.get('match_seq_num', function (err, seq_num)
+        else
         {
-          // Get matches with recent seqnums
-          var matches = body.result.matches.filter(function (m)
+          var match = body.result;
+          insertMatch(db, redis, match,
           {
-            return m.match_seq_num > Number(seq_num);
-          }).map(function (m)
+            type: "api",
+            origin: "scanner",
+            skipCounts: false,
+            skipAbilityUpgrades: false,
+            skipParse: false,
+            cassandra: cassandra,
+            attempts: 1,
+          }, function (err)
           {
-            return m.match_id;
+            if (!err)
+            {
+              redis.set('scanner_insert:' + match.match_id, 1);
+            }
+            cb(err);
           });
-          async.eachLimit(matches, 1, function (match_id, cb)
-          {
-            var job = generateJob("api_details",
-            {
-              match_id: match_id
-            });
-            var url = job.url;
-            getData(
-            {
-              url: url,
-              delay: delay
-            }, function (err, body)
-            {
-              if (err)
-              {
-                throw err;
-              }
-              if (body.result)
-              {
-                var match = body.result;
-                insertMatch(db, redis, match,
-                {
-                  skipCounts: true,
-                  skipAbilityUpgrades: true,
-                  skipParse: true,
-                  cassandra: cassandra,
-                  attempts: 1,
-                }, cb);
-              }
-              else
-              {
-                console.error(body);
-              }
-            });
-          }, cb);
-        });
-      }, function (err)
-      {
-        if (err)
-        {
-          console.error(err);
         }
-        start();
       });
-    });
+    }
   });
 }
