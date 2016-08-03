@@ -157,8 +157,12 @@ describe("parser", function()
             {
                 match:
                 {
+                    match_id: 1781962623,
                     cluster: 1,
-                    replay_salt: key.split(".")[0].split("_")[1]
+                    replay_salt: key.split(".")[0].split("_")[1],
+                    series_id: 0,
+                    series_type: 0,
+                    players: [],
                 }
             });
             //fake replay download
