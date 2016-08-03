@@ -84,6 +84,13 @@ function getMatch(db, redis, match_id, options, cb)
                         match_id: match_id
                     }).asCallback(cb);
                 },
+                "skill": function (cb)
+                {
+                    db.first().from('match_skill').where(
+                    {
+                        match_id: match_id
+                    }).asCallback(cb);
+                }
             }, function (err, result)
             {
                 if (err)
@@ -95,6 +102,7 @@ function getMatch(db, redis, match_id, options, cb)
                 match = Object.assign(
                 {}, result.gcdata, match);
                 match.replay_url = utility.buildReplayUrl(match.match_id, match.cluster, match.replay_salt);
+                match.skill = result.skill.skill;
                 async.each(players, function (p, cb)
                 {
                     //match-level columns
