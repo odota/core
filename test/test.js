@@ -147,7 +147,7 @@ describe("parser", function()
 {
     this.timeout(wait);
     var tests = {
-        '1781962623_source2.dem': details_api.result
+        '1781962623_1.dem': details_api.result
     };
     for (var key in tests)
     {
