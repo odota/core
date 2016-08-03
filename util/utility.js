@@ -732,6 +732,12 @@ function getPatchIndex(start_time)
     //use the value of i before the break, started at 1 to avoid negative index
     return i - 1;
 }
+
+function buildReplayUrl(match_id, cluster, replay_salt)
+{
+    var suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
+    return "http://replay" + cluster + ".valve.net/570/" + match_id + "_" + replay_salt + suffix;
+}
 module.exports = {
     tokenize,
     generateJob,
@@ -758,4 +764,5 @@ module.exports = {
     median,
     deserialize,
     getPatchIndex,
+    buildReplayUrl,
 };

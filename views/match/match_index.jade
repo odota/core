@@ -21,6 +21,7 @@ block match_content
         each player, i in match.players
           +data_table_header(i, match)
             tr
+              th
               th: abbr(title=tooltips.hero_id) Hero
               th
               th: abbr(title=tooltips.mmr) MMR
@@ -38,6 +39,22 @@ block match_content
               th: abbr(title=tooltips.hero_healing) HH
               th: abbr(title=tooltips.items) Items
           tr(class=player.isRadiant ? "radiant" : "dire")
+            td(style="position:relative;padding:0px;")
+              if match.parties
+                //=match.parties[player.player_slot]
+                - var partyPrev = match.parties[(match.players[i-1] || {}).player_slot] === match.parties[match.players[i].player_slot]
+                - var partyNext = match.parties[(match.players[i+1] || {}).player_slot] === match.parties[match.players[i].player_slot]
+                - var style = "position: absolute;width:30%;left:50%;"
+                - var borderStyle = "2px solid #999999;"
+                if !partyPrev && partyNext
+                  div(style=style+"border-left:"+borderStyle+"height:50%;top:50%;")
+                  div(style=style+"border-top:"+borderStyle+"height:50%;top:50%;")
+                if partyPrev && partyNext
+                  div(style=style+"border-left:"+borderStyle+"height:100%;top:0%;")
+                if partyPrev && !partyNext
+                  div(style=style+"border-bottom:"+borderStyle+"height:50%;top:0%;")
+                  div(style=style+"border-left:"+borderStyle+"height:50%;top:0%;")
+
             +hero_td(player, player.abandons ? constants.leaver_status[player.leaver_status] : "")
             td
               //img.img-sm(src=player.avatar)

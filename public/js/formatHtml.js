@@ -34,7 +34,7 @@ window.formatHtml = function formatHtml() {
         for (var key in sums) {
             var tr = $("<tr>");
             var sum = sums[key];
-            sum["0"] = key;
+            sum["0"] = key[0];
             for (var index in sum) {
                 var td = $("<td>");
                 if (index !== "0") {

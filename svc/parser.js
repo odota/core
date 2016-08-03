@@ -5,7 +5,7 @@
  * This object is passed to insertMatch to persist the data into the database.
  **/
 var utility = require('../util/utility');
-var getReplayUrl = require('../util/getReplayUrl');
+var getGCData= require('../util/getGCData');
 var config = require('../config');
 var db = require('../store/db');
 var redis = require('../store/redis');
@@ -96,7 +96,7 @@ pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
             }
             else
             {
-                getReplayUrl(db, redis, match, cb);
+                getGCData(db, redis, match, cb);
             }
         },
         "runParse": function (cb)

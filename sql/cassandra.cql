@@ -88,6 +88,11 @@ CREATE TABLE player_matches (
   multi_kills text,
   life_state text,
   damage_inflictor_received text,
+  obs_placed int,
+  sen_placed int,
+  creeps_stacked int,
+  camps_stacked int,
+  rune_pickups int,
 );
 
 CREATE TABLE player_caches (
@@ -155,8 +160,10 @@ ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  
 ALTER TABLE player_matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 
+/*
 ALTER TABLE player_matches ADD obs_placed int;
 ALTER TABLE player_matches ADD sen_placed int;
 ALTER TABLE player_matches ADD creeps_stacked int;
 ALTER TABLE player_matches ADD camps_stacked int;
 ALTER TABLE player_matches ADD rune_pickups int;
+*/
