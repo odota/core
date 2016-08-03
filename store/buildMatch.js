@@ -79,7 +79,10 @@ function getMatch(db, redis, match_id, options, cb)
                 },
                 "gcdata": function (cb)
                 {
-                    db.first().from('match_gcdata').asCallback(cb);
+                    db.first().from('match_gcdata').where(
+                    {
+                        match_id: match_id
+                    }).asCallback(cb);
                 },
             }, function (err, result)
             {
@@ -89,7 +92,8 @@ function getMatch(db, redis, match_id, options, cb)
                 }
                 var players = result.players;
                 var ab_upgrades = JSON.parse(result.ab_upgrades);
-                match = Object.assign({}, result.gcdata, match);
+                match = Object.assign(
+                {}, result.gcdata, match);
                 match.replay_url = utility.buildReplayUrl(match.match_id, match.cluster, match.replay_salt);
                 async.each(players, function (p, cb)
                 {

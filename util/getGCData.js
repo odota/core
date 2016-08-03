@@ -11,7 +11,10 @@ var queries = require('../store/queries');
 var buildReplayUrl = utility.buildReplayUrl;
 module.exports = function getGCData(db, redis, match, cb)
 {
-    db.first().from('match_gcdata').asCallback(function (err, gcdata)
+    db.first().from('match_gcdata').where(
+    {
+        match_id: match.match_id
+    }).asCallback(function (err, gcdata)
     {
         if (err)
         {
