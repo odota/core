@@ -490,30 +490,6 @@ module.exports = function (db, redis, cassandra)
         });
         return teammates;
     }
-    api.get('/players/:account_id/items', function (req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
-        });
-    });
-    api.get('/players/:account_id/activity', function (req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat(['start_time']);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
-        });
-    });
     api.get('/players/:account_id/histograms/:field', function (req, res, cb)
     {
         var result = {};
@@ -538,18 +514,6 @@ module.exports = function (db, redis, cassandra)
                 result[~~m[field]].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
             });
             res.json(result);
-        });
-    });
-    api.get('/players/:account_id/trends/:field', function (req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat('hero_id', req.params.field);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
         });
     });
     api.get('/players/:account_id/matches', function (req, res, cb)
