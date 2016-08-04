@@ -7,6 +7,8 @@ const db = require('../store/db');
 const cassandra = require('../store/cassandra');
 const queries = require('../store/queries');
 const insertMatch = queries.insertMatch;
+const config = require('../config');
+const PARALLELISM = config.STEAM_API_HOST.split(',').length * 10;
 const delay = 1000;
 start();
 
@@ -22,7 +24,7 @@ function start(err)
     {
       throw err;
     }
-    async.eachLimit(Object.keys(result.trackedPlayers), 20, processPlayer, start);
+    async.eachLimit(Object.keys(result.trackedPlayers), PARALLELISM, processPlayer, start);
   });
 }
 
@@ -47,15 +49,22 @@ function processPlayer(account_id, cb)
       // Skip this player on this iteration
       return cb();
     }
-    // Get matches with recent seqnums
-    var matches = body.result.matches.filter(function (m)
+    redis.get('match_seq_num', function (err, res)
     {
-      return m.match_seq_num > 2219926940;
-    }).map(function (m)
-    {
-      return m.match_id;
+      if (err)
+      {
+        console.error(err);
+      }
+      // Get matches with recent seqnums
+      var matches = body.result.matches.filter(function (m)
+      {
+        return m.match_seq_num > Number(res);
+      }).map(function (m)
+      {
+        return m.match_id;
+      });
+      async.eachLimit(matches, 1, processMatch, cb);
     });
-    async.eachLimit(matches, 1, processMatch, cb);
   });
 }
 
