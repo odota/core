@@ -60,8 +60,8 @@ var defaults = {
     "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
     "ENABLE_POSTGRES_MATCH_STORE_WRITE": "1", //set to enable writing match data to postgres (default on)
-    "ENABLE_CASSANDRA_MATCH_STORE_READ": "", //set to enable reading match data from cassandra
-    "ENABLE_CASSANDRA_MATCH_STORE_WRITE": "", //set to enable writing match data to cassandra
+    "ENABLE_CASSANDRA_MATCH_STORE_READ": "1", //set to enable reading match data from cassandra
+    "ENABLE_CASSANDRA_MATCH_STORE_WRITE": "1", //set to enable writing match data to cassandra
 };
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults)
