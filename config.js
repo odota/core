@@ -73,5 +73,18 @@ if (process.env.NODE_ENV === "development")
     //force PORT to null in development so we can run multiple web services without conflict
     process.env.PORT = "";
 }
+if (process.env.NODE_ENV === 'test')
+{
+    process.env.PORT = ""; //use service defaults
+    process.env.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
+    process.env.REDIS_URL = "redis://localhost:6379/1";
+    process.env.SESSION_SECRET = "testsecretvalue";
+    process.env.NODE_ENV = "test";
+    process.env.ENABLE_MATCH_CACHE = 1;
+    process.env.FRONTEND_PORT = 5001;
+    process.env.PARSER_PORT = 5201;
+    process.env.ENABLE_CASSANDRA_MATCH_STORE_WRITE = "";
+    process.env.ENABLE_CASSANDRA_MATCH_STORE_READ = "";
+}
 //now processes can use either process.env or config
 module.exports = process.env;

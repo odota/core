@@ -6,7 +6,7 @@
   "main": "deploy.js",
   "scripts": {
     "start": "node deploy",
-    "test": "test/run.sh",
+    "test": "NODE_ENV=test test/run.sh",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "ncu": "npm-check-updates -u",
     "webpack": "webpack -p --bail",
