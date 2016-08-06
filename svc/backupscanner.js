@@ -113,7 +113,6 @@ function processMatch(match_id, cb)
             skipAbilityUpgrades: false,
             skipParse: false,
             cassandra: cassandra,
-            attempts: 1,
           }, function (err)
           {
             if (!err)
