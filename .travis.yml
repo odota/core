@@ -12,7 +12,7 @@ notifications:
 before_install:
 install: true
 before_script:
--sudo service postgresql stop
+- sudo service postgresql stop
 - docker run -d --privileged --name postgres --restart=always --net=host postgres:9.5
 - docker run -d --privileged --name redis --restart=always --net=host redis:3
 - docker run -d --privileged --name cassandra --restart=always --net=host cassandra:3
