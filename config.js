@@ -57,8 +57,8 @@ var defaults = {
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches (Redis)
-    "ENABLE_INSERT_ALL_MATCHES": "", //set to enable inserting all matches
-    "ENABLE_RANDOM_MMR_UPDATE": "", //set to randomly update MMRs in ranked matches
+    "ENABLE_INSERT_ALL_MATCHES": "1", //set to enable inserting all matches
+    "ENABLE_RANDOM_MMR_UPDATE": "", //set to update MMRs after ranked matches
     "ENABLE_POSTGRES_MATCH_STORE_WRITE": "1", //set to enable writing match data to postgres (default on)
     "ENABLE_CASSANDRA_MATCH_STORE_READ": "1", //set to enable reading match data from cassandra
     "ENABLE_CASSANDRA_MATCH_STORE_WRITE": "1", //set to enable writing match data to cassandra
@@ -77,14 +77,14 @@ if (process.env.NODE_ENV === 'test')
 {
     process.env.PORT = ""; //use service defaults
     process.env.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
+    process.env.CASSANDRA_URL = "cassandra://localhost/yasp_test";
     process.env.REDIS_URL = "redis://localhost:6379/1";
     process.env.SESSION_SECRET = "testsecretvalue";
     process.env.NODE_ENV = "test";
     process.env.ENABLE_MATCH_CACHE = 1;
     process.env.FRONTEND_PORT = 5001;
     process.env.PARSER_PORT = 5201;
-    process.env.ENABLE_CASSANDRA_MATCH_STORE_WRITE = "";
-    process.env.ENABLE_CASSANDRA_MATCH_STORE_READ = "";
+    process.env.PARSE_SERVER_PORT = 5601;
 }
 //now processes can use either process.env or config
 module.exports = process.env;

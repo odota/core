@@ -35,14 +35,7 @@ Quickstart (Docker)
 * Install Docker: `curl -sSL https://get.docker.com/ | sh`
 * Clone the repo: `git clone https://github.com/yasp-dota/yasp`
 * Go into the directory: `cd yasp`
-* Start a new container running the image, and map your local directory into the container: `sudo docker run -v $(pwd):/usr/src/yasp -di --name yasp --net=host yasp/yasp:latest`
-* Start the external dependencies in separate containers.
-  * `sudo docker run -d --name postgres --net=host postgres:9.5`
-  * `sudo docker run -d --name redis --net=host redis:3`
-  * `sudo docker run -d --name cassandra --net=host cassandra:3`
-* Initialize Postgres: `sudo docker exec -i postgres psql -U postgres < sql/init.sql`
-* Create tables: `sudo docker exec -i postgres psql -U postgres yasp < sql/create_tables.sql`
-* Set up Cassandra: `sudo docker exec -i cassandra cqlsh < sql/cassandra.cql`
+* Start containers and initialize databases: `sudo bash scripts/dev.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
   * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
@@ -56,11 +49,10 @@ Quickstart (Docker)
     * `pm2 delete all` Stop and remove all the services.
 * Useful commands
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
-  * `node tasks/updateconstants` pulls latest constants data and saves to `json` directory.
-  * `sudo docker build -t yasp/yasp .` rebuilds the Docker image.  If you are editing the `Dockerfile`, do this to ensure it works.
+  * `sudo docker build -t yasp/yasp .` rebuilds the Docker image. If you are editing the `Dockerfile`, do this to ensure it works.
 * Get some starter data
-  * You can request some parses by ID to get some parsed data.  
-  * You can also run `scanner` with `ENABLE_INSERT_ALL_MATCHES=1` in your `.env` to get some matches from the API.
+  * You can request some parses by ID to get some parsed data.
+  * You can also run `scanner` to get some matches from the API.
 * File changes you make outside the container should be automatically mirrored to the container.
 * Make some changes and commit them: `git add --all; git commit -m "My first commit!"`
 * Submit a pull request.  Wait for it to be reviewed and merged.

@@ -155,8 +155,11 @@ function invokeInterval(func)
                     threshold: 0,
                 };
             }
-            result.timestamp = ~~(new Date() / 1000);
-            redis.hset('health', func.name, JSON.stringify(result));
+            if (result)
+            {
+                result.timestamp = ~~(new Date() / 1000);
+                redis.hset('health', func.name, JSON.stringify(result));
+            }
             console.timeEnd(func.name);
             setTimeout(invoker, result && result.delay ? result.delay : 10000);
         });

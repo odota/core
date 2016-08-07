@@ -1,5 +1,3 @@
-CREATE KEYSPACE yasp WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };
-USE yasp;
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
   match_seq_num bigint,
