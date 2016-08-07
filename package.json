@@ -74,7 +74,7 @@
     "sentiment": "2.0.0",
     "steam": "1.4.0",
     "stripe": "4.9.0",
-    "wordcloud": "1.0.5",
+    "wordcloud": "1.0.5"
   },
   "devDependencies": {
     "coveralls": "2.11.12",
