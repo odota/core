@@ -1,5 +1,3 @@
-CREATE KEYSPACE yasp WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };
-USE yasp;
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
   match_seq_num bigint,
@@ -161,13 +159,3 @@ CREATE TABLE player_caches (
 ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
-
-/*
-ALTER TABLE player_matches ADD obs_placed int;
-ALTER TABLE player_matches ADD sen_placed int;
-ALTER TABLE player_matches ADD creeps_stacked int;
-ALTER TABLE player_matches ADD camps_stacked int;
-ALTER TABLE player_matches ADD rune_pickups int;
-ALTER TABLE player_matches ADD obs_left_log text;
-ALTER TABLE player_matches ADD sen_left_log text;
-*/

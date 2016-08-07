@@ -9,7 +9,6 @@ var utility = require('../util/utility');
 var benchmarkMatch = queries.benchmarkMatch;
 var getMatchRating = queries.getMatchRating;
 var computeMatchData = compute.computeMatchData;
-var renderMatch = compute.renderMatch;
 var deserialize = utility.deserialize;
 
 function buildMatch(options, cb)
@@ -130,7 +129,6 @@ function getMatch(db, redis, match_id, options, cb)
                     }
                     match.players = players;
                     computeMatchData(match);
-                    renderMatch(match);
                     getMatchRating(redis, match, function (err, avg)
                     {
                         if (err)
