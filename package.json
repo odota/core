@@ -75,7 +75,6 @@
     "steam": "1.4.0",
     "stripe": "4.9.0",
     "wordcloud": "1.0.5",
-    "world-countries": "1.7.8"
   },
   "devDependencies": {
     "coveralls": "2.11.12",
