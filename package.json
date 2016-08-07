@@ -11,7 +11,7 @@
     "ncu": "npm-check-updates -a",
     "webpack": "webpack -p --bail",
     "watch": "webpack --watch",
-    "mocha": "mocha",
+    "mocha": "NODE_ENV=test mocha",
     "maven": "mvn -q -f java_parser/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack",
     "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest",
