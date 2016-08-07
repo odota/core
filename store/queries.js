@@ -371,6 +371,10 @@ function insertMatch(db, redis, match, options, cb)
                 return cb(err);
             }
             var obj = serialize(match);
+            if (!Object.keys(obj).length)
+            {
+                return cb(err);
+            }
             var query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(function (k)
             {
                 return '?';
@@ -399,6 +403,10 @@ function insertMatch(db, redis, match, options, cb)
                             return cb(err);
                         }
                         var obj2 = serialize(pm);
+                        if (!Object.keys(obj2).length)
+                        {
+                            return cb(err);
+                        }
                         var query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(function (k)
                         {
                             return '?';
