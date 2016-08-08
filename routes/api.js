@@ -109,7 +109,7 @@ module.exports = function (db, redis, cassandra)
             },
             tracked_until: function (cb)
             {
-                redis.zscore('tracked', account_id, cb);  
+                redis.zscore('tracked', account_id, cb);
             },
             solo_competitive_rank: function (cb)
             {
@@ -305,7 +305,15 @@ module.exports = function (db, redis, cassandra)
             {
                 for (var key in countCats)
                 {
-                    result[key][~~m[key]] = result[key][~~m[key]] ? result[key][~~m[key]] + 1 : 1;
+                    if (!result[key][~~m[key]])
+                    {
+                        result[key][~~m[key]] = {
+                            games: 0,
+                            win: 0
+                        };
+                    }
+                    result[key][~~m[key]].games += 1;
+                    result[key][~~m[key]].win += Number(m.radiant_win === utility.isRadiant(m));
                 }
             });
             res.json(result);
@@ -399,7 +407,7 @@ module.exports = function (db, redis, cassandra)
             queries.generateTeammateArrayFromHash(db, teammates,
             {
                 account_id: req.params.account_id
-            }, function(err, result)
+            }, function (err, result)
             {
                 if (err)
                 {
@@ -409,10 +417,10 @@ module.exports = function (db, redis, cassandra)
             });
         });
     });
-    api.get('/players/:account_id/pros', function(req, res, cb)
+    api.get('/players/:account_id/pros', function (req, res, cb)
     {
         req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
@@ -437,7 +445,7 @@ module.exports = function (db, redis, cassandra)
     {
         var teammates = {};
         var isRadiant = utility.isRadiant;
-        matches.forEach(function(m)
+        matches.forEach(function (m)
         {
             var player_win = isRadiant(m) === m.radiant_win;
             var group = m.heroes ||
@@ -482,30 +490,6 @@ module.exports = function (db, redis, cassandra)
         });
         return teammates;
     }
-    api.get('/players/:account_id/items', function(req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
-        });
-    });
-    api.get('/players/:account_id/activity', function (req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat(['start_time']);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
-        });
-    });
     api.get('/players/:account_id/histograms/:field', function (req, res, cb)
     {
         var result = {};
@@ -530,18 +514,6 @@ module.exports = function (db, redis, cassandra)
                 result[~~m[field]].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
             });
             res.json(result);
-        });
-    });
-    api.get('/players/:account_id/trends/:field', function (req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat('hero_id', req.params.field);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
         });
     });
     api.get('/players/:account_id/matches', function (req, res, cb)
@@ -859,8 +831,35 @@ module.exports = function (db, redis, cassandra)
             }
         }).catch(cb);
     });
-    //TODO implement
-    api.get('/picks/:n');
+    api.get('/matchups', function (req, res, cb)
+    {
+        //accept as input two arrays of up to 5
+        var t0 = [].concat(req.query.t0 || []).slice(0, 5);
+        var t1 = [].concat(req.query.t1 || []).slice(0, 5);
+        //return wins of each team
+        async.parallel(
+        {
+            t0: function (cb)
+            {
+                redis.hget('matchups', utility.matchupToString(t0, t1, true), cb);
+            },
+            t1: function (cb)
+            {
+                redis.hget('matchups', utility.matchupToString(t0, t1, false), cb);
+            }
+        }, function (err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(
+            {
+                t0: Number(result.t0) || 0,
+                t1: Number(result.t1) || 0,
+            });
+        });
+    });
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     return api;

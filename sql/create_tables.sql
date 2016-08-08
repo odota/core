@@ -78,6 +78,8 @@ CREATE TABLE player_matches (
   xp_t integer[],
   obs_log json[],
   sen_log json[],
+  obs_left_log json[],
+  sen_left_log json[],
   purchase_log json[],
   kills_log json[],
   buyback_log json[],
@@ -101,7 +103,12 @@ CREATE TABLE player_matches (
   kill_streaks json,
   multi_kills json,
   life_state json,
-  damage_inflictor_received json
+  damage_inflictor_received json,
+  obs_placed int,
+  sen_placed int,
+  creeps_stacked int,
+  camps_stacked int,
+  rune_pickups int
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 
@@ -217,7 +224,12 @@ CREATE TABLE match_logs (
   targetname_slot smallint,
   sourcename_slot smallint,
   targetsourcename_slot smallint,
-  player1_slot smallint
+  player1_slot smallint,
+  obs_placed int,
+  sen_placed int,
+  creeps_stacked int,
+  camps_stacked int,
+  rune_pickups int
 );
 CREATE INDEX ON match_logs(match_id);
 CREATE INDEX ON match_logs(match_id, player_slot) WHERE player_slot IS NOT NULL;
@@ -275,3 +287,27 @@ CREATE TABLE team_match(
   radiant boolean,
   PRIMARY KEY(team_id, match_id)
 );
+
+CREATE TABLE match_gcdata(
+  match_id bigint PRIMARY KEY,
+  cluster int,
+  replay_salt int,
+  series_id int,
+  series_type int,
+  parties json
+);
+
+/*
+ALTER TABLE player_matches ADD obs_placed int;
+ALTER TABLE player_matches ADD sen_placed int;
+ALTER TABLE player_matches ADD creeps_stacked int;
+ALTER TABLE player_matches ADD camps_stacked int;
+ALTER TABLE player_matches ADD rune_pickups int;
+ALTER TABLE player_matches ADD obs_left_log json[];
+ALTER TABLE player_matches ADD sen_left_log json[];
+ALTER TABLE match_logs ADD obs_placed int;
+ALTER TABLE match_logs ADD sen_placed int;
+ALTER TABLE match_logs ADD creeps_stacked int;
+ALTER TABLE match_logs ADD camps_stacked int;
+ALTER TABLE match_logs ADD rune_pickups int;
+*/

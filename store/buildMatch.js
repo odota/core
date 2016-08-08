@@ -17,7 +17,7 @@ function buildMatch(options, cb)
     var redis = options.redis;
     var match_id = options.match_id;
     var key = "match:" + match_id;
-    redis.get(key, function(err, reply)
+    redis.get(key, function (err, reply)
     {
         if (err)
         {
@@ -32,7 +32,7 @@ function buildMatch(options, cb)
         else
         {
             console.log("Cache miss for match " + match_id);
-            getMatch(db, redis, match_id, options, function(err, match)
+            getMatch(db, redis, match_id, options, function (err, match)
             {
                 if (err)
                 {
@@ -54,7 +54,7 @@ function buildMatch(options, cb)
 
 function getMatch(db, redis, match_id, options, cb)
 {
-    getMatchData(match_id, function(err, match)
+    getMatchData(match_id, function (err, match)
     {
         if (err)
         {
@@ -68,19 +68,29 @@ function getMatch(db, redis, match_id, options, cb)
         {
             async.parallel(
             {
-                "players": function(cb)
+                "players": function (cb)
                 {
                     getPlayerMatchData(match_id, cb);
                 },
-                "ab_upgrades": function(cb)
+                "ab_upgrades": function (cb)
                 {
                     redis.get('ability_upgrades:' + match_id, cb);
                 },
-                "replay_url": function(cb)
+                "gcdata": function (cb)
                 {
-                    redis.hget('replay_url', match_id, cb);
+                    db.first().from('match_gcdata').where(
+                    {
+                        match_id: match_id
+                    }).asCallback(cb);
                 },
-            }, function(err, result)
+                "skill": function (cb)
+                {
+                    db.first().from('match_skill').where(
+                    {
+                        match_id: match_id
+                    }).asCallback(cb);
+                }
+            }, function (err, result)
             {
                 if (err)
                 {
@@ -88,8 +98,11 @@ function getMatch(db, redis, match_id, options, cb)
                 }
                 var players = result.players;
                 var ab_upgrades = JSON.parse(result.ab_upgrades);
-                match.replay_url = result.replay_url;
-                async.each(players, function(p, cb)
+                match = Object.assign(
+                {}, result.gcdata, match);
+                match.replay_url = utility.buildReplayUrl(match.match_id, match.cluster, match.replay_salt);
+                match = Object.assign({}, match, result.skill);
+                async.each(players, function (p, cb)
                 {
                     //match-level columns
                     p.radiant_win = match.radiant_win;
@@ -103,12 +116,12 @@ function getMatch(db, redis, match_id, options, cb)
                     {
                         p.ability_upgrades_arr = ab_upgrades[p.player_slot];
                     }
-                    redis.zscore('solo_competitive_rank', p.account_id || "", function(err, rating)
+                    redis.zscore('solo_competitive_rank', p.account_id || "", function (err, rating)
                     {
                         p.solo_competitive_rank = rating;
                         return cb(err);
                     });
-                }, function(err)
+                }, function (err)
                 {
                     if (err)
                     {
@@ -116,20 +129,20 @@ function getMatch(db, redis, match_id, options, cb)
                     }
                     match.players = players;
                     computeMatchData(match);
-                    getMatchRating(redis, match, function(err, avg)
+                    getMatchRating(redis, match, function (err, avg)
                     {
                         if (err)
                         {
                             return cb(err);
                         }
                         var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
-                        redis.zcard(key, function(err, card)
+                        redis.zcard(key, function (err, card)
                         {
                             if (err)
                             {
                                 return cb(err);
                             }
-                            redis.zcount(key, 0, avg, function(err, count)
+                            redis.zcount(key, 0, avg, function (err, count)
                             {
                                 if (err)
                                 {
@@ -137,7 +150,7 @@ function getMatch(db, redis, match_id, options, cb)
                                 }
                                 match.rating = avg;
                                 match.rating_percentile = Number(count) / Number(card);
-                                benchmarkMatch(redis, match, function(err)
+                                benchmarkMatch(redis, match, function (err)
                                 {
                                     return cb(err, match);
                                 });
@@ -158,13 +171,13 @@ function getMatch(db, redis, match_id, options, cb)
                 prepare: true,
                 fetchSize: 10,
                 autoPage: true,
-            }, function(err, result)
+            }, function (err, result)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                result = result.rows.map(function(m)
+                result = result.rows.map(function (m)
                 {
                     return deserialize(m);
                 });
@@ -189,20 +202,20 @@ function getMatch(db, redis, match_id, options, cb)
                 prepare: true,
                 fetchSize: 10,
                 autoPage: true,
-            }, function(err, result)
+            }, function (err, result)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                result = result.rows.map(function(m)
+                result = result.rows.map(function (m)
                 {
                     return deserialize(m);
                 });
                 //get personanames
-                async.map(result, function(r, cb)
+                async.map(result, function (r, cb)
                 {
-                    db.raw(`SELECT personaname, last_login FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function(err, names)
+                    db.raw(`SELECT personaname, last_login FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function (err, names)
                     {
                         if (err)
                         {
