@@ -66,11 +66,14 @@ function start()
         {
             if (err)
             {
-                console.log("failed to getSets from redis");
-                return scanApi(seq_num);
+                throw err;
             }
             //set local vars
             trackedPlayers = result.trackedPlayers;
+            if (config.NODE_ENV === 'development')
+            {
+                console.log(JSON.stringify(trackedPlayers));
+            }
             var arr = [];
             var matchBuffer = {};
             var completePages = {};

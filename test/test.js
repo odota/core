@@ -1,38 +1,30 @@
 /**
  * Main test script to run tests
  **/
-var config = require('../config');
-var constants = require('dotaconstants');
-var redis = require('../store/redis');
-var queue = require('../store/queue');
-var queries = require('../store/queries');
-config.PORT = ""; //use service defaults
-config.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
-config.REDIS_URL = "redis://localhost:6379/1";
-config.SESSION_SECRET = "testsecretvalue";
-config.NODE_ENV = "test";
-config.ENABLE_MATCH_CACHE = 1;
-config.FRONTEND_PORT = 5001;
-config.PARSER_PORT = 5201;
-config.ENABLE_CASSANDRA_MATCH_STORE_WRITE = "";
-config.ENABLE_CASSANDRA_MATCH_STORE_READ = "";
-var async = require('async');
-var nock = require('nock');
-var moment = require('moment');
-var assert = require('assert');
-var init_db = "postgres://postgres:postgres@localhost/postgres";
-var pQueue = queue.getQueue('parse');
-var supertest = require('supertest');
-var replay_dir = "./test/testfiles/";
-var pg = require('pg');
-var fs = require('fs');
-var wait = 90000;
-//var cassandra = require('../store/cassandra');
-var buildMatch = require('../store/buildMatch');
+process.env.NODE_ENV = 'test';
+const async = require('async');
+const nock = require('nock');
+const assert = require('assert');
+const supertest = require('supertest');
+const pg = require('pg');
+const cass = require('cassandra-driver');
+const fs = require('fs');
+const config = require('../config');
+const constants = require('dotaconstants');
+const redis = require('../store/redis');
+const queue = require('../store/queue');
+const queries = require('../store/queries');
+const pQueue = queue.getQueue('parse');
+const buildMatch = require('../store/buildMatch');
+const utility = require('../util/utility');
+const details_api = require('./details_api.json');
+const init_db = "postgres://postgres:postgres@localhost/postgres";
+const replay_dir = "./test/testfiles/";
+const wait = 90000;
 // these are loaded later, as the database needs to be created when these are required
 var db;
+var cassandra;
 var app;
-var details_api = require('./details_api.json');
 //nock.disableNetConnect();
 //nock.enableNetConnect();
 //fake api response
@@ -60,105 +52,124 @@ nock('http://api.steampowered.com')
 //.get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, require('./leagues_api.json'));
 //fake mmr response
 nock("http://" + config.RETRIEVER_HOST).get('/?account_id=88367253').reply(200, require('./retriever_player.json'));
-before(function(done)
+before(function setup(done)
 {
     this.timeout(wait);
     async.series([
-        function(cb)
+        function (cb)
         {
-            console.log('removing old test database');
-            pg.connect(init_db, function(err, client)
+            pg.connect(init_db, function (err, client)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                console.log('cleaning test database', config.POSTGRES_URL);
-                client.query('DROP DATABASE IF EXISTS yasp_test', function(err, result)
-                {
-                    cb(err);
-                });
+                async.series([
+                    function (cb)
+                    {
+                        console.log('drop postgres test database');
+                        client.query('DROP DATABASE IF EXISTS yasp_test', cb);
+                    },
+                    function (cb)
+                    {
+                        console.log('create postgres test database');
+                        client.query('CREATE DATABASE yasp_test', cb);
+                    },
+                    function (cb)
+                    {
+                        console.log('connecting to test database and creating tables');
+                        db = require('../store/db');
+                        var query = fs.readFileSync("./sql/create_tables.sql", "utf8");
+                        db.raw(query).asCallback(cb);
+                    },
+                ], cb);
             });
         },
-        function(cb)
+        function (cb)
         {
-            console.log('creating test database');
-            pg.connect(init_db, function(err, client)
+            const client = new cass.Client(
             {
-                if (err)
-                {
-                    return cb(err);
-                }
-                console.log('creation of test database', config.POSTGRES_URL);
-                client.query('CREATE DATABASE yasp_test', function(err, result)
-                {
-                    cb(err);
-                });
+                contactPoints: ['localhost']
             });
-        },
-        function(cb)
-        {
-            console.log('connecting to test database and creating tables');
-            pg.connect(config.POSTGRES_URL, function(err, client)
-            {
-                if (err)
+            async.series([function (cb)
                 {
-                    return cb(err);
+                    console.log('drop cassandra test keyspace');
+                    client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+                },
+                function (cb)
+                {
+                    console.log('create cassandra test keyspace');
+                    client.execute(`CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };`, cb);
+                },
+                function (cb)
+                {
+                    cassandra = require('../store/cassandra');
+                    console.log('create cassandra test tables');
+                    async.eachSeries(fs.readFileSync('./sql/create_tables.cql', "utf8").split(';').filter(function (cql)
+                    {
+                        return cql.length > 1;
+                    }), function (cql, cb)
+                    {
+                        cassandra.execute(cql, cb);
+                    }, cb);
                 }
-                // create tables
-                var query = fs.readFileSync("./sql/create_tables.sql", "utf8");
-                client.query(query, function(err, result)
-                {
-                    console.log('set up %s', config.POSTGRES_URL);
-                    cb(err);
-                });
-            });
+            ], cb);
         },
-        function(cb)
+        function (cb)
         {
             console.log("wiping redis");
             redis.flushdb(cb);
         },
-        function(cb)
+        function (cb)
         {
-            db = require('../store/db');
-            app = require('../svc/web');
-            require('../svc/parser');
             console.log("loading matches");
-            async.mapSeries([details_api.result], function(m, cb)
+            async.mapSeries([details_api.result], function (m, cb)
             {
                 queries.insertMatch(db, redis, m,
                 {
+                    cassandra: cassandra,
                     type: "api",
                     skipParse: true,
                 }, cb);
             }, cb);
         },
-        function(cb)
+        function (cb)
         {
             console.log("loading players");
-            async.mapSeries(require('./summaries_api').response.players, function(p, cb)
+            async.mapSeries(require('./summaries_api').response.players, function (p, cb)
             {
                 queries.insertPlayer(db, p, cb);
             }, cb);
-        }], done);
+        },
+        function (cb)
+        {
+            console.log('starting services');
+            app = require('../svc/web');
+            require('../svc/parser');
+            cb();
+        },
+    ], done);
 });
-describe("parser", function()
+describe("replay parse", function ()
 {
     this.timeout(wait);
     var tests = {
-        '1781962623_source2.dem': details_api.result
+        '1781962623_1.dem': details_api.result
     };
     for (var key in tests)
     {
-        it('parse replay', function(done)
+        it('parse replay ' + key, function (done)
         {
             nock("http://" + config.RETRIEVER_HOST).get('/').query(true).reply(200,
             {
                 match:
                 {
+                    match_id: 1781962623,
                     cluster: 1,
-                    replay_salt: key.split(".")[0].split("_")[1]
+                    replay_salt: 1,
+                    series_id: 0,
+                    series_type: 0,
+                    players: [],
                 }
             });
             //fake replay download
@@ -170,14 +181,14 @@ describe("parser", function()
                 radiant_win: tests[key].radiant_win,
             };
             queue.addToQueue(pQueue, match,
-            {}, function(err, job)
+            {}, function (err, job)
             {
                 assert(job && !err);
-                var poll = setInterval(function()
+                var poll = setInterval(function ()
                 {
-                    pQueue.getJob(job.jobId).then(function(job)
+                    pQueue.getJob(job.jobId).then(function (job)
                     {
-                        job.getState().then(function(state)
+                        job.getState().then(function (state)
                         {
                             if (state === "completed")
                             {
@@ -188,7 +199,7 @@ describe("parser", function()
                                     db: db,
                                     redis: redis,
                                     match_id: tests[key].match_id
-                                }, function(err, match)
+                                }, function (err, match)
                                 {
                                     if (err)
                                     {
@@ -209,190 +220,161 @@ describe("parser", function()
         });
     }
 });
-describe("web", function()
+//this.timeout(wait);
+describe("player pages", function ()
 {
-    //this.timeout(wait);
-    describe("main page tests", function()
+    var tests = Object.keys(constants.player_pages);
+    tests.forEach(function (t)
     {
-        var tests = Object.keys(constants.navbar_pages);
-        tests.forEach(function(t)
+        it('/players/:valid/' + t, function (done)
         {
-            it('/' + t, function(done)
-            {
-                supertest(app).get('/' + t)
-                    //.expect('Content-Type', /json/)
-                    //.expect('Content-Length', '20')
-                    .expect(200).end(function(err, res)
-                    {
-                        done(err);
-                    });
-            });
-        });
-        it('/:invalid', function(done)
-        {
-            supertest(app).get('/asdf').expect(404).end(function(err, res)
+            supertest(app).get('/players/120269134/' + t).expect(200).end(function (err, res)
             {
                 done(err);
-            });
-        });
-    });
-    describe("player page tests", function()
-    {
-        var tests = Object.keys(constants.player_pages);
-        tests.forEach(function(t)
-        {
-            it('/players/:valid/' + t, function(done)
-            {
-                supertest(app).get('/players/120269134/' + t).expect(200).end(function(err, res)
-                {
-                    done(err);
-                });
-            });
-        });
-    });
-    describe("player page tests with filter", function()
-    {
-        var tests = Object.keys(constants.player_pages);
-        tests.forEach(function(t)
-        {
-            it('/players/:valid/' + t, function(done)
-            {
-                supertest(app).get('/players/120269134/' + t + "?hero_id=1").expect(200).end(function(err, res)
-                {
-                    done(err);
-                });
-            });
-        });
-    });
-    describe("basic match page tests", function()
-    {
-        it('/matches/:invalid', function(done)
-        {
-            supertest(app).get('/matches/1').expect(404).end(function(err, res)
-            {
-                done(err);
-            });
-        });
-        //TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
-        it('/matches/:valid', function(done)
-        {
-            supertest(app).get('/matches/1781962623').expect(200).end(function(err, res)
-            {
-                done(err);
-            });
-        });
-    });
-    describe("parsed match page tests", function()
-    {
-        var tests = Object.keys(constants.match_pages);
-        tests.forEach(function(t)
-        {
-            it('/matches/:valid_parsed/' + t, function(done)
-            {
-                //new RegExp(t, "i")
-                supertest(app).get('/matches/1781962623/' + t).expect(200).expect(/1781962623/).end(function(err, res)
-                {
-                    done(err);
-                });
             });
         });
     });
 });
-describe("api tests", function()
+describe("player pages with filter", function ()
 {
-    describe("/api/items", function()
+    var tests = Object.keys(constants.player_pages);
+    tests.forEach(function (t)
     {
-        it('should 200', function(done)
+        it('/players/:valid/' + t, function (done)
         {
-            supertest(app).get('/api/items').expect(200).end(function(err, res)
-            {
-                done(err);
-            });
-        });
-    });
-    describe("/api/abilities", function()
-    {
-        it('should 200', function(done)
-        {
-            supertest(app).get('/api/abilities').expect(200).end(function(err, res)
+            supertest(app).get('/players/120269134/' + t + "?hero_id=1").expect(200).end(function (err, res)
             {
                 done(err);
             });
         });
     });
 });
-/*
-var io = require('socket.io-client');
-describe("additional tests", function() {
-    this.timeout(wait);
-    it('socket request', function(done) {
-        jobs.process('request', processApi);
-        //fake replay download
-        nock('http://replay1.valve.net').filteringPath(function(path) {
-            return '/';
-        }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
-        var socket = io.connect('http://localhost:5000');
-        socket.on('connect', function() {
-            console.log('connected to server websocket');
-            socket.emit('request', {
-                match_id: 1151783218,
-                response: ""
-            });
-            socket.on('failed', function() {
-                done();
-            });
-            socket.on('complete', function() {
-                done();
-            });
-        });
-    });
-});
-*/
-//zombiejs tests
-/*
-    describe("/login", function() {
-        before(function(done) {
-            browser.visit('/login');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should 200', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-    });
-    describe("/return", function() {
-        before(function(done) {
-            browser.visit('/return');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should 200', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-    });
-    //test for logout
-describe("home", function(){
-    it('/ should 200', function(done) {
-        browser.visit('/', function(err) {
-            browser.assert.status(200);
+describe("basic match page", function ()
+{
+    it('/matches/:invalid', function (done)
+    {
+        supertest(app).get('/matches/1').expect(404).end(function (err, res)
+        {
             done(err);
         });
-    })
-});
-describe("/matches", function() {
-    browser.visit('/matches', function(err) {
-        it('should 200', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-        it('should say Matches', function(done) {
-            browser.assert.text('body', /Matches/);
-            done();
+    });
+    //TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
+    it('/matches/:valid', function (done)
+    {
+        supertest(app).get('/matches/1781962623').expect(200).end(function (err, res)
+        {
+            done(err);
         });
     });
 });
-*/
+describe("parsed match page", function ()
+{
+    var tests = Object.keys(constants.match_pages);
+    tests.forEach(function (t)
+    {
+        it('/matches/:valid_parsed/' + t, function (done)
+        {
+            //new RegExp(t, "i")
+            supertest(app).get('/matches/1781962623/' + t).expect(200).expect(/1781962623/).end(function (err, res)
+            {
+                done(err);
+            });
+        });
+    });
+});
+//TODO just test based on the documented swagger API
+describe("/api/items", function ()
+{
+    it('should 200', function (done)
+    {
+        supertest(app).get('/api/items').expect(200).end(done);
+    });
+});
+describe("/api/abilities", function ()
+{
+    it('should 200', function (done)
+    {
+        supertest(app).get('/api/abilities').expect(200).end(done);
+    });
+});
+describe('generateMatchups', function ()
+{
+    it('should generate matchups', function (done)
+    {
+        //in this sample match
+        //1,6,52,59,105:46,73,75,100,104:1
+        //dire:radiant, radiant won
+        var keys = utility.generateMatchups(details_api.result);
+        var combs = Math.pow(1 + 5 + 10 + 10 + 5 + 1, 2); //sum of 5cN for n from 0 to 5, squared to account for all pairwise matchups between both teams
+        assert.equal(keys.length, combs);
+        keys.forEach(function (k)
+        {
+            redis.hincrby('matchups', k, 1);
+        });
+        async.series([
+            function zeroVzero(cb)
+            {
+                supertest(app).get('/api/matchups').expect(200).end(function (err, res)
+                {
+                    assert.equal(res.body.t0, 1);
+                    assert.equal(res.body.t1, 0);
+                    cb(err);
+                });
+            },
+            function oneVzeroRight(cb)
+            {
+                supertest(app).get('/api/matchups?t1=1').expect(200).end(function (err, res)
+                {
+                    assert.equal(res.body.t0, 1);
+                    assert.equal(res.body.t1, 0);
+                    cb(err);
+                });
+            },
+            function oneVzero(cb)
+            {
+                supertest(app).get('/api/matchups?t0=1').expect(200).end(function (err, res)
+                {
+                    assert.equal(res.body.t0, 0);
+                    assert.equal(res.body.t1, 1);
+                    cb(err);
+                });
+            },
+            function oneVzero2(cb)
+            {
+                supertest(app).get('/api/matchups?t0=6').expect(200).end(function (err, res)
+                {
+                    assert.equal(res.body.t0, 0);
+                    assert.equal(res.body.t1, 1);
+                    cb(err);
+                });
+            },
+            function oneVzero3(cb)
+            {
+                supertest(app).get('/api/matchups?t0=46').expect(200).end(function (err, res)
+                {
+                    assert.equal(res.body.t0, 1);
+                    assert.equal(res.body.t1, 0);
+                    cb(err);
+                });
+            },
+            function oneVone(cb)
+            {
+                supertest(app).get('/api/matchups?t0=1&t1=46').expect(200).end(function (err, res)
+                {
+                    assert.equal(res.body.t0, 0);
+                    assert.equal(res.body.t1, 1);
+                    cb(err);
+                });
+            },
+            function oneVoneInvert(cb)
+            {
+                supertest(app).get('/api/matchups?t0=46&t1=1').expect(200).end(function (err, res)
+                {
+                    assert.equal(res.body.t0, 1);
+                    assert.equal(res.body.t1, 0);
+                    cb(err);
+                });
+            },
+        ], done);
+    });
+});

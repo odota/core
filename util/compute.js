@@ -26,18 +26,7 @@ function computeMatchData(pm)
     // Compute patch based on start_time
     if (pm.start_time)
     {
-        var date = new Date(pm.start_time * 1000);
-        for (var i = 1; i < constants.patch.length; i++)
-        {
-            var pd = new Date(constants.patch[i].date);
-            //stop when patch date is past the start time
-            if (pd > date)
-            {
-                break;
-            }
-        }
-        //use the value of i before the break, started at 1 to avoid negative index
-        pm.patch = i - 1;
+        pm.patch = utility.getPatchIndex(pm.start_time);
     }
     if (pm.cluster)
     {
@@ -49,10 +38,16 @@ function computeMatchData(pm)
         pm.win = Number(isRadiant(pm) === pm.radiant_win);
         pm.lose = Number(isRadiant(pm) === pm.radiant_win) ? 0 : 1;
     }
-    if (pm.duration)
+    if (pm.duration && pm.gold_per_min)
     {
         pm.total_gold = ~~(pm.gold_per_min * pm.duration / 60);
+    }
+    if (pm.duration && pm.xp_per_min)
+    {
         pm.total_xp = ~~(pm.xp_per_min * pm.duration / 60);
+    }
+    if (pm.duration && pm.kills)
+    {
         pm.kills_per_min = pm.kills / (pm.duration / 60);
     }
     if (pm.kills !== undefined && pm.deaths !== undefined && pm.assists !== undefined)
@@ -78,7 +73,7 @@ function computeMatchData(pm)
     if (pm.kills_log && self_hero)
     {
         //remove self kills
-        pm.kills_log = pm.kills_log.filter(function(k)
+        pm.kills_log = pm.kills_log.filter(function (k)
         {
             return k.key !== self_hero.name;
         });
@@ -170,66 +165,71 @@ function computeMatchData(pm)
         pm.lane_efficiency = pm.gold_t[10] / tenMinute;
         pm.lane_efficiency_pct = ~~(pm.lane_efficiency * 100);
     }
-    //convert position hashes to heatmap array of x,y,value
-    pm.posData = generatePositionData(
+    if (pm.obs)
     {
-        "obs": true,
-        "sen": true,
-        //"pos": true,
-        "lane_pos": true
-    }, pm);
-    //p.explore = p.posData.pos.length / 128 / 128;
-    //compute lanes
-    var lanes = [];
-    for (var i = 0; i < pm.posData.lane_pos.length; i++)
-    {
-        var dp = pm.posData.lane_pos[i];
-        for (var j = 0; j < dp.value; j++)
+        //convert position hashes to heatmap array of x,y,value
+        pm.posData = generatePositionData(
         {
-            if (constants.lanes[dp.y])
+            "obs": true,
+            "sen": true,
+            //"pos": true,
+            "lane_pos": true
+        }, pm);
+    }
+    if (pm.posData)
+    {
+        //compute lanes
+        var lanes = [];
+        for (var i = 0; i < pm.posData.lane_pos.length; i++)
+        {
+            var dp = pm.posData.lane_pos[i];
+            for (var j = 0; j < dp.value; j++)
             {
-                lanes.push(constants.lanes[dp.y][dp.x]);
+                if (constants.lanes[dp.y])
+                {
+                    lanes.push(constants.lanes[dp.y][dp.x]);
+                }
             }
         }
-    }
-    if (lanes.length)
-    {
-        pm.lane = mode(lanes);
-        var radiant = pm.isRadiant;
-        var lane_roles = {
-            "1": function()
-            {
-                //bot
-                return radiant ? 1 : 3;
-            },
-            "2": function()
-            {
-                //mid
-                return 2;
-            },
-            "3": function()
-            {
-                //top
-                return radiant ? 3 : 1;
-            },
-            "4": function()
-            {
-                //rjung
-                return 4;
-            },
-            "5": function()
-            {
-                //djung
-                return 4;
-            }
-        };
-        pm.lane_role = lane_roles[pm.lane] ? lane_roles[pm.lane]() : undefined;
+        if (lanes.length)
+        {
+            pm.lane = mode(lanes);
+            var radiant = pm.isRadiant;
+            var lane_roles = {
+                "1": function ()
+                {
+                    //bot
+                    return radiant ? 1 : 3;
+                },
+                "2": function ()
+                {
+                    //mid
+                    return 2;
+                },
+                "3": function ()
+                {
+                    //top
+                    return radiant ? 3 : 1;
+                },
+                "4": function ()
+                {
+                    //rjung
+                    return 4;
+                },
+                "5": function ()
+                {
+                    //djung
+                    return 4;
+                }
+            };
+            pm.lane_role = lane_roles[pm.lane] ? lane_roles[pm.lane]() : undefined;
+        }
     }
     //compute hashes of purchase time sums and counts from logs
     if (pm.purchase_log)
     {
         //remove ward dispenser and recipes
-        pm.purchase_log = pm.purchase_log.filter(function(purchase)
+        pm.purchase_log = pm.purchase_log.filter(function (purchase)
         {
             return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
         });
@@ -311,11 +311,11 @@ function renderMatch(m)
         },
     };
     //do render-only processing (not needed for aggregation, only for match display)
-    m.players.forEach(function(pm, i)
+    m.players.forEach(function (pm, i)
     {
         //converts hashes to arrays and sorts them
         var targets = ["ability_uses", "item_uses", "damage_inflictor", "damage_inflictor_received"];
-        targets.forEach(function(target)
+        targets.forEach(function (target)
         {
             if (pm[target])
             {
@@ -340,7 +340,7 @@ function renderMatch(m)
                     }
                     t.push(result);
                 }
-                t.sort(function(a, b)
+                t.sort(function (a, b)
                 {
                     return b.val - a.val;
                 });
@@ -351,9 +351,9 @@ function renderMatch(m)
         if (pm.times)
         {
             var intervals = ["lh_t", "gold_t", "xp_t", "times"];
-            intervals.forEach(function(key)
+            intervals.forEach(function (key)
             {
-                pm[key] = pm[key].filter(function(el, i)
+                pm[key] = pm[key].filter(function (el, i)
                 {
                     return pm.times[i] >= 0;
                 });
@@ -411,7 +411,7 @@ function renderMatch(m)
                     total: 0,
                 },
             };
-            m.players.forEach(function(other_pm)
+            m.players.forEach(function (other_pm)
             {
                 var team = (pm.isRadiant) ? 'radiant' : 'dire';
                 var other_hero = constants.heroes[other_pm.hero_id];
@@ -449,7 +449,7 @@ function renderMatch(m)
         }
     });
     console.time("generating player analysis");
-    m.players.forEach(function(pm, i)
+    m.players.forEach(function (pm, i)
     {
         pm.analysis = generatePlayerAnalysis(m, pm);
     });
@@ -457,7 +457,7 @@ function renderMatch(m)
     if (m.chat)
     {
         //make a list of messages and join them all together for sentiment analysis
-        var chat_words = m.chat.map(function(message)
+        var chat_words = m.chat.map(function (message)
         {
             return message.key;
         }).join(' ');
@@ -497,14 +497,14 @@ function renderMatch(m)
         m.graphData = generateGraphData(m);
     }
     //create heatmap data
-    m.posData = m.players.map(function(p)
+    m.posData = m.players.map(function (p)
     {
         return p.posData;
     });
     //process objectives
     if (m.objectives)
     {
-        m.objectives.forEach(function(entry)
+        m.objectives.forEach(function (entry)
         {
             entry.objective = constants.objectives[entry.subtype] || entry.subtype;
             var p = m.players[entry.slot];
@@ -518,7 +518,7 @@ function renderMatch(m)
     //process teamfight data
     if (m.teamfights)
     {
-        m.teamfights.forEach(function(tf)
+        m.teamfights.forEach(function (tf)
         {
             tf.posData = [];
             tf.radiant_gold_delta = 0;
@@ -527,7 +527,7 @@ function renderMatch(m)
             tf.radiant_deaths = 0;
             tf.dire_participation = 0;
             tf.dire_deaths = 0;
-            tf.players.forEach(function(p)
+            tf.players.forEach(function (p)
             {
                 //lookup starting, ending level
                 p.level_start = getLevelFromXp(p.xp_start);
@@ -546,7 +546,7 @@ function renderMatch(m)
                 }
             });
             //add player's hero_id to each teamfight participant
-            m.players.forEach(function(p, i)
+            m.players.forEach(function (p, i)
             {
                 var tfplayer = tf.players[p.player_slot % (128 - 5)];
                 tfplayer.hero_id = p.hero_id;
@@ -582,7 +582,7 @@ function renderMatch(m)
                 }, tfplayer);
                 //console.log(player);
                 //add player hero id to each death, push into teamfight death position array
-                tfplayer.posData.deaths_pos.forEach(function(pt)
+                tfplayer.posData.deaths_pos.forEach(function (pt)
                 {
                     pt.hero_id = tfplayer.hero_id;
                     tf.posData.push(pt);
@@ -608,7 +608,7 @@ function generateGraphData(match)
         xp: [time],
         lh: [time]
     };
-    match.players.forEach(function(p, i)
+    match.players.forEach(function (p, i)
     {
         var hero = constants.heroes[p.hero_id] ||
         {};
@@ -628,11 +628,11 @@ function generateIncomeData(match)
     var categories = [];
     var imgs = [];
     var orderedPlayers = match.players.slice(0);
-    orderedPlayers.sort(function(a, b)
+    orderedPlayers.sort(function (a, b)
     {
         return b.gold_per_min - a.gold_per_min;
     });
-    orderedPlayers.forEach(function(player)
+    orderedPlayers.forEach(function (player)
     {
         var hero = constants.heroes[player.hero_id] ||
         {};
@@ -644,7 +644,7 @@ function generateIncomeData(match)
         var reason = constants.gold_reasons[key].name;
         gold_reasons.push(reason);
         var col = [reason];
-        orderedPlayers.forEach(function(player)
+        orderedPlayers.forEach(function (player)
         {
             var g = player.gold_reasons;
             col.push(g ? g[key] : 0);
@@ -662,7 +662,7 @@ function generateIncomeData(match)
 function generateTreemapData(match)
 {
     var data = [];
-    match.players.forEach(function(player)
+    match.players.forEach(function (player)
     {
         var hero = constants.heroes[player.hero_id] ||
         {};
@@ -676,7 +676,7 @@ function generateTreemapData(match)
     for (var key in constants.gold_reasons)
     {
         var reason = constants.gold_reasons[key].name;
-        match.players.forEach(function(player)
+        match.players.forEach(function (player)
         {
             var g = player.gold_reasons;
             data.push(
@@ -700,7 +700,7 @@ function count_words(player_match, player_filter)
     // extract the message strings from the message objects
     // extract individual words from the message strings
     var chat_words = [];
-    messages.forEach(function(message)
+    messages.forEach(function (message)
     {
         // if there is no player_filter, or if the passed player's player_slot matches this message's parseSlot converted to player_slot, log it
         var messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);

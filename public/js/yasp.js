@@ -12,7 +12,9 @@ require('../../node_modules/select2-bootstrap-theme/dist/select2-bootstrap.css')
 require('../css/flaticon.css');
 require('../css/yasp.css');
 require('./ga.js');
-require('jquery');
+var $ = require('jquery');
+window.jQuery = $;
+window.$ = $;
 //require('datatables.net');
 //require('datatables.net-bs');
 require('../../node_modules/datatables/media/js/jquery.dataTables.js');

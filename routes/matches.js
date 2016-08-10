@@ -3,6 +3,8 @@ var buildMatch = require('../store/buildMatch');
 var express = require('express');
 var matches = express.Router();
 var matchPages = constants.match_pages;
+var compute = require('../util/compute');
+var renderMatch = compute.renderMatch;
 module.exports = function(db, redis, cassandra)
 {
     matches.get('/:match_id/:info?', function(req, res, cb)
@@ -26,6 +28,7 @@ module.exports = function(db, redis, cassandra)
             }
             console.timeEnd("match page");
             var info = matchPages[req.params.info] ? req.params.info : "index";
+            renderMatch(match);
             res.render("match/match_" + info,
             {
                 route: info,

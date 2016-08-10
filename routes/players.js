@@ -6,9 +6,57 @@ var querystring = require('querystring');
 //list of fields that are numerical (continuous).  These define the possible categories for histograms, trends, and records
 var player_fields = constants.player_fields;
 var playerPages = constants.player_pages;
-module.exports = function(db, redis, cassandra)
+playerPages = {
+  "index": {
+    "name": "Overview"
+  },
+  "matches": {
+    "name": "Matches"
+  },
+  "heroes": {
+    "name": "Heroes"
+  },
+  "peers": {
+    "name": "Peers"
+  },
+  "pros": {
+    "name": "Pros",
+    "new-feature": true
+  },
+  "activity": {
+    "name": "Activity"
+  },
+  "records": {
+    "name": "Records"
+  },
+  "counts": {
+    "name": "Counts"
+  },
+  "histograms": {
+    "name": "Histograms"
+  },
+  "trends": {
+    "name": "Trends"
+  },
+  "wardmap": {
+    "name": "Wardmap"
+  },
+  "items": {
+    "name": "Items"
+  },
+  "wordcloud": {
+    "name": "Wordcloud"
+  },
+  "rating": {
+    "name": "MMR"
+  },
+  "rankings": {
+    "name": "Rankings",
+  }
+};
+module.exports = function (db, redis, cassandra)
 {
-    players.get('/:account_id/:info?/:subkey?', function(req, res, cb)
+    players.get('/:account_id/:info?/:subkey?', function (req, res, cb)
     {
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
@@ -22,7 +70,7 @@ module.exports = function(db, redis, cassandra)
             info: info,
             subkey: subkey,
             query: req.query
-        }, function(err, player)
+        }, function (err, player)
         {
             if (err)
             {

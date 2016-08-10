@@ -35,11 +35,11 @@ var querystring = require('querystring');
 var util = require('util');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 //PASSPORT config
-passport.serializeUser(function(user, done)
+passport.serializeUser(function (user, done)
 {
     done(null, user.account_id);
 });
-passport.deserializeUser(function(account_id, done)
+passport.deserializeUser(function (account_id, done)
 {
     done(null,
     {
@@ -55,7 +55,7 @@ passport.use(new SteamStrategy(
 {
     var player = profile._json;
     player.last_login = new Date();
-    queries.insertPlayer(db, player, function(err)
+    queries.insertPlayer(db, player, function (err)
     {
         if (err)
         {
@@ -69,7 +69,7 @@ app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = constants;
-app.locals.tooltips = constants.tooltips;
+app.locals.tooltips = require('../json/tooltips.json');
 app.locals.qs = querystring;
 app.locals.util = util;
 app.locals.config = config;
@@ -77,8 +77,31 @@ app.locals.basedir = __dirname + '/../views';
 app.locals.prettyPrint = utility.prettyPrint;
 app.locals.percentToTextClass = utility.percentToTextClass;
 app.locals.getAggs = utility.getAggs;
+app.locals.navbar_pages = {
+  "request": {
+    "name": "Request"
+  },
+  "rankings": {
+    "name": "Rankings"
+  },
+  "benchmarks": {
+    "name": "Benchmarks"
+  },
+  "distributions": {
+    "name": "Distributions"
+  },
+  "mmstats": {
+    "name": "MMStats"
+  },
+  "carry": {
+    "name": "Carry"
+  },
+  "search": {
+    "name": "Search"
+  }
+};
 app.use(compression());
-app.use("/apps/dota2/images/:group_name/:image_name", function(req, res)
+app.use("/apps/dota2/images/:group_name/:image_name", function (req, res)
 {
     res.header('Cache-Control', 'max-age=604800, public');
     request("http://cdn.dota2.com/apps/dota2/images/" + req.params.group_name + "/" + req.params.image_name).pipe(res);
@@ -99,7 +122,7 @@ app.use(function rateLimit(req, res, cb)
     ip = ip.replace(/^.*:/, '').split(',')[0];
     var key = 'rate_limit:' + ip;
     console.log("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.originalUrl, ip);
-    redis.multi().incr(key).expire(key, 1).exec(function(err, resp)
+    redis.multi().incr(key).expire(key, 1).exec(function (err, resp)
     {
         if (err)
         {
@@ -123,14 +146,14 @@ app.use(function telemetry(req, res, cb)
     var timeStart = new Date();
     if (req.originalUrl.indexOf('/api') === 0)
     {
-        console.log('api')
         redis.zadd("api_hits", moment().format('X'), req.originalUrl);
     }
     if (req.user)
     {
         redis.zadd('visitors', moment().format('X'), req.user.account_id);
+        redis.zadd('tracked', moment().format('X'), req.user.account_id);
     }
-    res.once('finish', function()
+    res.once('finish', function ()
     {
         var timeEnd = new Date();
         var elapsed = timeEnd - timeStart;
@@ -148,15 +171,15 @@ app.use(function getMetadata(req, res, cb)
 {
     async.parallel(
     {
-        banner: function(cb)
+        banner: function (cb)
         {
             redis.get("banner", cb);
         },
-        cheese: function(cb)
+        cheese: function (cb)
         {
             redis.get("cheese_goal", cb);
         }
-    }, function(err, results)
+    }, function (err, results)
     {
         res.locals.user = req.user;
         res.locals.banner_msg = results.banner;
@@ -165,12 +188,12 @@ app.use(function getMetadata(req, res, cb)
     });
 });
 //START service/admin routes
-app.get('/robots.txt', function(req, res)
+app.get('/robots.txt', function (req, res)
 {
     res.type('text/plain');
     res.send("User-agent: *\nDisallow: /matches\nDisallow: /api");
 });
-app.route('/healthz').get(function(req, res)
+app.route('/healthz').get(function (req, res)
 {
     res.send("ok");
 });
@@ -181,7 +204,7 @@ app.route('/login').get(passport.authenticate('steam',
 app.route('/return').get(passport.authenticate('steam',
 {
     failureRedirect: '/'
-}), function(req, res, next)
+}), function (req, res, next)
 {
     if (config.UI_HOST)
     {
@@ -192,7 +215,7 @@ app.route('/return').get(passport.authenticate('steam',
         res.redirect('/players/' + req.user.account_id);
     }
 });
-app.route('/logout').get(function(req, res)
+app.route('/logout').get(function (req, res)
 {
     req.logout();
     req.session = null;
@@ -202,7 +225,7 @@ app.use('/api', api(db, redis, cassandra));
 //END service/admin routes
 //START standard routes.
 //TODO remove these with SPA
-app.route('/').get(function(req, res, next)
+app.route('/').get(function (req, res, next)
 {
     if (req.user)
     {
@@ -218,16 +241,16 @@ app.route('/').get(function(req, res, next)
         });
     }
 });
-app.get('/request', function(req, res)
+app.get('/request', function (req, res)
 {
     res.render('request',
     {
         rc_public: rc_public
     });
 });
-app.route('/status').get(function(req, res, next)
+app.route('/status').get(function (req, res, next)
 {
-    status(db, redis, function(err, result)
+    status(db, redis, function (err, result)
     {
         if (err)
         {
@@ -241,9 +264,9 @@ app.route('/status').get(function(req, res, next)
 });
 app.use('/matches', matches(db, redis, cassandra));
 app.use('/players', players(db, redis, cassandra));
-app.use('/distributions', function(req, res, cb)
+app.use('/distributions', function (req, res, cb)
 {
-    queries.getDistributions(redis, function(err, result)
+    queries.getDistributions(redis, function (err, result)
     {
         if (err)
         {
@@ -252,40 +275,7 @@ app.use('/distributions', function(req, res, cb)
         res.render('distributions', result);
     });
 });
-app.get('/picks/:n?', function(req, res, cb)
-{
-    var length = Number(req.params.n || 1);
-    var limit = 1000;
-    queries.getPicks(redis,
-    {
-        length: length,
-        limit: limit
-    }, function(err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        res.render('picks',
-        {
-            total: result.total,
-            picks: result.entries,
-            n: length,
-            limit: limit,
-            tabs:
-            {
-                1: "Monads",
-                2: "Dyads",
-                3: "Triads",
-                /*
-                4: "Tetrads",
-                5: "Pentads"
-                */
-            }
-        });
-    });
-});
-app.get('/rankings/:hero_id?', function(req, res, cb)
+app.get('/rankings/:hero_id?', function (req, res, cb)
 {
     if (!req.params.hero_id)
     {
@@ -300,7 +290,7 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
         queries.getHeroRankings(db, redis, req.params.hero_id,
         {
             beta: req.query.beta
-        }, function(err, result)
+        }, function (err, result)
         {
             if (err)
             {
@@ -310,7 +300,7 @@ app.get('/rankings/:hero_id?', function(req, res, cb)
         });
     }
 });
-app.get('/benchmarks/:hero_id?', function(req, res, cb)
+app.get('/benchmarks/:hero_id?', function (req, res, cb)
 {
     if (!req.params.hero_id)
     {
@@ -325,7 +315,7 @@ app.get('/benchmarks/:hero_id?', function(req, res, cb)
         queries.getBenchmarks(db, redis,
         {
             hero_id: req.params.hero_id
-        }, function(err, result)
+        }, function (err, result)
         {
             if (err)
             {
@@ -335,11 +325,11 @@ app.get('/benchmarks/:hero_id?', function(req, res, cb)
         });
     }
 });
-app.get('/search', function(req, res, cb)
+app.get('/search', function (req, res, cb)
 {
     if (req.query.q)
     {
-        queries.searchPlayer(db, req.query.q, function(err, result)
+        queries.searchPlayer(db, req.query.q, function (err, result)
         {
             if (err)
             {
@@ -357,11 +347,7 @@ app.get('/search', function(req, res, cb)
         res.render('search');
     }
 });
-app.get('/explorer/:qid?', function(req, res, cb)
-{
-    return res.render('explorer');
-});
-app.get('/april/:year?', function(req, res, cb)
+app.get('/april/:year?', function (req, res, cb)
 {
     return res.render('plusplus',
     {
@@ -374,7 +360,7 @@ app.use('/', mmstats(redis));
 //END standard routes
 //TODO keep donate routes around for legacy until @albertcui can reimplement in SPA?
 app.use('/', donate(db, redis));
-app.use(function(req, res, next)
+app.use(function (req, res, next)
 {
     if (config.UI_HOST)
     {
@@ -385,7 +371,7 @@ app.use(function(req, res, next)
     err.status = 404;
     return next(err);
 });
-app.use(function(err, req, res, next)
+app.use(function (err, req, res, next)
 {
     res.status(err.status || 500);
     console.log(err);
@@ -401,7 +387,7 @@ app.use(function(err, req, res, next)
     next(err);
 });
 var port = config.PORT || config.FRONTEND_PORT;
-var server = app.listen(port, function()
+var server = app.listen(port, function ()
 {
     console.log('[WEB] listening on %s', port);
 });
@@ -414,13 +400,13 @@ process.once('SIGINT', gracefulShutdown);
 function gracefulShutdown()
 {
     console.log("Received kill signal, shutting down gracefully.");
-    server.close(function()
+    server.close(function ()
     {
         console.log("Closed out remaining connections.");
         process.exit();
     });
     // if after 
-    setTimeout(function()
+    setTimeout(function ()
     {
         console.error("Could not close connections in time, forcefully shutting down");
         process.exit();

@@ -2,23 +2,22 @@ extend match
 
 block match_content
   .row
-    .col-md-6
-      +data_table({id:"performances",summable:true, heading: "Performances", rankable: true})
+    .col-md-12
+      +data_table({id:"overall", heading: "Overall"})
         each player, i in match.players
           +data_table_header(i, match)
             tr
               th: abbr(title=tooltips.hero_id) Hero
-              th: abbr(title=tooltips.lane) Lane
-              th: abbr(title=tooltips.lane_efficiency) EFF@10
-              th: abbr(title=tooltips.lhten) LH@10
+              th: abbr(title=tooltips.camps_stacked) Stacks
               th: abbr(title=tooltips.stuns) Stuns
               th: abbr(title=tooltips.time_dead) Dead
               th: abbr(title=tooltips.max_hero_hit) Biggest Hit
-          tr.activate(data-index=i, data-type="lane_pos", class = player.isRadiant ? "radiant" : "dire")
+              th: abbr(title=tooltips.ability_uses) Skill Use (Hits)
+              th: abbr(title=tooltips.item_uses) Item Use
+
+          tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
-            td #{constants.lane_ids[player.lane] || "-"} (#{constants.lane_role[player.lane_role] || "-"})
-            td.rankable #{(Number(player.lane_efficiency)*100).toFixed(2)}
-            td.rankable #{player.lh_t && player.lh_t[10] ? player.lh_t[10] : "-"}
+            td.rankable #{player.camps_stacked || "-"}
             td.rankable #{Number(Math.max(player.stuns, 0)).toFixed(2)}
             td.rankable.negative.format-seconds(data-format-seconds=player.life_state_dead) #{player.life_state_dead || "-"}
             td.nowrap
@@ -38,25 +37,6 @@ block match_content
                 span.img-text: img.img-md(src=hero.img, title=hero.localized_name)
               else
                 =player.max_hero_hit.key
-    .col-md-6
-      h3 Laning Map
-      #map.table-responsive
-        img.mapContainer(src=constants.map_url, alt="map")
-
-  +ad("banner2")
-
-  .row
-    .col-md-12
-      +data_table({id:"utilization", heading: "Utilization"})
-        each player, i in match.players
-          +data_table_header(i, match)
-            tr
-              th: abbr(title=tooltips.hero_id) Hero
-              th: abbr(title=tooltips.ability_uses) Skill Use (Hits)
-              th: abbr(title=tooltips.item_uses) Item Use
-
-          tr(class = player.isRadiant ? "radiant" : "dire")
-            +hero_td(player)
             td.table-img
               each ability in player.ability_uses_arr || []
                 span.img-text
@@ -68,6 +48,27 @@ block match_content
                 span.img-text
                   img.img-sm.item(src=item.img, title=item.name)
                   div #{item.val}
+  .row
+    .col-md-6
+      +data_table({id:"laning",summable:true, heading: "Laning", rankable: true})
+        each player, i in match.players
+          +data_table_header(i, match)
+            tr
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.lane) Lane
+              th: abbr(title=tooltips.lane_efficiency) EFF@10
+              th: abbr(title=tooltips.lhten) LH@10
+              th: abbr(title=tooltips.dnten) DN@10
+          tr.activate(data-index=i, data-type="lane_pos", class = player.isRadiant ? "radiant" : "dire")
+            +hero_td(player)
+            td #{constants.lane_role[player.lane_role] || "-"}
+            td.rankable #{(Number(player.lane_efficiency)*100).toFixed(2)}
+            td.rankable #{player.lh_t && player.lh_t[10] ? player.lh_t[10] : "-"}
+            td.rankable #{player.dn_t && player.dn_t[10] ? player.dn_t[10] : "-"}
+    .col-md-6
+      h3 Laning Map
+      #map.table-responsive
+        img.mapContainer(src=constants.map_url, alt="map")
 
 append footer_assets
   script.

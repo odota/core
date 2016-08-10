@@ -1,12 +1,22 @@
 extend layout
 
 block content
+  .alert.alert-warning
+    p 
+      strong Warning! 
+      | This data set is limited to:
+    ul
+      li Players displaying MMR on profile
+      li Players sharing public match data
+      li Players selecting a country on their Steam profile (for country data)
+    p 
+      strong Players do not have to sign in
+      | , but due to the opt-in nature of the data collected, the mean displayed here is likely higher than the true distribution's.
+
   .row
     .col-md-12
       h3 Solo MMR Distribution 
         small (#{mmr ? mmr.sum.count : 0} players)
-        br
-        small Includes players displaying MMR on profile and sharing public match data (Sign-in not required)
       #mmr
   .row
     .col-md-12

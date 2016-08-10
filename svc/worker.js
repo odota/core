@@ -163,7 +163,7 @@ invokeInterval(function leagues(cb)
 }, 10 * 60 * 1000);
 invokeInterval(function teams(cb)
 {
-    db.raw(`select distinct radiant_team_id from matches`).asCallback(function (err, result)
+    db.raw(`select distinct team_id from team_match`).asCallback(function (err, result)
     {
         if (err)
         {
@@ -171,13 +171,10 @@ invokeInterval(function teams(cb)
         }
         async.eachSeries(result.rows, function (m, cb)
         {
-            if (!m.radiant_team_id)
-            {
-                return cb();
-            }
             var container = utility.generateJob("api_teams",
             {
-                team_id: m.radiant_team_id || 2,
+                // 2 is the smallest team id, use as default
+                team_id: m.team_id || 2,
             });
             utility.getData(container.url, function (err, body)
             {

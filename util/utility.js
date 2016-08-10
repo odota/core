@@ -27,7 +27,7 @@ function generateJob(type, payload)
     var api_url = "http://api.steampowered.com";
     var api_key;
     var opts = {
-        "api_details": function()
+        "api_details": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
@@ -36,7 +36,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_history": function()
+        "api_history": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : "") + (payload.leagueid ? "&league_id=" + payload.leagueid : "") + (payload.start_at_match_id ? "&start_at_match_id=" + payload.start_at_match_id : ""),
@@ -45,10 +45,10 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_summaries": function()
+        "api_summaries": function ()
         {
             return {
-                url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.players.map(function(p)
+                url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.players.map(function (p)
                 {
                     return convert32to64(p.account_id).toString();
                 }).join(),
@@ -57,7 +57,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_sequence": function()
+        "api_sequence": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + api_key + "&start_at_match_seq_num=" + payload.start_at_match_seq_num,
@@ -65,7 +65,7 @@ function generateJob(type, payload)
                 type: "api"
             };
         },
-        "api_heroes": function()
+        "api_heroes": function ()
         {
             return {
                 url: api_url + "/IEconDOTA2_570/GetHeroes/v0001/?key=" + api_key + "&language=" + payload.language,
@@ -74,7 +74,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_leagues": function()
+        "api_leagues": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetLeagueListing/v0001/?key=" + api_key,
@@ -83,7 +83,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_skill": function()
+        "api_skill": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchHistory/v0001/?key=" + api_key + "&start_at_match_id=" + payload.start_at_match_id + "&skill=" + payload.skill + "&hero_id=" + payload.hero_id + "&min_players=10",
@@ -92,7 +92,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_live": function()
+        "api_live": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=" + api_key,
@@ -101,7 +101,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_notable": function()
+        "api_notable": function ()
         {
             return {
                 url: api_url + "/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=" + api_key,
@@ -110,7 +110,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "api_teams": function()
+        "api_teams": function ()
         {
             return {
                 url: api_url + "/IDOTA2Teams_570/GetTeamInfo/v1/?key=" + api_key + "&team_id=" + payload.team_id,
@@ -119,7 +119,7 @@ function generateJob(type, payload)
                 payload: payload,
             };
         },
-        "parse": function()
+        "parse": function ()
         {
             return {
                 title: [type, payload.match_id].join(),
@@ -128,7 +128,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "request": function()
+        "request": function ()
         {
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
@@ -138,7 +138,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "fullhistory": function()
+        "fullhistory": function ()
         {
             return {
                 title: [type, payload.account_id].join(),
@@ -146,7 +146,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "mmr": function()
+        "mmr": function ()
         {
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
@@ -154,7 +154,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "cache": function()
+        "cache": function ()
         {
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
@@ -162,7 +162,7 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
-        "rank": function()
+        "rank": function ()
         {
             return {
                 title: [type, payload.account_id, payload.hero_id].join(),
@@ -226,7 +226,7 @@ function getData(url, cb)
     }
     var target = urllib.format(parse);
     console.error("%s - getData: %s", new Date(), target);
-    return setTimeout(function()
+    return setTimeout(function ()
     {
         request(
         {
@@ -234,7 +234,7 @@ function getData(url, cb)
             url: target,
             json: true,
             timeout: 30000
-        }, function(err, res, body)
+        }, function (err, res, body)
         {
             if (body && body.error)
             {
@@ -368,10 +368,15 @@ function getParseSchema()
         "chat": [],
         "radiant_gold_adv": [],
         "radiant_xp_adv": [],
-        "players": Array.apply(null, new Array(10)).map(function()
+        "players": Array.apply(null, new Array(10)).map(function ()
         {
             return {
                 "player_slot": 0,
+                "obs_placed": 0,
+                "sen_placed": 0,
+                "creeps_stacked": 0,
+                "camps_stacked": 0,
+                "rune_pickups": 0,
                 "stuns": 0,
                 "max_hero_hit":
                 {
@@ -380,9 +385,12 @@ function getParseSchema()
                 "times": [],
                 "gold_t": [],
                 "lh_t": [],
+                "dn_t": [],
                 "xp_t": [],
                 "obs_log": [],
                 "sen_log": [],
+                "obs_left_log": [],
+                "sen_left_log": [],
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
@@ -581,7 +589,7 @@ function serialize(row)
 function deserialize(row)
 {
     var obj = {};
-    row.keys().forEach(function(key)
+    row.keys().forEach(function (key)
     {
         try
         {
@@ -599,10 +607,10 @@ function deserialize(row)
  **/
 function getAlphaHeroes()
 {
-    var alpha_heroes = Object.keys(constants.heroes).map(function(id)
+    var alpha_heroes = Object.keys(constants.heroes).map(function (id)
     {
         return constants.heroes[id];
-    }).sort(function(a, b)
+    }).sort(function (a, b)
     {
         return a.localized_name < b.localized_name ? -1 : 1;
     });
@@ -613,18 +621,18 @@ function getAlphaHeroes()
  **/
 function prettyPrint(str)
 {
-    return str.split("_").map(function(s)
+    return str.split("_").map(function (s)
     {
         switch (s)
         {
-            case "xp":
-                return "XP";
-            case "kda":
-                return "KDA";
-            case "tpscroll":
-                return "TP Scroll";
-            default:
-                return s.charAt(0).toUpperCase() + s.slice(1);
+        case "xp":
+            return "XP";
+        case "kda":
+            return "KDA";
+        case "tpscroll":
+            return "TP Scroll";
+        default:
+            return s.charAt(0).toUpperCase() + s.slice(1);
         }
     }).join(" ");
 }
@@ -635,7 +643,7 @@ function prettyPrint(str)
 function getStartOfBlockHours(size, offset)
 {
     offset = offset || 0;
-    var blockS = size * 60 * 60;
+    const blockS = size * 60 * 60;
     return (Math.floor(((new Date() / 1000 + (offset * blockS)) / blockS)) * blockS).toFixed(0);
 }
 
@@ -680,7 +688,7 @@ function percentToTextClass(pct)
 
 function average(data)
 {
-    return ~~(data.reduce(function(a, b)
+    return ~~(data.reduce(function (a, b)
     {
         return a + b;
     }, 0) / data.length);
@@ -689,7 +697,7 @@ function average(data)
 function stdDev(data)
 {
     var avg = average(data);
-    var squareDiffs = data.map(function(value)
+    var squareDiffs = data.map(function (value)
     {
         var diff = value - avg;
         var sqrDiff = diff * diff;
@@ -702,7 +710,7 @@ function stdDev(data)
 
 function median(data)
 {
-    data.sort(function(a, b)
+    data.sort(function (a, b)
     {
         return a - b;
     });
@@ -710,29 +718,186 @@ function median(data)
     if (data.length % 2) return data[half];
     else return (data[half - 1] + data[half]) / 2.0;
 }
+
+function getPatchIndex(start_time)
+{
+    var date = new Date(start_time * 1000);
+    for (var i = 1; i < constants.patch.length; i++)
+    {
+        var pd = new Date(constants.patch[i].date);
+        //stop when patch date is past the start time
+        if (pd > date)
+        {
+            break;
+        }
+    }
+    //use the value of i before the break, started at 1 to avoid negative index
+    return i - 1;
+}
+
+function buildReplayUrl(match_id, cluster, replay_salt)
+{
+    const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
+    return "http://replay" + cluster + ".valve.net/570/" + match_id + "_" + replay_salt + suffix;
+}
+
+function expectedWin(rates)
+{
+    //simple implementation, average
+    //return rates.reduce((prev, curr) => prev + curr)) / hids.length;
+    //advanced implementation, asymptotic
+    //https://github.com/yasp-dota/yasp/issues/959
+    //return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
+    return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
+}
+
+function matchupToString(t0, t1, t0win)
+{
+    //create sorted strings of each team
+    var rcg = groupToString(t0);
+    var dcg = groupToString(t1);
+    var suffix = '0';
+    if (rcg <= dcg)
+    {
+        suffix = t0win ? '0' : '1';
+        return rcg + ':' + dcg + ':' + suffix;
+    }
+    else
+    {
+        suffix = t0win ? '1' : '0';
+        return dcg + ':' + rcg + ':' + suffix;
+    }
+}
+
+function groupToString(g)
+{
+    return g.sort(function (a, b)
+    {
+        return a - b;
+    }).join(',');
+}
+
+function kCombinations(arr, k)
+{
+    var i, j, combs, head, tailcombs;
+    if (k > arr.length || k <= 0)
+    {
+        return [];
+    }
+    if (k === arr.length)
+    {
+        return [arr];
+    }
+    if (k == 1)
+    {
+        combs = [];
+        for (i = 0; i < arr.length; i++)
+        {
+            combs.push([arr[i]]);
+        }
+        return combs;
+    }
+    // Assert {1 < k < arr.length}
+    combs = [];
+    for (i = 0; i < arr.length - k + 1; i++)
+    {
+        head = arr.slice(i, i + 1);
+        //recursively get all combinations of the remaining array
+        tailcombs = kCombinations(arr.slice(i + 1), k - 1);
+        for (j = 0; j < tailcombs.length; j++)
+        {
+            combs.push(head.concat(tailcombs[j]));
+        }
+    }
+    return combs;
+}
+
+function generateMatchups(match)
+{
+    var radiant = [];
+    var dire = [];
+    //start with empty arrays for the choose 0 case
+    var rCombs = [
+        []
+    ];
+    var dCombs = [
+        []
+    ];
+    const result = [];
+    for (var i = 0; i < match.players.length; i++)
+    {
+        var p = match.players[i];
+        if (p.hero_id === 0)
+        {
+            //exclude this match if any hero is 0
+            return;
+        }
+        if (isRadiant(p))
+        {
+            radiant.push(p.hero_id);
+        }
+        else
+        {
+            dire.push(p.hero_id);
+        }
+    }
+    for (var i = 1; i < 6; i++)
+    {
+        var rc = kCombinations(radiant, i);
+        var dc = kCombinations(dire, i);
+        rCombs = rCombs.concat(rc);
+        dCombs = dCombs.concat(dc);
+    }
+    //iterate over combinations, increment count for unique key
+    //include empty set for opposing team (current picks data)
+    //t0, t1 are ordered lexicographically
+    //format: t0:t1:winner
+    //::0
+    //::1
+    //1::0
+    //1::1
+    //1:2:0
+    //when searching, take as input t0, t1 and retrieve data for both values of t0win
+    rCombs.forEach(function (t0)
+    {
+        dCombs.forEach(function (t1)
+        {
+            var key = matchupToString(t0, t1, match.radiant_win);
+            result.push(key);
+        });
+    });
+    return result;
+}
 module.exports = {
-    tokenize: tokenize,
-    generateJob: generateJob,
-    getData: getData,
-    convert32to64: convert32to64,
-    convert64to32: convert64to32,
-    isRadiant: isRadiant,
-    mergeObjects: mergeObjects,
-    mode: mode,
-    generatePositionData: generatePositionData,
-    getParseSchema: getParseSchema,
-    isSignificant: isSignificant,
-    max: max,
-    min: min,
-    getAggs: getAggs,
-    reduceAggregable: reduceAggregable,
-    serialize: serialize,
-    getAlphaHeroes: getAlphaHeroes,
-    prettyPrint: prettyPrint,
-    getStartOfBlockHours: getStartOfBlockHours,
-    percentToTextClass: percentToTextClass,
-    average: average,
-    stdDev: stdDev,
-    median: median,
+    tokenize,
+    generateJob,
+    getData,
+    convert32to64,
+    convert64to32,
+    isRadiant,
+    mergeObjects,
+    mode,
+    generatePositionData,
+    getParseSchema,
+    isSignificant,
+    max,
+    min,
+    getAggs,
+    reduceAggregable,
+    serialize,
+    getAlphaHeroes,
+    prettyPrint,
+    getStartOfBlockHours,
+    percentToTextClass,
+    average,
+    stdDev,
+    median,
     deserialize,
+    getPatchIndex,
+    buildReplayUrl,
+    expectedWin,
+    matchupToString,
+    groupToString,
+    kCombinations,
+    generateMatchups,
 };

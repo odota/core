@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h3 TI6 Predictions 
+    small Based on premium/professional league match data since July 1
+  .row
+    each val, key in predictions
+      .col-md-3
+        h4 #{key.split("_")[0]} 
+          small #{key.split("_").slice(1).join(" ")}
+        table.table
+          tr
+            each row in val.fields
+              th=row.name === "localized_name" ? "name" : row.name
+          each row in val.rows.slice(0, 10)
+            tr
+              each val2, key2 in row
+                if isNaN(Number(val2))
+                  td=val2
+                else
+                  td=Number(Number(val2).toFixed(2))
+            

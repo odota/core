@@ -165,7 +165,7 @@ function genStats()
     }
     var data = {
         replayRequests: replayRequests,
-        uptime: (new Date() - launch) / 1000,
+        uptime: getUptime(),
         numReadyAccounts: numReadyAccounts,
         ready: numReadyAccounts === users.length,
         accounts: stats,
@@ -237,7 +237,7 @@ function getGCReplayUrl(idx, match_id, cb)
     var Dota2 = steamObj[idx].Dota2;
     console.log("[DOTA] requesting replay %s, numusers: %s, requests: %s", match_id, users.length, replayRequests);
     replayRequests += 1;
-    if (replayRequests >= 500 && config.NODE_ENV !== "development")
+    if (replayRequests >= 500 && getUptime() > 600 && config.NODE_ENV !== "development")
     {
         selfDestruct();
     }
@@ -252,4 +252,9 @@ function getGCReplayUrl(idx, match_id, cb)
 function selfDestruct()
 {
     process.exit(0);
+}
+
+function getUptime()
+{
+    return (new Date() - launch) / 1000;
 }

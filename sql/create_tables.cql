@@ -1,5 +1,3 @@
-CREATE KEYSPACE yasp WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };
-USE yasp;
 CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
   match_seq_num bigint,
@@ -60,9 +58,12 @@ CREATE TABLE player_matches (
   times text,
   gold_t text,
   lh_t text,
+  dn_t text,
   xp_t text,
   obs_log text,
   sen_log text,
+  obs_left_log text,
+  sen_left_log text,
   purchase_log text,
   kills_log text,
   buyback_log text,
@@ -87,6 +88,11 @@ CREATE TABLE player_matches (
   multi_kills text,
   life_state text,
   damage_inflictor_received text,
+  obs_placed int,
+  sen_placed int,
+  creeps_stacked int,
+  camps_stacked int,
+  rune_pickups int,
 );
 
 CREATE TABLE player_caches (
