@@ -231,25 +231,7 @@ function runParse(match, job, cb)
     bz.stdin.on('error', exit);
     bz.stdout.on('error', exit);
     inStream.pipe(bz.stdin);
-    /*
-    var parser = spawn("java", [
-        "-jar",
-        "-Xmx128m",
-        "./java_parser/target/stats-0.1.0.jar",
-        ],
-    {
-        stdio: ['pipe', 'pipe', 'pipe'],
-        encoding: 'utf8'
-    });
-    parser.stdin.on('error', exit);
-    parser.stdout.on('error', exit);
-    parser.stderr.on('data', function printStdErr(data)
-    {
-        console.log(data.toString());
-    });
-    bz.stdout.pipe(parser.stdin);
-    */
-    var parser = request.post('http://localhost:'+config.PARSE_SERVER_PORT);
+    var parser = request.post('http://localhost:'+config.PARSE_SERVER_PORT).on('error', exit);
     bz.stdout.pipe(parser);
     const parseStream = readline.createInterface(
     {
@@ -257,17 +239,24 @@ function runParse(match, job, cb)
     });
     parseStream.on('line', function handleStream(e)
     {
-        e = JSON.parse(e);
-        if (e.type === 'epilogue')
+        try 
         {
-            console.log('received epilogue');
-            incomplete = false;
-            parseStream.close();
-            exit();
+            e = JSON.parse(e);
+            if (e.type === 'epilogue')
+            {
+                console.log('received epilogue');
+                incomplete = false;
+                parseStream.close();
+                exit();
+            }
+            entries.push(e);
         }
-        entries.push(e);
+        catch (err)
+        {
+            exit(err);
+        }
     });
-    request.debug = true;
+    //request.debug = true;
 
     function exit(err)
     {
