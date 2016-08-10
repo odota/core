@@ -643,7 +643,7 @@ function prettyPrint(str)
 function getStartOfBlockHours(size, offset)
 {
     offset = offset || 0;
-    var blockS = size * 60 * 60;
+    const blockS = size * 60 * 60;
     return (Math.floor(((new Date() / 1000 + (offset * blockS)) / blockS)) * blockS).toFixed(0);
 }
 
@@ -737,8 +737,136 @@ function getPatchIndex(start_time)
 
 function buildReplayUrl(match_id, cluster, replay_salt)
 {
-    var suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
+    const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
     return "http://replay" + cluster + ".valve.net/570/" + match_id + "_" + replay_salt + suffix;
+}
+
+function expectedWin(rates)
+{
+    //simple implementation, average
+    //return rates.reduce((prev, curr) => prev + curr)) / hids.length;
+    //advanced implementation, asymptotic
+    //https://github.com/yasp-dota/yasp/issues/959
+    //return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
+    return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
+}
+
+function matchupToString(t0, t1, t0win)
+{
+    //create sorted strings of each team
+    var rcg = groupToString(t0);
+    var dcg = groupToString(t1);
+    var suffix = '0';
+    if (rcg <= dcg)
+    {
+        suffix = t0win ? '0' : '1';
+        return rcg + ':' + dcg + ':' + suffix;
+    }
+    else
+    {
+        suffix = t0win ? '1' : '0';
+        return dcg + ':' + rcg + ':' + suffix;
+    }
+}
+
+function groupToString(g)
+{
+    return g.sort(function (a, b)
+    {
+        return a - b;
+    }).join(',');
+}
+
+function kCombinations(arr, k)
+{
+    var i, j, combs, head, tailcombs;
+    if (k > arr.length || k <= 0)
+    {
+        return [];
+    }
+    if (k === arr.length)
+    {
+        return [arr];
+    }
+    if (k == 1)
+    {
+        combs = [];
+        for (i = 0; i < arr.length; i++)
+        {
+            combs.push([arr[i]]);
+        }
+        return combs;
+    }
+    // Assert {1 < k < arr.length}
+    combs = [];
+    for (i = 0; i < arr.length - k + 1; i++)
+    {
+        head = arr.slice(i, i + 1);
+        //recursively get all combinations of the remaining array
+        tailcombs = kCombinations(arr.slice(i + 1), k - 1);
+        for (j = 0; j < tailcombs.length; j++)
+        {
+            combs.push(head.concat(tailcombs[j]));
+        }
+    }
+    return combs;
+}
+
+function generateMatchups(match)
+{
+    var radiant = [];
+    var dire = [];
+    //start with empty arrays for the choose 0 case
+    var rCombs = [
+        []
+    ];
+    var dCombs = [
+        []
+    ];
+    const result = [];
+    for (var i = 0; i < match.players.length; i++)
+    {
+        var p = match.players[i];
+        if (p.hero_id === 0)
+        {
+            //exclude this match if any hero is 0
+            return;
+        }
+        if (isRadiant(p))
+        {
+            radiant.push(p.hero_id);
+        }
+        else
+        {
+            dire.push(p.hero_id);
+        }
+    }
+    for (var i = 1; i < 6; i++)
+    {
+        var rc = kCombinations(radiant, i);
+        var dc = kCombinations(dire, i);
+        rCombs = rCombs.concat(rc);
+        dCombs = dCombs.concat(dc);
+    }
+    //iterate over combinations, increment count for unique key
+    //include empty set for opposing team (current picks data)
+    //t0, t1 are ordered lexicographically
+    //format: t0:t1:winner
+    //::0
+    //::1
+    //1::0
+    //1::1
+    //1:2:0
+    //when searching, take as input t0, t1 and retrieve data for both values of t0win
+    rCombs.forEach(function (t0)
+    {
+        dCombs.forEach(function (t1)
+        {
+            var key = matchupToString(t0, t1, match.radiant_win);
+            result.push(key);
+        });
+    });
+    return result;
 }
 module.exports = {
     tokenize,
@@ -767,4 +895,9 @@ module.exports = {
     deserialize,
     getPatchIndex,
     buildReplayUrl,
+    expectedWin,
+    matchupToString,
+    groupToString,
+    kCombinations,
+    generateMatchups,
 };

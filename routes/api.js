@@ -831,8 +831,35 @@ module.exports = function (db, redis, cassandra)
             }
         }).catch(cb);
     });
-    //TODO implement
-    api.get('/picks/:n');
+    api.get('/matchups', function (req, res, cb)
+    {
+        //accept as input two arrays of up to 5
+        var t0 = [].concat(req.query.t0 || []).slice(0, 5);
+        var t1 = [].concat(req.query.t1 || []).slice(0, 5);
+        //return wins of each team
+        async.parallel(
+        {
+            t0: function (cb)
+            {
+                redis.hget('matchups', utility.matchupToString(t0, t1, true), cb);
+            },
+            t1: function (cb)
+            {
+                redis.hget('matchups', utility.matchupToString(t0, t1, false), cb);
+            }
+        }, function (err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(
+            {
+                t0: Number(result.t0) || 0,
+                t1: Number(result.t1) || 0,
+            });
+        });
+    });
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     return api;

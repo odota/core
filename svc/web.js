@@ -77,6 +77,29 @@ app.locals.basedir = __dirname + '/../views';
 app.locals.prettyPrint = utility.prettyPrint;
 app.locals.percentToTextClass = utility.percentToTextClass;
 app.locals.getAggs = utility.getAggs;
+app.locals.navbar_pages = {
+  "request": {
+    "name": "Request"
+  },
+  "rankings": {
+    "name": "Rankings"
+  },
+  "benchmarks": {
+    "name": "Benchmarks"
+  },
+  "distributions": {
+    "name": "Distributions"
+  },
+  "mmstats": {
+    "name": "MMStats"
+  },
+  "carry": {
+    "name": "Carry"
+  },
+  "search": {
+    "name": "Search"
+  }
+};
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function (req, res)
 {
@@ -250,39 +273,6 @@ app.use('/distributions', function (req, res, cb)
             return cb(err);
         }
         res.render('distributions', result);
-    });
-});
-app.get('/picks/:n?', function (req, res, cb)
-{
-    var length = Number(req.params.n || 1);
-    var limit = 1000;
-    queries.getPicks(redis,
-    {
-        length: length,
-        limit: limit
-    }, function (err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        res.render('picks',
-        {
-            total: result.total,
-            picks: result.entries,
-            n: length,
-            limit: limit,
-            tabs:
-            {
-                1: "Monads",
-                2: "Dyads",
-                3: "Triads",
-                /*
-                4: "Tetrads",
-                5: "Pentads"
-                */
-            }
-        });
     });
 });
 app.get('/rankings/:hero_id?', function (req, res, cb)
