@@ -1,4 +1,3 @@
-- constants.navbar_pages.api = { "name": "API", "path": "//swagger.yasp.co"}
 .container
   .navbar(style="margin-bottom:0px")
     .navbar-header
@@ -13,7 +12,6 @@
         each val, key in navbar_pages
           if !val.hide || config.NODE_ENV === "development"
             li(id='nav-#{key}'): a(href=val.path || ("/"+key), class=val["new-feature"] ? "new-feature" : "")=val.name
-
       ul.nav.navbar-nav.navbar-right
         if user
           li: a(href="/players/"+user.account_id) Profile

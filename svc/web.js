@@ -78,27 +78,49 @@ app.locals.prettyPrint = utility.prettyPrint;
 app.locals.percentToTextClass = utility.percentToTextClass;
 app.locals.getAggs = utility.getAggs;
 app.locals.navbar_pages = {
-  "request": {
-    "name": "Request"
-  },
-  "rankings": {
-    "name": "Rankings"
-  },
-  "benchmarks": {
-    "name": "Benchmarks"
-  },
-  "distributions": {
-    "name": "Distributions"
-  },
-  "mmstats": {
-    "name": "MMStats"
-  },
-  "carry": {
-    "name": "Carry"
-  },
-  "search": {
-    "name": "Search"
-  }
+    "request":
+    {
+        "name": "Request"
+    },
+    "rankings":
+    {
+        "name": "Rankings"
+    },
+    "benchmarks":
+    {
+        "name": "Benchmarks"
+    },
+    "distributions":
+    {
+        "name": "Distributions"
+    },
+    "mmstats":
+    {
+        "name": "MMStats"
+    },
+    "search":
+    {
+        "name": "Search",
+    },
+    "status":
+    {
+        "name": "Status",
+    },
+    "blog":
+    {
+        "name": "Blog",
+        "path": "//blog.yasp.co"
+    },
+    "api":
+    {
+        "name": "API",
+        "path": "//swagger.yasp.co",
+        "new-feature": true,
+    },
+    "carry":
+    {
+        "name": "Carry"
+    },
 };
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function (req, res)
