@@ -156,7 +156,6 @@ function insertUploadedParse(match, cb)
         computeMatchData(p);
     });
     computeMatchData(match);
-    renderMatch(match);
     benchmarkMatch(redis, match, function (err)
     {
         if (err)
