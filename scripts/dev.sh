@@ -5,7 +5,7 @@ sudo docker run -v $(pwd):/usr/src/yasp -di --name yasp --net=host yasp/yasp:lat
 #Start the external dependencies in separate containers.
 sudo docker run -d --name postgres --net=host postgres:9.5
 sudo docker run -d --name redis --net=host redis:3
-sudo docker run -d --name cassandra --net=host cassandra:3
+sudo docker run -d --name cassandra --net=host -e "CASSANDRA_LISTEN_ADDRESS=127.0.0.1" cassandra:3
 #Create Postgres DB
 sudo docker exec -i postgres psql -U postgres < sql/init.sql
 #Create Postgres tables
