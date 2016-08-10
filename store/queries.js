@@ -677,112 +677,6 @@ function getDistributions(redis, cb)
     });
 }
 
-function getPicks(redis, options, cb)
-{
-    var length = options.length;
-    var limit = options.limit;
-    var single_rates = {};
-    //look up total
-    redis.get('picks_match_count', function (err, total)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        //get singles games/wins for composite computation
-        async.parallel(
-        {
-            "picks": function (cb)
-            {
-                async.map(Object.keys(constants.heroes), function (hero_id, cb)
-                {
-                    redis.zscore('picks_counts:1', hero_id, cb);
-                }, cb);
-            },
-            "wins": function (cb)
-            {
-                async.map(Object.keys(constants.heroes), function (hero_id, cb)
-                {
-                    redis.zscore('picks_wins_counts:1', hero_id, cb);
-                }, cb);
-            }
-        }, function (err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            Object.keys(constants.heroes).forEach(function (hero_id, i)
-            {
-                single_rates[hero_id] = {
-                    pick_rate: Number(result.picks[i]) / total,
-                    win_rate: Number(result.wins[i]) / Number(result.picks[i])
-                };
-            });
-            //get top 1000 picks for current length
-            redis.zrevrangebyscore('picks_counts:' + length, "inf", "-inf", "WITHSCORES", "LIMIT", "0", limit, function (err, rows)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                var entries = rows.map(function (r, i)
-                {
-                    return {
-                        key: r,
-                        games: rows[i + 1]
-                    };
-                }).filter(function (r, i)
-                {
-                    return i % 2 === 0;
-                });
-                //look up wins
-                async.each(entries, function (entry, cb)
-                {
-                    entry.pickrate = entry.games / total;
-                    var hids = entry.key.split(',');
-                    entry.expected_pick = hids.map(function (hero_id)
-                    {
-                        return single_rates[hero_id].pick_rate;
-                    }).reduce((prev, curr) => prev * curr) / hids.length;
-                    entry.expected_win = expectedWin(hids.map(function (hero_id)
-                    {
-                        return single_rates[hero_id].win_rate;
-                    }));
-                    redis.zscore('picks_wins_counts:' + length, entry.key, function (err, score)
-                    {
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        entry.wins = Number(score);
-                        entry.winrate = entry.wins / entry.games;
-                        cb(err);
-                    });
-                }, function (err)
-                {
-                    return cb(err,
-                    {
-                        total: Number(total),
-                        n: length,
-                        entries: entries
-                    });
-                });
-            });
-        });
-    });
-}
-
-function expectedWin(rates)
-{
-    //simple implementation, average
-    //return rates.reduce((prev, curr) => prev + curr)) / hids.length;
-    //advanced implementation, asymptotic
-    //https://github.com/yasp-dota/yasp/issues/959
-    //return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
-    return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
-}
-
 function getProPlayers(db, redis, cb)
 {
     db.raw(`
@@ -1194,7 +1088,6 @@ module.exports = {
     insertPlayerRating,
     insertMatchSkill,
     getDistributions,
-    getPicks,
     getProPlayers,
     getHeroRankings,
     getBenchmarks,
