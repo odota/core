@@ -14,8 +14,8 @@ install: true
 before_script:
 - sudo service postgresql stop
 - docker run -d --privileged --name postgres --restart=always --net=host postgres:9.5
-- docker run -d --privileged --name redis --restart=always --net=host redis:3
-- docker run -d --privileged --name cassandra --restart=always --net=host cassandra:3
+- docker run -d --name redis --restart=always --net=host redis:3
+- docker run -d --name cassandra --restart=always --net=host cassandra:3
 - docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
 script:
 # run test outside container
