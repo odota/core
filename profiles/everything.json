@@ -4,7 +4,7 @@
       "script": "svc/skill.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -12,7 +12,7 @@
       "script": "svc/mmr.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -20,7 +20,7 @@
       "script": "svc/profiler.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -28,7 +28,7 @@
       "script": "svc/scanner.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -36,7 +36,7 @@
       "script": "svc/worker.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -44,7 +44,7 @@
       "script": "svc/fullhistory.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -52,7 +52,7 @@
       "script": "svc/requests.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -60,7 +60,7 @@
       "script": "svc/cacher.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -68,7 +68,7 @@
       "script": "svc/monitor.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -76,7 +76,7 @@
       "script": "svc/backupscanner.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },

@@ -20,7 +20,7 @@
       "script": "svc/requests.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
