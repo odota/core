@@ -1,7 +1,7 @@
 mixin ad(type)
   if Number(cheese || 0) < Number(config.GOAL || 0)
     if type==="banner1"
-      style #eblur img { display: block; margin: 0 auto; }
+      style #eblur img { display: block; margin: 0 auto; max-width: 100%; }
       div
         a#eblur(href='http://bit.do/yasp_banner')
           img(src='/public/images/eblur.png')
