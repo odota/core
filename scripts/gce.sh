@@ -43,7 +43,7 @@ gcloud compute instance-templates delete -q backend-1
 gcloud compute instance-templates create backend-1 --machine-type n1-highcpu-4 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata startup-script='#!/bin/bash
 curl -sSL https://get.docker.com/ | sh
 sudo docker run -d --name backend --restart=always --net=host -e PROVIDER=gce -e GROUP=backend yasp/yasp:latest sh -c "npm start"
-sudo docker start yasp
+sudo docker start backend
 '
 gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"
 gcloud compute instance-groups managed set-autoscaling "backend-group-1" --cool-down-period "60" --max-num-replicas "1" --min-num-replicas "1" --target-cpu-utilization "0.6"
