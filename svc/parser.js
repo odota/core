@@ -60,7 +60,7 @@ app.get('/redis/:key', function (req, res, cb)
 app.listen(config.PARSER_PORT);
 //END EXPRESS
 // Start Java parse server
-var parseServer = spawn("java", ["-jar", "-Xmx256m", "./java_parser/target/stats-0.1.0.jar", config.PARSE_SERVER_PORT],
+var parseServer = spawn("java", ["-jar", "-Xmx256m", "./clarity/target/stats-0.1.0.jar", config.PARSE_SERVER_PORT],
 {
     stdio: ['pipe', 'pipe', 'pipe'],
     encoding: 'utf8'

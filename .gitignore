@@ -11,7 +11,7 @@ servers
 output*
 coverage
 constants*.json
-java_parser/target
+clarity/target
 /bin/
 Thumbs.db
 public/build/*
