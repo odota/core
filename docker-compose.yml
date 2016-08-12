@@ -1,5 +1,3 @@
-# Does not set up Cassandra
-
 # You don't usually need to edit this file.
 # If it does not fit your personal use case, docker-compose.override.yml is a preferred way to go.
 
@@ -9,6 +7,11 @@ services:
     build:
       context: .
       dockerfile: docker/postgres.dockerfile
+    network_mode: host
+  cassandra:
+    build:
+      context: .
+      dockerfile: docker/cassandra.dockerfile
     network_mode: host
   cache:
     image: redis:3
