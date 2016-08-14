@@ -1042,6 +1042,24 @@ app.get('/ti6predictions', function (req, res, cb)
         }
     });
 });
+app.get('/draftgame', function (req, res, cb)
+{
+    db.raw(`SELECT * from picks_bans
+    JOIN matches m
+    ON m.match_id = picks_bans.match_id
+    WHERE m.match_id > 
+    ((SELECT match_id FROM picks_bans ORDER BY match_id DESC LIMIT 1) - ?) 
+    AND is_pick IS TRUE
+    ORDER BY m.match_id
+    LIMIT 10`, [~~(Math.random() * 10000000)]).asCallback(function (err, result)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        res.render('draftgame', result);
+    });
+});
 app.get('/april/:year?', function (req, res, cb)
 {
     return res.render('plusplus',

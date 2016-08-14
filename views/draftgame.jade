@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  h3 Draft Game 
+    small Guess the winner of the match based on the draft
+  .row.text-center
+    .col-md-6
+      h3 Team 1
+      each row in rows.filter(function(r){return r.team === 0})
+        span
+          img(style="width:60px;" src=constants.heroes[row.hero_id].img)
+    .col-md-6
+      h3 Team 2
+      each row in rows.filter(function(r){return r.team === 1})
+        span
+          img(style="width:60px;" src=constants.heroes[row.hero_id].img)
+  .row.text-center
+    a(href="#" onClick="showWinner()").btn.btn-success#winner="Show Winner"
+  
+  script.
+    function showWinner(){
+      document.getElementById('winner').innerHTML = !{JSON.stringify(rows[0].radiant_win ? "Team 1" : "Team 2")};
+    }
+  
