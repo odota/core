@@ -8,7 +8,7 @@ const cassandra = require('../store/cassandra');
 const queries = require('../store/queries');
 const insertMatch = queries.insertMatch;
 const config = require('../config');
-const PARALLELISM = config.STEAM_API_HOST.split(',').length * 10;
+const PARALLELISM = config.STEAM_API_HOST.split(',').length * 8;
 const delay = 1000;
 start();
 
