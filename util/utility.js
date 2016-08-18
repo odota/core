@@ -251,7 +251,7 @@ function getData(url, cb)
                 }
                 else
                 {
-                    console.error("invalid response, retrying: %s", target);
+                    console.error("[INVALID] status: %s, retrying: %s", res.statusCode, target);
                     return getData(url, cb);
                 }
             }
