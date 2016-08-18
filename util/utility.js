@@ -252,7 +252,11 @@ function getData(url, cb)
                 else
                 {
                     console.error("[INVALID] status: %s, retrying: %s", res.statusCode, target);
-                    return getData(url, cb);
+                    var backoff = res.statusCode === 429 ? 1000 : 0;
+                    setTimeout(function()
+                    {
+                        getData(url, cb);
+                    }, backoff);
                 }
             }
             else if (body.result)
