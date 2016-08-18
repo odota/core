@@ -73,6 +73,7 @@ Getting Help
 * The following blog posts may help you understand the codebase/architecture:
   * General Learnings: https://blog.yasp.co/2016/05/13/learnings/
   * Architecture: https://blog.yasp.co/2016/05/15/architecture/
+  * Deployment/Infrastructure: https://blog.yasp.co/2016/08/10/deployment/
 
 Help Wanted
 ----
