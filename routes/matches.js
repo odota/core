@@ -34,7 +34,7 @@ module.exports = function(db, redis, cassandra)
                 route: info,
                 match: match,
                 tabs: matchPages,
-                title: "Match " + match.match_id + " - YASP"
+                title: "Match " + match.match_id
             });
         });
     });

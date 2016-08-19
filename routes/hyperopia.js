@@ -233,7 +233,7 @@ module.exports = function(db)
                             "DOTA_UNIT_ORDER_PING_ABILITY": "Pings (Ability)",
                             //"DOTA_UNIT_ORDER_MOVE_TO_DIRECTION": "Move (D)"
                         },
-                        title: "Match " + match.match_id + " - YASP"
+                        title: "Match " + match.match_id
                     });
         })
     });

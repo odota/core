@@ -26,7 +26,7 @@ try {
 
 }
 
-var fileName = path.join(filePath, "yasp-dump-" + moment().format("YYYY-MM-DD") + ".json.gz");
+var fileName = path.join(filePath, "dump-" + moment().format("YYYY-MM-DD") + ".json.gz");
 
 try {
     var stat = fs.statSync(fileName);

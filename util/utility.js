@@ -746,7 +746,6 @@ function expectedWin(rates)
     //simple implementation, average
     //return rates.reduce((prev, curr) => prev + curr)) / hids.length;
     //advanced implementation, asymptotic
-    //https://github.com/yasp-dota/yasp/issues/959
     //return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
     return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
 }
