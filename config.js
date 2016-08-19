@@ -50,8 +50,8 @@ var defaults = {
     "PARSER_PARALLELISM": 1,
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "BENCHMARK_RETENTION_HOURS": 1, //hours in block to retain benchmark data for percentile
-    "MATCH_RATING_RETENTION_HOURS": 12, //hours in block to retain match rating data for percentile
-    "ABILITY_UPGRADE_RETENTION_HOURS": 12, //hours to retain match ability upgrade data
+    "MATCH_RATING_RETENTION_HOURS": 24, //hours in block to retain match rating data for percentile
+    "ABILITY_UPGRADE_RETENTION_HOURS": 6, //hours to retain match ability upgrade data
     "PROVIDER": "", //The cloud provider used by the application (determines how environment data is downloaded)
     "UI_HOST": "", //The host of the UI, redirect traffic from / and /return here
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
