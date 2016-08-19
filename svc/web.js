@@ -77,6 +77,12 @@ app.locals.basedir = __dirname + '/../views';
 app.locals.prettyPrint = utility.prettyPrint;
 app.locals.percentToTextClass = utility.percentToTextClass;
 app.locals.getAggs = utility.getAggs;
+app.locals.constants.abilities.attribute_bonus = {
+  dname: "Attribute Bonus",
+  img: '/public/images/Stats.png',
+  attrib: "+2 All Attributes"
+};
+//APP middleware
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function (req, res)
 {
