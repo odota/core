@@ -8,7 +8,7 @@ const cassandra = require('../store/cassandra');
 const queries = require('../store/queries');
 const insertMatch = queries.insertMatch;
 const config = require('../config');
-const PARALLELISM = config.STEAM_API_HOST.split(',').length * 2;
+const parallelism = Math.min(10, api_keys.length);
 const delay = 1000;
 start();
 
@@ -24,7 +24,7 @@ function start(err)
     {
       throw err;
     }
-    async.eachLimit(Object.keys(result.trackedPlayers), PARALLELISM, processPlayer, start);
+    async.eachLimit(Object.keys(result.trackedPlayers), parallelism, processPlayer, start);
   });
 }
 
