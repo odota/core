@@ -251,8 +251,12 @@ function getData(url, cb)
                 }
                 else
                 {
-                    console.error("invalid response, retrying: %s", target);
-                    return getData(url, cb);
+                    console.error("[INVALID] status: %s, retrying: %s", res.statusCode, target);
+                    var backoff = res.statusCode === 429 ? 1000 : 0;
+                    return setTimeout(function()
+                    {
+                        getData(url, cb);
+                    }, backoff);
                 }
             }
             else if (body.result)
