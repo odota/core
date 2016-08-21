@@ -9,7 +9,7 @@ const queries = require('../store/queries');
 const insertMatch = queries.insertMatch;
 const config = require('../config');
 const api_keys = config.STEAM_API_KEY.split(',');
-const api_hosts = config.API_HOST.split(',');
+const api_hosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(api_hosts.length * 4, api_keys.length);
 const delay = 1000;
 start();
