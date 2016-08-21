@@ -466,6 +466,10 @@ function insertMatch(db, redis, match, options, cb)
         {
             redis.zadd("parser", moment().format('X'), match.match_id);
         }
+        if (options.origin === 'scanner')
+        {
+            redis.zadd("added_match", moment().format('X'), match.match_id);
+        }
         return cb();
     }
 

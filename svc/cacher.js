@@ -2,18 +2,19 @@
  * Worker to handle counting and caching tasks performed when a match is inserted or parsed.
  * All operations in this worker should deal with ephemeral data (can be reconstructed from persistent data stores)
  **/
-var constants = require('dotaconstants');
-var config = require('../config');
-var redis = require('../store/redis');
-var queue = require('../store/queue');
-var queries = require('../store/queries');
-var utility = require('../util/utility');
-var benchmarks = require('../util/benchmarks');
-var cQueue = queue.getQueue('cache');
-var moment = require('moment');
-var async = require('async');
-var getMatchRating = queries.getMatchRating;
-cQueue.process(10, processCache);
+const constants = require('dotaconstants');
+const config = require('../config');
+const redis = require('../store/redis');
+//const cassandra = require('../store/cassandra');
+const queue = require('../store/queue');
+const queries = require('../store/queries');
+const utility = require('../util/utility');
+const benchmarks = require('../util/benchmarks');
+const cQueue = queue.getQueue('cache');
+const moment = require('moment');
+const async = require('async');
+const getMatchRating = queries.getMatchRating;
+cQueue.process(20, processCache);
 cQueue.on('completed', function (job)
 {
     job.remove();
@@ -47,34 +48,26 @@ function processCache(job, cb)
                 return cb();
             }
         },
-        "incrCounts": function (cb)
+        "updateMatchups": function (cb)
         {
-            try
+            if (match.origin === "scanner")
             {
-                if (match.origin === "scanner")
-                {
-                    incrCounts(match);
-                }
-                cb();
+                return updateMatchups(match, cb);
             }
-            catch (e)
+            else
             {
-                return cb(e);
+                cb();
             }
         },
         "updateBenchmarks": function (cb)
         {
-            try
+            if (match.origin === "scanner")
             {
-                if (match.origin === "scanner")
-                {
-                    updateBenchmarks(match);
-                }
-                cb();
+                updateBenchmarks(match, cb);
             }
-            catch (e)
+            else
             {
-                return cb(e);
+                cb();
             }
         }
     }, function (err)
@@ -87,17 +80,14 @@ function processCache(job, cb)
     });
 }
 
-function incrCounts(match)
+function updateMatchups(match, cb)
 {
-    //count match for telemetry
-    redis.zadd("added_match", moment().format('X'), match.match_id);
-    //increment picks
-    /*
-    utility.generateMatchups(match).forEach(function (key)
+    async.each(utility.generateMatchups(match, 4), function (key, cb)
     {
-        redis.hincrby('matchups', key, 1);
-    });
-    */
+        //db.raw(`INSERT INTO matchups (matchup, num) VALUES (?, 1) ON CONFLICT(matchup) DO UPDATE SET num = matchups.num + 1`, [key]).asCallback(cb);
+        //cassandra.execute(`UPDATE matchups SET num = num + 1 WHERE matchup = ?`, [key], {prepare: true}, cb);
+        redis.hincrby('matchups', key, 1, cb);
+    }, cb);
 }
 
 function updateRankings(match, cb)
@@ -130,7 +120,7 @@ function updateRankings(match, cb)
     });
 }
 
-function updateBenchmarks(match)
+function updateBenchmarks(match, cb)
 {
     for (var i = 0; i < match.players.length; i++)
     {
@@ -152,6 +142,7 @@ function updateBenchmarks(match)
             }
         }
     }
+    return cb();
 }
 
 function updateMatchRating(match, cb)

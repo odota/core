@@ -815,8 +815,9 @@ function kCombinations(arr, k)
     return combs;
 }
 
-function generateMatchups(match)
+function generateMatchups(match, max)
 {
+    max = max || 5;
     var radiant = [];
     var dire = [];
     //start with empty arrays for the choose 0 case
@@ -844,7 +845,7 @@ function generateMatchups(match)
             dire.push(p.hero_id);
         }
     }
-    for (var i = 1; i < 6; i++)
+    for (var i = 1; i < (max + 1); i++)
     {
         var rc = kCombinations(radiant, i);
         var dc = kCombinations(dire, i);
