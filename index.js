@@ -1,5 +1,5 @@
 /**
- * Deployment entry point for the application.
+ * Entry point for the application.
  **/
 var args = process.argv.slice(2);
 var group = args[0] || process.env.GROUP;

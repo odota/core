@@ -8,6 +8,7 @@ var cassandra = require('../store/cassandra');
 var utility = require('../util/utility');
 var request = require('request');
 var api_key = config.STEAM_API_KEY.split(',')[0];
+var failing_account_id;
 var health = {
     random_player: function random_player(cb)
     {
@@ -21,9 +22,14 @@ var health = {
             {
                 return cb();
             }
-            request(config.ROOT_URL + "/api/players/" + result.rows[0].account_id, function (err, resp, body)
+            request(config.ROOT_URL + "/api/players/" + (failing_account_id || result.rows[0].account_id), function (err, resp, body)
             {
                 var fail = err || resp.statusCode !== 200;
+                if (fail)
+                {
+                    failing_account_id = result.rows[0].account_id;
+                    console.log('[FAILING] account_id %s', failing_account_id);
+                }
                 return cb(fail,
                 {
                     metric: Number(fail),

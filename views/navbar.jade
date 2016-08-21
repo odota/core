@@ -1,4 +1,3 @@
-- constants.navbar_pages.ti6predictions = { "name": "TI6 Predictions", "new-feature": true }
 .container
   .navbar(style="margin-bottom:0px")
     .navbar-header
@@ -10,7 +9,7 @@
           span.icon-bar
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav
-        each val, key in constants.navbar_pages
+        each val, key in navbar_pages
           if !val.hide || config.NODE_ENV === "development"
             li(id='nav-#{key}'): a(href="/"+key, class=val["new-feature"] ? "new-feature" : "")=val.name
 

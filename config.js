@@ -40,8 +40,8 @@ var defaults = {
     "GOAL": 5, //The cheese goal
     "PROXY_URLS": "", //comma separated list of proxy urls to use
     "STEAM_API_HOST": "api.steampowered.com", //the list of hosts to fetch Steam API data from
-    "ROLE": "", //for specifying the file that should be run when deploy.js is invoked
-    "GROUP": "", //for specifying the group of apps that should be run when deploy.js is invoked
+    "ROLE": "", //for specifying the file that should be run when entry point is invoked
+    "GROUP": "", //for specifying the group of apps that should be run when entry point is invoked
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
     "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)

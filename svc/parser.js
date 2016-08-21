@@ -5,7 +5,7 @@
  * This object is passed to insertMatch to persist the data into the database.
  **/
 var utility = require('../util/utility');
-var getReplayUrl = require('../util/getReplayUrl');
+var getGCData = require('../util/getGCData');
 var config = require('../config');
 var db = require('../store/db');
 var redis = require('../store/redis');
@@ -60,21 +60,26 @@ app.get('/redis/:key', function (req, res, cb)
 app.listen(config.PARSER_PORT);
 //END EXPRESS
 // Start Java parse server
-var parseServer = spawn("java", ["-jar", "-Xmx256m", "./java_parser/target/stats-0.1.0.jar", config.PARSE_SERVER_PORT],
+var parseServer = spawn("java", ["-jar", "-Xmx256m", "./clarity/target/stats-0.1.0.jar", config.PARSE_SERVER_PORT],
 {
     stdio: ['pipe', 'pipe', 'pipe'],
     encoding: 'utf8'
 });
 parseServer.stderr.on('data', function printStdErr(data)
 {
+    if (config.NODE_ENV === 'development')
+    {
+        //require('fs').appendFileSync('./parser.log', data);
+    }
     console.log(data.toString());
 });
 parseServer.on('exit', function ()
 {
     throw new Error("restarting due to parse server exit");
 });
-process.on('exit', function(){
-   parseServer.kill(); 
+process.on('exit', function ()
+{
+    parseServer.kill();
 });
 pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
 {
@@ -91,7 +96,7 @@ pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
             }
             else
             {
-                getReplayUrl(db, redis, match, cb);
+                getGCData(db, redis, match, cb);
             }
         },
         "runParse": function (cb)
@@ -231,7 +236,7 @@ function runParse(match, job, cb)
     bz.stdin.on('error', exit);
     bz.stdout.on('error', exit);
     inStream.pipe(bz.stdin);
-    var parser = request.post('http://localhost:'+config.PARSE_SERVER_PORT).on('error', exit);
+    var parser = request.post('http://localhost:' + config.PARSE_SERVER_PORT).on('error', exit);
     bz.stdout.pipe(parser);
     const parseStream = readline.createInterface(
     {
@@ -239,7 +244,7 @@ function runParse(match, job, cb)
     });
     parseStream.on('line', function handleStream(e)
     {
-        try 
+        try
         {
             e = JSON.parse(e);
             if (e.type === 'epilogue')
@@ -257,7 +262,6 @@ function runParse(match, job, cb)
         }
     });
     //request.debug = true;
-
     function exit(err)
     {
         if (exited)
