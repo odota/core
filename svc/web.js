@@ -183,12 +183,17 @@ app.use(function getMetadata(req, res, cb)
         cheese: function (cb)
         {
             redis.get("cheese_goal", cb);
+        },
+        pvgna: function(cb)
+        {
+            redis.get("pvgna", cb);
         }
     }, function (err, results)
     {
         res.locals.user = req.user;
         res.locals.banner_msg = results.banner;
         res.locals.cheese = results.cheese;
+        res.locals.pvgna = JSON.parse(results.pvgna);
         return cb(err);
     });
 });

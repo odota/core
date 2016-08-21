@@ -20,6 +20,16 @@ sqlq.forEach(function (f)
     sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
 });
 console.log("[WORKER] starting worker");
+invokeInterval(function getPvgnaAPI(cb) {
+    utility.getData('https://pvgna.com/yasp', function (err, guides)
+    {
+        if (err) {
+            return cb(err);
+        }
+        console.log(guides);
+        redis.set("pvgna", JSON.stringify(guides));
+    });
+}, 60 * 60 * 1000 * 24) //Once every day
 invokeInterval(function doBuildSets(cb)
 {
     buildSets(db, redis, cb);

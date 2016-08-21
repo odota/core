@@ -5,6 +5,8 @@ mixin hero_td(player, metadata)
     .img-text.img-text-lg(style="float:initial;")
       if hero
         img.img-md(src=hero.img, title="#{hero.localized_name}", style="border-left-color:#{slot_color}").player-color
+        if pvgna && pvgna[hero.id]
+          a(href=pvgna[hero.id]["url"]) test
       else
         =player.hero_id
       div(class=(player.isRadiant || player.team) ? "text-success" : "text-danger")
