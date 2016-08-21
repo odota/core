@@ -36,7 +36,7 @@ var defaults = {
     "REDIS_URL": "redis://127.0.0.1:6379/0", //connection string for Redis
     "CASSANDRA_URL": "cassandra://localhost/yasp", //connection string for Cassandra
     "RETRIEVER_HOST": "localhost:5100", //The host of the retriever (access to Dota 2 GC data)
-    "UNTRACK_DAYS": 7, //The number of days a user is tracked for after every visit
+    "UNTRACK_DAYS": 14, //The number of days a user is tracked for after every visit
     "GOAL": 5, //The cheese goal
     "PROXY_URLS": "", //comma separated list of proxy urls to use
     "STEAM_API_HOST": "api.steampowered.com", //the list of hosts to fetch Steam API data from
@@ -44,13 +44,13 @@ var defaults = {
     "GROUP": "", //for specifying the group of apps that should be run when entry point is invoked
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
-    "SCANNER_DELAY": 300, //delay for scanner API requests (more time-sensitive)
+    "SCANNER_DELAY": 500, //delay for scanner API requests (more time-sensitive)
     "SCANNER_PARALLELISM": 1, //Number of simultaneous API requests to make in scanner
-    "MMR_PARALLELISM": 15,
+    "MMR_PARALLELISM": 10,
     "PARSER_PARALLELISM": 1,
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
     "BENCHMARK_RETENTION_HOURS": 1, //hours in block to retain benchmark data for percentile
-    "MATCH_RATING_RETENTION_HOURS": 24, //hours in block to retain match rating data for percentile
+    "MATCH_RATING_RETENTION_HOURS": 12, //hours in block to retain match rating data for percentile
     "ABILITY_UPGRADE_RETENTION_HOURS": 6, //hours to retain match ability upgrade data
     "PROVIDER": "", //The cloud provider used by the application (determines how environment data is downloaded)
     "UI_HOST": "", //The host of the UI, redirect traffic from / and /return here
