@@ -92,10 +92,12 @@ function incrCounts(match)
     //count match for telemetry
     redis.zadd("added_match", moment().format('X'), match.match_id);
     //increment picks
+    /*
     utility.generateMatchups(match).forEach(function (key)
     {
         redis.hincrby('matchups', key, 1);
     });
+    */
 }
 
 function updateRankings(match, cb)
