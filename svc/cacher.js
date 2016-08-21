@@ -82,7 +82,7 @@ function processCache(job, cb)
 
 function updateMatchups(match, cb)
 {
-    async.each(utility.generateMatchups(match, 2), function (key, cb)
+    async.each(utility.generateMatchups(match, 1), function (key, cb)
     {
         //db.raw(`INSERT INTO matchups (matchup, num) VALUES (?, 1) ON CONFLICT(matchup) DO UPDATE SET num = matchups.num + 1`, [key]).asCallback(cb);
         //cassandra.execute(`UPDATE matchups SET num = num + 1 WHERE matchup = ?`, [key], {prepare: true}, cb);
