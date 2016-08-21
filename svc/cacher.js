@@ -14,7 +14,7 @@ const cQueue = queue.getQueue('cache');
 const moment = require('moment');
 const async = require('async');
 const getMatchRating = queries.getMatchRating;
-cQueue.process(40, processCache);
+cQueue.process(50, processCache);
 cQueue.on('completed', function (job)
 {
     job.remove();
@@ -125,20 +125,19 @@ function updateBenchmarks(match, cb)
     for (var i = 0; i < match.players.length; i++)
     {
         var p = match.players[i];
-        if (!p.hero_id)
+        //only do if all players have heroes
+        if (p.hero_id)
         {
-            //exclude this match
-            return;
-        }
-        for (var key in benchmarks)
-        {
-            var metric = benchmarks[key](match, p);
-            if (metric !== undefined && metric !== null && !Number.isNaN(metric))
+            for (var key in benchmarks)
             {
-                var rkey = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':');
-                redis.zadd(rkey, metric, match.match_id);
-                //expire at time two blocks later (after prev/current cycle)
-                redis.expireat(rkey, utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 2));
+                var metric = benchmarks[key](match, p);
+                if (metric !== undefined && metric !== null && !Number.isNaN(metric))
+                {
+                    var rkey = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':');
+                    redis.zadd(rkey, metric, match.match_id);
+                    //expire at time two blocks later (after prev/current cycle)
+                    redis.expireat(rkey, utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 2));
+                }
             }
         }
     }
