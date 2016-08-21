@@ -97,6 +97,10 @@ app.locals.navbar_pages = {
   },
   "search": {
     "name": "Search"
+  },
+  "become-the-gamer": {
+      "name": "In-Game Stats",
+      "sponsored": true
   }
 };
 app.locals.constants.abilities.attribute_bonus = {
@@ -351,6 +355,10 @@ app.get('/search', function (req, res, cb)
     {
         res.render('search');
     }
+});
+app.get('/become-the-gamer', function(req, res, cb)
+{
+   return res.render('btg'); 
 });
 app.get('/april/:year?', function (req, res, cb)
 {
