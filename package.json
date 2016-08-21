@@ -12,7 +12,7 @@
     "webpack": "webpack -p --bail",
     "watch": "webpack --watch",
     "mocha": "NODE_ENV=test mocha",
-    "maven": "mvn -q -f java_parser/pom.xml clean install -U",
+    "maven": "mvn -q -f clarity/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack",
     "kube": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:latest",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
@@ -74,7 +74,7 @@
     "sentiment": "2.0.0",
     "steam": "1.4.0",
     "stripe": "4.9.0",
-    "wordcloud": "1.0.5"
+    "wordcloud": "1.0.3"
   },
   "devDependencies": {
     "coveralls": "2.11.12",

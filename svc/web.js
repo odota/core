@@ -5,7 +5,6 @@
 var config = require('../config');
 var constants = require('dotaconstants');
 var utility = require('../util/utility');
-var buildSets = require('../store/buildSets');
 var redis = require('../store/redis');
 var status = require('../store/buildStatus');
 var db = require('../store/db');
@@ -122,6 +121,12 @@ app.locals.navbar_pages = {
         "name": "Carry"
     },
 };
+app.locals.constants.abilities.attribute_bonus = {
+  dname: "Attribute Bonus",
+  img: '/public/images/Stats.png',
+  attrib: "+2 All Attributes"
+};
+//APP middleware
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function (req, res)
 {

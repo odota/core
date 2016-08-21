@@ -11,7 +11,7 @@ sudo docker exec -i postgres psql -U postgres < sql/init.sql
 #Create Postgres tables
 sudo docker exec -i postgres psql -U postgres yasp < sql/create_tables.sql
 #Create Cassandra keyspace
-sudo docker exec -i cassandra cqlsh < sql/cassandra.cql
+sudo docker exec -i cassandra cqlsh < sql/init.cql
 #Create Cassandra tables
 sudo docker exec -i cassandra cqlsh -k yasp < sql/create_tables.cql
 

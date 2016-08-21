@@ -1,7 +1,6 @@
 /**
  * Webpack configuration file
  **/
-var API_URL = "https://yasp.co";
 module.exports = {
     entry:
     {

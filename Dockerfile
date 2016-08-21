@@ -108,7 +108,7 @@ ADD package.json /usr/src/yasp/
 RUN npm install
 
 # Add and build the java parser
-ADD java_parser /usr/src/yasp/java_parser
+ADD clarity /usr/src/yasp/clarity
 RUN npm run maven
 
 # Add everything else
