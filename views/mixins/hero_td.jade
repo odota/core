@@ -6,7 +6,9 @@ mixin hero_td(player, metadata)
       if hero
         img.img-md(src=hero.img, title="#{hero.localized_name}", style="border-left-color:#{slot_color}").player-color
         if pvgna && pvgna[hero.id]
-          a(href=pvgna[hero.id]["url"]) test
+          - var guide = pvgna[hero.id]
+          a(href=guide["url"], onclick="ga('send', 'event', 'Pvgna', 'click', #{hero.id})")
+            img(src='/public/images/pvgna_logo_small.png', title="Hero Guide Available! Powered by Pvgna - " + guide["title"])
       else
         =player.hero_id
       div(class=(player.isRadiant || player.team) ? "text-success" : "text-danger")
