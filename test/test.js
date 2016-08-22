@@ -304,9 +304,9 @@ describe('generateMatchups', function ()
         //in this sample match
         //1,6,52,59,105:46,73,75,100,104:1
         //dire:radiant, radiant won
-        var keys = utility.generateMatchups(details_api.result);
-        var combs = Math.pow(1 + 5 + 10 + 10 + 5 + 1, 2); //sum of 5cN for n from 0 to 5, squared to account for all pairwise matchups between both teams
-        assert.equal(keys.length, combs);
+        var keys = utility.generateMatchups(details_api.result, 5);
+        var combs5 = Math.pow(1 + 5 + 10 + 10 + 5 + 1, 2); //sum of 5cN for n from 0 to 5, squared to account for all pairwise matchups between both teams
+        assert.equal(keys.length, combs5);
         keys.forEach(function (k)
         {
             redis.hincrby('matchups', k, 1);

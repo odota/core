@@ -53,7 +53,10 @@ module.exports = function getGCData(db, redis, match, cb)
                 {
                     body.match.players.forEach(function (p)
                     {
-                        parties[p.player_slot] = p.party_id.low;
+                        if (p.party_id)
+                        {
+                            parties[p.player_slot] = p.party_id.low;
+                        }
                     });
                 }
                 // Persist GC data to database

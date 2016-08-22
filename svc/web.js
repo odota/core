@@ -120,11 +120,16 @@ app.locals.navbar_pages = {
     {
         "name": "Carry"
     },
+    "become-the-gamer":
+    {
+        "name": "In-Game Stats",
+        "sponsored": true
+    },
 };
 app.locals.constants.abilities.attribute_bonus = {
-  dname: "Attribute Bonus",
-  img: '/public/images/Stats.png',
-  attrib: "+2 All Attributes"
+    dname: "Attribute Bonus",
+    img: '/public/images/Stats.png',
+    attrib: "+2 All Attributes"
 };
 //APP middleware
 app.use(compression());
@@ -373,6 +378,10 @@ app.get('/search', function (req, res, cb)
     {
         res.render('search');
     }
+});
+app.get('/become-the-gamer', function (req, res, cb)
+{
+    return res.render('btg');
 });
 app.get('/april/:year?', function (req, res, cb)
 {
