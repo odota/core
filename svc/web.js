@@ -116,13 +116,18 @@ app.locals.navbar_pages = {
         "path": "//swagger.yasp.co",
         "new-feature": true,
     },
+    "code":
+    {
+        "name": "Code",
+        "path": "//github.com/yasp-dota/yasp"
+    },
     "carry":
     {
         "name": "Carry"
     },
     "become-the-gamer":
     {
-        "name": "In-Game Stats",
+        "name": "In-Game",
         "sponsored": true
     },
 };
