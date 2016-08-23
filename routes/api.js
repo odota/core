@@ -405,7 +405,7 @@ module.exports = function (db, redis, cassandra)
                 return cb(err);
             }
             var teammates = countPeers(cache);
-            queries.generateTeammateArrayFromHash(db, teammates,
+            queries.getPeers(db, teammates,
             {
                 account_id: req.params.account_id
             }, function (err, result)
@@ -428,7 +428,7 @@ module.exports = function (db, redis, cassandra)
                 return cb(err);
             }
             var teammates = countPeers(cache);
-            queries.generateProPlayersArrayFromHash(db, teammates,
+            queries.getProPeers(db, teammates,
             {
                 account_id: req.params.account_id
             }, function (err, result)

@@ -20,7 +20,7 @@ const reduceAggregable = utility.reduceAggregable;
 const filter = require('../util/filter');
 const compute = require('../util/compute');
 const computeMatchData = compute.computeMatchData;
-const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
+const cassandra = (config.ENABLE_CASSANDRA_MATCH_STORE_READ || config.ENABLE_CASSANDRA_MATCH_STORE_WRITE) ? require('../store/cassandra') : undefined;
 const columnInfo = {};
 const cassandraColumnInfo = {};
 
@@ -412,10 +412,7 @@ function insertMatch(db, redis, match, options, cb)
             return cb();
         }
         var copy = createMatchCopy(match, players, options);
-        insertPlayerCache(copy,
-        {
-            cassandra: options.cassandra
-        }, cb);
+        insertPlayerCache(copy, cb);
     }
 
     function updateCounts(cb)
@@ -573,9 +570,8 @@ function insertMatchSkill(db, row, cb)
     }, cb);
 }
 
-function insertPlayerCache(match, options, cb)
+function insertPlayerCache(match, cb)
 {
-    var cassandra = options && options.cassandra;
     if (cassandra)
     {
         var players = match.players;
@@ -608,9 +604,6 @@ function insertPlayerCache(match, options, cb)
                 writeCache(player_match.account_id,
                 {
                     raw: [player_match]
-                },
-                {
-                    cassandra: cassandra
                 }, cb);
             }
             else
@@ -624,9 +617,8 @@ function insertPlayerCache(match, options, cb)
         return cb();
     }
 
-    function writeCache(account_id, cache, options, cb)
+    function writeCache(account_id, cache, cb)
     {
-        var cassandra = options && options.cassandra;
         if (cassandra)
         {
             //console.log("saving player cache to cassandra %s", account_id);
@@ -982,7 +974,7 @@ function getMatchesSkill(db, matches, options, cb)
 
 function getPlayerMatches(account_id, queryObj, cb)
 {
-    if (cassandra)
+    if (config.ENABLE_CASSANDRA_MATCH_STORE_READ && cassandra)
     {
         var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', queryObj.project.join(','));
         var matches = [];
@@ -1090,13 +1082,12 @@ function getPlayer(db, account_id, cb)
     }
 }
 
-function generateTeammateArrayFromHash(db, input, player, cb)
+function getPeers(db, input, player, cb)
 {
     if (!input)
     {
         return cb();
     }
-    console.time('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
     var teammates_arr = [];
     var teammates = input;
     for (var id in teammates)
@@ -1133,12 +1124,11 @@ function generateTeammateArrayFromHash(db, input, player, cb)
         });
     }, function (err)
     {
-        console.timeEnd('[PLAYER] generateTeammateArrayFromHash ' + player.account_id);
         cb(err, teammates_arr);
     });
 }
 
-function generateProPlayersArrayFromHash(db, input, player, cb)
+function getProPeers(db, input, player, cb)
 {
     if (!input)
     {
@@ -1181,6 +1171,6 @@ module.exports = {
     getPlayer,
     getMmrEstimate,
     getMatchesSkill,
-    generateTeammateArrayFromHash,
-    generateProPlayersArrayFromHash,
+    getPeers,
+    getProPeers,
 };

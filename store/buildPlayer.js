@@ -198,11 +198,11 @@ function buildPlayer(options, cb)
                 {
                     if (info === "peers")
                     {
-                        queries.generateTeammateArrayFromHash(db, aggData.teammates, player, cb);
+                        queries.getPeers(db, aggData.teammates, player, cb);
                     }
                     else if (info === "pros")
                     {
-                        queries.generateProPlayersArrayFromHash(db, aggData.teammates, player, cb);
+                        queries.getProPeers(db, aggData.teammates, player, cb);
                     }
                     else
                     {
