@@ -145,7 +145,12 @@ pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
 });
 pQueue.on('completed', function (job)
 {
-    job.remove();
+    // Delay the removal so that the request polling has a chance to check for completion.
+    // If interrupted, the regular cleanup process in worker will take care of orphaned jobs.
+    setTimeout(function ()
+    {
+        job.remove();
+    }, 60 * 1000);
 });
 
 function insertUploadedParse(match, cb)
