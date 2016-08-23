@@ -12,7 +12,7 @@ function findPlayer(db, search, cb)
   db.first(['account_id', 'personaname', 'avatarfull']).from('players').where(search).asCallback(cb);
 }
 
-function searchPlayer(db, query, cb)
+function search(db, query, cb)
 {
   async.parallel(
   {
@@ -65,6 +65,4 @@ function searchPlayer(db, query, cb)
     cb(null, ret);
   });
 }
-module.exports = {
-  searchPlayer,
-};
+module.exports = search;
