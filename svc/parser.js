@@ -143,6 +143,10 @@ pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
         return cb(err, match.match_id);
     });
 });
+pQueue.on('completed', function (job)
+{
+    job.remove();
+});
 
 function insertUploadedParse(match, cb)
 {
