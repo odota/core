@@ -26,8 +26,7 @@ invokeInterval(function getPvgnaAPI(cb) {
         if (err) {
             return cb(err);
         }
-        console.log(guides);
-        redis.set("pvgna", JSON.stringify(guides));
+        redis.set("pvgna", JSON.stringify(guides), cb);
     });
 }, 60 * 60 * 1000 * 24) //Once every day
 invokeInterval(function doBuildSets(cb)
