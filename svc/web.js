@@ -10,7 +10,6 @@ const status = require('../store/buildStatus');
 const db = require('../store/db');
 const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
 const queries = require('../store/queries');
-const searchPlayer = require('../store/search').searchPlayer;
 const matches = require('../routes/matches');
 const hyperopia = require('../routes/hyperopia');
 const players = require('../routes/players');
@@ -335,7 +334,7 @@ app.get('/search', function (req, res, cb)
 {
     if (req.query.q)
     {
-        searchPlayer(db, req.query.q, function (err, result)
+        queries.searchPlayer(db, req.query.q, function (err, result)
         {
             if (err)
             {

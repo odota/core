@@ -13,7 +13,6 @@ var multer = require('multer')(
 const queue = require('../store/queue');
 const rQueue = queue.getQueue('request');
 const queries = require('../store/queries');
-const searchPlayer = require('../store/search').searchPlayer;
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
@@ -690,7 +689,7 @@ module.exports = function (db, redis, cassandra)
         {
             return cb(400);
         }
-        searchPlayer(db, req.query.q, function (err, result)
+        queries.searchPlayer(db, req.query.q, function (err, result)
         {
             if (err)
             {
