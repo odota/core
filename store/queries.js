@@ -1,48 +1,28 @@
 /**
  * Provides functions to get/insert data into data stores.
  **/
-var utility = require('../util/utility');
-var benchmarks = require('../util/benchmarks');
-var config = require('../config');
-var constants = require('dotaconstants');
-var queue = require('./queue');
-var playerCache = require('./playerCache');
-var readCache = playerCache.readCache;
-var addToQueue = queue.addToQueue;
-var mQueue = queue.getQueue('mmr');
-var async = require('async');
-var convert64to32 = utility.convert64to32;
-var moment = require('moment');
-var util = require('util');
-var cQueue = queue.getQueue('cache');
-var pQueue = queue.getQueue('parse');
-var updateCache = playerCache.updateCache;
-var serialize = utility.serialize;
-var columnInfo = {};
-var cassandraColumnInfo = {};
-
-function getSets(redis, cb)
-{
-    async.parallel(
-    {
-        "trackedPlayers": function (cb)
-        {
-            redis.zrange('tracked', 0, -1, function (err, ids)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                var result = {};
-                ids.forEach(function (id)
-                {
-                    result[id] = 1;
-                });
-                return cb(err, result);
-            });
-        },
-    }, cb);
-}
+const utility = require('../util/utility');
+const benchmarks = require('../util/benchmarks');
+const config = require('../config');
+const constants = require('dotaconstants');
+const queue = require('./queue');
+const addToQueue = queue.addToQueue;
+const mQueue = queue.getQueue('mmr');
+const async = require('async');
+const convert64to32 = utility.convert64to32;
+const moment = require('moment');
+const util = require('util');
+const cQueue = queue.getQueue('cache');
+const pQueue = queue.getQueue('parse');
+const serialize = utility.serialize;
+const deserialize = utility.deserialize;
+const reduceAggregable = utility.reduceAggregable;
+const filter = require('../util/filter');
+const compute = require('../util/compute');
+const computeMatchData = compute.computeMatchData;
+const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
+const columnInfo = {};
+const cassandraColumnInfo = {};
 
 function cleanRow(db, table, row, cb)
 {
@@ -427,8 +407,15 @@ function insertMatch(db, redis, match, options, cb)
 
     function updatePlayerCaches(cb)
     {
+        if (!config.ENABLE_CASSANDRA_MATCH_STORE_WRITE)
+        {
+            return cb();
+        }
         var copy = createMatchCopy(match, players, options);
-        updateCache(copy, cb);
+        insertPlayerCache(copy,
+        {
+            cassandra: options.cassandra
+        }, cb);
     }
 
     function updateCounts(cb)
@@ -585,10 +572,121 @@ function insertMatchSkill(db, row, cb)
         match_id: row.match_id
     }, cb);
 }
+
+function insertPlayerCache(match, options, cb)
+{
+    var cassandra = options && options.cassandra;
+    if (cassandra)
+    {
+        var players = match.players;
+        if (match.pgroup && players)
+        {
+            players.forEach(function (p)
+            {
+                if (match.pgroup[p.player_slot])
+                {
+                    //add account id to each player so we know what caches to update
+                    p.account_id = match.pgroup[p.player_slot].account_id;
+                    //add hero_id to each player so we update records with hero played
+                    p.hero_id = match.pgroup[p.player_slot].hero_id;
+                }
+            });
+        }
+        async.eachSeries(players, function (player_match, cb)
+        {
+            if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id)
+            {
+                //join player with match to form player_match
+                for (var key in match)
+                {
+                    if (key !== 'players')
+                    {
+                        player_match[key] = match[key];
+                    }
+                }
+                computeMatchData(player_match);
+                writeCache(player_match.account_id,
+                {
+                    raw: [player_match]
+                },
+                {
+                    cassandra: cassandra
+                }, cb);
+            }
+            else
+            {
+                return cb();
+            }
+        }, cb);
+    }
+    else
+    {
+        return cb();
+    }
+
+    function writeCache(account_id, cache, options, cb)
+    {
+        var cassandra = options && options.cassandra;
+        if (cassandra)
+        {
+            //console.log("saving player cache to cassandra %s", account_id);
+            //upsert matches into store
+            return async.each(cache.raw, function (m, cb)
+            {
+                m = serialize(reduceAggregable(m));
+                var query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(function (k)
+                {
+                    return '?';
+                }).join(','));
+                cassandra.execute(query, Object.keys(m).map(function (k)
+                {
+                    return m[k];
+                }),
+                {
+                    prepare: true
+                }, cb);
+            }, function (err)
+            {
+                if (err)
+                {
+                    console.error(err.stack);
+                }
+                return cb(err);
+            });
+        }
+        else
+        {
+            return cb();
+        }
+    }
+}
+
+function getSets(redis, cb)
+{
+    async.parallel(
+    {
+        "trackedPlayers": function (cb)
+        {
+            redis.zrange('tracked', 0, -1, function (err, ids)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                var result = {};
+                ids.forEach(function (id)
+                {
+                    result[id] = 1;
+                });
+                return cb(err, result);
+            });
+        },
+    }, cb);
+}
 /**
  * Benchmarks a match against stored data in Redis.
  **/
-function benchmarkMatch(redis, m, cb)
+function getMatchBenchmarks(redis, m, cb)
 {
     async.map(m.players, function (p, cb)
     {
@@ -731,7 +829,7 @@ function getHeroRankings(db, redis, hero_id, options, cb)
     });
 }
 
-function getBenchmarks(db, redis, options, cb)
+function getHeroBenchmarks(db, redis, options, cb)
 {
     var hero_id = options.hero_id;
     var ret = {};
@@ -819,7 +917,7 @@ function getLeaderboard(db, redis, key, n, cb)
     });
 }
 
-function mmrEstimate(db, redis, account_id, cb)
+function getMmrEstimate(db, redis, account_id, cb)
 {
     redis.lrange('mmr_estimates:' + account_id, 0, -1, function (err, result)
     {
@@ -844,71 +942,8 @@ function mmrEstimate(db, redis, account_id, cb)
         });
     });
 }
-/**
- * @param db - databse object
- * @param search - object to for where parameter of query
- * @param cb - callback
- */
-function findPlayer(db, search, cb)
-{
-    db.first(['account_id', 'personaname', 'avatarfull']).from('players').where(search).asCallback(cb);
-}
 
-function searchPlayer(db, query, cb)
-{
-    async.parallel(
-    {
-        account_id: function (callback)
-        {
-            if (Number.isNaN(Number(query)))
-            {
-                return callback();
-            }
-            else
-            {
-                findPlayer(db,
-                {
-                    account_id: Number(query)
-                }, callback);
-            }
-        },
-        personaname: function (callback)
-        {
-            db.raw(`
-                    SELECT * FROM 
-                    (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS sml 
-                    FROM players 
-                    WHERE personaname % ? 
-                    LIMIT 500) search 
-                    ORDER BY sml DESC;
-                    `, [query, query]).asCallback(function (err, result)
-            {
-                if (err)
-                {
-                    return callback(err);
-                }
-                return callback(err, result.rows);
-            });
-        }
-    }, function (err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        var ret = [];
-        for (var key in result)
-        {
-            if (result[key])
-            {
-                ret = ret.concat(result[key]);
-            }
-        }
-        cb(null, ret);
-    });
-}
-
-function fillSkill(db, matches, options, cb)
+function getMatchesSkill(db, matches, options, cb)
 {
     //fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
     console.time('[PLAYER] fillSkill');
@@ -947,8 +982,49 @@ function fillSkill(db, matches, options, cb)
 
 function getPlayerMatches(account_id, queryObj, cb)
 {
-    //TODO support reading from postgres?
-    readCache(account_id, queryObj, cb);
+    if (cassandra)
+    {
+        var query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', queryObj.project.join(','));
+        var matches = [];
+        return cassandra.stream(query, [account_id],
+        {
+            prepare: true,
+            fetchSize: 1000,
+            autoPage: true,
+        }).on('readable', function ()
+        {
+            //readable is emitted as soon a row is received and parsed
+            var m;
+            while (m = this.read())
+            {
+                m = deserialize(m);
+                if (filter([m], queryObj.filter).length)
+                {
+                    matches.push(m);
+                }
+            }
+        }).on('end', function (err)
+        {
+            //stream ended, there aren't any more rows
+            if (queryObj.sort)
+            {
+                matches.sort(function (a, b)
+                {
+                    return b[queryObj.sort] - a[queryObj.sort];
+                });
+            }
+            matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
+            return cb(err, matches);
+        }).on('error', function (err)
+        {
+            throw err;
+        });
+    }
+    else
+    {
+        //TODO support reading from postgres
+        return cb(null, []);
+    }
 }
 
 function getPlayerRatings(db, account_id, cb)
@@ -1086,26 +1162,25 @@ function generateProPlayersArrayFromHash(db, input, player, cb)
     });
 }
 module.exports = {
-    getSets,
+    upsert,
     insertPlayer,
     insertMatch,
     insertPlayerRating,
     insertMatchSkill,
+    getSets,
     getDistributions,
     getProPlayers,
     getHeroRankings,
-    getBenchmarks,
-    benchmarkMatch,
+    getHeroBenchmarks,
+    getMatchBenchmarks,
     getMatchRating,
-    upsert,
     getLeaderboard,
-    mmrEstimate,
-    searchPlayer,
-    fillSkill,
     getPlayerMatches,
     getPlayerRatings,
     getPlayerRankings,
     getPlayer,
+    getMmrEstimate,
+    getMatchesSkill,
     generateTeammateArrayFromHash,
     generateProPlayersArrayFromHash,
 };

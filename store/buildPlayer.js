@@ -15,7 +15,6 @@ var getPlayer = queries.getPlayer;
 var getPlayerMatches = queries.getPlayerMatches;
 var getPlayerRankings = queries.getPlayerRankings;
 var getPlayerRatings = queries.getPlayerRatings;
-var fillSkill = queries.fillSkill;
 //Fields to project from Cassandra player caches
 var cacheProj = ['account_id', 'match_id', 'player_slot', 'version', 'start_time', 'duration', 'game_mode', 'lobby_type', 'radiant_win', 'hero_id', 'game_mode', 'skill', 'duration', 'kills', 'deaths', 'assists', 'last_hits', 'gold_per_min'];
 var cacheFilters = ['heroes', 'hero_id', 'lane_role', 'game_mode', 'lobby_type', 'region', 'patch', 'start_time'];
@@ -152,7 +151,7 @@ function buildPlayer(options, cb)
                         });
                         //limit
                         matches = matches.slice(0, limit);
-                        fillSkill(db, matches, options, cb);
+                        queries.getMatchesSkill(db, matches, options, cb);
                     }
                     else
                     {
@@ -212,7 +211,7 @@ function buildPlayer(options, cb)
                 },
                 mmr_estimate: function(cb)
                 {
-                    queries.mmrEstimate(db, redis, account_id, cb);
+                    queries.getMmrEstimate(db, redis, account_id, cb);
                 },
                 ratings: function(cb)
                 {

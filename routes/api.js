@@ -13,6 +13,7 @@ var multer = require('multer')(
 const queue = require('../store/queue');
 const rQueue = queue.getQueue('request');
 const queries = require('../store/queries');
+const searchPlayer = require('../store/search').searchPlayer;
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
@@ -121,7 +122,7 @@ module.exports = function (db, redis, cassandra)
             },
             mmr_estimate: function (cb)
             {
-                queries.mmrEstimate(db, redis, account_id, cb);
+                queries.getMmrEstimate(db, redis, account_id, cb);
             },
         }, function (err, result)
         {
@@ -528,7 +529,7 @@ module.exports = function (db, redis, cassandra)
             }
             if (req.queryObj.project.indexOf('skill') !== -1)
             {
-                queries.fillSkill(db, cache,
+                queries.getMatchesSkill(db, cache,
                 {}, render);
             }
             else
@@ -660,7 +661,7 @@ module.exports = function (db, redis, cassandra)
     });
     api.get('/benchmarks', function (req, res, cb)
     {
-        queries.getBenchmarks(db, redis,
+        queries.getHeroBenchmarks(db, redis,
         {
             hero_id: req.query.hero_id
         }, function (err, result)
@@ -689,7 +690,7 @@ module.exports = function (db, redis, cassandra)
         {
             return cb(400);
         }
-        queries.searchPlayer(db, req.query.q, function (err, result)
+        searchPlayer(db, req.query.q, function (err, result)
         {
             if (err)
             {

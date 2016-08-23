@@ -30,7 +30,7 @@ var async = require('async');
 const readline = require('readline');
 var spawn = cp.spawn;
 var insertMatch = queries.insertMatch;
-var benchmarkMatch = queries.benchmarkMatch;
+var getMatchBenchmarks = queries.getMatchBenchmarks;
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 //EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
@@ -161,7 +161,7 @@ function insertUploadedParse(match, cb)
         computeMatchData(p);
     });
     computeMatchData(match);
-    benchmarkMatch(redis, match, function (err)
+    getMatchBenchmarks(redis, match, function (err)
     {
         if (err)
         {

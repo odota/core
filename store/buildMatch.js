@@ -6,7 +6,6 @@ var async = require('async');
 var queries = require('./queries');
 var compute = require('../util/compute');
 var utility = require('../util/utility');
-var benchmarkMatch = queries.benchmarkMatch;
 var getMatchRating = queries.getMatchRating;
 var computeMatchData = compute.computeMatchData;
 var deserialize = utility.deserialize;
@@ -150,7 +149,7 @@ function getMatch(db, redis, match_id, options, cb)
                                 }
                                 match.rating = avg;
                                 match.rating_percentile = Number(count) / Number(card);
-                                benchmarkMatch(redis, match, function (err)
+                                queries.getMatchBenchmarks(redis, match, function (err)
                                 {
                                     return cb(err, match);
                                 });
