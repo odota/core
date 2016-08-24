@@ -455,3 +455,12 @@ table {
 .yellow-plus i {
     color: yellow;
 }
+
+.img-text .pvgna-icon {
+    margin: auto 4px auto 0;
+}
+
+
+.img-text.img-text-lg .pvgna-icon {
+    margin: auto 6px;
+}

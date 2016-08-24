@@ -24,6 +24,7 @@ invokeInterval(function getPvgnaAPI(cb) {
     utility.getData('https://pvgna.com/yasp', function (err, guides)
     {
         if (err) {
+            console.log("Received a bad response from pvgna");
             return cb(err);
         }
         redis.set("pvgna", JSON.stringify(guides), cb);

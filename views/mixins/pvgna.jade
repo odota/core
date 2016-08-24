@@ -1,5 +1,10 @@
 mixin pvgna(hero)
   if pvgna && pvgna[hero.id]
     - var guide = pvgna[hero.id]
-    a(href=guide["url"], onclick="ga('send', 'event', 'Pvgna', 'click', #{hero.id})")
+    a.pvgna-icon(href=guide["url"], onclick="ga('send', 'event', 'Pvgna', 'click', #{hero.id})")
       img(src='/public/images/pvgna_logo_small.png', title="<strong>Hero Guide Available!</strong><br>Title: " + guide["title"] + "<br>Hero guides by Pvgna")
+      
+mixin pvgna_footer
+  a(href='https://pvgna.com/?ref=yasp', onclick="ga('send', 'event', 'Pvgna', 'click', 'logo')")
+    h3 Hero Guides by
+      img(src='/public/images/pvgna_logo.png', style="height:30px;")
