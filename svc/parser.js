@@ -30,7 +30,7 @@ var async = require('async');
 const readline = require('readline');
 var spawn = cp.spawn;
 var insertMatch = queries.insertMatch;
-var benchmarkMatch = queries.benchmarkMatch;
+var getMatchBenchmarks = queries.getMatchBenchmarks;
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 //EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
@@ -143,6 +143,15 @@ pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
         return cb(err, match.match_id);
     });
 });
+pQueue.on('completed', function (job)
+{
+    // Delay the removal so that the request polling has a chance to check for completion.
+    // If interrupted, the regular cleanup process in worker will take care of orphaned jobs.
+    setTimeout(function ()
+    {
+        job.remove();
+    }, 60 * 1000);
+});
 
 function insertUploadedParse(match, cb)
 {
@@ -161,7 +170,7 @@ function insertUploadedParse(match, cb)
         computeMatchData(p);
     });
     computeMatchData(match);
-    benchmarkMatch(redis, match, function (err)
+    getMatchBenchmarks(redis, match, function (err)
     {
         if (err)
         {
