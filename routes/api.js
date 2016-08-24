@@ -861,6 +861,28 @@ module.exports = function (db, redis, cassandra)
             });
         });
     });
+    api.get('/heroes', function (req, res, cb)
+    {
+        db.select().from('heroes').orderBy('id', 'asc').asCallback(function (err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            return res.json(result);
+        });
+    });
+    api.get('/leagues', function (req, res, cb)
+    {
+        db.select().from('leagues').asCallback(function (err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            return res.json(result);
+        });
+    });
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     return api;
