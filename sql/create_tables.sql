@@ -298,6 +298,12 @@ CREATE TABLE match_gcdata(
   parties json
 );
 
+CREATE TABLE match_rating(
+  match_id bigint PRIMARY KEY,
+  rating int,
+  num_players int
+);
+
 /*
 ALTER TABLE player_matches ADD ability_upgrades_arr integer[];
 */

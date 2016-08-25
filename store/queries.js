@@ -736,6 +736,7 @@ function getMatchRating(redis, match, cb)
         {
             return cb(err);
         }
+        // Remove undefined/null values
         var filt = result.filter(function (r)
         {
             return r;
@@ -747,7 +748,7 @@ function getMatchRating(redis, match, cb)
         {
             return a + b;
         }, 0) / filt.length);
-        cb(err, avg);
+        cb(err, avg, filt.length);
     });
 }
 

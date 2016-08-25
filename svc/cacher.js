@@ -5,6 +5,7 @@
 const constants = require('dotaconstants');
 const config = require('../config');
 const redis = require('../store/redis');
+const db = require('../store/db');
 //const cassandra = require('../store/cassandra');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
@@ -146,12 +147,11 @@ function updateBenchmarks(match, cb)
 
 function updateMatchRating(match, cb)
 {
-    getMatchRating(redis, match, function (err, avg)
+    getMatchRating(redis, match, function (err, avg, num)
     {
         if (avg && !Number.isNaN(avg))
         {
-            //TODO persist to postgres
-            //for each player
+            // For each player, update mmr estimation list
             match.players.forEach(function (player)
             {
                 if (player.account_id && player.account_id !== constants.anonymous_account_id)
@@ -161,7 +161,16 @@ function updateMatchRating(match, cb)
                     redis.ltrim('mmr_estimates:' + player.account_id, 0, 19);
                 }
             });
-            cb();
+            // Persist match average MMR into postgres
+            queries.upsert(db, 'match_rating',
+            {
+                match_id: match.match_id,
+                rating: avg,
+                num_players: num
+            },
+            {
+                match_id: match.match_id
+            }, cb);
         }
         else
         {
