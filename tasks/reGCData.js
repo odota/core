@@ -11,7 +11,13 @@ db.select(['match_id']).from('matches').asCallback(function (err, matches)
   async.eachSeries(matches, function (match, cb)
   {
     console.log(match.match_id);
-    getGCData(db, redis, match, cb);
+    getGCData(db, redis, match, function(err){
+      if (err)
+      {
+        console.error(err);
+      }
+      cb();
+    });
   }, function (err)
   {
     if (err)
