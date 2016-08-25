@@ -242,7 +242,7 @@ function getData(url, cb)
                 //non-retryable
                 return cb(body);
             }
-            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams))
+            if (err || !res || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams))
             {
                 //invalid response
                 if (url.noRetry)
@@ -252,7 +252,7 @@ function getData(url, cb)
                 else
                 {
                     console.error("[INVALID] status: %s, retrying: %s", res ? res.statusCode : '', target);
-                    var backoff = res.statusCode === 429 ? 2000 : 0;
+                    var backoff = res && res.statusCode === 429 ? 2000 : 0;
                     return setTimeout(function()
                     {
                         getData(url, cb);
