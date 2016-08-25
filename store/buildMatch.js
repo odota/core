@@ -6,7 +6,6 @@ var async = require('async');
 var queries = require('./queries');
 var compute = require('../util/compute');
 var utility = require('../util/utility');
-var getMatchRating = queries.getMatchRating;
 var computeMatchData = compute.computeMatchData;
 var deserialize = utility.deserialize;
 
@@ -71,10 +70,6 @@ function getMatch(db, redis, match_id, options, cb)
                 {
                     getPlayerMatchData(match_id, cb);
                 },
-                "ab_upgrades": function (cb)
-                {
-                    redis.get('ability_upgrades:' + match_id, cb);
-                },
                 "gcdata": function (cb)
                 {
                     db.first().from('match_gcdata').where(
@@ -96,11 +91,11 @@ function getMatch(db, redis, match_id, options, cb)
                     return cb(err);
                 }
                 var players = result.players;
-                var ab_upgrades = JSON.parse(result.ab_upgrades);
                 match = Object.assign(
                 {}, result.gcdata, match);
                 match.replay_url = utility.buildReplayUrl(match.match_id, match.cluster, match.replay_salt);
-                match = Object.assign({}, match, result.skill);
+                match = Object.assign(
+                {}, match, result.skill);
                 async.each(players, function (p, cb)
                 {
                     //match-level columns
@@ -111,10 +106,6 @@ function getMatch(db, redis, match_id, options, cb)
                     p.lobby_type = match.lobby_type;
                     p.game_mode = match.game_mode;
                     computeMatchData(p);
-                    if (ab_upgrades)
-                    {
-                        p.ability_upgrades_arr = ab_upgrades[p.player_slot];
-                    }
                     redis.zscore('solo_competitive_rank', p.account_id || "", function (err, rating)
                     {
                         p.solo_competitive_rank = rating;
@@ -128,33 +119,9 @@ function getMatch(db, redis, match_id, options, cb)
                     }
                     match.players = players;
                     computeMatchData(match);
-                    getMatchRating(redis, match, function (err, avg)
+                    queries.getMatchBenchmarks(redis, match, function (err)
                     {
-                        if (err)
-                        {
-                            return cb(err);
-                        }
-                        var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
-                        redis.zcard(key, function (err, card)
-                        {
-                            if (err)
-                            {
-                                return cb(err);
-                            }
-                            redis.zcount(key, 0, avg, function (err, count)
-                            {
-                                if (err)
-                                {
-                                    return cb(err);
-                                }
-                                match.rating = avg;
-                                match.rating_percentile = Number(count) / Number(card);
-                                queries.getMatchBenchmarks(redis, match, function (err)
-                                {
-                                    return cb(err, match);
-                                });
-                            });
-                        });
+                        return cb(err, match);
                     });
                 });
             });

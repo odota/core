@@ -93,6 +93,7 @@ CREATE TABLE player_matches (
   creeps_stacked int,
   camps_stacked int,
   rune_pickups int,
+  ability_upgrades_arr text,
 );
 
 CREATE TABLE player_caches (
