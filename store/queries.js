@@ -146,18 +146,19 @@ function insertMatch(db, redis, match, options, cb)
             };
         });
     }
-    //put ability_upgrades data in redis
-    if (players && players[0] && players[0].ability_upgrades && !options.skipAbilityUpgrades)
+    //ability_upgrades_arr
+    if (players)
     {
-        var ability_upgrades = {};
         players.forEach(function (p)
         {
-            ability_upgrades[p.player_slot] = p.ability_upgrades ? p.ability_upgrades.map(function (au)
+            if (p.ability_upgrades)
             {
-                return au.ability;
-            }) : null;
+                p.ability_upgrades_arr = p.ability_upgrades.map(function (au)
+                {
+                    return au.ability;
+                });
+            }
         });
-        redis.setex("ability_upgrades:" + match.match_id, 60 * 60 * config.ABILITY_UPGRADE_RETENTION_HOURS, JSON.stringify(ability_upgrades));
     }
     //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players

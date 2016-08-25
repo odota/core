@@ -150,9 +150,7 @@ function updateMatchRating(match, cb)
     {
         if (avg && !Number.isNaN(avg))
         {
-            var rkey = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0);
-            redis.zadd(rkey, avg, match.match_id);
-            redis.expireat(rkey, utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 2));
+            //TODO persist to postgres
             //for each player
             match.players.forEach(function (player)
             {

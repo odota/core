@@ -108,7 +108,8 @@ CREATE TABLE player_matches (
   sen_placed int,
   creeps_stacked int,
   camps_stacked int,
-  rune_pickups int
+  rune_pickups int,
+  ability_upgrades_arr integer[]
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 
@@ -296,3 +297,7 @@ CREATE TABLE match_gcdata(
   series_type int,
   parties json
 );
+
+/*
+ALTER TABLE player_matches ADD ability_upgrades_arr integer[];
+*/
