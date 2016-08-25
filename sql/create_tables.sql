@@ -303,7 +303,3 @@ CREATE TABLE match_rating(
   rating int,
   num_players int
 );
-
-/*
-ALTER TABLE player_matches ADD ability_upgrades_arr integer[];
-*/

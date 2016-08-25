@@ -160,7 +160,3 @@ CREATE TABLE player_caches (
 ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
-
-/*
-ALTER TABLE player_matches ADD ability_upgrades_arr text;
-*/
