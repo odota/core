@@ -251,8 +251,8 @@ function getData(url, cb)
                 }
                 else
                 {
-                    console.error("[INVALID] status: %s, retrying: %s", res.statusCode, target);
-                    var backoff = res.statusCode === 429 ? 1000 : 0;
+                    console.error("[INVALID] status: %s, retrying: %s", res ? res.statusCode : '', target);
+                    var backoff = res.statusCode === 429 ? 2000 : 0;
                     return setTimeout(function()
                     {
                         getData(url, cb);
