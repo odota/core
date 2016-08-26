@@ -58,9 +58,8 @@ Quickstart (Docker)
 Docker Compose
 ----
 * Alternatively, if you have Docker Compose [installed](https://docs.docker.com/compose/install/) you can just run `docker-compose up`.
- * 3 containers will be built and launched - one with postgres database, one with redis and one with web service.
- * Database is inited and tables are created automatically.
- * By default, minimal configuration necessairy to open the site in a browser and request parses by ID is started. This can be overridden via `docker-compose.override.yml`.
+ * Databases are set up and tables are created automatically.
+ * By default, minimal configuration necessary to open the site in a browser and request parses by ID is started. This can be overridden via `docker-compose.override.yml`.
  * `sudo docker exec -it yasp_web_1 bash` will give you a terminal into the running web container.
 
 Getting Help
