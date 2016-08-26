@@ -11,15 +11,15 @@ case $1 in
         # This is enough to open the site in a browser and request parses by ID.
         pm2 start profiles/basic.json
     ;;
-    'everything')
-        pm2 start profiles/everything.json
+    'full')
+        pm2 start profiles/full.json
     ;;
     'custom-profile')
         # To use this option you'll have to provide your custom.json profile. It's gitignored.
         pm2 start profiles/custom.json
     ;;
     *)
-        pm2 start profiles/everything.json
+        pm2 start profiles/full.json
     ;;
 esac
 

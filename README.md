@@ -40,7 +40,7 @@ Quickstart (Docker)
 * Get a terminal into the running container: `sudo docker exec -it yasp bash`
 * Rebuild inside the container (your local directory hides the built files): `npm run build`
 * Start the services you want to run:
-  * `pm2 start profiles/basic.json` This starts all the basic services to be able to read the API and request parses (which is a useful end-to-end test).  Use `profiles/everything.json` to start everything.
+  * `pm2 start profiles/basic.json` This starts all the basic services to be able to read the API and request parses (which is a useful end-to-end test).  The profiles directory contains common sets of services to be started together.
   * Useful PM2 commands:
     * `pm2 start svc/web.js --watch` This starts a specific service and watches it for changes.
     * `pm2 logs web` You can use this command to inspect the output of a service.
