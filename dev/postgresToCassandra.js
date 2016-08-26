@@ -104,7 +104,7 @@ function run(start_id)
     {
         var obj = serialize(match);
         delete obj.pgroup;
-        var query = "INSERT INTO yasp.matches JSON ?";
+        var query = "INSERT INTO matches JSON ?";
         cassandra.execute(query, [JSON.stringify(obj)],
         {
             prepare: true
@@ -118,7 +118,7 @@ function run(start_id)
             delete pm.account_id;
         }
         var obj2 = serialize(pm);
-        var query2 = "INSERT INTO yasp.player_matches JSON ?";
+        var query2 = "INSERT INTO player_matches JSON ?";
         cassandra.execute(query2, [JSON.stringify(obj2)],
         {
             prepare: true

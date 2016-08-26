@@ -11,7 +11,6 @@ if [ -n "$DOCKER_EMAIL" ]; then
   if [ -z "$TAG" ]; then
     echo "Unable to determine tag to push to."
   fi
-  echo "Pushing to yasp/yasp:${TAG}"
   docker tag yasp/yasp:latest yasp/yasp:${TAG}
   docker push yasp/yasp:${TAG}
   docker push yasp/yasp:latest

@@ -417,7 +417,6 @@ public class Parse {
                         //System.err.println(e);
                     }
                     //TODO: gem, rapier time?
-                    //https://github.com/yasp-dota/yasp/issues/333
                     //need to dump inventory items for each player and possibly keep track of item entity handles
                     
                     //get the player's hero entity
