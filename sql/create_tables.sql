@@ -112,6 +112,7 @@ CREATE TABLE player_matches (
   ability_upgrades_arr integer[]
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
+CREATE INDEX on player_matches(hero_id);
 
 CREATE TABLE players (
   account_id bigint PRIMARY KEY,
