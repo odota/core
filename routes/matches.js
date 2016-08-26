@@ -5,18 +5,17 @@ var matches = express.Router();
 var matchPages = constants.match_pages;
 var compute = require('../util/compute');
 var renderMatch = compute.renderMatch;
-module.exports = function(db, redis, cassandra)
+module.exports = function (db, redis, cassandra)
 {
-    matches.get('/:match_id/:info?', function(req, res, cb)
+    matches.get('/:match_id/:info?', function (req, res, cb)
     {
         console.time("match page");
-        buildMatch(
+        buildMatch(req.params.match_id,
         {
             db: db,
             redis: redis,
             cassandra: cassandra,
-            match_id: req.params.match_id
-        }, function(err, match)
+        }, function (err, match)
         {
             if (err)
             {

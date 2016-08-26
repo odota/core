@@ -79,12 +79,11 @@ module.exports = function (db, redis, cassandra)
     });
     api.get('/matches/:match_id/:info?', function (req, res, cb)
     {
-        buildMatch(
+        buildMatch(req.params.match_id,
         {
             db: db,
             redis: redis,
             cassandra: cassandra,
-            match_id: req.params.match_id
         }, function (err, match)
         {
             if (err)

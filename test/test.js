@@ -195,11 +195,10 @@ describe("replay parse", function ()
                             {
                                 clearInterval(poll);
                                 //ensure parse data got inserted
-                                buildMatch(
+                                buildMatch(tests[key].match_id,
                                 {
                                     db: db,
                                     redis: redis,
-                                    match_id: tests[key].match_id
                                 }, function (err, match)
                                 {
                                     if (err)
