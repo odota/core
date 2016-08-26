@@ -69,7 +69,7 @@ app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = constants;
-app.locals.tooltips = require('../json/tooltips.json');
+app.locals.tooltips = require('../lang/en.json');
 app.locals.qs = querystring;
 app.locals.util = util;
 app.locals.config = config;
