@@ -53,6 +53,9 @@ gcloud compute instance-groups managed delete -q parser-group-1
 gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 curl -sSL https://get.docker.com/ | sh
+sudo docker build -t yasp/parser https://github.com/yasp-dota/parser.git
+sudo docker run -d --name parserHost --restart=always --net=host yasp/parser
+sudo docker start parserHost
 sudo docker run -d --name=parser --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest sh -c "npm start"
 sudo docker start parser
 '
