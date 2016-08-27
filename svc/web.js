@@ -26,7 +26,6 @@ const async = require('async');
 const fs = require('fs');
 const express = require('express');
 const app = express();
-const example_match = JSON.parse(fs.readFileSync('./matches/frontpage.json'));
 const passport = require('passport');
 const api_key = config.STEAM_API_KEY.split(",")[0];
 const SteamStrategy = require('passport-steam').Strategy;
@@ -245,7 +244,6 @@ app.route('/').get(function (req, res, next)
     {
         res.render('home',
         {
-            match: example_match,
             truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
             home: true
         });
@@ -361,15 +359,6 @@ app.get('/become-the-gamer', function(req, res, cb)
 {
    return res.render('btg'); 
 });
-app.get('/april/:year?', function (req, res, cb)
-{
-    return res.render('plusplus',
-    {
-        match: example_match,
-        truncate: [2, 6]
-    });
-});
-app.use('/april/2016/hyperopia', hyperopia(db));
 app.use('/', mmstats(redis));
 //END standard routes
 //TODO keep donate routes around for legacy until @albertcui can reimplement in SPA?
