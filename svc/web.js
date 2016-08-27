@@ -111,7 +111,7 @@ app.locals.navbar_pages = {
     "api":
     {
         "name": "API",
-        "path": "//swagger.yasp.co",
+        "path": "//api.yasp.co",
         "new-feature": true,
     },
     "code":

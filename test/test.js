@@ -282,11 +282,11 @@ describe("parsed match page", function ()
         });
     });
 });
-describe('swagger api', function ()
+describe('api', function ()
 {
-    it('should accept swagger endpoints', function (cb)
+    it('should accept endpoints', function (cb)
     {
-        request('https://raw.githubusercontent.com/yasp-dota/swagger/gh-pages/swagger.json', function (err, resp, body)
+        request('https://raw.githubusercontent.com/yasp-dota/api/gh-pages/swagger.json', function (err, resp, body)
         {
             if (err)
             {
