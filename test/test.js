@@ -9,6 +9,7 @@ const supertest = require('supertest');
 const pg = require('pg');
 const cass = require('cassandra-driver');
 const fs = require('fs');
+const request = require('request');
 const config = require('../config');
 const constants = require('dotaconstants');
 const redis = require('../store/redis');
@@ -194,11 +195,10 @@ describe("replay parse", function ()
                             {
                                 clearInterval(poll);
                                 //ensure parse data got inserted
-                                buildMatch(
+                                buildMatch(tests[key].match_id,
                                 {
                                     db: db,
                                     redis: redis,
-                                    match_id: tests[key].match_id
                                 }, function (err, match)
                                 {
                                     if (err)
@@ -282,19 +282,26 @@ describe("parsed match page", function ()
         });
     });
 });
-//TODO just test based on the documented swagger API
-describe("/api/items", function ()
+describe('swagger api', function ()
 {
-    it('should 200', function (done)
+    it('should accept swagger endpoints', function (cb)
     {
-        supertest(app).get('/api/items').expect(200).end(done);
-    });
-});
-describe("/api/abilities", function ()
-{
-    it('should 200', function (done)
-    {
-        supertest(app).get('/api/abilities').expect(200).end(done);
+        request('https://raw.githubusercontent.com/yasp-dota/swagger/gh-pages/swagger.json', function (err, resp, body)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            body = JSON.parse(body);
+            async.eachSeries(Object.keys(body.paths), function (path, cb)
+            {
+                supertest(app).get('/api' + path.replace(/{.*}/, 1)).end(function (err, res)
+                {
+                    console.log(path, res.length);
+                    return cb(err);
+                });
+            }, cb);
+        });
     });
 });
 describe('generateMatchups', function ()

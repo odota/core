@@ -19,7 +19,7 @@ services:
   web:
     build: .
     # 'basic' to launch basic configuration as in profiles/basic.json
-    # 'everything' to launch all the services as in profiles/everything.json
+    # 'full' to launch all the services as in profiles/full.json
     # 'custom-profile' to launch all services as in profiles/custom.json (you'll have to provide it)
     # or just override the whole command with your script if existing does not fit your needs
     command: ./docker/main-launch.sh basic 

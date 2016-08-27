@@ -1,20 +1,25 @@
 /**
  * Worker scanning the Steam sequential match API (GetMatchHistoryBySequenceNum) for latest matches.
  **/
-var utility = require('../util/utility');
-var config = require('../config');
-var buildSets = require('../store/buildSets');
-var db = require('../store/db');
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
-var redis = require('../store/redis');
-var queries = require('../store/queries');
-var insertMatch = queries.insertMatch;
-var getData = utility.getData;
-var generateJob = utility.generateJob;
-var async = require('async');
+const utility = require('../util/utility');
+const config = require('../config');
+const buildSets = require('../store/buildSets');
+const db = require('../store/db');
+const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
+const redis = require('../store/redis');
+const queries = require('../store/queries');
+const insertMatch = queries.insertMatch;
+const getData = utility.getData;
+const generateJob = utility.generateJob;
+const async = require('async');
+const parallelism = config.SCANNER_PARALLELISM;
+const api_hosts = config.STEAM_API_HOST.split(',');
+//note that the limit for this endpoint seems to be around 5 calls/IP/minute
+//endpoint usually takes around 3 seconds to return data
+//therefore each IP should generally avoid requesting more than once every 9 seconds
+const delay = Number(config.SCANNER_DELAY);
+const PAGE_SIZE = 100;
 var trackedPlayers;
-var parallelism = config.SCANNER_PARALLELISM;
-var PAGE_SIZE = 100;
 buildSets(db, redis, function(err)
 {
     if (err)
@@ -94,7 +99,7 @@ function start()
                 getData(
                 {
                     url: container.url,
-                    delay: Number(config.SCANNER_DELAY),
+                    delay: delay,
                 }, function(err, data)
                 {
                     if (err)

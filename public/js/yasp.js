@@ -10,7 +10,7 @@ require('../../node_modules/flag-icon-css/css/flag-icon.css');
 require('../../node_modules/select2/dist/css/select2.css');
 require('../../node_modules/select2-bootstrap-theme/dist/select2-bootstrap.css');
 require('../css/flaticon.css');
-require('../css/yasp.css');
+require('../css/index.css');
 require('./ga.js');
 var $ = require('jquery');
 window.jQuery = $;

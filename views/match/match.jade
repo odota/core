@@ -34,7 +34,6 @@ block content
             th Duration
             th Ended
             th Skill
-            th Percentile
         tbody
           tr
             td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
@@ -42,15 +41,6 @@ block content
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td: abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, HH:mm:ss Z"))= moment.unix(match.start_time + match.duration).fromNow()
             td= constants.skill[match.skill] ? constants.skill[match.skill] : 'N/A'
-            - var rtg = match.rating
-            - var pct = match.rating_percentile
-            - var pctD = (pct*100).toFixed(2)
-            if !match.rating || Number.isNaN(match.rating)
-              td N/A
-            else
-              td: abbr(title=util.format("The average MMR in this match of %s is higher than %s% of matches", rtg, pctD))
-                span(class=percentToTextClass(pct).className) #{pctD}% 
-                span.text-muted  #{rtg}
   
   .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive

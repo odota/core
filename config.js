@@ -30,7 +30,7 @@ var defaults = {
     "PROXY_PORT": "5300",
     "WORK_PORT": "5400",
     "SCANNER_PORT": "5500",
-    "PARSE_SERVER_PORT": "5600",
+    "PARSER_HOST": "http://localhost:5600", //host of the parse server
     "POSTGRES_URL": "postgresql://postgres:postgres@localhost/yasp", //connection string for PostgreSQL
     "READONLY_POSTGRES_URL": "postgresql://readonly:readonly@localhost/yasp", //readonly connection string for PostgreSQL
     "REDIS_URL": "redis://127.0.0.1:6379/0", //connection string for Redis
@@ -49,9 +49,7 @@ var defaults = {
     "MMR_PARALLELISM": 10,
     "PARSER_PARALLELISM": 1,
     "PLAYER_MATCH_LIMIT": 50000, //max results to return from player matches
-    "BENCHMARK_RETENTION_HOURS": 1, //hours in block to retain benchmark data for percentile
-    "MATCH_RATING_RETENTION_HOURS": 12, //hours in block to retain match rating data for percentile
-    "ABILITY_UPGRADE_RETENTION_HOURS": 6, //hours to retain match ability upgrade data
+    "BENCHMARK_RETENTION_MINUTES": 60, //minutes in block to retain benchmark data for percentile
     "PROVIDER": "", //The cloud provider used by the application (determines how environment data is downloaded)
     "UI_HOST": "", //The host of the UI, redirect traffic from / and /return here
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page

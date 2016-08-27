@@ -1,8 +1,6 @@
 YASP (Yet Another Stats Page)
 ====
 [![Build Status](https://travis-ci.org/yasp-dota/yasp.svg)](https://travis-ci.org/yasp-dota/yasp)
-[![Code Climate](https://codeclimate.com/github/yasp-dota/yasp/badges/gpa.svg)](https://codeclimate.com/github/yasp-dota/yasp)
-[![Coverage Status](https://coveralls.io/repos/yasp-dota/yasp/badge.svg)](https://coveralls.io/r/yasp-dota/yasp)
 [![Dependency Status](https://david-dm.org/yasp-dota/yasp.svg)](https://david-dm.org/yasp-dota/yasp)
 [![devDependency Status](https://david-dm.org/yasp-dota/yasp/dev-status.svg)](https://david-dm.org/yasp-dota/yasp#info=devDependencies)
 [![Discord](https://img.shields.io/badge/Discord-join%20chat%20%E2%86%92-738bd7.svg?style=flat-square)](https://discord.gg/0o5SQGbXuWCNDcaF)
@@ -38,18 +36,17 @@ Quickstart (Docker)
 * Start containers and initialize databases: `sudo bash scripts/dev.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
-  * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts.  We recommend creating a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
+  * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts. It is recommended to use a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
 * Get a terminal into the running container: `sudo docker exec -it yasp bash`
 * Rebuild inside the container (your local directory hides the built files): `npm run build`
 * Start the services you want to run:
-  * `pm2 start profiles/basic.json` This starts all the basic services to be able to read the API and request parses (which is a useful end-to-end test).  Use `profiles/everything.json` to start everything.
+  * `pm2 start profiles/basic.json` This starts all the basic services to be able to read the API and request parses (which is a useful end-to-end test).  The profiles directory contains common sets of services to be started together.
   * Useful PM2 commands:
     * `pm2 start svc/web.js --watch` This starts a specific service and watches it for changes.
     * `pm2 logs web` You can use this command to inspect the output of a service.
     * `pm2 delete all` Stop and remove all the services.
-* Useful commands
+* Tests
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
-  * `sudo docker build -t yasp/yasp .` rebuilds the Docker image. If you are editing the `Dockerfile`, do this to ensure it works.
 * Get some starter data
   * You can request some parses by ID to get some parsed data.
   * You can also run `scanner` to get some matches from the API.
@@ -61,9 +58,8 @@ Quickstart (Docker)
 Docker Compose
 ----
 * Alternatively, if you have Docker Compose [installed](https://docs.docker.com/compose/install/) you can just run `docker-compose up`.
- * 3 containers will be built and launched - one with postgres database, one with redis and one with web service.
- * Database is inited and tables are created automatically.
- * By default, minimal configuration necessairy to open the site in a browser and request parses by ID is started. This can be overridden via `docker-compose.override.yml`.
+ * Databases are set up and tables are created automatically.
+ * By default, minimal configuration necessary to open the site in a browser and request parses by ID is started. This can be overridden via `docker-compose.override.yml`.
  * `sudo docker exec -it yasp_web_1 bash` will give you a terminal into the running web container.
 
 Getting Help
