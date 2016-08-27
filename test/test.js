@@ -172,9 +172,15 @@ describe("replay parse", function ()
                     players: [],
                 }
             });
-            nock("http://replay1.valve.net").get('/570/' + key).reply(200, function (uri, requestBody)
+            nock("http://replay1.valve.net").get('/570/' + key).reply(200, function (uri, requestBody, cb)
             {
-                return request('https://github.com/yasp-dota/testfiles/raw/master/1781962623_1.dem');
+                request('https://github.com/yasp-dota/testfiles/raw/master/1781962623_1.dem',
+                {
+                    encoding: null
+                }, function (err, resp, body)
+                {
+                    return cb(err, body);
+                });
             });
             var match = {
                 match_id: tests[key].match_id,
