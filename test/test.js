@@ -20,7 +20,6 @@ const buildMatch = require('../store/buildMatch');
 const utility = require('../util/utility');
 const details_api = require('./details_api.json');
 const init_db = "postgres://postgres:postgres@localhost/postgres";
-const replay_dir = "./test/testfiles/";
 const wait = 90000;
 // these are loaded later, as the database needs to be created when these are required
 var db;
@@ -173,8 +172,10 @@ describe("replay parse", function ()
                     players: [],
                 }
             });
-            //fake replay download
-            nock("http://replay1.valve.net").get('/570/' + key).replyWithFile(200, replay_dir + key);
+            nock("http://replay1.valve.net").get('/570/' + key).reply(200, function (uri, requestBody)
+            {
+                return request('https://github.com/yasp-dota/testfiles/raw/master/1781962623_1.dem');
+            });
             var match = {
                 match_id: tests[key].match_id,
                 start_time: tests[key].start_time,
