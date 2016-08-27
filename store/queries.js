@@ -686,8 +686,8 @@ function getMatchBenchmarks(redis, m, cb)
         p.benchmarks = {};
         async.eachSeries(Object.keys(benchmarks), function (metric, cb)
         {
-            //in development use live data (for speed), in production use full data (for consistency)
-            var key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), metric, p.hero_id].join(':');
+            // Use data from previous epoch
+            var key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, p.hero_id].join(':');
             var raw = benchmarks[metric](m, p);
             p.benchmarks[metric] = {
                 raw: raw
@@ -832,7 +832,8 @@ function getHeroBenchmarks(db, redis, options, cb)
         var arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
         async.each(arr, function (percentile, cb)
         {
-            var key = ["benchmarks", utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), metric, hero_id].join(':');
+            // Use data from previous epoch
+            var key = ["benchmarks", utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, hero_id].join(':');
             redis.zcard(key, function (err, card)
             {
                 if (err)
