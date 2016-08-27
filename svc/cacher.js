@@ -134,10 +134,10 @@ function updateBenchmarks(match, cb)
                 var metric = benchmarks[key](match, p);
                 if (metric !== undefined && metric !== null && !Number.isNaN(metric))
                 {
-                    var rkey = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':');
+                    var rkey = ["benchmarks", utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), key, p.hero_id].join(':');
                     redis.zadd(rkey, metric, match.match_id);
-                    //expire at time two blocks later (after prev/current cycle)
-                    redis.expireat(rkey, utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 2));
+                    //expire at time two epochs later (after prev/current cycle)
+                    redis.expireat(rkey, utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, config.BENCHMARK_RETENTION_MINUTES * 2));
                 }
             }
         }

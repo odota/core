@@ -18,7 +18,7 @@ before_script:
 - sudo docker run -d --privileged --name redis --net=host redis:3
 - sudo docker build -t yasp/parser https://github.com/yasp-dota/parser.git
 - sudo docker run -d --name parser --net=host yasp/parser
-- sudo docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
+- sudo docker pull yasp/yasp && sudo docker build -t "yasp/yasp" .
 script:
 # run test outside container
 #- npm run test && (npm run coveralls || true)

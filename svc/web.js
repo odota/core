@@ -12,7 +12,6 @@ const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/c
 const queries = require('../store/queries');
 const search = require('../store/search');
 const matches = require('../routes/matches');
-const hyperopia = require('../routes/hyperopia');
 const players = require('../routes/players');
 const api = require('../routes/api');
 const donate = require('../routes/donate');
@@ -23,10 +22,8 @@ const session = require('cookie-session');
 const path = require('path');
 const moment = require('moment');
 const async = require('async');
-const fs = require('fs');
 const express = require('express');
 const app = express();
-const example_match = JSON.parse(fs.readFileSync('./matches/frontpage.json'));
 const passport = require('passport');
 const api_key = config.STEAM_API_KEY.split(",")[0];
 const SteamStrategy = require('passport-steam').Strategy;
@@ -78,37 +75,47 @@ app.locals.prettyPrint = utility.prettyPrint;
 app.locals.percentToTextClass = utility.percentToTextClass;
 app.locals.getAggs = utility.getAggs;
 app.locals.navbar_pages = {
-  "request": {
-    "name": "Request"
-  },
-  "rankings": {
-    "name": "Rankings"
-  },
-  "benchmarks": {
-    "name": "Benchmarks"
-  },
-  "distributions": {
-    "name": "Distributions"
-  },
-  "mmstats": {
-    "name": "MMStats"
-  },
-  "carry": {
-    "name": "Carry"
-  },
-  "search": {
-    "name": "Search"
-  },
-  "become-the-gamer": {
-      "name": "In-Game Stats",
-      "sponsored": true
-  }
+    "request":
+    {
+        "name": "Request"
+    },
+    "rankings":
+    {
+        "name": "Rankings"
+    },
+    "benchmarks":
+    {
+        "name": "Benchmarks"
+    },
+    "distributions":
+    {
+        "name": "Distributions"
+    },
+    "mmstats":
+    {
+        "name": "MMStats"
+    },
+    "carry":
+    {
+        "name": "Carry"
+    },
+    "search":
+    {
+        "name": "Search"
+    },
+    "become-the-gamer":
+    {
+        "name": "In-Game Stats",
+        "sponsored": true
+    }
 };
 app.locals.constants.abilities.attribute_bonus = {
-  dname: "Attribute Bonus",
-  img: '/public/images/Stats.png',
-  attrib: "+2 All Attributes"
+    dname: "Attribute Bonus",
+    img: '/public/images/Stats.png',
+    attrib: "+2 All Attributes"
 };
+app.locals.constants.map_url = '/public/images/map.png';
+app.locals.constants.ICON_PATH = '/public/images/logo.svg';
 //APP middleware
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function (req, res)
@@ -132,13 +139,17 @@ app.use(function rateLimit(req, res, cb)
     ip = ip.replace(/^.*:/, '').split(',')[0];
     var key = 'rate_limit:' + ip;
     console.log("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.originalUrl, ip);
-    redis.multi().incr(key).expire(key, 1).exec(function (err, resp)
+    redis.multi().incr(key).expireat(key, utility.getStartOfBlockMinutes(1, 1)).exec(function (err, resp)
     {
         if (err)
         {
             return cb(err);
         }
-        if (resp[0] > 8 && config.NODE_ENV !== "test")
+        if (config.NODE_ENV === 'development')
+        {
+            console.log(resp);
+        }
+        if (resp[0] > 90 && config.NODE_ENV !== "test")
         {
             return res.status(429).json(
             {
@@ -245,7 +256,6 @@ app.route('/').get(function (req, res, next)
     {
         res.render('home',
         {
-            match: example_match,
             truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
             home: true
         });
@@ -357,19 +367,10 @@ app.get('/search', function (req, res, cb)
         res.render('search');
     }
 });
-app.get('/become-the-gamer', function(req, res, cb)
+app.get('/become-the-gamer', function (req, res, cb)
 {
-   return res.render('btg'); 
+    return res.render('btg');
 });
-app.get('/april/:year?', function (req, res, cb)
-{
-    return res.render('plusplus',
-    {
-        match: example_match,
-        truncate: [2, 6]
-    });
-});
-app.use('/april/2016/hyperopia', hyperopia(db));
 app.use('/', mmstats(redis));
 //END standard routes
 //TODO keep donate routes around for legacy until @albertcui can reimplement in SPA?

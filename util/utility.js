@@ -252,7 +252,8 @@ function getData(url, cb)
                 else
                 {
                     console.error("[INVALID] status: %s, retrying: %s", res ? res.statusCode : '', target);
-                    var backoff = res && res.statusCode === 429 ? 2000 : 0;
+                    //var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
+                    var backoff = 0;
                     return setTimeout(function()
                     {
                         getData(url, cb);
@@ -641,14 +642,16 @@ function prettyPrint(str)
     }).join(" ");
 }
 /**
- * Returns a string of the unix timestamp at the beginning of a block of size hours
+ * Returns the unix timestamp at the beginning of a block of n minutes
  * Offset controls the number of blocks to look ahead
  **/
-function getStartOfBlockHours(size, offset)
+function getStartOfBlockMinutes(size, offset)
 {
     offset = offset || 0;
-    const blockS = size * 60 * 60;
-    return (Math.floor(((new Date() / 1000 + (offset * blockS)) / blockS)) * blockS).toFixed(0);
+    const blockS = size * 60;
+    const curTime = ~~(new Date() / 1000);
+    const blockStart = curTime - (curTime % blockS);
+    return (blockStart + (offset * blockS)).toFixed(0);
 }
 
 function percentToTextClass(pct)
@@ -891,7 +894,7 @@ module.exports = {
     serialize,
     getAlphaHeroes,
     prettyPrint,
-    getStartOfBlockHours,
+    getStartOfBlockMinutes,
     percentToTextClass,
     average,
     stdDev,
