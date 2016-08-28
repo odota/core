@@ -45,8 +45,8 @@ block content
               span: abbr(title="MMR estimate based on available data from peer players. This is an estimate of the population mean MMR of the recent matches played by this user.")
                 i.fa.fa-fw.fa-question-circle
               small#estimate(style="margin-left:.5em;display:inline-block;")
-                if player.mmr_estimate.estimate
-                  span: abbr(title="Standard deviation: " + (player.mmr_estimate.stdDev || "N/A") + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
+                if player.mmr_estimate && player.mmr_estimate.estimate && player.mmr_estimate.stdDev
+                  span: abbr(title="Standard deviation: " + (player.mmr_estimate.stdDev.toFixed(2) + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
                 else
                   ="N/A"
     .col-md-2
