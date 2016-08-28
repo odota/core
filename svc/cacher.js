@@ -137,7 +137,7 @@ function updateBenchmarks(match, cb)
                     var rkey = ["benchmarks", utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), key, p.hero_id].join(':');
                     redis.zadd(rkey, metric, match.match_id);
                     //expire at time two epochs later (after prev/current cycle)
-                    redis.expireat(rkey, utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, config.BENCHMARK_RETENTION_MINUTES * 2));
+                    redis.expireat(rkey, utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 2));
                 }
             }
         }
