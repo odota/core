@@ -184,7 +184,12 @@ function getMatch(match_id, options, cb)
                 //get personanames
                 async.map(result, function (r, cb)
                 {
-                    db.raw(`SELECT personaname, last_login FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function (err, names)
+                    db.raw(`
+                    SELECT personaname, name, last_login 
+                    FROM players
+                    LEFT JOIN notable_players
+                    ON players.account_id = notable_players.account_id
+                    WHERE players.account_id = ?`, [r.account_id]).asCallback(function (err, names)
                     {
                         if (err)
                         {
