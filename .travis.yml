@@ -12,7 +12,7 @@ notifications:
 before_install:
 install: true
 before_script:
-- ./scripts/prebuild.sh
+- sudo bash scripts/prebuild.sh
 script:
 # run test outside container
 #- npm run test && (npm run coveralls || true)
