@@ -46,7 +46,7 @@ block content
                 i.fa.fa-fw.fa-question-circle
               small#estimate(style="margin-left:.5em;display:inline-block;")
                 if player.mmr_estimate && player.mmr_estimate.estimate && player.mmr_estimate.stdDev
-                  span: abbr(title="Standard deviation: " + (player.mmr_estimate.stdDev.toFixed(2) + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
+                  span: abbr(title="Standard deviation: " + player.mmr_estimate.stdDev.toFixed(2) + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
                 else
                   ="N/A"
     .col-md-2
