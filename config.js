@@ -1,12 +1,20 @@
 /**
  * File managing configuration for the application
  **/
-var dotenv = require('dotenv');
-dotenv.config(
+const dotenv = require('dotenv');
+const fs = require('fs');
+try
 {
-    silent: true
-});
-dotenv.load();
+    if (fs.statSync('.env'))
+    {
+        dotenv.load();
+    }
+}
+catch(e)
+{
+    // Swallow exceptions due to no .env file
+}
+
 var defaults = {
     "STEAM_API_KEY": "", //for API reqs, in worker
     "STEAM_USER": "", //for getting replay salt/profile data, in retriever

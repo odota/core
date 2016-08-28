@@ -15,8 +15,8 @@ const async = require('async');
 const parallelism = config.SCANNER_PARALLELISM;
 const api_hosts = config.STEAM_API_HOST.split(',');
 //note that the limit for this endpoint seems to be around 5 calls/IP/minute
-//endpoint usually takes around 3 seconds to return data
-//therefore each IP should generally avoid requesting more than once every 9 seconds
+//endpoint usually takes around 2 seconds to return data
+//therefore each IP should generally avoid requesting more than once every 10 seconds
 const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;
 var trackedPlayers;

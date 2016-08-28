@@ -230,7 +230,7 @@ module.exports = function(db, redis) {
             paymentMethodNonce: nonce,
             options: {
                 paypal: {
-                    description: "YASP - Buying " + amount + " cheese!",
+                    description: "Buying " + amount + " cheese!",
                 },
                 submitForSettlement: true
             }
@@ -322,7 +322,7 @@ module.exports = function(db, redis) {
             }).asCallback(function(err) {
                 if (err) return res.send(
                     "There was a problem processing your subscription." 
-                    + " Please email support@yasp.co");
+                    + " Please contact us for support.");
                 
                 req.session.cheeseAmount = amount;
                 res.sendStatus(200);
@@ -346,8 +346,7 @@ module.exports = function(db, redis) {
         } else {
             return "There was a problem processing your request. " + 
                    "If you're trying to make a subscription, only credit/debit cards are supported. " +
-                   "If you keep getting errors, please send us an email " +
-                   "at support@yasp.co. Thanks!";
+                   "If you keep getting errors, please contact us for support.";
         }
     }
     
