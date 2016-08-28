@@ -85,18 +85,14 @@ block page_content
                   |  via Stripe
             .col-md-6
               #paypal-container(style="display:inline-block;")
-          .row
-            .col-md-12
-              <br>
-              p Need support? Send us an email at <a href="mailto:support@yasp.co?Subject=YASP%20Cheese" target="_top">support@yasp.co</a>.
           #cancel-info(style="display:none; margin-top: 14px")
             p 
               i.fa.fa-info-circle.carry-info-icon
               | Subscriptions are only supported through Stripe.<br>
               if user
-                | You'll be able to cancel your subscription from this page or by emailing support@yasp.co with your player ID.
+                | You'll be able to cancel your subscription from this page or by contacting us with your player ID.
               else
-                | You're not logged in! If you want to cancel your subscription, you'll have to email us at support@yasp.co.
+                | You're not logged in! If you want to cancel your subscription, you'll have to contact us.
       hr
       .row.carry-col.carry-feature
         .col-md-4
