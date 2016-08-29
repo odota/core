@@ -50,7 +50,7 @@
     "express-session": "^1.14.0",
     "flag-icon-css": "^2.3.0",
     "font-awesome": "^4.6.3",
-    "heatmap.js": "2.0.0",
+    "heatmap.js": "2.0.2",
     "http-proxy": "^1.14.0",
     "jade": "^1.11.0",
     "jquery": "^3.1.0",
@@ -71,8 +71,8 @@
     "select2-bootstrap-theme": "0.1.0-beta.8",
     "sentiment": "2.0.0",
     "steam": "1.4.0",
-    "stripe": "4.9.0",
-    "wordcloud": "1.0.3"
+    "stripe": "4.9.1",
+    "wordcloud": "1.0.5"
   },
   "devDependencies": {
     "coveralls": "2.11.12",
