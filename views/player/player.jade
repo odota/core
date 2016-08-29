@@ -59,7 +59,7 @@ block content
             span.text-danger(style="margin:0 4px;") #{player.lose}
             if (player.win+player.lose)
               span (#{(player.win/(player.win+player.lose)*100).toFixed(2)}%)
-            abbr(title="Refresh Match History: If you've recently toggled your match privacy setting, this will queue a scan to find the missing matches.")
+            abbr(title="Refresh Match History: If this player has recently changed their match privacy setting, this will queue a scan to find the missing matches.")
               button.btn.btn-sm.btn-default(id="refreshButton" onClick="refreshMatchHistory()")
                 i.fa.fa-refresh
     .col-md-2
