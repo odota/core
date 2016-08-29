@@ -44,7 +44,7 @@
     "datatables-bootstrap3-plugin": "^0.5.0",
     "dota2": "^4.0.0",
     "dota2-minimap-hero-sprites": "^2.0.0",
-    "dotaconstants": "yasp-dota/dotaconstants#fcee355",
+    "dotaconstants": "yasp-dota/dotaconstants#931dcae",
     "dotenv": "^2.0.0",
     "express": "^4.14.0",
     "express-session": "^1.14.0",
