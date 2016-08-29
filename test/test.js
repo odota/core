@@ -293,7 +293,7 @@ describe('api', function ()
 {
     it('should accept api endpoints', function (cb)
     {
-        request('https://raw.githubusercontent.com/yasp-dota/api/gh-pages/swagger.json', function (err, resp, body)
+        request('https://raw.githubusercontent.com/yasp-dota/api/gh-pages/openapi.json', function (err, resp, body)
         {
             if (err)
             {
