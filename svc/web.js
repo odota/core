@@ -388,18 +388,28 @@ app.use(function (req, res, next)
 });
 app.use(function (err, req, res, next)
 {
+    console.error(err);
     res.status(err.status || 500);
-    console.log(err);
     redis.zadd("error_500", moment().format('X'), req.originalUrl);
-    if (config.NODE_ENV !== "development")
+    if (config.NODE_ENV === "development")
+    {
+        //default express handler
+        next(err);
+    }
+    else if (req.originalUrl.indexOf('/api') === 0)
+    {
+        return res.json(
+        {
+            error: err
+        });
+    }
+    else
     {
         return res.render('error/' + (err.status === 404 ? '404' : '500'),
         {
             error: err
         });
     }
-    //default express handler
-    next(err);
 });
 var port = config.PORT || config.FRONTEND_PORT;
 var server = app.listen(port, function ()
