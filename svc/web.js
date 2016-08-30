@@ -103,6 +103,15 @@ app.locals.navbar_pages = {
     {
         "name": "Status",
     },
+    "carry":
+    {
+        "name": "Carry"
+    },
+    "become-the-gamer":
+    {
+        "name": "Ingame",
+        "sponsored": true
+    },
     "blog":
     {
         "name": "Blog",
@@ -118,15 +127,6 @@ app.locals.navbar_pages = {
     {
         "name": "Code",
         "path": "//github.com/odota/yasp"
-    },
-    "carry":
-    {
-        "name": "Carry"
-    },
-    "become-the-gamer":
-    {
-        "name": "Ingame",
-        "sponsored": true
     },
 };
 app.locals.constants.abilities.attribute_bonus = {
