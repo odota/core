@@ -23,23 +23,8 @@ module.exports = function buildStatus(db, redis, cb)
     {
         user_players: function (cb)
         {
-            /*
-            db.from('players').count().whereNotNull('last_login').asCallback(function(err, count)
-            {
-                extractCount(err, count, cb);
-            });
-            */
             redis.zcard('visitors', cb);
         },
-        /*
-        full_history_players: function(cb)
-        {
-            db.from('players').count().whereNotNull('full_history_time').asCallback(function(err, count)
-            {
-                extractCount(err, count, cb);
-            });
-        },
-        */
         tracked_players: function (cb)
         {
             redis.zcard('tracked', cb);
@@ -51,6 +36,10 @@ module.exports = function buildStatus(db, redis, cb)
         matches_last_day: function (cb)
         {
             redis.zcard("added_match", cb);
+        },
+        matches_last_hour: function (cb)
+        {
+            redis.zcount("added_match", moment().subtract(1, 'hour').format('X'), '+inf', cb);
         },
         api_hits: function (cb)
         {
@@ -157,20 +146,5 @@ module.exports = function buildStatus(db, redis, cb)
             res[e] = res[e] ? res[e] + 1 : 1;
         });
         return res;
-    }
-
-    function extractCount(err, count, cb)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        // We need the property "rows" for "matches" and "players". Others just need count
-        if (count.hasOwnProperty("rows"))
-        {
-            count = count.rows;
-        }
-        //psql counts are returned as [{count:'string'}].  If we want to do math with them we need to numberify them
-        cb(err, Number(count[0].count));
     }
 };

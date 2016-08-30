@@ -47,7 +47,7 @@ function processFullHistory(job, cb)
         if (err)
         {
             //non-retryable error while scanning, user had a private account
-            console.log("error: %s", err);
+            console.log("error: %s", JSON.stringify(err));
             updatePlayer(player, cb);
         }
         else

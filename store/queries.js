@@ -1074,9 +1074,9 @@ function getPlayer(db, account_id, cb)
 {
     if (!Number.isNaN(account_id))
     {
-        db.first().from('players').where(
+        db.first('players.account_id', 'personaname', 'name', 'cheese', 'steamid', 'avatar', 'avatarmedium', 'avatarfull', 'profileurl', 'last_login', 'loccountrycode').from('players').leftJoin('notable_players', 'players.account_id', 'notable_players.account_id').where(
         {
-            account_id: Number(account_id)
+            'players.account_id': Number(account_id)
         }).asCallback(cb);
     }
     else

@@ -1,28 +1,29 @@
-var express = require('express');
-var async = require('async');
-var api = express.Router();
-var constants = require('dotaconstants');
-var config = require('../config');
-var request = require('request');
-var rc_secret = config.RECAPTCHA_SECRET_KEY;
-var multer = require('multer')(
+const express = require('express');
+const async = require('async');
+const api = express.Router();
+const constants = require('dotaconstants');
+const config = require('../config');
+const request = require('request');
+const crypto = require('crypto');
+const bodyParser = require('body-parser');
+const multer = require('multer')(
 {
     inMemory: true,
     fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
 const queue = require('../store/queue');
 const rQueue = queue.getQueue('request');
+const fhQueue = queue.getQueue('fullhistory');
 const queries = require('../store/queries');
 const search = require('../store/search');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
-var player_fields = constants.player_fields;
-var subkeys = player_fields.subkeys;
-var countCats = player_fields.countCats;
+const player_fields = constants.player_fields;
+const subkeys = player_fields.subkeys;
+const countCats = player_fields.countCats;
 const utility = require('../util/utility');
-const crypto = require('crypto');
-const bodyParser = require('body-parser');
+const rc_secret = config.RECAPTCHA_SECRET_KEY;
 module.exports = function (db, redis, cassandra)
 {
     api.use(function (req, res, cb)
@@ -567,6 +568,27 @@ module.exports = function (db, redis, cassandra)
                 return cb(err);
             }
             res.json(result);
+        });
+    });
+    api.post('/players/:account_id/refresh', function (req, res, cb)
+    {
+        console.log(req.body);
+        queue.addToQueue(fhQueue,
+        {
+            account_id: req.params.account_id || '1'
+        },
+        {
+            attempts: 1
+        }, function (err, job)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(
+            {
+                jobId: job.jobId
+            });
         });
     });
     api.post('/explorer', bodyParser.json(
