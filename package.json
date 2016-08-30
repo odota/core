@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/opendota/yasp"
+    "url": "http://github.com/odota/yasp"
   },
   "dependencies": {
     "JSONStream": "^1.1.4",
@@ -44,7 +44,7 @@
     "datatables-bootstrap3-plugin": "^0.5.0",
     "dota2": "^4.0.0",
     "dota2-minimap-hero-sprites": "^2.0.0",
-    "dotaconstants": "opendota/dotaconstants#931dcae",
+    "dotaconstants": "odota/dotaconstants#931dcae",
     "dotenv": "^2.0.0",
     "express": "^4.14.0",
     "express-session": "^1.14.0",

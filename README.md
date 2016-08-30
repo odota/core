@@ -1,6 +1,6 @@
 YASP (Yet Another Stats Page)
 ====
-[![Build Status](https://travis-ci.org/opendota/yasp.svg)](https://travis-ci.org/opendota/yasp)
+[![Build Status](https://travis-ci.org/odota/yasp.svg)](https://travis-ci.org/odota/yasp)
 [![Discord](https://img.shields.io/badge/Discord-join%20chat%20%E2%86%92-738bd7.svg?style=flat-square)](https://discord.gg/0o5SQGbXuWCNDcaF)
 
 Overview
@@ -9,9 +9,6 @@ Overview
 * Raw data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
 * Processed data is accessible through a REST API.
   * API documentation: https://api.opendota.com
-* Examples of applications built on the platform:
-  * Website: https://github.com/opendota/ui
-  * Mobile App: https://github.com/opendota/mobile
 
 Funding
 ----
@@ -27,7 +24,7 @@ Tech Stack
 Quickstart (Docker)
 ----
 * Install Docker: `curl -sSL https://get.docker.com/ | sh`
-* Clone the repo: `git clone https://github.com/opendota/yasp`
+* Clone the repo: `git clone https://github.com/odota/yasp`
 * Go into the directory: `cd yasp`
 * Start containers and initialize databases: `sudo bash scripts/dev.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
@@ -69,7 +66,7 @@ Getting Help
 
 Help Wanted
 ----
-* UI/web design experts.  We want to improve the user interface and would appreciate any expertise you can contribute.  See https://github.com/opendota/ui
+* UI/web design experts.  We want to improve the user interface and would appreciate any expertise you can contribute.  See https://github.com/odota/ui
 
 History
 ----

@@ -117,7 +117,7 @@ app.locals.navbar_pages = {
     "code":
     {
         "name": "Code",
-        "path": "//github.com/opendota/yasp"
+        "path": "//github.com/odota/yasp"
     },
     "carry":
     {
