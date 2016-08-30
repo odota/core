@@ -1,6 +1,6 @@
 YASP (Yet Another Stats Page)
 ====
-[![Build Status](https://travis-ci.org/yasp-dota/yasp.svg)](https://travis-ci.org/yasp-dota/yasp)
+[![Build Status](https://travis-ci.org/opendota/yasp.svg)](https://travis-ci.org/opendota/yasp)
 [![Discord](https://img.shields.io/badge/Discord-join%20chat%20%E2%86%92-738bd7.svg?style=flat-square)](https://discord.gg/0o5SQGbXuWCNDcaF)
 
 Overview
@@ -8,10 +8,10 @@ Overview
 * This project provides an open platform with Dota-related data (matches, players, etc.)
 * Raw data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
 * Processed data is accessible through a REST API.
-  * API documentation: https://api.yasp.co
+  * API documentation: https://api.opendota.com
 * Examples of applications built on the platform:
-  * Website: https://github.com/yasp-dota/ui
-  * Mobile App: https://github.com/yasp-dota/mobile
+  * Website: https://github.com/opendota/ui
+  * Mobile App: https://github.com/opendota/mobile
 
 Funding
 ----
@@ -27,7 +27,7 @@ Tech Stack
 Quickstart (Docker)
 ----
 * Install Docker: `curl -sSL https://get.docker.com/ | sh`
-* Clone the repo: `git clone https://github.com/yasp-dota/yasp`
+* Clone the repo: `git clone https://github.com/opendota/yasp`
 * Go into the directory: `cd yasp`
 * Start containers and initialize databases: `sudo bash scripts/dev.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
@@ -63,13 +63,13 @@ Getting Help
 * Feel free to open a new issue to ask questions/get help!
 * You can also find us on Discord if you'd like real-time help.
 * The following blog posts may help you understand the codebase/architecture:
-  * General Learnings: https://blog.yasp.co/2016/05/13/learnings/
-  * Architecture: https://blog.yasp.co/2016/05/15/architecture/
-  * Deployment/Infrastructure: https://blog.yasp.co/2016/08/10/deployment/
+  * General Learnings: https://blog.opendota.com/2016/05/13/learnings/
+  * Architecture: https://blog.opendota.com/2016/05/15/architecture/
+  * Deployment/Infrastructure: https://blog.opendota.com/2016/08/10/deployment/
 
 Help Wanted
 ----
-* UI/web design experts.  We want to improve the user interface and would appreciate any expertise you can contribute.  See https://github.com/yasp-dota/ui
+* UI/web design experts.  We want to improve the user interface and would appreciate any expertise you can contribute.  See https://github.com/opendota/ui
 
 History
 ----

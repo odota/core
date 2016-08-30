@@ -106,18 +106,18 @@ app.locals.navbar_pages = {
     "blog":
     {
         "name": "Blog",
-        "path": "//blog.yasp.co"
+        "path": "//blog.opendota.com"
     },
     "api":
     {
         "name": "API",
-        "path": "//api.yasp.co",
+        "path": "//api.opendota.com",
         "new-feature": true,
     },
     "code":
     {
         "name": "Code",
-        "path": "//github.com/yasp-dota/yasp"
+        "path": "//github.com/opendota/yasp"
     },
     "carry":
     {
@@ -125,7 +125,7 @@ app.locals.navbar_pages = {
     },
     "become-the-gamer":
     {
-        "name": "InGame",
+        "name": "Ingame",
         "sponsored": true
     },
 };
