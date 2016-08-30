@@ -10,15 +10,14 @@ block content
             span
               a(href=player.profile.profileurl || "#", target="_blank")
                 img(style="display:inline-block; margin-right:5px;" src='#{player.profile.avatar}').img-thumbnail
-          span(style="word-wrap:break-word;") #{player.profile.personaname || player.profile.account_id}
+          span(style="word-wrap:break-word;") #{player.profile.name || player.profile.personaname || player.profile.account_id}
           if player.profile.loccountrycode && constants.countries[player.profile.loccountrycode]
             span: abbr(title=constants.countries[player.profile.loccountrycode].name.common): span.flag-icon(style="margin:5px;" class="flag-icon-"+player.profile.loccountrycode.toLowerCase())
           if player.profile.last_login
             span: img.user(src=constants.ICON_PATH, title="This user is registered!")
-          if player.profile.cheese
-            div(style="margin-top:1%;")
-              i.flaticon-1.small-cheese(style="display:inline-block")
-              small(style="margin-left:.5em") x #{' '} #{player.profile.cheese}
+          div(style="margin-top:1%;")
+            i.flaticon-1.small-cheese(style="display:inline-block")
+            small(style="margin-left:.5em") x #{' '} #{player.profile.cheese || 0}
     .col-md-4
       h4
             span.text-info.rating

@@ -9,7 +9,7 @@ mixin hero_td(player, metadata)
         =player.hero_id
       div(class=(player.isRadiant || player.team) ? "text-success" : "text-danger")
         if (player.personaname || player.account_id)
-          a(href='/players/#{player.account_id}')= player.personaname || player.account_id
+          a(href='/players/#{player.account_id}')= player.name || player.personaname || player.account_id
         else if ("team" in player)
           =player.team ? "The Radiant" : "The Dire"
         else
