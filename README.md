@@ -1,6 +1,5 @@
 YASP (Yet Another Stats Page)
 ====
-[![Build Status](https://travis-ci.org/odota/yasp.svg)](https://travis-ci.org/odota/yasp)
 [![Discord](https://img.shields.io/badge/Discord-join%20chat%20%E2%86%92-738bd7.svg?style=flat-square)](https://discord.gg/0o5SQGbXuWCNDcaF)
 
 Overview
