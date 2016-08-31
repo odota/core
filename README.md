@@ -7,10 +7,7 @@ Overview
 * This project provides an open platform with Dota-related data (matches, players, etc.)
 * Raw data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
 * Processed data is accessible through a REST API.
-  * API documentation: https://api.yasp.co
-* Examples of applications built on the platform:
-  * Website: https://github.com/yasp-dota/ui
-  * Mobile App: https://github.com/yasp-dota/mobile
+  * API documentation: https://odota.github.io/api
 
 Funding
 ----
@@ -65,10 +62,6 @@ Getting Help
   * General Learnings: https://blog.yasp.co/2016/05/13/learnings/
   * Architecture: https://blog.yasp.co/2016/05/15/architecture/
   * Deployment/Infrastructure: https://blog.yasp.co/2016/08/10/deployment/
-
-Help Wanted
-----
-* UI/web design experts.  We want to improve the user interface and would appreciate any expertise you can contribute.  See https://github.com/yasp-dota/ui
 
 History
 ----
