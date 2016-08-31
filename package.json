@@ -84,7 +84,6 @@
     "json-loader": "^0.5.4",
     "mocha": "^3.0.1",
     "nock": "^8.0.0",
-    "npm-check-updates": "2.8.0",
     "style-loader": "^0.13.1",
     "supertest": "^2.0.0",
     "url-loader": "^0.5.7",
