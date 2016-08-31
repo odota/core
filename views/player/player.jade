@@ -41,7 +41,7 @@ block content
                 small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
 
             span.rating
-              span: abbr(title="MMR estimate based on available data from peer players. This is an average of the visible MMR of the recent matches played by this user.")
+              span: abbr(title="MMR estimate based on data from peer players. This is the mean visible MMR of the recent matches played by this user.")
                 i.fa.fa-fw.fa-question-circle
               small#estimate(style="margin-left:.5em;display:inline-block;")
                 if player.mmr_estimate && player.mmr_estimate.estimate && player.mmr_estimate.stdDev
