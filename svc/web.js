@@ -115,18 +115,18 @@ app.locals.navbar_pages = {
     "blog":
     {
         "name": "Blog",
-        "path": "//blog.opendota.com"
+        "path": "//odota.github.io/blog"
     },
     "api":
     {
         "name": "API",
-        "path": "//api.opendota.com",
+        "path": "//odota.github.io/api",
         "new-feature": true,
     },
     "code":
     {
         "name": "Code",
-        "path": "//github.com/odota/yasp"
+        "path": "//github.com/odota"
     },
 };
 app.locals.constants.abilities.attribute_bonus = {
