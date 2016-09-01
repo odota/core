@@ -10,16 +10,15 @@ block content
             span
               a(href=player.profile.profileurl || "#", target="_blank")
                 img(style="display:inline-block; margin-right:5px;" src='#{player.profile.avatar}').img-thumbnail
-          span(style="word-wrap:break-word;") #{player.profile.personaname || player.profile.account_id}
+          span(style="word-wrap:break-word;") #{player.profile.name || player.profile.personaname || player.profile.account_id}
           if player.profile.loccountrycode && constants.countries[player.profile.loccountrycode]
             span: abbr(title=constants.countries[player.profile.loccountrycode].name.common): span.flag-icon(style="margin:5px;" class="flag-icon-"+player.profile.loccountrycode.toLowerCase())
           if player.profile.last_login
             span: img.user(src=constants.ICON_PATH, title="This user is registered!")
-          if player.profile.cheese
-            div(style="margin-top:1%;")
-              i.flaticon-1.small-cheese(style="display:inline-block")
-              small(style="margin-left:.5em") x #{' '} #{player.profile.cheese}
-    .col-md-4
+          div(style="margin-top:1%;")
+            i.flaticon-1.small-cheese(style="display:inline-block")
+            small(style="margin-left:.5em") x #{' '} #{player.profile.cheese || 0}
+    .col-md-3
       h4
             span.text-info.rating
               span: abbr(title="Solo MMR")
@@ -42,27 +41,32 @@ block content
                 small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitive_rank;})),0) || "N/A"}
 
             span.rating
-              span: abbr(title="MMR estimate based on available data from peer players. This is an estimate of the population mean MMR of the recent matches played by this user.")
+              span: abbr(title="MMR estimate based on data from peer players. This is the mean visible MMR of the recent matches played by this user.")
                 i.fa.fa-fw.fa-question-circle
               small#estimate(style="margin-left:.5em;display:inline-block;")
-                if player.mmr_estimate.estimate
-                  span: abbr(title="95% confidence interval: +/- " + (player.mmr_estimate.stdDev ? (player.mmr_estimate.stdDev*2).toFixed(0) : 0) + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
+                if player.mmr_estimate && player.mmr_estimate.estimate && player.mmr_estimate.stdDev
+                  span: abbr(title="Standard deviation: " + player.mmr_estimate.stdDev.toFixed(2) + "<br>Matches: " + player.mmr_estimate.n) #{player.mmr_estimate.estimate}
                 else
                   ="N/A"
-    .col-md-2
+    .col-md-3
       h4
         span.text-primary
           //i.fa.fa-trophy
-          small(style="margin-left:.5em")
+          small(style="margin-left:.5em;margin-right:.5em;")
             span.text-success(style="margin:0 4px;") #{(player.win)}
             span -
             span.text-danger(style="margin:0 4px;") #{player.lose}
             if (player.win+player.lose)
               span (#{(player.win/(player.win+player.lose)*100).toFixed(2)}%)
+          abbr(title="Refresh Match History: If this player has recently changed their match privacy setting, this will queue a scan to find the missing matches.")
+            button.btn.btn-sm.btn-default(id="refreshButton" onClick="refreshMatchHistory()")
+              i.fa.fa-refresh
     .col-md-2
-        a(href="#{'https://dotacoach.org/Hire/Yasp?matchID=' + Math.max(Math.max.apply(null, player.matches.map(function(m){return m.match_id;})),-1) + '&userSteamId=' + (user ? user.account_id : '') + '&playerSteamId=' + player.profile.account_id + '&playerMmr=' + Math.max(player.solo_competitive_rank || -1, player.competitive_rank || -1)}", class="btn btn-sm btn-default")
-          img(src='/public/images/dotacoach-32x24.png', style="margin: -2px; padding-right: 4px;")
-          | Ask a Coach
+      h4
+        span
+          a(href="#{'https://dotacoach.org/Hire/Yasp?matchID=' + Math.max(Math.max.apply(null, player.matches.map(function(m){return m.match_id;})),-1) + '&userSteamId=' + (user ? user.account_id : '') + '&playerSteamId=' + player.profile.account_id + '&playerMmr=' + Math.max(player.solo_competitive_rank || -1, player.competitive_rank || -1)}", class="btn btn-sm btn-default")
+            img(src='/public/images/dotacoach-32x24.png', style="margin: -2px; padding-right: 4px;")
+            | Ask a Coach
 
   .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive
@@ -76,6 +80,11 @@ block content
 
 append footer_assets
   script.
+    function refreshMatchHistory(){
+      fetch('/api/players/#{player.profile.account_id}/refresh', {method: 'POST'});
+      document.getElementById('refreshButton').style.display = 'none';
+    }
+    
     $('#matches').dataTable({
         "order": [],
         info: false,

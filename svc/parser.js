@@ -30,7 +30,7 @@ var async = require('async');
 const readline = require('readline');
 var spawn = cp.spawn;
 var insertMatch = queries.insertMatch;
-var benchmarkMatch = queries.benchmarkMatch;
+var getMatchBenchmarks = queries.getMatchBenchmarks;
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 //EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
@@ -59,28 +59,6 @@ app.get('/redis/:key', function (req, res, cb)
 });
 app.listen(config.PARSER_PORT);
 //END EXPRESS
-// Start Java parse server
-var parseServer = spawn("java", ["-jar", "-Xmx256m", "./clarity/target/stats-0.1.0.jar", config.PARSE_SERVER_PORT],
-{
-    stdio: ['pipe', 'pipe', 'pipe'],
-    encoding: 'utf8'
-});
-parseServer.stderr.on('data', function printStdErr(data)
-{
-    if (config.NODE_ENV === 'development')
-    {
-        //require('fs').appendFileSync('./parser.log', data);
-    }
-    console.log(data.toString());
-});
-parseServer.on('exit', function ()
-{
-    throw new Error("restarting due to parse server exit");
-});
-process.on('exit', function ()
-{
-    parseServer.kill();
-});
 pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
 {
     console.log("parse job: %s", job.jobId);
@@ -143,6 +121,15 @@ pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
         return cb(err, match.match_id);
     });
 });
+pQueue.on('completed', function (job)
+{
+    // Delay the removal so that the request polling has a chance to check for completion.
+    // If interrupted, the regular cleanup process in worker will take care of orphaned jobs.
+    setTimeout(function ()
+    {
+        job.remove();
+    }, 60 * 1000);
+});
 
 function insertUploadedParse(match, cb)
 {
@@ -161,7 +148,7 @@ function insertUploadedParse(match, cb)
         computeMatchData(p);
     });
     computeMatchData(match);
-    benchmarkMatch(redis, match, function (err)
+    getMatchBenchmarks(redis, match, function (err)
     {
         if (err)
         {
@@ -236,7 +223,7 @@ function runParse(match, job, cb)
     bz.stdin.on('error', exit);
     bz.stdout.on('error', exit);
     inStream.pipe(bz.stdin);
-    var parser = request.post('http://localhost:' + config.PARSE_SERVER_PORT).on('error', exit);
+    var parser = request.post(config.PARSER_HOST).on('error', exit);
     bz.stdout.pipe(parser);
     const parseStream = readline.createInterface(
     {

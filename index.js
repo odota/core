@@ -17,7 +17,7 @@ else if (group)
 {
     var pm2 = require('pm2');
     var async = require('async');
-    var manifest = require('./profiles/everything.json').apps;
+    var manifest = require('./profiles/full.json').apps;
     pm2.connect(function()
     {
         async.each(manifest, function start(app, cb)

@@ -9,6 +9,7 @@ const supertest = require('supertest');
 const pg = require('pg');
 const cass = require('cassandra-driver');
 const fs = require('fs');
+const request = require('request');
 const config = require('../config');
 const constants = require('dotaconstants');
 const redis = require('../store/redis');
@@ -19,7 +20,6 @@ const buildMatch = require('../store/buildMatch');
 const utility = require('../util/utility');
 const details_api = require('./details_api.json');
 const init_db = "postgres://postgres:postgres@localhost/postgres";
-const replay_dir = "./test/testfiles/";
 const wait = 90000;
 // these are loaded later, as the database needs to be created when these are required
 var db;
@@ -172,8 +172,16 @@ describe("replay parse", function ()
                     players: [],
                 }
             });
-            //fake replay download
-            nock("http://replay1.valve.net").get('/570/' + key).replyWithFile(200, replay_dir + key);
+            nock("http://replay1.valve.net").get('/570/' + key).reply(200, function (uri, requestBody, cb)
+            {
+                request('https://github.com/yasp-dota/testfiles/raw/master/1781962623_1.dem',
+                {
+                    encoding: null
+                }, function (err, resp, body)
+                {
+                    return cb(err, body);
+                });
+            });
             var match = {
                 match_id: tests[key].match_id,
                 start_time: tests[key].start_time,
@@ -194,11 +202,10 @@ describe("replay parse", function ()
                             {
                                 clearInterval(poll);
                                 //ensure parse data got inserted
-                                buildMatch(
+                                buildMatch(tests[key].match_id,
                                 {
                                     db: db,
                                     redis: redis,
-                                    match_id: tests[key].match_id
                                 }, function (err, match)
                                 {
                                     if (err)
@@ -282,19 +289,26 @@ describe("parsed match page", function ()
         });
     });
 });
-//TODO just test based on the documented swagger API
-describe("/api/items", function ()
+describe('api', function ()
 {
-    it('should 200', function (done)
+    it('should accept api endpoints', function (cb)
     {
-        supertest(app).get('/api/items').expect(200).end(done);
-    });
-});
-describe("/api/abilities", function ()
-{
-    it('should 200', function (done)
-    {
-        supertest(app).get('/api/abilities').expect(200).end(done);
+        request('https://raw.githubusercontent.com/yasp-dota/api/gh-pages/openapi.json', function (err, resp, body)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            body = JSON.parse(body);
+            async.eachSeries(Object.keys(body.paths), function (path, cb)
+            {
+                supertest(app).get('/api' + path.replace(/{.*}/, 1)).end(function (err, res)
+                {
+                    console.log(path, res.length);
+                    return cb(err);
+                });
+            }, cb);
+        });
     });
 });
 describe('generateMatchups', function ()

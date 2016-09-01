@@ -16,7 +16,7 @@ block match_content
             each val, key in player.benchmarks || {}
                 td
                   if val.raw !== undefined && val.raw !== null
-                    div: abbr(title=util.format("This player's %s %s is equal or higher than %s% of performances on this hero.", Number(val.raw.toFixed(2)), prettyPrint(key), (val.pct*100).toFixed(2)))
+                    div: abbr(title=util.format("This player's %s %s is equal or higher than %s% of recent performances on this hero.", Number(val.raw.toFixed(2)), prettyPrint(key), (val.pct*100).toFixed(2)))
                       - var pct = val.pct
                       - var pctD = (val.pct*100).toFixed(2)+"%"
                       span(class=percentToTextClass(pct).className)=pctD

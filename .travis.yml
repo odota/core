@@ -12,16 +12,12 @@ notifications:
 before_install:
 install: true
 before_script:
-- sudo service postgresql stop
-- docker run -d --privileged --name cassandra --net=host -e "CASSANDRA_LISTEN_ADDRESS=127.0.0.1" cassandra:3
-- docker run -d --privileged --name postgres --net=host postgres:9.5
-- docker run -d --privileged --name redis --net=host redis:3
-- docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
+- sudo bash scripts/prebuild.sh
 script:
 # run test outside container
 #- npm run test && (npm run coveralls || true)
-# run test inside container, don't need to build since the docker image already built
-- docker run -e "TEST_SKIP_BUILD=y" -e "COVERALLS_SERVICE_NAME=travis-ci" -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN --net=host -i yasp/yasp:latest sh -c 'npm run test && (npm run coveralls || true)'
+# run test inside container
+- docker run -e "COVERALLS_SERVICE_NAME=travis-ci" -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN --net=host -i yasp/yasp sh -c 'npm run test && (npm run coveralls || true)'
 deploy:
   provider: script
   skip_cleanup: true

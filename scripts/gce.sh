@@ -35,7 +35,7 @@ gcloud compute --project "peaceful-parity-87002" http-health-checks create "lb-c
 gcloud compute --project "peaceful-parity-87002" target-pools create "lb-pool" --region "us-central1" --health-check "lb-check" --session-affinity "NONE"
 gcloud compute --project "peaceful-parity-87002" forwarding-rules create "lb-rule" --region "us-central1" --address "104.197.19.32" --ip-protocol "TCP" --port-range "80" --target-pool "lb-pool"
 gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "web-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/lb-pool"
-gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "2" --target-cpu-utilization "0.7"
+gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "2" --target-cpu-utilization "0.8"
 
 #backend
 gcloud compute instance-groups managed delete -q backend-group-1
@@ -53,7 +53,9 @@ gcloud compute instance-groups managed delete -q parser-group-1
 gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata startup-script='#!/bin/bash
 curl -sSL https://get.docker.com/ | sh
-sudo docker run -d --name=parser --restart=always -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest sh -c "npm start"
+sudo docker run -d --name parserHost --restart=always --net=host yasp/parser
+sudo docker start parserHost
+sudo docker run -d --name=parser --restart=always --net=host -e PROVIDER=gce -e ROLE=parser yasp/yasp:latest sh -c "npm start"
 sudo docker start parser
 '
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
