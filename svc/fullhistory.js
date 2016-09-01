@@ -17,7 +17,7 @@ var urllib = require('url');
 var generateJob = utility.generateJob;
 var api_keys = config.STEAM_API_KEY.split(",");
 //number of api requests to send at once
-var parallelism = Math.min(10, api_keys.length);
+var parallelism = Math.min(20, api_keys.length);
 fhQueue.process(1, processFullHistory);
 
 function processFullHistory(job, cb)
