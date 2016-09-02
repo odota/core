@@ -165,6 +165,7 @@ function invokeInterval(func)
             {
                 result.timestamp = ~~(new Date() / 1000);
                 redis.hset('health', func.name, JSON.stringify(result));
+                redis.expire('health', 900);
             }
             console.timeEnd(func.name);
             setTimeout(invoker, result && result.delay ? result.delay : 10000);
