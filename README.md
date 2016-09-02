@@ -59,9 +59,9 @@ Getting Help
 * Feel free to open a new issue to ask questions/get help!
 * You can also find us on Discord if you'd like real-time help.
 * The following blog posts may help you understand the codebase/architecture:
-  * General Learnings: https://blog.opendota.com/2016/05/13/learnings/
-  * Architecture: https://blog.opendota.com/2016/05/15/architecture/
-  * Deployment/Infrastructure: https://blog.opendota.com/2016/08/10/deployment/
+  * General Learnings: https://odota.github.io/blog/2016/05/13/learnings/
+  * Architecture: https://odota.github.io/blog/2016/05/15/architecture/
+  * Deployment/Infrastructure: https://odota.github.io/blog/2016/08/10/deployment/
 
 History
 ----
