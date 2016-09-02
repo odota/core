@@ -55,7 +55,7 @@ block match_content
                   div(style=style+"border-bottom:"+borderStyle+"height:50%;top:0%;")
                   div(style=style+"border-left:"+borderStyle+"height:50%;top:0%;")
 
-            +hero_td(player, player.abandons ? constants.leaver_status[player.leaver_status] : "")
+            +hero_td(player, player.abandons ? constants.leaver_status[player.leaver_status] : "", true)
             td
               //img.img-sm(src=player.avatar)
               if (player.last_login)
@@ -130,7 +130,10 @@ block match_content
       h3 Buildings
       #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
         img.map(src=constants.map_url, alt="map")
-  
+
+block match_footer
+  +pvgna_footer
+
 append footer_assets
   script.
     buildMap();
