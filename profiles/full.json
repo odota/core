@@ -14,7 +14,7 @@
       "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "backend",
       "exec_mode": "cluster",
-      "instances": 1
+      "instances": 2
     },
     {
       "script": "svc/profiler.js",
