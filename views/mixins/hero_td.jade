@@ -1,13 +1,14 @@
 include /mixins/pvgna
 
-mixin hero_td(player, metadata)
+mixin hero_td(player, metadata, display_pvgna)
   - var hero = constants.heroes[player.hero_id]
   - var slot_color = constants.player_colors[player.player_slot]
   td(style="padding:1px")
     .img-text.img-text-lg(style="float:initial;")
       if hero
         img.img-md(src=hero.img, title="#{hero.localized_name}", style="border-left-color:#{slot_color}").player-color
-        +pvgna(hero)
+        if display_pvgna
+          +pvgna(hero)
       else
         =player.hero_id
       div(class=(player.isRadiant || player.team) ? "text-success" : "text-danger")

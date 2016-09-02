@@ -1,6 +1,6 @@
 include /mixins/pvgna
 
-mixin match_table(matches)
+mixin match_table(matches, display_pvgna)
   h3 Matches
   div
     table.table.table-condensed#matches.table-striped.rankable(style="border:1px solid #666;")
@@ -31,7 +31,8 @@ mixin match_table(matches)
               .img-text
                 if hero
                   img.img-sm(src=hero.img, title=hero.localized_name)
-                  +pvgna(hero)
+                  if display_pvgna
+                    +pvgna(hero)
                 else
                   =match.hero_id
             td(class=win ? "text-success" : "text-danger")=win ? "W" : "L"

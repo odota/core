@@ -1,7 +1,7 @@
 include /mixins/progress_bar
 include /mixins/pvgna
 
-mixin hero_table(rows, short)
+mixin hero_table(rows, short, display_pvgna)
   h3 Heroes
   table.table.table-condensed#heroes.table-striped.rankable
     thead
@@ -22,7 +22,8 @@ mixin hero_table(rows, short)
           td.text-left.small.img-text
             if hero
               img.img-sm(src=hero.img, title=hero.localized_name)
-              +pvgna(hero)
+              if display_pvgna
+                +pvgna(hero)
               =hero.localized_name
           td.rankable=h.games
           td.rankable
