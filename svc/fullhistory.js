@@ -27,7 +27,7 @@ function processFullHistory(job, cb)
     var heroArray = job.short_history || config.NODE_ENV === "test" ? ["0"] : Object.keys(constants.heroes);
     //use steamapi via specific player history and specific hero id (up to 500 games per hero)
     player.match_ids = {};
-    async.eachLimit(heroArray, parallelism, function(hero_id, cb)
+    async.eachLimit(heroArray, parallelism, function (hero_id, cb)
     {
         //make a request for every possible hero
         var container = generateJob("api_history",
@@ -36,12 +36,12 @@ function processFullHistory(job, cb)
             hero_id: hero_id,
             matches_requested: 100
         });
-        getApiMatchPage(player, container.url, function(err)
+        getApiMatchPage(player, container.url, function (err)
         {
             console.log("%s matches found", Object.keys(player.match_ids).length);
             cb(err);
         });
-    }, function(err)
+    }, function (err)
     {
         player.fh_unavailable = Boolean(err);
         if (err)
@@ -52,56 +52,56 @@ function processFullHistory(job, cb)
         }
         else
         {
-            /*
-            //REMOVED to eliminate postgres dependency
             //check what matches the player is already associated with
-            db.select('match_id').from('player_matches').where({
-                account_id: player.account_id
-            }).
-            asCallback(function(err, docs) {
-                if (err) {
-                    return cb(err);
-                }
-                console.log("%s matches found, %s already in db, %s to add", Object.keys(player.match_ids).length, docs.length, Object.keys(player.match_ids).length - docs.length);
-                //iterate through db results, delete match_id key if this player has this match already
-                //will re-request and update matches where this player was previously anonymous
-                for (var i = 0; i < docs.length; i++) {
-                    var match_id = docs[i].match_id;
-                    delete player.match_ids[match_id];
-                }
-                */
-            //iterate through keys, make api_details requests
-            async.eachLimit(Object.keys(player.match_ids), parallelism, function(match_id, cb)
+            queries.getPlayerMatches(player.account_id,
             {
-                //process api jobs directly with parallelism
-                var container = generateJob("api_details",
-                {
-                    match_id: Number(match_id)
-                });
-                getData(container.url, function(err, body)
-                {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    var match = body.result;
-                    insertMatch(db, redis, match,
-                    {
-                        type: "api",
-                        cassandra: cassandra,
-                        skipAbilityUpgrades: true,
-                        skipParse: true,
-                    }, cb);
-                });
-            }, function(err)
+                project: ['match_id']
+            }, function (err, docs)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                updatePlayer(player, cb);
+                console.log("%s matches found, %s already in db, %s to add", Object.keys(player.match_ids).length, docs.length, Object.keys(player.match_ids).length - docs.length);
+                //iterate through db results, delete match_id key if this player has this match already
+                //will re-request and update matches where this player was previously anonymous
+                for (var i = 0; i < docs.length; i++)
+                {
+                    var match_id = docs[i].match_id;
+                    delete player.match_ids[match_id];
+                }
+                //iterate through keys, make api_details requests
+                async.eachLimit(Object.keys(player.match_ids), parallelism, function (match_id, cb)
+                {
+                    //process api jobs directly with parallelism
+                    var container = generateJob("api_details",
+                    {
+                        match_id: Number(match_id)
+                    });
+                    getData(container.url, function (err, body)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        var match = body.result;
+                        insertMatch(db, redis, match,
+                        {
+                            type: "api",
+                            cassandra: cassandra,
+                            skipAbilityUpgrades: true,
+                            skipParse: true,
+                        }, cb);
+                    });
+                }, function (err)
+                {
+                    if (err)
+                    {
+                        return cb(err);
+                    }
+                    updatePlayer(player, cb);
+                });
             });
-            //});
         }
     });
 
@@ -115,7 +115,7 @@ function processFullHistory(job, cb)
         }).where(
         {
             account_id: player.account_id
-        }).asCallback(function(err)
+        }).asCallback(function (err)
         {
             if (err)
             {
@@ -128,7 +128,7 @@ function processFullHistory(job, cb)
 
     function getApiMatchPage(player, url, cb)
     {
-        getData(url, function(err, body)
+        getData(url, function (err, body)
         {
             if (err)
             {
@@ -144,7 +144,7 @@ function processFullHistory(job, cb)
             //response for match history for single player
             var resp = body.result.matches;
             var start_id = 0;
-            resp.forEach(function(match, i)
+            resp.forEach(function (match, i)
             {
                 //add match ids on each page to match_ids
                 var match_id = match.match_id;
