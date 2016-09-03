@@ -87,7 +87,7 @@ function updateMatchups(match, cb)
     {
         //db.raw(`INSERT INTO matchups (matchup, num) VALUES (?, 1) ON CONFLICT(matchup) DO UPDATE SET num = matchups.num + 1`, [key]).asCallback(cb);
         //cassandra.execute(`UPDATE matchups SET num = num + 1 WHERE matchup = ?`, [key], {prepare: true}, cb);
-        redis.hincrby('matchups', key, 1, cb);
+        redis.hincrby('matchups', key, 2, cb);
     }, cb);
 }
 
