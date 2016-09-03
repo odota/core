@@ -1,4 +1,6 @@
-mixin match_table(matches)
+include /mixins/pvgna
+
+mixin match_table(matches, display_pvgna)
   h3 Matches
   div
     table.table.table-condensed#matches.table-striped.rankable(style="border:1px solid #666;")
@@ -26,10 +28,13 @@ mixin match_table(matches)
           tr
             td: a(class=win ? "text-success" : "text-danger", href="/matches/"+match.match_id)=match.match_id
             td
-              if hero
-                img.img-sm(src=hero.img, title=hero.localized_name)
-              else
-                =match.hero_id
+              .img-text
+                if hero
+                  img.img-sm(src=hero.img, title=hero.localized_name)
+                  if display_pvgna
+                    +pvgna(hero)
+                else
+                  =match.hero_id
             td(class=win ? "text-success" : "text-danger")=win ? "W" : "L"
             td.small=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
 
