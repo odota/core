@@ -85,9 +85,7 @@ function populate(e, container)
         else
         {
             //we must use the full reference since this is a primitive type
-            //use the value most of the time, but key when stuns since value only holds Integers in Java
-            //replace the value directly
-            container.players[e.slot][e.type] = e.value || Number(e.key);
+            container.players[e.slot][e.type] = e.value;
         }
         break;
     }
