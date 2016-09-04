@@ -10,6 +10,9 @@ function populate(e, container)
     case 'chat':
         container.chat.push(JSON.parse(JSON.stringify(e)));
         break;
+    case 'cosmetics':
+        container.cosmetics = JSON.parse(e.key);
+        break;
     case 'CHAT_MESSAGE_TOWER_KILL':
     case 'CHAT_MESSAGE_TOWER_DENY':
     case 'CHAT_MESSAGE_BARRACKS_KILL':
