@@ -34,7 +34,7 @@ function populate(e, container)
         if (typeof t === "undefined")
         {
             //container.players[0] doesn't have a type for this event
-            console.log("no field in parsed_data.players for %s", e.type);
+            //console.log("no field in parsed_data.players for %s", e.type);
             return;
         }
         else if (e.posData)
