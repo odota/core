@@ -95,19 +95,24 @@ app.locals.navbar_pages = {
     {
         "name": "MMStats"
     },
+    "search":
+    {
+        "name": "Search",
+    },
     "carry":
     {
         "name": "Carry"
     },
-    "search":
-    {
-        "name": "Search"
-    },
     "become-the-gamer":
     {
-        "name": "In-Game Stats",
+        "name": "Ingame",
         "sponsored": true
-    }
+    },
+    "blog":
+    {
+        "name": "Blog",
+        "path": "//odota.github.io/blog"
+    },
 };
 app.locals.constants.abilities.attribute_bonus = {
     dname: "Attribute Bonus",
@@ -251,6 +256,7 @@ app.use('/api', api(db, redis, cassandra));
 //END service/admin routes
 //START standard routes.
 //TODO remove these with SPA
+app.use('/favicon.ico', express.static('./public/images/favicon.ico'));
 app.route('/').get(function (req, res, next)
 {
     if (req.user)

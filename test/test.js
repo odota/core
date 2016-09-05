@@ -174,7 +174,7 @@ describe("replay parse", function ()
             });
             nock("http://replay1.valve.net").get('/570/' + key).reply(200, function (uri, requestBody, cb)
             {
-                request('https://github.com/yasp-dota/testfiles/raw/master/1781962623_1.dem',
+                request('https://github.com/odota/testfiles/raw/master/1781962623_1.dem',
                 {
                     encoding: null
                 }, function (err, resp, body)
@@ -293,7 +293,7 @@ describe('api', function ()
 {
     it('should accept api endpoints', function (cb)
     {
-        request('https://raw.githubusercontent.com/yasp-dota/api/gh-pages/openapi.json', function (err, resp, body)
+        request('https://raw.githubusercontent.com/odota/api/gh-pages/openapi.json', function (err, resp, body)
         {
             if (err)
             {
