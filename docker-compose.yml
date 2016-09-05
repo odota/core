@@ -1,5 +1,3 @@
-# Does not set up Cassandra
-
 # You don't usually need to edit this file.
 # If it does not fit your personal use case, docker-compose.override.yml is a preferred way to go.
 
@@ -10,13 +8,18 @@ services:
       context: .
       dockerfile: docker/postgres.dockerfile
     network_mode: host
+  cassandra:
+    build:
+      context: .
+      dockerfile: docker/cassandra.dockerfile
+    network_mode: host
   cache:
     image: redis:3
     network_mode: host
   web:
     build: .
     # 'basic' to launch basic configuration as in profiles/basic.json
-    # 'everything' to launch all the services as in profiles/everything.json
+    # 'full' to launch all the services as in profiles/full.json
     # 'custom-profile' to launch all services as in profiles/custom.json (you'll have to provide it)
     # or just override the whole command with your script if existing does not fit your needs
     command: ./docker/main-launch.sh basic 

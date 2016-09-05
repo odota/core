@@ -20,6 +20,16 @@ sqlq.forEach(function (f)
     sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
 });
 console.log("[WORKER] starting worker");
+invokeInterval(function getPvgnaAPI(cb) {
+    utility.getData('https://pvgna.com/yasp', function (err, guides)
+    {
+        if (err) {
+            console.log("Received a bad response from pvgna");
+            return cb(err);
+        }
+        redis.set("pvgna", JSON.stringify(guides), cb);
+    });
+}, 60 * 60 * 1000 * 24) //Once every day
 invokeInterval(function doBuildSets(cb)
 {
     buildSets(db, redis, cb);
@@ -123,7 +133,7 @@ invokeInterval(function notablePlayers(cb)
             }, cb);
         }, cb);
     });
-}, 10 * 60 * 1000);
+}, 30 * 60 * 1000);
 invokeInterval(function leagues(cb)
 {
     var container = utility.generateJob("api_leagues",
@@ -160,7 +170,7 @@ invokeInterval(function leagues(cb)
             }, cb);
         });
     });
-}, 10 * 60 * 1000);
+}, 30 * 60 * 1000);
 invokeInterval(function teams(cb)
 {
     db.raw(`select distinct team_id from team_match`).asCallback(function (err, result)
@@ -197,12 +207,26 @@ invokeInterval(function teams(cb)
 }, 60 * 60 * 1000);
 invokeInterval(function heroes(cb)
 {
-    async.eachSeries(Object.keys(constants.heroes), function (hero_id, cb)
+    var container = utility.generateJob('api_heroes',
     {
-        const hero = constants.heroes[hero_id];
-        queries.upsert(db, 'heroes', hero,
+        language: 'english'
+    });
+    utility.getData(container.url, function (err, body)
+    {
+        if (err)
         {
-            id: hero.id
+            return cb(err);
+        }
+        if (!body || !body.result || !body.result.heroes)
+        {
+            return cb();
+        }
+        async.eachSeries(body.result.heroes, function (hero, cb)
+        {
+            queries.upsert(db, 'heroes', hero,
+            {
+                id: hero.id
+            }, cb);
         }, cb);
     });
 }, 60 * 60 * 1000);

@@ -11,7 +11,6 @@ servers
 output*
 coverage
 constants*.json
-java_parser/target
 /bin/
 Thumbs.db
 public/build/*
@@ -24,8 +23,6 @@ redis-config.yaml
 postgres-config.yaml
 dependency-reduced-pom.xml
 kubernetes
-yasp.sql
 Procfile.dev
-
 docker-compose.override.yml
 profiles/custom.json

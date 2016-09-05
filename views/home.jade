@@ -5,16 +5,15 @@ include /mixins/data_table_header
 
 block head
   //link(rel="import" href="/public/paper-fab-menu.html")
-  link(rel='stylesheet', href="/public/css/yasp_home.css")
+  link(rel='stylesheet', href="/public/css/home.css")
 
 block page_content
   #top.header.alt.vert
     .container
       br
-      h1.home YASP
-      p.lead Yet Another Stats Page
+      h1(style='font-size:64px;')=tooltips.app_name
       a.btn.btn-default.btn-lg(href='/login')
-        img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
+        img(src='//steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
         h4 Start parsing my matches
       div &nbsp;
       a.btn.btn-default.btn-lg(href="/request")
@@ -28,12 +27,12 @@ block page_content
     a.arrow-wrap(href='#philosophy')
       span.arrow
   
-  paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
-      paper-fab-menu-item(icon='expand-less', color='rgb(23, 190, 207);', tooltip='Scroll up!', link="#top")#up
-      paper-fab-menu-item(icon='filter-list', color='rgb(255, 127, 14);', tooltip='TL;DR', link="#content")#tldr
-      paper-fab-menu-item(icon='star', color='rgb(44, 160, 44);', tooltip='Features', link="#match_statistics")#features
-      paper-fab-menu-item(icon='redeem', color='red;', tooltip='We need your help!', link="#cheeses")#cheese
   //-
+    paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
+        paper-fab-menu-item(icon='expand-less', color='rgb(23, 190, 207);', tooltip='Scroll up!', link="#top")#up
+        paper-fab-menu-item(icon='filter-list', color='rgb(255, 127, 14);', tooltip='TL;DR', link="#content")#tldr
+        paper-fab-menu-item(icon='star', color='rgb(44, 160, 44);', tooltip='Features', link="#match_statistics")#features
+        paper-fab-menu-item(icon='redeem', color='red;', tooltip='We need your help!', link="#cheeses")#cheese
     #philosophy
       .right-img
           .container
@@ -67,66 +66,10 @@ block page_content
               img.circle-margin(src='../public/images/present.png')
             h4 Free of charge.
             p Our servers are paid for by donations and development is done by volunteers, so we don't charge users anything.
-  
-  #match_statistics.callout
-      .container.bottom-padding
-        .col-md-12.text-center
-          h1 Features
-          h2 Detailed Game Play Breakdowns
-        .row
-          .col-md-8.col-md-offset-2.bottom-padding
-              hr
-        .row
-          .col-md-12.text-center.bottom-padding
-            include match/timelines_purchases_table
-          .col-md-8.col-md-offset-2.text-center
-            h3 View timelines of item purchases.<br>
-              | Also see <a href="/matches/#{match.match_id}/combat" target="_blank">timelines of kills</a>,
-              | <a href="/matches/#{match.match_id}/teamfights" target="_blank">teamfight recaps</a>, and more.
-  .featurette.dark
-    .container
-      .vert
-          .col-md-12.text-center
-            h2 Graphs
-          .col-md-8.col-md-offset-2.bottom-padding
-            hr
-          .col-md-12.text-center.bottom-padding
-              h3 Gold
-              #chart-gold
-          .col-md-8.col-md-offset-2.text-center.bottom-padding
-            h3 See <a href="/matches/#{match.match_id}/graphs" target="_blank">charts</a> of how gold, XP, and last hits changed over the game.
-  //-
-    #positions.blurb.bright
-      .container
-        .col-md-12.text-center
-          h2 Positions
-        .col-md-8.col-md-offset-2.bottom-padding
-          hr(style="border-top: 1px solid #777;")
-        include match/positions_map
-        .col-md-8.col-md-offset-2.text-center
-          br
-          h3 See how players laned and where they warded.
-  
-  #cheeses.featurette.dark
-    .container
-      .vert
-        .col-md-12.text-center.bottom-padding
-          h2 And more to come!
-          h3 We're constantly working to add features and improvements. <br>
-             | <a href="https://github.com/yasp-dota/yasp/issues" target="_blank"> Request a feature</a> or <a href="https://github.com/yasp-dota/yasp/pulls" target="_blank">build it yourself!</a>
-          br
-          hr
-          br
-          h3 Funded by contributions from the generous Dota 2 community
-          br
-          hr
     
 append footer_assets
   //these scripts must go at the end (can't be bundled) since they depend on content to be loaded
   script(src="/public/js/home/scroll.js")
   script(src="/public/js/home/animatedNavbar.js")
   script(src="/public/js/home/polymerFabs.js")
-  script.
-    var graphData = !{JSON.stringify(match.graphData)};
-    generateCharts(graphData);  
 

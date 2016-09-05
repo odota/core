@@ -6,18 +6,14 @@ var async = require('async');
 var queries = require('./queries');
 var compute = require('../util/compute');
 var utility = require('../util/utility');
-var benchmarkMatch = queries.benchmarkMatch;
-var getMatchRating = queries.getMatchRating;
 var computeMatchData = compute.computeMatchData;
 var deserialize = utility.deserialize;
 
-function buildMatch(options, cb)
+function buildMatch(match_id, options, cb)
 {
-    var db = options.db;
     var redis = options.redis;
-    var match_id = options.match_id;
     var key = "match:" + match_id;
-    redis.get(key, function(err, reply)
+    redis.get(key, function (err, reply)
     {
         if (err)
         {
@@ -32,7 +28,7 @@ function buildMatch(options, cb)
         else
         {
             console.log("Cache miss for match " + match_id);
-            getMatch(db, redis, match_id, options, function(err, match)
+            getMatch(match_id, options, function (err, match)
             {
                 if (err)
                 {
@@ -52,9 +48,12 @@ function buildMatch(options, cb)
     });
 }
 
-function getMatch(db, redis, match_id, options, cb)
+function getMatch(match_id, options, cb)
 {
-    getMatchData(match_id, function(err, match)
+    var cassandra = options.cassandra;
+    var redis = options.redis;
+    var db = options.db;
+    getMatchData(match_id, function (err, match)
     {
         if (err)
         {
@@ -68,82 +67,65 @@ function getMatch(db, redis, match_id, options, cb)
         {
             async.parallel(
             {
-                "players": function(cb)
+                "players": function (cb)
                 {
-                    getPlayerMatchData(match_id, cb);
-                },
-                "ab_upgrades": function(cb)
-                {
-                    redis.get('ability_upgrades:' + match_id, cb);
-                },
-                "replay_url": function(cb)
-                {
-                    redis.hget('replay_url', match_id, cb);
-                },
-            }, function(err, result)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                var players = result.players;
-                var ab_upgrades = JSON.parse(result.ab_upgrades);
-                match.replay_url = result.replay_url;
-                async.each(players, function(p, cb)
-                {
-                    //match-level columns
-                    p.radiant_win = match.radiant_win;
-                    p.start_time = match.start_time;
-                    p.duration = match.duration;
-                    p.cluster = match.cluster;
-                    p.lobby_type = match.lobby_type;
-                    p.game_mode = match.game_mode;
-                    computeMatchData(p);
-                    if (ab_upgrades)
-                    {
-                        p.ability_upgrades_arr = ab_upgrades[p.player_slot];
-                    }
-                    redis.zscore('solo_competitive_rank', p.account_id || "", function(err, rating)
-                    {
-                        p.solo_competitive_rank = rating;
-                        return cb(err);
-                    });
-                }, function(err)
-                {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    match.players = players;
-                    computeMatchData(match);
-                    getMatchRating(redis, match, function(err, avg)
+                    getPlayerMatchData(match_id, function (err, players)
                     {
                         if (err)
                         {
                             return cb(err);
                         }
-                        var key = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, config.NODE_ENV === "development" ? 0 : -1);
-                        redis.zcard(key, function(err, card)
+                        async.map(players, function (p, cb)
                         {
-                            if (err)
+                            //match-level columns
+                            p.radiant_win = match.radiant_win;
+                            p.start_time = match.start_time;
+                            p.duration = match.duration;
+                            p.cluster = match.cluster;
+                            p.lobby_type = match.lobby_type;
+                            p.game_mode = match.game_mode;
+                            computeMatchData(p);
+                            redis.zscore('solo_competitive_rank', p.account_id || "", function (err, rating)
                             {
-                                return cb(err);
-                            }
-                            redis.zcount(key, 0, avg, function(err, count)
-                            {
-                                if (err)
-                                {
-                                    return cb(err);
-                                }
-                                match.rating = avg;
-                                match.rating_percentile = Number(count) / Number(card);
-                                benchmarkMatch(redis, match, function(err)
-                                {
-                                    return cb(err, match);
-                                });
+                                p.solo_competitive_rank = rating;
+                                return cb(err, p);
                             });
-                        });
+                        }, cb);
                     });
+                },
+                "gcdata": function (cb)
+                {
+                    db.first().from('match_gcdata').where(
+                    {
+                        match_id: match_id
+                    }).asCallback(cb);
+                },
+                "skill": function (cb)
+                {
+                    db.first().from('match_skill').where(
+                    {
+                        match_id: match_id
+                    }).asCallback(cb);
+                }
+            }, function (err, result)
+            {
+                if (err)
+                {
+                    return cb(err);
+                }
+                match = Object.assign(
+                {}, result.gcdata, result.skill,
+                {
+                    players: result.players
+                }, match);
+                computeMatchData(match);
+                if (match.replay_salt)
+                {
+                    match.replay_url = utility.buildReplayUrl(match.match_id, match.cluster, match.replay_salt);
+                }
+                queries.getMatchBenchmarks(redis, match, function (err)
+                {
+                    return cb(err, match);
                 });
             });
         }
@@ -151,20 +133,20 @@ function getMatch(db, redis, match_id, options, cb)
 
     function getMatchData(match_id, cb)
     {
-        if (options.cassandra)
+        if (cassandra)
         {
-            options.cassandra.execute(`SELECT * FROM matches where match_id = ?`, [Number(match_id)],
+            cassandra.execute(`SELECT * FROM matches where match_id = ?`, [Number(match_id)],
             {
                 prepare: true,
                 fetchSize: 10,
                 autoPage: true,
-            }, function(err, result)
+            }, function (err, result)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                result = result.rows.map(function(m)
+                result = result.rows.map(function (m)
                 {
                     return deserialize(m);
                 });
@@ -182,27 +164,32 @@ function getMatch(db, redis, match_id, options, cb)
 
     function getPlayerMatchData(match_id, cb)
     {
-        if (options.cassandra)
+        if (cassandra)
         {
-            options.cassandra.execute(`SELECT * FROM player_matches where match_id = ?`, [Number(match_id)],
+            cassandra.execute(`SELECT * FROM player_matches where match_id = ?`, [Number(match_id)],
             {
                 prepare: true,
                 fetchSize: 10,
                 autoPage: true,
-            }, function(err, result)
+            }, function (err, result)
             {
                 if (err)
                 {
                     return cb(err);
                 }
-                result = result.rows.map(function(m)
+                result = result.rows.map(function (m)
                 {
                     return deserialize(m);
                 });
                 //get personanames
-                async.map(result, function(r, cb)
+                async.map(result, function (r, cb)
                 {
-                    db.raw(`SELECT personaname, last_login FROM players WHERE account_id = ?`, [r.account_id]).asCallback(function(err, names)
+                    db.raw(`
+                    SELECT personaname, name, last_login 
+                    FROM players
+                    LEFT JOIN notable_players
+                    ON players.account_id = notable_players.account_id
+                    WHERE players.account_id = ?`, [r.account_id]).asCallback(function (err, names)
                     {
                         if (err)
                         {

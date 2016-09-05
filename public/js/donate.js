@@ -59,7 +59,7 @@ $(document).ready(function() {
 $('#thething').on('click', function(e) {
     // Open Checkout with further options
     handler.open({
-        name: 'yasp.co',
+        name: 'Donation',
         description: $amount.find(":selected").text() + " cheese!",
         amount: $amount.find(":selected").text() * 100,
         bitcoin: true,

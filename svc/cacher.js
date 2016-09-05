@@ -2,19 +2,21 @@
  * Worker to handle counting and caching tasks performed when a match is inserted or parsed.
  * All operations in this worker should deal with ephemeral data (can be reconstructed from persistent data stores)
  **/
-var constants = require('dotaconstants');
-var config = require('../config');
-var redis = require('../store/redis');
-var queue = require('../store/queue');
-var queries = require('../store/queries');
-var utility = require('../util/utility');
-var benchmarks = require('../util/benchmarks');
-var cQueue = queue.getQueue('cache');
-var moment = require('moment');
-var async = require('async');
-var getMatchRating = queries.getMatchRating;
-cQueue.process(10, processCache);
-cQueue.on('completed', function(job)
+const constants = require('dotaconstants');
+const config = require('../config');
+const redis = require('../store/redis');
+const db = require('../store/db');
+//const cassandra = require('../store/cassandra');
+const queue = require('../store/queue');
+const queries = require('../store/queries');
+const utility = require('../util/utility');
+const benchmarks = require('../util/benchmarks');
+const cQueue = queue.getQueue('cache');
+const moment = require('moment');
+const async = require('async');
+const getMatchRating = queries.getMatchRating;
+cQueue.process(50, processCache);
+cQueue.on('completed', function (job)
 {
     job.remove();
 });
@@ -25,7 +27,7 @@ function processCache(job, cb)
     console.log('match: %s, %s', match.match_id, match.origin);
     async.parallel(
     {
-        "updateRankings": function(cb)
+        "updateRankings": function (cb)
         {
             if (match.origin === "scanner")
             {
@@ -36,7 +38,7 @@ function processCache(job, cb)
                 return cb();
             }
         },
-        "updateMatchRating": function(cb)
+        "updateMatchRating": function (cb)
         {
             if (match.origin === "scanner")
             {
@@ -47,37 +49,29 @@ function processCache(job, cb)
                 return cb();
             }
         },
-        "incrCounts": function(cb)
+        "updateMatchups": function (cb)
         {
-            try
+            if (match.origin === "scanner")
             {
-                if (match.origin === "scanner")
-                {
-                    incrCounts(match);
-                }
-                cb();
+                return updateMatchups(match, cb);
             }
-            catch (e)
+            else
             {
-                return cb(e);
+                cb();
             }
         },
-        "updateBenchmarks": function(cb)
+        "updateBenchmarks": function (cb)
         {
-            try
+            if (match.origin === "scanner")
             {
-                if (match.origin === "scanner")
-                {
-                    updateBenchmarks(match);
-                }
+                updateBenchmarks(match, cb);
+            }
+            else
+            {
                 cb();
             }
-            catch (e)
-            {
-                return cb(e);
-            }
         }
-    }, function(err)
+    }, function (err)
     {
         if (err)
         {
@@ -87,107 +81,26 @@ function processCache(job, cb)
     });
 }
 
-function incrCounts(match)
+function updateMatchups(match, cb)
 {
-    var expire = moment().add(1, 'week').startOf('week').format('X');
-    //count match for telemetry
-    redis.zadd("added_match", moment().format('X'), match.match_id);
-    //increment picks
-    var radiant = [];
-    var dire = [];
-    for (var i = 0; i < match.players.length; i++)
+    async.each(utility.generateMatchups(match, 1), function (key, cb)
     {
-        var p = match.players[i];
-        if (p.hero_id === 0)
-        {
-            //exclude this match
-            return;
-        }
-        if (utility.isRadiant(p))
-        {
-            radiant.push(p.hero_id);
-        }
-        else
-        {
-            dire.push(p.hero_id);
-        }
-    }
-    //compute singles, dyads, triads, etc.
-    for (var i = 1; i < 4; i++)
-    {
-        addToPickResults(k_combinations(radiant, i), i, match.radiant_win, match);
-        addToPickResults(k_combinations(dire, i), i, !match.radiant_win, match);
-    }
-    redis.incr('picks_match_count');
-    redis.expireat('picks_match_count', expire);
-
-    function addToPickResults(groups, i, win, m)
-    {
-        groups.forEach(function(g)
-        {
-            //sort and join the g into a unique key
-            g = g.sort(function(a, b)
-            {
-                return a - b;
-            }).join(',');
-            //redis.zadd('picks:' + i + ":" + g, moment().format('X'), match.match_id);
-            redis.zincrby('picks_counts:' + i, 1, g);
-            redis.expireat('picks_counts:' + i, expire);
-            if (win)
-            {
-                //redis.zadd('picks_wins:' + i + ":" + g, moment().format('X'), match.match_id);
-                redis.zincrby('picks_wins_counts:' + i, 1, g);
-                redis.expireat('picks_wins_counts:' + i, expire);
-            }
-        });
-    }
-}
-
-function k_combinations(arr, k)
-{
-    var i, j, combs, head, tailcombs;
-    if (k > arr.length || k <= 0)
-    {
-        return [];
-    }
-    if (k === arr.length)
-    {
-        return [arr];
-    }
-    if (k == 1)
-    {
-        combs = [];
-        for (i = 0; i < arr.length; i++)
-        {
-            combs.push([arr[i]]);
-        }
-        return combs;
-    }
-    // Assert {1 < k < arr.length}
-    combs = [];
-    for (i = 0; i < arr.length - k + 1; i++)
-    {
-        head = arr.slice(i, i + 1);
-        //recursively get all combinations of the remaining array
-        tailcombs = k_combinations(arr.slice(i + 1), k - 1);
-        for (j = 0; j < tailcombs.length; j++)
-        {
-            combs.push(head.concat(tailcombs[j]));
-        }
-    }
-    return combs;
+        //db.raw(`INSERT INTO matchups (matchup, num) VALUES (?, 1) ON CONFLICT(matchup) DO UPDATE SET num = matchups.num + 1`, [key]).asCallback(cb);
+        //cassandra.execute(`UPDATE matchups SET num = num + 1 WHERE matchup = ?`, [key], {prepare: true}, cb);
+        redis.hincrby('matchups', key, 2, cb);
+    }, cb);
 }
 
 function updateRankings(match, cb)
 {
-    getMatchRating(redis, match, function(err, avg)
+    getMatchRating(redis, match, function (err, avg)
     {
         if (err)
         {
             return cb(err);
         }
-        var match_score = (avg && !Number.isNaN(avg)) ? Math.pow(Math.max(avg/1000, 1), 7) : undefined;
-        async.each(match.players, function(player, cb)
+        var match_score = (avg && !Number.isNaN(avg)) ? Math.pow(Math.max(avg / 1000, 1), 7) : undefined;
+        async.each(match.players, function (player, cb)
         {
             if (!player.account_id || player.account_id === constants.anonymous_account_id)
             {
@@ -208,41 +121,38 @@ function updateRankings(match, cb)
     });
 }
 
-function updateBenchmarks(match)
+function updateBenchmarks(match, cb)
 {
     for (var i = 0; i < match.players.length; i++)
     {
         var p = match.players[i];
-        if (!p.hero_id)
+        //only do if all players have heroes
+        if (p.hero_id)
         {
-            //exclude this match
-            return;
-        }
-        for (var key in benchmarks)
-        {
-            var metric = benchmarks[key](match, p);
-            if (metric !== undefined && metric !== null && !Number.isNaN(metric))
+            for (var key in benchmarks)
             {
-                var rkey = ["benchmarks", utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 0), key, p.hero_id].join(':');
-                redis.zadd(rkey, metric, match.match_id);
-                //expire at time two blocks later (after prev/current cycle)
-                redis.expireat(rkey, utility.getStartOfBlockHours(config.BENCHMARK_RETENTION_HOURS, 2));
+                var metric = benchmarks[key](match, p);
+                if (metric !== undefined && metric !== null && !Number.isNaN(metric))
+                {
+                    var rkey = ["benchmarks", utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), key, p.hero_id].join(':');
+                    redis.zadd(rkey, metric, match.match_id);
+                    //expire at time two epochs later (after prev/current cycle)
+                    redis.expireat(rkey, utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 2));
+                }
             }
         }
     }
+    return cb();
 }
 
 function updateMatchRating(match, cb)
 {
-    getMatchRating(redis, match, function(err, avg)
+    getMatchRating(redis, match, function (err, avg, num)
     {
         if (avg && !Number.isNaN(avg))
         {
-            var rkey = 'match_ratings:' + utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 0);
-            redis.zadd(rkey, avg, match.match_id);
-            redis.expireat(rkey, utility.getStartOfBlockHours(config.MATCH_RATING_RETENTION_HOURS, 2));
-            //for each player
-            match.players.forEach(function(player)
+            // For each player, update mmr estimation list
+            match.players.forEach(function (player)
             {
                 if (player.account_id && player.account_id !== constants.anonymous_account_id)
                 {
@@ -251,7 +161,16 @@ function updateMatchRating(match, cb)
                     redis.ltrim('mmr_estimates:' + player.account_id, 0, 19);
                 }
             });
-            cb();
+            // Persist match average MMR into postgres
+            queries.upsert(db, 'match_rating',
+            {
+                match_id: match.match_id,
+                rating: avg,
+                num_players: num
+            },
+            {
+                match_id: match.match_id
+            }, cb);
         }
         else
         {

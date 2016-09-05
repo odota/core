@@ -2,38 +2,35 @@
  * Worker serving as main web application
  * Serves web/API requests
  **/
-var config = require('../config');
-var constants = require('dotaconstants');
-var utility = require('../util/utility');
-var buildSets = require('../store/buildSets');
-var redis = require('../store/redis');
-var status = require('../store/buildStatus');
-var db = require('../store/db');
-var cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
-var queries = require('../store/queries');
-var matches = require('../routes/matches');
-var hyperopia = require('../routes/hyperopia');
-var players = require('../routes/players');
-var api = require('../routes/api');
-var donate = require('../routes/donate');
-var mmstats = require('../routes/mmstats');
-var request = require('request');
-var compression = require('compression');
-var session = require('cookie-session');
-var path = require('path');
-var moment = require('moment');
-var async = require('async');
-var fs = require('fs');
-var express = require('express');
-var app = express();
-var example_match = JSON.parse(fs.readFileSync('./matches/frontpage.json'));
-var passport = require('passport');
-var api_key = config.STEAM_API_KEY.split(",")[0];
-var SteamStrategy = require('passport-steam').Strategy;
-var host = config.ROOT_URL;
-var querystring = require('querystring');
-var util = require('util');
-var rc_public = config.RECAPTCHA_PUBLIC_KEY;
+const config = require('../config');
+const constants = require('dotaconstants');
+const utility = require('../util/utility');
+const redis = require('../store/redis');
+const status = require('../store/buildStatus');
+const db = require('../store/db');
+const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
+const queries = require('../store/queries');
+const search = require('../store/search');
+const matches = require('../routes/matches');
+const players = require('../routes/players');
+const api = require('../routes/api');
+const donate = require('../routes/donate');
+const mmstats = require('../routes/mmstats');
+const request = require('request');
+const compression = require('compression');
+const session = require('cookie-session');
+const path = require('path');
+const moment = require('moment');
+const async = require('async');
+const express = require('express');
+const app = express();
+const passport = require('passport');
+const api_key = config.STEAM_API_KEY.split(",")[0];
+const SteamStrategy = require('passport-steam').Strategy;
+const host = config.ROOT_URL;
+const querystring = require('querystring');
+const util = require('util');
+const rc_public = config.RECAPTCHA_PUBLIC_KEY;
 //PASSPORT config
 passport.serializeUser(function (user, done)
 {
@@ -69,7 +66,7 @@ app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = constants;
-app.locals.tooltips = constants.tooltips;
+app.locals.tooltips = require('../lang/en.json');
 app.locals.qs = querystring;
 app.locals.util = util;
 app.locals.config = config;
@@ -77,6 +74,54 @@ app.locals.basedir = __dirname + '/../views';
 app.locals.prettyPrint = utility.prettyPrint;
 app.locals.percentToTextClass = utility.percentToTextClass;
 app.locals.getAggs = utility.getAggs;
+app.locals.navbar_pages = {
+    "request":
+    {
+        "name": "Request"
+    },
+    "rankings":
+    {
+        "name": "Rankings"
+    },
+    "benchmarks":
+    {
+        "name": "Benchmarks"
+    },
+    "distributions":
+    {
+        "name": "Distributions"
+    },
+    "mmstats":
+    {
+        "name": "MMStats"
+    },
+    "search":
+    {
+        "name": "Search",
+    },
+    "carry":
+    {
+        "name": "Carry"
+    },
+    "become-the-gamer":
+    {
+        "name": "Ingame",
+        "sponsored": true
+    },
+    "blog":
+    {
+        "name": "Blog",
+        "path": "//odota.github.io/blog"
+    },
+};
+app.locals.constants.abilities.attribute_bonus = {
+    dname: "Attribute Bonus",
+    img: '/public/images/Stats.png',
+    attrib: "+2 All Attributes"
+};
+app.locals.constants.map_url = '/public/images/map.png';
+app.locals.constants.ICON_PATH = '/public/images/logo.svg';
+//APP middleware
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function (req, res)
 {
@@ -99,13 +144,17 @@ app.use(function rateLimit(req, res, cb)
     ip = ip.replace(/^.*:/, '').split(',')[0];
     var key = 'rate_limit:' + ip;
     console.log("%s visit %s, ip %s", req.user ? req.user.account_id : "anonymous", req.originalUrl, ip);
-    redis.multi().incr(key).expire(key, 1).exec(function (err, resp)
+    redis.multi().incr(key).expireat(key, utility.getStartOfBlockMinutes(1, 1)).exec(function (err, resp)
     {
         if (err)
         {
             return cb(err);
         }
-        if (resp[0] > 8 && config.NODE_ENV !== "test")
+        if (config.NODE_ENV === 'development')
+        {
+            console.log(resp);
+        }
+        if (resp[0] > 90 && config.NODE_ENV !== "test")
         {
             return res.status(429).json(
             {
@@ -155,12 +204,17 @@ app.use(function getMetadata(req, res, cb)
         cheese: function (cb)
         {
             redis.get("cheese_goal", cb);
+        },
+        pvgna: function(cb)
+        {
+            redis.get("pvgna", cb);
         }
     }, function (err, results)
     {
         res.locals.user = req.user;
         res.locals.banner_msg = results.banner;
         res.locals.cheese = results.cheese;
+        res.locals.pvgna = JSON.parse(results.pvgna);
         return cb(err);
     });
 });
@@ -202,6 +256,7 @@ app.use('/api', api(db, redis, cassandra));
 //END service/admin routes
 //START standard routes.
 //TODO remove these with SPA
+app.use('/favicon.ico', express.static('./public/images/favicon.ico'));
 app.route('/').get(function (req, res, next)
 {
     if (req.user)
@@ -212,7 +267,6 @@ app.route('/').get(function (req, res, next)
     {
         res.render('home',
         {
-            match: example_match,
             truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
             home: true
         });
@@ -252,39 +306,6 @@ app.use('/distributions', function (req, res, cb)
         res.render('distributions', result);
     });
 });
-app.get('/picks/:n?', function (req, res, cb)
-{
-    var length = Number(req.params.n || 1);
-    var limit = 1000;
-    queries.getPicks(redis,
-    {
-        length: length,
-        limit: limit
-    }, function (err, result)
-    {
-        if (err)
-        {
-            return cb(err);
-        }
-        res.render('picks',
-        {
-            total: result.total,
-            picks: result.entries,
-            n: length,
-            limit: limit,
-            tabs:
-            {
-                1: "Monads",
-                2: "Dyads",
-                3: "Triads",
-                /*
-                4: "Tetrads",
-                5: "Pentads"
-                */
-            }
-        });
-    });
-});
 app.get('/rankings/:hero_id?', function (req, res, cb)
 {
     if (!req.params.hero_id)
@@ -322,7 +343,7 @@ app.get('/benchmarks/:hero_id?', function (req, res, cb)
     }
     else
     {
-        queries.getBenchmarks(db, redis,
+        queries.getHeroBenchmarks(db, redis,
         {
             hero_id: req.params.hero_id
         }, function (err, result)
@@ -339,7 +360,7 @@ app.get('/search', function (req, res, cb)
 {
     if (req.query.q)
     {
-        queries.searchPlayer(db, req.query.q, function (err, result)
+        search(db, req.query.q, function (err, result)
         {
             if (err)
             {
@@ -357,700 +378,10 @@ app.get('/search', function (req, res, cb)
         res.render('search');
     }
 });
-const sqlqs = {
-    hero_most_picked: `
-SELECT h.localized_name, count(*)
-FROM picks_bans pb
-JOIN heroes h
-ON pb.hero_id = h.id
-JOIN match_patch mp
-ON mp.match_id = pb.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE is_pick IS TRUE
-AND to_timestamp(m.start_time) > '2016-07-01'
-GROUP BY h.localized_name
-ORDER BY count DESC;
-`,
-    hero_most_banned: `
-SELECT h.localized_name, count(*)
-FROM picks_bans pb
-JOIN heroes h
-ON pb.hero_id = h.id
-JOIN match_patch mp
-ON mp.match_id = pb.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE is_pick IS FALSE
-AND to_timestamp(m.start_time) > '2016-07-01'
-GROUP BY h.localized_name
-ORDER BY count DESC;
-`,
-    hero_highest_win_rate: `
-SELECT h.localized_name, 
-sum(case when ((pm.player_slot < 128) = m.radiant_win) then 1 else 0 end)/count(*)::float winrate
-FROM player_matches pm
-JOIN heroes h
-ON pm.hero_id = h.id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-ON pm.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-GROUP BY h.localized_name
-HAVING count(*) > 5
-ORDER BY winrate DESC
-`,
-    hero_highest_kill_avg: `
-SELECT h.localized_name, 
-avg(kills)
-FROM player_matches pm
-JOIN heroes h
-ON pm.hero_id = h.id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-GROUP BY h.localized_name
-HAVING count(*) > 5
-ORDER BY avg DESC
-`,
-    hero_highest_assist_avg: `
-SELECT h.localized_name, 
-avg(assists)
-FROM player_matches pm
-JOIN heroes h
-ON pm.hero_id = h.id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-GROUP BY h.localized_name
-HAVING count(*) > 5
-ORDER BY avg DESC
-`,
-    hero_lowest_death_avg: `
-SELECT h.localized_name, 
-avg(deaths)
-FROM player_matches pm
-JOIN heroes h
-ON pm.hero_id = h.id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-GROUP BY h.localized_name
-HAVING count(*) > 5
-ORDER BY avg ASC
-`,
-    hero_highest_last_hits_avg: `
-SELECT h.localized_name, 
-avg(last_hits)
-FROM player_matches pm
-JOIN heroes h
-ON pm.hero_id = h.id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-GROUP BY h.localized_name
-HAVING count(*) > 5
-ORDER BY avg DESC
-`,
-    hero_highest_gpm_avg: `
-SELECT h.localized_name, 
-avg(gold_per_min)
-FROM player_matches pm
-JOIN heroes h
-ON pm.hero_id = h.id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-GROUP BY h.localized_name
-HAVING count(*) > 5
-ORDER BY avg DESC
-`,
-    team_most_kills: `
-SELECT t.name,
-avg(kills)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-LEFT JOIN teams t
-ON np.team_id = t.team_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY t.team_id
-ORDER BY avg DESC
-LIMIT 100
-`,
-    team_least_deaths: `
-SELECT t.name,
-avg(deaths)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-LEFT JOIN teams t
-ON np.team_id = t.team_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY t.team_id
-ORDER BY avg ASC
-LIMIT 100
-`,
-    team_most_assists: `
-SELECT t.name,
-avg(assists)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-LEFT JOIN teams t
-ON np.team_id = t.team_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY t.team_id
-ORDER BY avg DESC
-LIMIT 100
-`,
-    team_longest_match: `
-SELECT t.name,
-avg(m.duration)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-LEFT JOIN teams t
-ON np.team_id = t.team_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-ON pm.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY t.team_id
-ORDER BY avg DESC
-LIMIT 100
-`,
-    team_shortest_match: `
-SELECT t.name,
-avg(duration)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-LEFT JOIN teams t
-ON np.team_id = t.team_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN matches m
-ON pm.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY t.team_id
-ORDER BY avg ASC
-LIMIT 100
-`,
-    team_most_heroes: `
-SELECT t.name,
-count(distinct h.localized_name)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-LEFT JOIN teams t
-ON np.team_id = t.team_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN heroes h
-ON pm.hero_id = h.id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY t.team_id
-ORDER BY count DESC
-LIMIT 100
-`,
-    team_least_heroes: `
-SELECT t.name,
-count(distinct h.localized_name)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-LEFT JOIN teams t
-ON np.team_id = t.team_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN heroes h
-ON pm.hero_id = h.id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY t.team_id
-ORDER BY count ASC
-LIMIT 100
-`,
-    player_highest_kills_avg: `
-SELECT np.name,
-avg(kills)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN teams t
-ON np.team_id = t.team_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY np.name
-HAVING count(*) > 5
-ORDER BY avg DESC
-LIMIT 100
-`,
-    player_lowest_deaths_avg: `
-SELECT np.name,
-avg(deaths)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN teams t
-ON np.team_id = t.team_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY np.name
-HAVING count(*) > 5
-ORDER BY avg ASC
-LIMIT 100
-`,
-    player_highest_assists_avg: `
-SELECT np.name,
-avg(assists)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN teams t
-ON np.team_id = t.team_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY np.name
-HAVING count(*) > 5
-ORDER BY avg DESC
-LIMIT 100
-`,
-    player_highest_last_hits_avg: `
-SELECT np.name,
-avg(last_hits)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN teams t
-ON np.team_id = t.team_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY np.name
-HAVING count(*) > 5
-ORDER BY avg DESC
-LIMIT 100
-`,
-    player_highest_gpm_avg: `
-SELECT np.name,
-avg(gold_per_min)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN teams t
-ON np.team_id = t.team_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY np.name
-HAVING count(*) > 5
-ORDER BY avg DESC
-LIMIT 100
-`,
-    player_most_heroes: `
-SELECT np.name,
-count(distinct pm.hero_id)
-FROM player_matches pm
-JOIN notable_players np
-ON pm.account_id = np.account_id
-JOIN match_patch mp
-ON mp.match_id = pm.match_id
-JOIN teams t
-ON np.team_id = t.team_id
-JOIN matches m
-on mp.match_id = m.match_id
-WHERE to_timestamp(m.start_time) > '2016-07-01'
-AND (t.name LIKE 'OG Dota2'
-OR t.name LIKE 'Team Liquid'
-OR t.name LIKE 'Newbee'
-OR t.name LIKE 'LGD-GAMING'
-OR t.name LIKE 'MVP Phoenix'
-OR t.name LIKE 'Natus Vincere'
-OR t.name LIKE 'Evil Geniuses'
-OR t.name LIKE 'the wings gaming'
-OR t.name LIKE 'Team Secret'
-OR t.name LIKE 'Digital Chaos'
-OR t.name LIKE 'Alliance'
-OR t.name LIKE 'Fnatic'
-OR t.name LIKE 'compLexity Gaming'
-OR t.name LIKE 'EHOME'
-OR t.name LIKE 'Execration'
-OR t.name LIKE 'Vici_Gaming Reborn'
-OR t.name LIKE 'TNC Pro Team'
-OR t.name LIKE 'Escape Gaming')
-GROUP BY np.name
-HAVING count(*) > 5
-ORDER BY count DESC
-LIMIT 100
-`,
-    tournament_heroes_picked: `
-SELECT count(distinct hero_id)
-FROM (SELECT * FROM picks_bans pb
-WHERE is_pick IS TRUE
-ORDER BY pb.match_id DESC
-LIMIT 1500) x
-`,
-    tournament_heroes_banned: `
-SELECT count(distinct hero_id)
-FROM (SELECT * FROM picks_bans pb
-WHERE is_pick IS FALSE
-ORDER BY pb.match_id DESC
-LIMIT 1500) x
-`,
-    tournament_kills_in_game: `
-SELECT sum(kills)
-FROM (SELECT * FROM player_matches pm
-ORDER BY pm.match_id DESC
-LIMIT 1500) x
-GROUP BY match_id
-ORDER BY sum DESC
-LIMIT 1;
-`,
-    tournament_longest_game: `
-SELECT max(duration) as seconds
-FROM (SELECT * FROM player_matches pm
-JOIN matches m 
-ON pm.match_id = m.match_id
-ORDER BY pm.match_id DESC
-LIMIT 1500) x
-`,
-    tournament_shortest_game: `
-SELECT min(duration) as seconds
-FROM (SELECT * FROM player_matches pm
-JOIN matches m 
-ON pm.match_id = m.match_id
-ORDER BY pm.match_id DESC
-LIMIT 1500) x
-`,
-    tournament_most_kills_on_hero: `
-SELECT max(kills)
-FROM (SELECT * FROM player_matches pm
-ORDER BY pm.match_id DESC
-LIMIT 1500) x
-`,
-    tournament_most_deaths_on_hero: `
-SELECT max(deaths)
-FROM (SELECT * FROM player_matches pm
-ORDER BY pm.match_id DESC
-LIMIT 1500) x
-`,
-    tournament_most_assists_on_hero: `
-SELECT max(assists)
-FROM (SELECT * FROM player_matches pm
-ORDER BY pm.match_id DESC
-LIMIT 1500) x
-`,
-    tournament_highest_gpm_on_hero: `
-SELECT max(gold_per_min)
-FROM (SELECT * FROM player_matches pm
-ORDER BY pm.match_id DESC
-LIMIT 1500) x
-`,
-};
-app.get('/ti6predictions', function (req, res, cb)
+app.get('/become-the-gamer', function (req, res, cb)
 {
-    redis.get('ti6predictions', function (err, result)
-    {
-        if (err || !result || config.NODE_ENV === "development")
-        {
-            var obj = {};
-            async.eachSeries(Object.keys(sqlqs), function (k, cb)
-            {
-                db.raw(sqlqs[k]).asCallback(function (err, result)
-                {
-                    console.log(k);
-                    obj[k] = result;
-                    cb(err);
-                });
-            }, function (err)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                redis.setex('ti6predictions', 3600, JSON.stringify(obj));
-                res.render('ti6predictions',
-                {
-                    predictions: obj
-                });
-            });
-        }
-        else
-        {
-            res.render('ti6predictions',
-            {
-                predictions: JSON.parse(result)
-            });
-        }
-    });
+    return res.render('btg');
 });
-app.get('/april/:year?', function (req, res, cb)
-{
-    return res.render('plusplus',
-    {
-        match: example_match,
-        truncate: [2, 6]
-    });
-});
-app.use('/april/2016/hyperopia', hyperopia(db));
 app.use('/', mmstats(redis));
 //END standard routes
 //TODO keep donate routes around for legacy until @albertcui can reimplement in SPA?
@@ -1068,18 +399,28 @@ app.use(function (req, res, next)
 });
 app.use(function (err, req, res, next)
 {
+    console.error(err);
     res.status(err.status || 500);
-    console.log(err);
     redis.zadd("error_500", moment().format('X'), req.originalUrl);
-    if (config.NODE_ENV !== "development")
+    if (config.NODE_ENV === "development")
+    {
+        //default express handler
+        next(err);
+    }
+    else if (req.originalUrl.indexOf('/api') === 0)
+    {
+        return res.json(
+        {
+            error: err
+        });
+    }
+    else
     {
         return res.render('error/' + (err.status === 404 ? '404' : '500'),
         {
             error: err
         });
     }
-    //default express handler
-    next(err);
 });
 var port = config.PORT || config.FRONTEND_PORT;
 var server = app.listen(port, function ()

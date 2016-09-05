@@ -36,8 +36,9 @@ CREATE TABLE matches (
   radiant_gold_adv integer[],
   radiant_xp_adv integer[],
   teamfights json[],
-  version integer
-  );
+  version integer,
+  cosmetics json
+);
 CREATE INDEX on matches(leagueid) WHERE leagueid > 0;
 
 CREATE TABLE player_matches (
@@ -78,6 +79,8 @@ CREATE TABLE player_matches (
   xp_t integer[],
   obs_log json[],
   sen_log json[],
+  obs_left_log json[],
+  sen_left_log json[],
   purchase_log json[],
   kills_log json[],
   buyback_log json[],
@@ -101,9 +104,16 @@ CREATE TABLE player_matches (
   kill_streaks json,
   multi_kills json,
   life_state json,
-  damage_inflictor_received json
+  damage_inflictor_received json,
+  obs_placed int,
+  sen_placed int,
+  creeps_stacked int,
+  camps_stacked int,
+  rune_pickups int,
+  ability_upgrades_arr integer[]
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
+CREATE INDEX on player_matches(hero_id);
 
 CREATE TABLE players (
   account_id bigint PRIMARY KEY,
@@ -217,7 +227,12 @@ CREATE TABLE match_logs (
   targetname_slot smallint,
   sourcename_slot smallint,
   targetsourcename_slot smallint,
-  player1_slot smallint
+  player1_slot smallint,
+  obs_placed int,
+  sen_placed int,
+  creeps_stacked int,
+  camps_stacked int,
+  rune_pickups int
 );
 CREATE INDEX ON match_logs(match_id);
 CREATE INDEX ON match_logs(match_id, player_slot) WHERE player_slot IS NOT NULL;
@@ -274,4 +289,19 @@ CREATE TABLE team_match(
   match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
   radiant boolean,
   PRIMARY KEY(team_id, match_id)
+);
+
+CREATE TABLE match_gcdata(
+  match_id bigint PRIMARY KEY,
+  cluster int,
+  replay_salt int,
+  series_id int,
+  series_type int,
+  parties json
+);
+
+CREATE TABLE match_rating(
+  match_id bigint PRIMARY KEY,
+  rating int,
+  num_players int
 );

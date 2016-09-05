@@ -1,27 +1,29 @@
-var express = require('express');
-var async = require('async');
-var api = express.Router();
-var constants = require('dotaconstants');
-var config = require('../config');
-var request = require('request');
-var rc_secret = config.RECAPTCHA_SECRET_KEY;
-var multer = require('multer')(
+const express = require('express');
+const async = require('async');
+const api = express.Router();
+const constants = require('dotaconstants');
+const config = require('../config');
+const request = require('request');
+const crypto = require('crypto');
+const bodyParser = require('body-parser');
+const multer = require('multer')(
 {
     inMemory: true,
     fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
 const queue = require('../store/queue');
 const rQueue = queue.getQueue('request');
+const fhQueue = queue.getQueue('fullhistory');
 const queries = require('../store/queries');
+const search = require('../store/search');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
-var player_fields = constants.player_fields;
-var subkeys = player_fields.subkeys;
-var countCats = player_fields.countCats;
+const player_fields = constants.player_fields;
+const subkeys = player_fields.subkeys;
+const countCats = player_fields.countCats;
 const utility = require('../util/utility');
-const crypto = require('crypto');
-const bodyParser = require('body-parser');
+const rc_secret = config.RECAPTCHA_SECRET_KEY;
 module.exports = function (db, redis, cassandra)
 {
     api.use(function (req, res, cb)
@@ -78,12 +80,11 @@ module.exports = function (db, redis, cassandra)
     });
     api.get('/matches/:match_id/:info?', function (req, res, cb)
     {
-        buildMatch(
+        buildMatch(req.params.match_id,
         {
             db: db,
             redis: redis,
             cassandra: cassandra,
-            match_id: req.params.match_id
         }, function (err, match)
         {
             if (err)
@@ -109,7 +110,7 @@ module.exports = function (db, redis, cassandra)
             },
             tracked_until: function (cb)
             {
-                redis.zscore('tracked', account_id, cb);  
+                redis.zscore('tracked', account_id, cb);
             },
             solo_competitive_rank: function (cb)
             {
@@ -121,7 +122,7 @@ module.exports = function (db, redis, cassandra)
             },
             mmr_estimate: function (cb)
             {
-                queries.mmrEstimate(db, redis, account_id, cb);
+                queries.getMmrEstimate(db, redis, account_id, cb);
             },
         }, function (err, result)
         {
@@ -305,7 +306,15 @@ module.exports = function (db, redis, cassandra)
             {
                 for (var key in countCats)
                 {
-                    result[key][~~m[key]] = result[key][~~m[key]] ? result[key][~~m[key]] + 1 : 1;
+                    if (!result[key][~~m[key]])
+                    {
+                        result[key][~~m[key]] = {
+                            games: 0,
+                            win: 0
+                        };
+                    }
+                    result[key][~~m[key]].games += 1;
+                    result[key][~~m[key]].win += Number(m.radiant_win === utility.isRadiant(m));
                 }
             });
             res.json(result);
@@ -396,10 +405,10 @@ module.exports = function (db, redis, cassandra)
                 return cb(err);
             }
             var teammates = countPeers(cache);
-            queries.generateTeammateArrayFromHash(db, teammates,
+            queries.getPeers(db, teammates,
             {
                 account_id: req.params.account_id
-            }, function(err, result)
+            }, function (err, result)
             {
                 if (err)
                 {
@@ -409,17 +418,17 @@ module.exports = function (db, redis, cassandra)
             });
         });
     });
-    api.get('/players/:account_id/pros', function(req, res, cb)
+    api.get('/players/:account_id/pros', function (req, res, cb)
     {
         req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function(err, cache)
+        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
         {
             if (err)
             {
                 return cb(err);
             }
             var teammates = countPeers(cache);
-            queries.generateProPlayersArrayFromHash(db, teammates,
+            queries.getProPeers(db, teammates,
             {
                 account_id: req.params.account_id
             }, function (err, result)
@@ -437,7 +446,7 @@ module.exports = function (db, redis, cassandra)
     {
         var teammates = {};
         var isRadiant = utility.isRadiant;
-        matches.forEach(function(m)
+        matches.forEach(function (m)
         {
             var player_win = isRadiant(m) === m.radiant_win;
             var group = m.heroes ||
@@ -482,30 +491,6 @@ module.exports = function (db, redis, cassandra)
         });
         return teammates;
     }
-    api.get('/players/:account_id/items', function(req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat(['purchase_time', 'item_usage', 'item_uses', 'purchase', 'item_win']);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
-        });
-    });
-    api.get('/players/:account_id/activity', function (req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat(['start_time']);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
-        });
-    });
     api.get('/players/:account_id/histograms/:field', function (req, res, cb)
     {
         var result = {};
@@ -532,18 +517,6 @@ module.exports = function (db, redis, cassandra)
             res.json(result);
         });
     });
-    api.get('/players/:account_id/trends/:field', function (req, res, cb)
-    {
-        req.queryObj.project = req.queryObj.project.concat('hero_id', req.params.field);
-        queries.getPlayerMatches(req.params.account_id, req.queryObj, function (err, cache)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(cache);
-        });
-    });
     api.get('/players/:account_id/matches', function (req, res, cb)
     {
         console.log(req.queryObj);
@@ -556,7 +529,7 @@ module.exports = function (db, redis, cassandra)
             }
             if (req.queryObj.project.indexOf('skill') !== -1)
             {
-                queries.fillSkill(db, cache,
+                queries.getMatchesSkill(db, cache,
                 {}, render);
             }
             else
@@ -595,6 +568,27 @@ module.exports = function (db, redis, cassandra)
                 return cb(err);
             }
             res.json(result);
+        });
+    });
+    api.post('/players/:account_id/refresh', function (req, res, cb)
+    {
+        console.log(req.body);
+        queue.addToQueue(fhQueue,
+        {
+            account_id: req.params.account_id || '1'
+        },
+        {
+            attempts: 1
+        }, function (err, job)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(
+            {
+                jobId: job.jobId
+            });
         });
     });
     api.post('/explorer', bodyParser.json(
@@ -688,7 +682,7 @@ module.exports = function (db, redis, cassandra)
     });
     api.get('/benchmarks', function (req, res, cb)
     {
-        queries.getBenchmarks(db, redis,
+        queries.getHeroBenchmarks(db, redis,
         {
             hero_id: req.query.hero_id
         }, function (err, result)
@@ -717,7 +711,7 @@ module.exports = function (db, redis, cassandra)
         {
             return cb(400);
         }
-        queries.searchPlayer(db, req.query.q, function (err, result)
+        search(db, req.query.q, function (err, result)
         {
             if (err)
             {
@@ -859,8 +853,57 @@ module.exports = function (db, redis, cassandra)
             }
         }).catch(cb);
     });
-    //TODO implement
-    api.get('/picks/:n');
+    api.get('/matchups', function (req, res, cb)
+    {
+        //accept as input two arrays of up to 5
+        var t0 = [].concat(req.query.t0 || []).slice(0, 5);
+        var t1 = [].concat(req.query.t1 || []).slice(0, 5);
+        //return wins of each team
+        async.parallel(
+        {
+            t0: function (cb)
+            {
+                redis.hget('matchups', utility.matchupToString(t0, t1, true), cb);
+            },
+            t1: function (cb)
+            {
+                redis.hget('matchups', utility.matchupToString(t0, t1, false), cb);
+            }
+        }, function (err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            res.json(
+            {
+                t0: Number(result.t0) || 0,
+                t1: Number(result.t1) || 0,
+            });
+        });
+    });
+    api.get('/heroes', function (req, res, cb)
+    {
+        db.select().from('heroes').orderBy('id', 'asc').asCallback(function (err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            return res.json(result);
+        });
+    });
+    api.get('/leagues', function (req, res, cb)
+    {
+        db.select().from('leagues').asCallback(function (err, result)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            return res.json(result);
+        });
+    });
     //TODO @albertcui owns mmstats
     api.get('/mmstats');
     return api;

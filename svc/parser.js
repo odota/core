@@ -5,7 +5,7 @@
  * This object is passed to insertMatch to persist the data into the database.
  **/
 var utility = require('../util/utility');
-var getReplayUrl = require('../util/getReplayUrl');
+var getGCData = require('../util/getGCData');
 var config = require('../config');
 var db = require('../store/db');
 var redis = require('../store/redis');
@@ -30,22 +30,12 @@ var async = require('async');
 const readline = require('readline');
 var spawn = cp.spawn;
 var insertMatch = queries.insertMatch;
-var benchmarkMatch = queries.benchmarkMatch;
+var getMatchBenchmarks = queries.getMatchBenchmarks;
 var renderMatch = compute.renderMatch;
 var computeMatchData = compute.computeMatchData;
 //EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
 var express = require('express');
-var bodyParser = require('body-parser');
 var app = express();
-app.use(bodyParser.json());
-app.get('/', function (req, res)
-{
-    res.json(
-    {
-        version: utility.getParseSchema().version,
-        started_at: startedAt
-    });
-});
 app.get('/redis/:key', function (req, res, cb)
 {
     redis.get(new Buffer('upload_blob:' + req.params.key), function (err, result)
@@ -59,23 +49,6 @@ app.get('/redis/:key', function (req, res, cb)
 });
 app.listen(config.PARSER_PORT);
 //END EXPRESS
-// Start Java parse server
-var parseServer = spawn("java", ["-jar", "-Xmx256m", "./java_parser/target/stats-0.1.0.jar", config.PARSE_SERVER_PORT],
-{
-    stdio: ['pipe', 'pipe', 'pipe'],
-    encoding: 'utf8'
-});
-parseServer.stderr.on('data', function printStdErr(data)
-{
-    console.log(data.toString());
-});
-parseServer.on('exit', function ()
-{
-    throw new Error("restarting due to parse server exit");
-});
-process.on('exit', function(){
-   parseServer.kill(); 
-});
 pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
 {
     console.log("parse job: %s", job.jobId);
@@ -91,7 +64,7 @@ pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
             }
             else
             {
-                getReplayUrl(db, redis, match, cb);
+                getGCData(db, redis, match, cb);
             }
         },
         "runParse": function (cb)
@@ -138,6 +111,15 @@ pQueue.process(config.PARSER_PARALLELISM, function (job, cb)
         return cb(err, match.match_id);
     });
 });
+pQueue.on('completed', function (job)
+{
+    // Delay the removal so that the request polling has a chance to check for completion.
+    // If interrupted, the regular cleanup process in worker will take care of orphaned jobs.
+    setTimeout(function ()
+    {
+        job.remove();
+    }, 60 * 1000);
+});
 
 function insertUploadedParse(match, cb)
 {
@@ -156,8 +138,7 @@ function insertUploadedParse(match, cb)
         computeMatchData(p);
     });
     computeMatchData(match);
-    renderMatch(match);
-    benchmarkMatch(redis, match, function (err)
+    getMatchBenchmarks(redis, match, function (err)
     {
         if (err)
         {
@@ -232,25 +213,7 @@ function runParse(match, job, cb)
     bz.stdin.on('error', exit);
     bz.stdout.on('error', exit);
     inStream.pipe(bz.stdin);
-    /*
-    var parser = spawn("java", [
-        "-jar",
-        "-Xmx128m",
-        "./java_parser/target/stats-0.1.0.jar",
-        ],
-    {
-        stdio: ['pipe', 'pipe', 'pipe'],
-        encoding: 'utf8'
-    });
-    parser.stdin.on('error', exit);
-    parser.stdout.on('error', exit);
-    parser.stderr.on('data', function printStdErr(data)
-    {
-        console.log(data.toString());
-    });
-    bz.stdout.pipe(parser.stdin);
-    */
-    var parser = request.post('http://localhost:'+config.PARSE_SERVER_PORT);
+    var parser = request.post(config.PARSER_HOST).on('error', exit);
     bz.stdout.pipe(parser);
     const parseStream = readline.createInterface(
     {
@@ -258,18 +221,24 @@ function runParse(match, job, cb)
     });
     parseStream.on('line', function handleStream(e)
     {
-        e = JSON.parse(e);
-        if (e.type === 'epilogue')
+        try
         {
-            console.log('received epilogue');
-            incomplete = false;
-            parseStream.close();
-            exit();
+            e = JSON.parse(e);
+            if (e.type === 'epilogue')
+            {
+                console.log('received epilogue');
+                incomplete = false;
+                parseStream.close();
+                exit();
+            }
+            entries.push(e);
         }
-        entries.push(e);
+        catch (err)
+        {
+            exit(err);
+        }
     });
-    request.debug = true;
-
+    //request.debug = true;
     function exit(err)
     {
         if (exited)
@@ -292,7 +261,7 @@ function runParse(match, job, cb)
                 var meta = processMetadata(entries);
                 var logs = processReduce(entries, match, meta);
                 var res = processExpand(entries, meta);
-                var parsed_data = processParsedData(res.parsed_data);
+                var parsed_data = processParsedData(res.parsed_data, getParseSchema());
                 var teamfights = processTeamfights(res.tf_data, meta);
                 var upload = processUploadProps(res.uploadProps, meta);
                 var ap = processAllPlayers(res.int_data);
@@ -311,4 +280,102 @@ function runParse(match, job, cb)
             }
         }
     }
+}
+
+function getParseSchema()
+{
+    return {
+        "version": 17,
+        "match_id": 0,
+        "teamfights": [],
+        "objectives": [],
+        "chat": [],
+        "radiant_gold_adv": [],
+        "radiant_xp_adv": [],
+        "cosmetics":
+        {},
+        "players": Array.apply(null, new Array(10)).map(function ()
+        {
+            return {
+                "player_slot": 0,
+                "obs_placed": 0,
+                "sen_placed": 0,
+                "creeps_stacked": 0,
+                "camps_stacked": 0,
+                "rune_pickups": 0,
+                "stuns": 0,
+                "max_hero_hit":
+                {
+                    value: 0
+                },
+                "times": [],
+                "gold_t": [],
+                "lh_t": [],
+                "dn_t": [],
+                "xp_t": [],
+                "obs_log": [],
+                "sen_log": [],
+                "obs_left_log": [],
+                "sen_left_log": [],
+                "purchase_log": [],
+                "kills_log": [],
+                "buyback_log": [],
+                //"pos": {},
+                "lane_pos":
+                {},
+                "obs":
+                {},
+                "sen":
+                {},
+                "actions":
+                {},
+                "pings":
+                {},
+                "purchase":
+                {},
+                "gold_reasons":
+                {},
+                "xp_reasons":
+                {},
+                "killed":
+                {},
+                "item_uses":
+                {},
+                "ability_uses":
+                {},
+                "hero_hits":
+                {},
+                "damage":
+                {},
+                "damage_taken":
+                {},
+                "damage_inflictor":
+                {},
+                "runes":
+                {},
+                "killed_by":
+                {},
+                "kill_streaks":
+                {},
+                "multi_kills":
+                {},
+                "life_state":
+                {},
+                "healing":
+                {},
+                "damage_inflictor_received":
+                {},
+                /*
+                "kill_streaks_log": [], // an array of kill streak values
+                //     where each kill streak is an array of kills where
+                //         where each kill is an object that contains
+                //             - the hero id of the player who was killed
+                //             - the multi kill id of this kill
+                //             - the team fight id of this kill
+                //             - the time of this kill
+                "multi_kill_id_vals": [] // an array of multi kill values (the length of each multi kill)
+                */
+            };
+        })
+    };
 }

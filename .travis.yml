@@ -2,42 +2,22 @@ sudo: required
 language: node_js
 services:
 - docker
-- redis-server
-- cassandra
 node_js:
 - 'node'
-before_install:
-  - sudo /etc/init.d/postgresql stop
-  - sudo apt-get -y remove --purge postgresql-9.1
-  - sudo apt-get -y remove --purge postgresql-9.2
-  - sudo apt-get -y remove --purge postgresql-9.3
-  - sudo apt-get -y remove --purge postgresql-9.4
-  - sudo apt-get -y autoremove
-  - sudo apt-key adv --keyserver keys.gnupg.net --recv-keys 7FCC7D46ACCC4CF8
-  - sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main 9.5" >> /etc/apt/sources.list.d/postgresql.list'
-  - sudo apt-get update
-  - sudo apt-get -y install postgresql-9.5
-  - sudo sh -c 'echo "local all postgres trust" > /etc/postgresql/9.5/main/pg_hba.conf'
-  - sudo sh -c 'echo -n "host all all 127.0.0.1/32 trust" >> /etc/postgresql/9.5/main/pg_hba.conf'
-  - sudo /etc/init.d/postgresql restart
-  - psql --version
-install: true
 notifications:
   email:
   - howardc93@gmail.com
   - christian@paral.in
   - aqc2109@columbia.edu
+before_install:
+install: true
 before_script:
-#- sudo service postgresql stop
-#- docker run --name postgres -v /var/lib/postgresql/data:/var/lib/postgresql/data --restart=always -u postgres --net=host postgres:9.5
-#- docker run --name redis --restart=always --net=host redis:3
-#- docker run --name cassandra --restart=always --net=host cassandra:latest
-- docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
+- sudo bash scripts/prebuild.sh
 script:
 # run test outside container
 #- npm run test && (npm run coveralls || true)
-# run test inside container, don't need to build since the docker image already built
-- docker run -e "TEST_SKIP_BUILD=y" -e "COVERALLS_SERVICE_NAME=travis-ci" -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN --net=host -i yasp/yasp:latest sh -c 'npm run test && (npm run coveralls || true)'
+# run test inside container
+- docker run -e "COVERALLS_SERVICE_NAME=travis-ci" -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN --net=host -i yasp/yasp sh -c 'npm run test && (npm run coveralls || true)'
 deploy:
   provider: script
   skip_cleanup: true

@@ -1,4 +1,7 @@
 #!/bin/bash
+
+curl -sSL https://get.docker.com/ | sh
+
 sudo mkdir -p /var/lib/postgresql/data
 sudo mount -o discard,defaults /dev/disk/by-id/google-persistent-disk-1 /var/lib/postgresql/data
 

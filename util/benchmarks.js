@@ -23,9 +23,9 @@ var benchmarks = {
     {
         return (p.hero_healing / m.duration * 60);
     },
-    "tower_damage_per_min": function(m, p)
+    "tower_damage": function(m, p)
     {
-        return (p.tower_damage / m.duration * 60);
+        return (p.tower_damage);
     },
 };
 module.exports = benchmarks;

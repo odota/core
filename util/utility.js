@@ -242,7 +242,7 @@ function getData(url, cb)
                 //non-retryable
                 return cb(body);
             }
-            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams))
+            if (err || !res || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams))
             {
                 //invalid response
                 if (url.noRetry)
@@ -251,8 +251,13 @@ function getData(url, cb)
                 }
                 else
                 {
-                    console.error("invalid response, retrying: %s", target);
-                    return getData(url, cb);
+                    console.error("[INVALID] status: %s, retrying: %s", res ? res.statusCode : '', target);
+                    //var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
+                    var backoff = 0;
+                    return setTimeout(function()
+                    {
+                        getData(url, cb);
+                    }, backoff);
                 }
             }
             else if (body.result)
@@ -356,95 +361,6 @@ function mode(array)
         }
     }
     return maxEl;
-}
-
-function getParseSchema()
-{
-    return {
-        "version": 16,
-        "match_id": 0,
-        "teamfights": [],
-        "objectives": [],
-        "chat": [],
-        "radiant_gold_adv": [],
-        "radiant_xp_adv": [],
-        "players": Array.apply(null, new Array(10)).map(function ()
-        {
-            return {
-                "player_slot": 0,
-                "stuns": 0,
-                "max_hero_hit":
-                {
-                    value: 0
-                },
-                "times": [],
-                "gold_t": [],
-                "lh_t": [],
-                "dn_t": [],
-                "xp_t": [],
-                "obs_log": [],
-                "sen_log": [],
-                "purchase_log": [],
-                "kills_log": [],
-                "buyback_log": [],
-                //"pos": {},
-                "lane_pos":
-                {},
-                "obs":
-                {},
-                "sen":
-                {},
-                "actions":
-                {},
-                "pings":
-                {},
-                "purchase":
-                {},
-                "gold_reasons":
-                {},
-                "xp_reasons":
-                {},
-                "killed":
-                {},
-                "item_uses":
-                {},
-                "ability_uses":
-                {},
-                "hero_hits":
-                {},
-                "damage":
-                {},
-                "damage_taken":
-                {},
-                "damage_inflictor":
-                {},
-                "runes":
-                {},
-                "killed_by":
-                {},
-                "kill_streaks":
-                {},
-                "multi_kills":
-                {},
-                "life_state":
-                {},
-                "healing":
-                {},
-                "damage_inflictor_received":
-                {},
-                /*
-                "kill_streaks_log": [], // an array of kill streak values
-                //     where each kill streak is an array of kills where
-                //         where each kill is an object that contains
-                //             - the hero id of the player who was killed
-                //             - the multi kill id of this kill
-                //             - the team fight id of this kill
-                //             - the time of this kill
-                "multi_kill_id_vals": [] // an array of multi kill values (the length of each multi kill)
-                */
-            };
-        })
-    };
 }
 
 function generatePositionData(d, p)
@@ -630,14 +546,16 @@ function prettyPrint(str)
     }).join(" ");
 }
 /**
- * Returns a string of the unix timestamp at the beginning of a block of size hours
+ * Returns the unix timestamp at the beginning of a block of n minutes
  * Offset controls the number of blocks to look ahead
  **/
-function getStartOfBlockHours(size, offset)
+function getStartOfBlockMinutes(size, offset)
 {
     offset = offset || 0;
-    var blockS = size * 60 * 60;
-    return (Math.floor(((new Date() / 1000 + (offset * blockS)) / blockS)) * blockS).toFixed(0);
+    const blockS = size * 60;
+    const curTime = ~~(new Date() / 1000);
+    const blockStart = curTime - (curTime % blockS);
+    return (blockStart + (offset * blockS)).toFixed(0);
 }
 
 function percentToTextClass(pct)
@@ -727,6 +645,140 @@ function getPatchIndex(start_time)
     //use the value of i before the break, started at 1 to avoid negative index
     return i - 1;
 }
+
+function buildReplayUrl(match_id, cluster, replay_salt)
+{
+    const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
+    return "http://replay" + cluster + ".valve.net/570/" + match_id + "_" + replay_salt + suffix;
+}
+
+function expectedWin(rates)
+{
+    //simple implementation, average
+    //return rates.reduce((prev, curr) => prev + curr)) / hids.length;
+    //advanced implementation, asymptotic
+    //return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
+    return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
+}
+
+function matchupToString(t0, t1, t0win)
+{
+    //create sorted strings of each team
+    var rcg = groupToString(t0);
+    var dcg = groupToString(t1);
+    var suffix = '0';
+    if (rcg <= dcg)
+    {
+        suffix = t0win ? '0' : '1';
+        return rcg + ':' + dcg + ':' + suffix;
+    }
+    else
+    {
+        suffix = t0win ? '1' : '0';
+        return dcg + ':' + rcg + ':' + suffix;
+    }
+}
+
+function groupToString(g)
+{
+    return g.sort(function (a, b)
+    {
+        return a - b;
+    }).join(',');
+}
+
+function kCombinations(arr, k)
+{
+    var i, j, combs, head, tailcombs;
+    if (k > arr.length || k <= 0)
+    {
+        return [];
+    }
+    if (k === arr.length)
+    {
+        return [arr];
+    }
+    if (k == 1)
+    {
+        combs = [];
+        for (i = 0; i < arr.length; i++)
+        {
+            combs.push([arr[i]]);
+        }
+        return combs;
+    }
+    // Assert {1 < k < arr.length}
+    combs = [];
+    for (i = 0; i < arr.length - k + 1; i++)
+    {
+        head = arr.slice(i, i + 1);
+        //recursively get all combinations of the remaining array
+        tailcombs = kCombinations(arr.slice(i + 1), k - 1);
+        for (j = 0; j < tailcombs.length; j++)
+        {
+            combs.push(head.concat(tailcombs[j]));
+        }
+    }
+    return combs;
+}
+
+function generateMatchups(match, max)
+{
+    max = max || 5;
+    var radiant = [];
+    var dire = [];
+    //start with empty arrays for the choose 0 case
+    var rCombs = [
+        []
+    ];
+    var dCombs = [
+        []
+    ];
+    const result = [];
+    for (var i = 0; i < match.players.length; i++)
+    {
+        var p = match.players[i];
+        if (p.hero_id === 0)
+        {
+            //exclude this match if any hero is 0
+            return;
+        }
+        if (isRadiant(p))
+        {
+            radiant.push(p.hero_id);
+        }
+        else
+        {
+            dire.push(p.hero_id);
+        }
+    }
+    for (var i = 1; i < (max + 1); i++)
+    {
+        var rc = kCombinations(radiant, i);
+        var dc = kCombinations(dire, i);
+        rCombs = rCombs.concat(rc);
+        dCombs = dCombs.concat(dc);
+    }
+    //iterate over combinations, increment count for unique key
+    //include empty set for opposing team (current picks data)
+    //t0, t1 are ordered lexicographically
+    //format: t0:t1:winner
+    //::0
+    //::1
+    //1::0
+    //1::1
+    //1:2:0
+    //when searching, take as input t0, t1 and retrieve data for both values of t0win
+    rCombs.forEach(function (t0)
+    {
+        dCombs.forEach(function (t1)
+        {
+            var key = matchupToString(t0, t1, match.radiant_win);
+            result.push(key);
+        });
+    });
+    return result;
+}
 module.exports = {
     tokenize,
     generateJob,
@@ -737,7 +789,6 @@ module.exports = {
     mergeObjects,
     mode,
     generatePositionData,
-    getParseSchema,
     isSignificant,
     max,
     min,
@@ -746,11 +797,17 @@ module.exports = {
     serialize,
     getAlphaHeroes,
     prettyPrint,
-    getStartOfBlockHours,
+    getStartOfBlockMinutes,
     percentToTextClass,
     average,
     stdDev,
     median,
     deserialize,
     getPatchIndex,
+    buildReplayUrl,
+    expectedWin,
+    matchupToString,
+    groupToString,
+    kCombinations,
+    generateMatchups,
 };

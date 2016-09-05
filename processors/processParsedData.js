@@ -1,8 +1,6 @@
-var utility = require('../util/utility');
 var populate = require('./populate');
-function processParsedData(entries)
+function processParsedData(entries, container)
 {
-    var container = utility.getParseSchema();
     for (var i = 0; i < entries.length; i++)
     {
         var e = entries[i];

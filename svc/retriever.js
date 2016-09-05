@@ -117,7 +117,7 @@ async.each(a, function(i, cb)
             return client.steamUser.logOn(logOnDetails);
         }
         console.log("[STEAM] Logged on %s", client.steamID);
-        client.steamFriends.setPersonaName("[YASP] " + client.steamID);
+        client.steamFriends.setPersonaName(client.steamID.toString());
         client.replays = 0;
         client.profiles = 0;
         client.Dota2.once("ready", function()

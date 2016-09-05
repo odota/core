@@ -6,10 +6,8 @@ var constants = require('dotaconstants');
 var db = require('../store/db');
 var cassandra = require('../store/cassandra');
 var redis = require('../store/redis');
-var playerCache = require('../store/playerCache');
 var utility = require('../util/utility');
 var async = require('async');
-var updateCache = playerCache.updateCache;
 var serialize = utility.serialize;
 const cluster = require('cluster');
 var bucket_size = 100000000;
@@ -106,7 +104,7 @@ function run(start_id)
     {
         var obj = serialize(match);
         delete obj.pgroup;
-        var query = "INSERT INTO yasp.matches JSON ?";
+        var query = "INSERT INTO matches JSON ?";
         cassandra.execute(query, [JSON.stringify(obj)],
         {
             prepare: true
@@ -120,7 +118,7 @@ function run(start_id)
             delete pm.account_id;
         }
         var obj2 = serialize(pm);
-        var query2 = "INSERT INTO yasp.player_matches JSON ?";
+        var query2 = "INSERT INTO player_matches JSON ?";
         cassandra.execute(query2, [JSON.stringify(obj2)],
         {
             prepare: true

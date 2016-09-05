@@ -1,18 +1,26 @@
 {
   "apps": [
     {
-      "script": "svc/web.js",
+      "script": "svc/mmr.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "web",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
-      "script": "svc/parser.js",
+      "script": "svc/worker.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "parser",
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/fullhistory.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -20,7 +28,23 @@
       "script": "svc/requests.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "core",
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/cacher.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/web.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "web",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -31,7 +55,13 @@
       "group": "retriever",
       "exec_mode": "cluster",
       "instances": 1
-    }
-
-  ]
+    },
+    {
+      "script": "svc/parser.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "parser",
+      "exec_mode": "cluster",
+      "instances": 1
+    }]
 }
