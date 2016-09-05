@@ -7,13 +7,13 @@ steam.on('loggedOn', function ()
 {
   console.error("Logged into Steam");
   var indices = [];
-  for (var i = 0; i < 10000; i++)
+  for (var i = 0; i < 3000; i++)
   {
     indices.push(i);
   }
   async.eachSeries(indices, function (i, cb)
   {
-    var name = 'series3_' + i;
+    var name = 'series5_' + i;
     var password = (Math.random() + 1).toString(36).substring(7);
     var email = name + '@email.com';
     steam.createAccount(name, password, email, function (result, steamid)
@@ -29,7 +29,7 @@ steam.on('loggedOn', function ()
       }
       else
       {
-        console.log('%s,%s', name, password);
+        console.log('%s\t%s', name, password);
       }
       cb();
     });
