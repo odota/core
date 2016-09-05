@@ -99,10 +99,6 @@ app.locals.navbar_pages = {
     {
         "name": "Search",
     },
-    "status":
-    {
-        "name": "Status",
-    },
     "carry":
     {
         "name": "Carry"
@@ -116,17 +112,6 @@ app.locals.navbar_pages = {
     {
         "name": "Blog",
         "path": "//odota.github.io/blog"
-    },
-    "api":
-    {
-        "name": "API",
-        "path": "//odota.github.io/api",
-        "new-feature": true,
-    },
-    "code":
-    {
-        "name": "Code",
-        "path": "//github.com/odota"
     },
 };
 app.locals.constants.abilities.attribute_bonus = {
