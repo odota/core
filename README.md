@@ -23,7 +23,7 @@ Tech Stack
 Quickstart (Docker)
 ----
 * Install Docker: `curl -sSL https://get.docker.com/ | sh`
-* Clone the repo: `git clone https://github.com/yasp-dota/yasp`
+* Clone the repo: `git clone https://github.com/odota/yasp`
 * Go into the directory: `cd yasp`
 * Start containers and initialize databases: `sudo bash scripts/dev.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
@@ -59,9 +59,9 @@ Getting Help
 * Feel free to open a new issue to ask questions/get help!
 * You can also find us on Discord if you'd like real-time help.
 * The following blog posts may help you understand the codebase/architecture:
-  * General Learnings: https://blog.yasp.co/2016/05/13/learnings/
-  * Architecture: https://blog.yasp.co/2016/05/15/architecture/
-  * Deployment/Infrastructure: https://blog.yasp.co/2016/08/10/deployment/
+  * General Learnings: https://odota.github.io/blog/2016/05/13/learnings/
+  * Architecture: https://odota.github.io/blog/2016/05/15/architecture/
+  * Deployment/Infrastructure: https://odota.github.io/blog/2016/08/10/deployment/
 
 History
 ----

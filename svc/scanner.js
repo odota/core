@@ -200,7 +200,10 @@ function start()
                     console.log("next_seq_num: %s", next_seq_num);
                     redis.set("match_seq_num", next_seq_num);
                     //completed inserting matches on this page
-                    return scanApi(next_seq_num);
+                    //if page set isn't full, delay the next iteration
+                    return setTimeout(function() {
+                        return scanApi(next_seq_num);
+                    }, Object.keys(matchBuffer).length < (parallelism * PAGE_SIZE) ? 2000 : 0);
                 }
             }
         });
