@@ -382,6 +382,7 @@ function processExpand(entries, meta)
                 {
                     var e2 = JSON.parse(JSON.stringify(e));
                     e2.type = t;
+                    e2.key = e2[t];
                     e2.value = e2[t];
                     expand(e2);
                 });

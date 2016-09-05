@@ -363,102 +363,6 @@ function mode(array)
     return maxEl;
 }
 
-function getParseSchema()
-{
-    return {
-        "version": 16,
-        "match_id": 0,
-        "teamfights": [],
-        "objectives": [],
-        "chat": [],
-        "radiant_gold_adv": [],
-        "radiant_xp_adv": [],
-        "players": Array.apply(null, new Array(10)).map(function ()
-        {
-            return {
-                "player_slot": 0,
-                "obs_placed": 0,
-                "sen_placed": 0,
-                "creeps_stacked": 0,
-                "camps_stacked": 0,
-                "rune_pickups": 0,
-                "stuns": 0,
-                "max_hero_hit":
-                {
-                    value: 0
-                },
-                "times": [],
-                "gold_t": [],
-                "lh_t": [],
-                "dn_t": [],
-                "xp_t": [],
-                "obs_log": [],
-                "sen_log": [],
-                "obs_left_log": [],
-                "sen_left_log": [],
-                "purchase_log": [],
-                "kills_log": [],
-                "buyback_log": [],
-                //"pos": {},
-                "lane_pos":
-                {},
-                "obs":
-                {},
-                "sen":
-                {},
-                "actions":
-                {},
-                "pings":
-                {},
-                "purchase":
-                {},
-                "gold_reasons":
-                {},
-                "xp_reasons":
-                {},
-                "killed":
-                {},
-                "item_uses":
-                {},
-                "ability_uses":
-                {},
-                "hero_hits":
-                {},
-                "damage":
-                {},
-                "damage_taken":
-                {},
-                "damage_inflictor":
-                {},
-                "runes":
-                {},
-                "killed_by":
-                {},
-                "kill_streaks":
-                {},
-                "multi_kills":
-                {},
-                "life_state":
-                {},
-                "healing":
-                {},
-                "damage_inflictor_received":
-                {},
-                /*
-                "kill_streaks_log": [], // an array of kill streak values
-                //     where each kill streak is an array of kills where
-                //         where each kill is an object that contains
-                //             - the hero id of the player who was killed
-                //             - the multi kill id of this kill
-                //             - the team fight id of this kill
-                //             - the time of this kill
-                "multi_kill_id_vals": [] // an array of multi kill values (the length of each multi kill)
-                */
-            };
-        })
-    };
-}
-
 function generatePositionData(d, p)
 {
     //d, a hash of keys to process
@@ -885,7 +789,6 @@ module.exports = {
     mergeObjects,
     mode,
     generatePositionData,
-    getParseSchema,
     isSignificant,
     max,
     min,

@@ -36,8 +36,9 @@ CREATE TABLE matches (
   radiant_gold_adv integer[],
   radiant_xp_adv integer[],
   teamfights json[],
-  version integer
-  );
+  version integer,
+  cosmetics json
+);
 CREATE INDEX on matches(leagueid) WHERE leagueid > 0;
 
 CREATE TABLE player_matches (

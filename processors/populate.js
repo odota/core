@@ -10,6 +10,9 @@ function populate(e, container)
     case 'chat':
         container.chat.push(JSON.parse(JSON.stringify(e)));
         break;
+    case 'cosmetics':
+        container.cosmetics = JSON.parse(e.key);
+        break;
     case 'CHAT_MESSAGE_TOWER_KILL':
     case 'CHAT_MESSAGE_TOWER_DENY':
     case 'CHAT_MESSAGE_BARRACKS_KILL':
@@ -31,7 +34,7 @@ function populate(e, container)
         if (typeof t === "undefined")
         {
             //container.players[0] doesn't have a type for this event
-            console.log("no field in parsed_data.players for %s", e.type);
+            //console.log("no field in parsed_data.players for %s", e.type);
             return;
         }
         else if (e.posData)
@@ -82,9 +85,7 @@ function populate(e, container)
         else
         {
             //we must use the full reference since this is a primitive type
-            //use the value most of the time, but key when stuns since value only holds Integers in Java
-            //replace the value directly
-            container.players[e.slot][e.type] = e.value || Number(e.key);
+            container.players[e.slot][e.type] = e.value;
         }
         break;
     }

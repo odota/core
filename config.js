@@ -90,7 +90,6 @@ if (process.env.NODE_ENV === 'test')
     process.env.ENABLE_MATCH_CACHE = 1;
     process.env.FRONTEND_PORT = 5001;
     process.env.PARSER_PORT = 5201;
-    process.env.PARSE_SERVER_PORT = 5601;
 }
 //now processes can use either process.env or config
 module.exports = process.env;
