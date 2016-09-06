@@ -47,7 +47,7 @@ Quickstart (Docker)
 * Submit a pull request.  Wait for it to be reviewed and merged.
 * Congratulations!  You're a contributor.
 
-Docker Compose
+Docker Compose (OUT OF DATE)
 ----
 * Alternatively, if you have Docker Compose [installed](https://docs.docker.com/compose/install/) you can just run `docker-compose up`.
  * Databases are set up and tables are created automatically.
