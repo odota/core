@@ -203,7 +203,7 @@ function start()
                     //if page set isn't full, delay the next iteration
                     return setTimeout(function() {
                         return scanApi(next_seq_num);
-                    }, Object.keys(matchBuffer).length < (parallelism * PAGE_SIZE) ? 2000 : 0);
+                    }, Object.keys(matchBuffer).length < (parallelism * PAGE_SIZE) ? 3000 : 0);
                 }
             }
         });
