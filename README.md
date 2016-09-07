@@ -4,15 +4,8 @@ YASP (Yet Another Stats Page)
 
 Overview
 ----
-* This project provides an open platform with Dota-related data (matches, players, etc.)
+* This project provides an open platform (backend) with Dota-related data (matches, players, etc.)
 * Raw data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
-* Processed data is accessible through a REST API.
-  * API documentation: https://odota.github.io/api
-
-Funding
-----
-* Servers for a public deployment of this code are funded by contributions from community members and corporate sponsors.
-* Community developers maintain the codebase without compensation, reducing operating costs.
 
 Tech Stack
 ----
