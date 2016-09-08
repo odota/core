@@ -305,3 +305,13 @@ CREATE TABLE match_rating(
   rating int,
   num_players int
 );
+
+CREATE TABLE items(
+  id int PRIMARY KEY,
+  name text,
+  cost int,
+  secret_shop smallint,
+  side_shop smallint,
+  recipe smallint,
+  localized_name text
+);
