@@ -1,4 +1,4 @@
-YASP (Yet Another Stats Page)
+core
 ====
 [![Discord](https://img.shields.io/badge/Discord-join%20chat%20%E2%86%92-738bd7.svg?style=flat-square)](https://discord.gg/0o5SQGbXuWCNDcaF)
 
@@ -6,6 +6,7 @@ Overview
 ----
 * This project provides an open platform (backend) with Dota-related data (matches, players, etc.)
 * Raw data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
+* A public deployment of this code is maintained by The OpenDota Project.
 
 Tech Stack
 ----
