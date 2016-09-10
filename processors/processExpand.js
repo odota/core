@@ -382,14 +382,18 @@ function processExpand(entries, meta)
                 {
                     var e2 = JSON.parse(JSON.stringify(e));
                     e2.type = t;
-                    e2.key = e2[t];
-                    e2.value = e2[t];
+                    if (t === 'life_state')
+                    {
+                        e2.key = e2[t];
+                        e2.value = 1;
+                    }
+                    else
+                    {
+                        e2.key = t;
+                        e2.value = e2[t];
+                    }
                     expand(e2);
                 });
-                //var e8 = JSON.parse(JSON.stringify(e));
-                //e8.type = "pos";
-                //e8.key = [e8.x, e8.y];
-                //expand(e8);
                 //if on minute, add to lh/gold/xp
                 if (e.time % 60 === 0)
                 {
