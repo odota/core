@@ -17,8 +17,8 @@ Tech Stack
 Quickstart (Docker)
 ----
 * Install Docker: `curl -sSL https://get.docker.com/ | sh`
-* Clone the repo: `git clone https://github.com/odota/yasp`
-* Go into the directory: `cd yasp`
+* Clone the repo: `git clone https://github.com/odota/core`
+* Go into the directory: `cd core`
 * Start containers and initialize databases: `sudo bash scripts/dev.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
