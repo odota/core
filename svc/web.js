@@ -256,7 +256,6 @@ app.use('/api', api(db, redis, cassandra));
 //END service/admin routes
 //START standard routes.
 //TODO remove these with SPA
-// app.use('/favicon.ico', express.static('./public/images/favicon.ico'));
 app.route('/').get(function (req, res, next)
 {
     if (req.user)
