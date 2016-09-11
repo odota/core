@@ -3,13 +3,14 @@ html
   head
     - var default_title = tooltips.app_name
     title= title || default_title
-    meta(name="description", content=default_title)
-    meta(property="og:site_name", content=default_title)
+    meta(name='description', content=default_title)
+    meta(property='og:site_name', content=default_title)
     meta(charset='utf-8')
-    meta(name="viewport" content="width=device-width, initial-scale=1")
+    meta(name='viewport', content='width=device-width, initial-scale=1')
     meta(name='theme-color', content='#ffffff')
+    link(rel='icon', type='image/png', href='/public/images/logo.png')
     block head
-    script(src="/public/build/yasp.min.js")
+    script(src='/public/build/yasp.min.js')
 
   body
     include navbar
