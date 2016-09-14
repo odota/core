@@ -31,7 +31,7 @@ getData(
         {
             skipCounts: true,
             skipAbilityUpgrades: true,
-            skipParse: false,
+            forceParse: true,
             cassandra: cassandra,
             attempts: 1,
         }, function(err)

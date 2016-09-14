@@ -285,7 +285,7 @@ function processExpand(entries, meta)
         {
             e.type = "runes";
             e.slot = e.player1;
-            e.key = e.value.toString();
+            e.key = String(e.value);
             e.value = 1;
             expand(e);
         },
@@ -300,7 +300,7 @@ function processExpand(entries, meta)
             //subsequent players assisted
             //still not perfect as dota can award kills to players when they're killed by towers/creeps and chat event does not reflect this
             //e.slot = e.player2;
-            //e.key = e.player1.toString();
+            //e.key = String(e.player1);
             //currently disabled in favor of combat log kills
         },
         "CHAT_MESSAGE_GLYPH_USED": function (e)
@@ -336,7 +336,7 @@ function processExpand(entries, meta)
             //Barracks can always be deduced 
             //They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
             //so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
-            e.key = e.value.toString();
+            e.key = String(e.value);
             expand(e);
         },
         "CHAT_MESSAGE_FIRSTBLOOD": function (e)

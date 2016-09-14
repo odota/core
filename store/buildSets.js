@@ -20,6 +20,7 @@ module.exports = function buildSets(db, redis, cb)
                 }
                 docs.forEach(function (player)
                 {
+                    // Refresh donators with expire date in the future
                     redis.zadd('tracked', moment().add(1, 'month').format('X'), player.account_id);
                 });
                 cb(err);
@@ -32,6 +33,7 @@ module.exports = function buildSets(db, redis, cb)
             console.log('error occurred during buildSets: %s', err);
             return cb(err);
         }
+        // Remove inactive players from tracked set
         redis.zremrangebyscore('tracked', 0, moment().subtract(config.UNTRACK_DAYS, 'days').format('X'));
         return cb(err);
     });
