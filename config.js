@@ -40,9 +40,12 @@ var defaults = {
     "SCANNER_PORT": "5500",
     "PARSER_HOST": "http://localhost:5600", //host of the parse server
     "POSTGRES_URL": "postgresql://postgres:postgres@localhost/yasp", //connection string for PostgreSQL
+    "POSTGRES_TEST_URL": "postgresql://postgres:postgres@localhost/yasp_test",
     "READONLY_POSTGRES_URL": "postgresql://readonly:readonly@localhost/yasp", //readonly connection string for PostgreSQL
     "REDIS_URL": "redis://127.0.0.1:6379/0", //connection string for Redis
+    "REDIS_TEST_URL": "redis://127.0.0.1:6379/1",
     "CASSANDRA_URL": "cassandra://localhost/yasp", //connection string for Cassandra
+    "CASSANDRA_TEST_URL": "cassandra://localhost/yasp_test",
     "RETRIEVER_HOST": "localhost:5100", //The host of the retriever (access to Dota 2 GC data)
     "UNTRACK_DAYS": 14, //The number of days a user is tracked for after every visit
     "GOAL": 5, //The cheese goal
@@ -81,11 +84,10 @@ if (process.env.NODE_ENV === "development")
 if (process.env.NODE_ENV === 'test')
 {
     process.env.PORT = ""; //use service defaults
-    process.env.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
-    process.env.CASSANDRA_URL = "cassandra://localhost/yasp_test";
-    process.env.REDIS_URL = "redis://localhost:6379/1";
+    process.env.POSTGRES_URL = process.env.POSTGRES_TEST_URL;
+    process.env.CASSANDRA_URL = process.env.CASSANDRA_TEST_URL;
+    process.env.REDIS_URL = process.env.REDIS_TEST_URL;
     process.env.SESSION_SECRET = "testsecretvalue";
-    process.env.NODE_ENV = "test";
     process.env.ENABLE_MATCH_CACHE = 1;
     process.env.FRONTEND_PORT = 5001;
     process.env.PARSER_PORT = 5201;

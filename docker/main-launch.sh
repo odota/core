@@ -3,7 +3,6 @@
 # main-launch.sh
 # Script run in the main container
 # If this script exits, so does the main container
-
 npm run build
 
 case $1 in

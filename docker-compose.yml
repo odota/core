@@ -3,35 +3,50 @@
 
 version: '2'
 services:
-  db:
+  postgres:
     build:
       context: .
       dockerfile: docker/postgres.dockerfile
-    network_mode: host
+    image: odota/postgres
+    container_name: odota-postgres
   cassandra:
     build:
       context: .
       dockerfile: docker/cassandra.dockerfile
-    network_mode: host
-  cache:
+    image: odota/cassandra
+    container_name: odota-cassandra
+  redis:
     image: redis:3
-    network_mode: host
+    container_name: odota-redis
   parser:
-    image: yasp/parser
-    network_mode: host
-  web:
-    build: .
+    image: odota/parser
+    container_name: odota-parser
+  core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: odota/core
     # 'basic' to launch basic configuration as in profiles/basic.json
     # 'full' to launch all the services as in profiles/full.json
     # 'custom-profile' to launch all services as in profiles/custom.json (you'll have to provide it)
     # or just override the whole command with your script if existing does not fit your needs
-    command: ./docker/main-launch.sh basic 
+    entrypoint: bash docker/main-launch.sh basic
     ports:
-      - "5000"
-    volumes:
-      - .:/usr/src/yasp
-    network_mode: host
-    depends_on:
-      - db
-      - cache
+      - "5000:5000"
+    environment:
+      PARSER_HOST: http://odota-parser:5600
+      POSTGRES_URL: postgresql://postgres:postgres@odota-postgres/yasp
+      POSTGRES_TEST_URL: postgresql://postgres:postgres@odota-postgres/yasp_test
+      READONLY_POSTGRES_URL: postgresql://readonly:readonly@odota-postgres/yasp
+      REDIS_URL: redis://odota-redis:6379/0
+      REDIS_TEST_URL: redis://odota-redis:6379/1
+      CASSANDRA_URL: cassandra://odota-cassandra/yasp
+      CASSANDRA_TEST_URL: cassandra://odota-cassandra/yasp_test
+    volumes: 
+      - .:/usr/src/yasp 
+    links:
+      - postgres
+      - cassandra
+      - redis
       - parser
+    container_name: odota-core
