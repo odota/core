@@ -109,7 +109,7 @@ function getMatch(match_id, options, cb)
                 },
                 "cosmetics": function (cb)
                 {
-                    async.map(Object.keys(match.cosmetics), function (item_id, cb)
+                    async.map(Object.keys(match.cosmetics || {}), function (item_id, cb)
                     {
                         db.first().from('cosmetics').where(
                         {
