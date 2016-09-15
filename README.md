@@ -17,8 +17,6 @@ Tech Stack
 Quickstart (Docker)
 ----
 * Install Docker: `curl -sSL https://get.docker.com/ | sh`
-* Clone the repo: `git clone https://github.com/odota/yasp`
-* Go into the directory: `cd yasp`
 * Start containers and initialize databases: `sudo bash scripts/dev.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
@@ -41,7 +39,7 @@ Quickstart (Docker)
 * Submit a pull request.  Wait for it to be reviewed and merged.
 * Congratulations!  You're a contributor.
 
-Docker Compose (OUT OF DATE)
+Docker Compose
 ----
 * Alternatively, if you have Docker Compose [installed](https://docs.docker.com/compose/install/) you can just run `docker-compose up`.
  * Databases are set up and tables are created automatically.

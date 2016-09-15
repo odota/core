@@ -74,6 +74,13 @@ function generateJob(type, payload)
                 payload: payload
             };
         },
+        "api_items": function ()
+        {
+            return {
+                url: api_url + "/IEconDOTA2_570/GetGameItems/v1?key=" + api_key + "&language=" + payload.language,
+                type: "api",
+            };
+        },
         "api_leagues": function ()
         {
             return {

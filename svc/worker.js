@@ -233,15 +233,37 @@ invokeInterval(function heroes(cb)
         }, cb);
     });
 }, 60 * 60 * 1000);
+invokeInterval(function items(cb)
+{
+    var container = utility.generateJob('api_items',
+    {
+        language: 'english'
+    });
+    utility.getData(container.url, function (err, body)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        if (!body || !body.result || !body.result.items)
+        {
+            return cb();
+        }
+        async.eachSeries(body.result.items, function (item, cb)
+        {
+            queries.upsert(db, 'items', item,
+            {
+                id: item.id
+            }, cb);
+        });
+    });
+}, 60 * 60 * 1000);
 invokeInterval(function cosmetics(cb)
 {
     utility.getData(utility.generateJob("api_item_schema").url, function (err, body)
     {
         // Get the item schema URL
-        if (err)
-        {
-            return cb(err);
-        }
+        << << << < HEAD
         if (!body || !body.result || !body.result.items_game_url)
         {
             return cb();
