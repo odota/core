@@ -5,4 +5,4 @@ sudo docker run -d --privileged --name cassandra --net=host -e "CASSANDRA_LISTEN
 sudo docker run -d --privileged --name postgres --net=host postgres:9.5
 sudo docker run -d --privileged --name redis --net=host redis:3
 sudo docker run -d --name parser --net=host yasp/parser
-sudo docker pull yasp/yasp && sudo docker build -t "yasp/yasp" .
+sudo docker pull odota/core && sudo docker build -t "odota/core" .
