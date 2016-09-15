@@ -16,6 +16,9 @@ services:
   cache:
     image: redis:3
     network_mode: host
+  parser:
+    image: yasp/parser
+    network_mode: host
   web:
     build: .
     # 'basic' to launch basic configuration as in profiles/basic.json
@@ -31,3 +34,4 @@ services:
     depends_on:
       - db
       - cache
+      - parser
