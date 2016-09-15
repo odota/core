@@ -305,3 +305,16 @@ CREATE TABLE match_rating(
   rating int,
   num_players int
 );
+
+CREATE TABLE cosmetics(
+  item_id int PRIMARY KEY,
+  name text,
+  prefab text,
+  creation_date timestamp with time zone,
+  image_inventory text,
+  image_path text,
+  item_description text,
+  item_name text,
+  item_rarity text,
+  item_type_name text
+);

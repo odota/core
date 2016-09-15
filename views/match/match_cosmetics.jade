@@ -1,0 +1,13 @@
+extend match
+
+block match_content
+  .row
+    .col-md-12
+      h3 Cosmetics 
+        small Cosmetic items used in this match
+      .row
+      each item in match.cosmetics
+        .col-md-3
+          div(style="")
+            img(src="http://cdn.dota2.com/apps/570/" + item.image_path, style="height:80px;")
+            div(style="")=item.name

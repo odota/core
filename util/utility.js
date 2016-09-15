@@ -119,6 +119,20 @@ function generateJob(type, payload)
                 payload: payload,
             };
         },
+        "api_item_schema": function ()
+        {
+            return {
+                url: api_url + "/IEconItems_570/GetSchemaURL/v1?key=" + api_key,
+                type: "api",
+            }
+        },
+        "api_item_icon": function ()
+        {
+            return {
+                url: api_url + "/IEconDOTA2_570/GetItemIconPath/v1?key=" + api_key + "&iconname=" + payload.iconname,
+                type: "api",
+            };
+        },
         "parse": function ()
         {
             return {
@@ -254,7 +268,7 @@ function getData(url, cb)
                     console.error("[INVALID] status: %s, retrying: %s", res ? res.statusCode : '', target);
                     //var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
                     var backoff = 0;
-                    return setTimeout(function()
+                    return setTimeout(function ()
                     {
                         getData(url, cb);
                     }, backoff);

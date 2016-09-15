@@ -106,6 +106,30 @@ function getMatch(match_id, options, cb)
                     {
                         match_id: match_id
                     }).asCallback(cb);
+                },
+                "cosmetics": function (cb)
+                {
+                    async.map(Object.keys(match.cosmetics), function (item_id, cb)
+                    {
+                        db.first().from('cosmetics').where(
+                        {
+                            item_id: item_id
+                        }).asCallback(cb);
+                    }, function (err, cosmetics)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        return cb(err, cosmetics.filter(c => c).map(function (c)
+                        {
+                            return Object.assign(
+                            {}, c,
+                            {
+                                account_id: match.cosmetics[c.item_id]
+                            });
+                        }));
+                    });
                 }
             }, function (err, result)
             {
@@ -113,11 +137,15 @@ function getMatch(match_id, options, cb)
                 {
                     return cb(err);
                 }
+                console.log(result.cosmetics);
                 match = Object.assign(
-                {}, result.gcdata, result.skill,
+                {}, match, result.gcdata, result.skill,
                 {
                     players: result.players
-                }, match);
+                },
+                {
+                    cosmetics: result.cosmetics
+                });
                 computeMatchData(match);
                 if (match.replay_salt)
                 {

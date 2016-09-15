@@ -10,6 +10,7 @@ var queries = require('../store/queries');
 var buildSets = require('../store/buildSets');
 var utility = require('../util/utility');
 var getMMStats = require('../util/getMMStats');
+var vdf = require('../util/vdf');
 var async = require('async');
 var moment = require('moment');
 var fs = require('fs');
@@ -20,16 +21,18 @@ sqlq.forEach(function (f)
     sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
 });
 console.log("[WORKER] starting worker");
-invokeInterval(function getPvgnaAPI(cb) {
-    utility.getData('https://pvgna.com/yasp', function (err, guides)
+invokeInterval(function getPvgnaAPI(cb)
     {
-        if (err) {
-            console.log("Received a bad response from pvgna");
-            return cb(err);
-        }
-        redis.set("pvgna", JSON.stringify(guides), cb);
-    });
-}, 60 * 60 * 1000 * 24) //Once every day
+        utility.getData('https://pvgna.com/yasp', function (err, guides)
+        {
+            if (err)
+            {
+                console.log("Received a bad response from pvgna");
+                return cb(err);
+            }
+            redis.set("pvgna", JSON.stringify(guides), cb);
+        });
+    }, 60 * 60 * 1000 * 24) //Once every day
 invokeInterval(function doBuildSets(cb)
 {
     buildSets(db, redis, cb);
@@ -230,6 +233,74 @@ invokeInterval(function heroes(cb)
         }, cb);
     });
 }, 60 * 60 * 1000);
+invokeInterval(function cosmetics(cb)
+{
+    utility.getData(utility.generateJob("api_item_schema").url, function (err, body)
+    {
+        // Get the item schema URL
+        if (err)
+        {
+            return cb(err);
+        }
+        if (!body || !body.result || !body.result.items_game_url)
+        {
+            return cb();
+        }
+        utility.getData(body.result.items_game_url, function (err, body)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var item_data = vdf.parse(body);
+            console.log(Object.keys(item_data.items_game.items).length);
+            async.eachLimit(Object.keys(item_data.items_game.items), 5, function (item_id, cb)
+            {
+                var item = item_data.items_game.items[item_id];
+                item.item_id = Number(item_id);
+                //console.log(item);
+                if (!item.item_id)
+                {
+                    return cb();
+                }
+                if (item.image_inventory)
+                {
+                    var spl = item.image_inventory.split('/');
+                    var iconname = spl[spl.length - 1];
+                    utility.getData(
+                    {
+                        url: utility.generateJob("api_item_icon",
+                        {
+                            iconname: iconname
+                        }).url,
+                        noRetry: true
+                    }, function (err, body)
+                    {
+                        if (err || !body || !body.result)
+                        {
+                            return cb();
+                        }
+                        item.image_path = body.result.path;
+                        insert(cb);
+                    });
+                }
+                else
+                {
+                    insert(cb);
+                }
+
+                function insert(cb)
+                {
+                    //console.log(item);
+                    return queries.upsert(db, 'cosmetics', item,
+                    {
+                        item_id: item.item_id
+                    }, cb);
+                }
+            }, cb);
+        });
+    });
+}, 12 * 60 * 60 * 1000);
 
 function invokeInterval(func, delay)
 {
