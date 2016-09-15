@@ -263,7 +263,6 @@ invokeInterval(function cosmetics(cb)
     utility.getData(utility.generateJob("api_item_schema").url, function (err, body)
     {
         // Get the item schema URL
-        << << << < HEAD
         if (!body || !body.result || !body.result.items_game_url)
         {
             return cb();

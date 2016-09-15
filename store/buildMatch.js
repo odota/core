@@ -137,7 +137,6 @@ function getMatch(match_id, options, cb)
                 {
                     return cb(err);
                 }
-                console.log(result.cosmetics);
                 match = Object.assign(
                 {}, match, result.gcdata, result.skill,
                 {
