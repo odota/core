@@ -20,13 +20,13 @@ function start(err)
   {
     throw err;
   }
-  queries.getSets(redis, function (err, result)
+  redis.zrange('tracked', 0, -1, function (err, ids)
   {
     if (err)
     {
       throw err;
     }
-    async.eachLimit(Object.keys(result.trackedPlayers), parallelism, processPlayer, start);
+    async.eachLimit(ids, parallelism, processPlayer, start);
   });
 }
 
@@ -113,7 +113,6 @@ function processMatch(match_id, cb)
             origin: "scanner",
             skipCounts: false,
             skipAbilityUpgrades: false,
-            skipParse: false,
             cassandra: cassandra,
           }, function (err)
           {

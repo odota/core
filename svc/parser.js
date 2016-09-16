@@ -196,7 +196,7 @@ function runParse(match, job, cb)
     {
         if (response.statusCode !== 200)
         {
-            exit(response.statusCode.toString());
+            exit(String(response.statusCode));
         }
     }).on('error', exit);
     var bz;
