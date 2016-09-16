@@ -783,8 +783,6 @@ module.exports = function (db, redis, cassandra)
             else if (req.file)
             {
                 console.log(req.file);
-                //var key = req.file.originalname + Date.now();
-                //var key = Math.random().toString(16).slice(2);
                 const hash = crypto.createHash('md5');
                 hash.update(req.file.buffer);
                 var key = hash.digest('hex');

@@ -489,7 +489,6 @@ function renderMatch(m)
     if (m.players[0] && m.players[0].gold_reasons)
     {
         m.incomeData = generateIncomeData(m);
-        //m.treeMapData = generateTreemapData(m);
     }
     //create graph data
     if (m.players[0] && m.players[0].gold_t)
@@ -659,36 +658,6 @@ function generateIncomeData(match)
     };
 }
 
-function generateTreemapData(match)
-{
-    var data = [];
-    match.players.forEach(function (player)
-    {
-        var hero = constants.heroes[player.hero_id] ||
-        {};
-        data.push(
-        {
-            name: hero.localized_name,
-            id: player.hero_id.toString(),
-            value: ~~(player.gold_per_min * match.duration / 60)
-        });
-    });
-    for (var key in constants.gold_reasons)
-    {
-        var reason = constants.gold_reasons[key].name;
-        match.players.forEach(function (player)
-        {
-            var g = player.gold_reasons;
-            data.push(
-            {
-                name: reason,
-                parent: player.hero_id.toString(),
-                value: g[key] || 0
-            });
-        });
-    }
-    return data;
-}
 /**
  * Count the words that occur in a set of messages
  * - messages: the messages to create the counts over

@@ -170,15 +170,17 @@ function runParse(match, job, cb)
     var exited = false;
     var timeout = setTimeout(function ()
     {
+        download.abort();
         exit('timeout');
-    }, 180000);
+    }, 120000);
     var url = match.url;
     // Streams
-    var inStream = progress(request(
+    var download = request(
     {
         url: url,
         encoding: null,
-    }));
+    });
+    var inStream = progress(download);
     inStream.on('progress', function (state)
     {
         console.log(JSON.stringify(
@@ -194,7 +196,7 @@ function runParse(match, job, cb)
     {
         if (response.statusCode !== 200)
         {
-            exit(response.statusCode.toString());
+            exit(String(response.statusCode));
         }
     }).on('error', exit);
     var bz;
