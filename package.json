@@ -70,6 +70,7 @@
     "select2": "^4.0.3",
     "select2-bootstrap-theme": "0.1.0-beta.8",
     "sentiment": "2.0.0",
+    "simple-vdf": "^1.0.0",
     "steam": "1.4.0",
     "steam-user": "^3.13.0",
     "stripe": "4.10.0",
