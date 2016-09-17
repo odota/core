@@ -65,7 +65,7 @@
     "pm2": "^2.0.12",
     "qtip2": "3.0.3",
     "redis": "2.6.2",
-    "request": "2.74.0",
+    "request": "2.75.0",
     "request-progress": "2.0.1",
     "select2": "^4.0.3",
     "select2-bootstrap-theme": "0.1.0-beta.8",
