@@ -4,8 +4,25 @@
 # Script run in the main container
 # If this script exits, so does the main container
 
-# Rebuild since we've mapped in our local working directory, which may not have a build.
+# Rebuild to replace mapped directory build
 npm run build
 
-# By default, this just waits for input from stdin, allowing the user to run pm2 commands.
-npm start
+case $1 in
+    'basic')
+        # This is enough to open the site in a browser and request parses by ID.
+        pm2 start profiles/basic.json
+    ;;
+    'full')
+        pm2 start profiles/full.json
+    ;;
+    'custom-profile')
+        # To use this option you'll have to provide your custom.json profile. It's gitignored.
+        pm2 start profiles/custom.json
+    ;;
+    *)
+        pm2 start profiles/full.json
+    ;;
+esac
+
+# We shall now display webserver logs indefinitely
+pm2 logs web
