@@ -18,8 +18,4 @@ var db = require('knex')(
     max: 5,
   },
 });
-db.client.pool.on('error', function(err)
-{
-  throw err;
-});
 module.exports = db;
