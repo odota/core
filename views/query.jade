@@ -6,23 +6,23 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
     .row
       .col-md-3
         .form-group
-          label The Team Included
-          select.form-control(name="with_hero_id" multiple, data-placeholder="Team: Any Hero")#with_hero_id
+          label Team Included
+          select.form-control(name="with_hero_id" multiple, data-placeholder="Any Hero")#with_hero_id
             each entry in constants.heroes
               option(value=entry.id, selected=q.with_hero_id && q.with_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
-          label The Enemies Included
-          select.form-control(name="against_hero_id" multiple, data-placeholder="Enemy: Any Hero")#enemy_hero_id
+          label Enemies Included
+          select.form-control(name="against_hero_id" multiple, data-placeholder="Any Hero")#enemy_hero_id
             each entry in constants.heroes
               option(value=entry.id, selected=q.against_hero_id && q.against_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
-          label The Players Included
-          select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player ID")#included_account_id
+          label Players Included
+          select.form-control(name="included_account_id", multiple, data-placeholder="Any Player ID")#included_account_id
             each entry in q.included_account_id || []
               option(value=entry, selected=q.included_account_id && q.included_account_id.indexOf(entry)!==-1)=entry
         .form-group
-          label The Players Excluded
-          select.form-control(name="excluded_account_id", multiple, data-placeholder="Excluded: Any Player ID")#excluded_account_id
+          label Players Excluded
+          select.form-control(name="excluded_account_id", multiple, data-placeholder="Any Player ID")#excluded_account_id
             each entry in q.excluded_account_id || []
               option(value=entry, selected=q.excluded_account_id && q.excluded_account_id.indexOf(entry)!==-1)=entry
 
