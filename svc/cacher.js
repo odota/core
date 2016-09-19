@@ -110,7 +110,7 @@ function updateRankings(match, cb)
             var start = moment().startOf('quarter').format('X');
             var expire = moment().add(1, 'quarter').startOf('quarter').format('X');
             var win = Number(utility.isRadiant(player) === player.radiant_win);
-            var player_score = win ? match_score : 0;
+            var player_score = win ? match_score : match_score * -1;
             if (player_score && utility.isSignificant(match))
             {
                 redis.zincrby(['hero_rankings', start, player.hero_id].join(':'), player_score, player.account_id);
