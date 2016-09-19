@@ -1,4 +1,4 @@
-button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Apply A Filter
+button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 15px" data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Apply A Filter
 #filter_collapse.collapse(class=querystring ? "in" : "")
   form#query(action="" method="GET")
     if config.NODE_ENV==="development"
@@ -102,6 +102,9 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
     width: 100% !important;
     padding: 0;
     color: #000;
+    }
+    #query {
+        margin-top: 15px;
     }
     #query .form-control {
       border: 1px solid #ccc;
