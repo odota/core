@@ -4,10 +4,18 @@ block match_content
   .row
     .col-md-12
       h3 Cosmetics 
-        small Cosmetic items used in this match
-      .row
-      each item in match.cosmetics
-        .col-md-3
-          div(style="")
-            img(src="http://cdn.dota2.com/apps/570/" + item.image_path, style="height:80px;")
-            div(style="")=item.name
+        small Cosmetic items owned by players in this match
+      +data_table({id:"cosmetics", heading:""})
+        each player, i in match.players
+          +data_table_header(i, match)
+            tr
+              th: abbr(title=tooltips.hero_id) Hero
+              th Cosmetics
+          tr(class = player.isRadiant ? "radiant" : "dire")
+            +hero_td(player)
+            td
+              .row
+              each item in player.cosmetics
+                .col-md-2
+                  img(src="http://cdn.dota2.com/apps/570/" + item.image_path, style="height:40px;")
+                  div.small=item.name 

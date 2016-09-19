@@ -109,7 +109,8 @@ function getMatch(match_id, options, cb)
                 },
                 "cosmetics": function (cb)
                 {
-                    async.map(Object.keys(match.cosmetics || {}), function (item_id, cb)
+                    async.map(Object.keys(match.cosmetics ||
+                    {}), function (item_id, cb)
                     {
                         db.first().from('cosmetics').where(
                         {
@@ -121,14 +122,7 @@ function getMatch(match_id, options, cb)
                         {
                             return cb(err);
                         }
-                        return cb(err, cosmetics.filter(c => c).map(function (c)
-                        {
-                            return Object.assign(
-                            {}, c,
-                            {
-                                account_id: match.cosmetics[c.item_id]
-                            });
-                        }));
+                        return cb(err, cosmetics.filter(c => c));
                     });
                 }
             }, function (err, result)
@@ -141,10 +135,15 @@ function getMatch(match_id, options, cb)
                 {}, match, result.gcdata, result.skill,
                 {
                     players: result.players
-                },
-                {
-                    cosmetics: result.cosmetics
                 });
+                // Assign cosmetics to each player
+                if (result.cosmetics)
+                {
+                    match.players.forEach(function (p)
+                    {
+                        p.cosmetics = result.cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot);
+                    });
+                }
                 computeMatchData(match);
                 if (match.replay_salt)
                 {
