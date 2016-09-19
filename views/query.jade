@@ -25,14 +25,14 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
           select.form-control(name="excluded_account_id", multiple, data-placeholder="Excluded: Any Player ID")#excluded_account_id
             each entry in q.excluded_account_id || []
               option(value=entry, selected=q.excluded_account_id && q.excluded_account_id.indexOf(entry)!==-1)=entry
-              
+
       .col-md-3
         .form-group
           label Hero
           select.form-control(multiple name="hero_id" data-placeholder="Any Hero")#hero_id
             each entry in constants.heroes
               option(value=entry.id, selected=(q["hero_id"] && q["hero_id"][0]===entry.id))=entry.localized_name
-        .form-group  
+        .form-group
           label Faction
           select.form-control(multiple name="is_radiant" data-placeholder="Any Faction")#is_radiant
             option(value="1", selected=(q["is_radiant"] && q["is_radiant"][0]===1)) Radiant
@@ -45,9 +45,9 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
         .form-group
           label Lane
           select.form-control(multiple name="lane_role" data-placeholder="Any Lane")#lane_role
-            each val, key in constants.lane_role		
+            each val, key in constants.lane_role
               option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
-              
+
       .col-md-3
         .form-group
           label Patch
@@ -66,17 +66,17 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
             each entry in constants.lobby_type
               option(value=entry.id, selected=(q.lobby_type && q.lobby_type[0]===entry.id))=entry.name
         .form-group
-          label Date
-          select.form-control(multiple name="date" data-placeholder="Any Date")#date
-            - var date_list = {7:"Last 1 Week",30:"Last 1 Month",90:"Last 3 Months",180:"Last 6 Months"}
-            each name, id in date_list
-              option(value=id, selected=(q.date && q.date[0]===Number(id)))=name
-        .form-group
           label Region
           select.form-control(multiple name="region" data-placeholder="Any Region")#region
             each name, id in constants.region
               option(value=id, selected=(q.region && q.region[0]===Number(id)))=name
       .col-md-3
+        .form-group
+          label Date
+          select.form-control(multiple name="date" data-placeholder="Any Date")#date
+            - var date_list = {7:"Last 1 Week",30:"Last 1 Month",90:"Last 3 Months",180:"Last 6 Months"}
+            each name, id in date_list
+              option(value=id, selected=(q.date && q.date[0]===Number(id)))=name
         .form-group
           label Order by
           select.form-control(multiple, name="desc", data-placeholder="Match ID")#desc
