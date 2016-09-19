@@ -76,7 +76,7 @@
     "wordcloud": "1.0.3"
   },
   "devDependencies": {
-    "coveralls": "2.11.13",
+    "coveralls": "2.11.14",
     "css-loader": "^0.25.0",
     "database-cleaner": "^1.0.0",
     "expose-loader": "^0.7.1",
