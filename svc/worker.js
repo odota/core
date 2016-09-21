@@ -262,6 +262,10 @@ invokeInterval(function cosmetics(cb)
 {
     utility.getData(utility.generateJob("api_item_schema").url, function (err, body)
     {
+        if (err)
+        {
+            return cb(err);
+        }
         // Get the item schema URL
         if (!body || !body.result || !body.result.items_game_url)
         {
@@ -279,6 +283,11 @@ invokeInterval(function cosmetics(cb)
             {
                 var item = item_data.items_game.items[item_id];
                 item.item_id = Number(item_id);
+                const hero = item.used_by_heroes && typeof(item.used_by_heroes) === "object" && Object.keys(item.used_by_heroes)[0];
+                if (hero)
+                {
+                    item.used_by_heroes = hero;
+                }
                 //console.log(item);
                 if (!item.item_id)
                 {

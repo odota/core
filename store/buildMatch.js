@@ -8,6 +8,7 @@ var compute = require('../util/compute');
 var utility = require('../util/utility');
 var computeMatchData = compute.computeMatchData;
 var deserialize = utility.deserialize;
+const constants = require('dotaconstants');
 
 function buildMatch(match_id, options, cb)
 {
@@ -141,7 +142,8 @@ function getMatch(match_id, options, cb)
                 {
                     match.players.forEach(function (p)
                     {
-                        p.cosmetics = result.cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot);
+                        const hero = constants.heroes[p.hero_id] || {};
+                        p.cosmetics = result.cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot && (!c.used_by_heroes || c.used_by_heroes === hero.name));
                     });
                 }
                 computeMatchData(match);

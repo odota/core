@@ -326,5 +326,6 @@ CREATE TABLE cosmetics(
   item_description text,
   item_name text,
   item_rarity text,
-  item_type_name text
+  item_type_name text,
+  used_by_heroes text
 );
