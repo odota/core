@@ -7,7 +7,6 @@ node_js:
 notifications:
   email:
   - howardc93@gmail.com
-  - christian@paral.in
   - aqc2109@columbia.edu
 before_install:
 install: true
