@@ -646,17 +646,6 @@ module.exports = function (db, redis, cassandra)
             });
         }
     });
-    api.get('/leagues', function (req, res, cb)
-    {
-        db.raw(`SELECT * FROM leagues ORDER BY leagueid DESC`).asCallback(function (err, result)
-        {
-            if (err)
-            {
-                return cb(err);
-            }
-            res.json(result.rows);
-        });
-    });
     api.get('/distributions', function (req, res, cb)
     {
         queries.getDistributions(redis, function (err, result)
