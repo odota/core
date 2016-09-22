@@ -94,5 +94,8 @@
     "supertest": "2.0.0",
     "url-loader": "0.5.7",
     "webpack": "1.13.1"
+  },
+  "engines": {
+    "node": "6.6.0"
   }
 }
