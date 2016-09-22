@@ -1,4 +1,3 @@
-require('../store/db')('match_logs').columnInfo().asCallback(function(err, result)
-{
-    console.log(err, result);
+require('../store/db')('match_logs').columnInfo().asCallback((err, result) => {
+  console.log(err, result);
 });
