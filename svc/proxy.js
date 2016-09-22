@@ -1,12 +1,12 @@
 /**
  * Worker proxying requests to the Steam API.
  **/
-//mirrors steam api
-var config = require('../config');
-var httpProxy = require('http-proxy');
+// mirrors steam api
+const config = require('../config');
+const httpProxy = require('http-proxy');
 httpProxy.createProxyServer({
-    target: 'http://api.steampowered.com',
-    changeOrigin: true
+  target: 'http://api.steampowered.com',
+  changeOrigin: true,
 }).listen(config.PORT || config.OPENSHIFT_NODEJS_PORT || config.PROXY_PORT, config.OPENSHIFT_NODEJS_IP);
 /*
 //general purpose proxy

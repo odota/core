@@ -1,18 +1,17 @@
 /**
  * Interface to Cassandra client
  **/
-var cass = require('cassandra-driver');
-var config = require('../config');
-var url = require('url');
-var spl = config.CASSANDRA_URL.split(',');
-var cps = spl.map(function(u)
-{
-    return url.parse(u).host;
+const cass = require('cassandra-driver');
+const config = require('../config');
+const url = require('url');
+const spl = config.CASSANDRA_URL.split(',');
+const cps = spl.map((u) => {
+  return url.parse(u).host;
 });
 console.error('connecting %s', config.CASSANDRA_URL);
-var cassandra = new cass.Client(
-{
+const cassandra = new cass.Client(
+  {
     contactPoints: cps,
     keyspace: url.parse(spl[0]).path.substring(1),
-});
+  });
 module.exports = cassandra;
