@@ -16,15 +16,26 @@ Tech Stack
 
 Quickstart (Docker)
 ----
-* Install Docker: `curl -sSL https://get.docker.com/ | sh`
-* Clone the repo: `git clone https://github.com/odota/yasp`
-* Go into the directory: `cd yasp`
-* Start containers and initialize databases: `sudo bash scripts/dev.sh`
+
+### Running the server
+
+* Install Docker: `curl -sSL https://get.docker.com/ | sh`. If you are on Windows, make sure you shared the working drive with Docker.
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
   * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts. It is recommended to use a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
-* Get a terminal into the running container: `sudo docker exec -it yasp bash`
-* Rebuild inside the container (your local directory hides the built files): `npm run build`
+* Start containers and initialize databases: `docker-compose up`.
+* By default, this starts the minimal configuration necessary (API, parse, and request workers). This can be overridden via `docker-compose.override.yml`.
+* You can now access the website at http://localhost:5000 (or the hostname of the instance running the code)
+
+### Developing the server
+
+* File changes you make outside the container should be automatically mirrored to the container.
+* Make some changes and commit them: `git add --all; git commit -m "My first commit!"`
+* Submit a pull request.  Wait for it to be reviewed and merged.
+* Congratulations!  You're a contributor.
+
+### Other information
+* Get a terminal into the running container: `docker exec -it odota-core bash`
 * Start the services you want to run:
   * `pm2 start profiles/basic.json` This starts all the basic services to be able to read the API and request parses (which is a useful end-to-end test).  The profiles directory contains common sets of services to be started together.
   * Useful PM2 commands:
@@ -36,17 +47,6 @@ Quickstart (Docker)
 * Get some starter data
   * You can request some parses by ID to get some parsed data.
   * You can also run `scanner` to get some matches from the API.
-* File changes you make outside the container should be automatically mirrored to the container.
-* Make some changes and commit them: `git add --all; git commit -m "My first commit!"`
-* Submit a pull request.  Wait for it to be reviewed and merged.
-* Congratulations!  You're a contributor.
-
-Docker Compose (OUT OF DATE)
-----
-* Alternatively, if you have Docker Compose [installed](https://docs.docker.com/compose/install/) you can just run `docker-compose up`.
- * Databases are set up and tables are created automatically.
- * By default, minimal configuration necessary to open the site in a browser and request parses by ID is started. This can be overridden via `docker-compose.override.yml`.
- * `sudo docker exec -it yasp_web_1 bash` will give you a terminal into the running web container.
 
 Getting Help
 ----

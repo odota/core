@@ -509,24 +509,42 @@ function insertMatch(db, redis, match, options, cb)
         }
         else
         {
-            //queue it and finish, callback with the queued parse job
-            return queue.addToQueue(pQueue,
+            //determine if any player in the match is tracked
+            async.some(match.players, function (p, cb)
             {
-                match_id: match.match_id,
-                radiant_win: match.radiant_win,
-                start_time: match.start_time,
-                duration: match.duration,
-                replay_blob_key: match.replay_blob_key,
-                pgroup: match.pgroup,
-                doLogParse: options.doLogParse,
-            },
+                redis.zscore('tracked', String(p.account_id), function (err, score)
+                {
+                    return cb(err, Boolean(score));
+                });
+            }, function (err, result)
             {
-                lifo: options.lifo,
-                attempts: options.attempts,
-                backoff: options.backoff,
-            }, function (err, job2)
-            {
-                cb(err, job2);
+                if (result || options.forceParse)
+                {
+                    //queue it and finish, callback with the queued parse job
+                    return queue.addToQueue(pQueue,
+                    {
+                        match_id: match.match_id,
+                        radiant_win: match.radiant_win,
+                        start_time: match.start_time,
+                        duration: match.duration,
+                        replay_blob_key: match.replay_blob_key,
+                        pgroup: match.pgroup,
+                        doLogParse: options.doLogParse,
+                    },
+                    {
+                        lifo: options.lifo,
+                        attempts: options.attempts,
+                        backoff: options.backoff,
+                    }, function (err, job2)
+                    {
+                        cb(err, job2);
+                    });
+                }
+                else
+                {
+                    //no tracked players, just callback
+                    cb(err);
+                }
             });
         }
     }
@@ -652,29 +670,6 @@ function insertPlayerCache(match, cb)
             return cb();
         }
     }
-}
-
-function getSets(redis, cb)
-{
-    async.parallel(
-    {
-        "trackedPlayers": function (cb)
-        {
-            redis.zrange('tracked', 0, -1, function (err, ids)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                var result = {};
-                ids.forEach(function (id)
-                {
-                    result[id] = 1;
-                });
-                return cb(err, result);
-            });
-        },
-    }, cb);
 }
 /**
  * Benchmarks a match against stored data in Redis.
@@ -1160,7 +1155,6 @@ module.exports = {
     insertMatch,
     insertPlayerRating,
     insertMatchSkill,
-    getSets,
     getDistributions,
     getProPlayers,
     getHeroRankings,

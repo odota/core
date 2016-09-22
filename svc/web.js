@@ -120,7 +120,7 @@ app.locals.constants.abilities.attribute_bonus = {
     attrib: "+2 All Attributes"
 };
 app.locals.constants.map_url = '/public/images/map.png';
-app.locals.constants.ICON_PATH = '/public/images/logo.svg';
+app.locals.constants.ICON_PATH = '/public/images/logo.png';
 //APP middleware
 app.use(compression());
 app.use("/apps/dota2/images/:group_name/:image_name", function (req, res)
@@ -256,7 +256,6 @@ app.use('/api', api(db, redis, cassandra));
 //END service/admin routes
 //START standard routes.
 //TODO remove these with SPA
-app.use('/favicon.ico', express.static('./public/images/favicon.ico'));
 app.route('/').get(function (req, res, next)
 {
     if (req.user)

@@ -35,7 +35,7 @@ function processRequest(job, cb)
                 attempts: 1,
                 lifo: true,
                 cassandra: cassandra,
-                skipParse: false,
+                forceParse: true,
             }, waitParse);
         });
     }

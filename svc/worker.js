@@ -20,16 +20,18 @@ sqlq.forEach(function (f)
     sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
 });
 console.log("[WORKER] starting worker");
-invokeInterval(function getPvgnaAPI(cb) {
-    utility.getData('https://pvgna.com/yasp', function (err, guides)
+invokeInterval(function getPvgnaAPI(cb)
     {
-        if (err) {
-            console.log("Received a bad response from pvgna");
-            return cb(err);
-        }
-        redis.set("pvgna", JSON.stringify(guides), cb);
-    });
-}, 60 * 60 * 1000 * 24) //Once every day
+        utility.getData('https://pvgna.com/yasp', function (err, guides)
+        {
+            if (err)
+            {
+                console.log("Received a bad response from pvgna");
+                return cb(err);
+            }
+            redis.set("pvgna", JSON.stringify(guides), cb);
+        });
+    }, 60 * 60 * 1000 * 24) //Once every day
 invokeInterval(function doBuildSets(cb)
 {
     buildSets(db, redis, cb);
@@ -228,6 +230,31 @@ invokeInterval(function heroes(cb)
                 id: hero.id
             }, cb);
         }, cb);
+    });
+}, 60 * 60 * 1000);
+invokeInterval(function items(cb)
+{
+    var container = utility.generateJob('api_items',
+    {
+        language: 'english'
+    });
+    utility.getData(container.url, function (err, body)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        if (!body || !body.result || !body.result.items)
+        {
+            return cb();
+        }
+        async.eachSeries(body.result.items, function (item, cb)
+        {
+            queries.upsert(db, 'items', item,
+            {
+                id: item.id
+            }, cb);
+        });
     });
 }, 60 * 60 * 1000);
 

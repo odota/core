@@ -40,7 +40,11 @@ function processReduce(entries, match, meta)
                 return false;
             }
             */
-            if (e.type === "DOTA_COMBATLOG_DAMAGE" || e.type === "DOTA_COMBATLOG_MODIFIER_ADD" || e.type === "DOTA_COMBATLOG_HEAL")
+            if (e.type === "DOTA_COMBATLOG_DAMAGE")
+            {
+                return true;
+            }
+            if (e.type === "DOTA_COMBATLOG_MODIFIER_ADD" || e.type === "DOTA_COMBATLOG_HEAL")
             {
                 return false;
                 /*

@@ -4,6 +4,7 @@
 # Script run in the main container
 # If this script exits, so does the main container
 
+# Rebuild to replace mapped directory build
 npm run build
 
 case $1 in

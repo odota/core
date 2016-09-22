@@ -40,9 +40,12 @@ var defaults = {
     "SCANNER_PORT": "5500",
     "PARSER_HOST": "http://localhost:5600", //host of the parse server
     "POSTGRES_URL": "postgresql://postgres:postgres@localhost/yasp", //connection string for PostgreSQL
+    "POSTGRES_TEST_URL": "postgresql://postgres:postgres@localhost/yasp_test",
     "READONLY_POSTGRES_URL": "postgresql://readonly:readonly@localhost/yasp", //readonly connection string for PostgreSQL
     "REDIS_URL": "redis://127.0.0.1:6379/0", //connection string for Redis
+    "REDIS_TEST_URL": "redis://127.0.0.1:6379/1",
     "CASSANDRA_URL": "cassandra://localhost/yasp", //connection string for Cassandra
+    "CASSANDRA_TEST_URL": "cassandra://localhost/yasp_test",
     "RETRIEVER_HOST": "localhost:5100", //The host of the retriever (access to Dota 2 GC data)
     "UNTRACK_DAYS": 14, //The number of days a user is tracked for after every visit
     "GOAL": 5, //The cheese goal
@@ -52,7 +55,7 @@ var defaults = {
     "GROUP": "", //for specifying the group of apps that should be run when entry point is invoked
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     "DEFAULT_DELAY": 1000, // delay between API requests (default: 1000)
-    "SCANNER_DELAY": 500, //delay for scanner API requests (more time-sensitive)
+    "SCANNER_DELAY": 2000, //delay for scanner API requests (stricter rate limit)
     "SCANNER_PARALLELISM": 1, //Number of simultaneous API requests to make in scanner
     "MMR_PARALLELISM": 10,
     "PARSER_PARALLELISM": 1,
@@ -63,7 +66,6 @@ var defaults = {
     "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
     "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches (Redis)
-    "ENABLE_INSERT_ALL_MATCHES": "1", //set to enable inserting all matches
     "ENABLE_RANDOM_MMR_UPDATE": "", //set to update MMRs after ranked matches
     "ENABLE_POSTGRES_MATCH_STORE_WRITE": "1", //set to enable writing match data to postgres (default on)
     "ENABLE_CASSANDRA_MATCH_STORE_READ": "1", //set to enable reading match data from cassandra
@@ -82,11 +84,10 @@ if (process.env.NODE_ENV === "development")
 if (process.env.NODE_ENV === 'test')
 {
     process.env.PORT = ""; //use service defaults
-    process.env.POSTGRES_URL = "postgres://postgres:postgres@localhost/yasp_test";
-    process.env.CASSANDRA_URL = "cassandra://localhost/yasp_test";
-    process.env.REDIS_URL = "redis://localhost:6379/1";
+    process.env.POSTGRES_URL = process.env.POSTGRES_TEST_URL;
+    process.env.CASSANDRA_URL = process.env.CASSANDRA_TEST_URL;
+    process.env.REDIS_URL = process.env.REDIS_TEST_URL;
     process.env.SESSION_SECRET = "testsecretvalue";
-    process.env.NODE_ENV = "test";
     process.env.ENABLE_MATCH_CACHE = 1;
     process.env.FRONTEND_PORT = 5001;
     process.env.PARSER_PORT = 5201;
