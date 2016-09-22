@@ -10,6 +10,7 @@ var queries = require('../store/queries');
 var buildSets = require('../store/buildSets');
 var utility = require('../util/utility');
 var getMMStats = require('../util/getMMStats');
+var vdf = require('simple-vdf');
 var async = require('async');
 var moment = require('moment');
 var fs = require('fs');
@@ -257,6 +258,79 @@ invokeInterval(function items(cb)
         });
     });
 }, 60 * 60 * 1000);
+invokeInterval(function cosmetics(cb)
+{
+    utility.getData(utility.generateJob("api_item_schema").url, function (err, body)
+    {
+        if (err)
+        {
+            return cb(err);
+        }
+        // Get the item schema URL
+        if (!body || !body.result || !body.result.items_game_url)
+        {
+            return cb();
+        }
+        utility.getData(body.result.items_game_url, function (err, body)
+        {
+            if (err)
+            {
+                return cb(err);
+            }
+            var item_data = vdf.parse(body);
+            console.log(Object.keys(item_data.items_game.items).length);
+            async.eachLimit(Object.keys(item_data.items_game.items), 5, function (item_id, cb)
+            {
+                var item = item_data.items_game.items[item_id];
+                item.item_id = Number(item_id);
+                const hero = item.used_by_heroes && typeof(item.used_by_heroes) === "object" && Object.keys(item.used_by_heroes)[0];
+                if (hero)
+                {
+                    item.used_by_heroes = hero;
+                }
+                //console.log(item);
+                if (!item.item_id)
+                {
+                    return cb();
+                }
+                if (item.image_inventory)
+                {
+                    var spl = item.image_inventory.split('/');
+                    var iconname = spl[spl.length - 1];
+                    utility.getData(
+                    {
+                        url: utility.generateJob("api_item_icon",
+                        {
+                            iconname: iconname
+                        }).url,
+                        noRetry: true
+                    }, function (err, body)
+                    {
+                        if (err || !body || !body.result)
+                        {
+                            return cb();
+                        }
+                        item.image_path = body.result.path;
+                        insert(cb);
+                    });
+                }
+                else
+                {
+                    insert(cb);
+                }
+
+                function insert(cb)
+                {
+                    //console.log(item);
+                    return queries.upsert(db, 'cosmetics', item,
+                    {
+                        item_id: item.item_id
+                    }, cb);
+                }
+            }, cb);
+        });
+    });
+}, 12 * 60 * 60 * 1000);
 
 function invokeInterval(func, delay)
 {

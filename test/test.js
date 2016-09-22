@@ -274,21 +274,6 @@ describe("basic match page", function ()
         });
     });
 });
-describe("parsed match page", function ()
-{
-    var tests = Object.keys(constants.match_pages);
-    tests.forEach(function (t)
-    {
-        it('/matches/:valid_parsed/' + t, function (done)
-        {
-            //new RegExp(t, "i")
-            supertest(app).get('/matches/1781962623/' + t).expect(200).expect(/1781962623/).end(function (err, res)
-            {
-                done(err);
-            });
-        });
-    });
-});
 describe('api', function ()
 {
     it('should accept api endpoints', function (cb)

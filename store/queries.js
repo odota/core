@@ -103,7 +103,7 @@ function upsert(db, table, row, conflict, cb)
             return util.format("%s=%s", key, "EXCLUDED." + key);
         });
         var query = util.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s", table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
-        //console.log(query.toString());
+        //if (table==='cosmetics') console.log(query.toString(), row);
         db.raw(query, Object.keys(row).map(function (key)
         {
             return row[key];

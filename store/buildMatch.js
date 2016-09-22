@@ -8,6 +8,7 @@ var compute = require('../util/compute');
 var utility = require('../util/utility');
 var computeMatchData = compute.computeMatchData;
 var deserialize = utility.deserialize;
+const constants = require('dotaconstants');
 
 function buildMatch(match_id, options, cb)
 {
@@ -106,6 +107,24 @@ function getMatch(match_id, options, cb)
                     {
                         match_id: match_id
                     }).asCallback(cb);
+                },
+                "cosmetics": function (cb)
+                {
+                    async.map(Object.keys(match.cosmetics ||
+                    {}), function (item_id, cb)
+                    {
+                        db.first().from('cosmetics').where(
+                        {
+                            item_id: item_id
+                        }).asCallback(cb);
+                    }, function (err, cosmetics)
+                    {
+                        if (err)
+                        {
+                            return cb(err);
+                        }
+                        return cb(err, cosmetics.filter(c => c));
+                    });
                 }
             }, function (err, result)
             {
@@ -114,10 +133,19 @@ function getMatch(match_id, options, cb)
                     return cb(err);
                 }
                 match = Object.assign(
-                {}, result.gcdata, result.skill,
+                {}, match, result.gcdata, result.skill,
                 {
                     players: result.players
-                }, match);
+                });
+                // Assign cosmetics to each player
+                if (result.cosmetics)
+                {
+                    match.players.forEach(function (p)
+                    {
+                        const hero = constants.heroes[p.hero_id] || {};
+                        p.cosmetics = result.cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot && (!c.used_by_heroes || c.used_by_heroes === hero.name));
+                    });
+                }
                 computeMatchData(match);
                 if (match.replay_salt)
                 {
