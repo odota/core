@@ -96,15 +96,18 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 15px" data-toggle
   style.
     .select2-container--bootstrap .select2-selection,
     .select2-container--bootstrap .select2-search--dropdown .select2-search__field {
-        font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
     }
-    .select2-container, .select2-search__field {
-    width: 100% !important;
-    padding: 0;
-    color: #000;
+    .select2-container {
+      color: #000;
+    }
+    .form-group .select2-container,
+    .form-group .select2-search__field {
+      width: 100% !important;
+      padding: 0;
     }
     #query {
-        margin-top: 15px;
+      margin-top: 15px;
     }
     #query .form-control {
       border: 1px solid #ccc;
