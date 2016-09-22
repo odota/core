@@ -181,7 +181,7 @@ function insertMatch(db, redis, match, options, cb)
 
     function decideLogParse(cb)
     {
-        if (match.leagueid && match.human_players === 10)
+        if (match.leagueid && match.human_players === 10 && match.duration > 300 && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2) && match.players && match.players.every(p => p.hero_id > 0))
         {
             redis.sismember('pro_leagueids', match.leagueid, function (err, result)
             {
