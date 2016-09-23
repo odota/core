@@ -394,7 +394,7 @@ function insertMatch(db, redis, match, options, cb) {
           return cb(err, Boolean(score));
         });
       }, (err, result) => {
-        if (result || options.forceParse) {
+        if (result || options.forceParse || options.doLogParse) {
           // queue it and finish, callback with the queued parse job
           return queue.addToQueue(pQueue, {
             match_id: match.match_id,
