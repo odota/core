@@ -250,7 +250,7 @@ describe('basic match page', () => {
 });
 describe('api', () => {
   it('should accept api endpoints', (cb) => {
-    request('https://raw.githubusercontent.com/odota/api/gh-pages/openapi.json', (err, resp, body) => {
+    request('https://raw.githubusercontent.com/odota/api/master/openapi.json', (err, resp, body) => {
       if (err)
             {
         return cb(err);
