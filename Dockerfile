@@ -1,4 +1,4 @@
-FROM node:6.6.0
+FROM mhart/alpine-node:6.6.0
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
