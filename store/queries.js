@@ -861,8 +861,15 @@ function getProPeers(db, input, player, cb) {
     return cb();
   }
   const teammates = input;
-  db.select().from('notable_players').asCallback((err, result) => {
-    const arr = result.map((r) => {
+  db.raw(`select *, notable_players.account_id
+          FROM notable_players
+          LEFT JOIN players
+          ON notable_players.account_id = players.account_id
+          `).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    const arr = result.rows.map((r) => {
       return Object.assign({}, r, teammates[r.account_id]);
     }).filter((r) => {
       return r.games;
