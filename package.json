@@ -80,7 +80,7 @@
   "devDependencies": {
     "css-loader": "0.25.0",
     "eslint": "3.6.0",
-    "eslint-config-airbnb": "11.1.0",
+    "eslint-config-airbnb": "11.2.0",
     "eslint-plugin-import": "1.16.0",
     "eslint-plugin-jsx-a11y": "2.2.2",
     "eslint-plugin-react": "6.3.0",
