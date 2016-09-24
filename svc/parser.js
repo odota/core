@@ -20,7 +20,6 @@ const processUploadProps = require('../processors/processUploadProps');
 const processParsedData = require('../processors/processParsedData');
 const processMetadata = require('../processors/processMetadata');
 const processExpand = require('../processors/processExpand');
-const startedAt = new Date();
 const request = require('request');
 const cp = require('child_process');
 const progress = require('request-progress');
@@ -31,7 +30,6 @@ const readline = require('readline');
 const spawn = cp.spawn;
 const insertMatch = queries.insertMatch;
 const getMatchBenchmarks = queries.getMatchBenchmarks;
-const renderMatch = compute.renderMatch;
 const computeMatchData = compute.computeMatchData;
 // EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
 const express = require('express');
@@ -55,27 +53,39 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
         match.url = 'http://localhost:' + config.PARSER_PORT + '/redis/' + match.replay_blob_key;
         cb();
       } else {
-        getGCData(db, redis, match, cb);
+        if (match.doGCData || !match.doGCData) {
+          // can remove the second condition after new code has been deployed for 1 day (no more old jobs in queue)
+          getGCData(db, redis, match, cb);
+        }
+        else {
+          cb();
+        }
       }
     },
     'runParse': function (cb) {
-      runParse(match, job, (err, parsed_data) => {
-        if (err) {
-          return cb(err);
-        }
-        parsed_data.match_id = match.match_id;
-        parsed_data.pgroup = match.pgroup;
-        parsed_data.radiant_win = match.radiant_win;
-        parsed_data.start_time = match.start_time;
-        parsed_data.duration = match.duration;
-        parsed_data.replay_blob_key = match.replay_blob_key;
-        parsed_data.doLogParse = match.doLogParse;
-        if (match.replay_blob_key) {
-          insertUploadedParse(parsed_data, cb);
-        } else {
-          insertStandardParse(parsed_data, cb);
-        }
-      });
+      if (match.doParse || (!match.doGCData && !match.doParse)) {
+        // run the parse if pre-change (no doGetGCData and no doParse) or if doParse is set
+        // can remove the second condition after new code has been deployed for 1 day (no more old jobs in queue)
+        runParse(match, job, (err, parsed_data) => {
+          if (err) {
+            return cb(err);
+          }
+          parsed_data.match_id = match.match_id;
+          parsed_data.pgroup = match.pgroup;
+          parsed_data.radiant_win = match.radiant_win;
+          parsed_data.start_time = match.start_time;
+          parsed_data.duration = match.duration;
+          parsed_data.replay_blob_key = match.replay_blob_key;
+          parsed_data.doLogParse = match.doLogParse;
+          if (match.replay_blob_key) {
+            insertUploadedParse(parsed_data, cb);
+          } else {
+            insertStandardParse(parsed_data, cb);
+          }
+        });
+      } else {
+        return cb();
+      }
     },
   }, (err) => {
     if (err) {

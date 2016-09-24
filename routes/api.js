@@ -673,7 +673,13 @@ module.exports = function (db, redis, cassandra) {
       return res.json(result);
     });
   });
-  // TODO @albertcui owns mmstats
-  api.get('/mmstats');
+  api.get('/replays', (req, res, cb) => {
+    db.select(['match_id', 'cluster', 'replay_salt']).from('match_gcdata').whereIn('match_id', req.query.match_id.slice(0, 100)).asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    });
+  });
   return api;
 };
