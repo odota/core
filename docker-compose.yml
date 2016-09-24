@@ -43,7 +43,7 @@ services:
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
       CASSANDRA_TEST_URL: cassandra://odota-cassandra/yasp_test
     volumes: 
-      - .:/usr/src/yasp 
+      - .:/usr/src
     links:
       - postgres
       - cassandra
