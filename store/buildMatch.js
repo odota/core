@@ -160,16 +160,16 @@ function getMatch(match_id, options, cb) {
                     LEFT JOIN notable_players
                     ON players.account_id = notable_players.account_id
                     WHERE players.account_id = ?`, [r.account_id]).asCallback((err, names) => {
-            if (err) {
-              return cb(err);
-            }
-            if (names.rows[0]) {
-              for (const key in names.rows[0]) {
-                r[key] = names.rows[0][key];
-              }
-            }
-            return cb(err, r);
-          });
+                      if (err) {
+                        return cb(err);
+                      }
+                      if (names.rows[0]) {
+                        for (const key in names.rows[0]) {
+                          r[key] = names.rows[0][key];
+                        }
+                      }
+                      return cb(err, r);
+                    });
         }, cb);
       });
     } else {

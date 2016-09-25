@@ -587,11 +587,11 @@ function getProPlayers(db, redis, cb) {
   db.raw(`
     SELECT * from notable_players
     `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows);
-  });
+      if (err) {
+        return cb(err);
+      }
+      return cb(err, result.rows);
+    });
 }
 
 function getHeroRankings(db, redis, hero_id, options, cb) {
@@ -866,18 +866,18 @@ function getProPeers(db, input, player, cb) {
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
           `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    const arr = result.rows.map((r) => {
-      return Object.assign({}, r, teammates[r.account_id]);
-    }).filter((r) => {
-      return r.games;
-    }).sort((a, b) => {
-      return b.games - a.games;
-    });
-    cb(err, arr);
-  });
+            if (err) {
+              return cb(err);
+            }
+            const arr = result.rows.map((r) => {
+              return Object.assign({}, r, teammates[r.account_id]);
+            }).filter((r) => {
+              return r.games;
+            }).sort((a, b) => {
+              return b.games - a.games;
+            });
+            cb(err, arr);
+          });
 }
 module.exports = {
   upsert,

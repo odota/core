@@ -314,7 +314,7 @@ function renderMatch(m) {
       // map to friendly name
       // iterate through keys in killed
       // if in expanded, put in pm.specific
-      for (var key in pm.killed) {
+      for (const key in pm.killed) {
         if (key in expanded) {
           const name = expanded[key];
           pm.specific[name] = pm.specific[name] ? pm.specific[name] + pm.killed[key] : pm.killed[key];
