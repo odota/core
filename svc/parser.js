@@ -5,7 +5,7 @@
  * This object is passed to insertMatch to persist the data into the database.
  **/
 const utility = require('../util/utility');
-const getGCData = require('../util/getGCData');
+const getGcData = require('../util/getGcData');
 const config = require('../config');
 const db = require('../store/db');
 const redis = require('../store/redis');
@@ -53,9 +53,9 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
         match.url = 'http://localhost:' + config.PARSER_PORT + '/redis/' + match.replay_blob_key;
         cb();
       } else {
-        if (match.doGCData || !match.doGCData) {
+        if (match.doGcData || !match.doGcData) {
           // can remove the second condition after new code has been deployed for 1 day (no more old jobs in queue)
-          getGCData(db, redis, match, cb);
+          getGcData(db, redis, match, cb);
         }
         else {
           cb();
@@ -63,8 +63,8 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
       }
     },
     'runParse': function (cb) {
-      if (match.doParse || (!match.doGCData && !match.doParse)) {
-        // run the parse if pre-change (no doGetGCData and no doParse) or if doParse is set
+      if (match.doParse || !match.doParse) {
+        // run the parse if pre-change (no doParse) or if doParse is set
         // can remove the second condition after new code has been deployed for 1 day (no more old jobs in queue)
         runParse(match, job, (err, parsed_data) => {
           if (err) {

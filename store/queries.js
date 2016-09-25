@@ -407,7 +407,7 @@ function insertMatch(db, redis, match, options, cb) {
           pgroup: match.pgroup,
           doLogParse: options.doLogParse,
           doParse: hasTrackedPlayer || options.forceParse || options.doLogParse,
-          doGCData: true,
+          doGcData: true,
         }, {
           lifo: options.lifo,
           attempts: options.attempts,

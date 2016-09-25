@@ -9,7 +9,7 @@ const moment = require('moment');
 const getData = utility.getData;
 const queries = require('../store/queries');
 const buildReplayUrl = utility.buildReplayUrl;
-module.exports = function getGCData(db, redis, match, cb)
+module.exports = function getGcData(db, redis, match, cb)
 {
   db.first().from('match_gcdata').where(
     {
