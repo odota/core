@@ -396,11 +396,19 @@ module.exports = function (db, redis, cassandra) {
       const max = Math.max(...cache.map(m => m[field]));
       // Round the bucket size up to the nearest integer
       const bucketSize = Math.ceil(max / buckets);
-      const bucketArray = Array.from({ length: buckets }, (value, index) => ({ x: bucketSize * index, games: 0, win: 0 }));
+      const bucketArray = Array.from({
+        length: buckets
+      }, (value, index) => ({
+        x: bucketSize * index,
+        games: 0,
+        win: 0
+      }));
       cache.forEach((m) => {
-        const index = ~~(m[field] / bucketSize);
-        bucketArray[index].games += 1;
-        bucketArray[index].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+        if (m[field] !== null && m[field] !== undefined) {
+          const index = ~~(m[field] / bucketSize);
+          bucketArray[index].games += 1;
+          bucketArray[index].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+        }
       });
       res.json(bucketArray);
     });
