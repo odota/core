@@ -385,24 +385,32 @@ module.exports = function (db, redis, cassandra) {
     return teammates;
   }
   api.get('/players/:account_id/histograms/:field', (req, res, cb) => {
-    const result = {};
     const field = req.params.field;
     req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot', req.params.field);
     queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
       if (err) {
         return cb(err);
       }
+      const buckets = 40;
+      // Find the maximum value to determine how large each bucket should be
+      const max = Math.max(...cache.map(m => m[field]));
+      // Round the bucket size up to the nearest integer
+      const bucketSize = Math.ceil(max / buckets);
+      const bucketArray = Array.from({
+        length: buckets
+      }, (value, index) => ({
+        x: bucketSize * index,
+        games: 0,
+        win: 0
+      }));
       cache.forEach((m) => {
-        if (!result[~~m[field]]) {
-          result[~~m[field]] = {
-            games: 0,
-            win: 0,
-          };
+        if (m[field] !== null && m[field] !== undefined) {
+          const index = ~~(m[field] / bucketSize);
+          bucketArray[index].games += 1;
+          bucketArray[index].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
         }
-        result[~~m[field]].games += 1;
-        result[~~m[field]].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
       });
-      res.json(result);
+      res.json(bucketArray);
     });
   });
   api.get('/players/:account_id/matches', (req, res, cb) => {
