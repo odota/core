@@ -395,7 +395,7 @@ module.exports = function (db, redis, cassandra) {
       // Find the maximum value to determine how large each bucket should be
       const max = Math.max(...cache.map(m => m[field]));
       // Round the bucket size up to the nearest integer
-      const bucketSize = Math.ceil(max / buckets);
+      const bucketSize = Math.ceil((max + 1) / buckets);
       const bucketArray = Array.from({
         length: buckets
       }, (value, index) => ({
@@ -405,7 +405,7 @@ module.exports = function (db, redis, cassandra) {
       }));
       cache.forEach((m) => {
         if (m[field] !== null && m[field] !== undefined) {
-          const index = ~~(m[field] / bucketSize);
+          const index = Math.floor(m[field] / bucketSize);
           bucketArray[index].games += 1;
           bucketArray[index].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
         }
