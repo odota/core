@@ -503,7 +503,11 @@ module.exports = function (db, redis, cassandra) {
       if (err) {
         return cb(err);
       }
-      console.log(q);
+      if (!q[0])
+      {
+        // 404
+        return cb();
+      }
       queryRaw(q[0], (err, result) => {
         if (err) {
           console.error(err);
@@ -688,7 +692,5 @@ module.exports = function (db, redis, cassandra) {
       return res.json(result);
     });
   });
-  // TODO @albertcui owns mmstats
-  api.get('/mmstats');
   return api;
 };
