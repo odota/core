@@ -315,13 +315,13 @@ app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500);
   redis.zadd('error_500', moment().format('X'), req.originalUrl);
-  if (config.NODE_ENV === 'development') {
-    // default express handler
-    next(err);
-  } else if (req.originalUrl.indexOf('/api') === 0) {
+  if (req.originalUrl.indexOf('/api') === 0) {
     return res.json({
       error: err,
     });
+  } else if (config.NODE_ENV === 'development') {
+    // default express handler
+    next(err);
   } else {
     return res.render('error/' + (err.status === 404 ? '404' : '500'), {
       error: err,
