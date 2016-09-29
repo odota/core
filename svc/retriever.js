@@ -21,8 +21,9 @@ if (config.provider === 'gce') {
   // Get the Steam credentials from GCS
   const userData = cp.execSync('gsutil cat gs://opendota/STEAM_USER.txt').split('\n');
   const passData = cp.execSync('gsutil cat gs://opendota/STEAM_PASS.txt').split('\n');
-  const startIndex = Math.floor((Math.random() * users.length));
-  const accountsToUse = 10;
+  const accountsToUse = Math.min(userData.length, 10);
+  const startIndex = Math.floor((Math.random() * userData.length - accountsToUse));
+  console.log("total registered accounts: %s, startIndex: %s", userData.length, startIndex);
   users = userData.slice(startIndex, accountsToUse);
   passes = passData.slice(startIndex, accountsToUse);
 }
