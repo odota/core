@@ -55,7 +55,7 @@ gcloud compute instance-groups managed create "retriever-group-1" --base-instanc
 gcloud compute --project "peaceful-parity-87002" target-pools create "retriever-lb" --region "us-central1" --session-affinity "NONE"
 gcloud compute --project "peaceful-parity-87002" forwarding-rules create "retriever-lb-forwarding-rule" --load-balancing-scheme internal --region "us-central1" --address "104.198.172.178" --ip-protocol "TCP" --port-range "80" --target-pool "retriever-lb"
 gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "retriever-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/retriever-lb"
-gcloud compute instance-groups managed set-autoscaling "retriever-group-1" --cool-down-period "60" --max-num-replicas "5" --min-num-replicas "5" --target-cpu-utilization "0.6"
+gcloud compute instance-groups managed set-autoscaling "retriever-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "10" --target-cpu-utilization "0.6"
 
 #backend
 gcloud compute instance-groups managed delete -q backend-group-1
