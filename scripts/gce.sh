@@ -31,7 +31,18 @@ gcloud compute --project "peaceful-parity-87002" http-health-checks create "lb-c
 gcloud compute --project "peaceful-parity-87002" target-pools create "lb-pool" --region "us-central1" --health-check "lb-check" --session-affinity "NONE"
 gcloud compute --project "peaceful-parity-87002" forwarding-rules create "lb-rule" --region "us-central1" --address "104.197.19.32" --ip-protocol "TCP" --port-range "80" --target-pool "lb-pool"
 gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "web-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/lb-pool"
-gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "2" --target-cpu-utilization "0.8"
+gcloud compute instance-groups managed set-autoscaling "web-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "2" --target-cpu-utilization "0.9"
+
+#proxy, health check, loadbalancer
+gcloud compute forwarding-rules delete -q proxy-lb-forwarding-rule
+gcloud compute target-pools delete -q proxy-lb
+gcloud compute instance-groups managed delete -q proxy-group-1
+gcloud compute instance-templates delete -q proxy-1
+gcloud compute instance-templates create proxy-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata-from-file startup-script=./scripts/proxy.sh
+gcloud compute instance-groups managed create "proxy-group-1" --base-instance-name "proxy-group-1" --template "proxy-1" --size "5"
+gcloud compute --project "peaceful-parity-87002" target-pools create "proxy-lb" --region "us-central1" --session-affinity "NONE"
+gcloud compute --project "peaceful-parity-87002" forwarding-rules create "proxy-lb-forwarding-rule" --load-balancing-scheme internal --region "us-central1" --address "104.198.172.178" --ip-protocol "TCP" --port-range "80" --target-pool "proxy-lb"
+gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "proxy-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/proxy-lb"
 
 #backend
 gcloud compute instance-groups managed delete -q backend-group-1
