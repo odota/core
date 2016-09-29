@@ -62,6 +62,8 @@ const defaults = {
   'PLAYER_MATCH_LIMIT': 50000, // max results to return from player matches
   'BENCHMARK_RETENTION_MINUTES': 60, // minutes in block to retain benchmark data for percentile
   'PROVIDER': '', // The cloud provider used by the application (determines how environment data is downloaded)
+  'STEAM_USER_DATA': '', // The URL to read Steam user data from
+  'STEAM_PASS_DATA': '', // The URL to read Steam passwords data from
   'UI_HOST': '', // The host of the UI, redirect traffic from / and /return here
   'ENABLE_RECAPTCHA': '', // set to enable the recaptcha on the Request page
   'ENABLE_ADS': '', // set to turn on ads

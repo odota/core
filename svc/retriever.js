@@ -17,10 +17,9 @@ let replayRequests = 0;
 let count = 0;
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
-if (config.provider === 'gce') {
-  // Get the Steam credentials from GCS
-  const userData = cp.execSync('gsutil cat gs://opendota/STEAM_USER.txt').split('\n');
-  const passData = cp.execSync('gsutil cat gs://opendota/STEAM_PASS.txt').split('\n');
+if (config.PROVIDER === 'gce' && config.STEAM_USER_DATA && config.STEAM_PASS_DATA) {
+  const userData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).split('\n');
+  const passData = cp.execSync(`curl '${config.STEAM_PASS_DATA}'`).split('\n');
   const accountsToUse = Math.min(userData.length, 10);
   const startIndex = Math.floor((Math.random() * userData.length - accountsToUse));
   console.log("total registered accounts: %s, startIndex: %s", userData.length, startIndex);
