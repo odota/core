@@ -671,7 +671,6 @@ function generateMatchups(match, max) {
 
 function countPeers(matches) {
   const teammates = {};
-  const isRadiant = utility.isRadiant;
   matches.forEach((m) => {
     const player_win = isRadiant(m) === m.radiant_win;
     const group = m.heroes || {};
