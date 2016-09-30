@@ -31,6 +31,7 @@ if (config.PROVIDER === 'gce' && config.STEAM_ACCOUNT_DATA) {
 }
 
 function start() {
+  console.log(users, passes);
   app.use((req, res, next) => {
     if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
       // reject request if it doesn't have key
