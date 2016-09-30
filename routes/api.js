@@ -365,7 +365,6 @@ module.exports = function (db, redis, cassandra) {
     // Use passed fields as additional fields, if available
     const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists'];
     req.queryObj.project = req.queryObj.project.concat(additionalFields);
-    console.log(req.queryObj.project);
     queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
       if (err) {
         return cb(err);
