@@ -15,20 +15,17 @@ const urllib = require('url');
  *
  * @return {Array}
  */
-function tokenize(input)
-{
+function tokenize(input) {
   return input.replace(/[^a-zA-Z- ]+/g, '').replace('/ {2,}/', ' ').toLowerCase().split(' ');
 }
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
  **/
-function generateJob(type, payload)
-{
+function generateJob(type, payload) {
   const api_url = 'http://api.steampowered.com';
   let api_key;
   const opts = {
-    'api_details': function ()
-        {
+    'api_details': function () {
       return {
         url: api_url + '/IDOTA2Match_570/GetMatchDetails/V001/?key=' + api_key + '&match_id=' + payload.match_id,
         title: [type, payload.match_id].join(),
@@ -36,8 +33,7 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_history': function ()
-        {
+    'api_history': function () {
       return {
         url: api_url + '/IDOTA2Match_570/GetMatchHistory/V001/?key=' + api_key + (payload.account_id ? '&account_id=' + payload.account_id : '') + (payload.matches_requested ? '&matches_requested=' + payload.matches_requested : '') + (payload.hero_id ? '&hero_id=' + payload.hero_id : '') + (payload.leagueid ? '&league_id=' + payload.leagueid : '') + (payload.start_at_match_id ? '&start_at_match_id=' + payload.start_at_match_id : ''),
         title: [type, payload.account_id].join(),
@@ -45,8 +41,7 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_summaries': function ()
-        {
+    'api_summaries': function () {
       return {
         url: api_url + '/ISteamUser/GetPlayerSummaries/v0002/?key=' + api_key + '&steamids=' + payload.players.map((p) => {
           return convert32to64(p.account_id).toString();
@@ -56,16 +51,14 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_sequence': function ()
-        {
+    'api_sequence': function () {
       return {
         url: api_url + '/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=' + api_key + '&start_at_match_seq_num=' + payload.start_at_match_seq_num,
         title: [type, payload.seq_num].join(),
         type: 'api',
       };
     },
-    'api_heroes': function ()
-        {
+    'api_heroes': function () {
       return {
         url: api_url + '/IEconDOTA2_570/GetHeroes/v0001/?key=' + api_key + '&language=' + payload.language,
         title: [type, payload.language].join(),
@@ -73,15 +66,13 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_items': function ()
-        {
+    'api_items': function () {
       return {
         url: api_url + '/IEconDOTA2_570/GetGameItems/v1?key=' + api_key + '&language=' + payload.language,
         type: 'api',
       };
     },
-    'api_leagues': function ()
-        {
+    'api_leagues': function () {
       return {
         url: api_url + '/IDOTA2Match_570/GetLeagueListing/v0001/?key=' + api_key,
         title: [type].join(),
@@ -89,8 +80,7 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_skill': function ()
-        {
+    'api_skill': function () {
       return {
         url: api_url + '/IDOTA2Match_570/GetMatchHistory/v0001/?key=' + api_key + '&start_at_match_id=' + payload.start_at_match_id + '&skill=' + payload.skill + '&hero_id=' + payload.hero_id + '&min_players=10',
         title: [type, payload.skill].join(),
@@ -98,8 +88,7 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_live': function ()
-        {
+    'api_live': function () {
       return {
         url: api_url + '/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=' + api_key,
         title: [type].join(),
@@ -107,8 +96,7 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_notable': function ()
-        {
+    'api_notable': function () {
       return {
         url: api_url + '/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=' + api_key,
         title: [type].join(),
@@ -116,8 +104,7 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_teams': function ()
-        {
+    'api_teams': function () {
       return {
         url: api_url + '/IDOTA2Teams_570/GetTeamInfo/v1/?key=' + api_key + '&team_id=' + payload.team_id,
         title: [type].join(),
@@ -125,22 +112,19 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'api_item_schema': function ()
-        {
+    'api_item_schema': function () {
       return {
         url: api_url + '/IEconItems_570/GetSchemaURL/v1?key=' + api_key,
         type: 'api',
       };
     },
-    'api_item_icon': function ()
-        {
+    'api_item_icon': function () {
       return {
         url: api_url + '/IEconDOTA2_570/GetItemIconPath/v1?key=' + api_key + '&iconname=' + payload.iconname,
         type: 'api',
       };
     },
-    'parse': function ()
-        {
+    'parse': function () {
       return {
         title: [type, payload.match_id].join(),
         type,
@@ -148,8 +132,7 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'request': function ()
-        {
+    'request': function () {
       return {
         url: api_url + '/IDOTA2Match_570/GetMatchDetails/V001/?key=' + api_key + '&match_id=' + payload.match_id,
         title: [type, payload.match_id].join(),
@@ -158,32 +141,28 @@ function generateJob(type, payload)
         payload,
       };
     },
-    'fullhistory': function ()
-        {
+    'fullhistory': function () {
       return {
         title: [type, payload.account_id].join(),
         type,
         payload,
       };
     },
-    'mmr': function ()
-        {
+    'mmr': function () {
       return {
         title: [type, payload.match_id, payload.account_id].join(),
         type,
         payload,
       };
     },
-    'cache': function ()
-        {
+    'cache': function () {
       return {
         title: [type, payload.match_id, payload.account_id].join(),
         type,
         payload,
       };
     },
-    'rank': function ()
-        {
+    'rank': function () {
       return {
         title: [type, payload.account_id, payload.hero_id].join(),
         type,
@@ -200,46 +179,39 @@ function generateJob(type, payload)
  * Injecting API key for Steam API
  * Errors from Steam API
  **/
-function getData(url, cb)
-{
+function getData(url, cb) {
   let u;
   let delay = Number(config.DEFAULT_DELAY);
   let proxyAffinityRange;
-  if (url.constructor === Array)
-    {
-        // select a random element if array
+  if (url.constructor === Array) {
+    // select a random element if array
     u = url[Math.floor(Math.random() * url.length)];
-  }
-  else if (typeof url === 'object')
-    {
-        // options object
+  } else if (typeof url === 'object') {
+    // options object
     u = url.url;
     delay = url.delay || delay;
     proxyAffinityRange = url.proxyAffinityRange || proxyAffinityRange;
-  }
-  else
-    {
+  } else {
     u = url;
   }
   const parse = urllib.parse(u, true);
   let proxy;
   let steam_api = false;
-  if (parse.host === 'api.steampowered.com')
-    {
+  if (parse.host === 'api.steampowered.com') {
     steam_api = true;
-        // choose an api key to use
+    // choose an api key to use
     const api_keys = config.STEAM_API_KEY.split(',');
     parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
     parse.search = null;
-        /*
-        //choose a proxy to request through
-        var proxies = config.PROXY_URLS.split(",");
-        //add no proxy option
-        proxies.push(null);
-        proxy = proxies[Math.floor(Math.random() * proxies.length)];
-        console.error(proxies, proxy);
-        */
-        // choose a steam api host
+    /*
+    //choose a proxy to request through
+    var proxies = config.PROXY_URLS.split(",");
+    //add no proxy option
+    proxies.push(null);
+    proxy = proxies[Math.floor(Math.random() * proxies.length)];
+    console.error(proxies, proxy);
+    */
+    // choose a steam api host
     let api_hosts = config.STEAM_API_HOST.split(',');
     api_hosts = proxyAffinityRange ? api_hosts.slice(0, proxyAffinityRange) : api_hosts;
     parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
@@ -247,63 +219,48 @@ function getData(url, cb)
   const target = urllib.format(parse);
   console.error('%s - getData: %s', new Date(), target);
   return setTimeout(() => {
-    request(
-      {
-        proxy,
-        url: target,
-        json: true,
-        timeout: 30000,
-      }, (err, res, body) => {
-      if (body && body.error)
-            {
-                // body contained specific error (probably from retriever)
-                // non-retryable
+    request({
+      proxy,
+      url: target,
+      json: true,
+      timeout: 30000,
+    }, (err, res, body) => {
+      if (body && body.error) {
+        // body contained specific error (probably from retriever)
+        // non-retryable
         return cb(body);
       }
-      if (err || !res || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams))
-            {
-                // invalid response
-        if (url.noRetry)
-                {
+      if (err || !res || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams)) {
+        // invalid response
+        if (url.noRetry) {
           return cb(err || 'invalid response');
-        }
-        else
-                {
+        } else {
           console.error('[INVALID] status: %s, retrying: %s', res ? res.statusCode : '', target);
-                    // var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
+          // var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
           const backoff = 0;
           return setTimeout(() => {
             getData(url, cb);
           }, backoff);
         }
-      }
-      else if (body.result)
-            {
-                // steam api usually returns data with body.result, getplayersummaries has body.response
-        if (body.result.status === 15 || body.result.error === 'Practice matches are not available via GetMatchDetails' || body.result.error === 'No Match ID specified' || body.result.error === 'Match ID not found')
-                {
-                    // user does not have stats enabled or attempting to get private match/invalid id, don't retry
-                    // non-retryable
+      } else if (body.result) {
+        // steam api usually returns data with body.result, getplayersummaries has body.response
+        if (body.result.status === 15 || body.result.error === 'Practice matches are not available via GetMatchDetails' || body.result.error === 'No Match ID specified' || body.result.error === 'Match ID not found') {
+          // user does not have stats enabled or attempting to get private match/invalid id, don't retry
+          // non-retryable
           return cb(body);
-        }
-        else if (body.result.error || body.result.status === 2)
-                {
-                    // valid response, but invalid data, retry
-          if (url.noRetry)
-                    {
+        } else if (body.result.error || body.result.status === 2) {
+          // valid response, but invalid data, retry
+          if (url.noRetry) {
             return cb(err || 'invalid data');
-          }
-          else
-                    {
+          } else {
             console.error('invalid data, retrying: %s, %s', target, JSON.stringify(body));
             return getData(url, cb);
           }
         }
       }
-      return cb(null, body,
-        {
-          hostname: parse.host,
-        });
+      return cb(null, body, {
+        hostname: parse.host,
+      });
     });
   }, delay);
 }
@@ -312,8 +269,7 @@ function getData(url, cb)
  *
  * Returns a BigNumber
  */
-function convert64to32(id)
-{
+function convert64to32(id) {
   return new BigNumber(id).minus('76561197960265728');
 }
 /*
@@ -321,58 +277,43 @@ function convert64to32(id)
  *
  * Returns a BigNumber
  */
-function convert32to64(id)
-{
+function convert32to64(id) {
   return new BigNumber('76561197960265728').plus(id);
 }
 
-function isRadiant(player)
-{
+function isRadiant(player) {
   return player.player_slot < 128;
 }
 
-function mergeObjects(merge, val)
-{
-  for (const attr in val)
-    {
-        // NaN test
-    if (Number.isNaN(val[attr]))
-        {
+function mergeObjects(merge, val) {
+  for (const attr in val) {
+    // NaN test
+    if (Number.isNaN(val[attr])) {
       val[attr] = 0;
     }
-        // does property exist?
-    if (!merge[attr])
-        {
+    // does property exist?
+    if (!merge[attr]) {
       merge[attr] = val[attr];
-    }
-    else if (val[attr] && val[attr].constructor === Array)
-        {
+    } else if (val[attr] && val[attr].constructor === Array) {
       merge[attr] = merge[attr].concat(val[attr]);
-    }
-    else if (typeof val[attr] === 'object')
-        {
+    } else if (typeof val[attr] === 'object') {
       mergeObjects(merge[attr], val[attr]);
-    }
-    else
-        {
+    } else {
       merge[attr] += Number(val[attr]);
     }
   }
 }
 
-function mode(array)
-{
+function mode(array) {
   if (array.length == 0) return null;
   const modeMap = {};
   let maxEl = array[0],
     maxCount = 1;
-  for (let i = 0; i < array.length; i++)
-    {
+  for (let i = 0; i < array.length; i++) {
     const el = array[i];
     if (modeMap[el] == null) modeMap[el] = 1;
     else modeMap[el]++;
-    if (modeMap[el] > maxCount)
-        {
+    if (modeMap[el] > maxCount) {
       maxEl = el;
       maxCount = modeMap[el];
     }
@@ -380,26 +321,21 @@ function mode(array)
   return maxEl;
 }
 
-function generatePositionData(d, p)
-{
-    // d, a hash of keys to process
-    // p, a player containing keys with values as position hashes
-    // stores the resulting arrays in the keys of d
-    // 64 is the offset of x and y values
-    // subtracting y from 127 inverts from bottom/left origin to top/left origin
-  for (const key in d)
-    {
+function generatePositionData(d, p) {
+  // d, a hash of keys to process
+  // p, a player containing keys with values as position hashes
+  // stores the resulting arrays in the keys of d
+  // 64 is the offset of x and y values
+  // subtracting y from 127 inverts from bottom/left origin to top/left origin
+  for (const key in d) {
     const t = [];
-    for (const x in p[key])
-        {
-      for (const y in p[key][x])
-            {
-        t.push(
-          {
-            x: Number(x) - 64,
-            y: 127 - (Number(y) - 64),
-            value: p[key][x][y],
-          });
+    for (const x in p[key]) {
+      for (const y in p[key][x]) {
+        t.push({
+          x: Number(x) - 64,
+          y: 127 - (Number(y) - 64),
+          value: p[key][x][y],
+        });
       }
     }
     d[key] = t;
@@ -407,23 +343,19 @@ function generatePositionData(d, p)
   return d;
 }
 
-function isSignificant(m)
-{
+function isSignificant(m) {
   return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined && m.duration > 60 * 5);
 }
 
-function max(array)
-{
+function max(array) {
   return Math.max.apply(null, array);
 }
 
-function min(array)
-{
+function min(array) {
   return Math.min.apply(null, array);
 }
 
-function getAggs()
-{
+function getAggs() {
   return {
     account_id: 'api',
     match_id: 'api',
@@ -485,11 +417,9 @@ function getAggs()
   };
 }
 // reduce match to only fields needed for aggregation/filtering
-function reduceAggregable(pm)
-{
+function reduceAggregable(pm) {
   const result = {};
-  for (const key in getAggs())
-    {
+  for (const key in getAggs()) {
     result[key] = pm[key];
   }
   return result;
@@ -497,13 +427,10 @@ function reduceAggregable(pm)
 /**
  * Serializes a JSON object to row for storage in Cassandra
  **/
-function serialize(row)
-{
+function serialize(row) {
   const obj = {};
-  for (const key in row)
-    {
-    if (row[key] !== null && !Number.isNaN(row[key]) && row[key] !== undefined)
-        {
+  for (const key in row) {
+    if (row[key] !== null && !Number.isNaN(row[key]) && row[key] !== undefined) {
       obj[key] = JSON.stringify(row[key]);
     }
   }
@@ -512,26 +439,21 @@ function serialize(row)
 /**
  * Deserializes a row to JSON object read from Cassandra
  **/
-function deserialize(row)
-{
+function deserialize(row) {
   const obj = {};
   row.keys().forEach((key) => {
-    try
-        {
-          obj[key] = JSON.parse(row[key]);
-        }
-        catch (e)
-        {
-          console.error('exception occurred during JSON parse: %s', e);
-        }
+    try {
+      obj[key] = JSON.parse(row[key]);
+    } catch (e) {
+      console.error('exception occurred during JSON parse: %s', e);
+    }
   });
   return obj;
 }
 /**
  * Returns a list of heroes sorted in alphabetical order
  **/
-function getAlphaHeroes()
-{
+function getAlphaHeroes() {
   const alpha_heroes = Object.keys(constants.heroes).map((id) => {
     return constants.heroes[id];
   }).sort((a, b) => {
@@ -542,19 +464,17 @@ function getAlphaHeroes()
 /**
  * Formats a snake_cased string for display
  **/
-function prettyPrint(str)
-{
+function prettyPrint(str) {
   return str.split('_').map((s) => {
-    switch (s)
-        {
-      case 'xp':
-        return 'XP';
-      case 'kda':
-        return 'KDA';
-      case 'tpscroll':
-        return 'TP Scroll';
-      default:
-        return s.charAt(0).toUpperCase() + s.slice(1);
+    switch (s) {
+    case 'xp':
+      return 'XP';
+    case 'kda':
+      return 'KDA';
+    case 'tpscroll':
+      return 'TP Scroll';
+    default:
+      return s.charAt(0).toUpperCase() + s.slice(1);
     }
   }).join(' ');
 }
@@ -562,8 +482,7 @@ function prettyPrint(str)
  * Returns the unix timestamp at the beginning of a block of n minutes
  * Offset controls the number of blocks to look ahead
  **/
-function getStartOfBlockMinutes(size, offset)
-{
+function getStartOfBlockMinutes(size, offset) {
   offset = offset || 0;
   const blockS = size * 60;
   const curTime = ~~(new Date() / 1000);
@@ -571,38 +490,28 @@ function getStartOfBlockMinutes(size, offset)
   return (blockStart + (offset * blockS)).toFixed(0);
 }
 
-function percentToTextClass(pct)
-{
-  if (pct >= 0.8)
-    {
+function percentToTextClass(pct) {
+  if (pct >= 0.8) {
     return {
       className: 'text-success',
       grade: 'A',
     };
-  }
-  else if (pct >= 0.6)
-    {
+  } else if (pct >= 0.6) {
     return {
       className: 'text-info',
       grade: 'B',
     };
-  }
-  else if (pct >= 0.4)
-    {
+  } else if (pct >= 0.4) {
     return {
       className: 'text-primary',
       grade: 'C',
     };
-  }
-  else if (pct >= 0.2)
-    {
+  } else if (pct >= 0.2) {
     return {
       className: 'text-warning',
       grade: 'D',
     };
-  }
-  else
-    {
+  } else {
     return {
       className: 'text-danger',
       grade: 'F',
@@ -610,15 +519,13 @@ function percentToTextClass(pct)
   }
 }
 
-function average(data)
-{
+function average(data) {
   return ~~(data.reduce((a, b) => {
     return a + b;
   }, 0) / data.length);
 }
 
-function stdDev(data)
-{
+function stdDev(data) {
   const avg = average(data);
   const squareDiffs = data.map((value) => {
     const diff = value - avg;
@@ -630,8 +537,7 @@ function stdDev(data)
   return stdDev;
 }
 
-function median(data)
-{
+function median(data) {
   data.sort((a, b) => {
     return a - b;
   });
@@ -640,144 +546,120 @@ function median(data)
   else return (data[half - 1] + data[half]) / 2.0;
 }
 
-function getPatchIndex(start_time)
-{
+function getPatchIndex(start_time) {
   const date = new Date(start_time * 1000);
-  for (var i = 1; i < constants.patch.length; i++)
-    {
+  for (var i = 1; i < constants.patch.length; i++) {
     const pd = new Date(constants.patch[i].date);
-        // stop when patch date is past the start time
-    if (pd > date)
-        {
+    // stop when patch date is past the start time
+    if (pd > date) {
       break;
     }
   }
-    // use the value of i before the break, started at 1 to avoid negative index
+  // use the value of i before the break, started at 1 to avoid negative index
   return i - 1;
 }
 
-function buildReplayUrl(match_id, cluster, replay_salt)
-{
+function buildReplayUrl(match_id, cluster, replay_salt) {
   const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
   return 'http://replay' + cluster + '.valve.net/570/' + match_id + '_' + replay_salt + suffix;
 }
 
-function expectedWin(rates)
-{
-    // simple implementation, average
-    // return rates.reduce((prev, curr) => prev + curr)) / hids.length;
-    // advanced implementation, asymptotic
-    // return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
+function expectedWin(rates) {
+  // simple implementation, average
+  // return rates.reduce((prev, curr) => prev + curr)) / hids.length;
+  // advanced implementation, asymptotic
+  // return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
   return 1 - rates.reduce((prev, curr) => (100 - curr * 100) * prev, 1) / (Math.pow(50, rates.length - 1) * 100);
 }
 
-function matchupToString(t0, t1, t0win)
-{
-    // create sorted strings of each team
+function matchupToString(t0, t1, t0win) {
+  // create sorted strings of each team
   const rcg = groupToString(t0);
   const dcg = groupToString(t1);
   let suffix = '0';
-  if (rcg <= dcg)
-    {
+  if (rcg <= dcg) {
     suffix = t0win ? '0' : '1';
     return rcg + ':' + dcg + ':' + suffix;
-  }
-  else
-    {
+  } else {
     suffix = t0win ? '1' : '0';
     return dcg + ':' + rcg + ':' + suffix;
   }
 }
 
-function groupToString(g)
-{
+function groupToString(g) {
   return g.sort((a, b) => {
     return a - b;
   }).join(',');
 }
 
-function kCombinations(arr, k)
-{
+function kCombinations(arr, k) {
   let i, j, combs, head, tailcombs;
-  if (k > arr.length || k <= 0)
-    {
+  if (k > arr.length || k <= 0) {
     return [];
   }
-  if (k === arr.length)
-    {
+  if (k === arr.length) {
     return [arr];
   }
-  if (k == 1)
-    {
+  if (k == 1) {
     combs = [];
-    for (i = 0; i < arr.length; i++)
-        {
+    for (i = 0; i < arr.length; i++) {
       combs.push([arr[i]]);
     }
     return combs;
   }
-    // Assert {1 < k < arr.length}
+  // Assert {1 < k < arr.length}
   combs = [];
-  for (i = 0; i < arr.length - k + 1; i++)
-    {
+  for (i = 0; i < arr.length - k + 1; i++) {
     head = arr.slice(i, i + 1);
-        // recursively get all combinations of the remaining array
+    // recursively get all combinations of the remaining array
     tailcombs = kCombinations(arr.slice(i + 1), k - 1);
-    for (j = 0; j < tailcombs.length; j++)
-        {
+    for (j = 0; j < tailcombs.length; j++) {
       combs.push(head.concat(tailcombs[j]));
     }
   }
   return combs;
 }
 
-function generateMatchups(match, max)
-{
+function generateMatchups(match, max) {
   max = max || 5;
   const radiant = [];
   const dire = [];
-    // start with empty arrays for the choose 0 case
+  // start with empty arrays for the choose 0 case
   let rCombs = [
-        [],
+    [],
   ];
   let dCombs = [
-        [],
+    [],
   ];
   const result = [];
-  for (var i = 0; i < match.players.length; i++)
-    {
+  for (var i = 0; i < match.players.length; i++) {
     const p = match.players[i];
-    if (p.hero_id === 0)
-        {
-            // exclude this match if any hero is 0
+    if (p.hero_id === 0) {
+      // exclude this match if any hero is 0
       return;
     }
-    if (isRadiant(p))
-        {
+    if (isRadiant(p)) {
       radiant.push(p.hero_id);
-    }
-    else
-        {
+    } else {
       dire.push(p.hero_id);
     }
   }
-  for (var i = 1; i < (max + 1); i++)
-    {
+  for (var i = 1; i < (max + 1); i++) {
     const rc = kCombinations(radiant, i);
     const dc = kCombinations(dire, i);
     rCombs = rCombs.concat(rc);
     dCombs = dCombs.concat(dc);
   }
-    // iterate over combinations, increment count for unique key
-    // include empty set for opposing team (current picks data)
-    // t0, t1 are ordered lexicographically
-    // format: t0:t1:winner
-    // ::0
-    // ::1
-    // 1::0
-    // 1::1
-    // 1:2:0
-    // when searching, take as input t0, t1 and retrieve data for both values of t0win
+  // iterate over combinations, increment count for unique key
+  // include empty set for opposing team (current picks data)
+  // t0, t1 are ordered lexicographically
+  // format: t0:t1:winner
+  // ::0
+  // ::1
+  // 1::0
+  // 1::1
+  // 1:2:0
+  // when searching, take as input t0, t1 and retrieve data for both values of t0win
   rCombs.forEach((t0) => {
     dCombs.forEach((t1) => {
       const key = matchupToString(t0, t1, match.radiant_win);
@@ -786,6 +668,47 @@ function generateMatchups(match, max)
   });
   return result;
 }
+
+function countPeers(matches) {
+  const teammates = {};
+  matches.forEach((m) => {
+    const player_win = isRadiant(m) === m.radiant_win;
+    const group = m.heroes || {};
+    for (const key in group) {
+      const tm = group[key];
+      // count teammate players
+      if (!teammates[tm.account_id]) {
+        teammates[tm.account_id] = {
+          account_id: tm.account_id,
+          last_played: 0,
+          win: 0,
+          games: 0,
+          with_win: 0,
+          with_games: 0,
+          against_win: 0,
+          against_games: 0,
+        };
+      }
+      if (m.start_time > teammates[tm.account_id].last_played) {
+        teammates[tm.account_id].last_played = m.start_time;
+      }
+      // played with
+      teammates[tm.account_id].games += 1;
+      teammates[tm.account_id].win += player_win ? 1 : 0;
+      if (isRadiant(tm) === isRadiant(m)) {
+        // played with
+        teammates[tm.account_id].with_games += 1;
+        teammates[tm.account_id].with_win += player_win ? 1 : 0;
+      } else {
+        // played against
+        teammates[tm.account_id].against_games += 1;
+        teammates[tm.account_id].against_win += player_win ? 1 : 0;
+      }
+    }
+  });
+  return teammates;
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -817,4 +740,5 @@ module.exports = {
   groupToString,
   kCombinations,
   generateMatchups,
+  countPeers,
 };

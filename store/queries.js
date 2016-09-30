@@ -42,7 +42,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   if (cassandraColumnInfo[table]) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   } else {
-    cassandra.execute('SELECT column_name FROM system_schema.columns WHERE keyspace_name = \'yasp\' AND table_name = ?', [table], (err, result) => {
+    cassandra.execute(`SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?`, [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table], (err, result) => {
       if (err) {
         return cb(err);
       }
@@ -587,11 +587,11 @@ function getProPlayers(db, redis, cb) {
   db.raw(`
     SELECT * from notable_players
     `).asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(err, result.rows);
-    });
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows);
+  });
 }
 
 function getHeroRankings(db, redis, hero_id, options, cb) {
@@ -719,8 +719,8 @@ function getMatchesSkill(db, matches, options, cb) {
       return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
   });
   */
-  // just get skill for last N matches (faster)
-  const recents = matches.slice(0, 20);
+  // just get skill for last N matches to speed up DB query
+  const recents = matches.slice(0, 50);
   const skillMap = {};
   db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map((m) => {
     return m.match_id;
@@ -742,32 +742,37 @@ function getMatchesSkill(db, matches, options, cb) {
 
 function getPlayerMatches(account_id, queryObj, cb) {
   if (config.ENABLE_CASSANDRA_MATCH_STORE_READ && cassandra) {
-    const query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', queryObj.project.join(','));
-    let matches = [];
-    return cassandra.stream(query, [account_id], {
-      prepare: true,
-      fetchSize: 1000,
-      autoPage: true,
-    }).on('readable', function () {
-      // readable is emitted as soon a row is received and parsed
-      let m;
-      while (m = this.read()) {
-        m = deserialize(m);
-        if (filter([m], queryObj.filter).length) {
-          matches.push(m);
+    // call clean method to ensure we have column info cached
+    cleanRowCassandra(cassandra, 'player_caches', {}, (err) => {
+      if (err) {
+        return cb(err);
+      }
+      // console.log(queryObj.project, cassandraColumnInfo.player_caches);
+      const query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','));
+      let matches = [];
+      return cassandra.stream(query, [account_id], {
+        prepare: true,
+        fetchSize: 1000,
+        autoPage: true,
+      }).on('readable', function () {
+        // readable is emitted as soon a row is received and parsed
+        let m;
+        while (m = this.read()) {
+          m = deserialize(m);
+          if (filter([m], queryObj.filter).length) {
+            matches.push(m);
+          }
         }
-      }
-    }).on('end', (err) => {
-      // stream ended, there aren't any more rows
-      if (queryObj.sort) {
-        matches.sort((a, b) => {
-          return b[queryObj.sort] - a[queryObj.sort];
-        });
-      }
-      matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
-      return cb(err, matches);
-    }).on('error', (err) => {
-      throw err;
+      }).on('end', (err) => {
+        // stream ended, there aren't any more rows
+        if (queryObj.sort) {
+          matches.sort((a, b) => {
+            return b[queryObj.sort] - a[queryObj.sort];
+          });
+        }
+        matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
+        return cb(err, matches);
+      }).on('error', cb);
     });
   } else {
     // TODO support reading from postgres
@@ -866,18 +871,18 @@ function getProPeers(db, input, player, cb) {
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
           `).asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            const arr = result.rows.map((r) => {
-              return Object.assign({}, r, teammates[r.account_id]);
-            }).filter((r) => {
-              return r.games;
-            }).sort((a, b) => {
-              return b.games - a.games;
-            });
-            cb(err, arr);
-          });
+    if (err) {
+      return cb(err);
+    }
+    const arr = result.rows.map((r) => {
+      return Object.assign({}, r, teammates[r.account_id]);
+    }).filter((r) => {
+      return r.games;
+    }).sort((a, b) => {
+      return b.games - a.games;
+    });
+    cb(err, arr);
+  });
 }
 module.exports = {
   upsert,
