@@ -1,7 +1,11 @@
 FROM daerdemandt/cassandra-init-manual
 
-COPY sql /tmp/sql
-RUN cp /tmp/sql/init.cql            /docker-entrypoint-init.d/10-init.cql; \
-    cp /tmp/sql/create_tables.cql   /docker-entrypoint-init.d/20-create-tables.cql; \
-    echo 'USE yasp;' | prepend /docker-entrypoint-init.d/20-create-tables.cql
+# Lower cassandra memory limits
+ENV MAX_HEAP_SIZE=128M
+ENV HEAP_NEWSIZE=24M
+ENV CASSANDRA_LISTEN_ADDRESS=127.0.0.1
 
+COPY sql/init.cql /docker-entrypoint-init.d/10-init.cql
+COPY sql/create_tables.cql /docker-entrypoint-init.d/20-create-tables.cql
+
+RUN echo 'USE yasp;' | bash prepend /docker-entrypoint-init.d/20-create-tables.cql

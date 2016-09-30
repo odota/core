@@ -1,14 +1,14 @@
-var zlib = require("zlib"),
-    JSONStream = require("JSONStream"),
-    fs = require("fs");
-    
-var fileName = "../export/dump.json.gz";
+var zlib = require('zlib'),
+  JSONStream = require('JSONStream'),
+  fs = require('fs');
 
-var write = fs.createReadStream(fileName)
-var JSONStream =  JSONStream.parse("*.match_id");
+const fileName = '../export/dump.json.gz';
 
-JSONStream.on("data", function(d) {
-    console.log(d);
+const write = fs.createReadStream(fileName);
+var JSONStream = JSONStream.parse('*.match_id');
+
+JSONStream.on('data', (d) => {
+  console.log(d);
 });
 
 write.pipe(zlib.createGunzip()).pipe(JSONStream);

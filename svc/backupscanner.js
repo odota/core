@@ -20,28 +20,26 @@ function start(err)
   {
     throw err;
   }
-  queries.getSets(redis, function (err, result)
-  {
+  redis.zrange('tracked', 0, -1, (err, ids) => {
     if (err)
     {
       throw err;
     }
-    async.eachLimit(Object.keys(result.trackedPlayers), parallelism, processPlayer, start);
+    async.eachLimit(ids, parallelism, processPlayer, start);
   });
 }
 
 function processPlayer(account_id, cb)
 {
-  var ajob = generateJob('api_history',
-  {
-    account_id: account_id
-  });
+  const ajob = generateJob('api_history',
+    {
+      account_id,
+    });
   getData(
-  {
-    url: ajob.url,
-    delay: delay
-  }, function (err, body)
-  {
+    {
+      url: ajob.url,
+      delay,
+    }, (err, body) => {
     if (err)
     {
       console.error(err);
@@ -51,18 +49,15 @@ function processPlayer(account_id, cb)
       // Skip this player on this iteration
       return cb();
     }
-    redis.get('match_seq_num', function (err, res)
-    {
+    redis.get('match_seq_num', (err, res) => {
       if (err)
       {
         console.error(err);
       }
       // Get matches with recent seqnums
-      var matches = body.result.matches.filter(function (m)
-      {
+      const matches = body.result.matches.filter((m) => {
         return m.match_seq_num > Number(res);
-      }).map(function (m)
-      {
+      }).map((m) => {
         return m.match_id;
       });
       async.eachLimit(matches, 1, processMatch, cb);
@@ -73,8 +68,7 @@ function processPlayer(account_id, cb)
 function processMatch(match_id, cb)
 {
   // Check if exists
-  redis.get('scanner_insert:' + match_id, function (err, res)
-  {
+  redis.get('scanner_insert:' + match_id, (err, res) => {
     if (err)
     {
       return cb(err);
@@ -85,17 +79,16 @@ function processMatch(match_id, cb)
     }
     else
     {
-      var job = generateJob("api_details",
-      {
-        match_id: match_id
-      });
-      var url = job.url;
+      const job = generateJob('api_details',
+        {
+          match_id,
+        });
+      const url = job.url;
       getData(
-      {
-        url: url,
-        delay: delay
-      }, function (err, body)
-      {
+        {
+          url,
+          delay,
+        }, (err, body) => {
         if (err)
         {
           throw err;
@@ -106,23 +99,21 @@ function processMatch(match_id, cb)
         }
         else
         {
-          var match = body.result;
+          const match = body.result;
           insertMatch(db, redis, match,
-          {
-            type: "api",
-            origin: "scanner",
-            skipCounts: false,
-            skipAbilityUpgrades: false,
-            skipParse: false,
-            cassandra: cassandra,
-          }, function (err)
-          {
-            if (!err)
             {
-              redis.set('scanner_insert:' + match.match_id, 1);
-            }
-            cb(err);
-          });
+              type: 'api',
+              origin: 'scanner',
+              skipCounts: false,
+              skipAbilityUpgrades: false,
+              cassandra,
+            }, (err) => {
+              if (!err)
+            {
+                redis.set('scanner_insert:' + match.match_id, 1);
+              }
+              cb(err);
+            });
         }
       });
     }

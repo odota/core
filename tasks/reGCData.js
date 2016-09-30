@@ -1,25 +1,22 @@
-var db = require('../store/db');
-var redis = require('../store/redis');
-var async = require('async');
-var getGCData = require('../util/getGCData');
-db.select(['match_id']).from('matches').asCallback(function (err, matches)
-{
+const db = require('../store/db');
+const redis = require('../store/redis');
+const async = require('async');
+const getGCData = require('../util/getGCData');
+db.select(['match_id']).from('matches').asCallback((err, matches) => {
   if (err)
   {
     throw err;
   }
-  async.eachSeries(matches, function (match, cb)
-  {
+  async.eachSeries(matches, (match, cb) => {
     console.log(match.match_id);
-    getGCData(db, redis, match, function(err){
+    getGCData(db, redis, match, (err) => {
       if (err)
       {
         console.error(err);
       }
       cb();
     });
-  }, function (err)
-  {
+  }, (err) => {
     if (err)
     {
       console.error(err);

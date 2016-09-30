@@ -1,25 +1,24 @@
 /**
  * Interface to PostgreSQL client
  **/
-var config = require('../config');
-var pg = require('pg');
-pg.types.setTypeParser(20, function(val)
-{
-  //remember: all values returned from the server are either NULL or a string
+const config = require('../config');
+const pg = require('pg');
+const knex = require('knex');
+pg.types.setTypeParser(20, (val) => {
+  // remember: all values returned from the server are either NULL or a string
   return val === null ? null : parseInt(val, 10);
 });
 console.error('connecting %s', config.POSTGRES_URL);
-var db = require('knex')(
-{
-  client: 'pg',
-  connection: config.POSTGRES_URL,
-  pool:
+const db = knex(
   {
-    max: 5,
-  },
-});
-db.client.pool.on('error', function(err)
-{
+    client: 'pg',
+    connection: config.POSTGRES_URL,
+    pool:
+    {
+      max: 5,
+    },
+  });
+db.on('query-error', function (err) {
   throw err;
 });
 module.exports = db;

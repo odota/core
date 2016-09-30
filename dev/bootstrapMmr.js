@@ -1,11 +1,11 @@
-var JSONStream = require('JSONStream');
-var async = require('async');
-var db = require('../store/db');
-var redis = require('../store/redis');
-var args = process.argv.slice(2);
-var start_id = Number(args[0]) || 0;
-var conc = 0;
-var stream = db.raw(`
+const JSONStream = require('JSONStream');
+const async = require('async');
+const db = require('../store/db');
+const redis = require('../store/redis');
+const args = process.argv.slice(2);
+const start_id = Number(args[0]) || 0;
+let conc = 0;
+const stream = db.raw(`
 SELECT pr.account_id, solo_competitive_rank from player_ratings pr
 JOIN 
 (select account_id, max(time) as maxtime from player_ratings GROUP by account_id) grouped
@@ -18,24 +18,23 @@ ORDER BY account_id asc
 `, [start_id]).stream();
 stream.on('end', exit);
 stream.pipe(JSONStream.parse());
-stream.on('data', function(player)
-{
-    conc += 1;
-    if (conc > 10)
+stream.on('data', (player) => {
+  conc += 1;
+  if (conc > 10)
     {
-        stream.pause();
-    }
-    redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
-    console.log(player.account_id);
-    conc -= 1;
-    stream.resume();
+    stream.pause();
+  }
+  redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
+  console.log(player.account_id);
+  conc -= 1;
+  stream.resume();
 });
 
 function exit(err)
 {
-    if (err)
+  if (err)
     {
-        console.error(err);
-    }
-    process.exit(Number(err));
+    console.error(err);
+  }
+  process.exit(Number(err));
 }

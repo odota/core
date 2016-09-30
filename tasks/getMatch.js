@@ -1,50 +1,48 @@
-var utility = require('../util/utility');
-var generateJob = utility.generateJob;
-var getData = utility.getData;
-var db = require('../store/db');
-var redis = require('../store/redis');
-var cassandra = require('../store/cassandra');
-var queries = require('../store/queries');
-var insertMatch = queries.insertMatch;
-var args = process.argv.slice(2);
-var match_id = Number(args[0]);
-var delay = 1000;
-var job = generateJob("api_details",
-{
-    match_id: match_id
-});
-var url = job.url;
+const utility = require('../util/utility');
+const generateJob = utility.generateJob;
+const getData = utility.getData;
+const db = require('../store/db');
+const redis = require('../store/redis');
+const cassandra = require('../store/cassandra');
+const queries = require('../store/queries');
+const insertMatch = queries.insertMatch;
+const args = process.argv.slice(2);
+const match_id = Number(args[0]);
+const delay = 1000;
+const job = generateJob('api_details',
+  {
+    match_id,
+  });
+const url = job.url;
 getData(
-{
-    url: url,
-    delay: delay
-}, function(err, body)
-{
-    if (err)
+  {
+    url,
+    delay,
+  }, (err, body) => {
+  if (err)
     {
-        throw err;
-    }
-    if (body.result)
+    throw err;
+  }
+  if (body.result)
     {
-        var match = body.result;
-        insertMatch(db, redis, match,
-        {
-            skipCounts: true,
-            skipAbilityUpgrades: true,
-            skipParse: false,
-            cassandra: cassandra,
-            attempts: 1,
-        }, function(err)
-        {
-            if (err)
+    const match = body.result;
+    insertMatch(db, redis, match,
+      {
+        skipCounts: true,
+        skipAbilityUpgrades: true,
+        forceParse: true,
+        cassandra,
+        attempts: 1,
+      }, (err) => {
+        if (err)
             {
-                throw err;
-            }
-            process.exit(0);
-        });
-    }
-    else
+          throw err;
+        }
+        process.exit(0);
+      });
+  }
+  else
     {
-        throw body;
-    }
+    throw body;
+  }
 });
