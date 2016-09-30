@@ -14,6 +14,9 @@ mQueue.process(retrieverArr.length * config.MMR_PARALLELISM, processMmr);
 mQueue.on('completed', (job) => {
   job.remove();
 });
+mQueue.on('failed', (job) => {
+  job.remove();
+});
 
 function processMmr(job, cb)
 {

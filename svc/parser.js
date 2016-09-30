@@ -63,8 +63,8 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
       }
     },
     'runParse': function (cb) {
-      if (match.doParse || !match.doParse) {
-        // run the parse if pre-change (no doParse) or if doParse is set
+      if (match.doParse || (!match.doGcData && !match.doParse)) {
+        // run the parse if pre-change (no doGcData and no doParse) or if doParse is set
         // can remove the second condition after new code has been deployed for 1 day (no more old jobs in queue)
         runParse(match, job, (err, parsed_data) => {
           if (err) {
