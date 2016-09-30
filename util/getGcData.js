@@ -35,7 +35,7 @@ module.exports = function getGcData(db, redis, match, cb) {
           return cb('invalid body or error');
         }
         // count retriever calls
-        redis.zadd('retriever:' + metadata.hostname.split('.')[0], moment().format('X'), match.match_id);
+        redis.zadd('retriever:' + metadata.hostname, moment().format('X'), match.match_id);
         match.url = buildReplayUrl(match.match_id, body.match.cluster, body.match.replay_salt);
         const parties = {};
         if (body.match.players) {
