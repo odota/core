@@ -219,9 +219,6 @@ function start() {
   }
 
   function selfDestruct() {
-    if (config.PROVIDER === 'gce') {
-      cp.execSync('gcloud compute instances delete $(hostname) --quiet');
-    }
     process.exit(0);
   }
 
