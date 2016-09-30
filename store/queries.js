@@ -397,6 +397,8 @@ function insertMatch(db, redis, match, options, cb) {
         if (err) {
           return cb(err);
         }
+        const doParse = hasTrackedPlayer || options.forceParse || options.doLogParse;
+        const doGcData = doParse || options.origin === 'scanner';
         // queue it and finish, callback with the queued parse job
         return queue.addToQueue(pQueue, {
           match_id: match.match_id,
@@ -406,8 +408,8 @@ function insertMatch(db, redis, match, options, cb) {
           replay_blob_key: match.replay_blob_key,
           pgroup: match.pgroup,
           doLogParse: options.doLogParse,
-          doParse: hasTrackedPlayer || options.forceParse || options.doLogParse,
-          doGcData: true,
+          doParse: doParse,
+          doGcData: doGcData,
         }, {
           lifo: options.lifo,
           attempts: options.attempts,
