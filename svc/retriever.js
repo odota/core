@@ -23,11 +23,10 @@ if (config.PROVIDER === 'gce' && config.STEAM_ACCOUNT_DATA) {
   const startIndex = Math.floor((Math.random() * accountData.length - accountsToUse));
   console.log("total registered accounts: %s, startIndex: %s", accountData.length, startIndex);
   accountData = accountData.slice(startIndex, accountsToUse);
-  users = accountData.map(a=>a.split('\t')[0]);
-  passes = accountData.map(a=>a.split('\t')[1]);
+  users = accountData.map(a => a.split('\t')[0]);
+  passes = accountData.map(a => a.split('\t')[1]);
   start();
-}
-else {
+} else {
   start();
 }
 
