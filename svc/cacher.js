@@ -74,7 +74,7 @@ function updateRankings(match, cb) {
     if (err) {
       return cb(err);
     }
-    const match_score = (avg && !Number.isNaN(avg)) ? Math.pow(Math.max(avg / 1000, 1), 6) : undefined;
+    const match_score = (avg && !Number.isNaN(avg)) ? Math.pow(Math.max(avg / 1000, 1), 7) : undefined;
     async.each(match.players, (player, cb) => {
       if (!player.account_id || player.account_id === constants.anonymous_account_id) {
         return cb();
@@ -83,7 +83,7 @@ function updateRankings(match, cb) {
       const start = moment().startOf('quarter').format('X');
       const expire = moment().add(1, 'quarter').startOf('quarter').format('X');
       const win = Number(utility.isRadiant(player) === player.radiant_win);
-      const player_score = win ? match_score : 0;
+      const player_score = win ? match_score : -match_score;
       if (player_score && utility.isSignificant(match)) {
         redis.zincrby(['hero_rankings', start, player.hero_id].join(':'), player_score, player.account_id);
         redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);

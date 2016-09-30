@@ -22,9 +22,9 @@ if (config.PROVIDER === 'gce' && config.STEAM_ACCOUNT_DATA) {
   const accountsToUse = 7;
   const startIndex = Math.floor((Math.random() * accountData.length - accountsToUse));
   console.log("total registered accounts: %s, startIndex: %s", accountData.length, startIndex);
-  accountData = accountData.slice(startIndex, accountsToUse);
-  users = accountData.map(a => a.split('\t')[0]);
-  passes = accountData.map(a => a.split('\t')[1]);
+  const accountDataToUse = accountData.slice(startIndex, accountsToUse);
+  users = accountDataToUse.map(a => a.split('\t')[0]);
+  passes = accountDataToUse.map(a => a.split('\t')[1]);
   start();
 } else {
   start();
@@ -219,9 +219,6 @@ function start() {
   }
 
   function selfDestruct() {
-    if (config.PROVIDER === 'gce') {
-      cp.execSync('gcloud compute instances delete $(hostname) --quiet');
-    }
     process.exit(0);
   }
 
