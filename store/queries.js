@@ -42,7 +42,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   if (cassandraColumnInfo[table]) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   } else {
-    cassandra.execute('SELECT column_name FROM system_schema.columns WHERE keyspace_name = \'yasp\' AND table_name = ?', [table], (err, result) => {
+    cassandra.execute(`SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?`, [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table], (err, result) => {
       if (err) {
         return cb(err);
       }
@@ -747,7 +747,7 @@ function getPlayerMatches(account_id, queryObj, cb) {
       if (err) {
         return cb(err);
       }
-      console.log(queryObj.project, cassandraColumnInfo.player_caches);
+      // console.log(queryObj.project, cassandraColumnInfo.player_caches);
       const query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC', queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','));
       let matches = [];
       return cassandra.stream(query, [account_id], {
