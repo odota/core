@@ -12,7 +12,7 @@ module.exports = function buildStatus(db, redis, cb) {
   redis.zremrangebyscore('api_hits', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('parser', 0, moment().subtract(1, 'day').format('X'));
   config.RETRIEVER_HOST.split(',').map((r) => {
-    return 'retriever:' + r.split('.')[0];
+    return 'retriever:' + r;
   }).forEach((retkey) => {
     redis.zremrangebyscore(retkey, 0, moment().subtract(1, 'day').format('X'));
   });
