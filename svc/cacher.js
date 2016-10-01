@@ -76,7 +76,7 @@ function updateRankings(match, cb) {
     }
     const match_score = (avg && !Number.isNaN(avg)) ? Math.pow(Math.max(avg / 1000, 1), 7) : undefined;
     async.each(match.players, (player, cb) => {
-      if (!player.account_id || player.account_id === constants.anonymous_account_id) {
+      if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
         return cb();
       }
       player.radiant_win = match.radiant_win;
@@ -117,7 +117,7 @@ function updateMatchRating(match, cb) {
     if (avg && !Number.isNaN(avg)) {
       // For each player, update mmr estimation list
       match.players.forEach((player) => {
-        if (player.account_id && player.account_id !== constants.anonymous_account_id) {
+        if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
           // push into list, limit elements
           redis.lpush('mmr_estimates:' + player.account_id, avg);
           redis.ltrim('mmr_estimates:' + player.account_id, 0, 19);

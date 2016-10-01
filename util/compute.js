@@ -1,12 +1,13 @@
+const constants = require('dotaconstants');
+const sentiment = require('sentiment');
 const utility = require('./utility');
 const generatePlayerAnalysis = require('./analysis');
-const constants = require('dotaconstants');
+const laneMappings = require('./laneMappings');
 const mode = utility.mode;
 const max = utility.max;
 const min = utility.min;
 const isRadiant = utility.isRadiant;
 const generatePositionData = utility.generatePositionData;
-const sentiment = require('sentiment');
 const ancients = constants.ancients;
 const specific = constants.specific;
 const expanded = {};
@@ -139,8 +140,8 @@ function computeMatchData(pm) {
     for (var i = 0; i < pm.posData.lane_pos.length; i++) {
       const dp = pm.posData.lane_pos[i];
       for (let j = 0; j < dp.value; j++) {
-        if (constants.lanes[dp.y]) {
-          lanes.push(constants.lanes[dp.y][dp.x]);
+        if (laneMappings[dp.y]) {
+          lanes.push(laneMappings[dp.y][dp.x]);
         }
       }
     }

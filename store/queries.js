@@ -91,7 +91,7 @@ function insertMatch(db, redis, match, options, cb) {
   const players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
   // don't insert anonymous account id
   players.forEach((p) => {
-    if (p.account_id === constants.anonymous_account_id) {
+    if (p.account_id === utility.getAnonymousAccountId()) {
       delete p.account_id;
     }
   });
@@ -358,7 +358,7 @@ function insertMatch(db, redis, match, options, cb) {
 
   function decideMmr(cb) {
     async.each(match.players, (p, cb) => {
-      if (options.origin === 'scanner' && match.lobby_type === 7 && p.account_id && p.account_id !== constants.anonymous_account_id && config.ENABLE_RANDOM_MMR_UPDATE) {
+      if (options.origin === 'scanner' && match.lobby_type === 7 && p.account_id && p.account_id !== utility.getAnonymousAccountId() && config.ENABLE_RANDOM_MMR_UPDATE) {
         addToQueue(mQueue, {
           match_id: match.match_id,
           account_id: p.account_id,
@@ -374,7 +374,7 @@ function insertMatch(db, redis, match, options, cb) {
 
   function decideProfile(cb) {
     async.each(match.players, (p, cb) => {
-      if (options.origin === 'scanner' && p.account_id && p.account_id !== constants.anonymous_account_id) {
+      if (options.origin === 'scanner' && p.account_id && p.account_id !== utility.getAnonymousAccountId()) {
         redis.lpush('profilerQueue', p.account_id);
         redis.ltrim('profilerQueue', 0, 99);
       }
@@ -433,7 +433,7 @@ function insertPlayer(db, player, cb) {
     // this is a login, compute the account_id from steamid
     player.account_id = Number(convert64to32(player.steamid));
   }
-  if (!player.account_id || player.account_id === constants.anonymous_account_id) {
+  if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
     return cb();
   }
   upsert(db, 'players', player, {
@@ -465,7 +465,7 @@ function insertPlayerCache(match, cb) {
       });
     }
     async.eachSeries(players, (player_match, cb) => {
-      if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id) {
+      if (player_match.account_id && player_match.account_id !== utility.getAnonymousAccountId()) {
         // join player with match to form player_match
         for (const key in match) {
           if (key !== 'players') {
@@ -835,7 +835,7 @@ function getPeers(db, input, player, cb) {
     const tm = teammates[id];
     id = Number(id);
     // don't include if anonymous, self or if few games together
-    if (id && id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5)) {
+    if (id && id !== Number(player.account_id) && id !== utility.getAnonymousAccountId() && (tm.games >= 5)) {
       teammates_arr.push(tm);
     }
   }

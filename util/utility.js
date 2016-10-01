@@ -709,6 +709,10 @@ function countPeers(matches) {
   return teammates;
 }
 
+function getAnonymousAccountId() {
+  return 4294967295;
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -741,4 +745,5 @@ module.exports = {
   kCombinations,
   generateMatchups,
   countPeers,
+  getAnonymousAccountId,
 };

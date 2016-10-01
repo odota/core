@@ -57,7 +57,7 @@ function buildPlayer(options, cb)
     {
     return cb('non-numeric account_id');
   }
-  if (Number(account_id) === constants.anonymous_account_id)
+  if (Number(account_id) === utility.getAnonymousAccountId())
     {
     return cb('cannot generate profile for anonymous account_id');
   }
