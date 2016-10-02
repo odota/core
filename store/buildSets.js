@@ -26,8 +26,7 @@ module.exports = function buildSets(db, redis, cb) {
       return cb(err);
     }
     // Remove inactive players from tracked set
-    // TODO remove the subtraction here, once tracked_until is set properly for all users (in two weeks)
-    redis.zremrangebyscore('tracked', 0, moment().subtract(config.UNTRACK_DAYS, 'days').format('X'));
+    redis.zremrangebyscore('tracked', 0, moment().format('X'));
     return cb(err);
   });
 };
