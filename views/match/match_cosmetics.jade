@@ -17,5 +17,6 @@ block match_content
               .row
               each item in player.cosmetics
                 .col-md-2
-                  img(src="http://cdn.dota2.com/apps/570/" + item.image_path, style="height:40px;")
-                  div.small=item.name 
+                  a(href="https://www.lootmarket.com/dota-2/item/" + item.name + "?partner=1101&utm_source=misc&utm_medium=misc&utm_campaign=opendota")
+                    img(src="http://cdn.dota2.com/apps/570/" + item.image_path, style="height:40px;")
+                    div.small=item.name 
