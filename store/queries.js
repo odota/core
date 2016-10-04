@@ -349,7 +349,16 @@ function insertMatch(db, redis, match, options, cb) {
     if (options.origin === 'scanner') {
       redis.zadd('added_match', moment().format('X'), match.match_id);
     }
-    return cb();
+    async.some(match.players, (p, cb) => {
+      redis.zscore('visitors', String(p.account_id), (err, score) => {
+        return cb(err, Boolean(score));
+      });
+    }, (err, result) => {
+      if (result) {
+        redis.zadd('visitor_match', moment().format('X'), match.match_id);
+      }
+      return cb(err);
+    });
   }
 
   function clearMatchCache(cb) {

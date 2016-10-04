@@ -6,11 +6,11 @@ const queue = require('./queue');
 const async = require('async');
 const moment = require('moment');
 module.exports = function buildStatus(db, redis, cb) {
-  console.time('status');
   redis.zremrangebyscore('added_match', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('error_500', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('api_hits', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('parser', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('visitor_match', 0, moment().subtract(1, 'day').format('X'));
   config.RETRIEVER_HOST.split(',').map((r) => {
     return 'retriever:' + r;
   }).forEach((retkey) => {
@@ -31,6 +31,9 @@ module.exports = function buildStatus(db, redis, cb) {
     },
     matches_last_hour(cb) {
       redis.zcount('added_match', moment().subtract(1, 'hour').format('X'), '+inf', cb);
+    },
+    visitor_matches_last_day(cb) {
+      redis.zcard('visitor_match', cb);
     },
     api_hits(cb) {
       redis.zcard('api_hits', cb);
