@@ -60,7 +60,7 @@
     "multer": "1.2.0",
     "numeral": "1.5.3",
     "passport": "0.3.2",
-    "passport-steam": "1.0.6",
+    "passport-steam": "1.0.5",
     "pg": "6.0.3",
     "pg-query-stream": "1.0.0",
     "pm2": "2.0.18",
