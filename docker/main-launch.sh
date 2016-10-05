@@ -24,5 +24,5 @@ case $1 in
     ;;
 esac
 
-# We shall now display webserver logs indefinitely
-pm2 logs web
+# We shall now display logs indefinitely
+pm2 logs
