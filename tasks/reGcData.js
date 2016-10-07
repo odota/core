@@ -1,7 +1,7 @@
 const db = require('../store/db');
 const redis = require('../store/redis');
 const async = require('async');
-const getGCData = require('../util/getGCData');
+const getGcData = require('../util/getGcData');
 db.select(['match_id']).from('matches').asCallback((err, matches) => {
   if (err)
   {
@@ -9,7 +9,7 @@ db.select(['match_id']).from('matches').asCallback((err, matches) => {
   }
   async.eachSeries(matches, (match, cb) => {
     console.log(match.match_id);
-    getGCData(db, redis, match, (err) => {
+    getGcData(db, redis, match, (err) => {
       if (err)
       {
         console.error(err);
