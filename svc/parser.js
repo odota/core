@@ -55,8 +55,7 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
       } else {
         if (match.doGcData) {
           getGcData(db, redis, match, cb);
-        }
-        else {
+        } else {
           cb();
         }
       }
@@ -220,18 +219,22 @@ function runParse(match, job, cb) {
         const message = 'time spent on post-processing match ';
         console.time(message);
         const meta = processMetadata(entries);
-        const logs = processReduce(entries, match, meta);
-        const res = processExpand(entries, meta);
-        const parsed_data = processParsedData(res.parsed_data, getParseSchema());
-        const teamfights = processTeamfights(res.tf_data, meta);
-        const upload = processUploadProps(res.uploadProps, meta);
-        const ap = processAllPlayers(res.int_data);
+        meta.match_id = match.match_id;
+        const expanded = processExpand(entries, meta);
+        const parsed_data = processParsedData(expanded.parsed_data, getParseSchema());
+        const teamfights = processTeamfights(expanded.tf_data, meta);
         parsed_data.teamfights = teamfights;
+        const ap = processAllPlayers(expanded.int_data);
         parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
         parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
-        parsed_data.upload = upload;
-        parsed_data.logs = logs;
-        // processMultiKillStreaks();
+        if (match.replay_blob_key) {
+          const upload = processUploadProps(expanded.uploadProps, meta);
+          parsed_data.upload = upload;
+        }
+        if (match.doLogParse) {
+          const logs = processReduce(entries, meta);
+          parsed_data.logs = logs;
+        }
         console.timeEnd(message);
         return cb(err, parsed_data);
       } catch (e) {
