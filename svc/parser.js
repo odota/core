@@ -53,8 +53,7 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
         match.url = 'http://localhost:' + config.PARSER_PORT + '/redis/' + match.replay_blob_key;
         cb();
       } else {
-        if (match.doGcData || !match.doGcData) {
-          // can remove the second condition after new code has been deployed for 1 day (no more old jobs in queue)
+        if (match.doGcData) {
           getGcData(db, redis, match, cb);
         }
         else {
@@ -63,9 +62,7 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
       }
     },
     'runParse': function (cb) {
-      if (match.doParse || (!match.doGcData && !match.doParse)) {
-        // run the parse if pre-change (no doGcData and no doParse) or if doParse is set
-        // can remove the second condition after new code has been deployed for 1 day (no more old jobs in queue)
+      if (match.doParse) {
         runParse(match, job, (err, parsed_data) => {
           if (err) {
             return cb(err);
