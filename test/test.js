@@ -18,39 +18,35 @@ const queries = require('../store/queries');
 const pQueue = queue.getQueue('parse');
 const buildMatch = require('../store/buildMatch');
 const utility = require('../util/utility');
-const details_api = require('./details_api.json');
+const details_api = require('./data/details_api.json');
+const summaries_api = require('./data/summaries_api.json');
+const history_api = require('./data/history_api.json');
+const heroes_api = require('./data/heroes_api.json');
+const leagues_api = require('./data/leagues_api.json');
+const retriever_player = require('./data/retriever_player.json');
 const init_db = 'postgres://postgres:postgres@localhost/postgres';
-const wait = 90000;
 // these are loaded later, as the database needs to be created when these are required
 let db;
 let cassandra;
 let app;
-// nock.disableNetConnect();
-// nock.enableNetConnect();
-// fake api response
+// fake api responses
 nock('http://api.steampowered.com')
-  // 500 error
+  // fake 500 error
   .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).reply(500, {})
   // fake match details
   .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).times(10).reply(200, details_api)
   // fake player summaries
-  .get('/ISteamUser/GetPlayerSummaries/v0002/').query(true).reply(200, require('./summaries_api.json'))
-  // non-retryable error
-  .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, {
-    result: {
-      error: 'error',
-    },
-  })
+  .get('/ISteamUser/GetPlayerSummaries/v0002/').query(true).reply(200, summaries_api)
   // fake full history
-  .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, require('./history_api.json'));
-// fake heroes list
-// .get('/IEconDOTA2_570/GetHeroes/v0001/').query(true).reply(200, require('./heroes_api.json')
-// fake leagues
-// .get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, require('./leagues_api.json'));
+  .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, history_api)
+  // fake heroes list
+  .get('/IEconDOTA2_570/GetHeroes/v0001/').query(true).reply(200, heroes_api)
+  // fake leagues
+  .get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, leagues_api);
 // fake mmr response
-nock('http://' + config.RETRIEVER_HOST).get('/?account_id=88367253').reply(200, require('./retriever_player.json'));
+nock('http://' + config.RETRIEVER_HOST).get('/?account_id=88367253').reply(200, retriever_player);
 before(function setup(done) {
-  this.timeout(wait);
+  this.timeout(30000);
   async.series([
     function (cb) {
       pg.connect(init_db, (err, client) => {
@@ -100,7 +96,10 @@ before(function setup(done) {
     },
     function (cb) {
       console.log('wiping redis');
-      redis.flushdb(cb);
+      redis.flushdb((err, success) => {
+        console.log(err, success);
+        cb(err);
+      });
     },
     function (cb) {
       console.log('loading matches');
@@ -114,7 +113,7 @@ before(function setup(done) {
     },
     function (cb) {
       console.log('loading players');
-      async.mapSeries(require('./summaries_api').response.players, (p, cb) => {
+      async.mapSeries(summaries_api.response.players, (p, cb) => {
         queries.insertPlayer(db, p, cb);
       }, cb);
     },
@@ -127,39 +126,36 @@ before(function setup(done) {
   ], done);
 });
 describe('replay parse', function () {
-  this.timeout(wait);
+  this.timeout(120000);
   const tests = {
     '1781962623_1.dem': details_api.result,
   };
-  for (const key in tests) {
+  Object.keys(tests).forEach((key) => {
+    const match = tests[key];
+    nock('http://' + config.RETRIEVER_HOST).get('/').query(true).reply(200, {
+      match: {
+        match_id: match.match_id,
+        cluster: match.cluster,
+        replay_salt: 1,
+        series_id: 0,
+        series_type: 0,
+        players: [],
+      },
+    });
+    nock(`http://replay${match.cluster}.valve.net`).get('/570/' + key).reply(200, (uri, requestBody, cb) => {
+      request(`https://cdn.rawgit.com/odota/testfiles/master/${key}`, {
+        encoding: null,
+      }, (err, resp, body) => {
+        return cb(err, body);
+      });
+    });
     it('parse replay ' + key, (done) => {
-      nock('http://' + config.RETRIEVER_HOST).get('/').query(true).reply(200, {
-        match: {
-          match_id: 1781962623,
-          cluster: 1,
-          replay_salt: 1,
-          series_id: 0,
-          series_type: 0,
-          players: [],
-        },
-      });
-      nock('http://replay1.valve.net').get('/570/' + key).reply(200, (uri, requestBody, cb) => {
-        request('https://cdn.rawgit.com/odota/testfiles/master/1781962623_1.dem', {
-          encoding: null,
-        }, (err, resp, body) => {
-          return cb(err, body);
-        });
-      });
-      const match = {
-        match_id: tests[key].match_id,
-        start_time: tests[key].start_time,
-        duration: tests[key].duration,
-        radiant_win: tests[key].radiant_win,
-        doGetGcData: true,
-        doParse: true,
-        doLogParse: true,
-      };
-      queue.addToQueue(pQueue, match, {}, (err, job) => {
+      queries.insertMatch(db, redis, match, {
+        cassandra,
+        type: 'api',
+        forceParse: true,
+        attempts: 1,
+      }, (err, job) => {
         assert(job && !err);
         const poll = setInterval(() => {
           pQueue.getJob(job.jobId).then((job) => {
@@ -181,16 +177,18 @@ describe('replay parse', function () {
                   assert(match.radiant_gold_adv);
                   return done();
                 });
+              } else {
+                console.log(job.jobId, state, job.stacktrace);
               }
             });
           }).catch(done);
         }, 1000);
       });
     });
-  }
+  });
 });
-// this.timeout(wait);
-describe('player pages', () => {
+describe('player pages', function () {
+  this.timeout(5000);
   const tests = Object.keys(constants.player_pages);
   tests.forEach((t) => {
     it('/players/:valid/' + t, (done) => {
@@ -216,13 +214,13 @@ describe('basic match page', () => {
       done(err);
     });
   });
-  // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
   it('/matches/:valid', (done) => {
     supertest(app).get('/matches/1781962623').expect(200).end((err, res) => {
       done(err);
     });
   });
 });
+// TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
 describe('api', () => {
   it('should accept api endpoints', (cb) => {
     request('https://raw.githubusercontent.com/odota/docs/master/openapi.json', (err, resp, body) => {
