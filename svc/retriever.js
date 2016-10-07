@@ -13,6 +13,7 @@ const steamObj = {};
 const accountToIdx = {};
 const launch = new Date();
 const port = config.PORT || config.RETRIEVER_PORT;
+let lastRequestTime;
 let replayRequests = 0;
 let count = 0;
 let users = config.STEAM_USER.split(',');
@@ -208,6 +209,12 @@ function start() {
   }
 
   function getGCReplayUrl(idx, match_id, cb) {
+    const curRequestTime = new Date();
+    // Don't allow requests faster than 1/s
+    if (lastRequestTime && (curRequestTime - lastRequestTime < 1000)) {
+      return cb(429);
+    }
+    lastRequestTime = curRequestTime;
     match_id = Number(match_id);
     const Dota2 = steamObj[idx].Dota2;
     console.log('[DOTA] requesting replay %s, numusers: %s, requests: %s', match_id, users.length, replayRequests);
