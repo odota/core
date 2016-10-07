@@ -3,19 +3,16 @@
  **/
 const utility = require('../util/utility');
 
-function processAllPlayers(entries)
-{
+function processAllPlayers(entries) {
   const goldAdvTime = {};
   const xpAdvTime = {};
   const res = {
     radiant_gold_adv: [],
     radiant_xp_adv: [],
   };
-  for (let i = 0; i < entries.length; i++)
-    {
+  for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
-    if (e.type === 'interval' && e.time % 60 === 0)
-        {
+    if (e.time % 60 === 0 && e.type === 'interval') {
       const g = utility.isRadiant(e) ? e.gold : -e.gold;
       const x = utility.isRadiant(e) ? e.xp : -e.xp;
       goldAdvTime[e.time] = goldAdvTime[e.time] ? goldAdvTime[e.time] + g : g;
