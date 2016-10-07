@@ -407,7 +407,7 @@ function insertMatch(db, redis, match, options, cb) {
           return cb(err);
         }
         const doParse = hasTrackedPlayer || options.forceParse || options.doLogParse;
-        const doGcData = doParse || options.origin === 'scanner';
+        const doGcData = doParse || (options.origin === 'scanner' && Math.random() < 0.3);
         // queue it and finish, callback with the queued parse job
         return queue.addToQueue(pQueue, {
           match_id: match.match_id,
