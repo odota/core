@@ -183,6 +183,7 @@ function getData(url, cb) {
   let u;
   let delay = Number(config.DEFAULT_DELAY);
   let proxyAffinityRange;
+  let timeout = 15000;
   if (url.constructor === Array) {
     // select a random element if array
     u = url[Math.floor(Math.random() * url.length)];
@@ -191,6 +192,7 @@ function getData(url, cb) {
     u = url.url;
     delay = url.delay || delay;
     proxyAffinityRange = url.proxyAffinityRange || proxyAffinityRange;
+    timeout = url.timeout || timeout;
   } else {
     u = url;
   }
@@ -223,7 +225,7 @@ function getData(url, cb) {
       proxy,
       url: target,
       json: true,
-      timeout: 30000,
+      timeout: timeout,
     }, (err, res, body) => {
       if (body && body.error) {
         // body contained specific error (probably from retriever)
