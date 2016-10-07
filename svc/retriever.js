@@ -217,7 +217,9 @@ function start() {
     }
     steamObj[idx].replays += 1;
     Dota2.requestMatchDetails(match_id, (err, matchData) => {
-      // console.log(err, matchData);
+      if (matchData) {
+        console.log('[DOTA] received replay %s, numusers: %s, requests: %s', match_id);
+      }
       cb(err, matchData);
     });
   }

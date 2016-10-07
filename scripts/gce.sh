@@ -51,7 +51,7 @@ gcloud compute target-pools delete -q retriever-lb
 gcloud compute instance-groups managed delete -q retriever-group-1
 gcloud compute instance-templates delete -q retriever-1
 gcloud compute instance-templates create retriever-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/retriever.sh
-gcloud compute instance-groups managed create "retriever-group-1" --base-instance-name "retriever-group-1" --template "retriever-1" --size "5"
+gcloud compute instance-groups managed create "retriever-group-1" --base-instance-name "retriever-group-1" --template "retriever-1" --size "8"
 gcloud compute --project "peaceful-parity-87002" target-pools create "retriever-lb" --region "us-central1" --session-affinity "NONE"
 gcloud compute --project "peaceful-parity-87002" forwarding-rules create "retriever-lb-forwarding-rule" --load-balancing-scheme internal --region "us-central1" --address "104.198.172.178" --ip-protocol "TCP" --port-range "80" --target-pool "retriever-lb"
 gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "retriever-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/retriever-lb"
