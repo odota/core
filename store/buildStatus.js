@@ -34,6 +34,9 @@ module.exports = function buildStatus(db, redis, cb) {
     retriever_matches_last_day(cb) {
       redis.zcard('retriever', cb);
     },
+    parsed_matches_last_day(cb) {
+      redis.zcard('parser', cb);
+    },
     api_hits(cb) {
       redis.zcard('api_hits', cb);
     },
@@ -50,19 +53,6 @@ module.exports = function buildStatus(db, redis, cb) {
           return JSON.parse(r);
         }));
       });
-    },
-    parser(cb) {
-      async.map(['parser'], (zset, cb) => {
-        redis.zcard(zset, (err, cnt) => {
-          if (err) {
-            return cb(err);
-          }
-          return cb(err, {
-            hostname: zset,
-            count: cnt,
-          });
-        });
-      }, cb);
     },
     retriever(cb) {
       redis.zrange('retriever', -10000, -1, (err, results) => {
