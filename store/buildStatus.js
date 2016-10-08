@@ -65,7 +65,7 @@ module.exports = function buildStatus(db, redis, cb) {
       }, cb);
     },
     retriever(cb) {
-      redis.zrange('retriever', -9999, 0, (err, results) => {
+      redis.zrange('retriever', -10000, -1, (err, results) => {
         if (err) {
           return cb(err);
         }
