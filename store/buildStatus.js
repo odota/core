@@ -1,7 +1,7 @@
 /**
  * Function to build status data
  **/
-const config = require('../config');
+// const config = require('../config');
 const queue = require('./queue');
 const async = require('async');
 const moment = require('moment');
@@ -10,12 +10,8 @@ module.exports = function buildStatus(db, redis, cb) {
   redis.zremrangebyscore('error_500', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('api_hits', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('parser', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('retriever', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('visitor_match', 0, moment().subtract(1, 'day').format('X'));
-  config.RETRIEVER_HOST.split(',').map((r) => {
-    return 'retriever:' + r;
-  }).forEach((retkey) => {
-    redis.zremrangebyscore(retkey, 0, moment().subtract(1, 'day').format('X'));
-  });
   async.series({
     user_players(cb) {
       redis.zcard('visitors', cb);
@@ -66,19 +62,26 @@ module.exports = function buildStatus(db, redis, cb) {
       }, cb);
     },
     retriever(cb) {
-      async.map(config.RETRIEVER_HOST.split(',').map((r) => {
-        return 'retriever:' + r;
-      }), (zset, cb) => {
-        redis.zcard(zset, (err, cnt) => {
+      redis.zcard('retriever', (err, count) => {
+        if (err) {
+          return cb(err);
+        }
+        redis.lrange('retriever_sample', '0', '-1', (err, results) => {
           if (err) {
             return cb(err);
           }
-          return cb(err, {
-            hostname: zset,
-            count: cnt,
+          const counts = {};
+          results.forEach(e => {
+            const key = e;
+            counts[key] = counts[key] ? counts[key] + 1 : 1;
           });
+          const result = Object.keys(counts).map((retriever) => ({
+            hostname: retriever,
+            count: (counts[retriever] / results.length) * count,
+          }));
+          cb(err, result);
         });
-      }, cb);
+      });
     },
     queue(cb) {
       // generate object with properties as queue types, each mapped to json object mapping state to count
