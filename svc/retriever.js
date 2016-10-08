@@ -14,7 +14,7 @@ const accountToIdx = {};
 const launch = new Date();
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
-let replayRequests = 0;
+let matchRequests = 0;
 let count = 0;
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
@@ -55,7 +55,7 @@ function start() {
         return next(err);
       });
     } else if (req.query.match_id) {
-      getGCReplayUrl(r, req.query.match_id, (err, data) => {
+      getGcMatchData(r, req.query.match_id, (err, data) => {
         res.locals.data = data;
         return next(err);
       });
@@ -110,7 +110,7 @@ function start() {
       }
       console.log('[STEAM] Logged on %s', client.steamID);
       client.steamFriends.setPersonaName(client.steamID.toString());
-      client.replays = 0;
+      client.matches = 0;
       client.profiles = 0;
       client.Dota2.once('ready', () => {
         steamObj[client.steamID] = client;
@@ -143,13 +143,13 @@ function start() {
     for (const key in steamObj) {
       stats[key] = {
         steamID: key,
-        replays: steamObj[key].replays,
+        matches: steamObj[key].matches,
         profiles: steamObj[key].profiles,
         friends: Object.keys(steamObj[key].steamFriends.friends).length,
       };
     }
     const data = {
-      replayRequests,
+      matchRequests,
       uptime: getUptime(),
       numReadyAccounts,
       ready: numReadyAccounts === users.length,
@@ -208,7 +208,7 @@ function start() {
     });
   }
 
-  function getGCReplayUrl(idx, match_id, cb) {
+  function getGcMatchData(idx, match_id, cb) {
     const curRequestTime = new Date();
     // Don't allow requests faster than 1/s
     if (lastRequestTime && (curRequestTime - lastRequestTime < 1000)) {
@@ -217,12 +217,12 @@ function start() {
     lastRequestTime = curRequestTime;
     match_id = Number(match_id);
     const Dota2 = steamObj[idx].Dota2;
-    console.log('[DOTA] requesting replay %s, numusers: %s, requests: %s', match_id, users.length, replayRequests);
-    replayRequests += 1;
-    if (replayRequests >= 500 && getUptime() > 600 && config.NODE_ENV !== 'development') {
+    console.log('[DOTA] requesting match %s, numusers: %s, requests: %s', match_id, users.length, matchRequests);
+    matchRequests += 1;
+    if (matchRequests >= 500 && getUptime() > 600 && config.NODE_ENV !== 'development') {
       selfDestruct();
     }
-    steamObj[idx].replays += 1;
+    steamObj[idx].matches += 1;
     Dota2.requestMatchDetails(match_id, (err, matchData) => {
       cb(err, matchData);
     });
