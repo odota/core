@@ -77,7 +77,7 @@ module.exports = function buildStatus(db, redis, cb) {
           });
           const result = Object.keys(counts).map((retriever) => ({
             hostname: retriever,
-            count: (counts[retriever] / results.length) * count,
+            count: Math.floor((counts[retriever] / results.length) * count),
           }));
           cb(err, result);
         });
