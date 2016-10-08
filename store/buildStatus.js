@@ -31,6 +31,9 @@ module.exports = function buildStatus(db, redis, cb) {
     visitor_matches_last_day(cb) {
       redis.zcard('visitor_match', cb);
     },
+    retriever_matches_last_day(cb) {
+      redis.zcard('retriever', cb);
+    },
     api_hits(cb) {
       redis.zcard('api_hits', cb);
     },
@@ -62,25 +65,20 @@ module.exports = function buildStatus(db, redis, cb) {
       }, cb);
     },
     retriever(cb) {
-      redis.zcard('retriever', (err, count) => {
+      redis.zrange('retriever', -9999, 0, (err, results) => {
         if (err) {
           return cb(err);
         }
-        redis.zrange('retriever', 0, 10000, (err, results) => {
-          if (err) {
-            return cb(err);
-          }
-          const counts = {};
-          results.forEach(e => {
-            const key = e.split('_')[0];
-            counts[key] = counts[key] ? counts[key] + 1 : 1;
-          });
-          const result = Object.keys(counts).map((retriever) => ({
-            hostname: retriever,
-            count: Math.floor((counts[retriever] / results.length) * count),
-          }));
-          cb(err, result);
+        const counts = {};
+        results.forEach(e => {
+          const key = e.split('_')[0];
+          counts[key] = counts[key] ? counts[key] + 1 : 1;
         });
+        const result = Object.keys(counts).map((retriever) => ({
+          hostname: retriever,
+          count: counts[retriever],
+        }));
+        cb(err, result);
       });
     },
     queue(cb) {
