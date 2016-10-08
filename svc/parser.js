@@ -61,7 +61,7 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
       }
     },
     'runParse': function (cb) {
-      if (match.doParse) {
+      if (match.doParse || match.doLogParse) {
         runParse(match, job, (err, parsed_data) => {
           if (err) {
             return cb(err);

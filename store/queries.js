@@ -406,7 +406,7 @@ function insertMatch(db, redis, match, options, cb) {
         if (err) {
           return cb(err);
         }
-        const doParse = hasTrackedPlayer || options.forceParse || options.doLogParse;
+        const doParse = hasTrackedPlayer || options.forceParse;
         const doGcData = doParse || (options.origin === 'scanner' && Math.random() < 0.1);
         // queue it and finish, callback with the queued parse job
         return queue.addToQueue(pQueue, {
