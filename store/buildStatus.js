@@ -67,7 +67,7 @@ module.exports = function buildStatus(db, redis, cb) {
         const result = Object.keys(counts).map((retriever) => ({
           hostname: retriever,
           count: counts[retriever],
-        }));
+        })).sort((a, b) => a.hostname.localeCompare(b.hostname));
         cb(err, result);
       });
     },
