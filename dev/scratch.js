@@ -8,7 +8,4 @@ for (let i = 0; i < 100000; i += 1) {
     match_id: i
   };
   redis.zadd('retriever', moment().format('X'), `${metadata.hostname}_${match.match_id}`);
-  redis.lpush('retriever_sample', metadata.hostname);
-  redis.ltrim('retriever_sample', 0, 10000);
-
 }

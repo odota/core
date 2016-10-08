@@ -26,7 +26,7 @@ module.exports = function buildStatus(db, redis, cb) {
       redis.zcard('added_match', cb);
     },
     matches_last_hour(cb) {
-      redis.zcount('added_match', moment().subtract(1, 'hour').format('X'), '+inf', cb);
+      redis.zcount('added_match', moment().subtract(1, 'hour').format('X'), moment().format('X'), cb);
     },
     visitor_matches_last_day(cb) {
       redis.zcard('visitor_match', cb);
@@ -66,13 +66,13 @@ module.exports = function buildStatus(db, redis, cb) {
         if (err) {
           return cb(err);
         }
-        redis.lrange('retriever_sample', '0', '-1', (err, results) => {
+        redis.zrange('retriever', 0, 10000, (err, results) => {
           if (err) {
             return cb(err);
           }
           const counts = {};
           results.forEach(e => {
-            const key = e;
+            const key = e.split('_')[0];
             counts[key] = counts[key] ? counts[key] + 1 : 1;
           });
           const result = Object.keys(counts).map((retriever) => ({

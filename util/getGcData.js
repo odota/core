@@ -36,8 +36,6 @@ module.exports = function getGcData(db, redis, match, cb) {
         }
         // count retriever calls
         redis.zadd('retriever', moment().format('X'), `${metadata.hostname}_${match.match_id}`);
-        redis.lpush('retriever_sample', metadata.hostname);
-        redis.ltrim('retriever_sample', 0, 10000);
         match.url = buildReplayUrl(match.match_id, body.match.cluster, body.match.replay_salt);
         const parties = {};
         if (body.match.players) {
