@@ -4,7 +4,7 @@
 module.exports = {
   entry:
   {
-    'yasp': './public/js/yasp.js',
+    yasp: './public/js/yasp.js',
   },
   output:
   {

@@ -25,9 +25,9 @@ function processMultiKillStreaks(entries, hero_to_slot, parsed_data)
             {
         parsed_info.kill_streaks_log.push([]);
         players[killer_index] = {
-          'cur_multi_id': 0, // the id of the current multi kill
-          'cur_multi_val': 0, // the value of the current multi kill
-          'cur_streak_budget': 2, // the max length of the current kill streak
+          cur_multi_id: 0, // the id of the current multi kill
+          cur_multi_val: 0, // the value of the current multi kill
+          cur_streak_budget: 2, // the max length of the current kill streak
         };
       }
             // get the number of streaks and the length of the current streak
@@ -100,10 +100,10 @@ function processMultiKillStreaks(entries, hero_to_slot, parsed_data)
                     // add this kill to the killer's list of kills
           parsed_info.kill_streaks_log[all_streak_length - 1].push(
             {
-              'hero_id': hero_to_id[killed],
-              'multi_kill_id': local_info.cur_multi_id,
-              'team_fight_id': team_fight_id,
-              'time': kill_time,
+              hero_id: hero_to_id[killed],
+              multi_kill_id: local_info.cur_multi_id,
+              team_fight_id,
+              time: kill_time,
             });
           if (print_multi_kill_streak_debugging)
                     {

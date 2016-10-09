@@ -254,7 +254,7 @@ function generatePlayerAnalysis(match, pm)
           if (pm.purchase[key] && getGroupedItemUses(key) < 1 && constants.items[key] && isActiveItem(key))
                     {
                         // if item has cooldown, consider it usable
-            result.push("<img title='" + key + "' class='item img-sm' src='" + constants.items[key].img + "' />");
+            result.push(`<img title='${key}' class='item img-sm' src='${constants.items[key].img}' />`);
           }
         }
       }
@@ -295,7 +295,7 @@ function generatePlayerAnalysis(match, pm)
     advice[key] = checks[key](match, pm);
     const val = advice[key];
     val.display = util.format('%s: <b>%s</b>, expected <b>%s</b>', val.name, Number(val.value ? val.value.toFixed(2) : ''), Number(val.top.toFixed(2)));
-    val.display += (val.suffix ? ' ' + val.suffix : '');
+    val.display += (val.suffix ? ` ${val.suffix}` : '');
     val.pct = val.score(val.value) / val.score(val.top);
     delete val.score;
     pm.desc = [constants.lane_role[pm.lane_role], isSupport(pm) ? 'Support' : 'Core'].join('/');
@@ -321,9 +321,9 @@ function generatePlayerAnalysis(match, pm)
   function isRoshHero(pm)
     {
     const rosh_heroes = {
-      'npc_dota_hero_lycan': 1,
-      'npc_dota_hero_ursa': 1,
-      'npc_dota_hero_troll_warlord': 1,
+      npc_dota_hero_lycan: 1,
+      npc_dota_hero_ursa: 1,
+      npc_dota_hero_troll_warlord: 1,
     };
     return constants.heroes[pm.hero_id] && (constants.heroes[pm.hero_id].name in rosh_heroes);
   }
@@ -331,9 +331,9 @@ function generatePlayerAnalysis(match, pm)
   function isActiveItem(key)
     {
     const whitelist = {
-      'branches': 1,
-      'bloodstone': 1,
-      'radiance': 1,
+      branches: 1,
+      bloodstone: 1,
+      radiance: 1,
     };
     return (constants.items[key].desc.indexOf('Active: ') > -1 && !(key in whitelist));
   }

@@ -41,7 +41,7 @@ passport.deserializeUser((account_id, done) => {
   });
 });
 passport.use(new SteamStrategy({
-  returnURL: host + '/return',
+  returnURL: `${host}/return`,
   realm: host,
   apiKey: api_key,
 }, (identifier, profile, cb) => {
@@ -63,39 +63,39 @@ app.locals.tooltips = require('../lang/en.json');
 app.locals.qs = querystring;
 app.locals.util = util;
 app.locals.config = config;
-app.locals.basedir = __dirname + '/../views';
+app.locals.basedir = `${__dirname}/../views`;
 app.locals.prettyPrint = utility.prettyPrint;
 app.locals.percentToTextClass = utility.percentToTextClass;
 app.locals.getAggs = utility.getAggs;
 app.locals.navbar_pages = {
-  'request': {
-    'name': 'Request',
+  request: {
+    name: 'Request',
   },
-  'rankings': {
-    'name': 'Rankings',
+  rankings: {
+    name: 'Rankings',
   },
-  'benchmarks': {
-    'name': 'Benchmarks',
+  benchmarks: {
+    name: 'Benchmarks',
   },
-  'distributions': {
-    'name': 'Distributions',
+  distributions: {
+    name: 'Distributions',
   },
-  'mmstats': {
-    'name': 'MMStats',
+  mmstats: {
+    name: 'MMStats',
   },
-  'search': {
-    'name': 'Search',
+  search: {
+    name: 'Search',
   },
-  'carry': {
-    'name': 'Carry',
+  carry: {
+    name: 'Carry',
   },
   'become-the-gamer': {
-    'name': 'Ingame',
-    'sponsored': true,
+    name: 'Ingame',
+    sponsored: true,
   },
-  'blog': {
-    'name': 'Blog',
-    'path': '//odota.github.io/blog',
+  blog: {
+    name: 'Blog',
+    path: '//odota.github.io/blog',
   },
 };
 app.locals.constants.abilities.attribute_bonus = {
@@ -109,7 +109,7 @@ app.locals.constants.ICON_PATH = '/public/images/logo.png';
 app.use(compression());
 app.use('/apps/dota2/images/:group_name/:image_name', (req, res) => {
   res.header('Cache-Control', 'max-age=604800, public');
-  request('http://cdn.dota2.com/apps/dota2/images/' + req.params.group_name + '/' + req.params.image_name).pipe(res);
+  request(`http://cdn.dota2.com/apps/dota2/images/${req.params.group_name}/${req.params.image_name}`).pipe(res);
 });
 app.use('/public', express.static(path.join(__dirname, '/../public')));
 const sessOptions = {
@@ -124,7 +124,7 @@ app.use(passport.session());
 app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   ip = ip.replace(/^.*:/, '').split(',')[0];
-  const key = 'rate_limit:' + ip;
+  const key = `rate_limit:${ip}`;
   console.log('%s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   redis.multi().incr(key).expireat(key, utility.getStartOfBlockMinutes(1, 1)).exec((err, resp) => {
     if (err) {
@@ -197,9 +197,9 @@ app.route('/return').get(passport.authenticate('steam', {
   failureRedirect: '/',
 }), (req, res, next) => {
   if (config.UI_HOST) {
-    return res.redirect(config.UI_HOST + '/players/' + req.user.account_id);
+    return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
   } else {
-    res.redirect('/players/' + req.user.account_id);
+    res.redirect(`/players/${req.user.account_id}`);
   }
 });
 app.route('/logout').get((req, res) => {
@@ -213,7 +213,7 @@ app.use('/api', api(db, redis, cassandra));
 // TODO remove these with SPA
 app.route('/').get((req, res, next) => {
   if (req.user) {
-    res.redirect('/players/' + req.user.account_id);
+    res.redirect(`/players/${req.user.account_id}`);
   } else {
     res.render('home', {
       truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
@@ -323,7 +323,7 @@ app.use((err, req, res, next) => {
     // default express handler
     next(err);
   } else {
-    return res.render('error/' + (err.status === 404 ? '404' : '500'), {
+    return res.render(`error/${err.status === 404 ? '404' : '500'}`, {
       error: err,
     });
   }

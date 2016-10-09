@@ -44,7 +44,7 @@ nock('http://api.steampowered.com')
   // fake leagues
   .get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, leagues_api);
 // fake mmr response
-nock('http://' + config.RETRIEVER_HOST).get('/?account_id=88367253').reply(200, retriever_player);
+nock(`http://${config.RETRIEVER_HOST}`).get('/?account_id=88367253').reply(200, retriever_player);
 before(function setup(done) {
   this.timeout(30000);
   async.series([
@@ -76,9 +76,9 @@ before(function setup(done) {
         contactPoints: ['localhost'],
       });
       async.series([function (cb) {
-          console.log('drop cassandra test keyspace');
-          client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
-        },
+        console.log('drop cassandra test keyspace');
+        client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+      },
         function (cb) {
           console.log('create cassandra test keyspace');
           client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
@@ -132,7 +132,7 @@ describe('replay parse', function () {
   };
   Object.keys(tests).forEach((key) => {
     const match = tests[key];
-    nock('http://' + config.RETRIEVER_HOST).get('/').query(true).reply(200, {
+    nock(`http://${config.RETRIEVER_HOST}`).get('/').query(true).reply(200, {
       match: {
         match_id: match.match_id,
         cluster: match.cluster,
@@ -142,14 +142,14 @@ describe('replay parse', function () {
         players: [],
       },
     });
-    nock(`http://replay${match.cluster}.valve.net`).get('/570/' + key).reply(200, (uri, requestBody, cb) => {
+    nock(`http://replay${match.cluster}.valve.net`).get(`/570/${key}`).reply(200, (uri, requestBody, cb) => {
       request(`https://cdn.rawgit.com/odota/testfiles/master/${key}`, {
         encoding: null,
       }, (err, resp, body) => {
         return cb(err, body);
       });
     });
-    it('parse replay ' + key, (done) => {
+    it(`parse replay ${key}`, (done) => {
       queries.insertMatch(db, redis, match, {
         cassandra,
         type: 'api',
@@ -191,8 +191,8 @@ describe('player pages', function () {
   this.timeout(5000);
   const tests = Object.keys(constants.player_pages);
   tests.forEach((t) => {
-    it('/players/:valid/' + t, (done) => {
-      supertest(app).get('/players/120269134/' + t).expect(200).end((err, res) => {
+    it(`/players/:valid/${t}`, (done) => {
+      supertest(app).get(`/players/120269134/${t}`).expect(200).end((err, res) => {
         done(err);
       });
     });
@@ -201,8 +201,8 @@ describe('player pages', function () {
 describe('player pages with filter', () => {
   const tests = Object.keys(constants.player_pages);
   tests.forEach((t) => {
-    it('/players/:valid/' + t, (done) => {
-      supertest(app).get('/players/120269134/' + t + '?hero_id=1').expect(200).end((err, res) => {
+    it(`/players/:valid/${t}`, (done) => {
+      supertest(app).get(`/players/120269134/${t}?hero_id=1`).expect(200).end((err, res) => {
         done(err);
       });
     });
@@ -229,7 +229,7 @@ describe('api', () => {
       }
       body = JSON.parse(body);
       async.eachSeries(Object.keys(body.paths), (path, cb) => {
-        supertest(app).get('/api' + path.replace(/{.*}/, 1)).end((err, res) => {
+        supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
           console.log(path, res.length);
           return cb(err);
         });

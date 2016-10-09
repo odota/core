@@ -60,11 +60,11 @@ module.exports = function buildStatus(db, redis, cb) {
           return cb(err);
         }
         const counts = {};
-        results.forEach(e => {
+        results.forEach((e) => {
           const key = e.split('_')[0];
           counts[key] = counts[key] ? counts[key] + 1 : 1;
         });
-        const result = Object.keys(counts).map((retriever) => ({
+        const result = Object.keys(counts).map(retriever => ({
           hostname: retriever,
           count: counts[retriever],
         })).sort((a, b) => a.hostname.localeCompare(b.hostname));

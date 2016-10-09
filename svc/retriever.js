@@ -12,6 +12,7 @@ const app = express();
 const steamObj = {};
 const accountToIdx = {};
 const launch = new Date();
+const matchRequestDelay = 3000;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
@@ -22,7 +23,7 @@ if (config.PROVIDER === 'gce' && config.STEAM_ACCOUNT_DATA) {
   const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
   const accountsToUse = 30;
   const startIndex = Math.floor((Math.random() * accountData.length - accountsToUse));
-  console.log("total registered accounts: %s, startIndex: %s", accountData.length, startIndex);
+  console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
   const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
   users = accountDataToUse.map(a => a.split('\t')[0]);
   passes = accountDataToUse.map(a => a.split('\t')[1]);
@@ -90,8 +91,8 @@ function start() {
     const user = users[i];
     const pass = passes[i];
     const logOnDetails = {
-      'account_name': user,
-      'password': pass,
+      account_name: user,
+      password: pass,
     };
     client.connect();
     client.on('connected', () => {
@@ -211,7 +212,7 @@ function start() {
   function getGcMatchData(idx, match_id, cb) {
     const curRequestTime = new Date();
     // Don't allow requests faster than 1/s
-    if (lastRequestTime && (curRequestTime - lastRequestTime < 1000)) {
+    if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
       return cb(429);
     }
     lastRequestTime = curRequestTime;

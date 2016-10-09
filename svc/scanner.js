@@ -103,7 +103,7 @@ function start()
     function processMatch(match, cb)
         {
             // check if match was previously processed
-      redis.get('scanner_insert:' + match.match_id, (err, result) => {
+      redis.get(`scanner_insert:${match.match_id}`, (err, result) => {
         if (err)
                 {
           return finishMatch(err);
@@ -122,7 +122,7 @@ function start()
               if (!err)
                         {
                             // mark with long-lived key to indicate complete (persist between restarts)
-                redis.setex('scanner_insert:' + match.match_id, 3600 * 8, 1);
+                redis.setex(`scanner_insert:${match.match_id}`, 3600 * 8, 1);
               }
               finishMatch(err);
             });

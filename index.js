@@ -9,7 +9,7 @@ if (process.env.PROVIDER === 'gce') {
 }
 if (process.env.ROLE) {
   // if role variable is set just run that script
-  require('./svc/' + process.env.ROLE + '.js');
+  require(`./svc/${process.env.ROLE}.js`);
 } else if (group) {
   const pm2 = require('pm2');
   const async = require('async');

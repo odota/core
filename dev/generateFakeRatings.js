@@ -3,11 +3,11 @@ const async = require('async');
 db.from('players').asCallback((err, players) => {
   async.each(players, (p, cb) => {
     const fake = {
-      'match_id': p.account_id,
-      'account_id': p.account_id,
-      'solo_competitive_rank': ~~gaussianRandom(4000, 1000),
-      'competitive_rank': p.account_id % 8000,
-      'time': new Date(),
+      match_id: p.account_id,
+      account_id: p.account_id,
+      solo_competitive_rank: ~~gaussianRandom(4000, 1000),
+      competitive_rank: p.account_id % 8000,
+      time: new Date(),
     };
     console.log(fake.account_id, fake.solo_competitive_rank);
     db.insert(fake).into('player_ratings').asCallback(cb);

@@ -21,7 +21,7 @@ const health = {
             {
         return cb();
       }
-      request(config.ROOT_URL + '/api/players/' + (failing_account_id || result.rows[0].account_id), (err, resp, body) => {
+      request(`${config.ROOT_URL}/api/players/${failing_account_id || result.rows[0].account_id}`, (err, resp, body) => {
         const fail = err || resp.statusCode !== 200;
         if (fail)
                 {
@@ -38,7 +38,7 @@ const health = {
   },
   steam_api: function steam_api(cb)
     {
-    request('http://api.steampowered.com' + '/IDOTA2Match_570/GetMatchHistory/V001/?key=' + api_key, (err, resp, body) => {
+    request(`${'http://api.steampowered.com' + '/IDOTA2Match_570/GetMatchHistory/V001/?key='}${api_key}`, (err, resp, body) => {
       if (err || resp.statusCode !== 200)
             {
         return cb('bad http response');
@@ -160,5 +160,5 @@ function invokeInterval(func)
       console.timeEnd(func.name);
       setTimeout(invoker, result && result.delay ? result.delay : 10000);
     });
-  })();
+  }());
 }

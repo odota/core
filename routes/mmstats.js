@@ -26,7 +26,7 @@ module.exports = function (redis) {
     for (let i = 0; i < Object.keys(constants.regions).length; i++) {
       let regionName;
       for (const region in constants.regions) {
-        if (constants.regions[region].matchgroup === i + '') {
+        if (constants.regions[region].matchgroup === `${i}`) {
           regionName = region;
           break;
         }
@@ -41,7 +41,7 @@ module.exports = function (redis) {
 
   function createCall(i, range) {
     return function (cb) {
-      redis.lrange('mmstats:' + i, 0, range, cb);
+      redis.lrange(`mmstats:${i}`, 0, range, cb);
     };
   }
 };

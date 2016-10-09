@@ -16,7 +16,7 @@ const start_id = Number(args[1] || 0);
 const async = require('async');
 const fs = require('fs');
 
-const fileName = 'migration-' + args[0] + '-' + (new Date()) + '.log';
+const fileName = `migration-${args[0]}-${new Date()}.log`;
 
 MongoClient.connect(url, (err, db) => {
   if (err) {
@@ -159,7 +159,7 @@ MongoClient.connect(url, (err, db) => {
         pg('player_ratings').insert(elem).asCallback((err) => {
                     // next doc
           if (err) {
-            fs.appendFile(fileName, err + '\n', cb);
+            fs.appendFile(fileName, `${err}\n`, cb);
           } else {
             cb();
           }

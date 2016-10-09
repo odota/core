@@ -14,7 +14,7 @@ module.exports = function (db)
     db.first('personaname')
             .from('players')
             .where({
-              'account_id': req.params.player_id,
+              account_id: req.params.player_id,
             })
             .asCallback((err, p) => {
               if (err)
@@ -101,7 +101,7 @@ module.exports = function (db)
                   player.xp_t = xp;
 
                   for (j = 0; j < mChance.weighted([0, 1, 2, 3, 4, 5, 6], [0.01, 0.04, 0.5, 0.1, 0.2, 0.3, 0.3]); j++) {
-                    player['item_' + j] = constants.items[mChance.pickone(item_ids)].id;
+                    player[`item_${j}`] = constants.items[mChance.pickone(item_ids)].id;
                   }
 
                   player.obs_log = generateWards();
@@ -171,9 +171,9 @@ module.exports = function (db)
                 for (let i = 0; i < num; i++) {
                   lastTime = mChance.natural({ min: lastTime, max: match.duration });
                   chat.push({
-                    'time': lastTime,
-                    'slot': mChance.pickone(playerSlots),
-                    'key': mChance.bool() ? mChance.sentence({ words: mChance.natural({ max: 15 }) }) :
+                    time: lastTime,
+                    slot: mChance.pickone(playerSlots),
+                    key: mChance.bool() ? mChance.sentence({ words: mChance.natural({ max: 15 }) }) :
                                 mChance.bool() ? mChance.word() : mChance.syllable(),
                   });
                 }
@@ -194,7 +194,7 @@ module.exports = function (db)
                 // }
               console.log(match);
               const info = matchPages[req.params.info] ? req.params.info : 'index';
-              res.render('match/match_' + info,
+              res.render(`match/match_${info}`,
                 {
                   route: info,
                   match,
@@ -203,20 +203,20 @@ module.exports = function (db)
                   hyperopia: true,
                   display_types:
                   {
-                    'DOTA_UNIT_ORDER_MOVE_TO_POSITION': 'Move (P)',
-                    'DOTA_UNIT_ORDER_MOVE_TO_TARGET': 'Move (T)',
-                    'DOTA_UNIT_ORDER_ATTACK_MOVE': 'Attack (M)',
-                    'DOTA_UNIT_ORDER_ATTACK_TARGET': 'Attack (T)',
-                    'DOTA_UNIT_ORDER_CAST_POSITION': 'Cast (P)',
-                    'DOTA_UNIT_ORDER_CAST_TARGET': 'Cast (T)',
+                    DOTA_UNIT_ORDER_MOVE_TO_POSITION: 'Move (P)',
+                    DOTA_UNIT_ORDER_MOVE_TO_TARGET: 'Move (T)',
+                    DOTA_UNIT_ORDER_ATTACK_MOVE: 'Attack (M)',
+                    DOTA_UNIT_ORDER_ATTACK_TARGET: 'Attack (T)',
+                    DOTA_UNIT_ORDER_CAST_POSITION: 'Cast (P)',
+                    DOTA_UNIT_ORDER_CAST_TARGET: 'Cast (T)',
                             // "DOTA_UNIT_ORDER_CAST_TARGET_TREE"
-                    'DOTA_UNIT_ORDER_CAST_NO_TARGET': 'Cast (N)',
+                    DOTA_UNIT_ORDER_CAST_NO_TARGET: 'Cast (N)',
                             // "DOTA_UNIT_ORDER_CAST_TOGGLE"
-                    'DOTA_UNIT_ORDER_HOLD_POSITION': 'Hold',
+                    DOTA_UNIT_ORDER_HOLD_POSITION: 'Hold',
                             // "DOTA_UNIT_ORDER_TRAIN_ABILITY",
-                    'DOTA_UNIT_ORDER_DROP_ITEM': 'Drop',
-                    'DOTA_UNIT_ORDER_GIVE_ITEM': 'Give',
-                    'DOTA_UNIT_ORDER_PICKUP_ITEM': 'Pickup',
+                    DOTA_UNIT_ORDER_DROP_ITEM: 'Drop',
+                    DOTA_UNIT_ORDER_GIVE_ITEM: 'Give',
+                    DOTA_UNIT_ORDER_PICKUP_ITEM: 'Pickup',
                             // "DOTA_UNIT_ORDER_PICKUP_RUNE"
                             // "DOTA_UNIT_ORDER_PURCHASE_ITEM"
                             // "DOTA_UNIT_ORDER_SELL_ITEM"
@@ -224,15 +224,15 @@ module.exports = function (db)
                             // "DOTA_UNIT_ORDER_MOVE_ITEM"
                             // "DOTA_UNIT_ORDER_CAST_TOGGLE_AUTO"
                             // "DOTA_UNIT_ORDER_STOP"
-                    'DOTA_UNIT_ORDER_TAUNT': 'Taunt',
+                    DOTA_UNIT_ORDER_TAUNT: 'Taunt',
                             // "DOTA_UNIT_ORDER_BUYBACK",
-                    'DOTA_UNIT_ORDER_GLYPH': 'Glyph',
+                    DOTA_UNIT_ORDER_GLYPH: 'Glyph',
                             // "DOTA_UNIT_ORDER_EJECT_ITEM_FROM_STASH"
                             // "DOTA_UNIT_ORDER_CAST_RUNE"
-                    'DOTA_UNIT_ORDER_PING_ABILITY': 'Pings (Ability)',
+                    DOTA_UNIT_ORDER_PING_ABILITY: 'Pings (Ability)',
                             //"DOTA_UNIT_ORDER_MOVE_TO_DIRECTION": "Move (D)"
                   },
-                  title: 'Match ' + match.match_id,
+                  title: `Match ${match.match_id}`,
                 });
             });
   });

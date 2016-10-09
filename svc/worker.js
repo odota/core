@@ -16,7 +16,7 @@ const fs = require('fs');
 const sql = {};
 const sqlq = fs.readdirSync('./sql');
 sqlq.forEach((f) => {
-  sql[f.split('.')[0]] = fs.readFileSync('./sql/' + f, 'utf8');
+  sql[f.split('.')[0]] = fs.readFileSync(`./sql/${f}`, 'utf8');
 });
 console.log('[WORKER] starting worker');
 invokeInterval((cb) => {
@@ -36,7 +36,7 @@ invokeInterval((cb) => {
 }, config.MMSTATS_DATA_INTERVAL * 60 * 1000); // Sample every 3 minutes
 invokeInterval((cb) => {
   async.parallel({
-    'country_mmr': function (cb) {
+    country_mmr(cb) {
       const mapFunc = function (results) {
         results.rows = results.rows.map((r) => {
           const ref = constants.countries[r.loccountrycode];
@@ -46,7 +46,7 @@ invokeInterval((cb) => {
       };
       loadData('country_mmr', mapFunc, cb);
     },
-    'mmr': function (cb) {
+    mmr(cb) {
       const mapFunc = function (results) {
         const sum = results.rows.reduce((prev, current) => {
           return {
@@ -74,7 +74,7 @@ invokeInterval((cb) => {
       return cb(err);
     }
     for (const key in result) {
-      redis.set('distribution:' + key, JSON.stringify(result[key]));
+      redis.set(`distribution:${key}`, JSON.stringify(result[key]));
     }
     cb(err);
   });
@@ -252,7 +252,7 @@ invokeInterval((cb) => {
 function invokeInterval(func, delay) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
-    redis.get('worker:' + func.name, (err, fresh) => {
+    redis.get(`worker:${func.name}`, (err, fresh) => {
       if (err) {
         return setTimeout(invoker, delay);
       }
@@ -268,12 +268,12 @@ function invokeInterval(func, delay) {
             console.error(err);
           } else {
             // mark success, don't redo until this key expires
-            redis.setex('worker:' + func.name, delay / 1000 * 0.9, '1');
+            redis.setex(`worker:${func.name}`, delay / 1000 * 0.9, '1');
           }
           console.timeEnd(func.name);
           setTimeout(invoker, delay);
         });
       }
     });
-  })();
+  }());
 }

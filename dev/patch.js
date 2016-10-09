@@ -8,7 +8,7 @@ const version = Number(process.argv[2]);
 // v1, delete parsed_data (parsed_data.players contains players with lh, gold, xp, not much else, no heroes object)
 // db.matches.update({"parsed_data":{$exists:true}, "parsed_data.version":null},{$unset:{parsed_data:""},$set:{parse_status:1}},{multi:true})
 db.matches.find({
-  'parsed_data': {
+  parsed_data: {
     $ne: null,
   },
     // run these after v7 code is deployed, one version at a time
@@ -149,10 +149,10 @@ function getAssociatedHero(unit, heroes) {
         // split by _
     const split = unit.split('_');
         // get the third element
-    const identifiers = [split[2], split[2] + '_' + split[3]];
+    const identifiers = [split[2], `${split[2]}_${split[3]}`];
     identifiers.forEach((id) => {
             // append to npc_dota_hero_, see if matches
-      const attempt = 'npc_dota_hero_' + id;
+      const attempt = `npc_dota_hero_${id}`;
       if (heroes[attempt]) {
         unit = attempt;
       }

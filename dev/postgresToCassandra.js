@@ -36,7 +36,7 @@ if (cluster.isMaster)
 else
 {
   var bucket = Number(process.env.BUCKET);
-  redis.get('postgresToCassandra:' + bucket, (err, result) => {
+  redis.get(`postgresToCassandra:${bucket}`, (err, result) => {
     if (err)
         {
       throw err;
@@ -53,7 +53,7 @@ function run(start_id)
   stream.pipe(JSONStream.parse());
   stream.on('data', (match) => {
     stream.pause();
-    redis.set('postgresToCassandra:' + bucket, match.match_id);
+    redis.set(`postgresToCassandra:${bucket}`, match.match_id);
     delete match.parse_status;
     insertMatch(match, (err) => {
       if (err)

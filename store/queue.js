@@ -8,7 +8,7 @@ const url = require('url');
 const async = require('async');
 const types = ['request', 'mmr', 'parse', 'cache', 'fullhistory'];
 // parse the url
-const connInfo = url.parse(config.REDIS_URL, true /* parse query string */ );
+const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
 if (connInfo.protocol !== 'redis:') {
   throw new Error('connection string must use the redis: protocol');
 }
@@ -24,7 +24,7 @@ function generateKey(type, state) {
 
 function getQueue(type) {
   return bull(type, {
-    redis: redisOptions
+    redis: redisOptions,
   });
 }
 
@@ -52,19 +52,19 @@ function getCounts(redis, cb) {
 
   function getQueueCounts(type, cb) {
     async.series({
-      'wait': function (cb) {
+      wait(cb) {
         redis.llen(generateKey(type, 'wait'), cb);
       },
-      'act': function (cb) {
+      act(cb) {
         redis.llen(generateKey(type, 'active'), cb);
       },
-      'del': function (cb) {
+      del(cb) {
         redis.zcard(generateKey(type, 'delayed'), cb);
       },
-      'comp': function (cb) {
+      comp(cb) {
         redis.scard(generateKey(type, 'completed'), cb);
       },
-      'fail': function (cb) {
+      fail(cb) {
         redis.scard(generateKey(type, 'failed'), cb);
       },
     }, cb);

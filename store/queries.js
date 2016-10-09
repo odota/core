@@ -42,7 +42,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   if (cassandraColumnInfo[table]) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   } else {
-    cassandra.execute(`SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?`, [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table], (err, result) => {
+    cassandra.execute('SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?', [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table], (err, result) => {
       if (err) {
         return cb(err);
       }
@@ -77,7 +77,7 @@ function upsert(db, table, row, conflict, cb) {
       return '?';
     });
     const update = Object.keys(row).map((key) => {
-      return util.format('%s=%s', key, 'EXCLUDED.' + key);
+      return util.format('%s=%s', key, `EXCLUDED.${key}`);
     });
     const query = util.format('INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s', table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
     // if (table==='cosmetics') console.log(query.toString(), row);
@@ -127,16 +127,16 @@ function insertMatch(db, redis, match, options, cb) {
   // options.type specify api, parse, or skill
   // we want to insert into matches, then insert into player_matches for each entry in players
   async.series({
-    'dlp': decideLogParse,
-    'u': upsertMatch,
-    'uc': upsertMatchCassandra,
-    'upc': updatePlayerCaches,
-    'uct': updateCounts,
-    'cmc': clearMatchCache,
-    't': telemetry,
-    'dm': decideMmr,
-    'dpro': decideProfile,
-    'dp': decideParse,
+    dlp: decideLogParse,
+    u: upsertMatch,
+    uc: upsertMatchCassandra,
+    upc: updatePlayerCaches,
+    uct: updateCounts,
+    cmc: clearMatchCache,
+    t: telemetry,
+    dm: decideMmr,
+    dpro: decideProfile,
+    dp: decideParse,
   }, (err, results) => {
     return cb(err, results.dp);
   });
@@ -158,12 +158,12 @@ function insertMatch(db, redis, match, options, cb) {
     }
     db.transaction((trx) => {
       async.series({
-        'm': upsertMatch,
-        'pm': upsertPlayerMatches,
-        'pb': upsertPicksBans,
-        'mp': upsertMatchPatch,
-        'utm': upsertTeamMatch,
-        'l': upsertMatchLogs,
+        m: upsertMatch,
+        pm: upsertPlayerMatches,
+        pb: upsertPicksBans,
+        mp: upsertMatchPatch,
+        utm: upsertTeamMatch,
+        l: upsertMatchLogs,
       }, exit);
 
       function upsertMatch(cb) {
@@ -332,8 +332,8 @@ function insertMatch(db, redis, match, options, cb) {
   function telemetry(cb) {
     // console.log('[INSERTMATCH] updating telemetry');
     const types = {
-      'api': 'matches_last_added',
-      'parsed': 'matches_last_parsed',
+      api: 'matches_last_added',
+      parsed: 'matches_last_parsed',
     };
     if (types[options.type]) {
       redis.lpush(types[options.type], JSON.stringify({
@@ -362,7 +362,7 @@ function insertMatch(db, redis, match, options, cb) {
   }
 
   function clearMatchCache(cb) {
-    redis.del('match:' + match.match_id, cb);
+    redis.del(`match:${match.match_id}`, cb);
   }
 
   function decideMmr(cb) {
@@ -417,9 +417,9 @@ function insertMatch(db, redis, match, options, cb) {
           duration: match.duration,
           replay_blob_key: match.replay_blob_key,
           pgroup: match.pgroup,
-          doLogParse: doLogParse,
-          doParse: doParse,
-          doGcData: doGcData,
+          doLogParse,
+          doParse,
+          doGcData,
         }, {
           lifo: options.lifo,
           attempts: options.attempts,
@@ -599,11 +599,11 @@ function getProPlayers(db, redis, cb) {
   db.raw(`
     SELECT * from notable_players
     `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows);
-  });
+      if (err) {
+        return cb(err);
+      }
+      return cb(err, result.rows);
+    });
 }
 
 function getHeroRankings(db, redis, hero_id, options, cb) {
@@ -702,7 +702,7 @@ function getLeaderboard(db, redis, key, n, cb) {
 }
 
 function getMmrEstimate(db, redis, account_id, cb) {
-  redis.lrange('mmr_estimates:' + account_id, 0, -1, (err, result) => {
+  redis.lrange(`mmr_estimates:${account_id}`, 0, -1, (err, result) => {
     if (err) {
       return cb(err);
     }
@@ -793,12 +793,12 @@ function getPlayerMatches(account_id, queryObj, cb) {
 }
 
 function getPlayerRatings(db, account_id, cb) {
-  console.time('[PLAYER] getPlayerRatings ' + account_id);
+  console.time(`[PLAYER] getPlayerRatings ${account_id}`);
   if (!Number.isNaN(account_id)) {
     db.from('player_ratings').where({
       account_id: Number(account_id),
     }).orderBy('time', 'asc').asCallback((err, result) => {
-      console.timeEnd('[PLAYER] getPlayerRatings ' + account_id);
+      console.timeEnd(`[PLAYER] getPlayerRatings ${account_id}`);
       cb(err, result);
     });
   } else {
@@ -807,7 +807,7 @@ function getPlayerRatings(db, account_id, cb) {
 }
 
 function getPlayerRankings(redis, account_id, cb) {
-  console.time('[PLAYER] getPlayerRankings ' + account_id);
+  console.time(`[PLAYER] getPlayerRankings ${account_id}`);
   async.map(Object.keys(constants.heroes), (hero_id, cb) => {
     redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), hero_id].join(':'), (err, card) => {
       if (err) {
@@ -822,7 +822,7 @@ function getPlayerRankings(redis, account_id, cb) {
       });
     });
   }, (err, result) => {
-    console.timeEnd('[PLAYER] getPlayerRankings ' + account_id);
+    console.timeEnd(`[PLAYER] getPlayerRankings ${account_id}`);
     cb(err, result);
   });
 }
@@ -883,18 +883,18 @@ function getProPeers(db, input, player, cb) {
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
           `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    const arr = result.rows.map((r) => {
-      return Object.assign({}, r, teammates[r.account_id]);
-    }).filter((r) => {
-      return r.games;
-    }).sort((a, b) => {
-      return b.games - a.games;
-    });
-    cb(err, arr);
-  });
+            if (err) {
+              return cb(err);
+            }
+            const arr = result.rows.map((r) => {
+              return Object.assign({}, r, teammates[r.account_id]);
+            }).filter((r) => {
+              return r.games;
+            }).sort((a, b) => {
+              return b.games - a.games;
+            });
+            cb(err, arr);
+          });
 }
 module.exports = {
   upsert,

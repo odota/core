@@ -28,8 +28,8 @@ async.each(a, (i, cb) => {
   const user = users[i];
   const pass = passes[i];
   const logOnDetails = {
-    'account_name': user,
-    'password': pass,
+    account_name: user,
+    password: pass,
   };
   client.connect();
   client.on('connected', () => {

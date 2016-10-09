@@ -68,7 +68,7 @@ function processPlayer(account_id, cb)
 function processMatch(match_id, cb)
 {
   // Check if exists
-  redis.get('scanner_insert:' + match_id, (err, res) => {
+  redis.get(`scanner_insert:${match_id}`, (err, res) => {
     if (err)
     {
       return cb(err);
@@ -110,7 +110,7 @@ function processMatch(match_id, cb)
             }, (err) => {
               if (!err)
             {
-                redis.set('scanner_insert:' + match.match_id, 1);
+                redis.set(`scanner_insert:${match.match_id}`, 1);
               }
               cb(err);
             });

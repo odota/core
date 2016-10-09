@@ -8,7 +8,7 @@ module.exports = function buildSets(db, redis, cb) {
   console.log('rebuilding sets');
   async.parallel({
     // users in this set are added to the trackedPlayers set
-    'donators': function (cb) {
+    donators(cb) {
       db.select(['account_id']).from('players').where('cheese', '>', 0).asCallback((err, docs) => {
         if (err) {
           return cb(err);

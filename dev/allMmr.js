@@ -18,7 +18,7 @@ db.select('account_id').from('players').where('account_id', '>', start_id).order
       data: generateJob('mmr', {
         account_id: p.account_id,
         url: retrieverArr.map((r) => {
-          return 'http://' + r + '?key=' + config.RETRIEVER_SECRET + '&account_id=' + p.account_id;
+          return `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${p.account_id}`;
         })[p.account_id % retrieverArr.length],
       }),
     };

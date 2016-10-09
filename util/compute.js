@@ -128,10 +128,10 @@ function computeMatchData(pm) {
   if (pm.obs) {
     // convert position hashes to heatmap array of x,y,value
     pm.posData = generatePositionData({
-      'obs': true,
-      'sen': true,
+      obs: true,
+      sen: true,
       // "pos": true,
-      'lane_pos': true,
+      lane_pos: true,
     }, pm);
   }
   if (pm.posData) {
@@ -149,23 +149,23 @@ function computeMatchData(pm) {
       pm.lane = mode(lanes);
       const radiant = pm.isRadiant;
       const lane_roles = {
-        '1': function () {
+        1() {
           // bot
           return radiant ? 1 : 3;
         },
-        '2': function () {
+        2() {
           // mid
           return 2;
         },
-        '3': function () {
+        3() {
           // top
           return radiant ? 3 : 1;
         },
-        '4': function () {
+        4() {
           // rjung
           return 4;
         },
-        '5': function () {
+        5() {
           // djung
           return 4;
         },
@@ -272,7 +272,7 @@ function renderMatch(m) {
         t.sort((a, b) => {
           return b.val - a.val;
         });
-        pm[target + '_arr'] = t;
+        pm[`${target}_arr`] = t;
       }
     });
     // filter interval data to only be >= 0
@@ -381,26 +381,26 @@ function renderMatch(m) {
       return message.key;
     }).join(' ');
     m.sentiment = sentiment(chat_words, {
-      'report': -2,
-      'commend': 2,
-      'noob': -2,
-      'ff': -1,
-      'bg': -1,
-      'feed': -1,
-      'ty': 1,
-      'thanks': 1,
-      'wp': 1,
-      'end': -1,
-      'garbage': -1,
-      'trash': -1,
-      'throw': -1,
-      'salt': -1,
-      'ez': -1,
-      'mad': -1,
-      'hero': 0,
-      'salty': -1,
-      'autist': -1,
-      'autism': -1,
+      report: -2,
+      commend: 2,
+      noob: -2,
+      ff: -1,
+      bg: -1,
+      feed: -1,
+      ty: 1,
+      thanks: 1,
+      wp: 1,
+      end: -1,
+      garbage: -1,
+      trash: -1,
+      throw: -1,
+      salt: -1,
+      ez: -1,
+      mad: -1,
+      hero: 0,
+      salty: -1,
+      autist: -1,
+      autism: -1,
     });
   }
   // create gold breakdown data

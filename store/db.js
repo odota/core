@@ -18,7 +18,7 @@ const db = knex(
       max: 5,
     },
   });
-db.on('query-error', function (err) {
+db.on('query-error', (err) => {
   throw err;
 });
 module.exports = db;

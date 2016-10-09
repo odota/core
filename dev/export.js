@@ -25,7 +25,7 @@ try {
   process.exit(1);
 }
 
-const fileName = path.join(filePath, 'dump-' + moment().format('YYYY-MM-DD') + '.json.gz');
+const fileName = path.join(filePath, `dump-${moment().format('YYYY-MM-DD')}.json.gz`);
 
 try {
   var stat = fs.statSync(fileName);
@@ -48,7 +48,7 @@ let count = 0,
 
 jsstream.pipe(gzip).pipe(write);
 
-console.log('Exporting parsed matches since match_id ' + startingMatchId);
+console.log(`Exporting parsed matches since match_id ${startingMatchId}`);
 
 const stream = db.select('*')
     .from('matches')

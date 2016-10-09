@@ -151,8 +151,8 @@ function processTeamfights(entries, meta)
           if (tf.players[e.slot])
                     {
             const types = {
-              'gold_reasons': 'gold_delta',
-              'xp_reasons': 'xp_delta',
+              gold_reasons: 'gold_delta',
+              xp_reasons: 'xp_delta',
             };
             tf.players[e.slot][types[e.type]] += e.value;
           }

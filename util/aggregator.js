@@ -10,12 +10,12 @@ function aggregator(matches, fields, existing)
   fields = fields || getAggs();
     // ensure aggData isn't null for each requested aggregation field
   const aggData = existing ||
-  {
-    teammates:
+    {
+      teammates:
         {},
-    heroes:
+      heroes:
         {},
-  };
+    };
   for (var key in fields)
     {
         // if we don't have a cached aggregation for this field, replace with empty one

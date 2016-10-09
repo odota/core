@@ -45,7 +45,7 @@ if (cluster.isMaster)
 else
 {
   const bucket = Number(process.env.BUCKET);
-  redis.get('complete_history:' + bucket, (err, result) => {
+  redis.get(`complete_history:${bucket}`, (err, result) => {
     if (err)
         {
       throw err;
@@ -92,7 +92,7 @@ function getPage(match_seq_num, bucket)
           throw err;
         }
         const next_seq_num = matches[matches.length - 1].match_seq_num + 1;
-        redis.set('complete_history:' + bucket, next_seq_num);
+        redis.set(`complete_history:${bucket}`, next_seq_num);
         return getPage(next_seq_num, bucket);
       });
     }

@@ -22,12 +22,12 @@ module.exports = function getGcData(db, redis, match, cb) {
       return cb(err);
     } else {
       const retrievers = retrieverConfig.split(',').map((r) => {
-        return 'http://' + r + '?key=' + secret;
+        return `http://${r}?key=${secret}`;
       });
       const result = retrievers;
       // make array of retriever urls and use a random one on each retry
       const urls = result.map((r) => {
-        return r + '&match_id=' + match.match_id;
+        return `${r}&match_id=${match.match_id}`;
       });
       getData(urls, (err, body, metadata) => {
         if (err || !body || !body.match || !body.match.replay_salt) {

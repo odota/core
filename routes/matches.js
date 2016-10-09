@@ -3,78 +3,78 @@ const buildMatch = require('../store/buildMatch');
 const express = require('express');
 const matches = express.Router();
 const matchPages = {
-  'index':
+  index:
   {
-    'name': 'Overview',
+    name: 'Overview',
   },
-  'benchmarks':
+  benchmarks:
   {
-    'name': 'Benchmarks',
+    name: 'Benchmarks',
   },
-  'performances':
+  performances:
   {
-    'name': 'Performances',
-    'parsed': true,
+    name: 'Performances',
+    parsed: true,
   },
-  'damage':
+  damage:
   {
-    'name': 'Damage',
-    'parsed': true,
+    name: 'Damage',
+    parsed: true,
   },
-  'purchases':
+  purchases:
   {
-    'name': 'Purchases',
-    'parsed': true,
+    name: 'Purchases',
+    parsed: true,
   },
-  'farm':
+  farm:
   {
-    'name': 'Farm',
-    'parsed': true,
+    name: 'Farm',
+    parsed: true,
   },
-  'combat':
+  combat:
   {
-    'name': 'Combat',
-    'parsed': true,
+    name: 'Combat',
+    parsed: true,
   },
-  'graphs':
+  graphs:
   {
-    'name': 'Graphs',
-    'parsed': true,
+    name: 'Graphs',
+    parsed: true,
   },
-  'vision':
+  vision:
   {
-    'name': 'Vision',
-    'parsed': true,
+    name: 'Vision',
+    parsed: true,
   },
-  'objectives':
+  objectives:
   {
-    'name': 'Objectives',
-    'parsed': true,
+    name: 'Objectives',
+    parsed: true,
   },
-  'teamfights':
+  teamfights:
   {
-    'name': 'Teamfights',
-    'parsed': true,
+    name: 'Teamfights',
+    parsed: true,
   },
-  'actions':
+  actions:
   {
-    'name': 'Actions',
-    'parsed': true,
+    name: 'Actions',
+    parsed: true,
   },
-  'analysis':
+  analysis:
   {
-    'name': 'Analysis',
-    'parsed': true,
+    name: 'Analysis',
+    parsed: true,
   },
-  'cosmetics':
+  cosmetics:
   {
-    'name': 'Cosmetics',
-    'parsed': true,
+    name: 'Cosmetics',
+    parsed: true,
   },
-  'chat':
+  chat:
   {
-    'name': 'Chat',
-    'parsed': true,
+    name: 'Chat',
+    parsed: true,
   },
 };
 const compute = require('../util/compute');
@@ -100,12 +100,12 @@ module.exports = function (db, redis, cassandra)
         console.timeEnd('match page');
         const info = matchPages[req.params.info] ? req.params.info : 'index';
         renderMatch(match);
-        res.render('match/match_' + info,
+        res.render(`match/match_${info}`,
           {
             route: info,
             match,
             tabs: matchPages,
-            title: 'Match ' + match.match_id,
+            title: `Match ${match.match_id}`,
           });
       });
   });

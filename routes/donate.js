@@ -98,7 +98,7 @@ module.exports = function (db, redis) {
         amount: amount * 100,
         currency: 'usd',
         source: token.id,
-        description: 'Buying ' + amount + ' cheese!',
+        description: `Buying ${amount} cheese!`,
       }, (err, charge) => {
         if (err) {
           return res.send(checkErr(err));
@@ -228,7 +228,7 @@ module.exports = function (db, redis) {
       paymentMethodNonce: nonce,
       options: {
         paypal: {
-          description: 'Buying ' + amount + ' cheese!',
+          description: `Buying ${amount} cheese!`,
         },
         submitForSettlement: true,
       },

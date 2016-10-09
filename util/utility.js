@@ -25,106 +25,106 @@ function generateJob(type, payload) {
   const api_url = 'http://api.steampowered.com';
   let api_key;
   const opts = {
-    'api_details': function () {
+    api_details() {
       return {
-        url: api_url + '/IDOTA2Match_570/GetMatchDetails/V001/?key=' + api_key + '&match_id=' + payload.match_id,
+        url: `${api_url}/IDOTA2Match_570/GetMatchDetails/V001/?key=${api_key}&match_id=${payload.match_id}`,
         title: [type, payload.match_id].join(),
         type: 'api',
         payload,
       };
     },
-    'api_history': function () {
+    api_history() {
       return {
-        url: api_url + '/IDOTA2Match_570/GetMatchHistory/V001/?key=' + api_key + (payload.account_id ? '&account_id=' + payload.account_id : '') + (payload.matches_requested ? '&matches_requested=' + payload.matches_requested : '') + (payload.hero_id ? '&hero_id=' + payload.hero_id : '') + (payload.leagueid ? '&league_id=' + payload.leagueid : '') + (payload.start_at_match_id ? '&start_at_match_id=' + payload.start_at_match_id : ''),
+        url: `${api_url}/IDOTA2Match_570/GetMatchHistory/V001/?key=${api_key}${payload.account_id ? `&account_id=${payload.account_id}` : ''}${payload.matches_requested ? `&matches_requested=${payload.matches_requested}` : ''}${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${payload.leagueid ? `&league_id=${payload.leagueid}` : ''}${payload.start_at_match_id ? `&start_at_match_id=${payload.start_at_match_id}` : ''}`,
         title: [type, payload.account_id].join(),
         type: 'api',
         payload,
       };
     },
-    'api_summaries': function () {
+    api_summaries() {
       return {
-        url: api_url + '/ISteamUser/GetPlayerSummaries/v0002/?key=' + api_key + '&steamids=' + payload.players.map((p) => {
+        url: `${api_url}/ISteamUser/GetPlayerSummaries/v0002/?key=${api_key}&steamids=${payload.players.map((p) => {
           return convert32to64(p.account_id).toString();
-        }).join(),
+        }).join()}`,
         title: [type, payload.summaries_id].join(),
         type: 'api',
         payload,
       };
     },
-    'api_sequence': function () {
+    api_sequence() {
       return {
-        url: api_url + '/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=' + api_key + '&start_at_match_seq_num=' + payload.start_at_match_seq_num,
+        url: `${api_url}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${api_key}&start_at_match_seq_num=${payload.start_at_match_seq_num}`,
         title: [type, payload.seq_num].join(),
         type: 'api',
       };
     },
-    'api_heroes': function () {
+    api_heroes() {
       return {
-        url: api_url + '/IEconDOTA2_570/GetHeroes/v0001/?key=' + api_key + '&language=' + payload.language,
+        url: `${api_url}/IEconDOTA2_570/GetHeroes/v0001/?key=${api_key}&language=${payload.language}`,
         title: [type, payload.language].join(),
         type: 'api',
         payload,
       };
     },
-    'api_items': function () {
+    api_items() {
       return {
-        url: api_url + '/IEconDOTA2_570/GetGameItems/v1?key=' + api_key + '&language=' + payload.language,
+        url: `${api_url}/IEconDOTA2_570/GetGameItems/v1?key=${api_key}&language=${payload.language}`,
         type: 'api',
       };
     },
-    'api_leagues': function () {
+    api_leagues() {
       return {
-        url: api_url + '/IDOTA2Match_570/GetLeagueListing/v0001/?key=' + api_key,
+        url: `${api_url}/IDOTA2Match_570/GetLeagueListing/v0001/?key=${api_key}`,
         title: [type].join(),
         type: 'api',
         payload,
       };
     },
-    'api_skill': function () {
+    api_skill() {
       return {
-        url: api_url + '/IDOTA2Match_570/GetMatchHistory/v0001/?key=' + api_key + '&start_at_match_id=' + payload.start_at_match_id + '&skill=' + payload.skill + '&hero_id=' + payload.hero_id + '&min_players=10',
+        url: `${api_url}/IDOTA2Match_570/GetMatchHistory/v0001/?key=${api_key}&start_at_match_id=${payload.start_at_match_id}&skill=${payload.skill}&hero_id=${payload.hero_id}&min_players=10`,
         title: [type, payload.skill].join(),
         type: 'api',
         payload,
       };
     },
-    'api_live': function () {
+    api_live() {
       return {
-        url: api_url + '/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=' + api_key,
+        url: `${api_url}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${api_key}`,
         title: [type].join(),
         type: 'api',
         payload,
       };
     },
-    'api_notable': function () {
+    api_notable() {
       return {
-        url: api_url + '/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=' + api_key,
+        url: `${api_url}/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=${api_key}`,
         title: [type].join(),
         type: 'api',
         payload,
       };
     },
-    'api_teams': function () {
+    api_teams() {
       return {
-        url: api_url + '/IDOTA2Teams_570/GetTeamInfo/v1/?key=' + api_key + '&team_id=' + payload.team_id,
+        url: `${api_url}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${api_key}&team_id=${payload.team_id}`,
         title: [type].join(),
         type: 'api',
         payload,
       };
     },
-    'api_item_schema': function () {
+    api_item_schema() {
       return {
-        url: api_url + '/IEconItems_570/GetSchemaURL/v1?key=' + api_key,
+        url: `${api_url}/IEconItems_570/GetSchemaURL/v1?key=${api_key}`,
         type: 'api',
       };
     },
-    'api_item_icon': function () {
+    api_item_icon() {
       return {
-        url: api_url + '/IEconDOTA2_570/GetItemIconPath/v1?key=' + api_key + '&iconname=' + payload.iconname,
+        url: `${api_url}/IEconDOTA2_570/GetItemIconPath/v1?key=${api_key}&iconname=${payload.iconname}`,
         type: 'api',
       };
     },
-    'parse': function () {
+    parse() {
       return {
         title: [type, payload.match_id].join(),
         type,
@@ -132,37 +132,37 @@ function generateJob(type, payload) {
         payload,
       };
     },
-    'request': function () {
+    request() {
       return {
-        url: api_url + '/IDOTA2Match_570/GetMatchDetails/V001/?key=' + api_key + '&match_id=' + payload.match_id,
+        url: `${api_url}/IDOTA2Match_570/GetMatchDetails/V001/?key=${api_key}&match_id=${payload.match_id}`,
         title: [type, payload.match_id].join(),
         type,
         request: true,
         payload,
       };
     },
-    'fullhistory': function () {
+    fullhistory() {
       return {
         title: [type, payload.account_id].join(),
         type,
         payload,
       };
     },
-    'mmr': function () {
+    mmr() {
       return {
         title: [type, payload.match_id, payload.account_id].join(),
         type,
         payload,
       };
     },
-    'cache': function () {
+    cache() {
       return {
         title: [type, payload.match_id, payload.account_id].join(),
         type,
         payload,
       };
     },
-    'rank': function () {
+    rank() {
       return {
         title: [type, payload.account_id, payload.hero_id].join(),
         type,
@@ -225,7 +225,7 @@ function getData(url, cb) {
       proxy,
       url: target,
       json: true,
-      timeout: timeout,
+      timeout,
     }, (err, res, body) => {
       if (body && body.error) {
         // body contained specific error (probably from retriever)
@@ -402,7 +402,7 @@ function getAggs() {
     kill_streaks: 'parsed',
     all_word_counts: 'parsed',
     my_word_counts: 'parsed',
-    'throw': 'parsed',
+    throw: 'parsed',
     comeback: 'parsed',
     stomp: 'parsed',
     loss: 'parsed',
@@ -469,14 +469,14 @@ function getAlphaHeroes() {
 function prettyPrint(str) {
   return str.split('_').map((s) => {
     switch (s) {
-    case 'xp':
-      return 'XP';
-    case 'kda':
-      return 'KDA';
-    case 'tpscroll':
-      return 'TP Scroll';
-    default:
-      return s.charAt(0).toUpperCase() + s.slice(1);
+      case 'xp':
+        return 'XP';
+      case 'kda':
+        return 'KDA';
+      case 'tpscroll':
+        return 'TP Scroll';
+      default:
+        return s.charAt(0).toUpperCase() + s.slice(1);
     }
   }).join(' ');
 }
@@ -563,7 +563,7 @@ function getPatchIndex(start_time) {
 
 function buildReplayUrl(match_id, cluster, replay_salt) {
   const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
-  return 'http://replay' + cluster + '.valve.net/570/' + match_id + '_' + replay_salt + suffix;
+  return `http://replay${cluster}.valve.net/570/${match_id}_${replay_salt}${suffix}`;
 }
 
 function expectedWin(rates) {
@@ -581,10 +581,10 @@ function matchupToString(t0, t1, t0win) {
   let suffix = '0';
   if (rcg <= dcg) {
     suffix = t0win ? '0' : '1';
-    return rcg + ':' + dcg + ':' + suffix;
+    return `${rcg}:${dcg}:${suffix}`;
   } else {
     suffix = t0win ? '1' : '0';
-    return dcg + ':' + rcg + ':' + suffix;
+    return `${dcg}:${rcg}:${suffix}`;
   }
 }
 

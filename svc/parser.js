@@ -35,7 +35,7 @@ const computeMatchData = compute.computeMatchData;
 const express = require('express');
 const app = express();
 app.get('/redis/:key', (req, res, cb) => {
-  redis.get(new Buffer('upload_blob:' + req.params.key), (err, result) => {
+  redis.get(new Buffer(`upload_blob:${req.params.key}`), (err, result) => {
     if (err) {
       return cb(err);
     }
@@ -48,9 +48,9 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
   console.log('parse job: %s', job.jobId);
   const match = job.data.payload;
   async.series({
-    'getDataSource': function (cb) {
+    getDataSource(cb) {
       if (match.replay_blob_key) {
-        match.url = 'http://localhost:' + config.PARSER_PORT + '/redis/' + match.replay_blob_key;
+        match.url = `http://localhost:${config.PARSER_PORT}/redis/${match.replay_blob_key}`;
         cb();
       } else {
         if (match.doGcData) {
@@ -60,7 +60,7 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
         }
       }
     },
-    'runParse': function (cb) {
+    runParse(cb) {
       if (match.doParse || match.doLogParse) {
         runParse(match, job, cb);
       } else {
@@ -101,7 +101,7 @@ function insertUploadedParse(match, cb) {
     if (err) {
       return cb(err);
     }
-    redis.setex('match:' + match.replay_blob_key, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
+    redis.setex(`match:${match.replay_blob_key}`, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
   });
 }
 
@@ -231,61 +231,61 @@ function runParse(match, job, cb) {
 
 function getParseSchema() {
   return {
-    'version': 17,
-    'match_id': 0,
-    'teamfights': [],
-    'objectives': [],
-    'chat': [],
-    'radiant_gold_adv': [],
-    'radiant_xp_adv': [],
-    'cosmetics': {},
-    'players': Array.apply(null, new Array(10)).map(() => {
+    version: 17,
+    match_id: 0,
+    teamfights: [],
+    objectives: [],
+    chat: [],
+    radiant_gold_adv: [],
+    radiant_xp_adv: [],
+    cosmetics: {},
+    players: Array.apply(null, new Array(10)).map(() => {
       return {
-        'player_slot': 0,
-        'obs_placed': 0,
-        'sen_placed': 0,
-        'creeps_stacked': 0,
-        'camps_stacked': 0,
-        'rune_pickups': 0,
-        'stuns': 0,
-        'max_hero_hit': {
+        player_slot: 0,
+        obs_placed: 0,
+        sen_placed: 0,
+        creeps_stacked: 0,
+        camps_stacked: 0,
+        rune_pickups: 0,
+        stuns: 0,
+        max_hero_hit: {
           value: 0,
         },
-        'times': [],
-        'gold_t': [],
-        'lh_t': [],
-        'dn_t': [],
-        'xp_t': [],
-        'obs_log': [],
-        'sen_log': [],
-        'obs_left_log': [],
-        'sen_left_log': [],
-        'purchase_log': [],
-        'kills_log': [],
-        'buyback_log': [],
+        times: [],
+        gold_t: [],
+        lh_t: [],
+        dn_t: [],
+        xp_t: [],
+        obs_log: [],
+        sen_log: [],
+        obs_left_log: [],
+        sen_left_log: [],
+        purchase_log: [],
+        kills_log: [],
+        buyback_log: [],
         // "pos": {},
-        'lane_pos': {},
-        'obs': {},
-        'sen': {},
-        'actions': {},
-        'pings': {},
-        'purchase': {},
-        'gold_reasons': {},
-        'xp_reasons': {},
-        'killed': {},
-        'item_uses': {},
-        'ability_uses': {},
-        'hero_hits': {},
-        'damage': {},
-        'damage_taken': {},
-        'damage_inflictor': {},
-        'runes': {},
-        'killed_by': {},
-        'kill_streaks': {},
-        'multi_kills': {},
-        'life_state': {},
-        'healing': {},
-        'damage_inflictor_received': {},
+        lane_pos: {},
+        obs: {},
+        sen: {},
+        actions: {},
+        pings: {},
+        purchase: {},
+        gold_reasons: {},
+        xp_reasons: {},
+        killed: {},
+        item_uses: {},
+        ability_uses: {},
+        hero_hits: {},
+        damage: {},
+        damage_taken: {},
+        damage_inflictor: {},
+        runes: {},
+        killed_by: {},
+        kill_streaks: {},
+        multi_kills: {},
+        life_state: {},
+        healing: {},
+        damage_inflictor_received: {},
       };
     }),
   };

@@ -169,8 +169,8 @@ module.exports = function (db, redis, cassandra) {
       // generally position data function is used to generate heatmap data for each player in a natch
       // we use it here to generate a single heatmap for aggregated counts
       const d = {
-        'obs': true,
-        'sen': true,
+        obs: true,
+        sen: true,
       };
       utility.generatePositionData(d, result);
       res.json(d);
@@ -343,11 +343,11 @@ module.exports = function (db, redis, cassandra) {
       // Round the bucket size up to the nearest integer
       const bucketSize = Math.ceil((max + 1) / buckets);
       const bucketArray = Array.from({
-        length: buckets
+        length: buckets,
       }, (value, index) => ({
         x: bucketSize * index,
         games: 0,
-        win: 0
+        win: 0,
       }));
       cache.forEach((m) => {
         if (m[field] || m[field] === 0) {
@@ -545,7 +545,7 @@ module.exports = function (db, redis, cassandra) {
         const hash = crypto.createHash('md5');
         hash.update(req.file.buffer);
         const key = hash.digest('hex');
-        redis.setex(new Buffer('upload_blob:' + key), 60 * 60, req.file.buffer);
+        redis.setex(new Buffer(`upload_blob:${key}`), 60 * 60, req.file.buffer);
         match = {
           replay_blob_key: key,
         };

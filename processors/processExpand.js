@@ -4,7 +4,7 @@
  **/
 function processExpand(entries, meta) {
   const types = {
-    'DOTA_COMBATLOG_DAMAGE': function (e) {
+    DOTA_COMBATLOG_DAMAGE(e) {
       // damage
       e.unit = e.sourcename; // source of damage (a hero)
       e.key = computeIllusionString(e.targetname, e.targetillusion);
@@ -65,21 +65,21 @@ function processExpand(entries, meta) {
         expand(inf_rec);
       }
     },
-    'DOTA_COMBATLOG_HEAL': function (e) {
+    DOTA_COMBATLOG_HEAL(e) {
       // healing
       e.unit = e.sourcename; // source of healing (a hero)
       e.key = computeIllusionString(e.targetname, e.targetillusion);
       e.type = 'healing';
       expand(e);
     },
-    'DOTA_COMBATLOG_MODIFIER_ADD': function (e) {
+    DOTA_COMBATLOG_MODIFIER_ADD(e) {
       // gain buff/debuff
       e.unit = e.attackername; // unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
       e.key = translate(e.inflictor); // the buff
       e.targetname = computeIllusionString(e.targetname, e.targetillusion); // target of buff (possibly illusion)
       if (e.targethero && !e.targetillusion) {
         const whitelist = {
-          'modifier_item_ultimate_scepter_consumed': 1,
+          modifier_item_ultimate_scepter_consumed: 1,
         };
         if (e.key in whitelist) {
           e.type = 'modifier_applied';
@@ -87,14 +87,14 @@ function processExpand(entries, meta) {
         }
       }
     },
-    'DOTA_COMBATLOG_MODIFIER_REMOVE': function (e) {
+    DOTA_COMBATLOG_MODIFIER_REMOVE(e) {
       // lose buff/debuff
       // TODO: do something with modifier lost events, really only useful if we want to try to "time" modifiers
       // e.targetname is unit losing buff (possibly illusion)
       // e.inflictor is name of buff
       e.type = 'modifier_lost';
     },
-    'DOTA_COMBATLOG_DEATH': function (e) {
+    DOTA_COMBATLOG_DEATH(e) {
       // kill
       e.unit = e.sourcename; // killer (a hero)
       e.key = computeIllusionString(e.targetname, e.targetillusion);
@@ -121,25 +121,25 @@ function processExpand(entries, meta) {
         expand(r);
       }
     },
-    'DOTA_COMBATLOG_ABILITY': function (e) {
+    DOTA_COMBATLOG_ABILITY(e) {
       // ability use
       e.unit = e.attackername;
       e.key = translate(e.inflictor);
       e.type = 'ability_uses';
       expand(e);
     },
-    'DOTA_COMBATLOG_ITEM': function (e) {
+    DOTA_COMBATLOG_ITEM(e) {
       // item use
       e.unit = e.attackername;
       e.key = translate(e.inflictor);
       e.type = 'item_uses';
       expand(e);
     },
-    'DOTA_COMBATLOG_LOCATION': function (e) {
+    DOTA_COMBATLOG_LOCATION(e) {
       // not in replay?
       console.log(e);
     },
-    'DOTA_COMBATLOG_GOLD': function (e) {
+    DOTA_COMBATLOG_GOLD(e) {
       // gold gain/loss
       e.unit = e.targetname;
       e.key = e.gold_reason;
@@ -147,19 +147,19 @@ function processExpand(entries, meta) {
       e.type = 'gold_reasons';
       expand(e);
     },
-    'DOTA_COMBATLOG_GAME_STATE': function (e) {
+    DOTA_COMBATLOG_GAME_STATE(e) {
       // state
       // we don't use this here--we already used it during preprocessing to detect game_zero
       e.type = 'state';
     },
-    'DOTA_COMBATLOG_XP': function (e) {
+    DOTA_COMBATLOG_XP(e) {
       // xp gain
       e.unit = e.targetname;
       e.key = e.xp_reason;
       e.type = 'xp_reasons';
       expand(e);
     },
-    'DOTA_COMBATLOG_PURCHASE': function (e) {
+    DOTA_COMBATLOG_PURCHASE(e) {
       // purchase
       e.unit = e.targetname;
       e.key = translate(e.valuename);
@@ -173,20 +173,20 @@ function processExpand(entries, meta) {
         expand(e2);
       }
     },
-    'DOTA_COMBATLOG_BUYBACK': function (e) {
+    DOTA_COMBATLOG_BUYBACK(e) {
       // buyback
       e.slot = e.value; // player slot that bought back
       e.type = 'buyback_log';
       expand(e);
     },
-    'DOTA_COMBATLOG_ABILITY_TRIGGER': function (e) {
+    DOTA_COMBATLOG_ABILITY_TRIGGER(e) {
       // only seems to happen for axe spins
       e.type = 'ability_trigger';
       // e.attackername //unit triggered on?
       // e.key = e.inflictor; //ability triggered?
       // e.unit = determineIllusion(e.targetname, e.targetillusion); //unit that triggered the skill
     },
-    'DOTA_COMBATLOG_PLAYERSTATS': function (e) {
+    DOTA_COMBATLOG_PLAYERSTATS(e) {
       // player stats
       // TODO: don't really know what this does, following fields seem to be populated
       // attackername
@@ -197,7 +197,7 @@ function processExpand(entries, meta) {
       e.unit = e.attackername;
       e.key = e.targetname;
     },
-    'DOTA_COMBATLOG_MULTIKILL': function (e) {
+    DOTA_COMBATLOG_MULTIKILL(e) {
       // multikill
       e.unit = e.attackername;
       // add the "minimum value", as of 2016-02-06
@@ -207,7 +207,7 @@ function processExpand(entries, meta) {
       e.type = 'multi_kills';
       expand(e);
     },
-    'DOTA_COMBATLOG_KILLSTREAK': function (e) {
+    DOTA_COMBATLOG_KILLSTREAK(e) {
       // killstreak
       e.unit = e.attackername;
       // add the "minimum value", as of 2016-02-06
@@ -217,7 +217,7 @@ function processExpand(entries, meta) {
       e.type = 'kill_streaks';
       expand(e);
     },
-    'DOTA_COMBATLOG_TEAM_BUILDING_KILL': function (e) {
+    DOTA_COMBATLOG_TEAM_BUILDING_KILL(e) {
       // team building kill
       // System.err.println(cle);
       e.type = 'team_building_kill';
@@ -228,38 +228,38 @@ function processExpand(entries, meta) {
       // 2 is rax?
       // 3 is ancient?
     },
-    'DOTA_COMBATLOG_FIRST_BLOOD': function (e) {
+    DOTA_COMBATLOG_FIRST_BLOOD(e) {
       // first blood
       e.type = 'first_blood';
       // time, involved players?
     },
-    'DOTA_COMBATLOG_MODIFIER_REFRESH': function (e) {
+    DOTA_COMBATLOG_MODIFIER_REFRESH(e) {
       // modifier refresh
       e.type = 'modifier_refresh';
       // no idea what this means
     },
-    'clicks': function (e) {
+    clicks(e) {
       expand(e);
     },
-    'pings': function (e) {
+    pings(e) {
       // we're not breaking pings into subtypes atm so just set key to 0 for now
       e.key = 0;
       expand(e);
     },
-    'actions': function (e) {
+    actions(e) {
       expand(e);
     },
-    'CHAT_MESSAGE_RUNE_PICKUP': function (e) {
+    CHAT_MESSAGE_RUNE_PICKUP(e) {
       e.type = 'runes';
       e.slot = e.player1;
       e.key = String(e.value);
       e.value = 1;
       expand(e);
     },
-    'CHAT_MESSAGE_RUNE_BOTTLE': function (e) {
+    CHAT_MESSAGE_RUNE_BOTTLE(e) {
       // not tracking rune bottling atm
     },
-    'CHAT_MESSAGE_HERO_KILL': function (e) {
+    CHAT_MESSAGE_HERO_KILL(e) {
       // player, assisting players
       // player2 killed player 1
       // subsequent players assisted
@@ -268,21 +268,21 @@ function processExpand(entries, meta) {
       // e.key = String(e.player1);
       // currently disabled in favor of combat log kills
     },
-    'CHAT_MESSAGE_GLYPH_USED': function (e) {
+    CHAT_MESSAGE_GLYPH_USED(e) {
       // team glyph
       // player1 = team that used glyph (2/3, or 0/1?)
       // e.team = e.player1;
     },
-    'CHAT_MESSAGE_PAUSED': function (e) {
+    CHAT_MESSAGE_PAUSED(e) {
       // e.slot = e.player1;
       // player1 paused
     },
-    'CHAT_MESSAGE_TOWER_KILL': function (e) {
+    CHAT_MESSAGE_TOWER_KILL(e) {
       e.team = e.value;
       e.slot = e.player1;
       expand(e);
     },
-    'CHAT_MESSAGE_TOWER_DENY': function (e) {
+    CHAT_MESSAGE_TOWER_DENY(e) {
       // tower (player/team)
       // player1 = slot of player who killed tower (-1 if nonplayer)
       // value (2/3 radiant/dire killed tower, recently 0/1?)
@@ -290,7 +290,7 @@ function processExpand(entries, meta) {
       e.slot = e.player1;
       expand(e);
     },
-    'CHAT_MESSAGE_BARRACKS_KILL': function (e) {
+    CHAT_MESSAGE_BARRACKS_KILL(e) {
       // barracks (player)
       // value id of barracks based on power of 2?
       // Barracks can always be deduced
@@ -299,35 +299,35 @@ function processExpand(entries, meta) {
       e.key = String(e.value);
       expand(e);
     },
-    'CHAT_MESSAGE_FIRSTBLOOD': function (e) {
+    CHAT_MESSAGE_FIRSTBLOOD(e) {
       e.slot = e.player1;
       expand(e);
     },
-    'CHAT_MESSAGE_AEGIS': function (e) {
+    CHAT_MESSAGE_AEGIS(e) {
       e.slot = e.player1;
       expand(e);
     },
-    'CHAT_MESSAGE_AEGIS_STOLEN': function (e) {
+    CHAT_MESSAGE_AEGIS_STOLEN(e) {
       e.slot = e.player1;
       expand(e);
     },
-    'CHAT_MESSAGE_DENIED_AEGIS': function (e) {
+    CHAT_MESSAGE_DENIED_AEGIS(e) {
       // aegis (player)
       // player1 = slot who picked up/denied/stole aegis
       e.slot = e.player1;
       expand(e);
     },
-    'CHAT_MESSAGE_ROSHAN_KILL': function (e) {
+    CHAT_MESSAGE_ROSHAN_KILL(e) {
       // player1 = team that killed roshan? (2/3)
       e.team = e.player1;
       expand(e);
     },
-    'chat': function getChatSlot(e) {
+    chat: function getChatSlot(e) {
       // e.slot = name_to_slot[e.unit];
       // push a copy to chat
       expand(e);
     },
-    'interval': function (e) {
+    interval(e) {
       if (e.time >= 0) {
         expand(e);
         ['stuns', 'life_state', 'obs_placed', 'sen_placed', 'creeps_stacked', 'camps_stacked', 'rune_pickups'].forEach((t) => {
@@ -380,7 +380,7 @@ function processExpand(entries, meta) {
         expand(e9);
       }
     },
-    'obs': function (e) {
+    obs(e) {
       const e2 = JSON.parse(JSON.stringify(e));
       e2.type = 'obs_log';
       expand(e2);
@@ -390,7 +390,7 @@ function processExpand(entries, meta) {
       e3.posData = true;
       expand(e3);
     },
-    'sen': function (e) {
+    sen(e) {
       const e2 = JSON.parse(JSON.stringify(e));
       e2.type = 'sen_log';
       expand(e2);
@@ -399,12 +399,12 @@ function processExpand(entries, meta) {
       e3.posData = true;
       expand(e3);
     },
-    'obs_left': function (e) {
+    obs_left(e) {
       const e2 = JSON.parse(JSON.stringify(e));
       e2.type = 'obs_left_log';
       expand(e2);
     },
-    'sen_left': function (e) {
+    sen_left(e) {
       const e2 = JSON.parse(JSON.stringify(e));
       e2.type = 'sen_left_log';
       expand(e2);

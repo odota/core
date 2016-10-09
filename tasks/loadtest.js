@@ -9,7 +9,7 @@ db.select('account_id', 'last_login').from('players').whereNotNull('last_login')
   }
   async.eachLimit(results, 10, (r, cb) => {
     console.time(r.account_id);
-    request('http://' + host + '/players/' + r.account_id, (err, resp, body) => {
+    request(`http://${host}/players/${r.account_id}`, (err, resp, body) => {
       console.timeEnd(r.account_id);
       cb(err);
     });

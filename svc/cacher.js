@@ -25,28 +25,28 @@ function processCache(job, cb) {
   const match = job.data.payload;
   console.log('match: %s, %s', match.match_id, match.origin);
   async.parallel({
-    'updateRankings': function (cb) {
+    updateRankings(cb) {
       if (match.origin === 'scanner') {
         return updateRankings(match, cb);
       } else {
         return cb();
       }
     },
-    'updateMatchRating': function (cb) {
+    updateMatchRating(cb) {
       if (match.origin === 'scanner') {
         return updateMatchRating(match, cb);
       } else {
         return cb();
       }
     },
-    'updateMatchups': function (cb) {
+    updateMatchups(cb) {
       if (match.origin === 'scanner') {
         return updateMatchups(match, cb);
       } else {
         cb();
       }
     },
-    'updateBenchmarks': function (cb) {
+    updateBenchmarks(cb) {
       if (match.origin === 'scanner') {
         updateBenchmarks(match, cb);
       } else {
@@ -119,8 +119,8 @@ function updateMatchRating(match, cb) {
       match.players.forEach((player) => {
         if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
           // push into list, limit elements
-          redis.lpush('mmr_estimates:' + player.account_id, avg);
-          redis.ltrim('mmr_estimates:' + player.account_id, 0, 19);
+          redis.lpush(`mmr_estimates:${player.account_id}`, avg);
+          redis.ltrim(`mmr_estimates:${player.account_id}`, 0, 19);
         }
       });
       // Persist match average MMR into postgres

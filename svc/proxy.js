@@ -10,7 +10,7 @@ const proxy = httpProxy.createProxyServer({
   changeOrigin: true,
 });
 
-var server = http.createServer((req, res) => {
+const server = http.createServer((req, res) => {
   if (req.url === '/healthz') {
     return res.end('ok');
   }
@@ -18,4 +18,4 @@ var server = http.createServer((req, res) => {
 });
 
 server.listen(PORT);
-console.log("listening on port %s", PORT);
+console.log('listening on port %s', PORT);

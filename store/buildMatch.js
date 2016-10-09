@@ -12,16 +12,16 @@ const constants = require('dotaconstants');
 
 function buildMatch(match_id, options, cb) {
   const redis = options.redis;
-  const key = 'match:' + match_id;
+  const key = `match:${match_id}`;
   redis.get(key, (err, reply) => {
     if (err) {
       return cb(err);
     } else if (reply) {
-      console.log('Cache hit for match ' + match_id);
+      console.log(`Cache hit for match ${match_id}`);
       const match = JSON.parse(reply);
       return cb(err, match);
     } else {
-      console.log('Cache miss for match ' + match_id);
+      console.log(`Cache miss for match ${match_id}`);
       getMatch(match_id, options, (err, match) => {
         if (err) {
           return cb(err);
@@ -49,7 +49,7 @@ function getMatch(match_id, options, cb) {
       return cb();
     } else {
       async.parallel({
-        'players': function (cb) {
+        players(cb) {
           getPlayerMatchData(match_id, (err, players) => {
             if (err) {
               return cb(err);
@@ -70,17 +70,17 @@ function getMatch(match_id, options, cb) {
             }, cb);
           });
         },
-        'gcdata': function (cb) {
+        gcdata(cb) {
           db.first().from('match_gcdata').where({
             match_id,
           }).asCallback(cb);
         },
-        'skill': function (cb) {
+        skill(cb) {
           db.first().from('match_skill').where({
             match_id,
           }).asCallback(cb);
         },
-        'cosmetics': function (cb) {
+        cosmetics(cb) {
           async.map(Object.keys(match.cosmetics || {}), (item_id, cb) => {
             db.first().from('cosmetics').where({
               item_id,

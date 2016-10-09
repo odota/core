@@ -24,7 +24,7 @@ function processMmr(job, cb)
   getData(
     {
       url: retrieverArr.map((r) => {
-        return 'http://' + r + '?key=' + config.RETRIEVER_SECRET + '&account_id=' + account_id;
+        return `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${account_id}`;
       })[account_id % retrieverArr.length],
       noRetry: true,
     }, (err, data) => {

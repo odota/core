@@ -7,17 +7,17 @@ for (let i = 0; i < 128; i++) {
   for (let j = 0; j < 128; j++) {
     let lane;
     if (Math.abs(i - (127 - j)) < 8) {
-      lane = 2; //mid
+      lane = 2; // mid
     } else if (j < 27 || i < 27) {
-      lane = 3; //top
+      lane = 3; // top
     } else if (j >= 100 || i >= 100) {
-      lane = 1; //bot
+      lane = 1; // bot
     } else if (i < 50) {
-      lane = 5; //djung
+      lane = 5; // djung
     } else if (i >= 77) {
-      lane = 4; //rjung
+      lane = 4; // rjung
     } else {
-      lane = 2; //mid
+      lane = 2; // mid
     }
     laneMappings[i].push(lane);
   }

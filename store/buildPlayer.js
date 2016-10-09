@@ -40,9 +40,9 @@ const aggs = {
   rankings: basicAggs,
 };
 const deps = {
-  'teammates': 'heroes',
-  'win': 'radiant_win',
-  'lose': 'radiant_win',
+  teammates: 'heroes',
+  win: 'radiant_win',
+  lose: 'radiant_win',
 };
 // TODO decommission this and aggregator with SPA
 function buildPlayer(options, cb)
@@ -81,9 +81,9 @@ function buildPlayer(options, cb)
     return deps[k] || k;
   })).concat(filter_exists ? cacheFilters : []).concat(query.desc ? query.desc : []);
     // Find player in db
-  console.time('[PLAYER] getPlayer ' + account_id);
+  console.time(`[PLAYER] getPlayer ${account_id}`);
   getPlayer(db, account_id, (err, player) => {
-    console.timeEnd('[PLAYER] getPlayer ' + account_id);
+    console.timeEnd(`[PLAYER] getPlayer ${account_id}`);
     if (err)
         {
       return cb(err);
@@ -262,8 +262,8 @@ function buildPlayer(options, cb)
                 sen: ward_data.sen.counts,
               };
               const d = {
-                'obs': true,
-                'sen': true,
+                obs: true,
+                sen: true,
               };
               generatePositionData(d, ward_counts);
               const obj = {
@@ -321,13 +321,13 @@ function preprocessQuery(query)
   query.keywords = {};
   query.filter_count = 0;
   const dbAble = {
-    'account_id': 1,
+    account_id: 1,
   };
     // reserved keywords, don't treat these as filters
   const keywords = {
-    'desc': 1,
-    'project': 1,
-    'limit': 1,
+    desc: 1,
+    project: 1,
+    limit: 1,
   };
   for (const key in query.select)
     {
