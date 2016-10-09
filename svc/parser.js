@@ -62,23 +62,7 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
     },
     'runParse': function (cb) {
       if (match.doParse || match.doLogParse) {
-        runParse(match, job, (err, parsed_data) => {
-          if (err) {
-            return cb(err);
-          }
-          parsed_data.match_id = match.match_id;
-          parsed_data.pgroup = match.pgroup;
-          parsed_data.radiant_win = match.radiant_win;
-          parsed_data.start_time = match.start_time;
-          parsed_data.duration = match.duration;
-          parsed_data.replay_blob_key = match.replay_blob_key;
-          parsed_data.doLogParse = match.doLogParse;
-          if (match.replay_blob_key) {
-            insertUploadedParse(parsed_data, cb);
-          } else {
-            insertStandardParse(parsed_data, cb);
-          }
-        });
+        runParse(match, job, cb);
       } else {
         return cb();
       }
@@ -86,16 +70,6 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
   }, (err) => {
     if (err) {
       console.error(err.stack || err);
-      /*
-      if (err !== "404")
-      {
-          setTimeout(function()
-          {
-              console.error('encountered exception, restarting');
-              process.exit(1);
-          }, 1000);
-      }
-      */
     }
     return cb(err, match.match_id);
   });
@@ -236,7 +210,18 @@ function runParse(match, job, cb) {
           parsed_data.logs = logs;
         }
         console.timeEnd(message);
-        return cb(err, parsed_data);
+        parsed_data.match_id = match.match_id;
+        parsed_data.pgroup = match.pgroup;
+        parsed_data.radiant_win = match.radiant_win;
+        parsed_data.start_time = match.start_time;
+        parsed_data.duration = match.duration;
+        parsed_data.replay_blob_key = match.replay_blob_key;
+        parsed_data.doLogParse = match.doLogParse;
+        if (match.replay_blob_key) {
+          insertUploadedParse(parsed_data, cb);
+        } else {
+          insertStandardParse(parsed_data, cb);
+        }
       } catch (e) {
         return cb(e);
       }
@@ -301,16 +286,6 @@ function getParseSchema() {
         'life_state': {},
         'healing': {},
         'damage_inflictor_received': {},
-        /*
-        "kill_streaks_log": [], // an array of kill streak values
-        //     where each kill streak is an array of kills where
-        //         where each kill is an object that contains
-        //             - the hero id of the player who was killed
-        //             - the multi kill id of this kill
-        //             - the team fight id of this kill
-        //             - the time of this kill
-        "multi_kill_id_vals": [] // an array of multi kill values (the length of each multi kill)
-        */
       };
     }),
   };
