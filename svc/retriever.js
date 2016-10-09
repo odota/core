@@ -12,7 +12,7 @@ const app = express();
 const steamObj = {};
 const accountToIdx = {};
 const launch = new Date();
-const matchRequestDelay = 3000;
+const matchRequestDelay = 1200;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
@@ -220,7 +220,7 @@ function start() {
     const Dota2 = steamObj[idx].Dota2;
     console.log('[DOTA] requesting match %s, numusers: %s, requests: %s', match_id, users.length, matchRequests);
     matchRequests += 1;
-    if (matchRequests >= 500 && getUptime() > 600 && config.NODE_ENV !== 'development') {
+    if (matchRequests > 500 && getUptime() > 600 && config.NODE_ENV !== 'development') {
       selfDestruct();
     }
     steamObj[idx].matches += 1;
