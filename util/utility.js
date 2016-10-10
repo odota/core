@@ -227,11 +227,6 @@ function getData(url, cb) {
       json: true,
       timeout,
     }, (err, res, body) => {
-      if (body && body.error) {
-        // body contained specific error (probably from retriever)
-        // non-retryable
-        return cb(body);
-      }
       if (err || !res || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response && !body.player_infos && !body.teams)) {
         // invalid response
         if (url.noRetry) {

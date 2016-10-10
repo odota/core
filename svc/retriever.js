@@ -48,7 +48,9 @@ function start() {
   app.get('/', (req, res, next) => {
     // console.log(process.memoryUsage());
     const keys = Object.keys(steamObj);
-    if (keys.length == 0) return next('No accounts ready');
+    if (keys.length == 0) {
+      return next('No accounts ready');
+    }
     const r = keys[Math.floor((Math.random() * keys.length))];
     if (req.query.mmstats) {
       getMMStats(r, (err, data) => {
@@ -56,6 +58,14 @@ function start() {
         return next(err);
       });
     } else if (req.query.match_id) {
+      // Don't allow requests coming in too fast
+      const curRequestTime = new Date();
+      if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
+        return res.status(429).json({
+          error: 'too many requests'
+        });
+      }
+      lastRequestTime = curRequestTime;
       getGcMatchData(r, req.query.match_id, (err, data) => {
         res.locals.data = data;
         return next(err);
@@ -176,12 +186,6 @@ function start() {
     const Dota2 = steamObj[idx].Dota2;
     console.log('requesting player profile %s', account_id);
     steamObj[idx].profiles += 1;
-    /*
-    Dota2.requestProfile(account_id, false, function(err, profileData) {
-        //console.log(err, profileData);
-        cb(err, profileData.game_account_client);
-    });
-    */
     Dota2.requestProfileCard(account_id, (err, profileData) => {
       /*
      	enum EStatID {
@@ -210,13 +214,6 @@ function start() {
   }
 
   function getGcMatchData(idx, match_id, cb) {
-    const curRequestTime = new Date();
-    // Don't allow requests faster than 1/s
-    if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
-      return cb(429);
-    }
-    lastRequestTime = curRequestTime;
-    match_id = Number(match_id);
     const Dota2 = steamObj[idx].Dota2;
     console.log('[DOTA] requesting match %s, numusers: %s, requests: %s', match_id, users.length, matchRequests);
     matchRequests += 1;
@@ -224,7 +221,7 @@ function start() {
       selfDestruct();
     }
     steamObj[idx].matches += 1;
-    Dota2.requestMatchDetails(match_id, (err, matchData) => {
+    Dota2.requestMatchDetails(Number(match_id), (err, matchData) => {
       cb(err, matchData);
     });
   }
