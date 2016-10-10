@@ -1,34 +1,27 @@
 const config = require('../config');
-module.exports = function queryRaw(input, cb)
-{
-  var knex = require('knex')(
-  {
+const knex = require('knex');
+module.exports = function queryRaw(input, cb) {
+  const conn = knex({
     client: 'pg',
     connection: config.READONLY_POSTGRES_URL,
-    pool:
-    {
+    pool: {
       min: 1,
       max: 1,
     },
   });
-  var sql = input.sql || translateNQL(input.q);
-  var q = knex.raw(sql).timeout(60000);
-  q.asCallback(function (err, result)
-  {
-    knex.destroy(function ()
-    {
-      cb(err, Object.assign(
-      {}, input,
-      {
-        result: result,
+  const sql = input.sql || translateNQL(input.q);
+  const q = conn.raw(sql).timeout(60000);
+  q.asCallback((err, result) => {
+    conn.destroy(() => {
+      cb(err, Object.assign({}, input, {
+        result,
         err: err ? err.stack : err,
       }));
     });
   });
 };
 
-function translateNQL(input)
-{
-  //TODO @nicholashh to implement this
-  return "";
+function translateNQL(input) {
+  // TODO @nicholashh to implement this
+  return '';
 }

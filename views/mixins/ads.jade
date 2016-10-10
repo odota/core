@@ -1,10 +1,10 @@
 mixin ad(type)
   if config.ENABLE_ADS
     if type==="banner1"
-      style #eblur img { display: block; margin: 0 auto; max-width: 100%; }
+      style #vp img { display: block; margin: 0 auto; max-width: 100%; }
       div
-        a#eblur(href='http://bit.do/yasp_banner')
-          img(src='/public/images/eblur.png')
+        a#vp(href='http://www.vpgame.com/?lang=en_us', onclick="ga('send', 'event', 'vp', 'click', 'banner')")
+          img(src='/public/images/vp.jpg')
       hr
     else if type==="banner2"
       hr

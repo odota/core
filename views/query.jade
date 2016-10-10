@@ -1,4 +1,4 @@
-button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Apply A Filter
+button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 15px" data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Apply A Filter
 #filter_collapse.collapse(class=querystring ? "in" : "")
   form#query(action="" method="GET")
     if config.NODE_ENV==="development"
@@ -6,33 +6,33 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
     .row
       .col-md-3
         .form-group
-          label The Team Included
-          select.form-control(name="with_hero_id" multiple, data-placeholder="Team: Any Hero")#with_hero_id
+          label Team Included
+          select.form-control(name="with_hero_id" multiple, data-placeholder="Any Hero")#with_hero_id
             each entry in constants.heroes
               option(value=entry.id, selected=q.with_hero_id && q.with_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
-          label The Enemies Included
-          select.form-control(name="against_hero_id" multiple, data-placeholder="Enemy: Any Hero")#enemy_hero_id
+          label Enemies Included
+          select.form-control(name="against_hero_id" multiple, data-placeholder="Any Hero")#enemy_hero_id
             each entry in constants.heroes
               option(value=entry.id, selected=q.against_hero_id && q.against_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
-          label The Players Included
-          select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player ID")#included_account_id
+          label Players Included
+          select.form-control(name="included_account_id", multiple, data-placeholder="Any Player ID")#included_account_id
             each entry in q.included_account_id || []
               option(value=entry, selected=q.included_account_id && q.included_account_id.indexOf(entry)!==-1)=entry
         .form-group
-          label The Players Excluded
-          select.form-control(name="excluded_account_id", multiple, data-placeholder="Excluded: Any Player ID")#excluded_account_id
+          label Players Excluded
+          select.form-control(name="excluded_account_id", multiple, data-placeholder="Any Player ID")#excluded_account_id
             each entry in q.excluded_account_id || []
               option(value=entry, selected=q.excluded_account_id && q.excluded_account_id.indexOf(entry)!==-1)=entry
-              
+
       .col-md-3
         .form-group
           label Hero
           select.form-control(multiple name="hero_id" data-placeholder="Any Hero")#hero_id
             each entry in constants.heroes
               option(value=entry.id, selected=(q["hero_id"] && q["hero_id"][0]===entry.id))=entry.localized_name
-        .form-group  
+        .form-group
           label Faction
           select.form-control(multiple name="is_radiant" data-placeholder="Any Faction")#is_radiant
             option(value="1", selected=(q["is_radiant"] && q["is_radiant"][0]===1)) Radiant
@@ -45,9 +45,9 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
         .form-group
           label Lane
           select.form-control(multiple name="lane_role" data-placeholder="Any Lane")#lane_role
-            each val, key in constants.lane_role		
+            each val, key in constants.lane_role
               option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
-              
+
       .col-md-3
         .form-group
           label Patch
@@ -66,17 +66,17 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
             each entry in constants.lobby_type
               option(value=entry.id, selected=(q.lobby_type && q.lobby_type[0]===entry.id))=entry.name
         .form-group
-          label Date
-          select.form-control(multiple name="date" data-placeholder="Any Date")#date
-            - var date_list = {7:"Last 1 Week",30:"Last 1 Month",90:"Last 3 Months",180:"Last 6 Months"}
-            each name, id in date_list
-              option(value=id, selected=(q.date && q.date[0]===Number(id)))=name
-        .form-group
           label Region
           select.form-control(multiple name="region" data-placeholder="Any Region")#region
             each name, id in constants.region
               option(value=id, selected=(q.region && q.region[0]===Number(id)))=name
       .col-md-3
+        .form-group
+          label Date
+          select.form-control(multiple name="date" data-placeholder="Any Date")#date
+            - var date_list = {7:"Last 1 Week",30:"Last 1 Month",90:"Last 3 Months",180:"Last 6 Months"}
+            each name, id in date_list
+              option(value=id, selected=(q.date && q.date[0]===Number(id)))=name
         .form-group
           label Order by
           select.form-control(multiple, name="desc", data-placeholder="Match ID")#desc
@@ -84,7 +84,7 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
               option(value=key, selected=(q.desc===key))=prettyPrint(key)
         .form-group
           label Limit
-          input.form-control(name="limit" placeholder="No limit" value=q.limit)#limit
+          input.form-control(name="limit" placeholder="No Limit" value=q.limit)#limit
 
     hr
     .row
@@ -94,10 +94,31 @@ button.btn.btn-primary.btn-xs.toggle-button(style="margin-top: 0.5em" data-toggl
         span: a.btn.btn-danger(href="./"+route) Reset the Thing
   hr
   style.
-    .select2-container, .select2-search__field {
-    width: 100% !important;
-    padding: 0;
-    color: #000;
+    .select2-container--bootstrap .select2-selection,
+    .select2-container--bootstrap .select2-search--dropdown .select2-search__field {
+      font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    .select2-container {
+      color: #000;
+    }
+    .form-group .select2-container,
+    .form-group .select2-search__field {
+      width: 100% !important;
+      padding: 0;
+    }
+    #query {
+      margin-top: 15px;
+    }
+    #query .form-control {
+      border: 1px solid #ccc;
+      height: 34px;
+      font-family: inherit;
+      font-size: 14px;
+      padding: 0 12px;
+    }
+    #query .form-control:focus {
+      border-color: #66afe9;
+      box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
     }
   script.
     queryForm();

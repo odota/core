@@ -3,7 +3,7 @@ extend layout
 block content
   h1 Status
   .row
-    .col-md-3
+    .col-md-4
       h3 Counts
       table.table
         thead
@@ -16,7 +16,7 @@ block content
               tr
                 td=key
                 td(id=key)=val
-    .col-md-3
+    .col-md-4
       h3 Health
       table.table.table-condensed
         thead
@@ -35,7 +35,20 @@ block content
                 br
                 span.small.text-muted  #{(val.metric/val.threshold*100).toFixed(2)}%
 
-    .col-md-3
+    .col-md-4
+      h3 Retrievers
+      table.table.table-condensed
+        thead
+          tr
+            th Node
+            th Count
+        tbody
+          each entry in result.retriever || []
+            tr
+              td=entry.hostname
+              td=entry.count
+  .row
+    .col-md-4
       h3 Last Added
       table.table#last_added
         thead
@@ -47,7 +60,7 @@ block content
             tr
               td: a(href="/matches/"+match.match_id)= match.match_id
               td=moment.unix(match.start_time + match.duration).fromNow()
-    .col-md-3
+    .col-md-4
       h3 Last Parsed
       table.table#last_parsed
         thead
@@ -59,7 +72,6 @@ block content
             tr
               td: a(href="/matches/"+match.match_id)= match.match_id
               td=moment.unix(match.start_time + match.duration).fromNow()
-  .row
     .col-md-4
       h3 Queue
       //pre=JSON.stringify(result.queue)
@@ -75,47 +87,6 @@ block content
               td=key
               each val2, key2 in val
                 td(id=["queue",key, key2].join('_'))=val2
-    .col-md-4
-      h3 Parsers
-      table.table.table-condensed
-        thead
-          tr
-            th Node
-            th Count
-        tbody
-          each entry in result.parser || []
-            tr
-              td=entry.hostname
-              td=entry.count
-          tr
-            td
-              a#collapse.panel-group(data-toggle="collapse", href="#group", aria-expanded="false" aria-controls="group") #{group}
-            td= total
-      //-
-        .collapse#group
-          table.table.table-condensed
-            thead
-              tr
-                th Node
-                th Count
-            tbody
-              each entry in result.parser
-                tr
-                  if true || entry.hostname.indexOf(group) === 0
-                    td=entry.hostname
-                    td=entry.count
-    .col-md-4
-      h3 Retrievers
-      table.table.table-condensed
-        thead
-          tr
-            th Node
-            th Count
-        tbody
-          each entry in result.retriever || []
-            tr
-              td=entry.hostname
-              td=entry.count
   .row
     .col-md-12
       h3 Load Times (ms)

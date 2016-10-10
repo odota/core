@@ -4,6 +4,7 @@
 # Script run in the main container
 # If this script exits, so does the main container
 
+# Rebuild to replace mapped directory build
 npm run build
 
 case $1 in
@@ -23,5 +24,5 @@ case $1 in
     ;;
 esac
 
-# We shall now display webserver logs indefinitely
-pm2 logs web
+# We shall now display logs indefinitely
+pm2 logs

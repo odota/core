@@ -1,150 +1,106 @@
 /**
  * Function to build status data
  **/
-var config = require('../config');
-var queue = require('./queue');
-var async = require('async');
-var moment = require('moment');
-module.exports = function buildStatus(db, redis, cb)
-{
-    console.time('status');
-    redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("api_hits", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("parser", 0, moment().subtract(1, 'day').format('X'));
-    config.RETRIEVER_HOST.split(',').map(function (r)
-    {
-        return "retriever:" + r.split('.')[0];
-    }).forEach(function (retkey)
-    {
-        redis.zremrangebyscore(retkey, 0, moment().subtract(1, 'day').format('X'));
-    });
-    async.series(
-    {
-        user_players: function (cb)
-        {
-            redis.zcard('visitors', cb);
-        },
-        tracked_players: function (cb)
-        {
-            redis.zcard('tracked', cb);
-        },
-        error_500: function (cb)
-        {
-            redis.zcard("error_500", cb);
-        },
-        matches_last_day: function (cb)
-        {
-            redis.zcard("added_match", cb);
-        },
-        matches_last_hour: function (cb)
-        {
-            redis.zcount("added_match", moment().subtract(1, 'hour').format('X'), '+inf', cb);
-        },
-        api_hits: function (cb)
-        {
-            redis.zcard("api_hits", cb);
-        },
-        last_added: function (cb)
-        {
-            redis.lrange('matches_last_added', 0, -1, function (err, result)
-            {
-                return cb(err, result.map(function (r)
-                {
-                    return JSON.parse(r);
-                }));
-            });
-        },
-        last_parsed: function (cb)
-        {
-            redis.lrange('matches_last_parsed', 0, -1, function (err, result)
-            {
-                return cb(err, result.map(function (r)
-                {
-                    return JSON.parse(r);
-                }));
-            });
-        },
-        parser: function (cb)
-        {
-            async.map(["parser"], function (zset, cb)
-            {
-                redis.zcard(zset, function (err, cnt)
-                {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    return cb(err,
-                    {
-                        hostname: zset,
-                        count: cnt
-                    });
-                });
-            }, cb);
-        },
-        retriever: function (cb)
-        {
-            async.map(config.RETRIEVER_HOST.split(',').map(function (r)
-            {
-                return "retriever:" + r.split('.')[0];
-            }), function (zset, cb)
-            {
-                redis.zcard(zset, function (err, cnt)
-                {
-                    if (err)
-                    {
-                        return cb(err);
-                    }
-                    return cb(err,
-                    {
-                        hostname: zset.substring("retriever:".length),
-                        count: cnt
-                    });
-                });
-            }, cb);
-        },
-        queue: function (cb)
-        {
-            //generate object with properties as queue types, each mapped to json object mapping state to count
-            queue.getCounts(redis, cb);
-        },
-        load_times: function (cb)
-        {
-            redis.lrange("load_times", 0, -1, function (err, arr)
-            {
-                cb(err, generateCounts(arr, 1000));
-            });
-        },
-        health: function (cb)
-        {
-            redis.hgetall('health', function (err, result)
-            {
-                if (err)
-                {
-                    return cb(err);
-                }
-                for (var key in result)
-                {
-                    result[key] = JSON.parse(result[key]);
-                }
-                cb(err, result ||
-                {});
-            });
+// const config = require('../config');
+const queue = require('./queue');
+const async = require('async');
+const moment = require('moment');
+module.exports = function buildStatus(db, redis, cb) {
+  redis.zremrangebyscore('added_match', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('error_500', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('api_hits', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('parser', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('retriever', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('visitor_match', 0, moment().subtract(1, 'day').format('X'));
+  async.series({
+    user_players(cb) {
+      redis.zcard('visitors', cb);
+    },
+    tracked_players(cb) {
+      redis.zcard('tracked', cb);
+    },
+    error_500(cb) {
+      redis.zcard('error_500', cb);
+    },
+    matches_last_day(cb) {
+      redis.zcard('added_match', cb);
+    },
+    matches_last_hour(cb) {
+      redis.zcount('added_match', moment().subtract(1, 'hour').format('X'), moment().format('X'), cb);
+    },
+    visitor_matches_last_day(cb) {
+      redis.zcard('visitor_match', cb);
+    },
+    retriever_matches_last_day(cb) {
+      redis.zcard('retriever', cb);
+    },
+    parsed_matches_last_day(cb) {
+      redis.zcard('parser', cb);
+    },
+    api_hits(cb) {
+      redis.zcard('api_hits', cb);
+    },
+    last_added(cb) {
+      redis.lrange('matches_last_added', 0, -1, (err, result) => {
+        return cb(err, result.map((r) => {
+          return JSON.parse(r);
+        }));
+      });
+    },
+    last_parsed(cb) {
+      redis.lrange('matches_last_parsed', 0, -1, (err, result) => {
+        return cb(err, result.map((r) => {
+          return JSON.parse(r);
+        }));
+      });
+    },
+    retriever(cb) {
+      redis.zrange('retriever', -10000, -1, (err, results) => {
+        if (err) {
+          return cb(err);
         }
-    }, function (err, results)
-    {
-        cb(err, results);
-    });
-
-    function generateCounts(arr, cap)
-    {
-        var res = {};
-        arr.forEach(function (e)
-        {
-            e = Math.min(e, cap);
-            res[e] = res[e] ? res[e] + 1 : 1;
+        const counts = {};
+        results.forEach((e) => {
+          const key = e.split('_')[0];
+          counts[key] = counts[key] ? counts[key] + 1 : 1;
         });
-        return res;
-    }
+        const result = Object.keys(counts).map(retriever => ({
+          hostname: retriever,
+          count: counts[retriever],
+        })).sort((a, b) => a.hostname.localeCompare(b.hostname));
+        cb(err, result);
+      });
+    },
+    queue(cb) {
+      // generate object with properties as queue types, each mapped to json object mapping state to count
+      queue.getCounts(redis, cb);
+    },
+    load_times(cb) {
+      redis.lrange('load_times', 0, -1, (err, arr) => {
+        cb(err, generateCounts(arr, 1000));
+      });
+    },
+    health(cb) {
+      redis.hgetall('health', (err, result) => {
+        if (err) {
+          return cb(err);
+        }
+        for (const key in result) {
+          result[key] = JSON.parse(result[key]);
+        }
+        cb(err, result || {});
+      });
+    },
+  }, (err, results) => {
+    cb(err, results);
+  });
+
+  function generateCounts(arr, cap) {
+    const res = {};
+    arr.forEach((e) => {
+      e = Math.min(e, cap);
+      res[e] = res[e] ? res[e] + 1 : 1;
+    });
+    return res;
+  }
 };

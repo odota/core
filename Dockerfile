@@ -1,15 +1,13 @@
-FROM node:6.5.0
+FROM node:6.7.0
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
-WORKDIR /usr/src/yasp
+COPY . /usr/src
 
-ADD package.json /usr/src/yasp
-RUN npm install
+WORKDIR /usr/src
 
-ADD . /usr/src/yasp
-RUN npm run webpack
+RUN npm run build
 
-ENV PATH /usr/src/yasp/node_modules/pm2/bin:$PATH
+ENV PATH /usr/src/node_modules/.bin:$PATH
 
-CMD [ "npm", "start" ]
+CMD ["bash"]
