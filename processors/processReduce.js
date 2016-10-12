@@ -6,29 +6,11 @@ function processReduce(entries, meta) {
     if (e.type === 'actions') {
       return false;
     }
-    if (e.type === 'DOTA_COMBATLOG_MODIFIER_REMOVE') {
-      return false;
-    }
     if (e.type === 'DOTA_COMBATLOG_XP' || e.type === 'DOTA_COMBATLOG_GOLD') {
       return false;
     }
-    /*
-    if (e.type === "DOTA_COMBATLOG_ABILITY" || e.type === "DOTA_COMBATLOG_ITEM")
-    {
-        return false;
-    }
-    */
-    if (e.type === 'DOTA_COMBATLOG_DAMAGE') {
+    if (e.type === 'DOTA_COMBATLOG_DAMAGE' && targetname.indexOf('neutral') === -1 && targetname.indexOf('creep') === -1) {
       return true;
-    }
-    if (e.type === 'DOTA_COMBATLOG_MODIFIER_ADD' || e.type === 'DOTA_COMBATLOG_HEAL') {
-      return false;
-      /*
-      if (!e.targethero || e.targetillusion)
-      {
-          return false;
-      }
-      */
     }
     if (e.type === 'interval' && e.time % 60 !== 0) {
       return false;
