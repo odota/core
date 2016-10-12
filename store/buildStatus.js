@@ -28,7 +28,7 @@ module.exports = function buildStatus(db, redis, cb) {
     matches_last_hour(cb) {
       redis.zcount('added_match', moment().subtract(1, 'hour').format('X'), moment().format('X'), cb);
     },
-    visitor_matches_last_day(cb) {
+    user_matches_last_day(cb) {
       redis.zcard('visitor_match', cb);
     },
     retriever_matches_last_day(cb) {
@@ -55,7 +55,7 @@ module.exports = function buildStatus(db, redis, cb) {
       });
     },
     retriever(cb) {
-      redis.zrange('retriever', -10000, -1, (err, results) => {
+      redis.zrevrange('retriever', 0, 100000, (err, results) => {
         if (err) {
           return cb(err);
         }
