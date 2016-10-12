@@ -31,7 +31,7 @@
     "body-parser": "1.15.2",
     "bootstrap": "3.3.7",
     "bootswatch": "3.3.7",
-    "braintree": "1.41.0",
+    "braintree": "1.42.0",
     "bull": "1.0.0",
     "c3": "0.4.11",
     "cal-heatmap": "3.6.1",
