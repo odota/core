@@ -55,7 +55,7 @@ module.exports = function buildStatus(db, redis, cb) {
       });
     },
     retriever(cb) {
-      redis.zrevrange('retriever', 0, 100000, (err, results) => {
+      redis.zrevrange('retriever', 0, 10000, (err, results) => {
         if (err) {
           return cb(err);
         }
