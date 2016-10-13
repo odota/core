@@ -43,7 +43,7 @@ function computeMatchData(pm) {
     pm.kills_per_min = pm.kills / (pm.duration / 60);
   }
   if (pm.kills !== undefined && pm.deaths !== undefined && pm.assists !== undefined) {
-    pm.kda = ~~((pm.kills + pm.assists) / (pm.deaths + 1));
+    pm.kda = ~~((pm.kills + pm.assists) / Math.max(pm.deaths, 1));
   }
   if (pm.leaver_status !== undefined) {
     pm.abandons = Number(pm.leaver_status >= 2);
