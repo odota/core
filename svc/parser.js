@@ -15,7 +15,7 @@ const queries = require('../store/queries');
 const compute = require('../util/compute');
 const processAllPlayers = require('../processors/processAllPlayers');
 const processTeamfights = require('../processors/processTeamfights');
-const processReduce = require('../processors/processReduce');
+const processLogParse = require('../processors/processLogParse');
 const processUploadProps = require('../processors/processUploadProps');
 const processParsedData = require('../processors/processParsedData');
 const processMetadata = require('../processors/processMetadata');
@@ -190,26 +190,46 @@ function runParse(match, job, cb) {
       return cb(err);
     } else {
       try {
-        const message = 'time spent on post-processing match ';
-        console.time(message);
+        console.time('processMetadata');
         const meta = processMetadata(entries);
         meta.match_id = match.match_id;
-        const expanded = processExpand(entries, meta);
+        console.timeEnd('processMetadata');
+        console.time('adjustTime');
+        // adjust time by zero value to get actual game time
+        const adjustedEntries = entries.map(e => Object.assign({}, e, {
+          time: e.time - meta.game_zero
+        }));
+        console.timeEnd('adjustTime');
+        console.time('processExpand');
+        // pass a copy of the array since this function mutates the type property of entries
+        // TODO this should not mutate the original array
+        // Teamfights processor should handle the original types
+        const expanded = processExpand(JSON.parse(JSON.stringify(adjustedEntries)), meta);
+        console.timeEnd('processExpand');
+        console.time('processParsedData');
         const parsed_data = processParsedData(expanded.parsed_data, getParseSchema());
+        console.timeEnd('processParsedData');
+        console.time('processTeamfights');
         const teamfights = processTeamfights(expanded.tf_data, meta);
         parsed_data.teamfights = teamfights;
+        console.timeEnd('processTeamfights');
+        console.time('processAllPlayers');
         const ap = processAllPlayers(expanded.int_data);
         parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
         parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
+        console.timeEnd('processAllPlayers');
         if (match.replay_blob_key) {
+          console.time('processUploadProps');
           const upload = processUploadProps(expanded.uploadProps, meta);
           parsed_data.upload = upload;
+          console.timeEnd('processUploadProps');
         }
         if (match.doLogParse) {
-          const logs = processReduce(entries, meta);
+          console.time('processLogParse');
+          const logs = processLogParse(adjustedEntries, meta);
           parsed_data.logs = logs;
+          console.timeEnd('processLogParse');
         }
-        console.timeEnd(message);
         parsed_data.match_id = match.match_id;
         parsed_data.pgroup = match.pgroup;
         parsed_data.radiant_win = match.radiant_win;

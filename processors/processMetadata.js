@@ -49,12 +49,6 @@ function processMetadata(entries) {
       metaTypes[e.type](e);
     }
   }
-  for (let j = 0; j < entries.length; j++) {
-    const e2 = entries[j];
-    // adjust time by zero value to get actual game time
-    // we can only do this once stream is complete since the game start time (game_zero) is sent at some point in the stream
-    e2.time -= game_zero;
-  }
   return {
     game_zero,
     hero_to_slot,

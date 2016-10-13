@@ -9,8 +9,11 @@ function processReduce(entries, meta) {
     if (e.type === 'DOTA_COMBATLOG_XP' || e.type === 'DOTA_COMBATLOG_GOLD') {
       return false;
     }
-    if (e.type === 'DOTA_COMBATLOG_DAMAGE' && targetname.indexOf('neutral') === -1 && targetname.indexOf('creep') === -1) {
-      return true;
+    if ((e.type === 'DOTA_COMBATLOG_MODIFIER_ADD' || e.type === 'DOTA_COMBATLOG_MODIFIER_REMOVE') && !e.targethero) {
+      return false;
+    }
+    if (e.type === 'DOTA_COMBATLOG_DAMAGE' && (e.targetname.indexOf('neutral') === -1 || e.targetname.indexOf('creep') === -1)) {
+      return false;
     }
     if (e.type === 'interval' && e.time % 60 !== 0) {
       return false;
