@@ -183,7 +183,7 @@ function getData(url, cb) {
   let u;
   let delay = Number(config.DEFAULT_DELAY);
   let proxyAffinityRange;
-  let timeout = 15000;
+  let timeout = 5000;
   if (url.constructor === Array) {
     // select a random element if array
     u = url[Math.floor(Math.random() * url.length)];
