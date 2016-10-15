@@ -6,8 +6,6 @@ const benchmarks = require('../util/benchmarks');
 const config = require('../config');
 const constants = require('dotaconstants');
 const queue = require('./queue');
-const mQueue = queue.getQueue('mmr');
-const gcQueue = queue.getQueue('gcdata');
 const async = require('async');
 const convert64to32 = utility.convert64to32;
 const moment = require('moment');
@@ -501,11 +499,10 @@ function insertMatch(db, redis, match, options, cb) {
 
   function decideGcData(cb) {
     if (options.origin === 'scanner' && Math.random() < 0.01) {
-      queue.addToQueue(gcQueue, {
+      redis.lpush('gcQueue', JSON.stringify({
         match_id: match.match_id
-      }, {
-        attempts: 2
-      }, cb);
+      }));
+      cb();
     } else {
       cb();
     }
