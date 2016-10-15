@@ -68,7 +68,7 @@ function start() {
           error: 'too many requests'
         });
       }
-      if (timeouts > 10) {
+      if (timeouts > 50) {
         // If we keep timing out, stop making requests
         if (getUptime() > minUpTimeSeconds) {
           return selfDestruct();
