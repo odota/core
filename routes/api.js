@@ -589,9 +589,9 @@ module.exports = function (db, redis, cassandra) {
     });
   });
   api.get('/request_job', (req, res, cb) => {
-    pQueue.getJob(req.query.id).then((job) => {
+    return pQueue.getJob(req.query.id).then((job) => {
       if (job) {
-        job.getState().then((state) => {
+        return job.getState().then((state) => {
           return res.json({
             jobId: job.jobId,
             data: job.data,
