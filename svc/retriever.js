@@ -13,7 +13,7 @@ const steamObj = {};
 const accountToIdx = {};
 const launch = new Date();
 const matchRequestDelay = 1200;
-const minUpTimeSeconds = 600;
+const minUpTimeSeconds = 630;
 const timeoutMs = 15000;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
