@@ -57,14 +57,6 @@
       "instances": 1
     },
     {
-      "script": "svc/cacher.js",
-      "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "backend",
-      "exec_mode": "cluster",
-      "instances": 1
-    },
-    {
       "script": "svc/monitor.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],

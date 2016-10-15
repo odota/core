@@ -1,12 +1,11 @@
 /**
  * Provides methods for working with the job queue
  **/
-const generateJob = require('../util/utility').generateJob;
 const config = require('../config');
 const bull = require('bull');
 const url = require('url');
 const async = require('async');
-const types = ['request', 'mmr', 'parse', 'cache', 'fullhistory', 'gcdata'];
+const types = ['request', 'mmr', 'parse', 'fullhistory', 'gcdata'];
 // parse the url
 const connInfo = url.parse(config.REDIS_URL, true /* parse query string */ );
 if (connInfo.protocol !== 'redis:') {
