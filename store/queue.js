@@ -28,21 +28,6 @@ function getQueue(type) {
   });
 }
 
-function addToQueue(queue, payload, options, cb) {
-  const job = {
-    payload: payload
-  };
-  options.attempts = options.attempts || 15;
-  options.backoff = options.backoff || {
-    delay: 60 * 1000,
-    type: 'exponential',
-  };
-  queue.add(job, options).then((queuejob) => {
-    // console.log("created %s jobId: %s", queue.name, queuejob.jobId);
-    cb(null, queuejob);
-  }).catch(cb);
-}
-
 function getCounts(redis, cb) {
   async.map(types, getQueueCounts, (err, result) => {
     const obj = {};
@@ -110,7 +95,6 @@ function runQueue(queueName, parallelism, processor) {
 
 module.exports = {
   getQueue,
-  addToQueue,
   getCounts,
   cleanup,
   runQueue,

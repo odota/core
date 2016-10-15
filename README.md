@@ -42,7 +42,7 @@ Quickstart (Docker)
   * `pm2 start svc/web.js --watch` This starts a specific service and watches it for changes.
   * `pm2 logs web` Inspect the output of a service.
   * `pm2 delete all` Stop and remove all the services.
-* Testss
+* Tests
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
 * Get some starter data
   * You can request some parses by ID to get some parsed data.

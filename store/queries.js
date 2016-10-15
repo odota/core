@@ -526,22 +526,26 @@ function insertMatch(db, redis, match, options, cb) {
         const doLogParse = options.doLogParse;
         const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
         if (doParse) {
-          // queue it and finish, callback with the queued parse job
-          return queue.addToQueue(pQueue, {
-            match_id: match.match_id,
-            radiant_win: match.radiant_win,
-            start_time: match.start_time,
-            duration: match.duration,
-            replay_blob_key: match.replay_blob_key,
-            pgroup: match.pgroup,
-            doLogParse,
-          }, {
-            lifo: options.lifo,
-            attempts: options.attempts,
-            backoff: options.backoff,
-          }, (err, job2) => {
-            cb(err, job2);
-          });
+          return pQueue.add({
+              payload: {
+                match_id: match.match_id,
+                radiant_win: match.radiant_win,
+                start_time: match.start_time,
+                duration: match.duration,
+                replay_blob_key: match.replay_blob_key,
+                pgroup: match.pgroup,
+                doLogParse,
+              }
+            }, {
+              lifo: options.lifo,
+              attempts: options.attempts || 15,
+              backoff: options.backoff || {
+                delay: 60 * 1000,
+                type: 'exponential',
+              }
+            })
+            .then((parseJob) => cb(null, parseJob))
+            .catch(cb);
         } else {
           cb();
         }

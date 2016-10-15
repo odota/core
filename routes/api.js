@@ -582,9 +582,14 @@ module.exports = function (db, redis, cassandra) {
         });
       } else {
         // file upload request
-        queue.addToQueue(pQueue, match, {
-          attempts: 1,
-        }, exitWithJob);
+        return pQueue.add({
+            payload: match
+          }, {
+            lifo: true,
+            attempts: 1,
+          })
+          .then((parseJob) => exitWithJob(null, parseJob))
+          .catch(exitWithJob);
       }
     });
   });
