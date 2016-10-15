@@ -36,13 +36,13 @@ Quickstart (Docker)
 
 ### Other information
 * Get a terminal into the running container: `docker exec -it odota-core bash`
-* Start the services you want to run:
-  * `pm2 start profiles/basic.json` This starts all the basic services to be able to read the API and request parses (which is a useful end-to-end test).  The profiles directory contains common sets of services to be started together.
-  * Useful PM2 commands:
-    * `pm2 start svc/web.js --watch` This starts a specific service and watches it for changes.
-    * `pm2 logs web` You can use this command to inspect the output of a service.
-    * `pm2 delete all` Stop and remove all the services.
-* Tests
+* The process manager `pm2` is used to manage the individual services. Each is run as a single Node.js process.
+  * `pm2 list` See the currently running services.
+  * `pm2 start manifest.json` Start all the services.
+  * `pm2 start svc/web.js --watch` This starts a specific service and watches it for changes.
+  * `pm2 logs web` Inspect the output of a service.
+  * `pm2 delete all` Stop and remove all the services.
+* Testss
   * `npm test` runs the full test suite.  Use `mocha` for more fine-grained control over the tests you want to run.
 * Get some starter data
   * You can request some parses by ID to get some parsed data.

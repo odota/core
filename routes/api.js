@@ -11,7 +11,7 @@ const multer = require('multer')({
   fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
 const queue = require('../store/queue');
-const rQueue = queue.getQueue('request');
+const pQueue = queue.getQueue('parse');
 const queries = require('../store/queries');
 const search = require('../store/search');
 const buildMatch = require('../store/buildMatch');
@@ -513,7 +513,7 @@ module.exports = function (db, redis, cassandra) {
       }
     });
   });
-  api.post('/request_job', multer.single('replay_blob'), (req, res, next) => {
+  api.post('/request_job', multer.single('replay_blob'), (req, res, cb) => {
     request.post('https://www.google.com/recaptcha/api/siteverify', {
       form: {
         secret: rc_secret,
@@ -521,7 +521,7 @@ module.exports = function (db, redis, cassandra) {
       },
     }, (err, resp, body) => {
       if (err) {
-        return next(err);
+        return cb(err);
       }
       try {
         body = JSON.parse(body);
@@ -551,28 +551,45 @@ module.exports = function (db, redis, cassandra) {
           match_id,
         };
       }
-      if (match) {
-        console.log(match);
-        queue.addToQueue(rQueue, match, {
-          attempts: 1,
-        }, (err, job) => {
-          res.json({
-            error: err,
-            job: {
-              jobId: job.jobId,
-              data: job.data,
-            },
-          });
+
+      function exitWithJob(err, parseJob) {
+        res.status(err ? 400 : 200).json({
+          error: err,
+          job: {
+            jobId: parseJob.jobId,
+          }
+        });
+      }
+
+      if (!match) {
+        return exitWithJob('invalid input', {});
+      } else if (match && match.match_id) {
+        // match id request, get data from API
+        utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
+          if (err) {
+            // couldn't get data from api, non-retryable
+            return cb(JSON.stringify(err));
+          }
+          // match details response
+          const match = body.result;
+          queries.insertMatch(db, redis, match, {
+            type: 'api',
+            attempts: 1,
+            lifo: true,
+            cassandra,
+            forceParse: true,
+          }, exitWithJob);
         });
       } else {
-        res.json({
-          error: 'Invalid input.',
-        });
+        // file upload request
+        queue.addToQueue(pQueue, match, {
+          attempts: 1,
+        }, exitWithJob);
       }
     });
   });
   api.get('/request_job', (req, res, cb) => {
-    rQueue.getJob(req.query.id).then((job) => {
+    pQueue.getJob(req.query.id).then((job) => {
       if (job) {
         job.getState().then((state) => {
           return res.json({
