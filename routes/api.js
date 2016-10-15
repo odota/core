@@ -12,7 +12,6 @@ const multer = require('multer')({
 });
 const queue = require('../store/queue');
 const rQueue = queue.getQueue('request');
-const fhQueue = queue.getQueue('fullhistory');
 const queries = require('../store/queries');
 const search = require('../store/search');
 const buildMatch = require('../store/buildMatch');
@@ -402,16 +401,14 @@ module.exports = function (db, redis, cassandra) {
   });
   api.post('/players/:account_id/refresh', (req, res, cb) => {
     console.log(req.body);
-    queue.addToQueue(fhQueue, {
+    redis.lpush('fhQueue', JSON.stringify({
       account_id: req.params.account_id || '1',
-    }, {
-      attempts: 1,
-    }, (err, job) => {
+    }), (err, length) => {
       if (err) {
         return cb(err);
       }
       res.json({
-        jobId: job.jobId,
+        length: length
       });
     });
   });

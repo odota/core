@@ -8,5 +8,5 @@ const redis = require('../store/redis');
 queue.runQueue('gcQueue', 20, processGcData);
 
 function processGcData(job, cb) {
-  getGcData(db, redis, job.data.payload, cb);
+  getGcData(db, redis, job, cb);
 }

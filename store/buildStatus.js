@@ -37,6 +37,15 @@ module.exports = function buildStatus(db, redis, cb) {
     parsed_matches_last_day(cb) {
       redis.zcard('parser', cb);
     },
+    fhQueue(cb) {
+      redis.llen('fhQueue', cb);
+    },
+    gcQueue(cb) {
+      redis.llen('gcQueue', cb);
+    },
+    mmrQueue(cb) {
+      redis.llen('mmrQueue', cb);
+    },
     api_hits(cb) {
       redis.zcard('api_hits', cb);
     },
