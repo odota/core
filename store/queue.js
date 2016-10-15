@@ -6,7 +6,7 @@ const bull = require('bull');
 const url = require('url');
 const async = require('async');
 const redis = require('./redis');
-const types = ['request', 'parse', 'fullhistory'];
+const types = ['request', 'parse'];
 // parse the url
 const connInfo = url.parse(config.REDIS_URL, true /* parse query string */ );
 if (connInfo.protocol !== 'redis:') {
