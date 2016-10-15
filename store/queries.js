@@ -393,7 +393,7 @@ function insertMatch(db, redis, match, options, cb) {
   }
 
   function decideGcData(cb) {
-    if (options.origin === 'scanner' && Math.random() < 0.03) {
+    if (options.origin === 'scanner' && Math.random() < 0.01) {
       queue.addToQueue(gcQueue, {
         match_id: match.match_id
       }, {
