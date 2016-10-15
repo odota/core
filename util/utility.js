@@ -132,43 +132,6 @@ function generateJob(type, payload) {
         payload,
       };
     },
-    request() {
-      return {
-        url: `${api_url}/IDOTA2Match_570/GetMatchDetails/V001/?key=${api_key}&match_id=${payload.match_id}`,
-        title: [type, payload.match_id].join(),
-        type,
-        request: true,
-        payload,
-      };
-    },
-    fullhistory() {
-      return {
-        title: [type, payload.account_id].join(),
-        type,
-        payload,
-      };
-    },
-    mmr() {
-      return {
-        title: [type, payload.match_id, payload.account_id].join(),
-        type,
-        payload,
-      };
-    },
-    cache() {
-      return {
-        title: [type, payload.match_id, payload.account_id].join(),
-        type,
-        payload,
-      };
-    },
-    rank() {
-      return {
-        title: [type, payload.account_id, payload.hero_id].join(),
-        type,
-        payload,
-      };
-    },
   };
   return opts[type]();
 }

@@ -46,7 +46,7 @@ function processRequest(job, cb) {
       return cb(err);
     }
     // job2 is the parse job
-    if (job.data.request && job2) {
+    if (job2) {
       const poll = setInterval(() => {
         return pQueue.getJob(job2.jobId).then((job2) => {
           job.progress(job2.progress());

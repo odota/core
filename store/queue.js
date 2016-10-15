@@ -6,9 +6,9 @@ const config = require('../config');
 const bull = require('bull');
 const url = require('url');
 const async = require('async');
-const types = ['request', 'mmr', 'parse', 'cache', 'fullhistory'];
+const types = ['request', 'mmr', 'parse', 'cache', 'fullhistory', 'gcdata'];
 // parse the url
-const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
+const connInfo = url.parse(config.REDIS_URL, true /* parse query string */ );
 if (connInfo.protocol !== 'redis:') {
   throw new Error('connection string must use the redis: protocol');
 }
@@ -29,7 +29,9 @@ function getQueue(type) {
 }
 
 function addToQueue(queue, payload, options, cb) {
-  const job = generateJob(queue.name, payload);
+  const job = {
+    payload: payload
+  };
   options.attempts = options.attempts || 15;
   options.backoff = options.backoff || {
     delay: 60 * 1000,
