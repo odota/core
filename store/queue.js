@@ -5,7 +5,8 @@ const config = require('../config');
 const bull = require('bull');
 const url = require('url');
 const async = require('async');
-const types = ['request', 'mmr', 'parse', 'fullhistory', 'gcdata'];
+const redis = require('./redis');
+const types = ['request', 'parse', 'fullhistory', 'gcdata'];
 // parse the url
 const connInfo = url.parse(config.REDIS_URL, true /* parse query string */ );
 if (connInfo.protocol !== 'redis:') {
@@ -84,9 +85,33 @@ function cleanup(redis, cb) {
     }, cb);
   }, cb);
 }
+
+function runQueue(queueName, parallelism, processor) {
+  for (let i = 0; i < parallelism; i += 1) {
+    single();
+  }
+
+  function single() {
+    redis.blpop(queueName, '0', (err, job) => {
+      if (err) {
+        console.error(err);
+      }
+      // 0 is name of queue
+      // 1 is job data
+      processor(JSON.parse(job[1]), (err) => {
+        if (err) {
+          console.error(err);
+        }
+        single();
+      });
+    });
+  }
+}
+
 module.exports = {
   getQueue,
   addToQueue,
   getCounts,
   cleanup,
+  runQueue,
 };

@@ -402,41 +402,41 @@ function insertMatch(db, redis, match, options, cb) {
     if (options.skipCounts) {
       return cb();
     }
-      async.parallel({
-    updateRankings(cb) {
-      if (match.origin === 'scanner') {
-        return updateRankings(match, cb);
-      } else {
-        return cb();
+    async.parallel({
+      updateRankings(cb) {
+        if (match.origin === 'scanner') {
+          return updateRankings(match, cb);
+        } else {
+          return cb();
+        }
+      },
+      updateMatchRating(cb) {
+        if (match.origin === 'scanner') {
+          return updateMatchRating(match, cb);
+        } else {
+          return cb();
+        }
+      },
+      updateMatchups(cb) {
+        if (match.origin === 'scanner') {
+          return updateMatchups(match, cb);
+        } else {
+          cb();
+        }
+      },
+      updateBenchmarks(cb) {
+        if (match.origin === 'scanner') {
+          updateBenchmarks(match, cb);
+        } else {
+          cb();
+        }
+      },
+    }, (err) => {
+      if (err) {
+        console.error(err);
       }
-    },
-    updateMatchRating(cb) {
-      if (match.origin === 'scanner') {
-        return updateMatchRating(match, cb);
-      } else {
-        return cb();
-      }
-    },
-    updateMatchups(cb) {
-      if (match.origin === 'scanner') {
-        return updateMatchups(match, cb);
-      } else {
-        cb();
-      }
-    },
-    updateBenchmarks(cb) {
-      if (match.origin === 'scanner') {
-        updateBenchmarks(match, cb);
-      } else {
-        cb();
-      }
-    },
-  }, (err) => {
-    if (err) {
-      console.error(err);
-    }
-    return cb(err);
-  });
+      return cb(err);
+    });
   }
 
   function telemetry(cb) {
@@ -478,13 +478,11 @@ function insertMatch(db, redis, match, options, cb) {
   function decideMmr(cb) {
     async.each(match.players, (p, cb) => {
       if (options.origin === 'scanner' && match.lobby_type === 7 && p.account_id && p.account_id !== utility.getAnonymousAccountId() && config.ENABLE_RANDOM_MMR_UPDATE) {
-        queue.addToQueue(mQueue, {
+        redis.lpush('mmrQueue', JSON.stringify({
           match_id: match.match_id,
           account_id: p.account_id,
-        }, {
-          attempts: 1,
-          delay: 180000,
-        }, cb);
+        }));
+        cb();
       } else {
         cb();
       }
