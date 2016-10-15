@@ -13,9 +13,12 @@ const steamObj = {};
 const accountToIdx = {};
 const launch = new Date();
 const matchRequestDelay = 1200;
+const minUpTimeSeconds = 600;
+const timeoutMs = 15000;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
+let timeouts = 0;
 let count = 0;
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
@@ -45,17 +48,17 @@ function start() {
       next(null);
     }
   });
-  app.get('/', (req, res, next) => {
+  app.get('/', (req, res, cb) => {
     // console.log(process.memoryUsage());
     const keys = Object.keys(steamObj);
-    if (keys.length == 0) {
-      return next('No accounts ready');
+    if (!keys.length) {
+      return cb('No accounts ready');
     }
     const r = keys[Math.floor((Math.random() * keys.length))];
     if (req.query.mmstats) {
       getMMStats(r, (err, data) => {
         res.locals.data = data;
-        return next(err);
+        return cb(err);
       });
     } else if (req.query.match_id) {
       // Don't allow requests coming in too fast
@@ -65,19 +68,26 @@ function start() {
           error: 'too many requests'
         });
       }
+      if (timeouts > 10) {
+        // If we keep timing out, stop making requests
+        if (getUptime() > minUpTimeSeconds) {
+          return selfDestruct();
+        }
+        return cb('timeout count threshold exceeded');
+      }
       lastRequestTime = curRequestTime;
       getGcMatchData(r, req.query.match_id, (err, data) => {
         res.locals.data = data;
-        return next(err);
+        return cb(err);
       });
     } else if (req.query.account_id) {
       getPlayerProfile(r, req.query.account_id, (err, data) => {
         res.locals.data = data;
-        return next(err);
+        return cb(err);
       });
     } else {
       res.locals.data = genStats();
-      return next();
+      return cb();
     }
   });
   app.use((req, res) => {
@@ -217,11 +227,15 @@ function start() {
     const Dota2 = steamObj[idx].Dota2;
     console.log('[DOTA] requesting match %s, numusers: %s, requests: %s', match_id, users.length, matchRequests);
     matchRequests += 1;
-    if (matchRequests > 500 && getUptime() > 600 && config.NODE_ENV !== 'development') {
-      selfDestruct();
-    }
     steamObj[idx].matches += 1;
+    if (matchRequests > 500 && getUptime() > minUpTimeSeconds && config.NODE_ENV !== 'development') {
+      return selfDestruct();
+    }
+    const timeout = setTimeout(() => {
+      timeouts += 1;
+    }, timeoutMs);
     Dota2.requestMatchDetails(Number(match_id), (err, matchData) => {
+      clearTimeout(timeout);
       cb(err, matchData);
     });
   }
