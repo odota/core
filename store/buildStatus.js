@@ -64,7 +64,7 @@ module.exports = function buildStatus(db, redis, cb) {
       });
     },
     retriever(cb) {
-      redis.zrevrange('retriever', 0, 10000, (err, results) => {
+      redis.zrangebyscore('retriever', moment().subtract(6, 'hour').format('X'), moment().format('X'), (err, results) => {
         if (err) {
           return cb(err);
         }
