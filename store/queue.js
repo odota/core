@@ -72,22 +72,55 @@ function cleanup(redis, cb) {
 }
 
 function runQueue(queueName, parallelism, processor) {
+  const processingQueueName = `${queueName}:active`;
+  const lockKeyName = (job) => `${queueName}:lock:${job.id}`;
   for (let i = 0; i < parallelism; i += 1) {
-    single();
+    processOneJob();
   }
+  handleStalledJobs();
 
-  function single() {
-    redis.blpop(queueName, '0', (err, job) => {
+  function handleStalledJobs() {
+    redis.brpoplpush(processingQueueName, processingQueueName, '0', (err, job) => {
       if (err) {
         console.error(err);
       }
-      // 0 is name of queue
-      // 1 is job data
-      processor(JSON.parse(job[1]), (err) => {
+      const jobData = JSON.parse(job);
+      if (jobData && jobData.id) {
+        // If a job isn't locked, return it to queue
+        redis.get(lockKeyName(jobData), (err, result) => {
+          if (err) {
+            console.error(err);
+          }
+          if (!result) {
+            redis.lpush(queueName, job);
+          }
+          exit();
+        });
+      } else {
+        exit();
+      }
+
+      function exit() {
+        redis.lrem(processingQueueName, 0, job);
+        setTimeout(handleStalledJobs, 1000);
+      }
+    });
+  }
+
+  function processOneJob() {
+    redis.brpoplpush(queueName, processingQueueName, '0', (err, job) => {
+      if (err) {
+        console.error(err);
+      }
+      const jobData = JSON.parse(job);
+      processor(jobData, (err) => {
         if (err) {
           console.error(err);
         }
-        single();
+        // Lock the job so we don't requeue it
+        redis.setex(lockKeyName(jobData), 300, 1);
+        redis.lrem(processingQueueName, 0, job);
+        processOneJob();
       });
     });
   }

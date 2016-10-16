@@ -527,6 +527,7 @@ function insertMatch(db, redis, match, options, cb) {
         const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
         if (doParse) {
           return pQueue.add({
+              id: `${moment().format('X')}_${match.match_id}`,
               payload: {
                 match_id: match.match_id,
                 radiant_win: match.radiant_win,

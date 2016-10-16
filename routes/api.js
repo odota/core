@@ -10,6 +10,7 @@ const multer = require('multer')({
   inMemory: true,
   fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
+const moment = require('moment');
 const queue = require('../store/queue');
 const pQueue = queue.getQueue('parse');
 const queries = require('../store/queries');
@@ -583,6 +584,7 @@ module.exports = function (db, redis, cassandra) {
       } else {
         // file upload request
         return pQueue.add({
+            id: `${moment().format('X')}_${match.match_id}`,
             payload: match
           }, {
             lifo: true,
