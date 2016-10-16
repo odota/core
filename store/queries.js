@@ -511,7 +511,6 @@ function insertMatch(db, redis, match, options, cb) {
   function decideParse(cb) {
     if (options.skipParse) {
       // not parsing this match
-      // this isn't a error, although we want to report that we refused to parse back to user if it was a request
       return cb();
     } else {
       // determine if any player in the match is tracked
