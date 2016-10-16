@@ -73,10 +73,11 @@ function cleanup(redis, cb) {
 
 function runQueue(queueName, parallelism, processor) {
   const processingQueueName = `${queueName}:active`;
-  const lockKeyName = (job) => `${queueName}:lock:${job.id}`;
+  // const lockKeyName = (job) => `${queueName}:lock:${job.id}`;
   for (let i = 0; i < parallelism; i += 1) {
     processOneJob();
   }
+  /*
   handleStalledJobs();
 
   function handleStalledJobs() {
@@ -102,26 +103,30 @@ function runQueue(queueName, parallelism, processor) {
 
       function exit() {
         redis.lrem(processingQueueName, 0, job);
-        setTimeout(handleStalledJobs, 1000);
+        setTimeout(handleStalledJobs, 10000);
       }
     });
   }
+  */
 
   function processOneJob() {
-    redis.brpoplpush(queueName, processingQueueName, '0', (err, job) => {
+    redis.blpop(queueName, processingQueueName, '0', (err, job) => {
       if (err) {
         console.error(err);
       }
-      const jobData = JSON.parse(job);
+      //const jobData = JSON.parse(job);
+      const jobData = JSON.parse(job[1]);
       processor(jobData, (err) => {
         if (err) {
           console.error(err);
         }
+        /*
         if (jobData && jobData.id) {
           // Lock the job so we don't requeue it
           redis.setex(lockKeyName(jobData), 300, 1);
         }
         redis.lrem(processingQueueName, 0, job);
+        */
         processOneJob();
       });
     });
