@@ -402,28 +402,28 @@ function insertMatch(db, redis, match, options, cb) {
     }
     async.parallel({
       updateRankings(cb) {
-        if (match.origin === 'scanner') {
+        if (options.origin === 'scanner') {
           return updateRankings(match, cb);
         } else {
           return cb();
         }
       },
       updateMatchRating(cb) {
-        if (match.origin === 'scanner') {
+        if (options.origin === 'scanner') {
           return updateMatchRating(match, cb);
         } else {
           return cb();
         }
       },
       updateMatchups(cb) {
-        if (match.origin === 'scanner') {
+        if (options.origin === 'scanner') {
           return updateMatchups(match, cb);
         } else {
           cb();
         }
       },
       updateBenchmarks(cb) {
-        if (match.origin === 'scanner') {
+        if (options.origin === 'scanner') {
           updateBenchmarks(match, cb);
         } else {
           cb();
