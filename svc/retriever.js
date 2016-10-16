@@ -24,8 +24,8 @@ let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
 if (config.PROVIDER === 'gce' && config.STEAM_ACCOUNT_DATA) {
   const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
-  const accountsToUse = 30;
-  const startIndex = Math.floor((Math.random() * accountData.length - accountsToUse));
+  const accountsToUse = 15;
+  const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
   console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
   const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
   users = accountDataToUse.map(a => a.split('\t')[0]);
