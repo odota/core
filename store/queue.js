@@ -86,7 +86,7 @@ function runQueue(queueName, parallelism, processor) {
       }
       const jobData = JSON.parse(job);
       if (jobData && jobData.id) {
-        // If a job isn't locked, return it to queue
+        // If a job isn't locked and has an ID, return it to queue
         redis.get(lockKeyName(jobData), (err, result) => {
           if (err) {
             console.error(err);
@@ -117,8 +117,10 @@ function runQueue(queueName, parallelism, processor) {
         if (err) {
           console.error(err);
         }
-        // Lock the job so we don't requeue it
-        redis.setex(lockKeyName(jobData), 300, 1);
+        if (jobData && jobData.id) {
+          // Lock the job so we don't requeue it
+          redis.setex(lockKeyName(jobData), 300, 1);
+        }
         redis.lrem(processingQueueName, 0, job);
         processOneJob();
       });
