@@ -26,11 +26,8 @@ services:
       context: .
       dockerfile: Dockerfile
     image: odota/core
-    # 'basic' to launch basic configuration as in profiles/basic.json
-    # 'full' to launch all the services as in profiles/full.json
-    # 'custom-profile' to launch all services as in profiles/custom.json (you'll have to provide it)
-    # or just override the whole command with your script if existing does not fit your needs
-    entrypoint: bash docker/main-launch.sh basic
+    # Override this command with your script if existing does not fit your needs
+    entrypoint: bash docker/main-launch.sh
     ports:
       - "5000:5000"
     environment:

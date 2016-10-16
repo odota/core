@@ -6,13 +6,10 @@ const benchmarks = require('../util/benchmarks');
 const config = require('../config');
 const constants = require('dotaconstants');
 const queue = require('./queue');
-const addToQueue = queue.addToQueue;
-const mQueue = queue.getQueue('mmr');
 const async = require('async');
 const convert64to32 = utility.convert64to32;
 const moment = require('moment');
 const util = require('util');
-const cQueue = queue.getQueue('cache');
 const pQueue = queue.getQueue('parse');
 const serialize = utility.serialize;
 const deserialize = utility.deserialize;
@@ -20,6 +17,8 @@ const reduceAggregable = utility.reduceAggregable;
 const filter = require('../util/filter');
 const compute = require('../util/compute');
 const computeMatchData = compute.computeMatchData;
+const db = require('../store/db');
+const redis = require('../store/redis');
 const cassandra = (config.ENABLE_CASSANDRA_MATCH_STORE_READ || config.ENABLE_CASSANDRA_MATCH_STORE_WRITE) ? require('../store/cassandra') : undefined;
 const columnInfo = {};
 const cassandraColumnInfo = {};
@@ -87,6 +86,84 @@ function upsert(db, table, row, conflict, cb) {
   });
 }
 
+
+function updateMatchups(match, cb) {
+  async.each(utility.generateMatchups(match, 1), (key, cb) => {
+    // db.raw(`INSERT INTO matchups (matchup, num) VALUES (?, 1) ON CONFLICT(matchup) DO UPDATE SET num = matchups.num + 1`, [key]).asCallback(cb);
+    // cassandra.execute(`UPDATE matchups SET num = num + 1 WHERE matchup = ?`, [key], {prepare: true}, cb);
+    redis.hincrby('matchups', key, 2, cb);
+  }, cb);
+}
+
+function updateRankings(match, cb) {
+  getMatchRating(redis, match, (err, avg) => {
+    if (err) {
+      return cb(err);
+    }
+    const match_score = (avg && !Number.isNaN(avg)) ? Math.pow(Math.max(avg / 1000, 1), 7) : undefined;
+    async.each(match.players, (player, cb) => {
+      if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
+        return cb();
+      }
+      player.radiant_win = match.radiant_win;
+      const start = moment().startOf('quarter').format('X');
+      const expire = moment().add(1, 'quarter').startOf('quarter').format('X');
+      const win = Number(utility.isRadiant(player) === player.radiant_win);
+      const player_score = win ? match_score : -match_score;
+      if (player_score && utility.isSignificant(match)) {
+        redis.zincrby(['hero_rankings', start, player.hero_id].join(':'), player_score, player.account_id);
+        redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);
+      }
+      cb();
+    }, cb);
+  });
+}
+
+function updateBenchmarks(match, cb) {
+  for (let i = 0; i < match.players.length; i++) {
+    const p = match.players[i];
+    // only do if all players have heroes
+    if (p.hero_id) {
+      for (const key in benchmarks) {
+        const metric = benchmarks[key](match, p);
+        if (metric !== undefined && metric !== null && !Number.isNaN(metric)) {
+          const rkey = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), key, p.hero_id].join(':');
+          redis.zadd(rkey, metric, match.match_id);
+          // expire at time two epochs later (after prev/current cycle)
+          redis.expireat(rkey, utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 2));
+        }
+      }
+    }
+  }
+  return cb();
+}
+
+function updateMatchRating(match, cb) {
+  getMatchRating(redis, match, (err, avg, num) => {
+    if (avg && !Number.isNaN(avg)) {
+      // For each player, update mmr estimation list
+      match.players.forEach((player) => {
+        if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
+          // push into list, limit elements
+          redis.lpush(`mmr_estimates:${player.account_id}`, avg);
+          redis.ltrim(`mmr_estimates:${player.account_id}`, 0, 19);
+        }
+      });
+      // Persist match average MMR into postgres
+      upsert(db, 'match_rating', {
+        match_id: match.match_id,
+        rating: avg,
+        num_players: num,
+      }, {
+        match_id: match.match_id,
+      }, cb);
+    } else {
+      return cb(err);
+    }
+  });
+}
+
+
 function insertMatch(db, redis, match, options, cb) {
   const players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
   // don't insert anonymous account id
@@ -136,6 +213,7 @@ function insertMatch(db, redis, match, options, cb) {
     t: telemetry,
     dm: decideMmr,
     dpro: decideProfile,
+    dgcd: decideGcData,
     dp: decideParse,
   }, (err, results) => {
     return cb(err, results.dp);
@@ -322,11 +400,41 @@ function insertMatch(db, redis, match, options, cb) {
     if (options.skipCounts) {
       return cb();
     }
-    const copy = createMatchCopy(match, players, options);
-    // add to queue for counts
-    queue.addToQueue(cQueue, copy, {
-      attempts: 1,
-    }, cb);
+    async.parallel({
+      updateRankings(cb) {
+        if (match.origin === 'scanner') {
+          return updateRankings(match, cb);
+        } else {
+          return cb();
+        }
+      },
+      updateMatchRating(cb) {
+        if (match.origin === 'scanner') {
+          return updateMatchRating(match, cb);
+        } else {
+          return cb();
+        }
+      },
+      updateMatchups(cb) {
+        if (match.origin === 'scanner') {
+          return updateMatchups(match, cb);
+        } else {
+          cb();
+        }
+      },
+      updateBenchmarks(cb) {
+        if (match.origin === 'scanner') {
+          updateBenchmarks(match, cb);
+        } else {
+          cb();
+        }
+      },
+    }, (err) => {
+      if (err) {
+        console.error(err);
+      }
+      return cb(err);
+    });
   }
 
   function telemetry(cb) {
@@ -368,13 +476,11 @@ function insertMatch(db, redis, match, options, cb) {
   function decideMmr(cb) {
     async.each(match.players, (p, cb) => {
       if (options.origin === 'scanner' && match.lobby_type === 7 && p.account_id && p.account_id !== utility.getAnonymousAccountId() && config.ENABLE_RANDOM_MMR_UPDATE) {
-        addToQueue(mQueue, {
+        redis.lpush('mmrQueue', JSON.stringify({
           match_id: match.match_id,
           account_id: p.account_id,
-        }, {
-          attempts: 1,
-          delay: 180000,
-        }, cb);
+        }));
+        cb();
       } else {
         cb();
       }
@@ -391,10 +497,20 @@ function insertMatch(db, redis, match, options, cb) {
     }, cb);
   }
 
+  function decideGcData(cb) {
+    if (options.origin === 'scanner' && Math.random() < 0.01) {
+      redis.lpush('gcQueue', JSON.stringify({
+        match_id: match.match_id
+      }));
+      cb();
+    } else {
+      cb();
+    }
+  }
+
   function decideParse(cb) {
     if (options.skipParse) {
       // not parsing this match
-      // this isn't a error, although we want to report that we refused to parse back to user if it was a request
       return cb();
     } else {
       // determine if any player in the match is tracked
@@ -407,27 +523,29 @@ function insertMatch(db, redis, match, options, cb) {
           return cb(err);
         }
         const doLogParse = options.doLogParse;
-        const doParse = hasTrackedPlayer || options.forceParse;
-        const doGcData = doLogParse || doParse || (options.origin === 'scanner' && Math.random() < 0);
-        // queue it and finish, callback with the queued parse job
+        const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
         if (doParse) {
-          return queue.addToQueue(pQueue, {
-            match_id: match.match_id,
-            radiant_win: match.radiant_win,
-            start_time: match.start_time,
-            duration: match.duration,
-            replay_blob_key: match.replay_blob_key,
-            pgroup: match.pgroup,
-            doLogParse,
-            doParse,
-            doGcData,
-          }, {
-            lifo: options.lifo,
-            attempts: options.attempts,
-            backoff: options.backoff,
-          }, (err, job2) => {
-            cb(err, job2);
-          });
+          return pQueue.add({
+              id: `${moment().format('X')}_${match.match_id}`,
+              payload: {
+                match_id: match.match_id,
+                radiant_win: match.radiant_win,
+                start_time: match.start_time,
+                duration: match.duration,
+                replay_blob_key: match.replay_blob_key,
+                pgroup: match.pgroup,
+                doLogParse,
+              }
+            }, {
+              lifo: options.lifo,
+              attempts: options.attempts || 15,
+              backoff: options.backoff || {
+                delay: 60 * 1000,
+                type: 'exponential',
+              }
+            })
+            .then((parseJob) => cb(null, parseJob))
+            .catch(cb);
         } else {
           cb();
         }
@@ -603,11 +721,11 @@ function getProPlayers(db, redis, cb) {
   db.raw(`
     SELECT * from notable_players
     `).asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(err, result.rows);
-    });
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows);
+  });
 }
 
 function getHeroRankings(db, redis, hero_id, options, cb) {
@@ -887,18 +1005,18 @@ function getProPeers(db, input, player, cb) {
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
           `).asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            const arr = result.rows.map((r) => {
-              return Object.assign({}, r, teammates[r.account_id]);
-            }).filter((r) => {
-              return r.games;
-            }).sort((a, b) => {
-              return b.games - a.games;
-            });
-            cb(err, arr);
-          });
+    if (err) {
+      return cb(err);
+    }
+    const arr = result.rows.map((r) => {
+      return Object.assign({}, r, teammates[r.account_id]);
+    }).filter((r) => {
+      return r.games;
+    }).sort((a, b) => {
+      return b.games - a.games;
+    });
+    cb(err, arr);
+  });
 }
 module.exports = {
   upsert,

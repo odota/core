@@ -12,6 +12,7 @@ module.exports = function buildStatus(db, redis, cb) {
   redis.zremrangebyscore('parser', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('retriever', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('visitor_match', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('requests', 0, moment().subtract(1, 'day').format('X'));
   async.series({
     user_players(cb) {
       redis.zcard('visitors', cb);
@@ -37,6 +38,18 @@ module.exports = function buildStatus(db, redis, cb) {
     parsed_matches_last_day(cb) {
       redis.zcard('parser', cb);
     },
+    requests_last_day(cb) {
+      redis.zcard('requests', cb);
+    },
+    fhQueue(cb) {
+      redis.llen('fhQueue', cb);
+    },
+    gcQueue(cb) {
+      redis.llen('gcQueue', cb);
+    },
+    mmrQueue(cb) {
+      redis.llen('mmrQueue', cb);
+    },
     api_hits(cb) {
       redis.zcard('api_hits', cb);
     },
@@ -55,7 +68,7 @@ module.exports = function buildStatus(db, redis, cb) {
       });
     },
     retriever(cb) {
-      redis.zrevrange('retriever', 0, 10000, (err, results) => {
+      redis.zrangebyscore('retriever', moment().subtract(6, 'hour').format('X'), moment().format('X'), (err, results) => {
         if (err) {
           return cb(err);
         }

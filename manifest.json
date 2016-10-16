@@ -1,7 +1,31 @@
 {
   "apps": [
     {
+      "script": "svc/skill.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
       "script": "svc/mmr.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/profiler.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/scanner.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "backend",
@@ -25,7 +49,7 @@
       "instances": 1
     },
     {
-      "script": "svc/requests.js",
+      "script": "svc/monitor.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "backend",
@@ -33,12 +57,20 @@
       "instances": 1
     },
     {
-      "script": "svc/cacher.js",
+      "script": "svc/backupscanner.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
+    },
+    {
+      "script": "svc/gcdata.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1    
     },
     {
       "script": "svc/web.js",
@@ -57,11 +89,20 @@
       "instances": 1
     },
     {
+      "script": "svc/proxy.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "proxy",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
       "script": "svc/parser.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "parser",
       "exec_mode": "cluster",
       "instances": 1
-    }]
+    }
+  ]
 }

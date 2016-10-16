@@ -13,7 +13,7 @@ if (process.env.ROLE) {
 } else if (group) {
   const pm2 = require('pm2');
   const async = require('async');
-  const manifest = require('./profiles/full.json').apps;
+  const manifest = require('./manifest.json').apps;
   pm2.connect(() => {
     async.each(manifest, (app, cb) => {
       if (group === app.group) {

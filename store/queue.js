@@ -1,14 +1,14 @@
 /**
  * Provides methods for working with the job queue
  **/
-const generateJob = require('../util/utility').generateJob;
 const config = require('../config');
 const bull = require('bull');
 const url = require('url');
 const async = require('async');
-const types = ['request', 'mmr', 'parse', 'cache', 'fullhistory'];
+const redis = require('./redis');
+const types = ['parse'];
 // parse the url
-const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
+const connInfo = url.parse(config.REDIS_URL, true /* parse query string */ );
 if (connInfo.protocol !== 'redis:') {
   throw new Error('connection string must use the redis: protocol');
 }
@@ -26,19 +26,6 @@ function getQueue(type) {
   return bull(type, {
     redis: redisOptions,
   });
-}
-
-function addToQueue(queue, payload, options, cb) {
-  const job = generateJob(queue.name, payload);
-  options.attempts = options.attempts || 15;
-  options.backoff = options.backoff || {
-    delay: 60 * 1000,
-    type: 'exponential',
-  };
-  queue.add(job, options).then((queuejob) => {
-    // console.log("created %s jobId: %s", queue.name, queuejob.jobId);
-    cb(null, queuejob);
-  }).catch(cb);
 }
 
 function getCounts(redis, cb) {
@@ -83,9 +70,67 @@ function cleanup(redis, cb) {
     }, cb);
   }, cb);
 }
+
+function runQueue(queueName, parallelism, processor) {
+  const processingQueueName = `${queueName}:active`;
+  const lockKeyName = (job) => `${queueName}:lock:${job.id}`;
+  for (let i = 0; i < parallelism; i += 1) {
+    processOneJob();
+  }
+  handleStalledJobs();
+
+  function handleStalledJobs() {
+    redis.brpoplpush(processingQueueName, processingQueueName, '0', (err, job) => {
+      if (err) {
+        console.error(err);
+      }
+      const jobData = JSON.parse(job);
+      if (jobData && jobData.id) {
+        // If a job isn't locked and has an ID, return it to queue
+        redis.get(lockKeyName(jobData), (err, result) => {
+          if (err) {
+            console.error(err);
+          }
+          if (!result) {
+            redis.lpush(queueName, job);
+          }
+          exit();
+        });
+      } else {
+        exit();
+      }
+
+      function exit() {
+        redis.lrem(processingQueueName, 0, job);
+        setTimeout(handleStalledJobs, 1000);
+      }
+    });
+  }
+
+  function processOneJob() {
+    redis.brpoplpush(queueName, processingQueueName, '0', (err, job) => {
+      if (err) {
+        console.error(err);
+      }
+      const jobData = JSON.parse(job);
+      processor(jobData, (err) => {
+        if (err) {
+          console.error(err);
+        }
+        if (jobData && jobData.id) {
+          // Lock the job so we don't requeue it
+          redis.setex(lockKeyName(jobData), 300, 1);
+        }
+        redis.lrem(processingQueueName, 0, job);
+        processOneJob();
+      });
+    });
+  }
+}
+
 module.exports = {
   getQueue,
-  addToQueue,
   getCounts,
   cleanup,
+  runQueue,
 };
