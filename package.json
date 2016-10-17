@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "JSONStream": "1.2.1",
-    "async": "2.1.1",
+    "async": "2.1.2",
     "big-number": "0.4.0",
     "body-parser": "1.15.2",
     "bootstrap": "3.3.7",
