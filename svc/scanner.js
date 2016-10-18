@@ -85,7 +85,7 @@ function start() {
 
     function processMatch(match, cb) {
       // In development environment, only insert a fraction of matches to avoid overload
-      if (config.NODE_ENV === 'development' && match.match_id % 10 !== 0) {
+      if (config.NODE_ENV === 'development' && (match.match_id % 100) >= Number(config.SCANNER_PERCENT)) {
         return finishMatch();
       }
       // check if match was previously processed

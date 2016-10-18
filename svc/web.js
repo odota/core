@@ -31,6 +31,12 @@ const host = config.ROOT_URL;
 const querystring = require('querystring');
 const util = require('util');
 const rc_public = config.RECAPTCHA_PUBLIC_KEY;
+const sessOptions = {
+  maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
+  secret: config.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+};
 // PASSPORT config
 passport.serializeUser((user, done) => {
   done(null, user.account_id);
@@ -54,7 +60,7 @@ passport.use(new SteamStrategy({
     return cb(err, player);
   });
 }));
-// APP config
+// TODO Remove this with SPA (Views/Locals config)
 app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -105,22 +111,20 @@ app.locals.constants.abilities.attribute_bonus = {
 };
 app.locals.constants.map_url = '/public/images/map.png';
 app.locals.constants.ICON_PATH = '/public/images/logo.png';
-// APP middleware
+// Compression middleware
 app.use(compression());
+// Dota 2 images middleware (proxy to Dota 2 CDN)
 app.use('/apps/dota2/images/:group_name/:image_name', (req, res) => {
   res.header('Cache-Control', 'max-age=604800, public');
   request(`http://cdn.dota2.com/apps/dota2/images/${req.params.group_name}/${req.params.image_name}`).pipe(res);
 });
+// TODO remove this with SPA (no more public assets)
 app.use('/public', express.static(path.join(__dirname, '/../public')));
-const sessOptions = {
-  maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
-  secret: config.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-};
+// Session/Passport middleware
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
+// Rate limiter middleware
 app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   ip = ip.replace(/^.*:/, '').split(',')[0];
@@ -142,6 +146,7 @@ app.use((req, res, cb) => {
     }
   });
 });
+// Telemetry middleware
 app.use((req, res, cb) => {
   const timeStart = new Date();
   if (req.originalUrl.indexOf('/api') === 0) {
@@ -162,7 +167,7 @@ app.use((req, res, cb) => {
   });
   cb();
 });
-// TODO can remove this middleware with SPA
+// TODO can remove this middleware with SPA, site metadata
 app.use((req, res, cb) => {
   async.parallel({
     banner(cb) {
@@ -198,19 +203,21 @@ app.route('/return').get(passport.authenticate('steam', {
 }), (req, res, next) => {
   if (config.UI_HOST) {
     return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
-  } else {
-    res.redirect(`/players/${req.user.account_id}`);
   }
+  return res.redirect(`/players/${req.user.account_id}`);
 });
 app.route('/logout').get((req, res) => {
   req.logout();
   req.session = null;
-  res.redirect('/');
+  if (config.UI_HOST) {
+    return res.redirect(config.UI_HOST);
+  }
+  return res.redirect('/');
 });
 app.use('/api', api(db, redis, cassandra));
 // END service/admin routes
-// START standard routes.
 // TODO remove these with SPA
+// START standard routes.
 app.route('/').get((req, res, next) => {
   if (req.user) {
     res.redirect(`/players/${req.user.account_id}`);
@@ -303,10 +310,6 @@ app.use('/', mmstats(redis));
 // TODO keep donate routes around for legacy until @albertcui can reimplement in SPA?
 app.use('/', donate(db, redis));
 app.use((req, res, next) => {
-  if (config.UI_HOST) {
-    // route not found, redirect to SPA
-    return res.redirect(config.UI_HOST + req.url);
-  }
   const err = new Error('Not Found');
   err.status = 404;
   return next(err);
@@ -348,6 +351,6 @@ function gracefulShutdown() {
   setTimeout(() => {
     console.error('Could not close connections in time, forcefully shutting down');
     process.exit();
-  }, 30 * 1000);
+  }, 10 * 1000);
 }
 module.exports = app;

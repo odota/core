@@ -498,7 +498,7 @@ function insertMatch(db, redis, match, options, cb) {
   }
 
   function decideGcData(cb) {
-    if (options.origin === 'scanner' && Math.random() < 0.001) {
+    if (options.origin === 'scanner' && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
       redis.lpush('gcQueue', JSON.stringify({
         match_id: match.match_id
       }));
