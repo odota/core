@@ -18,7 +18,7 @@ function processTeamfights(entries, meta) {
         end: null,
         last_death: e.time,
         deaths: 0,
-        players: Array.apply(null, new Array(10)).map(() => {
+        players: Array(...new Array(10)).map(() => {
           return {
             deaths_pos: {},
             ability_uses: {},

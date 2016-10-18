@@ -409,7 +409,7 @@ module.exports = function (db, redis, cassandra) {
         return cb(err);
       }
       res.json({
-        length: length
+        length,
       });
     });
   });
@@ -558,7 +558,7 @@ module.exports = function (db, redis, cassandra) {
           error: err,
           job: {
             jobId: parseJob.jobId,
-          }
+          },
         });
       }
 
@@ -585,13 +585,13 @@ module.exports = function (db, redis, cassandra) {
       } else {
         // file upload request
         return pQueue.add({
-            id: `${moment().format('X')}_${match.match_id}`,
-            payload: match
-          }, {
-            lifo: true,
-            attempts: 1,
-          })
-          .then((parseJob) => exitWithJob(null, parseJob))
+          id: `${moment().format('X')}_${match.match_id}`,
+          payload: match,
+        }, {
+          lifo: true,
+          attempts: 1,
+        })
+          .then(parseJob => exitWithJob(null, parseJob))
           .catch(exitWithJob);
       }
     });

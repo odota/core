@@ -8,7 +8,7 @@ const async = require('async');
 const redis = require('./redis');
 const types = ['parse'];
 // parse the url
-const connInfo = url.parse(config.REDIS_URL, true /* parse query string */ );
+const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
 if (connInfo.protocol !== 'redis:') {
   throw new Error('connection string must use the redis: protocol');
 }
@@ -114,7 +114,7 @@ function runQueue(queueName, parallelism, processor) {
       if (err) {
         console.error(err);
       }
-      //const jobData = JSON.parse(job);
+      // const jobData = JSON.parse(job);
       const jobData = JSON.parse(job[1]);
       processor(jobData, (err) => {
         if (err) {

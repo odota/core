@@ -15,8 +15,8 @@ const entries = [];
 for (let i = 0; i < 1000000; i += 1) {
   entries.push({
     a: i,
-    b: i/7,
-    c: "asdf"
+    b: i / 7,
+    c: 'asdf',
   });
 }
 console.time('JSON');

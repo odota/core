@@ -65,7 +65,7 @@ function start() {
       const curRequestTime = new Date();
       if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
         return res.status(429).json({
-          error: 'too many requests'
+          error: 'too many requests',
         });
       }
       if (timeouts > 50) {

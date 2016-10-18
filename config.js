@@ -64,7 +64,7 @@ const defaults = {
   ENABLE_RANDOM_MMR_UPDATE: '', // set to update MMRs after ranked matches
   ENABLE_POSTGRES_MATCH_STORE_WRITE: '1', // set to enable writing match data to postgres, if off, only pro matches are written
   ENABLE_CASSANDRA_MATCH_STORE_READ: '1', // set to enable reading match data from cassandra
-  ENABLE_CASSANDRA_MATCH_STORE_WRITE: '1', //set to enable writing match data to cassandra
+  ENABLE_CASSANDRA_MATCH_STORE_WRITE: '1', // set to enable writing match data to cassandra
   RECAPTCHA_PUBLIC_KEY: '', // for preventing automated requests, in web
   RECAPTCHA_SECRET_KEY: '',
   STRIPE_SECRET: '', // for donations, in web

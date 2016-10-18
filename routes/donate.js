@@ -265,9 +265,9 @@ module.exports = function (db, redis) {
     });
   });
   donate.route('/cancel').get((req, res, next) => {
-    if (!req.user) return res.render('cancel', {
+    if (!req.user) { return res.render('cancel', {
       sub: false,
-    });
+    }); }
 
     db('subscriptions')
         .where({
@@ -318,9 +318,9 @@ module.exports = function (db, redis) {
             .where({
               account_id: req.user.account_id,
             }).asCallback((err) => {
-              if (err) return res.send(
+              if (err) { return res.send(
                     'There was a problem processing your subscription.'
-                    + ' Please contact us for support.');
+                    + ' Please contact us for support.'); }
 
               req.session.cheeseAmount = amount;
               res.sendStatus(200);

@@ -553,7 +553,11 @@ function groupToString(g) {
 }
 
 function kCombinations(arr, k) {
-  let i, j, combs, head, tailcombs;
+  let i,
+    j,
+    combs,
+    head,
+    tailcombs;
   if (k > arr.length || k <= 0) {
     return [];
   }

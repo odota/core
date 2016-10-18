@@ -500,7 +500,7 @@ function insertMatch(db, redis, match, options, cb) {
   function decideGcData(cb) {
     if (options.origin === 'scanner' && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
       redis.lpush('gcQueue', JSON.stringify({
-        match_id: match.match_id
+        match_id: match.match_id,
       }));
       cb();
     } else {
@@ -526,25 +526,25 @@ function insertMatch(db, redis, match, options, cb) {
         const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
         if (doParse) {
           return pQueue.add({
-              id: `${moment().format('X')}_${match.match_id}`,
-              payload: {
-                match_id: match.match_id,
-                radiant_win: match.radiant_win,
-                start_time: match.start_time,
-                duration: match.duration,
-                replay_blob_key: match.replay_blob_key,
-                pgroup: match.pgroup,
-                doLogParse,
-              }
-            }, {
-              lifo: options.lifo,
-              attempts: options.attempts || 15,
-              backoff: options.backoff || {
-                delay: 60 * 1000,
-                type: 'exponential',
-              }
-            })
-            .then((parseJob) => cb(null, parseJob))
+            id: `${moment().format('X')}_${match.match_id}`,
+            payload: {
+              match_id: match.match_id,
+              radiant_win: match.radiant_win,
+              start_time: match.start_time,
+              duration: match.duration,
+              replay_blob_key: match.replay_blob_key,
+              pgroup: match.pgroup,
+              doLogParse,
+            },
+          }, {
+            lifo: options.lifo,
+            attempts: options.attempts || 15,
+            backoff: options.backoff || {
+              delay: 60 * 1000,
+              type: 'exponential',
+            },
+          })
+            .then(parseJob => cb(null, parseJob))
             .catch(cb);
         } else {
           cb();
@@ -721,11 +721,11 @@ function getProPlayers(db, redis, cb) {
   db.raw(`
     SELECT * from notable_players
     `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows);
-  });
+      if (err) {
+        return cb(err);
+      }
+      return cb(err, result.rows);
+    });
 }
 
 function getHeroRankings(db, redis, hero_id, options, cb) {
@@ -1005,18 +1005,18 @@ function getProPeers(db, input, player, cb) {
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
           `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    const arr = result.rows.map((r) => {
-      return Object.assign({}, r, teammates[r.account_id]);
-    }).filter((r) => {
-      return r.games;
-    }).sort((a, b) => {
-      return b.games - a.games;
-    });
-    cb(err, arr);
-  });
+            if (err) {
+              return cb(err);
+            }
+            const arr = result.rows.map((r) => {
+              return Object.assign({}, r, teammates[r.account_id]);
+            }).filter((r) => {
+              return r.games;
+            }).sort((a, b) => {
+              return b.games - a.games;
+            });
+            cb(err, arr);
+          });
 }
 module.exports = {
   upsert,

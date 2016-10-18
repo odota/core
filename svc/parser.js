@@ -187,7 +187,6 @@ function runParse(match, job, cb) {
       } else {
         insertStandardParse(parsed_data, cb);
       }
-
     }
   }
 }
@@ -200,7 +199,7 @@ function createParsedDataBlob(entries, match) {
   console.time('adjustTime');
   // adjust time by zero value to get actual game time
   const adjustedEntries = entries.map(e => Object.assign({}, e, {
-    time: e.time - meta.game_zero
+    time: e.time - meta.game_zero,
   }));
   console.timeEnd('adjustTime');
   console.time('processExpand');
@@ -256,7 +255,7 @@ function getParseSchema() {
     radiant_gold_adv: [],
     radiant_xp_adv: [],
     cosmetics: {},
-    players: Array.apply(null, new Array(10)).map(() => {
+    players: Array(...new Array(10)).map(() => {
       return {
         player_slot: 0,
         obs_placed: 0,

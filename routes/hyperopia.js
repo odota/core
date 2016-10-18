@@ -85,8 +85,12 @@ module.exports = function (db)
                     isRadiant: i < 5,
                   };
 
-                  let gold = [], lh = [], xp = [];
-                  let lastGold = 0, lastLH = 0, lastXP = 0;
+                  let gold = [],
+                    lh = [],
+                    xp = [];
+                  let lastGold = 0,
+                    lastLH = 0,
+                    lastXP = 0;
                   for (var j = 0; j < times.length; j++) {
                     gold.push(lastGold);
                     lh.push(lastLH);
