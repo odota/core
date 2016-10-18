@@ -24,7 +24,6 @@ Quickstart (Docker)
   * `STEAM_API_KEY` You need this in order to access the Steam Web API.  
   * `STEAM_USER, STEAM_PASS` The retriever requires a Steam account in order to fetch replay salts. It is recommended to use a new account for this purpose (you won't be able to log into the account while the retriever is using it).  If you don't care about getting replay salts/downloading replays then you can skip this step.
 * Start containers and initialize databases: `docker-compose up`.
-* By default, this starts the minimal configuration necessary (API, parse, and request workers). This can be overridden via `docker-compose.override.yml`.
 * You can now access the website at http://localhost:5000 (or the hostname of the instance running the code)
 
 ### Developing the server
