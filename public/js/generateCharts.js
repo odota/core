@@ -1,3 +1,5 @@
+const constants = require('dotaconstants');
+
 window.generateCharts = function generateCharts(data) {
     var color_array = [];
     for (var key in constants.player_colors) {
@@ -7,6 +9,7 @@ window.generateCharts = function generateCharts(data) {
     var gold = data.gold;
     var xp = data.xp;
     var lh = data.lh;
+
     var charts = [{
         bindTo: "#chart-diff",
         columns: difference,
@@ -33,6 +36,9 @@ window.generateCharts = function generateCharts(data) {
         yLabel: 'XP',
         color: {
             pattern: color_array
+        },
+        valueFormat: function valueFormat (value) {
+           return value + " - Level " + getLevelFromXp(value);
         }
         }, {
         bindTo: "#chart-lh",
@@ -77,9 +83,18 @@ window.generateCharts = function generateCharts(data) {
                     d.sort(function(a, b) {
                         return b.value - a.value
                     });
-                    return this.getTooltipContent(d, defaultTitleFormat, defaultValueFormat, color);
+                    return this.getTooltipContent(d, defaultTitleFormat, chart.valueFormat || defaultValueFormat, color);
                 }
             }
         });
     });
 };
+
+function getLevelFromXp(xp) {
+  for (var i = 0; i < constants.xp_level.length; i++) {
+    if (constants.xp_level[i] > xp) {
+      return i;
+    }
+  }
+  return constants.xp_level.length;
+}

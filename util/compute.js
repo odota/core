@@ -438,17 +438,8 @@ function renderMatch(m) {
       tf.dire_deaths = 0;
       tf.players.forEach((p) => {
         // lookup starting, ending level
-        p.level_start = getLevelFromXp(p.xp_start);
-        p.level_end = getLevelFromXp(p.xp_end);
-
-        function getLevelFromXp(xp) {
-          for (let i = 0; i < constants.xp_level.length; i++) {
-            if (constants.xp_level[i] > xp) {
-              return i;
-            }
-          }
-          return constants.xp_level.length;
-        }
+        p.level_start = utility.getLevelFromXp(p.xp_start);
+        p.level_end = utility.getLevelFromXp(p.xp_end);
       });
       // add player's hero_id to each teamfight participant
       m.players.forEach((p, i) => {
