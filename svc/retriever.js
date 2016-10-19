@@ -129,20 +129,22 @@ function start() {
         // try logging on again
         return client.steamUser.logOn(logOnDetails);
       }
-      console.log('[STEAM] Logged on %s', client.steamID);
-      client.steamFriends.setPersonaName(client.steamID.toString());
-      client.matches = 0;
-      client.profiles = 0;
-      client.Dota2.once('ready', () => {
-        steamObj[client.steamID] = client;
-        dotaReady = true;
-        allDone();
-      });
-      client.Dota2.launch();
-      client.once('loggedOff', () => {
-        console.log('relogging');
-        client.steamUser.logOn(logOnDetails);
-      });
+      if (client && client.steamID) {
+        console.log('[STEAM] Logged on %s', client.steamID);
+        client.steamFriends.setPersonaName(client.steamID.toString());
+        client.matches = 0;
+        client.profiles = 0;
+        client.Dota2.once('ready', () => {
+          steamObj[client.steamID] = client;
+          dotaReady = true;
+          allDone();
+        });
+        client.Dota2.launch();
+        client.once('loggedOff', () => {
+          console.log('relogging');
+          client.steamUser.logOn(logOnDetails);
+        });
+      }
     });
     let cycled = false;
 
