@@ -677,6 +677,15 @@ function getAnonymousAccountId() {
   return 4294967295;
 }
 
+function getLevelFromXp(xp) {
+  for (let i = 0; i < constants.xp_level.length; i++) {
+    if (constants.xp_level[i] > xp) {
+      return i;
+    }
+  }
+  return constants.xp_level.length;
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -710,4 +719,5 @@ module.exports = {
   generateMatchups,
   countPeers,
   getAnonymousAccountId,
+  getLevelFromXp,
 };
