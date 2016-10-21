@@ -30,11 +30,10 @@ Notes
 * The API runs on port 5000 by default.
 * File changes made in the host directory get mirrored into the container.
 * Get a terminal into the running container: `docker exec -it odota-core bash`
-* `pm2`, a process manager, is used to manage the individual services. Each is run as a single Node.js process.
-  * `pm2` restarts services when file changes are detected (watch mode).
+* The process manager `pm2` is used to manage the individual services. Each is run as a single Node.js process. Services get restarted when file changes are detected (watch mode).
   * `pm2 list` See the currently running services.
   * `pm2 start manifest.json` Start all the services.
-  * `pm2 start svc/web.js --watch` This starts a specific service and watches it for changes.
+  * `pm2 start svc/web.js --watch` This starts a specific service and enables watch mode on it.
   * `pm2 logs web` Inspect the output of a service.
   * `pm2 delete all` Stop and remove all the services.
 * Tests are written using the `mocha` framework.
