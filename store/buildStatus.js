@@ -68,7 +68,7 @@ module.exports = function buildStatus(db, redis, cb) {
       });
     },
     retriever(cb) {
-      redis.zrangebyscore('retriever', moment().subtract(6, 'hour').format('X'), moment().format('X'), (err, results) => {
+      redis.zrangebyscore('retriever', moment().subtract(1, 'hour').format('X'), moment().format('X'), (err, results) => {
         if (err) {
           return cb(err);
         }
@@ -78,7 +78,7 @@ module.exports = function buildStatus(db, redis, cb) {
           counts[key] = counts[key] ? counts[key] + 1 : 1;
         });
         const result = Object.keys(counts).map(retriever => ({
-          hostname: retriever,
+          hostname: retriever.split('.')[0],
           count: counts[retriever],
         })).sort((a, b) => a.hostname.localeCompare(b.hostname));
         cb(err, result);
