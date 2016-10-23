@@ -51,7 +51,6 @@ const defaults = {
   MMSTATS_DATA_INTERVAL: 3, // minutes between requests for MMStats data
   DEFAULT_DELAY: 1000, // delay between API requests (default: 1000)
   SCANNER_DELAY: 2000, // delay for scanner API requests (stricter rate limit)
-  SCANNER_PARALLELISM: 1, // Number of simultaneous API requests to make in scanner
   MMR_PARALLELISM: 10, // Number of simulataneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
   PLAYER_MATCH_LIMIT: 50000, // max results to return from player matches
