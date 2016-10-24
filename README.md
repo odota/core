@@ -1,6 +1,5 @@
 core
 ====
-[![Discord](https://img.shields.io/badge/Discord-join%20chat%20%E2%86%92-738bd7.svg?style=flat-square)](https://discord.gg/0o5SQGbXuWCNDcaF)
 
 Overview
 ----
@@ -45,7 +44,7 @@ Notes
 
 Resources
 ----
-* Join us on Discord! We're always happy to help and answer questions.
+* Join us on Discord (https://discord.gg/0o5SQGbXuWCNDcaF)! We're always happy to help and answer questions.
 * The following blog posts may help you understand the codebase/architecture:
   * Architecture: https://odota.github.io/blog/2016/05/15/architecture/
   * Deployment/Infrastructure: https://odota.github.io/blog/2016/08/10/deployment/
