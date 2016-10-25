@@ -50,7 +50,7 @@
     "express": "4.14.0",
     "express-session": "1.14.0",
     "flag-icon-css": "2.3.0",
-    "font-awesome": "4.6.3",
+    "font-awesome": "4.7.0",
     "heatmap.js": "2.0.0",
     "http-proxy": "1.15.2",
     "jade": "1.11.0",
