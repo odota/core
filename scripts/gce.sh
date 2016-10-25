@@ -45,18 +45,6 @@ gcloud compute --project "peaceful-parity-87002" forwarding-rules create "proxy-
 gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "proxy-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/proxy-lb"
 gcloud compute instance-groups managed set-autoscaling "proxy-group-1" --cool-down-period "60" --max-num-replicas "5" --min-num-replicas "5" --target-cpu-utilization "0.6"
 
-#retriever, loadbalancer
-gcloud compute forwarding-rules delete -q retriever-lb-forwarding-rule
-gcloud compute target-pools delete -q retriever-lb
-gcloud compute instance-groups managed delete -q retriever-group-1
-gcloud compute instance-templates delete -q retriever-1
-gcloud compute instance-templates create retriever-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/retriever.sh
-gcloud compute instance-groups managed create "retriever-group-1" --base-instance-name "retriever-group-1" --template "retriever-1" --size "8"
-gcloud compute --project "peaceful-parity-87002" target-pools create "retriever-lb" --region "us-central1" --session-affinity "NONE"
-gcloud compute --project "peaceful-parity-87002" forwarding-rules create "retriever-lb-forwarding-rule" --load-balancing-scheme internal --region "us-central1" --address "104.198.172.178" --ip-protocol "TCP" --port-range "80" --target-pool "retriever-lb"
-gcloud compute --project "peaceful-parity-87002" instance-groups managed set-target-pools "retriever-group-1" --zone "us-central1-b" --target-pools "https://www.googleapis.com/compute/v1/projects/peaceful-parity-87002/regions/us-central1/targetPools/retriever-lb"
-gcloud compute instance-groups managed set-autoscaling "retriever-group-1" --cool-down-period "60" --max-num-replicas "10" --min-num-replicas "10" --target-cpu-utilization "0.6"
-
 #backend
 gcloud compute instance-groups managed delete -q backend-group-1
 gcloud compute instance-templates delete -q backend-1
@@ -70,3 +58,17 @@ gcloud compute instance-templates delete -q parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata-from-file startup-script=./scripts/parser.sh
 gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
 gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "30" --min-num-replicas "3" --target-cpu-utilization "0.8"
+
+#retriever
+gcloud compute instance-templates delete -q retriever-1
+gcloud compute instance-templates create retriever-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/retriever.sh
+
+#retriever-loadbalancer
+gcloud compute forwarding-rules delete -q retriever-lb-forwarding-rule
+gcloud compute --project "peaceful-parity-87002" forwarding-rules create "retriever-lb-forwarding-rule" --load-balancing-scheme internal --region "us-central1" --address "104.198.172.178" --ip-protocol "TCP" --port-range "80" --target-pool "retriever-lb"
+
+#cycler
+gcloud compute instance-groups managed delete -q cycler-group-1
+gcloud compute instance-templates delete -q cycler-1
+gcloud compute instance-templates create cycler-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/cycler.py
+gcloud compute instance-groups managed create "cycler-group-1" --base-instance-name "cycler-group-1" --template "cycler-1" --size "1"
