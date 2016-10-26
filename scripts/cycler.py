@@ -14,13 +14,16 @@ while True:
     print i, zone, instancegroupname
     # Create the instance group
     subprocess.call("gcloud compute instance-groups managed create {} -q --zone={} --size=0 --template={}".format(instancegroupname, zone, templatename), shell=True)
+    # Set instance template
+    subprocess.call("gcloud compute instance-groups managed set-instance-template {} -q --zone={} --template={}".format(instancegroupname, zone, templatename), shell=True)
     # Add it to backend
     subprocess.call("gcloud compute backend-services add-backend {} -q --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
-    # Scale the instance group if it's the appropriate hour
-    unixhour = time.time() // 3600
+    # Scale the instance group if it's the correct bucket
+    bucketsize = 86400 // len(zoneList)
+    unixhour = time.time() // bucketsize
     bucket = unixhour % len(zoneList)
-    size = 10 if i == bucket else 0
+    size = 15 if i == bucket else 0
     print unixhour, bucket, size
     subprocess.call("gcloud compute instance-groups managed resize {} -q --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
-  # Wait 30 minutes and redo
-  time.sleep(1800)
+  # Wait half a bucket and redo
+  time.sleep(bucketsize // 2)

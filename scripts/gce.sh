@@ -60,6 +60,7 @@ gcloud compute instance-groups managed create "parser-group-1" --base-instance-n
 gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "30" --min-num-replicas "3" --target-cpu-utilization "0.8"
 
 #retriever
+# --image-family gci-stable --image-project google-containers
 gcloud compute instance-templates delete -q retriever-1
 gcloud compute instance-templates create retriever-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/retriever.sh
 
