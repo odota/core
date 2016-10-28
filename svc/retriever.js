@@ -227,7 +227,7 @@ function start() {
 
   function getGcMatchData(idx, match_id, cb) {
     const Dota2 = steamObj[idx].Dota2;
-    console.log('[DOTA] requesting match %s, numusers: %s, requests: %s', match_id, users.length, matchRequests);
+    console.log('[DOTA] requesting match %s, numReady: %s, requests: %s', match_id, Object.keys(steamObj).length, matchRequests);
     matchRequests += 1;
     steamObj[idx].matches += 1;
     if (matchRequests > 500 && getUptime() > minUpTimeSeconds && config.NODE_ENV !== 'development') {
