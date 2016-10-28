@@ -25,7 +25,7 @@ while True:
     bucketsize = 86400 // len(zoneList)
     unixhour = time.time() // bucketsize
     bucket = unixhour % len(zoneList)
-    size = 15 if i == bucket else 0
+    size = 24 if i == bucket else 0
     print unixhour, bucket, size
     subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
   # Wait half a bucket and redo
