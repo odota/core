@@ -420,7 +420,10 @@ module.exports = function (db, redis, cassandra) {
       if (err) {
         console.error(err);
       }
-      res.status(err ? 400 : 200).json(result);
+      const final = Object.assign({}, result, {
+        err: err ? err.stack : err,
+      });
+      res.status(err ? 400 : 200).json(final);
     });
   });
   api.get('/distributions', (req, res, cb) => {

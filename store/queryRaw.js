@@ -12,9 +12,7 @@ module.exports = function queryRaw(input, cb) {
   const q = conn.raw(input).timeout(30000);
   q.asCallback((err, result) => {
     conn.destroy(() => {
-      cb(err, Object.assign({}, result, {
-        err: err ? err.stack : err,
-      }));
+      cb(err, result);
     });
   });
 };
