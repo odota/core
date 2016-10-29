@@ -9,19 +9,10 @@ module.exports = function queryRaw(input, cb) {
       max: 1,
     },
   });
-  const sql = input.sql || translateNQL(input.q);
-  const q = conn.raw(sql).timeout(60000);
+  const q = conn.raw(input).timeout(30000);
   q.asCallback((err, result) => {
     conn.destroy(() => {
-      cb(err, Object.assign({}, input, {
-        result,
-        err: err ? err.stack : err,
-      }));
+      cb(err, result);
     });
   });
 };
-
-function translateNQL(input) {
-  // TODO @nicholashh to implement this
-  return '';
-}
