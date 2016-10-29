@@ -413,44 +413,15 @@ module.exports = function (db, redis, cassandra) {
       });
     });
   });
-  api.post('/explorer', bodyParser.json({
-    limit: '10kb',
-  }), (req, res, cb) => {
-    console.log(req.body);
-    db('queries').insert(req.body).returning('*').asCallback((err, obj) => {
-      if (err) {
-        return cb(err);
-      }
-      queryRaw(obj[0], (err, result) => {
-        if (err) {
-          console.error(err);
-        }
-        res.json(result);
-      });
-    });
-  });
   api.get('/explorer', (req, res, cb) => {
-    if (req.query.id) {
-      db.select().from('queries').where({
-        id: req.query.id,
-      }).asCallback(runQuery);
-    }
-
-    function runQuery(err, q) {
+    // TODO handle NQL (@nicholashh query language)
+    const input = decodeURIComponent(req.query.sql);
+    return queryRaw(input, (err, result) => {
       if (err) {
-        return cb(err);
+        console.error(err);
       }
-      if (!q[0]) {
-        // 404
-        return cb();
-      }
-      queryRaw(q[0], (err, result) => {
-        if (err) {
-          console.error(err);
-        }
-        res.json(result);
-      });
-    }
+      res.json(result);
+    });
   });
   api.get('/distributions', (req, res, cb) => {
     queries.getDistributions(redis, (err, result) => {
