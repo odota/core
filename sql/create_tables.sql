@@ -290,7 +290,7 @@ CREATE TABLE match_gcdata(
   cluster int,
   replay_salt int,
   series_id int,
-  series_type int,
+  series_type int
 );
 
 CREATE TABLE match_rating(
