@@ -32,7 +32,8 @@ const querystring = require('querystring');
 const util = require('util');
 const rc_public = config.RECAPTCHA_PUBLIC_KEY;
 const sessOptions = {
-  maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
+  domain: config.COOKIE_DOMAIN,
+  maxAge: 26 * 7 * 24 * 60 * 60 * 1000,
   secret: config.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -124,6 +125,14 @@ app.use('/public', express.static(path.join(__dirname, '/../public')));
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
+// Remove any old cookies from default domain if not using it (using custom domain)
+app.use((req, res, cb) => {
+  if (config.COOKIE_DOMAIN) {
+    res.clearCookie('session');
+    res.clearCookie('session.sig');
+  }
+  cb();
+});
 // Rate limiter middleware
 app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';

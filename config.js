@@ -46,6 +46,7 @@ const defaults = {
   CASSANDRA_TEST_URL: 'cassandra://localhost/yasp_test',
   RETRIEVER_SECRET: '', // string to use as shared secret with retriever/parser
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
+  COOKIE_DOMAIN: '',
   UNTRACK_DAYS: 14, // The number of days a user is tracked for after every visit
   GOAL: 5, // The cheese goal
   MMSTATS_DATA_INTERVAL: 3, // minutes between requests for MMStats data
