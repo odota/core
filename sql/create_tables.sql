@@ -37,7 +37,8 @@ CREATE TABLE matches (
   radiant_xp_adv integer[],
   teamfights json[],
   version integer,
-  cosmetics json
+  cosmetics json,
+  parties json
 );
 CREATE INDEX on matches(leagueid) WHERE leagueid > 0;
 
@@ -290,7 +291,6 @@ CREATE TABLE match_gcdata(
   replay_salt int,
   series_id int,
   series_type int,
-  parties json
 );
 
 CREATE TABLE match_rating(

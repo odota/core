@@ -46,14 +46,17 @@ app.listen(config.PARSER_PORT);
 // END EXPRESS
 pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
   console.log('parse job: %s', job.jobId);
-  const match = job.data.payload;
+  let match = job.data.payload;
   async.series({
     getDataSource(cb) {
       if (match.replay_blob_key) {
         match.url = `http://localhost:${config.PARSER_PORT}/redis/${match.replay_blob_key}`;
         cb();
       } else {
-        getGcData(db, redis, match, cb);
+        getGcData(db, redis, match, (err, result) => {
+          match = Object.assign({}, match, result);
+          return cb(err);
+        });
       }
     },
     runParse(cb) {

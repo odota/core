@@ -25,6 +25,7 @@ CREATE TABLE matches (
   teamfights text,
   version int,
   cosmetics text,
+  parties text,
 );
 
 CREATE TABLE player_matches (

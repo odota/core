@@ -1,5 +1,6 @@
 /**
  * Issues a request to the retriever to get GC (Game Coordinator) data for a match
+ * Calls back with an object containing the GC data
  **/
 const utility = require('../util/utility');
 const config = require('../config');
@@ -18,15 +19,16 @@ module.exports = function getGcData(db, redis, match, cb) {
     }
     if (gcdata && gcdata.replay_salt) {
       console.log('found cached replay url for %s', match.match_id);
-      match.url = buildReplayUrl(gcdata.match_id, gcdata.cluster, gcdata.replay_salt);
-      return cb(err);
+      const url = buildReplayUrl(gcdata.match_id, gcdata.cluster, gcdata.replay_salt);
+      return cb(err, {
+        url
+      });
     } else {
       const retrievers = retrieverConfig.split(',').map((r) => {
         return `http://${r}?key=${secret}`;
       });
-      const result = retrievers;
       // make array of retriever urls and use a random one on each retry
-      const urls = result.map((r) => {
+      const urls = retrievers.map((r) => {
         return `${r}&match_id=${match.match_id}`;
       });
       getData(urls, (err, body, metadata) => {
@@ -36,7 +38,7 @@ module.exports = function getGcData(db, redis, match, cb) {
         }
         // count retriever calls
         redis.zadd('retriever', moment().format('X'), `${metadata.hostname}_${match.match_id}`);
-        match.url = buildReplayUrl(match.match_id, body.match.cluster, body.match.replay_salt);
+        const url = buildReplayUrl(match.match_id, body.match.cluster, body.match.replay_salt);
         const parties = {};
         if (body.match.players) {
           body.match.players.forEach((p) => {
@@ -52,10 +54,14 @@ module.exports = function getGcData(db, redis, match, cb) {
           replay_salt: body.match.replay_salt,
           series_id: body.match.series_id,
           series_type: body.match.series_type,
-          parties,
         }, {
           match_id: body.match.match_id,
-        }, cb);
+        }, (err) => {
+          cb(err, {
+            url,
+            parties,
+          });
+        });
       });
     }
   });
