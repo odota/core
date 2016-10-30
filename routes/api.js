@@ -415,7 +415,7 @@ module.exports = function (db, redis, cassandra) {
   });
   api.get('/explorer', (req, res, cb) => {
     // TODO handle NQL (@nicholashh query language)
-    const input = decodeURIComponent(req.query.sql);
+    const input = req.query.sql;
     return queryRaw(input, (err, result) => {
       if (err) {
         console.error(err);
