@@ -109,7 +109,7 @@ function updateRankings(match, cb) {
       const start = moment().startOf('quarter').format('X');
       const expire = moment().add(1, 'quarter').startOf('quarter').format('X');
       const win = Number(utility.isRadiant(player) === player.radiant_win);
-      const player_score = win ? match_score : -match_score;
+      const player_score = win ? match_score : 0;
       if (player_score && utility.isSignificant(match)) {
         redis.zincrby(['hero_rankings', start, player.hero_id].join(':'), player_score, player.account_id);
         redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);
