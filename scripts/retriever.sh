@@ -1,5 +1,8 @@
 #!/bin/bash
 
+VMNAME=$(hostname)
+ZONE=$(curl -H Metadata-Flavor:Google http://metadata/computeMetadata/v1/instance/zone | cut -d/ -f4)
+
 # Setup
 # Docker install not needed if using gci image
 curl -sSL https://get.docker.com/ | sh
