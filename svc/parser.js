@@ -46,7 +46,7 @@ app.listen(config.PARSER_PORT);
 // END EXPRESS
 pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
   console.log('parse job: %s', job.jobId);
-  let match = job.data.payload;
+  const match = job.data.payload;
   async.series({
     getDataSource(cb) {
       if (match.replay_blob_key) {
@@ -54,7 +54,11 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
         cb();
       } else {
         getGcData(db, redis, match, (err, result) => {
-          match = Object.assign({}, match, result);
+          if (err) {
+            return cb(err);
+          }
+          match.url = result.url;
+          match.parties = result.parties;
           return cb(err);
         });
       }
@@ -101,7 +105,6 @@ function insertUploadedParse(match, cb) {
 }
 
 function insertStandardParse(match, cb) {
-  console.log('insertMatch');
   // fs.writeFileSync('output.json', JSON.stringify(match));
   insertMatch(db, redis, match, {
     type: 'parsed',
@@ -238,14 +241,7 @@ function createParsedDataBlob(entries, match) {
     parsed_data.logs = logs;
     console.timeEnd('processLogParse');
   }
-  parsed_data.match_id = match.match_id;
-  parsed_data.pgroup = match.pgroup;
-  parsed_data.radiant_win = match.radiant_win;
-  parsed_data.start_time = match.start_time;
-  parsed_data.duration = match.duration;
-  parsed_data.replay_blob_key = match.replay_blob_key;
-  parsed_data.doLogParse = match.doLogParse;
-  return parsed_data;
+  return Object.assign({}, parsed_data, match);
 }
 
 function getParseSchema() {
