@@ -68,7 +68,7 @@
       "script": "svc/gcdata.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "gcedata",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1    
     },
