@@ -5,6 +5,7 @@ import subprocess
 import time
 
 def start():
+  # subprocess.call("sudo gcloud components update --quiet", shell=True)
   # For completeness this should also create the backend, HTTP load balancer, template, and network
   # Get the available zones
   zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
@@ -15,7 +16,7 @@ def start():
   print zoneList
   for i, zone in enumerate(zoneList):
     backendname = "retriever"
-    templatename = "retriever-1"
+    templatename = "retriever-2"
     instancegroupname = "retriever-group-" + zone
     print i, zone, instancegroupname
     # Create the instance group
@@ -38,11 +39,16 @@ def start():
       nextsize = int(subprocess.check_output("gcloud compute instance-groups managed describe {} --quiet --zone={} --format='value(targetSize)'".format(nextinstancegroupname, nextzone), shell=True))
       # Scale up the next zone
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(nextinstancegroupname, nextzone, nextsize + 1), shell=True)
+      # Find the oldest instance in this group
+      delete = subprocess.check_output("gcloud compute instances list --sort-by=creationTimestamp --format='table[no-heading](name)' | grep {} | head -n 1".format(instancegroupname), shell=True)
+      if (delete.startswith(instancegroupname)):
+        # Delete old one
+        subprocess.call("gcloud compute instance-groups managed delete-instances {} --quiet --zone={} --instances={}".format(instancegroupname, zone, delete), shell=True)
       # Scale down the current zone
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, currentsize - 1), shell=True)
-      # We want to cycle fast enough that each instance lives for approximately 15 minutes
-      time.sleep(900 // (currentsize + nextsize))
-      
+      # We want to cycle fast enough that each instance lives for 20 minutes
+      time.sleep(1200 // (currentsize + nextsize))
+   
 while True:
   try:
     start()
