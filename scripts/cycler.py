@@ -4,7 +4,7 @@ from itertools import cycle
 import subprocess
 import time
 
-targetsize = 16
+targetsize = 24
 
 def start():
   # subprocess.call("sudo gcloud components update --quiet", shell=True)
