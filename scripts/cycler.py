@@ -12,9 +12,9 @@ def start():
   # Get the available zones
   zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
   zoneList = zones.strip().split('\n')
-  zoneList = sorted(zoneList)
+  # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
-  # zoneList = sorted(zoneList, key=lambda x: x[-1])
+  zoneList = sorted(zoneList, key=lambda x: x[-1])
   print zoneList
   for i, zone in enumerate(zoneList):
     backendname = "retriever"
@@ -40,7 +40,7 @@ def start():
       nextinstancegroupname = "retriever-group-" + nextzone
       nextsize = max(targetsize - currentsize, 0)
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(nextinstancegroupname, nextzone, nextsize), shell=True)
-      time.sleep(300)
+      time.sleep(60)
       
       # nextsize = int(subprocess.check_output("gcloud compute instance-groups managed describe {} --quiet --zone={} --format='value(targetSize)'".format(nextinstancegroupname, nextzone), shell=True))
       # # Scale up the next zone
