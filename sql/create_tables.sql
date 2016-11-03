@@ -112,7 +112,7 @@ CREATE TABLE player_matches (
   rune_pickups int,
   ability_upgrades_arr integer[],
   party_id int,
-  permanent_buffs text
+  permanent_buffs json[]
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX on player_matches(hero_id);
