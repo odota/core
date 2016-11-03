@@ -3,10 +3,9 @@ core
 
 Overview
 ----
-* This project provides an open platform (backend) with Dota-related data (matches, players, etc.)
+* This project provides the [OpenDota API](https://docs.opendota.com/) for consumption.
 * Raw data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
 * A public deployment of this code is maintained by The OpenDota Project.
-* This project provides the [OpenDota API](https://docs.opendota.com/) for consumption.
 
 Tech Stack
 ----
