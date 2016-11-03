@@ -104,8 +104,7 @@ before(function setup(done) {
     function (cb) {
       console.log('loading matches');
       async.mapSeries([details_api.result], (m, cb) => {
-        queries.insertMatch(db, redis, m, {
-          cassandra,
+        queries.insertMatch(m, {
           type: 'api',
           skipParse: true,
         }, cb);
@@ -150,7 +149,7 @@ describe('replay parse', function () {
       });
     });
     it(`parse replay ${key}`, (done) => {
-      queries.insertMatch(db, redis, match, {
+      queries.insertMatch(match, {
         cassandra,
         type: 'api',
         forceParse: true,

@@ -9,7 +9,6 @@ const getGcData = require('../util/getGcData');
 const config = require('../config');
 const db = require('../store/db');
 const redis = require('../store/redis');
-const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 const compute = require('../util/compute');
@@ -31,6 +30,7 @@ const spawn = cp.spawn;
 const insertMatch = queries.insertMatch;
 const getMatchBenchmarks = queries.getMatchBenchmarks;
 const computeMatchData = compute.computeMatchData;
+const buildReplayUrl = utility.buildReplayUrl;
 // EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
 const express = require('express');
 const app = express();
@@ -57,8 +57,7 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
           if (err) {
             return cb(err);
           }
-          match.url = result.url;
-          match.parties = result.parties;
+          match.url = buildReplayUrl(result.match_id, result.cluster, result.replay_salt);
           return cb(err);
         });
       }
@@ -106,9 +105,8 @@ function insertUploadedParse(match, cb) {
 
 function insertStandardParse(match, cb) {
   // fs.writeFileSync('output.json', JSON.stringify(match));
-  insertMatch(db, redis, match, {
+  insertMatch(match, {
     type: 'parsed',
-    cassandra,
     skipParse: true,
     doLogParse: match.doLogParse,
   }, cb);

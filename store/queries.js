@@ -19,7 +19,7 @@ const compute = require('../util/compute');
 const computeMatchData = compute.computeMatchData;
 const db = require('../store/db');
 const redis = require('../store/redis');
-const cassandra = (config.ENABLE_CASSANDRA_MATCH_STORE_READ || config.ENABLE_CASSANDRA_MATCH_STORE_WRITE) ? require('../store/cassandra') : undefined;
+const cassandra = require('../store/cassandra');
 const columnInfo = {};
 const cassandraColumnInfo = {};
 
@@ -164,7 +164,7 @@ function updateMatchRating(match, cb) {
 }
 
 
-function insertMatch(db, redis, match, options, cb) {
+function insertMatch(match, options, cb) {
   const players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
   // don't insert anonymous account id
   players.forEach((p) => {
@@ -201,8 +201,6 @@ function insertMatch(db, redis, match, options, cb) {
       }
     });
   }
-  // options.type specify api, parse, or skill
-  // we want to insert into matches, then insert into player_matches for each entry in players
   async.series({
     dlp: decideLogParse,
     u: upsertMatch,
@@ -214,7 +212,8 @@ function insertMatch(db, redis, match, options, cb) {
     dm: decideMmr,
     dpro: decideProfile,
     dgcd: decideGcData,
-    dp: decideParse,
+    dmp: decideMetaParse,
+    dp: decideReplayParse,
   }, (err, results) => {
     return cb(err, results.dp);
   });
@@ -340,7 +339,6 @@ function insertMatch(db, redis, match, options, cb) {
     if (!config.ENABLE_CASSANDRA_MATCH_STORE_WRITE) {
       return cb();
     }
-    const cassandra = options.cassandra;
     // console.log('[INSERTMATCH] upserting into Cassandra');
     cleanRowCassandra(cassandra, 'matches', match, (err, match) => {
       if (err) {
@@ -498,6 +496,7 @@ function insertMatch(db, redis, match, options, cb) {
   }
 
   function decideGcData(cb) {
+    // TODO use reliable queue
     if (options.origin === 'scanner' && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
       redis.lpush('gcQueue', JSON.stringify({
         match_id: match.match_id,
@@ -507,8 +506,13 @@ function insertMatch(db, redis, match, options, cb) {
       cb();
     }
   }
+  
+  function decideMetaParse(cb) {
+    // metaQueue.add()
+    cb();
+  }
 
-  function decideParse(cb) {
+  function decideReplayParse(cb) {
     if (options.skipParse) {
       // not parsing this match
       return cb();

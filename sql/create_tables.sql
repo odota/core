@@ -37,8 +37,7 @@ CREATE TABLE matches (
   radiant_xp_adv integer[],
   teamfights json[],
   version integer,
-  cosmetics json,
-  parties json
+  cosmetics json
 );
 CREATE INDEX on matches(leagueid) WHERE leagueid > 0;
 
@@ -111,7 +110,9 @@ CREATE TABLE player_matches (
   creeps_stacked int,
   camps_stacked int,
   rune_pickups int,
-  ability_upgrades_arr integer[]
+  ability_upgrades_arr integer[],
+  party_id int,
+  permanent_buffs text
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX on player_matches(hero_id);

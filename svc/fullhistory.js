@@ -4,8 +4,6 @@
 const config = require('../config');
 const constants = require('dotaconstants');
 const utility = require('../util/utility');
-const redis = require('../store/redis');
-const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 const db = require('../store/db');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
@@ -68,9 +66,8 @@ function processFullHistory(job, cb) {
               return cb(err);
             }
             const match = body.result;
-            insertMatch(db, redis, match, {
+            insertMatch(match, {
               type: 'api',
-              cassandra,
               skipAbilityUpgrades: true,
               skipParse: true,
             }, cb);

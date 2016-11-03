@@ -7,7 +7,6 @@ const utility = require('../util/utility');
 const db = require('../store/db');
 const queries = require('../store/queries');
 const async = require('async');
-// var insertMatch = queries.insertMatch;
 const insertMatchSkill = queries.insertMatchSkill;
 const results = {};
 const added = {};

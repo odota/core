@@ -25,7 +25,6 @@ CREATE TABLE matches (
   teamfights text,
   version int,
   cosmetics text,
-  parties text,
 );
 
 CREATE TABLE player_matches (
@@ -96,6 +95,8 @@ CREATE TABLE player_matches (
   camps_stacked int,
   rune_pickups int,
   ability_upgrades_arr text,
+  party_id int,
+  permanent_buffs text,
 );
 
 CREATE TABLE player_caches (
