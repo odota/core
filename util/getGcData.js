@@ -36,7 +36,7 @@ module.exports = function getGcData(db, redis, match, cb) {
         // count retriever calls
         redis.zadd('retriever', moment().format('X'), `${metadata.hostname}_${match.match_id}`);
         // Persist parties and permanent buffs
-        const players = body.match.players.mapforEach((p) => ({
+        const players = body.match.players.map((p) => ({
           player_slot: p.player_slot,
           party_id: p.party_id.low,
           permanent_buffs: p.permanent_buffs,
