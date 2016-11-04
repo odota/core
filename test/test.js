@@ -11,7 +11,6 @@ const cass = require('cassandra-driver');
 const fs = require('fs');
 const request = require('request');
 const config = require('../config');
-const constants = require('dotaconstants');
 const redis = require('../store/redis');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
@@ -187,40 +186,8 @@ describe('replay parse', function () {
     });
   });
 });
-describe('player pages', function () {
-  this.timeout(5000);
-  const tests = Object.keys(constants.player_pages);
-  tests.forEach((t) => {
-    it(`/players/:valid/${t}`, (done) => {
-      supertest(app).get(`/players/120269134/${t}`).expect(200).end((err, res) => {
-        done(err);
-      });
-    });
-  });
-});
-describe('player pages with filter', () => {
-  const tests = Object.keys(constants.player_pages);
-  tests.forEach((t) => {
-    it(`/players/:valid/${t}`, (done) => {
-      supertest(app).get(`/players/120269134/${t}?hero_id=1`).expect(200).end((err, res) => {
-        done(err);
-      });
-    });
-  });
-});
-describe('basic match page', () => {
-  it('/matches/:invalid', (done) => {
-    supertest(app).get('/matches/1').expect(404).end((err, res) => {
-      done(err);
-    });
-  });
-  it('/matches/:valid', (done) => {
-    supertest(app).get('/matches/1781962623').expect(200).end((err, res) => {
-      done(err);
-    });
-  });
-});
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
+/*
 describe('api', () => {
   it('should accept api endpoints', (cb) => {
     const body = require('../routes/spec.js');
@@ -232,6 +199,7 @@ describe('api', () => {
     }, cb);
   });
 });
+*/
 describe('generateMatchups', () => {
   it('should generate matchups', (done) => {
     // in this sample match
