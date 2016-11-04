@@ -180,26 +180,11 @@ Please keep request rate to approximately 1/s.
   "paths": {
     "/matches/{match_id}": {
       "get": {
-        route: '/matches/:match_id/:info?',
-        func: (req, res, cb) => {
-          buildMatch(req.params.match_id, {
-            db,
-            redis,
-            cassandra,
-          }, (err, match) => {
-            if (err) {
-              return cb(err);
-            }
-            if (!match) {
-              return cb();
-            }
-            res.json(match);
-          });
-        },
+        "summary": "/",
+        "description": "Match data",
         "tags": [
           "matches"
         ],
-        "summary": "A Dota 2 match",
         "parameters": [{
           "name": "match_id",
           "in": "path",
@@ -208,7 +193,7 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "An object with match data",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
@@ -367,47 +352,38 @@ Please keep request rate to approximately 1/s.
               }
             }
           }
-        }
+        },
+        route: () => '/matches/:match_id/:info?',
+        func: (req, res, cb) => {
+          buildMatch(req.params.match_id, {
+            db,
+            redis,
+            cassandra,
+          }, (err, match) => {
+            if (err) {
+              return cb(err);
+            }
+            if (!match) {
+              return cb();
+            }
+            res.json(match);
+          });
+        },
       }
     },
     "/players/{account_id}": {
       "get": {
-        route: '/players/:account_id',
-        func: (req, res, cb) => {
-          const account_id = Number(req.params.account_id);
-          async.parallel({
-            profile(cb) {
-              queries.getPlayer(db, account_id, cb);
-            },
-            tracked_until(cb) {
-              redis.zscore('tracked', account_id, cb);
-            },
-            solo_competitive_rank(cb) {
-              redis.zscore('solo_competitive_rank', account_id, cb);
-            },
-            competitive_rank(cb) {
-              redis.zscore('competitive_rank', account_id, cb);
-            },
-            mmr_estimate(cb) {
-              queries.getMmrEstimate(db, redis, account_id, cb);
-            },
-          }, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            res.json(result);
-          });
-        },
+        "summary": "/",
+        "description": "Player data",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }],
         "responses": {
           "200": {
-            "description": "Player data",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
@@ -434,36 +410,42 @@ Please keep request rate to approximately 1/s.
               }
             }
           }
-        }
+        },
+        route: () => '/players/:account_id',
+        func: (req, res, cb) => {
+          const account_id = Number(req.params.account_id);
+          async.parallel({
+            profile(cb) {
+              queries.getPlayer(db, account_id, cb);
+            },
+            tracked_until(cb) {
+              redis.zscore('tracked', account_id, cb);
+            },
+            solo_competitive_rank(cb) {
+              redis.zscore('solo_competitive_rank', account_id, cb);
+            },
+            competitive_rank(cb) {
+              redis.zscore('competitive_rank', account_id, cb);
+            },
+            mmr_estimate(cb) {
+              queries.getMmrEstimate(db, redis, account_id, cb);
+            },
+          }, (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            res.json(result);
+          });
+        },
       }
     },
     "/players/{account_id}/wl": {
       "get": {
-        route: '/players/:account_id/wl',
-        func: (req, res, cb) => {
-          const result = {
-            win: 0,
-            lose: 0,
-          };
-          req.queryObj.project = req.queryObj.project.concat('player_slot', 'radiant_win');
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            cache.forEach((m) => {
-              if (utility.isRadiant(m) == m.radiant_win) {
-                result.win += 1;
-              } else {
-                result.lose += 1;
-              }
-            });
-            res.json(result);
-          });
-        },
+        "summary": "/wl",
+        "description": "Win/Loss count",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's wins/losses",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }, {
@@ -503,7 +485,7 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "Player wins/losses",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
@@ -518,38 +500,37 @@ Please keep request rate to approximately 1/s.
               }
             }
           }
-        }
-      }
-    },
-    "/players/{account_id}/matches": {
-      "get": {
-        route: '/players/:account_id/matches',
+        },
+        route: () => '/players/:account_id/wl',
         func: (req, res, cb) => {
-          // Use passed fields as additional fields, if available
-          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists'];
-          req.queryObj.project = req.queryObj.project.concat(additionalFields);
+          const result = {
+            win: 0,
+            lose: 0,
+          };
+          req.queryObj.project = req.queryObj.project.concat('player_slot', 'radiant_win');
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
               return cb(err);
             }
-            if (req.queryObj.project.indexOf('skill') !== -1) {
-              queries.getMatchesSkill(db, cache, {}, render);
-            } else {
-              render();
-            }
-
-            function render(err) {
-              if (err) {
-                return cb(err);
+            cache.forEach((m) => {
+              if (utility.isRadiant(m) == m.radiant_win) {
+                result.win += 1;
+              } else {
+                result.lose += 1;
               }
-              return res.json(cache);
-            }
+            });
+            res.json(result);
           });
         },
+      }
+    },
+    "/players/{account_id}/matches": {
+      "get": {
+        "summary": "/matches",
+        "description": "Matches played",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's matches",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }, {
@@ -591,17 +572,96 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "Player matches",
+            "description": "Success",
             "schema": {
-              "type": "array"
+              "type": "array",
+              items: {
+                "type": "object",
+              },
             }
           }
-        }
+        },
+        route: () => '/players/:account_id/matches',
+        func: (req, res, cb) => {
+          // Use passed fields as additional fields, if available
+          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists'];
+          req.queryObj.project = req.queryObj.project.concat(additionalFields);
+          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
+            if (err) {
+              return cb(err);
+            }
+            if (req.queryObj.project.indexOf('skill') !== -1) {
+              queries.getMatchesSkill(db, cache, {}, render);
+            } else {
+              render();
+            }
+
+            function render(err) {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(cache);
+            }
+          });
+        },
       }
     },
     "/players/{account_id}/heroes": {
       "get": {
-        route: '/players/:account_id/heroes',
+        "summary": "/heroes",
+        "description": "Heroes played",
+        "tags": [
+          "players"
+        ],
+        "parameters": [{
+          "$ref": "#/parameters/accountIdParam"
+        }, {
+          "$ref": "#/parameters/limitParam"
+        }, {
+          "$ref": "#/parameters/offsetParam"
+        }, {
+          "$ref": "#/parameters/winParam"
+        }, {
+          "$ref": "#/parameters/patchParam"
+        }, {
+          "$ref": "#/parameters/gameModeParam"
+        }, {
+          "$ref": "#/parameters/lobbyTypeParam"
+        }, {
+          "$ref": "#/parameters/regionParam"
+        }, {
+          "$ref": "#/parameters/dateParam"
+        }, {
+          "$ref": "#/parameters/laneRoleParam"
+        }, {
+          "$ref": "#/parameters/heroIdParam"
+        }, {
+          "$ref": "#/parameters/isRadiantParam"
+        }, {
+          "$ref": "#/parameters/includedAccountIdParam"
+        }, {
+          "$ref": "#/parameters/excludedAccountIdParam"
+        }, {
+          "$ref": "#/parameters/withHeroIdParam"
+        }, {
+          "$ref": "#/parameters/againstHeroIdParam"
+        }, {
+          "$ref": "#/parameters/significantParam"
+        }, {
+          "$ref": "#/parameters/sortParam"
+        }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              items: {
+                "type": "object",
+              },
+            }
+          }
+        },
+        route: () => '/players/:account_id/heroes',
         func: (req, res, cb) => {
           const heroes = {};
           // prefill heroes with every hero
@@ -660,16 +720,17 @@ Please keep request rate to approximately 1/s.
             }));
           });
         },
+      }
+    },
+    "/players/{account_id}/peers": {
+      "get": {
+        "summary": "/peers",
+        "description": "Players played with",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's played heroes",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
-        }, {
-          "$ref": "#/parameters/limitParam"
-        }, {
-          "$ref": "#/parameters/offsetParam"
         }, {
           "$ref": "#/parameters/winParam"
         }, {
@@ -701,20 +762,18 @@ Please keep request rate to approximately 1/s.
         }, {
           "$ref": "#/parameters/sortParam"
         }],
-        "description": "Count of games played on heroes",
         "responses": {
           "200": {
             "description": "Success",
             "schema": {
-              "type": "array"
+              "type": "array",
+              items: {
+                "type": "object",
+              },
             }
           }
-        }
-      }
-    },
-    "/players/{account_id}/peers": {
-      "get": {
-        route: '/players/:account_id/peers',
+        },
+        route: () => '/players/:account_id/peers',
         func: (req, res, cb) => {
           req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
@@ -732,10 +791,15 @@ Please keep request rate to approximately 1/s.
             });
           });
         },
+      }
+    },
+    "/players/{account_id}/pros": {
+      "get": {
+        "summary": "/pros",
+        "description": "Pro players played with",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's peers",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }, {
@@ -771,17 +835,16 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "Player data",
+            "description": "Success",
             "schema": {
-              "type": "array"
+              "type": "array",
+              items: {
+                "type": "object",
+              },
             }
           }
-        }
-      }
-    },
-    "/players/{account_id}/pros": {
-      "get": {
-        route: '/players/:account_id/pros',
+        },
+        route: () => '/players/:account_id/pros',
         func: (req, res, cb) => {
           req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
@@ -799,77 +862,15 @@ Please keep request rate to approximately 1/s.
             });
           });
         },
-        "tags": [
-          "players"
-        ],
-        "summary": "A Dota 2 player's games played with professional players",
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
-        }, {
-          "$ref": "#/parameters/winParam"
-        }, {
-          "$ref": "#/parameters/patchParam"
-        }, {
-          "$ref": "#/parameters/gameModeParam"
-        }, {
-          "$ref": "#/parameters/lobbyTypeParam"
-        }, {
-          "$ref": "#/parameters/regionParam"
-        }, {
-          "$ref": "#/parameters/dateParam"
-        }, {
-          "$ref": "#/parameters/laneRoleParam"
-        }, {
-          "$ref": "#/parameters/heroIdParam"
-        }, {
-          "$ref": "#/parameters/isRadiantParam"
-        }, {
-          "$ref": "#/parameters/includedAccountIdParam"
-        }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
-        }, {
-          "$ref": "#/parameters/withHeroIdParam"
-        }, {
-          "$ref": "#/parameters/againstHeroIdParam"
-        }, {
-          "$ref": "#/parameters/significantParam"
-        }, {
-          "$ref": "#/parameters/sortParam"
-        }],
-        "responses": {
-          "200": {
-            "description": "Player data",
-            "schema": {
-              "type": "array"
-            }
-          }
-        }
       }
     },
     "/players/{account_id}/records": {
       "get": {
-        route: '/players/:account_id/records',
-        func: (req, res, cb) => {
-          const result = {};
-          req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys)).concat('hero_id', 'start_time');
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            cache.forEach((m) => {
-              for (const key in subkeys) {
-                if (!result[key] || (m[key] > result[key][key])) {
-                  result[key] = m;
-                }
-              }
-            });
-            res.json(result);
-          });
-        },
+        "summary": "/records",
+        "description": "Extremes in matches played",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's records",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }, {
@@ -909,7 +910,7 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "Player data",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
@@ -1032,41 +1033,34 @@ Please keep request rate to approximately 1/s.
               }
             }
           }
-        }
-      }
-    },
-    "/players/{account_id}/counts": {
-      "get": {
-        route: '/players/:account_id/counts',
+        },
+        route: () => '/players/:account_id/records',
         func: (req, res, cb) => {
           const result = {};
-          for (const key in countCats) {
-            result[key] = {};
-          }
-          req.queryObj.project = req.queryObj.project.concat(Object.keys(countCats));
+          req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys)).concat('hero_id', 'start_time');
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
               return cb(err);
             }
             cache.forEach((m) => {
-              for (const key in countCats) {
-                if (!result[key][~~m[key]]) {
-                  result[key][~~m[key]] = {
-                    games: 0,
-                    win: 0,
-                  };
+              for (const key in subkeys) {
+                if (!result[key] || (m[key] > result[key][key])) {
+                  result[key] = m;
                 }
-                result[key][~~m[key]].games += 1;
-                result[key][~~m[key]].win += Number(m.radiant_win === utility.isRadiant(m));
               }
             });
             res.json(result);
           });
         },
+      }
+    },
+    "/players/{account_id}/counts": {
+      "get": {
+        "summary": "/counts",
+        "description": "Categorical counts",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's categorical match counts",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }, {
@@ -1106,7 +1100,7 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "Player data",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
@@ -1137,47 +1131,42 @@ Please keep request rate to approximately 1/s.
               }
             }
           }
-        }
-      }
-    },
-    "/players/{account_id}/histograms/{field}": {
-      "get": {
-        route: '/players/:account_id/histograms/:field',
+        },
+        route: () => '/players/:account_id/counts',
         func: (req, res, cb) => {
-          const field = req.params.field;
-          req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot').concat([field].filter(f => subkeys[f]));
+          const result = {};
+          for (const key in countCats) {
+            result[key] = {};
+          }
+          req.queryObj.project = req.queryObj.project.concat(Object.keys(countCats));
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
               return cb(err);
             }
-            const buckets = 40;
-            // Find the maximum value to determine how large each bucket should be
-            const max = Math.max(...cache.map(m => m[field]));
-            // Round the bucket size up to the nearest integer
-            const bucketSize = Math.ceil((max + 1) / buckets);
-            const bucketArray = Array.from({
-              length: buckets,
-            }, (value, index) => ({
-              x: bucketSize * index,
-              games: 0,
-              win: 0,
-            }));
             cache.forEach((m) => {
-              if (m[field] || m[field] === 0) {
-                const index = Math.floor(m[field] / bucketSize);
-                if (bucketArray[index]) {
-                  bucketArray[index].games += 1;
-                  bucketArray[index].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+              for (const key in countCats) {
+                if (!result[key][~~m[key]]) {
+                  result[key][~~m[key]] = {
+                    games: 0,
+                    win: 0,
+                  };
                 }
+                result[key][~~m[key]].games += 1;
+                result[key][~~m[key]].win += Number(m.radiant_win === utility.isRadiant(m));
               }
             });
-            res.json(bucketArray);
+            res.json(result);
           });
         },
+      }
+    },
+    "/players/{account_id}/histograms/{field}": {
+      "get": {
+        "summary": "/histograms",
+        "description": "Distribution of matches in a single stat",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's histograms in a stat",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }, {
@@ -1219,17 +1208,112 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "Player data",
+            "description": "Success",
             "schema": {
-              "type": "array"
+              "type": "array",
+              items: {
+                "type": "object",
+              },
             }
           }
-        }
+        },
+        route: () => '/players/:account_id/histograms/:field',
+        func: (req, res, cb) => {
+          const field = req.params.field;
+          req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot').concat([field].filter(f => subkeys[f]));
+          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
+            if (err) {
+              return cb(err);
+            }
+            const buckets = 40;
+            // Find the maximum value to determine how large each bucket should be
+            const max = Math.max(...cache.map(m => m[field]));
+            // Round the bucket size up to the nearest integer
+            const bucketSize = Math.ceil((max + 1) / buckets);
+            const bucketArray = Array.from({
+              length: buckets,
+            }, (value, index) => ({
+              x: bucketSize * index,
+              games: 0,
+              win: 0,
+            }));
+            cache.forEach((m) => {
+              if (m[field] || m[field] === 0) {
+                const index = Math.floor(m[field] / bucketSize);
+                if (bucketArray[index]) {
+                  bucketArray[index].games += 1;
+                  bucketArray[index].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+                }
+              }
+            });
+            res.json(bucketArray);
+          });
+        },
       }
     },
     "/players/{account_id}/wardmap": {
       "get": {
-        route: '/players/:account_id/wardmap',
+        "summary": "/wardmap",
+        "description": "Wards placed in matches played",
+        "tags": [
+          "players"
+        ],
+        "parameters": [{
+          "$ref": "#/parameters/accountIdParam"
+        }, {
+          "$ref": "#/parameters/limitParam"
+        }, {
+          "$ref": "#/parameters/offsetParam"
+        }, {
+          "$ref": "#/parameters/winParam"
+        }, {
+          "$ref": "#/parameters/patchParam"
+        }, {
+          "$ref": "#/parameters/gameModeParam"
+        }, {
+          "$ref": "#/parameters/lobbyTypeParam"
+        }, {
+          "$ref": "#/parameters/regionParam"
+        }, {
+          "$ref": "#/parameters/dateParam"
+        }, {
+          "$ref": "#/parameters/laneRoleParam"
+        }, {
+          "$ref": "#/parameters/heroIdParam"
+        }, {
+          "$ref": "#/parameters/isRadiantParam"
+        }, {
+          "$ref": "#/parameters/includedAccountIdParam"
+        }, {
+          "$ref": "#/parameters/excludedAccountIdParam"
+        }, {
+          "$ref": "#/parameters/withHeroIdParam"
+        }, {
+          "$ref": "#/parameters/againstHeroIdParam"
+        }, {
+          "$ref": "#/parameters/significantParam"
+        }, {
+          "$ref": "#/parameters/sortParam"
+        }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "obs": {
+                  "description": "obs",
+                  "type": "object"
+                },
+                "sen": {
+                  "description": "sen",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        route: () => '/players/:account_id/wardmap',
         func: (req, res, cb) => {
           const result = {
             obs: {},
@@ -1255,10 +1339,15 @@ Please keep request rate to approximately 1/s.
             res.json(d);
           });
         },
+      }
+    },
+    "/players/{account_id}/wordcloud": {
+      "get": {
+        "summary": "/wordcloud",
+        "description": "Words said/read in matches played",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's wardmap",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }, {
@@ -1298,27 +1387,23 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "Player data",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
-                "obs": {
-                  "description": "obs",
+                "my_word_counts": {
+                  "description": "my_word_counts",
                   "type": "object"
                 },
-                "sen": {
-                  "description": "sen",
+                "all_word_counts": {
+                  "description": "all_word_counts",
                   "type": "object"
                 }
               }
             }
           }
-        }
-      }
-    },
-    "/players/{account_id}/wordcloud": {
-      "get": {
-        route: '/players/:account_id/wordcloud',
+        },
+        route: () => '/players/:account_id/wordcloud',
         func: (req, res, cb) => {
           const result = {
             my_word_counts: {},
@@ -1337,70 +1422,30 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-        "tags": [
-          "players"
-        ],
-        "summary": "A Dota 2 player's wordcloud",
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
-        }, {
-          "$ref": "#/parameters/limitParam"
-        }, {
-          "$ref": "#/parameters/offsetParam"
-        }, {
-          "$ref": "#/parameters/winParam"
-        }, {
-          "$ref": "#/parameters/patchParam"
-        }, {
-          "$ref": "#/parameters/gameModeParam"
-        }, {
-          "$ref": "#/parameters/lobbyTypeParam"
-        }, {
-          "$ref": "#/parameters/regionParam"
-        }, {
-          "$ref": "#/parameters/dateParam"
-        }, {
-          "$ref": "#/parameters/laneRoleParam"
-        }, {
-          "$ref": "#/parameters/heroIdParam"
-        }, {
-          "$ref": "#/parameters/isRadiantParam"
-        }, {
-          "$ref": "#/parameters/includedAccountIdParam"
-        }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
-        }, {
-          "$ref": "#/parameters/withHeroIdParam"
-        }, {
-          "$ref": "#/parameters/againstHeroIdParam"
-        }, {
-          "$ref": "#/parameters/significantParam"
-        }, {
-          "$ref": "#/parameters/sortParam"
-        }],
-        "responses": {
-          "200": {
-            "description": "Player data",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "my_word_counts": {
-                  "description": "my_word_counts",
-                  "type": "object"
-                },
-                "all_word_counts": {
-                  "description": "all_word_counts",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/players/{account_id}/ratings": {
       "get": {
-        route: '/players/:account_id/ratings',
+        "summary": "/ratings",
+        "description": "Player rating history",
+        "tags": [
+          "players"
+        ],
+        "parameters": [{
+          "$ref": "#/parameters/accountIdParam"
+        }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              items: {
+                "type": "object",
+              },
+            }
+          }
+        },
+        route: () => '/players/:account_id/ratings',
         func: (req, res, cb) => {
           queries.getPlayerRatings(db, req.params.account_id, (err, result) => {
             if (err) {
@@ -1409,10 +1454,15 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
+      }
+    },
+    "/players/{account_id}/rankings": {
+      "get": {
+        "summary": "/rankings",
+        "description": "Player hero rankings",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's rating history",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }],
@@ -1420,15 +1470,14 @@ Please keep request rate to approximately 1/s.
           "200": {
             "description": "Success",
             "schema": {
-              "type": "array"
+              "type": "array",
+              items: {
+                "type": "object",
+              },
             }
           }
-        }
-      }
-    },
-    "/players/{account_id}/rankings": {
-      "get": {
-        route: '/players/:account_id/rankings',
+        },
+        route: () => '/players/:account_id/rankings',
         func: (req, res, cb) => {
           queries.getPlayerRankings(redis, req.params.account_id, (err, result) => {
             if (err) {
@@ -1437,10 +1486,15 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
+      }
+    },
+    "/players/{account_id}/refresh": {
+      "post": {
+        "summary": "/refresh",
+        "description": "Refresh player match history",
         "tags": [
           "players"
         ],
-        "summary": "A Dota 2 player's hero rankings",
         "parameters": [{
           "$ref": "#/parameters/accountIdParam"
         }],
@@ -1448,16 +1502,11 @@ Please keep request rate to approximately 1/s.
           "200": {
             "description": "Success",
             "schema": {
-              "type": "array"
+              "type": "object",
             }
           }
-        }
-      }
-    },
-    "/players/{account_id}/refreesh": {
-      "post": {
-        "summary": "Refresh player match history",
-        route: '/players/:account_id/refresh',
+        },
+        route: () => 'players/:account_id/refresh',
         func: (req, res, cb) => {
           redis.lpush('fhQueue', JSON.stringify({
             account_id: req.params.account_id || '1',
@@ -1470,11 +1519,19 @@ Please keep request rate to approximately 1/s.
             });
           });
         },
-        "tags": [
-          "players"
-        ],
+      }
+    },
+    "/explorer": {
+      "get": {
+        "summary": "/",
+        "description": "Submit arbitrary SQL queries to the database",
+        tags: ["explorer"],
         "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+          "name": "sql",
+          "in": "query",
+          "description": "The PostgreSQL query as percent-encoded string.",
+          "required": false,
+          "type": "string"
         }],
         "responses": {
           "200": {
@@ -1483,12 +1540,50 @@ Please keep request rate to approximately 1/s.
               "type": "object",
             }
           }
-        }
+        },
+        route: () => '/explorer',
+        func: (req, res, cb) => {
+          // TODO handle NQL (@nicholashh query language)
+          const input = req.query.sql;
+          return queryRaw(input, (err, result) => {
+            if (err) {
+              console.error(err);
+            }
+            const final = Object.assign({}, result, {
+              err: err ? err.stack : err,
+            });
+            res.status(err ? 400 : 200).json(final);
+          });
+        },
+
       }
     },
     "/metadata": {
       "get": {
-        route: "/metadata",
+        "summary": "/",
+        "description": "Site metadata",
+        "tags": [
+          "metadata"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "banner": {
+                  "description": "banner",
+                  "type": "object"
+                },
+                "cheese": {
+                  "description": "cheese",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        route: () => "/metadata",
         func: (req, res, cb) => {
           async.parallel({
             banner(cb) {
@@ -1512,48 +1607,18 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-        "tags": [
-          "metadata"
-        ],
-        "summary": "Site metadata",
-        "responses": {
-          "200": {
-            "description": "Current site metadata",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "banner": {
-                  "description": "banner",
-                  "type": "object"
-                },
-                "cheese": {
-                  "description": "cheese",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/distributions": {
       "get": {
-        route: '/distributions',
-        func: (req, res, cb) => {
-          queries.getDistributions(redis, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            res.json(result);
-          });
-        },
+        "summary": "/",
+        "description": "Global Dota 2 statistics",
         "tags": [
           "distributions"
         ],
-        "summary": "Global Dota 2 statistics",
         "responses": {
           "200": {
-            "description": "An object with distribution data",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
@@ -1568,12 +1633,44 @@ Please keep request rate to approximately 1/s.
               }
             }
           }
-        }
+        },
+        route: () => '/distributions',
+        func: (req, res, cb) => {
+          queries.getDistributions(redis, (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            res.json(result);
+          });
+        },
       }
     },
     "/search": {
       "get": {
-        route: '/search',
+        "summary": "/",
+        "description": "Search players by personaname",
+        "tags": [
+          "search"
+        ],
+        "parameters": [{
+          "name": "q",
+          "in": "query",
+          "description": "Search string",
+          "required": true,
+          "type": "string"
+        }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              items: {
+                "type": "object",
+              },
+            }
+          }
+        },
+        route: () => '/search',
         func: (req, res, cb) => {
           if (!req.query.q) {
             return cb(400);
@@ -1585,38 +1682,12 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-        "tags": [
-          "search"
-        ],
-        "summary": "Search players by personaname",
-        "parameters": [{
-          "name": "q",
-          "in": "query",
-          "description": "Search string",
-          "required": true,
-          "type": "string"
-        }],
-        "responses": {
-          "200": {
-            "description": "An array of search results",
-            "schema": {
-              "type": "array"
-            }
-          }
-        }
       }
     },
     "/rankings": {
       "get": {
-        route: '/rankings',
-        func: (req, res, cb) => {
-          queries.getHeroRankings(db, redis, req.query.hero_id, {}, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            res.json(result);
-          });
-        },
+        "summary": "/",
+        "description": "Top players by hero",
         "tags": [
           "rankings"
         ],
@@ -1627,10 +1698,9 @@ Please keep request rate to approximately 1/s.
           "required": true,
           "type": "string"
         }],
-        "summary": "Hero rankings",
         "responses": {
           "200": {
-            "description": "Array of top players",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
@@ -1645,23 +1715,22 @@ Please keep request rate to approximately 1/s.
               }
             }
           }
-        }
-      }
-    },
-    "/benchmarks": {
-      "get": {
-        "summary": "Benchmarks of average stat values for a hero",
-        route: '/benchmarks',
+        },
+        route: () => '/rankings',
         func: (req, res, cb) => {
-          queries.getHeroBenchmarks(db, redis, {
-            hero_id: req.query.hero_id,
-          }, (err, result) => {
+          queries.getHeroRankings(db, redis, req.query.hero_id, {}, (err, result) => {
             if (err) {
               return cb(err);
             }
             res.json(result);
           });
         },
+      }
+    },
+    "/benchmarks": {
+      "get": {
+        "summary": "/",
+        "description": "Benchmarks of average stat values for a hero",
         "tags": [
           "benchmarks"
         ],
@@ -1674,7 +1743,7 @@ Please keep request rate to approximately 1/s.
         }],
         "responses": {
           "200": {
-            "description": "Benchmark values",
+            "description": "Success",
             "schema": {
               "type": "object",
               "properties": {
@@ -1689,39 +1758,34 @@ Please keep request rate to approximately 1/s.
               }
             }
           }
-        }
-      }
-    },
-    "/explorer": {
-      "get": {
-        "summary": "Submit arbitrary SQL queries to the database",
-        "parameters": [{
-          "name": "sql",
-          "in": "query",
-          "description": "The PostgreSQL query as percent-encoded string.",
-          "required": true,
-          "type": "string"
-        }],
-        route: '/explorer',
+        },
+        route: () => '/benchmarks',
         func: (req, res, cb) => {
-          // TODO handle NQL (@nicholashh query language)
-          const input = req.query.sql;
-          return queryRaw(input, (err, result) => {
+          queries.getHeroBenchmarks(db, redis, {
+            hero_id: req.query.hero_id,
+          }, (err, result) => {
             if (err) {
-              console.error(err);
+              return cb(err);
             }
-            const final = Object.assign({}, result, {
-              err: err ? err.stack : err,
-            });
-            res.status(err ? 400 : 200).json(final);
+            res.json(result);
           });
-        }
+        },
       }
     },
     "/status": {
       get: {
-        "summary": "Get current service statistics",
-        route: '/status',
+        "summary": "/",
+        "description": "Get current service statistics",
+        tags: ['status'],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object"
+            }
+          }
+        },
+        route: () => '/status',
         func: (req, res, cb) => {
           buildStatus(db, redis, (err, status) => {
             if (err) {
@@ -1729,13 +1793,23 @@ Please keep request rate to approximately 1/s.
             }
             res.json(status);
           });
-        }
+        },
       }
     },
-    "/health/{metric}": {
+    "/health": {
       get: {
-        "summary": "Get service health data",
-        route: '/health/:metric?',
+        "summary": "/",
+        "description": "Get service health data",
+        tags: ["health"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object"
+            }
+          }
+        },
+        route: () => '/health/:metric?',
         func: (req, res, cb) => {
           redis.hgetall('health', (err, result) => {
             if (err) {
@@ -1757,7 +1831,9 @@ Please keep request rate to approximately 1/s.
     },
     "/request_job": {
       get: {
-        summary: "Get request job state",
+        "summary": "/",
+        description: "Get parse request state",
+        tags: ['request'],
         "parameters": [{
           "name": "id",
           "in": "query",
@@ -1765,7 +1841,7 @@ Please keep request rate to approximately 1/s.
           "required": true,
           "type": "string"
         }],
-        route: '/request_job',
+        route: () => '/request_job',
         func: (req, res, cb) => {
           return pQueue.getJob(req.query.id).then((job) => {
             if (job) {
@@ -1783,11 +1859,21 @@ Please keep request rate to approximately 1/s.
               });
             }
           }).catch(cb);
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object"
+            }
+          }
         }
       },
       post: {
-        summary: "Submit a new parse request",
-        route: '/request_job',
+        summary: "/",
+        description: "Submit a new parse request",
+        tags: ['request'],
+        route: () => '/request_job',
         func: (req, res, cb) => {
           request.post('https://www.google.com/recaptcha/api/siteverify', {
             form: {
@@ -1869,12 +1955,25 @@ Please keep request rate to approximately 1/s.
                 .catch(exitWithJob);
             }
           });
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              items: {
+                "type": "object",
+              },
+            }
+          }
         }
       },
     },
     "/matchups": {
       get: {
-        summary: "Get hero matchups (teammates and opponents)",
+        summary: "/",
+        description: "Get hero matchups (teammates and opponents)",
+        tags: ['matchups'],
         "parameters": [{
           "name": "t0",
           "in": "query",
@@ -1888,7 +1987,15 @@ Please keep request rate to approximately 1/s.
           "required": false,
           "type": "number"
         }],
-        route: '/matchups',
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object"
+            }
+          }
+        },
+        route: () => '/matchups',
         func: (req, res, cb) => {
           // accept as input two arrays of up to 5
           const t0 = [].concat(req.query.t0 || []).slice(0, 5);
@@ -1915,8 +2022,21 @@ Please keep request rate to approximately 1/s.
     },
     "/heroes": {
       get: {
-        summary: "Get hero data",
-        route: '/heroes',
+        summary: '/',
+        description: "Get hero data",
+        tags: ['heroes'],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              items: {
+                "type": "object",
+              },
+            }
+          }
+        },
+        route: () => '/heroes',
         func: (req, res, cb) => {
           db.select().from('heroes').orderBy('id', 'asc').asCallback((err, result) => {
             if (err) {
@@ -1929,8 +2049,21 @@ Please keep request rate to approximately 1/s.
     },
     "/leagues": {
       get: {
-        summary: "Get league data",
-        route: '/leagues',
+        summary: "/",
+        description: "Get league data",
+        tags: ['leagues'],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              items: {
+                "type": "object",
+              },
+            }
+          }
+        },
+        route: () => '/leagues',
         func: (req, res, cb) => {
           db.select().from('leagues').asCallback((err, result) => {
             if (err) {
@@ -1943,8 +2076,28 @@ Please keep request rate to approximately 1/s.
     },
     "/replays": {
       get: {
-        summary: "Get replay data",
-        route: '/replays',
+        summary: '/',
+        description: "Get replay data",
+        tags: ['replays'],
+        "parameters": [{
+          "name": "match_id",
+          "in": "query",
+          "description": "Match IDs (array)",
+          "required": true,
+          "type": "integer"
+        }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              items: {
+                "type": "object",
+              },
+            }
+          }
+        },
+        route: () => '/replays',
         func: (req, res, cb) => {
           db.select(['match_id', 'cluster', 'replay_salt']).from('match_gcdata').whereIn('match_id', req.query.match_id.slice(0, 100)).asCallback((err, result) => {
             if (err) {

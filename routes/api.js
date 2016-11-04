@@ -17,11 +17,11 @@ module.exports = function (db, redis, cassandra) {
   });
   // Player endpoints middleware
   api.use('/players/:account_id/:info?', (req, res, cb) => {
-    if (Number.isNaN(req.params.account_id)) {
+    if (isNaN(Number(req.params.account_id))) {
       return cb('invalid account_id');
     }
     if (req.params.info !== 'matches') {
-      // We want to show insignificant matches in match view
+      // We want to show insignificant/unbalanced matches in match view
       // Set default significant to true in all other views
       req.query.significant = [1];
     }
@@ -49,7 +49,7 @@ module.exports = function (db, redis, cassandra) {
         route,
         func
       } = spec.paths[path][verb];
-      api[verb](route, func);
+      api[verb](route(), func);
     });
   });
   // TODO remove these, currently only used by legacy UI
