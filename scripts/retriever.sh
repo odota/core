@@ -1,5 +1,8 @@
 #!/bin/bash
 
+VMNAME=$(hostname)
+ZONE=$(curl -H Metadata-Flavor:Google http://metadata/computeMetadata/v1/instance/zone | cut -d/ -f4)
+
 # Setup
 # Docker install not needed if using gci image
 curl -sSL https://get.docker.com/ | sh
@@ -7,4 +10,4 @@ sudo docker run -d --name=retriever --restart=always --net=host --log-opt max-si
 
 # If already initialized
 sudo docker start retriever
-sudo docker logs -f retriever
+sudo docker logs -f retriever && gcloud compute instance-groups managed delete-instances retriever-group-$ZONE --quiet --zone=$ZONE --instances=$VMNAME
