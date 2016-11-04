@@ -76,9 +76,9 @@ before(function setup(done) {
         contactPoints: ['localhost'],
       });
       async.series([function (cb) {
-        console.log('drop cassandra test keyspace');
-        client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
-      },
+          console.log('drop cassandra test keyspace');
+          client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+        },
         function (cb) {
           console.log('create cassandra test keyspace');
           client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
@@ -223,18 +223,13 @@ describe('basic match page', () => {
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
 describe('api', () => {
   it('should accept api endpoints', (cb) => {
-    request('https://raw.githubusercontent.com/odota/docs/master/openapi.json', (err, resp, body) => {
-      if (err) {
+    const body = require('../routes/spec.js');
+    async.eachSeries(Object.keys(body.paths), (path, cb) => {
+      supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
+        console.log(path, res.length);
         return cb(err);
-      }
-      body = JSON.parse(body);
-      async.eachSeries(Object.keys(body.paths), (path, cb) => {
-        supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
-          console.log(path, res.length);
-          return cb(err);
-        });
-      }, cb);
-    });
+      });
+    }, cb);
   });
 });
 describe('generateMatchups', () => {
