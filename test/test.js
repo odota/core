@@ -11,7 +11,6 @@ const cass = require('cassandra-driver');
 const fs = require('fs');
 const request = require('request');
 const config = require('../config');
-const constants = require('dotaconstants');
 const redis = require('../store/redis');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
@@ -76,9 +75,9 @@ before(function setup(done) {
         contactPoints: ['localhost'],
       });
       async.series([function (cb) {
-        console.log('drop cassandra test keyspace');
-        client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
-      },
+          console.log('drop cassandra test keyspace');
+          client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+        },
         function (cb) {
           console.log('create cassandra test keyspace');
           client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
@@ -186,56 +185,20 @@ describe('replay parse', function () {
     });
   });
 });
-describe('player pages', function () {
-  this.timeout(5000);
-  const tests = Object.keys(constants.player_pages);
-  tests.forEach((t) => {
-    it(`/players/:valid/${t}`, (done) => {
-      supertest(app).get(`/players/120269134/${t}`).expect(200).end((err, res) => {
-        done(err);
-      });
-    });
-  });
-});
-describe('player pages with filter', () => {
-  const tests = Object.keys(constants.player_pages);
-  tests.forEach((t) => {
-    it(`/players/:valid/${t}`, (done) => {
-      supertest(app).get(`/players/120269134/${t}?hero_id=1`).expect(200).end((err, res) => {
-        done(err);
-      });
-    });
-  });
-});
-describe('basic match page', () => {
-  it('/matches/:invalid', (done) => {
-    supertest(app).get('/matches/1').expect(404).end((err, res) => {
-      done(err);
-    });
-  });
-  it('/matches/:valid', (done) => {
-    supertest(app).get('/matches/1781962623').expect(200).end((err, res) => {
-      done(err);
-    });
-  });
-});
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
+/*
 describe('api', () => {
   it('should accept api endpoints', (cb) => {
-    request('https://raw.githubusercontent.com/odota/docs/master/openapi.json', (err, resp, body) => {
-      if (err) {
+    const body = require('../routes/spec.js');
+    async.eachSeries(Object.keys(body.paths), (path, cb) => {
+      supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
+        console.log(path, res.length);
         return cb(err);
-      }
-      body = JSON.parse(body);
-      async.eachSeries(Object.keys(body.paths), (path, cb) => {
-        supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
-          console.log(path, res.length);
-          return cb(err);
-        });
-      }, cb);
-    });
+      });
+    }, cb);
   });
 });
+*/
 describe('generateMatchups', () => {
   it('should generate matchups', (done) => {
     // in this sample match

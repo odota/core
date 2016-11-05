@@ -1,30 +1,10 @@
 const express = require('express');
-const async = require('async');
 const api = express.Router();
 const constants = require('dotaconstants');
-const config = require('../config');
-const request = require('request');
-const crypto = require('crypto');
-const bodyParser = require('body-parser');
-const multer = require('multer')({
-  inMemory: true,
-  fileSize: 100 * 1024 * 1024, // no larger than 100mb
-});
-const moment = require('moment');
-const queue = require('../store/queue');
-const pQueue = queue.getQueue('parse');
-const queries = require('../store/queries');
-const search = require('../store/search');
-const buildMatch = require('../store/buildMatch');
-const buildStatus = require('../store/buildStatus');
-const queryRaw = require('../store/queryRaw');
 const player_fields = constants.player_fields;
 const subkeys = player_fields.subkeys;
-const countCats = player_fields.countCats;
-const utility = require('../util/utility');
 const filterDeps = require('../util/filterDeps');
-const countPeers = utility.countPeers;
-const rc_secret = config.RECAPTCHA_SECRET_KEY;
+const spec = require('./spec');
 module.exports = function (db, redis, cassandra) {
   api.use((req, res, cb) => {
     res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -32,86 +12,16 @@ module.exports = function (db, redis, cassandra) {
     res.header('Access-Control-Allow-Credentials', 'true');
     cb();
   });
-  api.get('/constants', (req, res, cb) => {
-    res.header('Cache-Control', 'max-age=604800, public');
-    res.json(constants);
+  api.get('/', (req, res, cb) => {
+    res.json(spec);
   });
-  api.get('/metadata', (req, res, cb) => {
-    async.parallel({
-      banner(cb) {
-        redis.get('banner', cb);
-      },
-      cheese(cb) {
-        redis.get('cheese_goal', (err, result) => {
-          return cb(err, {
-            cheese: result,
-            goal: config.GOAL,
-          });
-        });
-      },
-      user(cb) {
-        cb(null, req.user);
-      },
-    }, (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      res.json(result);
-    });
-  });
-  api.get('/items', (req, res) => {
-    res.json(constants.items[req.query.name]);
-  });
-  api.get('/abilities', (req, res) => {
-    res.json(constants.abilities[req.query.name]);
-  });
-  api.get('/matches/:match_id/:info?', (req, res, cb) => {
-    buildMatch(req.params.match_id, {
-      db,
-      redis,
-      cassandra,
-    }, (err, match) => {
-      if (err) {
-        return cb(err);
-      }
-      if (!match) {
-        return cb();
-      }
-      res.json(match);
-    });
-  });
-  // basic player data
-  api.get('/players/:account_id', (req, res, cb) => {
-    const account_id = Number(req.params.account_id);
-    async.parallel({
-      profile(cb) {
-        queries.getPlayer(db, account_id, cb);
-      },
-      tracked_until(cb) {
-        redis.zscore('tracked', account_id, cb);
-      },
-      solo_competitive_rank(cb) {
-        redis.zscore('solo_competitive_rank', account_id, cb);
-      },
-      competitive_rank(cb) {
-        redis.zscore('competitive_rank', account_id, cb);
-      },
-      mmr_estimate(cb) {
-        queries.getMmrEstimate(db, redis, account_id, cb);
-      },
-    }, (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      res.json(result);
-    });
-  });
+  // Player endpoints middleware
   api.use('/players/:account_id/:info?', (req, res, cb) => {
-    if (Number.isNaN(req.params.account_id)) {
+    if (isNaN(Number(req.params.account_id))) {
       return cb('invalid account_id');
     }
     if (req.params.info !== 'matches') {
-      // We want to show insignificant matches in match view
+      // We want to show insignificant/unbalanced matches in match view
       // Set default significant to true in all other views
       req.query.significant = [1];
     }
@@ -133,49 +43,16 @@ module.exports = function (db, redis, cassandra) {
     };
     cb();
   });
-  api.get('/players/:account_id/wordcloud', (req, res, cb) => {
-    const result = {
-      my_word_counts: {},
-      all_word_counts: {},
-    };
-    req.queryObj.project = req.queryObj.project.concat(Object.keys(result));
-    queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-      if (err) {
-        return cb(err);
-      }
-      cache.forEach((m) => {
-        for (const key in result) {
-          utility.mergeObjects(result[key], m[key]);
-        }
-      });
-      res.json(result);
+  Object.keys(spec.paths).forEach((path) => {
+    Object.keys(spec.paths[path]).forEach((verb) => {
+      const {
+        route,
+        func
+      } = spec.paths[path][verb];
+      api[verb](route(), func);
     });
   });
-  api.get('/players/:account_id/wardmap', (req, res, cb) => {
-    const result = {
-      obs: {},
-      sen: {},
-    };
-    req.queryObj.project = req.queryObj.project.concat(Object.keys(result));
-    queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-      if (err) {
-        return cb(err);
-      }
-      cache.forEach((m) => {
-        for (const key in result) {
-          utility.mergeObjects(result[key], m[key]);
-        }
-      });
-      // generally position data function is used to generate heatmap data for each player in a natch
-      // we use it here to generate a single heatmap for aggregated counts
-      const d = {
-        obs: true,
-        sen: true,
-      };
-      utility.generatePositionData(d, result);
-      res.json(d);
-    });
-  });
+<<<<<<< HEAD
   api.get('/players/:account_id/wl', (req, res, cb) => {
     const result = {
       win: 0,
@@ -624,14 +501,14 @@ module.exports = function (db, redis, cassandra) {
       }
       return res.json(result);
     });
+=======
+  // TODO remove these, currently only used by legacy UI
+  api.get('/items', (req, res) => {
+    res.json(constants.items[req.query.name]);
+>>>>>>> b8c45ef9583cacda2961e549720f09fddd8e4521
   });
-  api.get('/replays', (req, res, cb) => {
-    db.select(['match_id', 'cluster', 'replay_salt']).from('match_gcdata').whereIn('match_id', req.query.match_id.slice(0, 100)).asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return res.json(result);
-    });
+  api.get('/abilities', (req, res) => {
+    res.json(constants.abilities[req.query.name]);
   });
   return api;
 };

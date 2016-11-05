@@ -44,7 +44,7 @@ function generateJob(type, payload) {
     api_summaries() {
       return {
         url: `${api_url}/ISteamUser/GetPlayerSummaries/v0002/?key=${api_key}&steamids=${payload.players.map((p) => {
-          return convert32to64(p.account_id).toString();
+          return convert32to64(p.account_id);
         }).join()}`,
         title: [type, payload.summaries_id].join(),
         type: 'api',
@@ -227,18 +227,18 @@ function getData(url, cb) {
 /*
  * Converts a steamid 64 to a steamid 32
  *
- * Returns a BigNumber
+ * Returns a string
  */
 function convert64to32(id) {
-  return new BigNumber(id).minus('76561197960265728');
+  return new BigNumber(id).minus('76561197960265728').toString();
 }
 /*
  * Converts a steamid 64 to a steamid 32
  *
- * Returns a BigNumber
+ * Returns a string
  */
 function convert32to64(id) {
-  return new BigNumber('76561197960265728').plus(id);
+  return new BigNumber('76561197960265728').plus(id).toString();
 }
 
 function isRadiant(player) {
