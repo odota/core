@@ -1875,95 +1875,71 @@ Please keep request rate to approximately 1/s.
         tags: ['request'],
         route: () => '/request_job',
         func: (req, res, cb) => {
-          request.post('https://www.google.com/recaptcha/api/siteverify', {
-            form: {
-              secret: rc_secret,
-              response: req.body.response,
-            },
-          }, (err, resp, body) => {
-            if (err) {
-              return cb(err);
-            }
-            try {
-              body = JSON.parse(body);
-            } catch (err) {
-              return res.render({
-                error: err,
-              });
-            }
-            const match_id = Number(req.body.match_id);
-            let match;
-            if (!body.success && config.ENABLE_RECAPTCHA && !req.file) {
-              console.log('failed recaptcha');
-              return res.json({
-                error: 'Recaptcha Failed!',
-              });
-            } else if (req.file) {
-              console.log(req.file);
-              const hash = crypto.createHash('md5');
-              hash.update(req.file.buffer);
-              const key = hash.digest('hex');
-              redis.setex(new Buffer(`upload_blob:${key}`), 60 * 60, req.file.buffer);
-              match = {
-                replay_blob_key: key,
-              };
-            } else if (match_id && !Number.isNaN(match_id)) {
-              match = {
-                match_id,
-              };
-            }
+          console.log(req.body);
+          const match_id = Number(req.body.match_id);
+          let match;
+          if (req.file) {
+            console.log(req.file);
+            const hash = crypto.createHash('md5');
+            hash.update(req.file.buffer);
+            const key = hash.digest('hex');
+            redis.setex(new Buffer(`upload_blob:${key}`), 60 * 60, req.file.buffer);
+            match = {
+              replay_blob_key: key,
+            };
+          } else if (match_id && !Number.isNaN(match_id)) {
+            match = {
+              match_id,
+            };
+          }
 
-            function exitWithJob(err, parseJob) {
-              res.status(err ? 400 : 200).json({
-                error: err,
-                job: {
-                  jobId: parseJob.jobId,
-                },
-              });
-            }
+          function exitWithJob(err, parseJob) {
+            res.status(err ? 400 : 200).json({
+              error: err,
+              job: {
+                jobId: parseJob.jobId,
+              },
+            });
+          }
 
-            if (!match) {
-              return exitWithJob('invalid input', {});
-            } else if (match && match.match_id) {
-              // match id request, get data from API
-              utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
-                if (err) {
-                  // couldn't get data from api, non-retryable
-                  return cb(JSON.stringify(err));
-                }
-                // match details response
-                const match = body.result;
-                redis.zadd('requests', moment().format('X'), `${moment().format('X')}_${match.match_id}`);
-                queries.insertMatch(match, {
-                  type: 'api',
-                  attempts: 1,
-                  lifo: true,
-                  cassandra,
-                  forceParse: true,
-                }, exitWithJob);
-              });
-            } else {
-              // file upload request
-              return pQueue.add({
-                  id: `${moment().format('X')}_${match.match_id}`,
-                  payload: match,
-                }, {
-                  lifo: true,
-                  attempts: 1,
-                })
-                .then(parseJob => exitWithJob(null, parseJob))
-                .catch(exitWithJob);
-            }
-          });
+          if (!match) {
+            return exitWithJob('invalid input', {});
+          } else if (match && match.match_id) {
+            // match id request, get data from API
+            utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
+              if (err) {
+                // couldn't get data from api, non-retryable
+                return cb(JSON.stringify(err));
+              }
+              // match details response
+              const match = body.result;
+              redis.zadd('requests', moment().format('X'), `${moment().format('X')}_${match.match_id}`);
+              queries.insertMatch(match, {
+                type: 'api',
+                attempts: 1,
+                lifo: true,
+                cassandra,
+                forceParse: true,
+              }, exitWithJob);
+            });
+          } else {
+            // file upload request
+            return pQueue.add({
+                id: `${moment().format('X')}_${match.match_id}`,
+                payload: match,
+              }, {
+                lifo: true,
+                attempts: 1,
+              })
+              .then(parseJob => exitWithJob(null, parseJob))
+              .catch(exitWithJob);
+          }
         },
         "responses": {
           "200": {
             "description": "Success",
             "schema": {
-              "type": "array",
-              items: {
-                "type": "object",
-              },
+              "type": "object",
             }
           }
         }
