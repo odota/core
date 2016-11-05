@@ -4,16 +4,16 @@ from itertools import cycle
 import subprocess
 import time
 
-targetsize = 32
+targetsize = 48
 
 def cycle(zoneList):
   while True:
+    # Scale the instance group if it's the correct bucket
+    bucketsize = 86400 // len(zoneList)
+    epoch = time.time() // bucketsize
+    bucket = epoch % len(zoneList)
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
-      # Scale the instance group if it's the correct bucket
-      bucketsize = 86400 // len(zoneList)
-      epoch = time.time() // bucketsize
-      bucket = epoch % len(zoneList)
       if i == bucket:
         subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
     time.sleep(60)
@@ -70,8 +70,8 @@ def start():
     subprocess.call("gcloud compute backend-services add-backend {} --quiet --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
     # Configure load balancing policy
     subprocess.call("gcloud compute backend-services update-backend {} --quiet --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1".format(backendname, instancegroupname, zone), shell=True)
-    cycle(zoneList)
-    # cycle2(zoneList)
+  cycle(zoneList)
+  # cycle2(zoneList)
 
 while True:
   try:
