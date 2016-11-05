@@ -5,6 +5,10 @@ const player_fields = constants.player_fields;
 const subkeys = player_fields.subkeys;
 const filterDeps = require('../util/filterDeps');
 const spec = require('./spec');
+const multer = require('multer')({
+  inMemory: true,
+  fileSize: 100 * 1024 * 1024, // no larger than 100mb		
+});
 module.exports = function (db, redis, cassandra) {
   api.use((req, res, cb) => {
     res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -12,9 +16,7 @@ module.exports = function (db, redis, cassandra) {
     res.header('Access-Control-Allow-Credentials', 'true');
     cb();
   });
-  api.get('/', (req, res, cb) => {
-    res.json(spec);
-  });
+  api.use(multer.single('replay_blob'));
   // Player endpoints middleware
   api.use('/players/:account_id/:info?', (req, res, cb) => {
     if (isNaN(Number(req.params.account_id))) {
@@ -42,6 +44,9 @@ module.exports = function (db, redis, cassandra) {
       offset: Number(req.query.offset),
     };
     cb();
+  });
+  api.get('/', (req, res, cb) => {
+    res.json(spec);
   });
   Object.keys(spec.paths).forEach((path) => {
     Object.keys(spec.paths[path]).forEach((verb) => {
