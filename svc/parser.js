@@ -195,7 +195,7 @@ function createParsedDataBlob(entries, match) {
   parsed_data.teamfights = teamfights;
   console.timeEnd('processTeamfights');
   console.time('processAllPlayers');
-  const ap = processAllPlayers(adjustedEntries);
+  const ap = processAllPlayers(adjustedEntries, meta);
   parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
   parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
   console.timeEnd('processAllPlayers');
@@ -212,7 +212,7 @@ function createParsedDataBlob(entries, match) {
   parsed_data.duration = match.duration;
   parsed_data.replay_blob_key = match.replay_blob_key;
   parsed_data.doLogParse = match.doLogParse;
-  //require('fs').writeFileSync('./output.json', JSON.stringify(parsed_data, null, 2));
+  // require('fs').writeFileSync('./output2.json', JSON.stringify(parsed_data, null, 2));
   return parsed_data;
 }
 
