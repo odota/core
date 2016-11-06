@@ -3,7 +3,7 @@
  **/
 const utility = require('../util/utility');
 
-function processAllPlayers(entries) {
+function processAllPlayers(entries, meta) {
   const goldAdvTime = {};
   const xpAdvTime = {};
   const res = {
@@ -12,9 +12,13 @@ function processAllPlayers(entries) {
   };
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
-    if (e.time % 60 === 0 && e.type === 'interval') {
-      const g = utility.isRadiant(e) ? e.gold : -e.gold;
-      const x = utility.isRadiant(e) ? e.xp : -e.xp;
+    if (e.time >= 0 && e.time % 60 === 0 && e.type === 'interval') {
+      const g = utility.isRadiant({
+        player_slot: meta.slot_to_playerslot[e.slot]
+      }) ? e.gold : -e.gold;
+      const x = utility.isRadiant({
+        player_slot: meta.slot_to_playerslot[e.slot]
+      }) ? e.xp : -e.xp;
       goldAdvTime[e.time] = goldAdvTime[e.time] ? goldAdvTime[e.time] + g : g;
       xpAdvTime[e.time] = xpAdvTime[e.time] ? xpAdvTime[e.time] + x : x;
     }

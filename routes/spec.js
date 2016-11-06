@@ -1673,7 +1673,7 @@ Please keep request rate to approximately 1/s.
         route: () => '/search',
         func: (req, res, cb) => {
           if (!req.query.q) {
-            return cb(400);
+            return res.status(400).json([]);
           }
           search(db, req.query.q, (err, result) => {
             if (err) {
@@ -2075,7 +2075,7 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/replays',
         func: (req, res, cb) => {
-          db.select(['match_id', 'cluster', 'replay_salt']).from('match_gcdata').whereIn('match_id', req.query.match_id.slice(0, 100)).asCallback((err, result) => {
+          db.select(['match_id', 'cluster', 'replay_salt']).from('match_gcdata').whereIn('match_id', (req.query.match_id || []).slice(0, 100)).asCallback((err, result) => {
             if (err) {
               return cb(err);
             }

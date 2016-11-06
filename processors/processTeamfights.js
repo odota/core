@@ -67,8 +67,8 @@ function processTeamfights(entries, meta) {
       }
     });
   });
-  for (var i = 0; i < entries.length; i++) {
-    var e = entries[i];
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
     // check each teamfight to see if this event should be processed as part of that teamfight
     for (let j = 0; j < teamfights.length; j++) {
       const tf = teamfights[j];
@@ -86,7 +86,7 @@ function processTeamfights(entries, meta) {
             const y = intervalState[r.time][r.slot].y;
             // fill in the copy
             r.type = 'deaths_pos';
-            r.key = [x, y];
+            r.key = JSON.stringify([x, y]);
             r.posData = true;
             populate(r, tf);
             // increment death count for this hero

@@ -31,36 +31,18 @@ const insertMatch = queries.insertMatch;
 const getMatchBenchmarks = queries.getMatchBenchmarks;
 const computeMatchData = compute.computeMatchData;
 const buildReplayUrl = utility.buildReplayUrl;
-// EXPRESS, use express to provide an HTTP interface to replay blobs uploaded to Redis.
-const express = require('express');
-const app = express();
-app.get('/redis/:key', (req, res, cb) => {
-  redis.get(new Buffer(`upload_blob:${req.params.key}`), (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    res.send(result);
-  });
-});
-app.listen(config.PARSER_PORT);
-// END EXPRESS
 pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
   console.log('parse job: %s', job.jobId);
   const match = job.data.payload;
   async.series({
     getDataSource(cb) {
-      if (match.replay_blob_key) {
-        match.url = `http://localhost:${config.PARSER_PORT}/redis/${match.replay_blob_key}`;
-        cb();
-      } else {
-        getGcData(db, redis, match, (err, result) => {
-          if (err) {
-            return cb(err);
-          }
-          match.url = buildReplayUrl(result.match_id, result.cluster, result.replay_salt);
+      getGcData(db, redis, match, (err, result) => {
+        if (err) {
           return cb(err);
-        });
-      }
+        }
+        match.url = buildReplayUrl(result.match_id, result.cluster, result.replay_salt);
+        return cb(err);
+      });
     },
     runParse(cb) {
       runParse(match, job, cb);
@@ -207,32 +189,20 @@ function createParsedDataBlob(entries, match) {
   }));
   console.timeEnd('adjustTime');
   console.time('processExpand');
-  console.time('copyEntries');
-  // make a copy of the array since processExpand mutates the type property of entries
-  const adjustedEntriesCopy = JSON.parse(JSON.stringify(adjustedEntries));
-  console.timeEnd('copyEntries');
-  // TODO this should not mutate the original array
-  const expanded = processExpand(adjustedEntriesCopy, meta);
+  const expanded = processExpand(adjustedEntries, meta);
   console.timeEnd('processExpand');
   console.time('processParsedData');
-  const parsed_data = processParsedData(expanded.parsed_data, getParseSchema());
+  const parsed_data = processParsedData(expanded, getParseSchema());
   console.timeEnd('processParsedData');
   console.time('processTeamfights');
-  // TODO Teamfights processor should handle the original types (when processExpand no longer mutates state)
-  const teamfights = processTeamfights(expanded.tf_data, meta);
+  const teamfights = processTeamfights(expanded, meta);
   parsed_data.teamfights = teamfights;
   console.timeEnd('processTeamfights');
   console.time('processAllPlayers');
-  const ap = processAllPlayers(expanded.int_data);
+  const ap = processAllPlayers(adjustedEntries, meta);
   parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
   parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
   console.timeEnd('processAllPlayers');
-  if (match.replay_blob_key) {
-    console.time('processUploadProps');
-    const upload = processUploadProps(expanded.uploadProps, meta);
-    parsed_data.upload = upload;
-    console.timeEnd('processUploadProps');
-  }
   if (match.doLogParse) {
     console.time('processLogParse');
     const logs = processLogParse(adjustedEntries, meta);

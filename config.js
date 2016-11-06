@@ -44,6 +44,8 @@ const defaults = {
   REDIS_TEST_URL: 'redis://127.0.0.1:6379/1',
   CASSANDRA_URL: 'cassandra://localhost/yasp', // connection string for Cassandra
   CASSANDRA_TEST_URL: 'cassandra://localhost/yasp_test',
+  INIT_POSTGRES_HOST: 'localhost',
+  INIT_CASSANDRA_HOST: 'localhost',
   RETRIEVER_SECRET: '', // string to use as shared secret with retriever/parser
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
   COOKIE_DOMAIN: '',

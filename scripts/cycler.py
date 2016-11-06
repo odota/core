@@ -4,7 +4,7 @@ from itertools import cycle
 import subprocess
 import time
 
-targetsize = 48
+targetsize = 32
 
 def cycle(zoneList):
   while True:
