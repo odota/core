@@ -1914,7 +1914,7 @@ Please keep request rate to approximately 1/s.
               // match details response
               const match = body.result;
               redis.zadd('requests', moment().format('X'), `${moment().format('X')}_${match.match_id}`);
-              queries.insertMatch(db, redis, match, {
+              queries.insertMatch(match, {
                 type: 'api',
                 attempts: 1,
                 lifo: true,

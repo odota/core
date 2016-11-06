@@ -9,7 +9,6 @@ const getGcData = require('../util/getGcData');
 const config = require('../config');
 const db = require('../store/db');
 const redis = require('../store/redis');
-const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 const compute = require('../util/compute');
@@ -31,12 +30,19 @@ const spawn = cp.spawn;
 const insertMatch = queries.insertMatch;
 const getMatchBenchmarks = queries.getMatchBenchmarks;
 const computeMatchData = compute.computeMatchData;
+const buildReplayUrl = utility.buildReplayUrl;
 pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
   console.log('parse job: %s', job.jobId);
   const match = job.data.payload;
   async.series({
     getDataSource(cb) {
-      getGcData(db, redis, match, cb);
+      getGcData(db, redis, match, (err, result) => {
+        if (err) {
+          return cb(err);
+        }
+        match.url = buildReplayUrl(result.match_id, result.cluster, result.replay_salt);
+        return cb(err);
+      });
     },
     runParse(cb) {
       runParse(match, job, cb);
@@ -80,11 +86,9 @@ function insertUploadedParse(match, cb) {
 }
 
 function insertStandardParse(match, cb) {
-  console.log('insertMatch');
   // fs.writeFileSync('output.json', JSON.stringify(match));
-  insertMatch(db, redis, match, {
+  insertMatch(match, {
     type: 'parsed',
-    cassandra,
     skipParse: true,
     doLogParse: match.doLogParse,
   }, cb);
@@ -205,15 +209,7 @@ function createParsedDataBlob(entries, match) {
     parsed_data.logs = logs;
     console.timeEnd('processLogParse');
   }
-  parsed_data.match_id = match.match_id;
-  parsed_data.pgroup = match.pgroup;
-  parsed_data.radiant_win = match.radiant_win;
-  parsed_data.start_time = match.start_time;
-  parsed_data.duration = match.duration;
-  parsed_data.replay_blob_key = match.replay_blob_key;
-  parsed_data.doLogParse = match.doLogParse;
-  // require('fs').writeFileSync('./output2.json', JSON.stringify(parsed_data, null, 2));
-  return parsed_data;
+  return Object.assign({}, parsed_data, match);
 }
 
 function getParseSchema() {

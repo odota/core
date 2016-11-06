@@ -6,8 +6,6 @@
  **/
 const utility = require('../util/utility');
 const config = require('../config');
-const db = require('../store/db');
-const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_WRITE ? require('../store/cassandra') : undefined;
 const redis = require('../store/redis');
 const queries = require('../store/queries');
 const insertMatch = queries.insertMatch;
@@ -83,10 +81,9 @@ function start() {
         }
         // don't insert this match if we already processed it recently
         if (!result) {
-          insertMatch(db, redis, match, {
+          insertMatch(match, {
             type: 'api',
             origin: 'scanner',
-            cassandra,
           }, (err) => {
             if (!err) {
               // Save match_id in Redis to avoid duplicate inserts (persist even if process restarts)

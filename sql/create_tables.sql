@@ -110,7 +110,9 @@ CREATE TABLE player_matches (
   creeps_stacked int,
   camps_stacked int,
   rune_pickups int,
-  ability_upgrades_arr integer[]
+  ability_upgrades_arr integer[],
+  party_id int,
+  permanent_buffs json[]
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX on player_matches(hero_id);
@@ -289,8 +291,7 @@ CREATE TABLE match_gcdata(
   cluster int,
   replay_salt int,
   series_id int,
-  series_type int,
-  parties json
+  series_type int
 );
 
 CREATE TABLE match_rating(
