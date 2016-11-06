@@ -323,5 +323,6 @@ CREATE TABLE cosmetics(
   used_by_heroes text
 );
 
+CREATE USER readonly PASSWORD 'readonly';
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly;
