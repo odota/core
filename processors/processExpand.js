@@ -77,19 +77,10 @@ function processExpand(entries, meta) {
       e.unit = e.attackername; // unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
       e.key = translate(e.inflictor); // the buff
       e.targetname = computeIllusionString(e.targetname, e.targetillusion); // target of buff (possibly illusion)
-      if (e.targethero && !e.targetillusion) {
-        const whitelist = {
-          modifier_item_ultimate_scepter_consumed: 1,
-        };
-        if (e.key in whitelist) {
-          e.type = 'modifier_applied';
-          expand(e);
-        }
-      }
     },
     DOTA_COMBATLOG_MODIFIER_REMOVE(e) {
       // lose buff/debuff
-      // TODO: do something with modifier lost events, really only useful if we want to try to "time" modifiers
+      // this is really only useful if we want to try to "time" modifiers
       // e.targetname is unit losing buff (possibly illusion)
       // e.inflictor is name of buff
       e.type = 'modifier_lost';
@@ -322,7 +313,7 @@ function processExpand(entries, meta) {
       e.team = e.player1;
       expand(e);
     },
-    chat: function getChatSlot(e) {
+    chat(e) {
       // e.slot = name_to_slot[e.unit];
       // push a copy to chat
       expand(e);
@@ -409,7 +400,11 @@ function processExpand(entries, meta) {
       e2.type = 'sen_left_log';
       expand(e2);
     },
+    epilogue(e) {
+      expand(e);
+    },
   };
+  /*
   // define the types we want to put into each array
   // null means all types
   const reqs = {
@@ -433,18 +428,25 @@ function processExpand(entries, meta) {
       interval: 1,
     },
   };
-  const res = {};
+  */
+  const output = [];
   for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
+    const e = JSON.parse(JSON.stringify(entries[i]));
     if (types[e.type]) {
       // preprocess based on type name
       types[e.type](e);
-    } else {
-      // expand if not specified
-      expand(e);
     }
   }
-  return res;
+  return output;
+  /**
+   * Place the entry in the output
+   **/
+  function expand(e) {
+    // set slot and player_slot
+    e.slot = ('slot' in e) ? e.slot : meta.hero_to_slot[e.unit];
+    e.player_slot = meta.slot_to_playerslot[e.slot];
+    output.push(e);
+  }
   /**
    * Strips off "item_" from strings, and nullifies dota_unknown.  Does not mutate the original string.
    **/
@@ -462,22 +464,6 @@ function processExpand(entries, meta) {
    **/
   function computeIllusionString(input, isIllusion) {
     return (isIllusion ? 'illusion_' : '') + input;
-  }
-  /**
-   * Place the entry in the output arrays
-   **/
-  function expand(e) {
-    // set slot and player_slot
-    e.slot = ('slot' in e) ? e.slot : meta.hero_to_slot[e.unit];
-    e.player_slot = meta.slot_to_playerslot[e.slot];
-    for (const key in reqs) {
-      if (!res[key]) {
-        res[key] = [];
-      }
-      if (!reqs[key] || (e.type in reqs[key])) {
-        res[key].push(e);
-      }
-    }
   }
 }
 module.exports = processExpand;
