@@ -53,10 +53,10 @@ gcloud compute instance-groups managed create "backend-group-1" --base-instance-
 gcloud compute instance-groups managed set-autoscaling "backend-group-1" --cool-down-period "60" --max-num-replicas "1" --min-num-replicas "1" --target-cpu-utilization "0.6"
 
 #parsers
-gcloud compute instance-groups managed delete --quiet parser-group-1
+gcloud compute instance-groups managed delete --quiet parser-group-1 --zone=us-central1-b
 gcloud compute instance-templates delete --quiet parser-1
 gcloud compute instance-templates create parser-1 --machine-type n1-highcpu-2 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata-from-file startup-script=./scripts/parser.sh
-gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1"
+gcloud compute instance-groups managed create "parser-group-1" --base-instance-name "parser-group-1" --template "parser-1" --size "1" --zone=us-central1-b
 gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-down-period "60" --max-num-replicas "30" --min-num-replicas "3" --target-cpu-utilization "0.8"
 
 #retriever
