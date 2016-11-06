@@ -439,18 +439,20 @@ function processExpand(entries, meta) {
     },
     obs(e) {
       expand(Object.assign({}, e, {
-        type: 'obs_log'
+        type: 'obs',
+        posData: true
       }));
       expand(Object.assign({}, e, {
-        posData: true
+        type: 'obs_log'
       }));
     },
     sen(e) {
       expand(Object.assign({}, e, {
-        type: 'sen_log'
+        type: 'sen',
+        posData: true
       }));
       expand(Object.assign({}, e, {
-        posData: true
+        type: 'sen_log'
       }));
     },
     obs_left(e) {
