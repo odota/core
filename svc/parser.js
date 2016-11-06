@@ -185,32 +185,20 @@ function createParsedDataBlob(entries, match) {
   }));
   console.timeEnd('adjustTime');
   console.time('processExpand');
-  console.time('copyEntries');
-  // make a copy of the array since processExpand mutates the type property of entries
-  const adjustedEntriesCopy = JSON.parse(JSON.stringify(adjustedEntries));
-  console.timeEnd('copyEntries');
-  // TODO this should not mutate the original array
-  const expanded = processExpand(adjustedEntriesCopy, meta);
+  const expanded = processExpand(adjustedEntries, meta);
   console.timeEnd('processExpand');
   console.time('processParsedData');
-  const parsed_data = processParsedData(expanded.parsed_data, getParseSchema());
+  const parsed_data = processParsedData(expanded, getParseSchema());
   console.timeEnd('processParsedData');
   console.time('processTeamfights');
-  // TODO Teamfights processor should handle the original types (when processExpand no longer mutates state)
-  const teamfights = processTeamfights(expanded.tf_data, meta);
+  const teamfights = processTeamfights(expanded, meta);
   parsed_data.teamfights = teamfights;
   console.timeEnd('processTeamfights');
   console.time('processAllPlayers');
-  const ap = processAllPlayers(expanded.int_data);
+  const ap = processAllPlayers(adjustedEntries, meta);
   parsed_data.radiant_gold_adv = ap.radiant_gold_adv;
   parsed_data.radiant_xp_adv = ap.radiant_xp_adv;
   console.timeEnd('processAllPlayers');
-  if (match.replay_blob_key) {
-    console.time('processUploadProps');
-    const upload = processUploadProps(expanded.uploadProps, meta);
-    parsed_data.upload = upload;
-    console.timeEnd('processUploadProps');
-  }
   if (match.doLogParse) {
     console.time('processLogParse');
     const logs = processLogParse(adjustedEntries, meta);
@@ -224,6 +212,7 @@ function createParsedDataBlob(entries, match) {
   parsed_data.duration = match.duration;
   parsed_data.replay_blob_key = match.replay_blob_key;
   parsed_data.doLogParse = match.doLogParse;
+  // require('fs').writeFileSync('./output2.json', JSON.stringify(parsed_data, null, 2));
   return parsed_data;
 }
 

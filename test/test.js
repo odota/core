@@ -7,15 +7,13 @@ const nock = require('nock');
 const assert = require('assert');
 const supertest = require('supertest');
 const pg = require('pg');
-const cass = require('cassandra-driver');
+const cassandraDriver = require('cassandra-driver');
 const fs = require('fs');
 const request = require('request');
 const config = require('../config');
 const redis = require('../store/redis');
 const queue = require('../store/queue');
-const queries = require('../store/queries');
 const pQueue = queue.getQueue('parse');
-const buildMatch = require('../store/buildMatch');
 const utility = require('../util/utility');
 const details_api = require('./data/details_api.json');
 const summaries_api = require('./data/summaries_api.json');
@@ -23,11 +21,14 @@ const history_api = require('./data/history_api.json');
 const heroes_api = require('./data/heroes_api.json');
 const leagues_api = require('./data/leagues_api.json');
 const retriever_player = require('./data/retriever_player.json');
-const init_db = 'postgres://postgres:postgres@localhost/postgres';
+const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
+const initCassandraHost = config.INIT_CASSANDRA_HOST;
 // these are loaded later, as the database needs to be created when these are required
 let db;
 let cassandra;
 let app;
+let queries;
+let buildMatch;
 // fake api responses
 nock('http://api.steampowered.com')
   // fake 500 error
@@ -48,7 +49,7 @@ before(function setup(done) {
   this.timeout(30000);
   async.series([
     function (cb) {
-      pg.connect(init_db, (err, client) => {
+      pg.connect(initPostgresHost, (err, client) => {
         if (err) {
           return cb(err);
         }
@@ -62,8 +63,8 @@ before(function setup(done) {
             client.query('CREATE DATABASE yasp_test', cb);
           },
           function (cb) {
-            console.log('connecting to test database and creating tables');
             db = require('../store/db');
+            console.log('connecting to test database and creating tables');
             const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
             db.raw(query).asCallback(cb);
           },
@@ -71,8 +72,8 @@ before(function setup(done) {
       });
     },
     function (cb) {
-      const client = new cass.Client({
-        contactPoints: ['localhost'],
+      const client = new cassandraDriver.Client({
+        contactPoints: [initCassandraHost],
       });
       async.series([function (cb) {
           console.log('drop cassandra test keyspace');
@@ -101,6 +102,14 @@ before(function setup(done) {
       });
     },
     function (cb) {
+      console.log('starting services');
+      app = require('../svc/web');
+      queries = require('../store/queries');
+      buildMatch = require('../store/buildMatch');
+      require('../svc/parser');
+      cb();
+    },
+    function (cb) {
       console.log('loading matches');
       async.mapSeries([details_api.result], (m, cb) => {
         queries.insertMatch(db, redis, m, {
@@ -115,12 +124,6 @@ before(function setup(done) {
       async.mapSeries(summaries_api.response.players, (p, cb) => {
         queries.insertPlayer(db, p, cb);
       }, cb);
-    },
-    function (cb) {
-      console.log('starting services');
-      app = require('../svc/web');
-      require('../svc/parser');
-      cb();
     },
   ], done);
 });
@@ -187,19 +190,24 @@ describe('replay parse', function () {
   });
 });
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
-/*
 describe('api', () => {
   it('should accept api endpoints', (cb) => {
-    const body = require('../routes/spec.js');
-    async.eachSeries(Object.keys(body.paths), (path, cb) => {
-      supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
-        console.log(path, res.length);
+    supertest(app).get('/api').end((err, res) => {
+      if (err) {
         return cb(err);
-      });
-    }, cb);
+      }
+      const spec = res.body;
+      async.eachSeries(Object.keys(spec.paths), (path, cb) => {
+        // TODO test POST routes
+        supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
+          // TODO better asserts on results
+          console.log(path, res.statusCode);
+          return cb(err);
+        });
+      }, cb);
+    });
   });
 });
-*/
 describe('generateMatchups', () => {
   it('should generate matchups', (done) => {
     // in this sample match
