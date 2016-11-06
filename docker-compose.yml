@@ -39,6 +39,8 @@ services:
       REDIS_TEST_URL: redis://odota-redis:6379/1
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
       CASSANDRA_TEST_URL: cassandra://odota-cassandra/yasp_test
+      INIT_POSTGRES_HOST: localhost
+      INIT_CASSANDRA_HOST: localhost
     volumes: 
       - .:/usr/src
     links:

@@ -21,9 +21,8 @@ const history_api = require('./data/history_api.json');
 const heroes_api = require('./data/heroes_api.json');
 const leagues_api = require('./data/leagues_api.json');
 const retriever_player = require('./data/retriever_player.json');
-// TODO make these config variables
-const initDbHost = 'postgres://postgres:postgres@odota-postgres/postgres';
-const initCassandraHost = 'odota-cassandra';
+const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
+const initCassandraHost = config.INIT_CASSANDRA_HOST;
 // these are loaded later, as the database needs to be created when these are required
 let db;
 let cassandra;
@@ -50,7 +49,7 @@ before(function setup(done) {
   this.timeout(30000);
   async.series([
     function (cb) {
-      pg.connect(initDbHost, (err, client) => {
+      pg.connect(initPostgresHost, (err, client) => {
         if (err) {
           return cb(err);
         }
