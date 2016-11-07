@@ -49,7 +49,7 @@
     "request": "2.78.0",
     "request-progress": "2.0.1",
     "simple-vdf": "1.1.0",
-    "steam": "1.4.0"s
+    "steam": "1.4.0"
   },
   "devDependencies": {
     "eslint": "3.9.0",
