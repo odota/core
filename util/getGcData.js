@@ -21,13 +21,13 @@ module.exports = function getGcData(db, redis, match, cb) {
       console.log('found cached replay url for %s', match.match_id);
       return cb(err, gcdata);
     } else {
-      const retrievers = retrieverConfig.split(',').map((r) => {
-        return `http://${r}?key=${secret}`;
-      });
+      const retrievers = retrieverConfig.split(',').map(r =>
+         `http://${r}?key=${secret}`
+      );
       // make array of retriever urls and use a random one on each retry
-      const urls = retrievers.map((r) => {
-        return `${r}&match_id=${match.match_id}`;
-      });
+      const urls = retrievers.map(r =>
+         `${r}&match_id=${match.match_id}`
+      );
       getData(urls, (err, body, metadata) => {
         if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
           // non-retryable error
@@ -36,14 +36,14 @@ module.exports = function getGcData(db, redis, match, cb) {
         // count retriever calls
         redis.zadd('retriever', moment().format('X'), `${metadata.hostname}_${match.match_id}`);
         // Persist parties and permanent buffs
-        const players = body.match.players.map((p) => ({
+        const players = body.match.players.map(p => ({
           player_slot: p.player_slot,
           party_id: p.party_id && p.party_id.low,
           permanent_buffs: p.permanent_buffs,
         }));
         const matchToInsert = {
           match_id: match.match_id,
-          players: players
+          players,
         };
         insertMatch(matchToInsert, {
           type: 'gcdata',

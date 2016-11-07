@@ -43,9 +43,9 @@ function generateJob(type, payload) {
     },
     api_summaries() {
       return {
-        url: `${api_url}/ISteamUser/GetPlayerSummaries/v0002/?key=${api_key}&steamids=${payload.players.map((p) => {
-          return convert32to64(p.account_id);
-        }).join()}`,
+        url: `${api_url}/ISteamUser/GetPlayerSummaries/v0002/?key=${api_key}&steamids=${payload.players.map(p =>
+           convert32to64(p.account_id)
+        ).join()}`,
         title: [type, payload.summaries_id].join(),
         type: 'api',
         payload,
@@ -414,11 +414,11 @@ function deserialize(row) {
  * Returns a list of heroes sorted in alphabetical order
  **/
 function getAlphaHeroes() {
-  const alpha_heroes = Object.keys(constants.heroes).map((id) => {
-    return constants.heroes[id];
-  }).sort((a, b) => {
-    return a.localized_name < b.localized_name ? -1 : 1;
-  });
+  const alpha_heroes = Object.keys(constants.heroes).map(id =>
+     constants.heroes[id]
+  ).sort((a, b) =>
+     a.localized_name < b.localized_name ? -1 : 1
+  );
   return alpha_heroes;
 }
 /**
@@ -480,9 +480,9 @@ function percentToTextClass(pct) {
 }
 
 function average(data) {
-  return ~~(data.reduce((a, b) => {
-    return a + b;
-  }, 0) / data.length);
+  return ~~(data.reduce((a, b) =>
+     a + b
+  , 0) / data.length);
 }
 
 function stdDev(data) {
@@ -498,9 +498,9 @@ function stdDev(data) {
 }
 
 function median(data) {
-  data.sort((a, b) => {
-    return a - b;
-  });
+  data.sort((a, b) =>
+     a - b
+  );
   const half = Math.floor(data.length / 2);
   if (data.length % 2) return data[half];
   else return (data[half - 1] + data[half]) / 2.0;
@@ -547,9 +547,9 @@ function matchupToString(t0, t1, t0win) {
 }
 
 function groupToString(g) {
-  return g.sort((a, b) => {
-    return a - b;
-  }).join(',');
+  return g.sort((a, b) =>
+     a - b
+  ).join(',');
 }
 
 function kCombinations(arr, k) {

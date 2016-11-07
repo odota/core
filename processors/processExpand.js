@@ -21,7 +21,7 @@ function processExpand(entries, meta) {
           value: e.value,
           unit: key,
           key: unit,
-          type: 'damage_taken'
+          type: 'damage_taken',
         });
         // count a hit on a real hero with this inflictor
         expand({
@@ -39,7 +39,7 @@ function processExpand(entries, meta) {
             value: e.value,
             unit,
             key: inflictor,
-            type: 'damage_inflictor'
+            type: 'damage_inflictor',
           });
           // biggest hit on a hero
           expand({
@@ -68,7 +68,7 @@ function processExpand(entries, meta) {
       expand(Object.assign(e, {}, {
         unit: e.sourcename,
         key: computeIllusionString(e.targetname, e.targetillusion),
-        type: 'healing'
+        type: 'healing',
       }));
     },
     DOTA_COMBATLOG_MODIFIER_ADD(e) {
@@ -92,7 +92,7 @@ function processExpand(entries, meta) {
         expand(Object.assign({}, e, {
           unit,
           key,
-          type: 'killed'
+          type: 'killed',
         }));
       }
       if (e.targethero && !e.targetillusion) {
@@ -100,14 +100,14 @@ function processExpand(entries, meta) {
           time: e.time,
           unit,
           key,
-          type: 'kills_log'
+          type: 'kills_log',
         });
         // reverse
         expand({
           time: e.time,
           unit: key,
           key: unit,
-          type: 'killed_by'
+          type: 'killed_by',
         });
       }
     },
@@ -118,7 +118,7 @@ function processExpand(entries, meta) {
         time: e.time,
         unit: e.attackername,
         key: translate(e.inflictor),
-        type: 'ability_uses'
+        type: 'ability_uses',
       });
     },
     DOTA_COMBATLOG_ITEM(e) {
@@ -127,7 +127,7 @@ function processExpand(entries, meta) {
         time: e.time,
         unit: e.attackername,
         key: translate(e.inflictor),
-        type: 'item_uses'
+        type: 'item_uses',
       });
     },
     DOTA_COMBATLOG_LOCATION(e) {
@@ -184,7 +184,7 @@ function processExpand(entries, meta) {
       expand({
         time: e.time,
         slot: e.value,
-        type: 'buyback_log'
+        type: 'buyback_log',
       });
     },
     DOTA_COMBATLOG_ABILITY_TRIGGER(e) {
@@ -291,7 +291,7 @@ function processExpand(entries, meta) {
         time: e.time,
         type: e.type,
         team: e.value,
-        slot: e.player1
+        slot: e.player1,
       });
     },
     CHAT_MESSAGE_TOWER_DENY(e) {
@@ -302,7 +302,7 @@ function processExpand(entries, meta) {
         time: e.time,
         type: e.type,
         team: e.value,
-        slot: e.player1
+        slot: e.player1,
       });
     },
     CHAT_MESSAGE_BARRACKS_KILL(e) {
@@ -321,14 +321,14 @@ function processExpand(entries, meta) {
       expand({
         time: e.time,
         type: e.type,
-        slot: e.player1
+        slot: e.player1,
       });
     },
     CHAT_MESSAGE_AEGIS(e) {
       expand({
         time: e.time,
         type: e.type,
-        slot: e.player1
+        slot: e.player1,
       });
     },
     CHAT_MESSAGE_AEGIS_STOLEN(e) {
@@ -344,7 +344,7 @@ function processExpand(entries, meta) {
       expand({
         time: e.time,
         type: e.type,
-        slot: e.player1
+        slot: e.player1,
       });
     },
     CHAT_MESSAGE_ROSHAN_KILL(e) {
@@ -352,7 +352,7 @@ function processExpand(entries, meta) {
       expand({
         time: e.time,
         type: e.type,
-        team: e.player1
+        team: e.player1,
       });
     },
     CHAT_MESSAGE_HERO_NOMINATED_BAN(e) {
@@ -384,7 +384,7 @@ function processExpand(entries, meta) {
             slot: e.slot,
             type: t,
             key,
-            value
+            value,
           });
         });
         // if on minute, add to interval arrays
@@ -433,36 +433,36 @@ function processExpand(entries, meta) {
           slot: e.slot,
           type: 'lane_pos',
           key: JSON.stringify([e.x, e.y]),
-          posData: true
+          posData: true,
         });
       }
     },
     obs(e) {
       expand(Object.assign({}, e, {
         type: 'obs',
-        posData: true
+        posData: true,
       }));
       expand(Object.assign({}, e, {
-        type: 'obs_log'
+        type: 'obs_log',
       }));
     },
     sen(e) {
       expand(Object.assign({}, e, {
         type: 'sen',
-        posData: true
+        posData: true,
       }));
       expand(Object.assign({}, e, {
-        type: 'sen_log'
+        type: 'sen_log',
       }));
     },
     obs_left(e) {
       expand(Object.assign({}, e, {
-        type: 'obs_left_log'
+        type: 'obs_left_log',
       }));
     },
     sen_left(e) {
       expand(Object.assign({}, e, {
-        type: 'sen_left_log'
+        type: 'sen_left_log',
       }));
     },
     epilogue(e) {
@@ -473,7 +473,7 @@ function processExpand(entries, meta) {
     },
     cosmetics(e) {
       expand(e);
-    }
+    },
   };
   const output = [];
   for (let i = 0; i < entries.length; i++) {

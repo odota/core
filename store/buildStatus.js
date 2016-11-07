@@ -54,18 +54,18 @@ module.exports = function buildStatus(db, redis, cb) {
       redis.zcard('api_hits', cb);
     },
     last_added(cb) {
-      redis.lrange('matches_last_added', 0, -1, (err, result) => {
-        return cb(err, result.map((r) => {
-          return JSON.parse(r);
-        }));
-      });
+      redis.lrange('matches_last_added', 0, -1, (err, result) =>
+         cb(err, result.map(r =>
+           JSON.parse(r)
+        ))
+      );
     },
     last_parsed(cb) {
-      redis.lrange('matches_last_parsed', 0, -1, (err, result) => {
-        return cb(err, result.map((r) => {
-          return JSON.parse(r);
-        }));
-      });
+      redis.lrange('matches_last_parsed', 0, -1, (err, result) =>
+         cb(err, result.map(r =>
+           JSON.parse(r)
+        ))
+      );
     },
     retriever(cb) {
       redis.zrangebyscore('retriever', moment().subtract(1, 'hour').format('X'), moment().format('X'), (err, results) => {

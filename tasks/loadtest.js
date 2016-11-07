@@ -3,8 +3,7 @@ const async = require('async');
 const request = require('request');
 const host = 'localhost:5000';
 db.select('account_id', 'last_login').from('players').whereNotNull('last_login').orderBy('last_login').orderBy('account_id').asCallback((err, results) => {
-  if (err)
-    {
+  if (err) {
     return cb(err);
   }
   async.eachLimit(results, 10, (r, cb) => {
@@ -16,7 +15,6 @@ db.select('account_id', 'last_login').from('players').whereNotNull('last_login')
   }, cb);
 });
 
-function cb(err)
-{
+function cb(err) {
   process.exit(Number(err));
 }

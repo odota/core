@@ -12,18 +12,18 @@ files.forEach((file) => {
 */
 
 const builder = ProtoBuf.loadProtoFile('./proto/dota_match_metadata.proto');
-const Message= builder.build();
+const Message = builder.build();
 const buf = fs.readFileSync('./2750586075_1028519576.meta');
 const message = Message.CDOTAMatchMetadataFile.decode(buf);
 message.metadata.teams.forEach((team) => {
   team.players.forEach((player) => {
-    player.equipped_econ_items.forEach(item => {
+    player.equipped_econ_items.forEach((item) => {
       delete item.attribute;
     });
   });
 });
 delete message.private_metadata;
-console.log(JSON.stringify(message, null ,2));
+console.log(JSON.stringify(message, null, 2));
 
 /*
 const redis = require('../store/redis');

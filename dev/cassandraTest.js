@@ -15,8 +15,7 @@ stream.on('data', (player) => {
   stream.pause();
   console.time(player.account_id);
   cassandra.execute('SELECT * from player_matches WHERE account_id = ?', [player.account_id], (err, result) => {
-    if (err)
-        {
+    if (err) {
       return exit(err);
     }
         // console.log(player.account_id, result.length);
@@ -25,10 +24,8 @@ stream.on('data', (player) => {
   });
 });
 
-function exit(err)
-{
-  if (err)
-    {
+function exit(err) {
+  if (err) {
     console.error(err);
   }
   process.exit(Number(err));

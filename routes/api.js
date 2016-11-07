@@ -7,7 +7,7 @@ const filterDeps = require('../util/filterDeps');
 const spec = require('./spec');
 const multer = require('multer')({
   inMemory: true,
-  fileSize: 100 * 1024 * 1024, // no larger than 100mb		
+  fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
 module.exports = function (db, redis, cassandra) {
   api.use((req, res, cb) => {
@@ -30,9 +30,9 @@ module.exports = function (db, redis, cassandra) {
     let filterCols = [];
     for (const key in req.query) {
       // numberify and arrayify everything in query
-      req.query[key] = [].concat(req.query[key]).map((e) => {
-        return isNaN(Number(e)) ? e : Number(e);
-      });
+      req.query[key] = [].concat(req.query[key]).map(e =>
+         isNaN(Number(e)) ? e : Number(e)
+      );
       // build array of required projections due to filters
       filterCols = filterCols.concat(filterDeps[key] || []);
     }
@@ -52,7 +52,7 @@ module.exports = function (db, redis, cassandra) {
     Object.keys(spec.paths[path]).forEach((verb) => {
       const {
         route,
-        func
+        func,
       } = spec.paths[path][verb];
       api[verb](route(), func);
     });

@@ -1,6 +1,5 @@
 const constants = require('dotaconstants');
 const utility = require('./utility');
-const generatePlayerAnalysis = require('./analysis');
 const laneMappings = require('./laneMappings');
 const mode = utility.mode;
 const max = utility.max;
@@ -52,9 +51,9 @@ function computeMatchData(pm) {
   }
   if (pm.kills_log && self_hero) {
     // remove self kills
-    pm.kills_log = pm.kills_log.filter((k) => {
-      return k.key !== self_hero.name;
-    });
+    pm.kills_log = pm.kills_log.filter(k =>
+       k.key !== self_hero.name
+    );
   }
   if (pm.killed) {
     pm.neutral_kills = 0;
@@ -168,9 +167,9 @@ function computeMatchData(pm) {
   // compute hashes of purchase time sums and counts from logs
   if (pm.purchase_log) {
     // remove ward dispenser and recipes
-    pm.purchase_log = pm.purchase_log.filter((purchase) => {
-      return !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser');
-    });
+    pm.purchase_log = pm.purchase_log.filter(purchase =>
+       !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser')
+    );
     pm.purchase_time = {};
     pm.first_purchase_time = {};
     pm.item_win = {};

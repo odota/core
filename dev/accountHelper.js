@@ -5,10 +5,8 @@ let count = 0;
 const limit = 5000;
 permute(user, 1);
 
-function permute(user, n)
-{
-  if (n >= user.length || (limit && count > limit))
-    {
+function permute(user, n) {
+  if (n >= user.length || (limit && count > limit)) {
     arr[0] = user;
     console.log(arr.join('@'));
     count += 1;

@@ -4,8 +4,7 @@ const async = require('async');
 const constants = require('dotaconstants');
 const utility = require('../util/utility');
 db.select(['match_id', 'start_time']).from('matches').asCallback((err, match_ids) => {
-  if (err)
-  {
+  if (err) {
     throw err;
   }
   async.eachSeries(match_ids, (match, cb) => {

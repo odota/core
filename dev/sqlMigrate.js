@@ -34,8 +34,7 @@ MongoClient.connect(url, (err, db) => {
       match_id: 1,
     });
     migrate = processMatch;
-  }
-  else if (args[0] === 'players') {
+  } else if (args[0] === 'players') {
     cursor = db.collection('players').find({
       account_id: {
         $gt: start_id,
@@ -44,8 +43,7 @@ MongoClient.connect(url, (err, db) => {
       account_id: 1,
     });
     migrate = processPlayer;
-  }
-  else {
+  } else {
     throw 'invalid option, choose matches or players';
   }
   cursor.nextObject(processItem);
@@ -81,8 +79,7 @@ MongoClient.connect(url, (err, db) => {
           if (isRadiant(elem)) {
             goldtotal += p.gold[i];
             xptotal += p.xp[i];
-          }
-          else {
+          } else {
             xptotal -= p.xp[i];
             goldtotal -= p.gold[i];
           }
@@ -139,15 +136,15 @@ MongoClient.connect(url, (err, db) => {
     p.last_login = p.last_visited;
     delete p.last_visited;
     let ratings = JSON.parse(JSON.stringify(p.ratings || []));
-    ratings = ratings.map((r) => {
-      return {
-        solo_competitive_rank: r.soloCompetitiveRank,
-        competitive_rank: r.competitiveRank,
-        time: r.time,
-        match_id: r.match_id,
-        account_id: p.account_id,
-      };
-    });
+    ratings = ratings.map(r =>
+       ({
+         solo_competitive_rank: r.soloCompetitiveRank,
+         competitive_rank: r.competitiveRank,
+         time: r.time,
+         match_id: r.match_id,
+         account_id: p.account_id,
+       })
+    );
     delete p.ratings;
     console.log(p.account_id);
     insertPlayer(pg, p, (err) => {
