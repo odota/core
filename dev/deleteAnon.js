@@ -5,8 +5,7 @@ const start_id = Number(args[0]) || 0;
 const end_id = 2400000000;
 const bucket = 10000000;
 const starts = [];
-for (let i = start_id; i < end_id; i += bucket)
-{
+for (let i = start_id; i < end_id; i += bucket) {
   starts.push(i);
 }
 async.eachSeries(starts, (s, cb) => {
@@ -17,8 +16,7 @@ async.eachSeries(starts, (s, cb) => {
     cb(err);
   });
 }, (err) => {
-  if (err)
-    {
+  if (err) {
     console.error(err);
   }
   process.exit(Number(err));

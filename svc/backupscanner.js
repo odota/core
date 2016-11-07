@@ -44,11 +44,11 @@ function processPlayer(account_id, cb) {
         console.error(err);
       }
       // Get matches with recent seqnums
-      const matches = body.result.matches.filter((m) => {
-        return m.match_seq_num > Number(res);
-      }).map((m) => {
-        return m.match_id;
-      });
+      const matches = body.result.matches.filter(m =>
+         m.match_seq_num > Number(res)
+      ).map(m =>
+         m.match_id
+      );
       async.eachLimit(matches, 1, processMatch, cb);
     });
   });

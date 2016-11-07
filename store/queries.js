@@ -72,17 +72,17 @@ function upsert(db, table, row, conflict, cb) {
     if (err) {
       return cb(err);
     }
-    const values = Object.keys(row).map((key) => {
-      return '?';
-    });
-    const update = Object.keys(row).map((key) => {
-      return util.format('%s=%s', key, `EXCLUDED.${key}`);
-    });
+    const values = Object.keys(row).map(key =>
+       '?'
+    );
+    const update = Object.keys(row).map(key =>
+       util.format('%s=%s', key, `EXCLUDED.${key}`)
+    );
     const query = util.format('INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s', table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
     // if (table==='cosmetics') console.log(query.toString(), row);
-    db.raw(query, Object.keys(row).map((key) => {
-      return row[key];
-    })).asCallback(cb);
+    db.raw(query, Object.keys(row).map(key =>
+       row[key]
+    )).asCallback(cb);
   });
 }
 
@@ -195,9 +195,9 @@ function insertMatch(match, options, cb) {
   if (players) {
     players.forEach((p) => {
       if (p.ability_upgrades) {
-        p.ability_upgrades_arr = p.ability_upgrades.map((au) => {
-          return au.ability;
-        });
+        p.ability_upgrades_arr = p.ability_upgrades.map(au =>
+           au.ability
+        );
       }
     });
   }
@@ -214,9 +214,9 @@ function insertMatch(match, options, cb) {
     dgcd: decideGcData,
     dmp: decideMetaParse,
     dp: decideReplayParse,
-  }, (err, results) => {
-    return cb(err, results.dp);
-  });
+  }, (err, results) =>
+     cb(err, results.dp)
+  );
 
   function decideLogParse(cb) {
     if (match.leagueid && match.human_players === 10 && match.duration > 300 && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2) && match.players && match.players.every(p => p.hero_id > 0)) {
@@ -348,13 +348,13 @@ function insertMatch(match, options, cb) {
       if (!Object.keys(obj).length) {
         return cb(err);
       }
-      const query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map((k) => {
-        return '?';
-      }).join(','));
-      const arr = Object.keys(obj).map((k) => {
+      const query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(k =>
+         '?'
+      ).join(','));
+      const arr = Object.keys(obj).map(k =>
         // boolean types need to be expressed as booleans, if strings the cassandra driver will always convert it to true, e.g. 'false'
-        return (obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k];
-      });
+         (obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k]
+      );
       cassandra.execute(query, arr, {
         prepare: true,
       }, (err, result) => {
@@ -371,12 +371,12 @@ function insertMatch(match, options, cb) {
             if (!Object.keys(obj2).length) {
               return cb(err);
             }
-            const query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map((k) => {
-              return '?';
-            }).join(','));
-            const arr2 = Object.keys(obj2).map((k) => {
-              return obj2[k];
-            });
+            const query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(k =>
+               '?'
+            ).join(','));
+            const arr2 = Object.keys(obj2).map(k =>
+               obj2[k]
+            );
             cassandra.execute(query2, arr2, {
               prepare: true,
             }, cb);
@@ -456,9 +456,9 @@ function insertMatch(match, options, cb) {
       redis.zadd('added_match', moment().format('X'), match.match_id);
     }
     async.some(match.players, (p, cb) => {
-      redis.zscore('visitors', String(p.account_id), (err, score) => {
-        return cb(err, Boolean(score));
-      });
+      redis.zscore('visitors', String(p.account_id), (err, score) =>
+         cb(err, Boolean(score))
+      );
     }, (err, result) => {
       if (result) {
         redis.zadd('visitor_match', moment().format('X'), match.match_id);
@@ -506,7 +506,7 @@ function insertMatch(match, options, cb) {
       cb();
     }
   }
-  
+
   function decideMetaParse(cb) {
     // metaQueue.add()
     cb();
@@ -519,9 +519,9 @@ function insertMatch(match, options, cb) {
     } else {
       // determine if any player in the match is tracked
       async.some(match.players, (p, cb) => {
-        redis.zscore('tracked', String(p.account_id), (err, score) => {
-          return cb(err, Boolean(score));
-        });
+        redis.zscore('tracked', String(p.account_id), (err, score) =>
+           cb(err, Boolean(score))
+        );
       }, (err, hasTrackedPlayer) => {
         if (err) {
           return cb(err);
@@ -628,12 +628,12 @@ function insertPlayerCache(match, cb) {
       // upsert matches into store
       return async.each(cache.raw, (m, cb) => {
         m = serialize(reduceAggregable(m));
-        const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map((k) => {
-          return '?';
-        }).join(','));
-        cassandra.execute(query, Object.keys(m).map((k) => {
-          return m[k];
-        }), {
+        const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(k =>
+           '?'
+        ).join(','));
+        cassandra.execute(query, Object.keys(m).map(k =>
+           m[k]
+        ), {
           prepare: true,
         }, cb);
       }, (err) => {
@@ -693,14 +693,14 @@ function getMatchRating(redis, match, cb) {
       return cb(err);
     }
     // Remove undefined/null values
-    const filt = result.filter((r) => {
-      return r;
-    });
-    const avg = ~~(filt.map((r) => {
-      return Number(r);
-    }).reduce((a, b) => {
-      return a + b;
-    }, 0) / filt.length);
+    const filt = result.filter(r =>
+       r
+    );
+    const avg = ~~(filt.map(r =>
+       Number(r)
+    ).reduce((a, b) =>
+       a + b
+    , 0) / filt.length);
     cb(err, avg, filt.length);
   });
 }
@@ -716,9 +716,9 @@ function getDistributions(redis, cb) {
       result[r.split(':')[1]] = JSON.parse(blob);
       cb(err);
     });
-  }, (err) => {
-    return cb(err, result);
-  });
+  }, err =>
+     cb(err, result)
+  );
 }
 
 function getProPlayers(db, redis, cb) {
@@ -749,12 +749,12 @@ function getHeroRankings(db, redis, hero_id, options, cb) {
         player.solo_competitive_rank = result.solo_competitive_rank;
         cb(err);
       });
-    }, (err) => {
-      return cb(err, {
-        hero_id: Number(hero_id),
-        rankings: entries,
-      });
-    });
+    }, err =>
+       cb(err, {
+         hero_id: Number(hero_id),
+         rankings: entries,
+       })
+    );
   });
 }
 
@@ -784,12 +784,12 @@ function getHeroBenchmarks(db, redis, options, cb) {
         });
       });
     }, cb);
-  }, (err) => {
-    return cb(err, {
-      hero_id: Number(hero_id),
-      result: ret,
-    });
-  });
+  }, err =>
+     cb(err, {
+       hero_id: Number(hero_id),
+       result: ret,
+     })
+  );
 }
 
 function getLeaderboard(db, redis, key, n, cb) {
@@ -797,17 +797,17 @@ function getLeaderboard(db, redis, key, n, cb) {
     if (err) {
       return cb(err);
     }
-    const entries = rows.map((r, i) => {
-      return {
-        account_id: r,
-        score: rows[i + 1],
-      };
-    }).filter((r, i) => {
-      return i % 2 === 0;
-    });
-    const account_ids = entries.map((r) => {
-      return r.account_id;
-    });
+    const entries = rows.map((r, i) =>
+       ({
+         account_id: r,
+         score: rows[i + 1],
+       })
+    ).filter((r, i) =>
+       i % 2 === 0
+    );
+    const account_ids = entries.map(r =>
+       r.account_id
+    );
     // get player data from DB
     db.select().from('players').whereIn('account_id', account_ids).asCallback((err, names) => {
       if (err) {
@@ -832,13 +832,13 @@ function getMmrEstimate(db, redis, account_id, cb) {
     if (err) {
       return cb(err);
     }
-    const data = result.filter((d) => {
+    const data = result.filter(d =>
       // remove invalid values
-      return d;
-    }).map((d) => {
+       d
+    ).map(d =>
       // convert to numerical values
-      return Number(d);
-    });
+       Number(d)
+    );
     cb(err, {
       estimate: utility.average(data),
       stdDev: utility.stdDev(data),
@@ -860,9 +860,9 @@ function getMatchesSkill(db, matches, options, cb) {
   // just get skill for last N matches to speed up DB query
   const recents = matches.slice(0, 50);
   const skillMap = {};
-  db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map((m) => {
-    return m.match_id;
-  })).asCallback((err, rows) => {
+  db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(m =>
+     m.match_id
+  )).asCallback((err, rows) => {
     if (err) {
       return cb(err);
     }
@@ -904,9 +904,9 @@ function getPlayerMatches(account_id, queryObj, cb) {
       }).on('end', (err) => {
         // stream ended, there aren't any more rows
         if (queryObj.sort) {
-          matches.sort((a, b) => {
-            return b[queryObj.sort] - a[queryObj.sort];
-          });
+          matches.sort((a, b) =>
+             b[queryObj.sort] - a[queryObj.sort]
+          );
         }
         matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
         return cb(err, matches);
@@ -977,9 +977,9 @@ function getPeers(db, input, player, cb) {
       teammates_arr.push(tm);
     }
   }
-  teammates_arr.sort((a, b) => {
-    return b.games - a.games;
-  });
+  teammates_arr.sort((a, b) =>
+     b.games - a.games
+  );
   // limit to 200 max players
   teammates_arr = teammates_arr.slice(0, 200);
   async.each(teammates_arr, (t, cb) => {
@@ -1012,13 +1012,13 @@ function getProPeers(db, input, player, cb) {
             if (err) {
               return cb(err);
             }
-            const arr = result.rows.map((r) => {
-              return Object.assign({}, r, teammates[r.account_id]);
-            }).filter((r) => {
-              return r.games;
-            }).sort((a, b) => {
-              return b.games - a.games;
-            });
+            const arr = result.rows.map(r =>
+               Object.assign({}, r, teammates[r.account_id])
+            ).filter(r =>
+               r.games
+            ).sort((a, b) =>
+               b.games - a.games
+            );
             cb(err, arr);
           });
 }

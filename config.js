@@ -3,15 +3,11 @@
  **/
 const dotenv = require('dotenv');
 const fs = require('fs');
-try
-{
-  if (fs.statSync('.env'))
-    {
+try {
+  if (fs.statSync('.env')) {
     dotenv.load();
   }
-}
-catch (e)
-{
+} catch (e) {
     // Swallow exceptions due to no .env file
 }
 
@@ -76,17 +72,14 @@ const defaults = {
   BRAIN_TREE_PRIVATE_KEY: '',
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
-for (const key in defaults)
-{
+for (const key in defaults) {
   process.env[key] = (key in process.env) ? process.env[key] : defaults[key];
 }
-if (process.env.NODE_ENV === 'development')
-{
+if (process.env.NODE_ENV === 'development') {
     // force PORT to null in development so we can run multiple web services without conflict
   process.env.PORT = '';
 }
-if (process.env.NODE_ENV === 'test')
-{
+if (process.env.NODE_ENV === 'test') {
   process.env.PORT = ''; // use service defaults
   process.env.POSTGRES_URL = process.env.POSTGRES_TEST_URL;
   process.env.CASSANDRA_URL = process.env.CASSANDRA_TEST_URL;

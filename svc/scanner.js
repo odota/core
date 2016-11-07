@@ -114,9 +114,9 @@ function start() {
         redis.set('match_seq_num', nextSeqNum);
         // Completed inserting matches on this page
         // If not a full page, delay the next iteration
-        return setTimeout(() => {
-          return scanApi(nextSeqNum);
-        }, delayNextRequest ? 3000 : 0);
+        return setTimeout(() =>
+           scanApi(nextSeqNum)
+        , delayNextRequest ? 3000 : 0);
       }
     }
   }

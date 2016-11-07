@@ -93,11 +93,11 @@ function start() {
   app.use((req, res) => {
     res.json(res.locals.data);
   });
-  app.use((err, req, res, next) => {
-    return res.status(500).json({
-      error: err,
-    });
-  });
+  app.use((err, req, res, next) =>
+     res.status(500).json({
+       error: err,
+     })
+  );
   const server = app.listen(port, () => {
     const host = server.address().address;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);
