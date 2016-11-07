@@ -13,7 +13,7 @@ const steamObj = {};
 const accountToIdx = {};
 const launch = new Date();
 const matchRequestDelay = 1200;
-const minUpTimeSeconds = 630;
+const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
 const timeoutMs = 15000;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
@@ -94,9 +94,9 @@ function start() {
     res.json(res.locals.data);
   });
   app.use((err, req, res, next) =>
-     res.status(500).json({
-       error: err,
-     })
+    res.status(500).json({
+      error: err,
+    })
   );
   const server = app.listen(port, () => {
     const host = server.address().address;
