@@ -57,12 +57,5 @@ module.exports = function (db, redis, cassandra) {
       api[verb](route(), func);
     });
   });
-  // TODO remove these, currently only used by legacy UI
-  api.get('/items', (req, res) => {
-    res.json(constants.items[req.query.name]);
-  });
-  api.get('/abilities', (req, res) => {
-    res.json(constants.abilities[req.query.name]);
-  });
   return api;
 };

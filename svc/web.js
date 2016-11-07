@@ -11,11 +11,7 @@ const db = require('../store/db');
 const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
 const queries = require('../store/queries');
 const search = require('../store/search');
-const matches = require('../routes/matches');
-const players = require('../routes/players');
 const api = require('../routes/api');
-const donate = require('../routes/donate');
-const mmstats = require('../routes/mmstats');
 const request = require('request');
 const compression = require('compression');
 const session = require('cookie-session');
@@ -59,57 +55,6 @@ passport.use(new SteamStrategy({
     return cb(err, player);
   });
 }));
-// TODO Remove this with SPA (Views/Locals config)
-app.set('views', path.join(__dirname, '../views'));
-app.set('view engine', 'jade');
-app.locals.moment = moment;
-app.locals.constants = constants;
-app.locals.tooltips = require('../lang/en.json');
-app.locals.qs = querystring;
-app.locals.util = util;
-app.locals.config = config;
-app.locals.basedir = `${__dirname}/../views`;
-app.locals.prettyPrint = utility.prettyPrint;
-app.locals.percentToTextClass = utility.percentToTextClass;
-app.locals.getAggs = utility.getAggs;
-app.locals.navbar_pages = {
-  request: {
-    name: 'Request',
-  },
-  rankings: {
-    name: 'Rankings',
-  },
-  benchmarks: {
-    name: 'Benchmarks',
-  },
-  distributions: {
-    name: 'Distributions',
-  },
-  mmstats: {
-    name: 'MMStats',
-  },
-  search: {
-    name: 'Search',
-  },
-  carry: {
-    name: 'Carry',
-  },
-  'become-the-gamer': {
-    name: 'Ingame',
-    sponsored: true,
-  },
-  blog: {
-    name: 'Blog',
-    path: '//odota.github.io/blog',
-  },
-};
-app.locals.constants.abilities.attribute_bonus = {
-  dname: 'Attribute Bonus',
-  img: '/public/images/Stats.png',
-  attrib: '+2 All Attributes',
-};
-app.locals.constants.map_url = '/public/images/map.png';
-app.locals.constants.ICON_PATH = '/public/images/logo.png';
 // Compression middleware
 app.use(compression());
 // Dota 2 images middleware (proxy to Dota 2 CDN)
@@ -117,8 +62,6 @@ app.use('/apps/dota2/images/:group_name/:image_name', (req, res) => {
   res.header('Cache-Control', 'max-age=604800, public');
   request(`http://cdn.dota2.com/apps/dota2/images/${req.params.group_name}/${req.params.image_name}`).pipe(res);
 });
-// TODO remove this with SPA (no more public assets)
-app.use('/public', express.static(path.join(__dirname, '/../public')));
 // Session/Passport middleware
 app.use(session(sessOptions));
 app.use(passport.initialize());
@@ -166,31 +109,7 @@ app.use((req, res, cb) => {
   });
   cb();
 });
-// TODO can remove this middleware with SPA, site metadata
-app.use((req, res, cb) => {
-  async.parallel({
-    banner(cb) {
-      redis.get('banner', cb);
-    },
-    cheese(cb) {
-      redis.get('cheese_goal', cb);
-    },
-    pvgna(cb) {
-      redis.get('pvgna', cb);
-    },
-  }, (err, results) => {
-    res.locals.user = req.user;
-    res.locals.banner_msg = results.banner;
-    res.locals.cheese = results.cheese;
-    res.locals.pvgna = JSON.parse(results.pvgna);
-    return cb(err);
-  });
-});
 // START service/admin routes
-app.get('/robots.txt', (req, res) => {
-  res.type('text/plain');
-  res.send('User-agent: *\nDisallow: /matches\nDisallow: /api');
-});
 app.route('/healthz').get((req, res) => {
   res.send('ok');
 });
@@ -203,7 +122,7 @@ app.route('/return').get(passport.authenticate('steam', {
   if (config.UI_HOST) {
     return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
   }
-  return res.redirect(`/players/${req.user.account_id}`);
+  return res.redirect('/api');
 });
 app.route('/logout').get((req, res) => {
   req.logout();
@@ -211,103 +130,10 @@ app.route('/logout').get((req, res) => {
   if (config.UI_HOST) {
     return res.redirect(config.UI_HOST);
   }
-  return res.redirect('/');
+  return res.redirect('/api');
 });
 app.use('/api', api(db, redis, cassandra));
 // END service/admin routes
-// TODO remove these with SPA
-// START standard routes.
-app.route('/').get((req, res, next) => {
-  if (req.user) {
-    res.redirect(`/players/${req.user.account_id}`);
-  } else {
-    res.render('home', {
-      truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
-      home: true,
-    });
-  }
-});
-app.get('/request', (req, res) => {
-  res.render('request', {
-    rc_public,
-  });
-});
-app.route('/status').get((req, res, next) => {
-  status(db, redis, (err, result) => {
-    if (err) {
-      return next(err);
-    }
-    res.render('status', {
-      result,
-    });
-  });
-});
-app.use('/matches', matches(db, redis, cassandra));
-app.use('/players', players(db, redis, cassandra));
-app.use('/distributions', (req, res, cb) => {
-  queries.getDistributions(redis, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    res.render('distributions', result);
-  });
-});
-app.get('/rankings/:hero_id?', (req, res, cb) => {
-  if (!req.params.hero_id) {
-    res.render('heroes', {
-      path: '/rankings',
-      alpha_heroes: utility.getAlphaHeroes(),
-    });
-  } else {
-    queries.getHeroRankings(db, redis, req.params.hero_id, {
-      beta: req.query.beta,
-    }, (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      res.render('rankings', result);
-    });
-  }
-});
-app.get('/benchmarks/:hero_id?', (req, res, cb) => {
-  if (!req.params.hero_id) {
-    return res.render('heroes', {
-      path: '/benchmarks',
-      alpha_heroes: utility.getAlphaHeroes(),
-    });
-  } else {
-    queries.getHeroBenchmarks(db, redis, {
-      hero_id: req.params.hero_id,
-    }, (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      res.render('benchmarks', result);
-    });
-  }
-});
-app.get('/search', (req, res, cb) => {
-  if (req.query.q) {
-    search(db, req.query.q, (err, result) => {
-      if (err) {
-        cb(err);
-      }
-      return res.render('search', {
-        query: req.query.q,
-        result,
-      });
-    });
-  } else {
-    res.render('search');
-  }
-});
-app.get('/become-the-gamer', (req, res, cb) => {
-  return res.render('btg');
-});
-app.use('/', mmstats(redis));
-// END standard routes
-// TODO keep donate routes around for legacy until @albertcui can reimplement in SPA?
-app.use('/', donate(db, redis));
 app.use((req, res, next) => {
   const err = new Error('Not Found');
   err.status = 404;
