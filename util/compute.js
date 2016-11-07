@@ -1,6 +1,5 @@
 const constants = require('dotaconstants');
 const utility = require('./utility');
-const generatePlayerAnalysis = require('./analysis');
 const laneMappings = require('./laneMappings');
 const mode = utility.mode;
 const max = utility.max;

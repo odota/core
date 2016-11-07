@@ -3,12 +3,8 @@
  **/
 const dotenv = require('dotenv');
 const fs = require('fs');
-try {
-  if (fs.statSync('.env')) {
-    dotenv.load();
-  }
-} catch (e) {
-    // Swallow exceptions due to no .env file
+if (fs.existsSync('.env')) {
+  dotenv.load();
 }
 
 const defaults = {
@@ -76,7 +72,7 @@ for (const key in defaults) {
   process.env[key] = (key in process.env) ? process.env[key] : defaults[key];
 }
 if (process.env.NODE_ENV === 'development') {
-    // force PORT to null in development so we can run multiple web services without conflict
+  // force PORT to null in development so we can run multiple web services without conflict
   process.env.PORT = '';
 }
 if (process.env.NODE_ENV === 'test') {
