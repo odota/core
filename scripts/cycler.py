@@ -4,8 +4,19 @@ from itertools import cycle
 import subprocess
 import time
 
+# subprocess.call("sudo gcloud components update --quiet", shell=True)
+# For completeness this should also create the backend, HTTP load balancer, template, and network
 targetsize = 2
+backendname = "retriever"
+templatename = "retriever-4"
 
+# Get the available zones
+zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
+zoneList = zones.strip().split('\n')
+# zoneList = sorted(zoneList)
+# sort by zone letter (last character)
+zoneList = sorted(zoneList, key=lambda x: x[-1])
+  
 def cycle(zoneList):
   while True:
     # Scale the instance group if it's the correct bucket
@@ -81,8 +92,6 @@ def cycle3(zoneList):
 
 def createGroups(zoneList):
   for i, zone in enumerate(zoneList):
-    backendname = "retriever"
-    templatename = "retriever-3"
     instancegroupname = "retriever-group-" + zone
     print i, zone, instancegroupname
     # Create the instance group
@@ -95,15 +104,6 @@ def createGroups(zoneList):
     subprocess.call("gcloud compute backend-services update-backend {} --quiet --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1".format(backendname, instancegroupname, zone), shell=True)
     
 def start():
-  # subprocess.call("sudo gcloud components update --quiet", shell=True)
-  # For completeness this should also create the backend, HTTP load balancer, template, and network
-  # Get the available zones
-  zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
-  zoneList = zones.strip().split('\n')
-  # zoneList = sorted(zoneList)
-  # sort by zone letter (last character)
-  zoneList = sorted(zoneList, key=lambda x: x[-1])
-  print zoneList
   createGroups(zoneList)
   # cycle(zoneList)
   # cycle2(zoneList)
