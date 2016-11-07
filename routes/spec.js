@@ -513,7 +513,7 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
-              if (utility.isRadiant(m) == m.radiant_win) {
+              if (utility.isRadiant(m) === m.radiant_win) {
                 result.win += 1;
               } else {
                 result.lose += 1;
@@ -1152,7 +1152,7 @@ Please keep request rate to approximately 1/s.
                   };
                 }
                 result[key][~~m[key]].games += 1;
-                result[key][~~m[key]].win += Number(m.radiant_win === utility.isRadiant(m));
+                result[key][~~m[key]].win += (m.radiant_win === utility.isRadiant(m)) ? 1 : 0;
               }
             });
             res.json(result);

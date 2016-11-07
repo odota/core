@@ -37,7 +37,7 @@ module.exports = function (db, redis, cassandra) {
       filterCols = filterCols.concat(filterDeps[key] || []);
     }
     req.queryObj = {
-      project: ['match_id'].concat(filterCols).concat((req.query.sort || []).filter(f => subkeys[f])),
+      project: ['match_id', 'player_slot', 'radiant_win'].concat(filterCols).concat((req.query.sort || []).filter(f => subkeys[f])),
       filter: req.query || {},
       sort: req.query.sort,
       limit: Number(req.query.limit),
