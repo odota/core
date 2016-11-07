@@ -76,9 +76,9 @@ before(function setup(done) {
         contactPoints: [initCassandraHost],
       });
       async.series([function (cb) {
-          console.log('drop cassandra test keyspace');
-          client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
-        },
+        console.log('drop cassandra test keyspace');
+        client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+      },
         function (cb) {
           console.log('create cassandra test keyspace');
           client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
@@ -86,9 +86,9 @@ before(function setup(done) {
         function (cb) {
           cassandra = require('../store/cassandra');
           console.log('create cassandra test tables');
-          async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter((cql) => {
-            return cql.length > 1;
-          }), (cql, cb) => {
+          async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter(cql =>
+             cql.length > 1
+          ), (cql, cb) => {
             cassandra.execute(cql, cb);
           }, cb);
         },
@@ -146,9 +146,9 @@ describe('replay parse', function () {
     nock(`http://replay${match.cluster}.valve.net`).get(`/570/${key}`).reply(200, (uri, requestBody, cb) => {
       request(`https://cdn.rawgit.com/odota/testfiles/master/${key}`, {
         encoding: null,
-      }, (err, resp, body) => {
-        return cb(err, body);
-      });
+      }, (err, resp, body) =>
+         cb(err, body)
+      );
     });
     it(`parse replay ${key}`, (done) => {
       queries.insertMatch(match, {

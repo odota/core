@@ -1,9 +1,0 @@
-mixin progress_bar(num, total)
-  - var pct = total ? 100*num/total : 0
-  //-
-    .progress
-      .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{Math.min(pct,100)}%") #{pct.toFixed(2)}
-  div=pct.toFixed(2)
-  //-
-    .progress.progress-short
-      .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{Math.min(pct,100)}%")

@@ -20,8 +20,7 @@ stream.on('end', exit);
 stream.pipe(JSONStream.parse());
 stream.on('data', (player) => {
   conc += 1;
-  if (conc > 10)
-    {
+  if (conc > 10) {
     stream.pause();
   }
   redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
@@ -30,10 +29,8 @@ stream.on('data', (player) => {
   stream.resume();
 });
 
-function exit(err)
-{
-  if (err)
-    {
+function exit(err) {
+  if (err) {
     console.error(err);
   }
   process.exit(Number(err));

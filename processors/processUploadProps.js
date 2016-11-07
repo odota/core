@@ -2,18 +2,15 @@
  * A processor to extract basic match stats from the replay file.
  * This is used for uploaded match parses since we can't get basic match data from the API.
  **/
-function processUploadProps(entries, meta)
-{
+function processUploadProps(entries, meta) {
   const container = {
     player_map:
         {},
   };
   container.duration = meta.game_end - meta.game_zero;
-  for (let i = 0; i < entries.length; i++)
-    {
+  for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
-    switch (e.type)
-        {
+    switch (e.type) {
       case 'epilogue':
         var dota = JSON.parse(e.key).gameInfo_.dota_;
         container.match_id = dota.matchId_;
@@ -23,8 +20,7 @@ function processUploadProps(entries, meta)
                 // container.picks_bans = dota.picksBans_;
                 // require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
       case 'interval':
-        if (!container.player_map[e.player_slot])
-                {
+        if (!container.player_map[e.player_slot]) {
           container.player_map[e.player_slot] = {};
         }
         container.player_map[e.player_slot].hero_id = e.hero_id;

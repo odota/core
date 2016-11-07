@@ -10,21 +10,17 @@ const request = require('request');
 const api_key = config.STEAM_API_KEY.split(',')[0];
 let failing_account_id;
 const health = {
-  random_player: function random_player(cb)
-    {
+  random_player: function random_player(cb) {
     db.raw('select account_id from players tablesample system(1) limit 1').asCallback((err, result) => {
-      if (err)
-            {
+      if (err) {
         return cb(err);
       }
-      if (!result.rows[0])
-            {
+      if (!result.rows[0]) {
         return cb();
       }
       request(`${config.ROOT_URL}/api/players/${failing_account_id || result.rows[0].account_id}`, (err, resp, body) => {
         const fail = err || resp.statusCode !== 200;
-        if (fail)
-                {
+        if (fail) {
           failing_account_id = result.rows[0].account_id;
           console.log('[FAILING] account_id %s', failing_account_id);
         }
@@ -36,41 +32,33 @@ const health = {
       });
     });
   },
-  steam_api: function steam_api(cb)
-    {
+  steam_api: function steam_api(cb) {
     request(`${'http://api.steampowered.com' + '/IDOTA2Match_570/GetMatchHistory/V001/?key='}${api_key}`, (err, resp, body) => {
-      if (err || resp.statusCode !== 200)
-            {
+      if (err || resp.statusCode !== 200) {
         return cb('bad http response');
       }
-      try
-            {
-              const fail = err || resp.statusCode !== 200 || JSON.parse(body).result.status !== 1;
-              return cb(fail,
-                {
-                  metric: Number(fail),
-                  threshold: 1,
-                });
-            }
-            catch (e)
-            {
-              return cb('malformed http response');
-            }
+      try {
+        const fail = err || resp.statusCode !== 200 || JSON.parse(body).result.status !== 1;
+        return cb(fail,
+          {
+            metric: Number(fail),
+            threshold: 1,
+          });
+      } catch (e) {
+        return cb('malformed http response');
+      }
     });
   },
-  seq_num_delay: function seq_num_delay(cb)
-    {
+  seq_num_delay: function seq_num_delay(cb) {
     utility.getData(utility.generateJob('api_history',
         {}).url, (err, body) => {
-      if (err)
-            {
+      if (err) {
         return cb('failed to get current sequence number');
       }
             // get match_seq_num, compare with real seqnum
       const curr_seq_num = body.result.matches[0].match_seq_num;
       redis.get('match_seq_num', (err, num) => {
-        if (err)
-                {
+        if (err) {
           return cb(err);
         }
         num = Number(num);
@@ -83,11 +71,9 @@ const health = {
       });
     });
   },
-  redis_usage: function redis_usage(cb)
-    {
+  redis_usage: function redis_usage(cb) {
     redis.info((err, info) => {
-      if (err)
-            {
+      if (err) {
         return cb(err);
       }
       return cb(err,
@@ -97,11 +83,9 @@ const health = {
         });
     });
   },
-  postgres_usage: function postgres_usage(cb)
-    {
+  postgres_usage: function postgres_usage(cb) {
     db.raw('select pg_database_size(\'yasp\')').asCallback((err, result) => {
-      if (err)
-            {
+      if (err) {
         return cb(err);
       }
       return cb(err,
@@ -111,11 +95,9 @@ const health = {
         });
     });
   },
-  cassandra_usage: function cassandra_usage(cb)
-    {
+  cassandra_usage: function cassandra_usage(cb) {
     cassandra.execute('select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = \'yasp\'', (err, result) => {
-      if (err)
-            {
+      if (err) {
         return cb(err);
       }
       let size = 0;
@@ -130,29 +112,24 @@ const health = {
     });
   },
 };
-for (const key in health)
-{
+for (const key in health) {
   invokeInterval(health[key]);
 }
 
-function invokeInterval(func)
-{
+function invokeInterval(func) {
     // invokes the function immediately, waits for callback, waits the delay, and then calls it again
-  (function invoker()
-    {
+  (function invoker() {
     console.log('running %s', func.name);
     console.time(func.name);
     func((err, result) => {
-      if (err)
-            {
+      if (err) {
         console.error(err);
         result = {
           metric: 1,
           threshold: 0,
         };
       }
-      if (result)
-            {
+      if (result) {
         result.timestamp = ~~(new Date() / 1000);
         redis.hset('health', func.name, JSON.stringify(result));
         redis.expire('health', 900);

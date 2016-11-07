@@ -14,9 +14,9 @@ queue.runQueue('mmrQueue', config.MMR_PARALLELISM * retrieverArr.length, process
 function processMmr(job, cb) {
   const accountId = job.account_id;
   getData({
-    url: retrieverArr.map((r) => {
-      return `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`;
-    })[accountId % retrieverArr.length],
+    url: retrieverArr.map(r =>
+       `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
+    )[accountId % retrieverArr.length],
     noRetry: true,
   }, (err, data) => {
     if (err) {

@@ -110,9 +110,9 @@ function getMatch(match_id, options, cb) {
         if (match.replay_salt) {
           match.replay_url = utility.buildReplayUrl(match.match_id, match.cluster, match.replay_salt);
         }
-        queries.getMatchBenchmarks(redis, match, (err) => {
-          return cb(err, match);
-        });
+        queries.getMatchBenchmarks(redis, match, err =>
+           cb(err, match)
+        );
       });
     }
   });
@@ -127,9 +127,9 @@ function getMatch(match_id, options, cb) {
         if (err) {
           return cb(err);
         }
-        result = result.rows.map((m) => {
-          return deserialize(m);
-        });
+        result = result.rows.map(m =>
+           deserialize(m)
+        );
         return cb(err, result[0]);
       });
     } else {
@@ -149,9 +149,9 @@ function getMatch(match_id, options, cb) {
         if (err) {
           return cb(err);
         }
-        result = result.rows.map((m) => {
-          return deserialize(m);
-        });
+        result = result.rows.map(m =>
+           deserialize(m)
+        );
         // get personanames
         async.map(result, (r, cb) => {
           db.raw(`

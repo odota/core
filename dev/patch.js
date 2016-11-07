@@ -48,8 +48,7 @@ db.matches.find({
     // v6, migration
   else if (match.parsed_data.version === 6) {
     v6(match);
-  }
-  else {
+  } else {
     console.log('found version %s', match.parsed_data.version);
   }
     // persist the saved match to db
@@ -116,9 +115,9 @@ function v6(match) {
     });
   });
     // sort the chat messages by time
-  match.parsed_data.chat.sort((a, b) => {
-    return a.time - b.time;
-  });
+  match.parsed_data.chat.sort((a, b) =>
+     a.time - b.time
+  );
 }
 
 function mergeMatchData(match) {

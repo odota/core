@@ -11,15 +11,16 @@ const search = require('../store/search');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
-const player_fields = constants.player_fields;
-const subkeys = player_fields.subkeys;
-const countCats = player_fields.countCats;
+const playerFields = require('./playerFields');
+const subkeys = playerFields.subkeys;
+const countCats = playerFields.countCats;
 const utility = require('../util/utility');
 const countPeers = utility.countPeers;
 const rc_secret = config.RECAPTCHA_SECRET_KEY;
 const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
+const package = require('../package.json');
 const spec = {
   "swagger": "2.0",
   "info": {
@@ -28,7 +29,7 @@ const spec = {
 This API provides Dota 2 related data.
 Please keep request rate to approximately 1/s.
 `,
-    "version": "1.0.1"
+    "version": package.version,
   },
   "host": "api.opendota.com",
   "basePath": "/api",
@@ -513,7 +514,7 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
-              if (utility.isRadiant(m) == m.radiant_win) {
+              if (utility.isRadiant(m) === m.radiant_win) {
                 result.win += 1;
               } else {
                 result.lose += 1;
@@ -1152,7 +1153,7 @@ Please keep request rate to approximately 1/s.
                   };
                 }
                 result[key][~~m[key]].games += 1;
-                result[key][~~m[key]].win += Number(m.radiant_win === utility.isRadiant(m));
+                result[key][~~m[key]].win += (m.radiant_win === utility.isRadiant(m)) ? 1 : 0;
               }
             });
             res.json(result);

@@ -17,9 +17,9 @@ db.select('account_id').from('players').where('account_id', '>', start_id).order
     const job = {
       data: generateJob('mmr', {
         account_id: p.account_id,
-        url: retrieverArr.map((r) => {
-          return `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${p.account_id}`;
-        })[p.account_id % retrieverArr.length],
+        url: retrieverArr.map(r =>
+           `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${p.account_id}`
+        )[p.account_id % retrieverArr.length],
       }),
     };
     getData({
@@ -37,8 +37,7 @@ db.select('account_id').from('players').where('account_id', '>', start_id).order
         data.match_id = job.data.payload.match_id;
         data.time = new Date();
         queries.insertPlayerRating(db, data, cb);
-      }
-      else {
+      } else {
         cb();
       }
     });

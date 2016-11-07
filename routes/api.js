@@ -1,13 +1,13 @@
 const express = require('express');
 const api = express.Router();
 const constants = require('dotaconstants');
-const player_fields = constants.player_fields;
-const subkeys = player_fields.subkeys;
+const playerFields = require('./playerFields');
+const subkeys = playerFields.subkeys;
 const filterDeps = require('../util/filterDeps');
 const spec = require('./spec');
 const multer = require('multer')({
   inMemory: true,
-  fileSize: 100 * 1024 * 1024, // no larger than 100mb		
+  fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
 module.exports = function (db, redis, cassandra) {
   api.use((req, res, cb) => {
@@ -30,14 +30,14 @@ module.exports = function (db, redis, cassandra) {
     let filterCols = [];
     for (const key in req.query) {
       // numberify and arrayify everything in query
-      req.query[key] = [].concat(req.query[key]).map((e) => {
-        return isNaN(Number(e)) ? e : Number(e);
-      });
+      req.query[key] = [].concat(req.query[key]).map(e =>
+         isNaN(Number(e)) ? e : Number(e)
+      );
       // build array of required projections due to filters
       filterCols = filterCols.concat(filterDeps[key] || []);
     }
     req.queryObj = {
-      project: ['match_id'].concat(filterCols).concat((req.query.sort || []).filter(f => subkeys[f])),
+      project: ['match_id', 'player_slot', 'radiant_win'].concat(filterCols).concat((req.query.sort || []).filter(f => subkeys[f])),
       filter: req.query || {},
       sort: req.query.sort,
       limit: Number(req.query.limit),
@@ -52,17 +52,10 @@ module.exports = function (db, redis, cassandra) {
     Object.keys(spec.paths[path]).forEach((verb) => {
       const {
         route,
-        func
+        func,
       } = spec.paths[path][verb];
       api[verb](route(), func);
     });
-  });
-  // TODO remove these, currently only used by legacy UI
-  api.get('/items', (req, res) => {
-    res.json(constants.items[req.query.name]);
-  });
-  api.get('/abilities', (req, res) => {
-    res.json(constants.abilities[req.query.name]);
   });
   return api;
 };

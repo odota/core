@@ -1,7 +1,6 @@
 /**
  * Worker to fetch updated player profiles
  **/
-const constants = require('dotaconstants');
 const config = require('../config');
 const queries = require('../store/queries');
 const db = require('../store/db');
@@ -12,37 +11,32 @@ const getData = utility.getData;
 const async = require('async');
 start();
 
-function start()
-{
+function start() {
   getSummaries((err) => {
-    if (err)
-        {
+    if (err) {
       throw err;
     }
     return setTimeout(start, 1000);
   });
 }
 
-function getSummaries(cb)
-{
+function getSummaries(cb) {
   redis.lrange('profilerQueue', 0, -1, (err, results) => {
-    if (err)
-        {
+    if (err) {
       return cb(err);
     }
     console.log('players sampled: %s', results.length);
-    results = results.map((account_id) => {
-      return {
-        account_id,
-      };
-    });
+    results = results.map(account_id =>
+       ({
+         account_id,
+       })
+    );
     const container = utility.generateJob('api_summaries',
       {
         players: results,
       });
     getData(container.url, (err, body) => {
-      if (err)
-            {
+      if (err) {
                 // couldn't get data from api, non-retryable
         return cb(JSON.stringify(err));
       }
