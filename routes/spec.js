@@ -20,6 +20,7 @@ const rc_secret = config.RECAPTCHA_SECRET_KEY;
 const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
+const package = require('../package.json');
 const spec = {
   "swagger": "2.0",
   "info": {
@@ -28,7 +29,7 @@ const spec = {
 This API provides Dota 2 related data.
 Please keep request rate to approximately 1/s.
 `,
-    "version": "1.0.1"
+    "version": package.version,
   },
   "host": "api.opendota.com",
   "basePath": "/api",
