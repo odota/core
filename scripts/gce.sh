@@ -62,8 +62,8 @@ gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-d
 #retriever
 # --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud
 # --image-family gci-stable --image-project google-containers
-gcloud compute instance-templates delete --quiet retriever-2
-gcloud compute instance-templates create retriever-2 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --network=retriever --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/retriever.sh
+gcloud compute instance-templates delete --quiet retriever-3
+gcloud compute instance-templates create retriever-3 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --network=retriever --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/retriever.sh
 
 #retriever-loadbalancer
 gcloud compute forwarding-rules delete --quiet retriever-lb-forwarding-rule
