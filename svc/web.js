@@ -110,10 +110,6 @@ app.use((req, res, cb) => {
   cb();
 });
 // START service/admin routes
-app.get('/robots.txt', (req, res) => {
-  res.type('text/plain');
-  res.send('User-agent: *\nDisallow: /matches\nDisallow: /api');
-});
 app.route('/healthz').get((req, res) => {
   res.send('ok');
 });
@@ -126,7 +122,7 @@ app.route('/return').get(passport.authenticate('steam', {
   if (config.UI_HOST) {
     return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
   }
-  return res.redirect(`/players/${req.user.account_id}`);
+  return res.redirect('/api');
 });
 app.route('/logout').get((req, res) => {
   req.logout();
@@ -134,7 +130,7 @@ app.route('/logout').get((req, res) => {
   if (config.UI_HOST) {
     return res.redirect(config.UI_HOST);
   }
-  return res.redirect('/');
+  return res.redirect('/api');
 });
 app.use('/api', api(db, redis, cassandra));
 // END service/admin routes
