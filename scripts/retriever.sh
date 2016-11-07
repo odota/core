@@ -12,8 +12,8 @@ sudo docker run -d --name=retriever --restart=always --net=host --log-opt max-si
 sudo docker start retriever
 
 while true; do
-sudo docker logs -f retriever /
-&& gcloud compute instances delete-access-config $VMNAME --quiet --access-config-name=external-nat --zone=$ZONE /
-&& gcloud compute instances add-access-config $VMNAME --quiet --access-config-name=external-nat --zone=$ZONE /
-&& sudo docker restart retriever
+sudo docker logs -f retriever && /
+gcloud compute instances delete-access-config $VMNAME --quiet --access-config-name=external-nat --zone=$ZONE && /
+gcloud compute instances add-access-config $VMNAME --quiet --access-config-name=external-nat --zone=$ZONE && /
+sudo docker restart retriever
 done
