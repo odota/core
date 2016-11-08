@@ -281,28 +281,6 @@ function mode(array) {
   return maxEl;
 }
 
-function generatePositionData(d, p) {
-  // d, a hash of keys to process
-  // p, a player containing keys with values as position hashes
-  // stores the resulting arrays in the keys of d
-  // 64 is the offset of x and y values
-  // subtracting y from 127 inverts from bottom/left origin to top/left origin
-  for (const key in d) {
-    const t = [];
-    for (const x in p[key]) {
-      for (const y in p[key][x]) {
-        t.push({
-          x: Number(x) - 64,
-          y: 127 - (Number(y) - 64),
-          value: p[key][x][y],
-        });
-      }
-    }
-    d[key] = t;
-  }
-  return d;
-}
-
 function isSignificant(m) {
   return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined && m.duration > 60 * 5);
 }
@@ -695,7 +673,6 @@ module.exports = {
   isRadiant,
   mergeObjects,
   mode,
-  generatePositionData,
   isSignificant,
   max,
   min,

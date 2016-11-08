@@ -5,7 +5,6 @@ const mode = utility.mode;
 const max = utility.max;
 const min = utility.min;
 const isRadiant = utility.isRadiant;
-const generatePositionData = utility.generatePositionData;
 const ancients = constants.ancients;
 /**
  * Computes additional properties from a match/player_match
@@ -52,7 +51,7 @@ function computeMatchData(pm) {
   if (pm.kills_log && self_hero) {
     // remove self kills
     pm.kills_log = pm.kills_log.filter(k =>
-       k.key !== self_hero.name
+      k.key !== self_hero.name
     );
   }
   if (pm.killed) {
@@ -116,26 +115,19 @@ function computeMatchData(pm) {
     pm.lane_efficiency = pm.gold_t[10] / tenMinute;
     pm.lane_efficiency_pct = ~~(pm.lane_efficiency * 100);
   }
-  if (pm.obs) {
-    // convert position hashes to heatmap array of x,y,value
-    pm.posData = generatePositionData({
-      obs: true,
-      sen: true,
-      // "pos": true,
-      lane_pos: true,
-    }, pm);
-  }
-  if (pm.posData) {
+  if (pm.lane_pos) {
     // compute lanes
     const lanes = [];
-    for (var i = 0; i < pm.posData.lane_pos.length; i++) {
-      const dp = pm.posData.lane_pos[i];
-      for (let j = 0; j < dp.value; j++) {
-        if (laneMappings[dp.y]) {
-          lanes.push(laneMappings[dp.y][dp.x]);
+    // iterate over the position hash and get the lane bucket for each data point
+    Object.keys(pm.lane_pos).forEach((x) => {
+      Object.keys(pm.lane_pos[x]).forEach((y) => {
+        const val = pm.lane_pos[x][y];
+        // Add it N times to the array
+        for (let i = 0; i < val; i += 1) {
+          lanes.push(laneMappings[y][x]);
         }
-      }
-    }
+      });
+    });
     if (lanes.length) {
       pm.lane = mode(lanes);
       const radiant = pm.isRadiant;
@@ -168,7 +160,7 @@ function computeMatchData(pm) {
   if (pm.purchase_log) {
     // remove ward dispenser and recipes
     pm.purchase_log = pm.purchase_log.filter(purchase =>
-       !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser')
+      !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser')
     );
     pm.purchase_time = {};
     pm.first_purchase_time = {};
