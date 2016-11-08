@@ -25,17 +25,17 @@ function generateJob(type, payload) {
   const api_url = 'http://api.steampowered.com';
   let api_key;
   const opts = {
-    api_details() {
-      return {
-        url: `${api_url}/IDOTA2Match_570/GetMatchDetails/V001/?key=${api_key}&match_id=${payload.match_id}`,
-        title: [type, payload.match_id].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_history() {
-      return {
-        url: `${api_url}/IDOTA2Match_570/GetMatchHistory/V001/?key=${api_key}${payload.account_id ? `&account_id=${payload.account_id}` : ''}${payload.matches_requested ? `&matches_requested=${payload.matches_requested}` : ''}${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${payload.leagueid ? `&league_id=${payload.leagueid}` : ''}${payload.start_at_match_id ? `&start_at_match_id=${payload.start_at_match_id}` : ''}`,
+      api_details() {
+        return {
+          url: `${api_url}/IDOTA2Match_570/GetMatchDetails/V001/?key=${api_key}&match_id=${payload.match_id}`,
+          title: [type, payload.match_id].join(),
+          type: 'api',
+          payload,
+        };
+      },
+      api_history() {
+        return {
+          url: `${api_url}/IDOTA2Match_570/GetMatchHistory/V001/?key=${api_key}${payload.account_id ? `&account_id=${payload.account_id}` : ''}${payload.matches_requested ? `&matches_requested=${payload.matches_requested}` : ''}${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${payload.leagueid ? `&league_id=${payload.leagueid}` : ''}${payload.start_at_match_id ? `&start_at_match_id=${payload.start_at_match_id}` : ''}`,
         title: [type, payload.account_id].join(),
         type: 'api',
         payload,
@@ -664,6 +664,48 @@ function getLevelFromXp(xp) {
   return constants.xp_level.length;
 }
 
+const laneRoles = {
+  1() {
+    // bot
+    return isRadiant ? 1 : 3;
+  },
+  2() {
+    // mid
+    return 2;
+  },
+  3() {
+    // top
+    return isRadiant ? 3 : 1;
+  },
+  4() {
+    // rjung
+    return 4;
+  },
+  5() {
+    // djung
+    return 4;
+  },
+};
+
+function getLaneRoleFromPosData(lane_pos, isRadiant) {
+  // compute lanes
+  const lanes = [];
+  // iterate over the position hash and get the lane bucket for each data point
+  Object.keys(pm.lane_pos).forEach((x) => {
+    Object.keys(pm.lane_pos[x]).forEach((y) => {
+      const val = pm.lane_pos[x][y];
+      const adjX = Number(x) - 64;
+      const adjY = 127 - (Number(y) - 64);
+      // Add it N times to the array
+      for (let i = 0; i < val; i += 1) {
+        lanes.push(laneMappings[adjY][adjX]);
+      }
+    });
+  });
+  pm.lane = mode(lanes);
+  return laneRoles[pm.lane] ? laneRoles[pm.lane]() : null;
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -697,4 +739,5 @@ module.exports = {
   countPeers,
   getAnonymousAccountId,
   getLevelFromXp,
+  getLaneRoleFromPosData,
 };

@@ -116,45 +116,7 @@ function computeMatchData(pm) {
     pm.lane_efficiency_pct = ~~(pm.lane_efficiency * 100);
   }
   if (pm.lane_pos) {
-    // compute lanes
-    const lanes = [];
-    // iterate over the position hash and get the lane bucket for each data point
-    Object.keys(pm.lane_pos).forEach((x) => {
-      Object.keys(pm.lane_pos[x]).forEach((y) => {
-        const val = pm.lane_pos[x][y];
-        // Add it N times to the array
-        for (let i = 0; i < val; i += 1) {
-          lanes.push(laneMappings[y][x]);
-        }
-      });
-    });
-    if (lanes.length) {
-      pm.lane = mode(lanes);
-      const radiant = pm.isRadiant;
-      const lane_roles = {
-        1() {
-          // bot
-          return radiant ? 1 : 3;
-        },
-        2() {
-          // mid
-          return 2;
-        },
-        3() {
-          // top
-          return radiant ? 3 : 1;
-        },
-        4() {
-          // rjung
-          return 4;
-        },
-        5() {
-          // djung
-          return 4;
-        },
-      };
-      pm.lane_role = lane_roles[pm.lane] ? lane_roles[pm.lane]() : undefined;
-    }
+    pm.lane_role = utility.getLaneRoleFromPosData(pm.lane_pos, isRadiant(pm));
   }
   // compute hashes of purchase time sums and counts from logs
   if (pm.purchase_log) {
