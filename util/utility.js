@@ -8,6 +8,8 @@ const constants = require('dotaconstants');
 const request = require('request');
 const BigNumber = require('big-number');
 const urllib = require('url');
+const laneMappings = require('./laneMappings');
+
 /**
  * Tokenizes an input string.
  *
@@ -664,36 +666,13 @@ function getLevelFromXp(xp) {
   return constants.xp_level.length;
 }
 
-const laneRoles = {
-  1() {
-    // bot
-    return isRadiant ? 1 : 3;
-  },
-  2() {
-    // mid
-    return 2;
-  },
-  3() {
-    // top
-    return isRadiant ? 3 : 1;
-  },
-  4() {
-    // rjung
-    return 4;
-  },
-  5() {
-    // djung
-    return 4;
-  },
-};
-
-function getLaneRoleFromPosData(lane_pos, isRadiant) {
+function getLaneFromPosData(lane_pos, isRadiant) {
   // compute lanes
   const lanes = [];
   // iterate over the position hash and get the lane bucket for each data point
-  Object.keys(pm.lane_pos).forEach((x) => {
-    Object.keys(pm.lane_pos[x]).forEach((y) => {
-      const val = pm.lane_pos[x][y];
+  Object.keys(lane_pos).forEach((x) => {
+    Object.keys(lane_pos[x]).forEach((y) => {
+      const val = lane_pos[x][y];
       const adjX = Number(x) - 64;
       const adjY = 127 - (Number(y) - 64);
       // Add it N times to the array
@@ -702,8 +681,33 @@ function getLaneRoleFromPosData(lane_pos, isRadiant) {
       }
     });
   });
-  pm.lane = mode(lanes);
-  return laneRoles[pm.lane] ? laneRoles[pm.lane]() : null;
+  const lane = mode(lanes);
+  const laneRoles = {
+    1() {
+      // bot
+      return isRadiant ? 1 : 3;
+    },
+    2() {
+      // mid
+      return 2;
+    },
+    3() {
+      // top
+      return isRadiant ? 3 : 1;
+    },
+    4() {
+      // rjung
+      return 4;
+    },
+    5() {
+      // djung
+      return 4;
+    },
+  };
+  return { 
+    lane,
+    lane_role: laneRoles[lane] ? laneRoles[lane]() : null,
+  }
 }
 
 module.exports = {
@@ -739,5 +743,5 @@ module.exports = {
   countPeers,
   getAnonymousAccountId,
   getLevelFromXp,
-  getLaneRoleFromPosData,
+  getLaneFromPosData,
 };

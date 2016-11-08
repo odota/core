@@ -1,6 +1,5 @@
 const constants = require('dotaconstants');
 const utility = require('./utility');
-const laneMappings = require('./laneMappings');
 const mode = utility.mode;
 const max = utility.max;
 const min = utility.min;
@@ -116,7 +115,9 @@ function computeMatchData(pm) {
     pm.lane_efficiency_pct = ~~(pm.lane_efficiency * 100);
   }
   if (pm.lane_pos) {
-    pm.lane_role = utility.getLaneRoleFromPosData(pm.lane_pos, isRadiant(pm));
+    const laneData = utility.getLaneFromPosData(pm.lane_pos, isRadiant(pm));
+    pm.lane = laneData.lane;
+    pm.lane_role = laneData.lane_role;
   }
   // compute hashes of purchase time sums and counts from logs
   if (pm.purchase_log) {
