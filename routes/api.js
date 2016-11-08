@@ -9,7 +9,7 @@ const multer = require('multer')({
   inMemory: true,
   fileSize: 100 * 1024 * 1024, // no larger than 100mb
 });
-module.exports = function (db, redis, cassandra) {
+module.exports = function () {
   api.use((req, res, cb) => {
     res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.header('Access-Control-Allow-Headers', 'origin, content-type, accept');

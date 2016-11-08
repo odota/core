@@ -7,7 +7,6 @@ const utility = require('../util/utility');
 const redis = require('../store/redis');
 const status = require('../store/buildStatus');
 const db = require('../store/db');
-const cassandra = config.ENABLE_CASSANDRA_MATCH_STORE_READ ? require('../store/cassandra') : undefined;
 const queries = require('../store/queries');
 const search = require('../store/search');
 const api = require('../routes/api');
@@ -108,15 +107,14 @@ app.use((req, res, cb) => {
   });
   cb();
 });
-// START service/admin routes
 app.route('/healthz').get((req, res) => {
   res.send('ok');
 });
 app.route('/login').get(passport.authenticate('steam', {
-  failureRedirect: '/',
+  failureRedirect: '/api',
 }));
 app.route('/return').get(passport.authenticate('steam', {
-  failureRedirect: '/',
+  failureRedirect: '/api',
 }), (req, res, next) => {
   if (config.UI_HOST) {
     return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
@@ -131,27 +129,22 @@ app.route('/logout').get((req, res) => {
   }
   return res.redirect('/api');
 });
-app.use('/api', api(db, redis, cassandra));
-// END service/admin routes
+app.use('/api', api());
+// 404 route
 app.use((req, res, next) => {
-  const err = new Error('Not Found');
-  err.status = 404;
-  return next(err);
+  return res.status(404).json({
+    error: 'Not Found'
+  });
 });
+// 500 route
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500);
   redis.zadd('error_500', moment().format('X'), req.originalUrl);
-  if (req.originalUrl.indexOf('/api') === 0) {
-    return res.json({
-      error: err,
-    });
-  } else if (config.NODE_ENV === 'development') {
+  if (config.NODE_ENV === 'development') {
     // default express handler
     next(err);
   } else {
-    return res.render(`error/${err.status === 404 ? '404' : '500'}`, {
-      error: err,
+    return res.status(500).json({
+      error: 'Internal Server Error',
     });
   }
 });
