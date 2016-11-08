@@ -25,17 +25,17 @@ function generateJob(type, payload) {
   const api_url = 'http://api.steampowered.com';
   let api_key;
   const opts = {
-      api_details() {
-        return {
-          url: `${api_url}/IDOTA2Match_570/GetMatchDetails/V001/?key=${api_key}&match_id=${payload.match_id}`,
-          title: [type, payload.match_id].join(),
-          type: 'api',
-          payload,
-        };
-      },
-      api_history() {
-        return {
-          url: `${api_url}/IDOTA2Match_570/GetMatchHistory/V001/?key=${api_key}${payload.account_id ? `&account_id=${payload.account_id}` : ''}${payload.matches_requested ? `&matches_requested=${payload.matches_requested}` : ''}${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${payload.leagueid ? `&league_id=${payload.leagueid}` : ''}${payload.start_at_match_id ? `&start_at_match_id=${payload.start_at_match_id}` : ''}`,
+    api_details() {
+      return {
+        url: `${api_url}/IDOTA2Match_570/GetMatchDetails/V001/?key=${api_key}&match_id=${payload.match_id}`,
+        title: [type, payload.match_id].join(),
+        type: 'api',
+        payload,
+      };
+    },
+    api_history() {
+      return {
+        url: `${api_url}/IDOTA2Match_570/GetMatchHistory/V001/?key=${api_key}${payload.account_id ? `&account_id=${payload.account_id}` : ''}${payload.matches_requested ? `&matches_requested=${payload.matches_requested}` : ''}${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${payload.leagueid ? `&league_id=${payload.leagueid}` : ''}${payload.start_at_match_id ? `&start_at_match_id=${payload.start_at_match_id}` : ''}`,
         title: [type, payload.account_id].join(),
         type: 'api',
         payload,

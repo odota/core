@@ -128,7 +128,7 @@ function computeMatchData(pm) {
     pm.first_purchase_time = {};
     pm.item_win = {};
     pm.item_usage = {};
-    for (var i = 0; i < pm.purchase_log.length; i++) {
+    for (let i = 0; i < pm.purchase_log.length; i++) {
       const k = pm.purchase_log[i].key;
       const time = pm.purchase_log[i].time;
       if (!pm.purchase_time[k]) {
