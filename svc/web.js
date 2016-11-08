@@ -131,11 +131,11 @@ app.route('/logout').get((req, res) => {
 });
 app.use('/api', api());
 // 404 route
-app.use((req, res, next) => {
-  return res.status(404).json({
-    error: 'Not Found'
-  });
-});
+app.use((req, res, next) =>
+   res.status(404).json({
+     error: 'Not Found',
+   })
+);
 // 500 route
 app.use((err, req, res, next) => {
   redis.zadd('error_500', moment().format('X'), req.originalUrl);
