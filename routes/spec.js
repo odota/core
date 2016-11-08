@@ -1490,7 +1490,7 @@ Please keep request rate to approximately 1/s.
       }
     },
     "/players/{account_id}/refresh": {
-      "post": {
+      post: {
         "summary": "/refresh",
         "description": "Refresh player match history",
         "tags": [
@@ -1507,7 +1507,7 @@ Please keep request rate to approximately 1/s.
             }
           }
         },
-        route: () => 'players/:account_id/refresh',
+        route: () => '/players/:account_id/refresh',
         func: (req, res, cb) => {
           redis.lpush('fhQueue', JSON.stringify({
             account_id: req.params.account_id || '1',
@@ -1515,7 +1515,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json({
+            return res.json({
               length,
             });
           });
