@@ -8,8 +8,7 @@ import time
 # For completeness this should also create the backend, HTTP load balancer, template, and network
 targetsize = 32
 backendname = "retriever"
-templatename = "retriever-2"
-zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
+templatename = "retriever-1"
 
 def cycle(zoneList):
   while True:
@@ -21,19 +20,20 @@ def cycle(zoneList):
       instancegroupname = "retriever-group-" + zone
       size = targetsize if i == bucket else 0
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
-      if size > 0:
-        # Iterate over instances in the group
-        instancesCmd = "gcloud compute instance-groups managed list-instances {} --zone={} --format='value(NAME)'".format(instancegroupname, zone);
-        # print instancesCmd
-        instances = subprocess.check_output(instancesCmd, shell=True)
-        instanceList = instances.strip().split('\n')
-        for i, instance in enumerate(instanceList):
-          # Delete access config
-          subprocess.call("gcloud compute instances delete-access-config {} --quiet --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
-          # Wait a while
-          time.sleep(900 / targetsize)
-          # Use ephemeral IP
-          subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
+      # if size > 0:
+      #   # Iterate over instances in the group
+      #   instancesCmd = "gcloud compute instance-groups managed list-instances {} --zone={} --format='value(NAME)'".format(instancegroupname, zone);
+      #   # print instancesCmd
+      #   instances = subprocess.check_output(instancesCmd, shell=True)
+      #   instanceList = instances.strip().split('\n')
+      #   for i, instance in enumerate(instanceList):
+      #     # Delete access config
+      #     subprocess.call("gcloud compute instances delete-access-config {} --quiet --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
+      #     # Wait a while
+      #     time.sleep(900 / targetsize)
+      #     # Use ephemeral IP
+      #     subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
+    time.sleep(600)
 
 def cycle2(zoneList):
   pool = cycle(zoneList)
@@ -111,12 +111,13 @@ def createGroups(zoneList):
     
 def start():
   # Get the available zones
-  # zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
-  # zoneList = zones.strip().split('\n')
+  zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
+  zoneList = zones.strip().split('\n')
   # sort by zone (alphabetical)
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
-  # zoneList = sorted(zoneList, key=lambda x: x[-1])
+  zoneList = sorted(zoneList, key=lambda x: x[-1])
+  # zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
   createGroups(zoneList)
   cycle(zoneList)
   # cycle2(zoneList)
