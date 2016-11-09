@@ -1879,14 +1879,11 @@ Please keep request rate to approximately 1/s.
         route: () => '/request/:match_id',
         func: (req, res, cb) => {
           const match_id = req.params.match_id;
-          let match;
-          if (match_id && !Number.isNaN(match_id)) {
-            match = {
-              match_id,
-            };
-          }
+          const match = {
+            match_id: Number(match_id),
+          };
           /*
-          else if (req.file) {
+          if (req.file) {
             console.log(req.file);
             const hash = crypto.createHash('md5');
             hash.update(req.file.buffer);
@@ -1902,14 +1899,12 @@ Please keep request rate to approximately 1/s.
             res.status(err ? 400 : 200).json({
               error: err,
               job: {
-                jobId: parseJob.jobId,
+                jobId: parseJob && parseJob.jobId,
               },
             });
           }
 
-          if (!match) {
-            return exitWithJob('invalid input', {});
-          } else if (match && match.match_id) {
+          if (match && match.match_id) {
             // match id request, get data from API
             utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
               if (err) {
@@ -1927,7 +1922,9 @@ Please keep request rate to approximately 1/s.
                 forceParse: true,
               }, exitWithJob);
             });
-          } 
+          } else {
+            return exitWithJob('invalid input');
+          }
           /*
           else {
             // file upload request
