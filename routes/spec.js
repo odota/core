@@ -1830,9 +1830,9 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
-    "/request_job": {
+    "/request": {
       get: {
-        "summary": "/",
+        "summary": "GET",
         description: "Get parse request state",
         tags: ['request'],
         "parameters": [{
@@ -1842,7 +1842,7 @@ Please keep request rate to approximately 1/s.
           "required": true,
           "type": "string"
         }],
-        route: () => '/request_job',
+        route: () => '/request',
         func: (req, res, cb) => {
           return pQueue.getJob(req.query.id).then((job) => {
             if (job) {
@@ -1870,16 +1870,23 @@ Please keep request rate to approximately 1/s.
           }
         }
       },
+    },
+    "/request/{match_id}": {
       post: {
-        summary: "/",
+        summary: "POST",
         description: "Submit a new parse request",
         tags: ['request'],
-        route: () => '/request_job',
+        route: () => '/request/:match_id',
         func: (req, res, cb) => {
-          console.log(req.body);
-          const match_id = Number(req.body.match_id);
+          const match_id = req.params.match_id;
           let match;
-          if (req.file) {
+          if (match_id && !Number.isNaN(match_id)) {
+            match = {
+              match_id,
+            };
+          }
+          /*
+          else if (req.file) {
             console.log(req.file);
             const hash = crypto.createHash('md5');
             hash.update(req.file.buffer);
@@ -1887,12 +1894,9 @@ Please keep request rate to approximately 1/s.
             redis.setex(new Buffer(`upload_blob:${key}`), 60 * 60, req.file.buffer);
             match = {
               replay_blob_key: key,
-            };
-          } else if (match_id && !Number.isNaN(match_id)) {
-            match = {
-              match_id,
-            };
+            }
           }
+          */
 
           function exitWithJob(err, parseJob) {
             res.status(err ? 400 : 200).json({
@@ -1923,7 +1927,9 @@ Please keep request rate to approximately 1/s.
                 forceParse: true,
               }, exitWithJob);
             });
-          } else {
+          } 
+          /*
+          else {
             // file upload request
             return pQueue.add({
                 id: `${moment().format('X')}_${match.match_id}`,
@@ -1935,6 +1941,7 @@ Please keep request rate to approximately 1/s.
               .then(parseJob => exitWithJob(null, parseJob))
               .catch(exitWithJob);
           }
+          */
         },
         "responses": {
           "200": {
