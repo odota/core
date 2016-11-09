@@ -1,3 +1,6 @@
+/**
+ * Load a range of matches by match_seq_num from the Steam API, without replay parsing
+ **/
 const async = require('async');
 const utility = require('../util/utility');
 const generateJob = utility.generateJob;

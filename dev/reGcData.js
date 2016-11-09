@@ -1,3 +1,6 @@
+/**
+ * Call getGcData for all matches in match table
+ **/
 const db = require('../store/db');
 const redis = require('../store/redis');
 const async = require('async');
