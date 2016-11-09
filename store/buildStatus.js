@@ -55,15 +55,15 @@ module.exports = function buildStatus(db, redis, cb) {
     },
     last_added(cb) {
       redis.lrange('matches_last_added', 0, -1, (err, result) =>
-         cb(err, result.map(r =>
-           JSON.parse(r)
+        cb(err, result.map(r =>
+          JSON.parse(r)
         ))
       );
     },
     last_parsed(cb) {
       redis.lrange('matches_last_parsed', 0, -1, (err, result) =>
-         cb(err, result.map(r =>
-           JSON.parse(r)
+        cb(err, result.map(r =>
+          JSON.parse(r)
         ))
       );
     },
@@ -90,7 +90,7 @@ module.exports = function buildStatus(db, redis, cb) {
     },
     load_times(cb) {
       redis.lrange('load_times', 0, -1, (err, arr) => {
-        cb(err, generateCounts(arr, 1000));
+        cb(err, generatePercentiles(arr));
       });
     },
     health(cb) {
@@ -108,12 +108,19 @@ module.exports = function buildStatus(db, redis, cb) {
     cb(err, results);
   });
 
-  function generateCounts(arr, cap) {
-    const res = {};
-    arr.forEach((e) => {
-      e = Math.min(e, cap);
-      res[e] = res[e] ? res[e] + 1 : 1;
+  function generatePercentiles(arr) {
+    // sort the list
+    arr.sort((a, b) => Number(a) - Number(b));
+    // console.log(arr);
+    const percentiles = [50, 75, 95, 99];
+    const result = {};
+    arr.forEach((time, i) => {
+      if (i >= arr.length * (percentiles[0] / 100)) {
+        result[percentiles[0]] = Number(time);
+        // Pop the first element
+        percentiles.shift();
+      }
     });
-    return res;
+    return result;
   }
 };
