@@ -6,11 +6,11 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 32
+targetsize = 16
 backendname = "retriever"
 templatename = "retriever-1"
 
-def cycle(zoneList):
+def run1(zoneList):
   while True:
     # Scale the instance group if it's the correct bucket
     bucketsize = 86400 // len(zoneList)
@@ -33,14 +33,11 @@ def cycle(zoneList):
       #     time.sleep(900 / targetsize)
       #     # Use ephemeral IP
       #     subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
-    time.sleep(600)
+    time.sleep(300)
 
-def cycle2(zoneList):
+def run2(zoneList):
   pool = cycle(zoneList)
   while True:
-    # Consider all instances in each instance group connected in a chain
-    # Every iteration, slide the current window one slot
-    # Create the new instance in the next group first, then delete an instance in the current group
     zone = next(pool)
     instancegroupname = "retriever-group-" + zone
     currentsize = int(subprocess.check_output("gcloud compute instance-groups managed describe {} --quiet --zone={} --format='value(targetSize)'".format(instancegroupname, zone), shell=True))
@@ -49,22 +46,9 @@ def cycle2(zoneList):
       nextinstancegroupname = "retriever-group-" + nextzone
       nextsize = max(targetsize - currentsize, 0)
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(nextinstancegroupname, nextzone, nextsize), shell=True)
-      time.sleep(60)
-      
-      # nextsize = int(subprocess.check_output("gcloud compute instance-groups managed describe {} --quiet --zone={} --format='value(targetSize)'".format(nextinstancegroupname, nextzone), shell=True))
-      # # Scale up the next zone
-      # subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(nextinstancegroupname, nextzone, nextsize + 1), shell=True)
-      # # Find the oldest instance in this group
-      # delete = subprocess.check_output("gcloud compute instances list --sort-by=creationTimestamp --format='table[no-heading](name)' | grep {} | head -n 1".format(instancegroupname), shell=True)
-      # if (delete.startswith(instancegroupname)):
-      #   # Delete old one
-      #   subprocess.call("gcloud compute instance-groups managed delete-instances {} --quiet --zone={} --instances={}".format(instancegroupname, zone, delete), shell=True)
-      # # Scale down the current zone
-      # subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, currentsize - 1), shell=True)
-      # We want to cycle fast enough that each instance lives for 20 minutes
-      # time.sleep(1200 // (currentsize + nextsize))
+      time.sleep(300)
 
-def cycle3(zoneList):
+def run3(zoneList):
   while True:
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
@@ -119,9 +103,9 @@ def start():
   zoneList = sorted(zoneList, key=lambda x: x[-1])
   # zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
   createGroups(zoneList)
-  cycle(zoneList)
-  # cycle2(zoneList)
-  # cycle3(zoneList)
+  # run1(zoneList)
+  run2(zoneList)
+  # run3(zoneList)
   
 # start()
 
