@@ -37,7 +37,7 @@
     "express-session": "1.14.2",
     "http-proxy": "1.15.2",
     "knex": "0.12.6",
-    "moment": "2.15.2",
+    "moment": "2.16.0",
     "multer": "1.2.0",
     "passport": "0.3.2",
     "passport-steam": "1.0.7",
