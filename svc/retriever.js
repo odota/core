@@ -8,6 +8,7 @@ const Dota2 = require('dota2');
 const async = require('async');
 const express = require('express');
 const cp = require('child_process');
+const request = require('request');
 const app = express();
 const steamObj = {};
 const accountToIdx = {};
@@ -20,17 +21,24 @@ let lastRequestTime;
 let matchRequests = 0;
 let timeouts = 0;
 let count = 0;
-let users = config.STEAM_USER.split(',');
-let passes = config.STEAM_PASS.split(',');
-if (config.STEAM_ACCOUNT_DATA) {
-  const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
-  const accountsToUse = 10;
-  const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
-  console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
-  const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
-  users = accountDataToUse.map(a => a.split('\t')[0]);
-  passes = accountDataToUse.map(a => a.split('\t')[1]);
-  start();
+let users;
+let passes;
+let retrieverHost = config.RETRIEVER_HOST;
+if (config.PROVIDER === 'gce') {
+  retrieverHost = cp.execSync('curl -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip');
+} else if (config.PROVIDER === 'aws') {
+  retrieverHost = cp.execSync('curl http://169.254.169.254/latest/meta-data/public-ipv4');
+}
+if (config.REGISTER_HOST && retrieverHost) {
+  request.post(`${config.REGISTER_HOST}/register?key=${config.RETRIEVER_SECRET}&type=retriever&client=${retrieverHost}`, (err, resp, body) => {
+    if (err || resp.statusCode !== 200) {
+      throw err || 'bad registration';
+    }
+    const registrationInfo = JSON.parse(body);
+    users = registrationInfo.users;
+    passes = registrationInfo.passes;
+    start();
+  });
 } else {
   start();
 }
@@ -41,7 +49,7 @@ function start() {
     res.end('ok');
   });
   app.use((req, res, next) => {
-    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+    if (config.RETRIEVER_SECRET !== req.query.key) {
       // reject request if it doesn't have key
       return next('invalid key');
     } else {

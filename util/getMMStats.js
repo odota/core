@@ -1,3 +1,4 @@
+/*
 const utility = require('../util/utility');
 const config = require('../config');
 const secret = config.RETRIEVER_SECRET;
@@ -26,3 +27,4 @@ function getMMStats(redis, cb) {
 }
 
 module.exports = getMMStats;
+*/

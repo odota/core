@@ -25,6 +25,10 @@ const host = config.ROOT_URL;
 const querystring = require('querystring');
 const util = require('util');
 const rc_public = config.RECAPTCHA_PUBLIC_KEY;
+let accountData;
+if (config.STEAM_ACCOUNT_DATA) {
+  accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
+}
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
   maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
@@ -110,6 +114,28 @@ app.use((req, res, cb) => {
 app.route('/healthz').get((req, res) => {
   res.send('ok');
 });
+app.post('/register', (req, res) => {
+  if (req.query.key !== config.RETRIEVER_SECRET) {
+    return res.status(403).json({
+      err: 'invalid key',
+    });
+  }
+  const accountsToUse = 10;
+  // req.query.type has the worker type being registered
+  // Keep track in redis what index we're at
+  redis.incr('retrieverOffset', accountsToUse, (err, result) => {
+    const startIndex = Number(result) % accountData.length;
+    console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
+    const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
+    users = accountDataToUse.map(a => a.split('\t')[0]);
+    passes = accountDataToUse.map(a => a.split('\t')[1]);
+    redis.zadd('registeredRetrievers', req.query.client, moment().format('X'));
+    res.json({
+      users,
+      passes
+    });
+  });
+});
 app.route('/login').get(passport.authenticate('steam', {
   failureRedirect: '/api',
 }));
@@ -132,9 +158,9 @@ app.route('/logout').get((req, res) => {
 app.use('/api', api());
 // 404 route
 app.use((req, res, next) =>
-   res.status(404).json({
-     error: 'Not Found',
-   })
+  res.status(404).json({
+    error: 'Not Found',
+  })
 );
 // 500 route
 app.use((err, req, res, next) => {

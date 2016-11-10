@@ -26,6 +26,7 @@ const defaults = {
   ROOT_URL: 'http://localhost:5000', // base url to redirect to after steam oauth login
   RETRIEVER_HOST: 'localhost:5100', // Comma separated list of retriever hosts (access to Dota 2 GC data)
   PARSER_HOST: 'http://localhost:5600', // host of the parse server
+  REGISTER_HOST: 'http://localhost:5000', // registration host address
   UI_HOST: '', // The host of the UI, target of /logout and /return
   PROXY_URLS: '', // comma separated list of proxy urls to use
   STEAM_API_HOST: 'api.steampowered.com', // comma separated list of hosts to fetch Steam API data from
@@ -38,7 +39,7 @@ const defaults = {
   CASSANDRA_TEST_URL: 'cassandra://localhost/yasp_test',
   INIT_POSTGRES_HOST: 'localhost',
   INIT_CASSANDRA_HOST: 'localhost',
-  RETRIEVER_SECRET: '', // string to use as shared secret with retriever/parser
+  RETRIEVER_SECRET: 'secret to authorize retrievers', // string to use as shared secret with retriever/parser
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
   COOKIE_DOMAIN: '',
   UNTRACK_DAYS: 14, // The number of days a user is tracked for after every visit

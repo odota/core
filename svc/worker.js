@@ -31,9 +31,11 @@ invokeInterval((cb) => {
 invokeInterval((cb) => {
   buildSets(db, redis, cb);
 }, 60 * 1000);
+/*
 invokeInterval((cb) => {
   getMMStats(redis, cb);
 }, config.MMSTATS_DATA_INTERVAL * 60 * 1000); // Sample every 3 minutes
+*/
 invokeInterval((cb) => {
   async.parallel({
     country_mmr(cb) {
