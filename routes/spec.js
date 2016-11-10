@@ -1830,21 +1830,21 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
-    "/request": {
+    "/request/{jobId}": {
       get: {
         "summary": "GET",
         description: "Get parse request state",
         tags: ['request'],
         "parameters": [{
           "name": "id",
-          "in": "query",
+          "in": "path",
           "description": "The job ID to query.",
           "required": true,
           "type": "string"
         }],
-        route: () => '/request',
+        route: () => '/request/:jobId',
         func: (req, res, cb) => {
-          return pQueue.getJob(req.query.id).then((job) => {
+          return pQueue.getJob(req.params.jobId).then((job) => {
             if (job) {
               return job.getState().then((state) => {
                 return res.json({
@@ -1897,7 +1897,7 @@ Please keep request rate to approximately 1/s.
 
           function exitWithJob(err, parseJob) {
             res.status(err ? 400 : 200).json({
-              error: err,
+              err,
               job: {
                 jobId: parseJob && parseJob.jobId,
               },
@@ -1909,7 +1909,7 @@ Please keep request rate to approximately 1/s.
             utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
               if (err) {
                 // couldn't get data from api, non-retryable
-                return cb(JSON.stringify(err));
+                return exitWithJob(JSON.stringify(err));
               }
               // match details response
               const match = body.result;
