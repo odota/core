@@ -112,7 +112,7 @@ module.exports = function buildStatus(db, redis, cb) {
     // sort the list
     arr.sort((a, b) => Number(a) - Number(b));
     // console.log(arr);
-    const percentiles = [50, 75, 95, 99];
+    const percentiles = [50, 75, 90, 95, 99];
     const result = {};
     arr.forEach((time, i) => {
       if (i >= arr.length * (percentiles[0] / 100)) {
