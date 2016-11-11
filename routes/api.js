@@ -5,10 +5,6 @@ const playerFields = require('./playerFields');
 const subkeys = playerFields.subkeys;
 const filterDeps = require('../util/filterDeps');
 const spec = require('./spec');
-const multer = require('multer')({
-  inMemory: true,
-  fileSize: 100 * 1024 * 1024, // no larger than 100mb
-});
 module.exports = function () {
   api.use((req, res, cb) => {
     res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -16,7 +12,6 @@ module.exports = function () {
     res.header('Access-Control-Allow-Credentials', 'true');
     cb();
   });
-  api.use(multer.single('replay_blob'));
   // Player endpoints middleware
   api.use('/players/:account_id/:info?', (req, res, cb) => {
     if (isNaN(Number(req.params.account_id))) {

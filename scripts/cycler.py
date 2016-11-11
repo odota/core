@@ -103,8 +103,8 @@ def start():
   zoneList = sorted(zoneList, key=lambda x: x[-1])
   # zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
   createGroups(zoneList)
-  # run1(zoneList)
-  run2(zoneList)
+  run1(zoneList)
+  # run2(zoneList)
   # run3(zoneList)
   
 # start()

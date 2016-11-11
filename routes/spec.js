@@ -1330,14 +1330,7 @@ Please keep request rate to approximately 1/s.
                 utility.mergeObjects(result[key], m[key]);
               }
             });
-            // generally position data function is used to generate heatmap data for each player in a natch
-            // we use it here to generate a single heatmap for aggregated counts
-            const d = {
-              obs: true,
-              sen: true,
-            };
-            utility.generatePositionData(d, result);
-            res.json(d);
+            res.json(result);
           });
         },
       }
@@ -1830,21 +1823,21 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
-    "/request_job": {
+    "/request/{jobId}": {
       get: {
-        "summary": "/",
+        "summary": "GET",
         description: "Get parse request state",
         tags: ['request'],
         "parameters": [{
           "name": "id",
-          "in": "query",
+          "in": "path",
           "description": "The job ID to query.",
           "required": true,
           "type": "string"
         }],
-        route: () => '/request_job',
+        route: () => '/request/:jobId',
         func: (req, res, cb) => {
-          return pQueue.getJob(req.query.id).then((job) => {
+          return pQueue.getJob(req.params.jobId).then((job) => {
             if (job) {
               return job.getState().then((state) => {
                 return res.json({
@@ -1870,15 +1863,19 @@ Please keep request rate to approximately 1/s.
           }
         }
       },
+    },
+    "/request/{match_id}": {
       post: {
-        summary: "/",
+        summary: "POST",
         description: "Submit a new parse request",
         tags: ['request'],
-        route: () => '/request_job',
+        route: () => '/request/:match_id',
         func: (req, res, cb) => {
-          console.log(req.body);
-          const match_id = Number(req.body.match_id);
-          let match;
+          const match_id = req.params.match_id;
+          const match = {
+            match_id: Number(match_id),
+          };
+          /*
           if (req.file) {
             console.log(req.file);
             const hash = crypto.createHash('md5');
@@ -1887,30 +1884,25 @@ Please keep request rate to approximately 1/s.
             redis.setex(new Buffer(`upload_blob:${key}`), 60 * 60, req.file.buffer);
             match = {
               replay_blob_key: key,
-            };
-          } else if (match_id && !Number.isNaN(match_id)) {
-            match = {
-              match_id,
-            };
+            }
           }
+          */
 
           function exitWithJob(err, parseJob) {
             res.status(err ? 400 : 200).json({
-              error: err,
+              err,
               job: {
-                jobId: parseJob.jobId,
+                jobId: parseJob && parseJob.jobId,
               },
             });
           }
 
-          if (!match) {
-            return exitWithJob('invalid input', {});
-          } else if (match && match.match_id) {
+          if (match && match.match_id) {
             // match id request, get data from API
             utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
               if (err) {
                 // couldn't get data from api, non-retryable
-                return cb(JSON.stringify(err));
+                return exitWithJob(JSON.stringify(err));
               }
               // match details response
               const match = body.result;
@@ -1924,6 +1916,10 @@ Please keep request rate to approximately 1/s.
               }, exitWithJob);
             });
           } else {
+            return exitWithJob('invalid input');
+          }
+          /*
+          else {
             // file upload request
             return pQueue.add({
                 id: `${moment().format('X')}_${match.match_id}`,
@@ -1935,6 +1931,7 @@ Please keep request rate to approximately 1/s.
               .then(parseJob => exitWithJob(null, parseJob))
               .catch(exitWithJob);
           }
+          */
         },
         "responses": {
           "200": {
