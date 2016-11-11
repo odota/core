@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 16
+targetsize = 3
 backendname = "retriever"
 templatename = "retriever-1"
 
@@ -52,10 +52,8 @@ def run3(zoneList):
   while True:
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
-      # Scale to 0
-      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
-      # Scale to 2
-      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 2), shell=True)
+      # Scale to target
+      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
       # Delete the static IP
       # subprocess.call("gcloud compute addresses delete {} --quiet --region={}".format(zone, zone[:-2]), shell=True)
       # Create a static IP
@@ -79,6 +77,14 @@ def run3(zoneList):
       # Delete the static IP
       # subprocess.call("gcloud compute addresses delete {} --quiet --region={}".format(zone, zone[:-2]), shell=True)
     time.sleep(600)
+    
+def run4(zoneList):
+  while True:
+    for i, zone in enumerate(zoneList):
+      instancegroupname = "retriever-group-" + zone
+      # Scale to target
+      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
+    time.sleep(300)
 
 def createGroups(zoneList):
   for i, zone in enumerate(zoneList):
@@ -92,6 +98,8 @@ def createGroups(zoneList):
     subprocess.call("gcloud compute backend-services add-backend {} --quiet --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
     # Configure load balancing policy
     subprocess.call("gcloud compute backend-services update-backend {} --quiet --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1".format(backendname, instancegroupname, zone), shell=True)
+    # Scale to 0 (recreate instances)
+    subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
     
 def start():
   # Get the available zones
@@ -101,11 +109,12 @@ def start():
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   zoneList = sorted(zoneList, key=lambda x: x[-1])
-  # zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
+  zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
   createGroups(zoneList)
-  run1(zoneList)
+  # run1(zoneList)
   # run2(zoneList)
   # run3(zoneList)
+  run4(zoneList)
   
 # start()
 
