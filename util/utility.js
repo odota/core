@@ -8,6 +8,8 @@ const constants = require('dotaconstants');
 const request = require('request');
 const BigNumber = require('big-number');
 const urllib = require('url');
+const laneMappings = require('./laneMappings');
+
 /**
  * Tokenizes an input string.
  *
@@ -279,28 +281,6 @@ function mode(array) {
     }
   }
   return maxEl;
-}
-
-function generatePositionData(d, p) {
-  // d, a hash of keys to process
-  // p, a player containing keys with values as position hashes
-  // stores the resulting arrays in the keys of d
-  // 64 is the offset of x and y values
-  // subtracting y from 127 inverts from bottom/left origin to top/left origin
-  for (const key in d) {
-    const t = [];
-    for (const x in p[key]) {
-      for (const y in p[key][x]) {
-        t.push({
-          x: Number(x) - 64,
-          y: 127 - (Number(y) - 64),
-          value: p[key][x][y],
-        });
-      }
-    }
-    d[key] = t;
-  }
-  return d;
 }
 
 function isSignificant(m) {
@@ -686,6 +666,50 @@ function getLevelFromXp(xp) {
   return constants.xp_level.length;
 }
 
+function getLaneFromPosData(lane_pos, isRadiant) {
+  // compute lanes
+  const lanes = [];
+  // iterate over the position hash and get the lane bucket for each data point
+  Object.keys(lane_pos).forEach((x) => {
+    Object.keys(lane_pos[x]).forEach((y) => {
+      const val = lane_pos[x][y];
+      const adjX = Number(x) - 64;
+      const adjY = 127 - (Number(y) - 64);
+      // Add it N times to the array
+      for (let i = 0; i < val; i += 1) {
+        lanes.push(laneMappings[adjY][adjX]);
+      }
+    });
+  });
+  const lane = mode(lanes);
+  const laneRoles = {
+    1() {
+      // bot
+      return isRadiant ? 1 : 3;
+    },
+    2() {
+      // mid
+      return 2;
+    },
+    3() {
+      // top
+      return isRadiant ? 3 : 1;
+    },
+    4() {
+      // rjung
+      return 4;
+    },
+    5() {
+      // djung
+      return 4;
+    },
+  };
+  return { 
+    lane,
+    lane_role: laneRoles[lane] ? laneRoles[lane]() : null,
+  }
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -695,7 +719,6 @@ module.exports = {
   isRadiant,
   mergeObjects,
   mode,
-  generatePositionData,
   isSignificant,
   max,
   min,
@@ -720,4 +743,5 @@ module.exports = {
   countPeers,
   getAnonymousAccountId,
   getLevelFromXp,
+  getLaneFromPosData,
 };
