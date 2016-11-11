@@ -5,5 +5,8 @@
     "jsx-a11y",
     "import"
   ],
-  "rules": {}
+  "rules": {
+    "no-console": 0,
+    "no-shadow": 0
+  }
 }
