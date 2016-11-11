@@ -497,9 +497,9 @@ function expectedWin(rates) {
   // return rates.reduce((prev, curr) => prev + curr)) / hids.length;
   // advanced implementation, asymptotic
   // return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
-  return 1 - rates.reduce((prev, curr) =>
-    (100 - (((((curr * 100) * prev), 1) / (Math.pow(50, rates.length - 1))) * 100))
-  );
+  const adjustedRates = rates.reduce((prev, curr) => (100 - (curr * 100)) * prev, 1);
+  const denominator = Math.pow(50, rates.length - 1);
+  return 1 - ((adjustedRates / denominator) * 100);
 }
 
 /**
