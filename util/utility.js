@@ -551,7 +551,7 @@ function kCombinations(arr, k) {
   }
   // Assert {1 < k < arr.length}
   combs = [];
-  for (i = 0; i < arr.length - (k + 1); i += 1) {
+  for (i = 0; i < (arr.length - k) + 1; i += 1) {
     head = arr.slice(i, i + 1);
     // recursively get all combinations of the remaining array
     tailcombs = kCombinations(arr.slice(i + 1), k - 1);
