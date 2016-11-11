@@ -1,11 +1,9 @@
 const constants = require('dotaconstants');
 const utility = require('./utility');
-const laneMappings = require('./laneMappings');
 const mode = utility.mode;
 const max = utility.max;
 const min = utility.min;
 const isRadiant = utility.isRadiant;
-const generatePositionData = utility.generatePositionData;
 const ancients = constants.ancients;
 /**
  * Computes additional properties from a match/player_match
@@ -52,7 +50,7 @@ function computeMatchData(pm) {
   if (pm.kills_log && self_hero) {
     // remove self kills
     pm.kills_log = pm.kills_log.filter(k =>
-       k.key !== self_hero.name
+      k.key !== self_hero.name
     );
   }
   if (pm.killed) {
@@ -116,65 +114,22 @@ function computeMatchData(pm) {
     pm.lane_efficiency = pm.gold_t[10] / tenMinute;
     pm.lane_efficiency_pct = ~~(pm.lane_efficiency * 100);
   }
-  if (pm.obs) {
-    // convert position hashes to heatmap array of x,y,value
-    pm.posData = generatePositionData({
-      obs: true,
-      sen: true,
-      // "pos": true,
-      lane_pos: true,
-    }, pm);
-  }
-  if (pm.posData) {
-    // compute lanes
-    const lanes = [];
-    for (var i = 0; i < pm.posData.lane_pos.length; i++) {
-      const dp = pm.posData.lane_pos[i];
-      for (let j = 0; j < dp.value; j++) {
-        if (laneMappings[dp.y]) {
-          lanes.push(laneMappings[dp.y][dp.x]);
-        }
-      }
-    }
-    if (lanes.length) {
-      pm.lane = mode(lanes);
-      const radiant = pm.isRadiant;
-      const lane_roles = {
-        1() {
-          // bot
-          return radiant ? 1 : 3;
-        },
-        2() {
-          // mid
-          return 2;
-        },
-        3() {
-          // top
-          return radiant ? 3 : 1;
-        },
-        4() {
-          // rjung
-          return 4;
-        },
-        5() {
-          // djung
-          return 4;
-        },
-      };
-      pm.lane_role = lane_roles[pm.lane] ? lane_roles[pm.lane]() : undefined;
-    }
+  if (pm.lane_pos) {
+    const laneData = utility.getLaneFromPosData(pm.lane_pos, isRadiant(pm));
+    pm.lane = laneData.lane;
+    pm.lane_role = laneData.lane_role;
   }
   // compute hashes of purchase time sums and counts from logs
   if (pm.purchase_log) {
     // remove ward dispenser and recipes
     pm.purchase_log = pm.purchase_log.filter(purchase =>
-       !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser')
+      !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser')
     );
     pm.purchase_time = {};
     pm.first_purchase_time = {};
     pm.item_win = {};
     pm.item_usage = {};
-    for (var i = 0; i < pm.purchase_log.length; i++) {
+    for (let i = 0; i < pm.purchase_log.length; i++) {
       const k = pm.purchase_log[i].key;
       const time = pm.purchase_log[i].time;
       if (!pm.purchase_time[k]) {

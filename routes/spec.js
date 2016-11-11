@@ -1330,14 +1330,7 @@ Please keep request rate to approximately 1/s.
                 utility.mergeObjects(result[key], m[key]);
               }
             });
-            // generally position data function is used to generate heatmap data for each player in a natch
-            // we use it here to generate a single heatmap for aggregated counts
-            const d = {
-              obs: true,
-              sen: true,
-            };
-            utility.generatePositionData(d, result);
-            res.json(d);
+            res.json(result);
           });
         },
       }
