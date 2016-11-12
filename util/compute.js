@@ -1,15 +1,51 @@
 const constants = require('dotaconstants');
 const utility = require('./utility');
-const mode = utility.mode;
+
 const max = utility.max;
 const min = utility.min;
 const isRadiant = utility.isRadiant;
 const ancients = constants.ancients;
+
+/**
+ * Count the words that occur in a set of messages
+ * - messages: the messages to create the counts over
+ * - player_filter: if non-null, only count that player's messages
+ **/
+function countWords(playerMatch, playerFilter) {
+  const messages = playerMatch.chat;
+  // extract the message strings from the message objects
+  // extract individual words from the message strings
+  let chatWords = [];
+  messages.forEach((message) => {
+    // if there is no player_filter
+    // if the passed player's player_slot matches this message's parseSlot converted to player_slot
+    const messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
+    if (!playerFilter || (messageParseSlot === playerFilter.player_slot)) {
+      chatWords.push(message.key);
+    }
+  });
+  chatWords = chatWords.join(' ');
+  const tokens = utility.tokenize(chatWords);
+  // count how frequently each word occurs
+  const counts = {};
+  for (let i = 0; i < tokens.length; i += 1) {
+    // ignore the empty string
+    if (tokens[i]) {
+      if (!counts[tokens[i]]) {
+        counts[tokens[i]] = 0;
+      }
+      counts[tokens[i]] += 1;
+    }
+  }
+  // return the final counts
+  return counts;
+}
+
 /**
  * Computes additional properties from a match/player_match
  **/
 function computeMatchData(pm) {
-  const self_hero = constants.heroes[pm.hero_id];
+  const selfHero = constants.heroes[pm.hero_id];
   // Compute patch based on start_time
   if (pm.start_time) {
     pm.patch = utility.getPatchIndex(pm.start_time);
@@ -23,16 +59,16 @@ function computeMatchData(pm) {
     pm.lose = Number(isRadiant(pm) === pm.radiant_win) ? 0 : 1;
   }
   if (pm.duration && pm.gold_per_min) {
-    pm.total_gold = ~~(pm.gold_per_min * pm.duration / 60);
+    pm.total_gold = Math.floor(pm.gold_per_min * pm.duration / 60);
   }
   if (pm.duration && pm.xp_per_min) {
-    pm.total_xp = ~~(pm.xp_per_min * pm.duration / 60);
+    pm.total_xp = Math.floor(pm.xp_per_min * pm.duration / 60);
   }
   if (pm.duration && pm.kills) {
     pm.kills_per_min = pm.kills / (pm.duration / 60);
   }
   if (pm.kills !== undefined && pm.deaths !== undefined && pm.assists !== undefined) {
-    pm.kda = ~~((pm.kills + pm.assists) / (pm.deaths + 1));
+    pm.kda = Math.floor((pm.kills + pm.assists) / (pm.deaths + 1));
   }
   if (pm.leaver_status !== undefined) {
     pm.abandons = Number(pm.leaver_status >= 2);
@@ -43,14 +79,14 @@ function computeMatchData(pm) {
   if (pm.chat) {
     // word counts for this player and all players
     // aggregation of all words in all chat this player has experienced
-    pm.all_word_counts = count_words(pm, null);
+    pm.all_word_counts = countWords(pm, null);
     // aggregation of only the words in all chat this player said themselves
-    pm.my_word_counts = count_words(pm, pm);
+    pm.my_word_counts = countWords(pm, pm);
   }
-  if (pm.kills_log && self_hero) {
+  if (pm.kills_log && selfHero) {
     // remove self kills
     pm.kills_log = pm.kills_log.filter(k =>
-      k.key !== self_hero.name
+      k.key !== selfHero.name
     );
   }
   if (pm.killed) {
@@ -64,7 +100,7 @@ function computeMatchData(pm) {
     pm.roshan_kills = 0;
     pm.necronomicon_kills = 0;
     pm.ancient_kills = 0;
-    for (var key in pm.killed) {
+    Object.keys(pm.killed).forEach((key) => {
       if (key.indexOf('creep_goodguys') !== -1 || key.indexOf('creep_badguys') !== -1) {
         pm.lane_kills += pm.killed[key];
       }
@@ -75,7 +111,7 @@ function computeMatchData(pm) {
         pm.sentry_kills += pm.killed[key];
       }
       if (key.indexOf('npc_dota_hero') === 0) {
-        if (!self_hero || self_hero.name !== key) {
+        if (!selfHero || selfHero.name !== key) {
           pm.hero_kills += pm.killed[key];
         }
       }
@@ -97,7 +133,7 @@ function computeMatchData(pm) {
       if (key.indexOf('necronomicon') !== -1) {
         pm.necronomicon_kills += pm.killed[key];
       }
-    }
+    });
   }
   if (pm.buyback_log) {
     pm.buyback_count = pm.buyback_log.length;
@@ -112,7 +148,7 @@ function computeMatchData(pm) {
     // 6.84 change
     const tenMinute = (40 * 60 + 45 * 20 + 74 * 2) + (600 / 0.6) + 625;
     pm.lane_efficiency = pm.gold_t[10] / tenMinute;
-    pm.lane_efficiency_pct = ~~(pm.lane_efficiency * 100);
+    pm.lane_efficiency_pct = Math.floor(pm.lane_efficiency * 100);
   }
   if (pm.lane_pos) {
     const laneData = utility.getLaneFromPosData(pm.lane_pos, isRadiant(pm));
@@ -129,14 +165,14 @@ function computeMatchData(pm) {
     pm.first_purchase_time = {};
     pm.item_win = {};
     pm.item_usage = {};
-    for (let i = 0; i < pm.purchase_log.length; i++) {
+    for (let i = 0; i < pm.purchase_log.length; i += 1) {
       const k = pm.purchase_log[i].key;
       const time = pm.purchase_log[i].time;
       if (!pm.purchase_time[k]) {
         pm.purchase_time[k] = 0;
       }
       // Store first purchase time for every item
-      if (!pm.first_purchase_time.hasOwnProperty(k)) {
+      if (!pm.first_purchase_time[k]) {
         pm.first_purchase_time[k] = time;
       }
       pm.purchase_time[k] += time;
@@ -155,19 +191,23 @@ function computeMatchData(pm) {
     pm.purchase_gem = pm.purchase.gem;
   }
   if (pm.actions && pm.duration) {
-    let actions_sum = 0;
-    for (var key in pm.actions) {
-      actions_sum += pm.actions[key];
-    }
-    pm.actions_per_min = ~~(actions_sum / pm.duration * 60);
+    let actionsSum = 0;
+    Object.keys(pm.actions).forEach((key) => {
+      actionsSum += pm.actions[key];
+    });
+    pm.actions_per_min = Math.floor(actionsSum / pm.duration * 60);
   }
   // compute throw/comeback levels
   if (pm.radiant_gold_adv && pm.radiant_win !== undefined) {
-    const radiant_gold_advantage = pm.radiant_gold_adv;
-    pm.throw = pm.radiant_win !== isRadiant(pm) ? (isRadiant(pm) ? max(radiant_gold_advantage) : min(radiant_gold_advantage) * -1) : undefined;
-    pm.comeback = pm.radiant_win === isRadiant(pm) ? (isRadiant(pm) ? min(radiant_gold_advantage) * -1 : max(radiant_gold_advantage)) : undefined;
-    pm.loss = pm.radiant_win !== isRadiant(pm) ? (isRadiant(pm) ? min(radiant_gold_advantage) * -1 : max(radiant_gold_advantage)) : undefined;
-    pm.stomp = pm.radiant_win === isRadiant(pm) ? (isRadiant(pm) ? max(radiant_gold_advantage) : min(radiant_gold_advantage) * -1) : undefined;
+    const radiantGoldAdvantage = pm.radiant_gold_adv;
+    const throwVal = isRadiant(pm) ? max(radiantGoldAdvantage) : min(radiantGoldAdvantage) * -1;
+    const comebackVal = isRadiant(pm) ? min(radiantGoldAdvantage) * -1 : max(radiantGoldAdvantage);
+    const lossVal = isRadiant(pm) ? min(radiantGoldAdvantage) * -1 : max(radiantGoldAdvantage);
+    const stompVal = isRadiant(pm) ? max(radiantGoldAdvantage) : min(radiantGoldAdvantage) * -1;
+    pm.throw = pm.radiant_win !== isRadiant(pm) ? throwVal : undefined;
+    pm.comeback = pm.radiant_win === isRadiant(pm) ? comebackVal : undefined;
+    pm.loss = pm.radiant_win !== isRadiant(pm) ? lossVal : undefined;
+    pm.stomp = pm.radiant_win === isRadiant(pm) ? stompVal : undefined;
   }
   if (pm.pings) {
     pm.pings = pm.pings[0];
@@ -177,40 +217,6 @@ function computeMatchData(pm) {
   }
 }
 
-/**
- * Count the words that occur in a set of messages
- * - messages: the messages to create the counts over
- * - player_filter: if non-null, only count that player's messages
- **/
-function count_words(player_match, player_filter) {
-  const messages = player_match.chat;
-  // extract the message strings from the message objects
-  // extract individual words from the message strings
-  let chat_words = [];
-  messages.forEach((message) => {
-    // if there is no player_filter, or if the passed player's player_slot matches this message's parseSlot converted to player_slot, log it
-    const messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
-    if (!player_filter || (messageParseSlot === player_filter.player_slot)) {
-      chat_words.push(message.key);
-    }
-  });
-  chat_words = chat_words.join(' ');
-  const tokens = utility.tokenize(chat_words);
-  // count how frequently each word occurs
-  const counts = {};
-  for (let i = 0; i < tokens.length; i++) {
-    // ignore the empty string
-    if (tokens[i]) {
-      if (!counts[tokens[i]]) {
-        counts[tokens[i]] = 0;
-      }
-      counts[tokens[i]] += 1;
-    }
-  }
-  // return the final counts
-  return counts;
-}
 module.exports = {
   computeMatchData,
-  count_words,
 };
