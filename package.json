@@ -51,7 +51,7 @@
     "supertest": "2.0.1"
   },
   "devDependencies": {
-    "eslint": "3.9.0",
+    "eslint": "3.10.0",
     "eslint-config-airbnb": "12.0.0",
     "eslint-plugin-import": "2.2.0",
     "eslint-plugin-jsx-a11y": "2.2.3",
