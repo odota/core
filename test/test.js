@@ -60,8 +60,8 @@ nock('http://api.steampowered.com')
   .reply(200, leaguesApi);
 // fake mmr response
 nock(`http://${config.RETRIEVER_HOST}`)
-.get('/?account_id=88367253')
-.reply(200, retrieverPlayer);
+  .get('/?account_id=88367253')
+  .reply(200, retrieverPlayer);
 before(function setup(done) {
   this.timeout(30000);
   async.series([
@@ -93,9 +93,9 @@ before(function setup(done) {
         contactPoints: [initCassandraHost],
       });
       async.series([function drop(cb) {
-        console.log('drop cassandra test keyspace');
-        client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
-      },
+          console.log('drop cassandra test keyspace');
+          client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+        },
         function create(cb) {
           console.log('create cassandra test keyspace');
           client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
@@ -104,7 +104,7 @@ before(function setup(done) {
           cassandra = require('../store/cassandra');
           console.log('create cassandra test tables');
           async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter(cql =>
-             cql.length > 1
+            cql.length > 1
           ), (cql, cb) => {
             cassandra.execute(cql, cb);
           }, cb);
@@ -162,9 +162,9 @@ describe('replay parse', function testReplayParse() {
     });
     nock(`http://replay${match.cluster}.valve.net`).get(`/570/${key}`).reply(200, (uri, requestBody, cb) => {
       request(`https://cdn.rawgit.com/odota/testfiles/master/${key}`, {
-        encoding: null,
-      }, (err, resp, body) =>
-         cb(err, body)
+          encoding: null,
+        }, (err, resp, body) =>
+        cb(err, body)
       );
     });
     it(`parse replay ${key}`, (done) => {
@@ -207,19 +207,27 @@ describe('replay parse', function testReplayParse() {
 });
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
 describe('api', () => {
-  it('should accept api endpoints', (cb) => {
+  it('should get API spec', (cb) => {
     supertest(app).get('/api').end((err, res) => {
       if (err) {
         return cb(err);
       }
       const spec = res.body;
       return async.eachSeries(Object.keys(spec.paths), (path, cb) => {
-        // TODO test POST routes
-        supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
-          // TODO better asserts on results
-          console.log(path, res.statusCode);
-          return cb(err);
-        });
+        const replacedPath = path
+          .replace(/{match_id}/, 1781962623)
+          .replace(/{account_id}/, 120269134)
+          .replace(/{field}/, 'kills');
+        async.eachSeries(Object.keys(spec.paths[path]), (verb, cb) => {
+          if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0) {
+            return cb(err);
+          }
+          return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
+            console.log(verb, replacedPath);
+            assert.equal(res.statusCode, 200);
+            return cb(err);
+          });
+        }, cb);
       }, cb);
     });
   });
