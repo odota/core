@@ -3,7 +3,7 @@ language: node_js
 services:
 - docker
 node_js:
-- 'node'
+- '6.9.0'
 notifications:
   email:
   - howardc93@gmail.com
