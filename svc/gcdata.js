@@ -6,9 +6,11 @@ const queue = require('../store/queue');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const config = require('../config');
+
 const retrieverArr = config.RETRIEVER_HOST.split(',');
-queue.runQueue('gcQueue', retrieverArr.length, processGcData);
 
 function processGcData(job, cb) {
   getGcData(db, redis, job, cb);
 }
+
+queue.runQueue('gcQueue', retrieverArr.length, processGcData);
