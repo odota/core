@@ -1,3 +1,4 @@
+/* global before describe it */
 /**
  * Main test script to run tests
  **/
@@ -7,20 +8,21 @@ const nock = require('nock');
 const assert = require('assert');
 const supertest = require('supertest');
 const pg = require('pg');
-const cassandraDriver = require('cassandra-driver');
 const fs = require('fs');
+const cassandraDriver = require('cassandra-driver');
 const request = require('request');
 const config = require('../config');
 const redis = require('../store/redis');
 const queue = require('../store/queue');
-const pQueue = queue.getQueue('parse');
 const utility = require('../util/utility');
-const details_api = require('./data/details_api.json');
-const summaries_api = require('./data/summaries_api.json');
-const history_api = require('./data/history_api.json');
-const heroes_api = require('./data/heroes_api.json');
-const leagues_api = require('./data/leagues_api.json');
-const retriever_player = require('./data/retriever_player.json');
+const detailsApi = require('./data/details_api.json');
+const summariesApi = require('./data/summaries_api.json');
+const historyApi = require('./data/history_api.json');
+const heroesApi = require('./data/heroes_api.json');
+const leaguesApi = require('./data/leagues_api.json');
+const retrieverPlayer = require('./data/retriever_player.json');
+
+const pQueue = queue.getQueue('parse');
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = config.INIT_CASSANDRA_HOST;
 // these are loaded later, as the database needs to be created when these are required
@@ -32,37 +34,52 @@ let buildMatch;
 // fake api responses
 nock('http://api.steampowered.com')
   // fake 500 error
-  .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).reply(500, {})
+  .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+  .query(true)
+  .reply(500, {})
   // fake match details
-  .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).times(10).reply(200, details_api)
+  .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+  .query(true)
+  .times(10)
+  .reply(200, detailsApi)
   // fake player summaries
-  .get('/ISteamUser/GetPlayerSummaries/v0002/').query(true).reply(200, summaries_api)
+  .get('/ISteamUser/GetPlayerSummaries/v0002/')
+  .query(true)
+  .reply(200, summariesApi)
   // fake full history
-  .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, history_api)
+  .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+  .query(true)
+  .reply(200, historyApi)
   // fake heroes list
-  .get('/IEconDOTA2_570/GetHeroes/v0001/').query(true).reply(200, heroes_api)
+  .get('/IEconDOTA2_570/GetHeroes/v0001/')
+  .query(true)
+  .reply(200, heroesApi)
   // fake leagues
-  .get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, leagues_api);
+  .get('/IDOTA2Match_570/GetLeagueListing/v0001/')
+  .query(true)
+  .reply(200, leaguesApi);
 // fake mmr response
-nock(`http://${config.RETRIEVER_HOST}`).get('/?account_id=88367253').reply(200, retriever_player);
+nock(`http://${config.RETRIEVER_HOST}`)
+.get('/?account_id=88367253')
+.reply(200, retrieverPlayer);
 before(function setup(done) {
   this.timeout(30000);
   async.series([
-    function (cb) {
+    function initPostgres(cb) {
       pg.connect(initPostgresHost, (err, client) => {
         if (err) {
           return cb(err);
         }
-        async.series([
-          function (cb) {
+        return async.series([
+          function drop(cb) {
             console.log('drop postgres test database');
             client.query('DROP DATABASE IF EXISTS yasp_test', cb);
           },
-          function (cb) {
+          function create(cb) {
             console.log('create postgres test database');
             client.query('CREATE DATABASE yasp_test', cb);
           },
-          function (cb) {
+          function tables(cb) {
             db = require('../store/db');
             console.log('connecting to test database and creating tables');
             const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
@@ -71,19 +88,19 @@ before(function setup(done) {
         ], cb);
       });
     },
-    function (cb) {
+    function initCassandra(cb) {
       const client = new cassandraDriver.Client({
         contactPoints: [initCassandraHost],
       });
-      async.series([function (cb) {
+      async.series([function drop(cb) {
         console.log('drop cassandra test keyspace');
         client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
       },
-        function (cb) {
+        function create(cb) {
           console.log('create cassandra test keyspace');
           client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
         },
-        function (cb) {
+        function tables(cb) {
           cassandra = require('../store/cassandra');
           console.log('create cassandra test tables');
           async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter(cql =>
@@ -94,14 +111,14 @@ before(function setup(done) {
         },
       ], cb);
     },
-    function (cb) {
+    function wipeRedis(cb) {
       console.log('wiping redis');
       redis.flushdb((err, success) => {
         console.log(err, success);
         cb(err);
       });
     },
-    function (cb) {
+    function startServices(cb) {
       console.log('starting services');
       app = require('../svc/web');
       queries = require('../store/queries');
@@ -109,27 +126,27 @@ before(function setup(done) {
       require('../svc/parser');
       cb();
     },
-    function (cb) {
+    function loadMatches(cb) {
       console.log('loading matches');
-      async.mapSeries([details_api.result], (m, cb) => {
+      async.mapSeries([detailsApi.result], (m, cb) => {
         queries.insertMatch(m, {
           type: 'api',
           skipParse: true,
         }, cb);
       }, cb);
     },
-    function (cb) {
+    function loadPlayers(cb) {
       console.log('loading players');
-      async.mapSeries(summaries_api.response.players, (p, cb) => {
+      async.mapSeries(summariesApi.response.players, (p, cb) => {
         queries.insertPlayer(db, p, cb);
       }, cb);
     },
   ], done);
 });
-describe('replay parse', function () {
+describe('replay parse', function testReplayParse() {
   this.timeout(120000);
   const tests = {
-    '1781962623_1.dem': details_api.result,
+    '1781962623_1.dem': detailsApi.result,
   };
   Object.keys(tests).forEach((key) => {
     const match = tests[key];
@@ -196,7 +213,7 @@ describe('api', () => {
         return cb(err);
       }
       const spec = res.body;
-      async.eachSeries(Object.keys(spec.paths), (path, cb) => {
+      return async.eachSeries(Object.keys(spec.paths), (path, cb) => {
         // TODO test POST routes
         supertest(app).get(`/api${path.replace(/{.*}/, 1)}`).end((err, res) => {
           // TODO better asserts on results
@@ -212,8 +229,9 @@ describe('generateMatchups', () => {
     // in this sample match
     // 1,6,52,59,105:46,73,75,100,104:1
     // dire:radiant, radiant won
-    const keys = utility.generateMatchups(details_api.result, 5);
-    const combs5 = Math.pow(1 + 5 + 10 + 10 + 5 + 1, 2); // sum of 5cN for n from 0 to 5, squared to account for all pairwise matchups between both teams
+    const keys = utility.generateMatchups(detailsApi.result, 5);
+    // sum of 5cN for n from 0 to 5, squared to account for all pairwise matchups
+    const combs5 = Math.pow(1 + 5 + 10 + 10 + 5 + 1, 2);
     assert.equal(keys.length, combs5);
     keys.forEach((k) => {
       redis.hincrby('matchups', k, 1);

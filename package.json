@@ -36,6 +36,7 @@
     "http-proxy": "1.15.2",
     "knex": "0.12.6",
     "moment": "2.16.0",
+    "nock": "9.0.2",
     "passport": "0.3.2",
     "passport-steam": "1.0.7",
     "pg": "6.0.3",
@@ -46,7 +47,8 @@
     "request": "2.78.0",
     "request-progress": "2.0.1",
     "simple-vdf": "1.1.0",
-    "steam": "1.4.0"
+    "steam": "1.4.0",
+    "supertest": "2.0.1"
   },
   "devDependencies": {
     "eslint": "3.9.0",
@@ -54,9 +56,7 @@
     "eslint-plugin-import": "2.2.0",
     "eslint-plugin-jsx-a11y": "2.2.3",
     "eslint-plugin-react": "6.6.0",
-    "mocha": "3.1.2",
-    "nock": "9.0.2",
-    "supertest": "2.0.1"
+    "mocha": "3.1.2"
   },
   "engines": {
     "node": "6.9.0"

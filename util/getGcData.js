@@ -43,7 +43,7 @@ module.exports = function getGcData(db, redis, match, cb) {
         match_id: match.match_id,
         players,
       };
-      insertMatch(matchToInsert, {
+      return insertMatch(matchToInsert, {
         type: 'gcdata',
         skipParse: true,
       }, (err) => {
@@ -51,7 +51,7 @@ module.exports = function getGcData(db, redis, match, cb) {
           return cb(err);
         }
         // Persist GC data to database
-        queries.upsert(db, 'match_gcdata', {
+        return queries.upsert(db, 'match_gcdata', {
           match_id: match.match_id,
           cluster: body.match.cluster,
           replay_salt: body.match.replay_salt,
