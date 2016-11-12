@@ -4,6 +4,7 @@
 const config = require('../config');
 const httpProxy = require('http-proxy');
 const http = require('http');
+
 const PORT = config.PORT || config.PROXY_PORT;
 const proxy = httpProxy.createProxyServer({
   target: 'http://api.steampowered.com',

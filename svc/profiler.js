@@ -1,15 +1,14 @@
 /**
  * Worker to fetch updated player profiles
  **/
-const config = require('../config');
+const async = require('async');
 const queries = require('../store/queries');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const utility = require('../util/utility');
+
 const insertPlayer = queries.insertPlayer;
 const getData = utility.getData;
-const async = require('async');
-start();
 
 function start() {
   getSummaries((err) => {
@@ -27,23 +26,24 @@ function getSummaries(cb) {
     }
     console.log('players sampled: %s', results.length);
     results = results.map(account_id =>
-       ({
-         account_id,
-       })
+      ({
+        account_id,
+      })
     );
-    const container = utility.generateJob('api_summaries',
-      {
-        players: results,
-      });
+    const container = utility.generateJob('api_summaries', {
+      players: results,
+    });
     getData(container.url, (err, body) => {
       if (err) {
-                // couldn't get data from api, non-retryable
+        // couldn't get data from api, non-retryable
         return cb(JSON.stringify(err));
       }
-            // player summaries response
+      // player summaries response
       async.each(body.response.players, (player, cb) => {
         insertPlayer(db, player, cb);
       }, cb);
     });
   });
 }
+
+start();
