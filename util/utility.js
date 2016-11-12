@@ -665,18 +665,6 @@ function getAnonymousAccountId() {
 }
 
 /**
- * Returns the level given an XP value
- **/
-function getLevelFromXp(xp) {
-  for (let i = 0; i < constants.xp_level.length; i += 1) {
-    if (constants.xp_level[i] > xp) {
-      return i;
-    }
-  }
-  return constants.xp_level.length;
-}
-
-/**
  * Computes the lane a hero is in based on an input hash of positions
  **/
 function getLaneFromPosData(lanePos, isRadiant) {
@@ -752,6 +740,5 @@ module.exports = {
   generateMatchups,
   countPeers,
   getAnonymousAccountId,
-  getLevelFromXp,
   getLaneFromPosData,
 };
