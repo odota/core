@@ -10,39 +10,39 @@ const utility = require('../util/utility');
 const insertPlayer = queries.insertPlayer;
 const getData = utility.getData;
 
-function start() {
-  getSummaries((err) => {
-    if (err) {
-      throw err;
-    }
-    return setTimeout(start, 1000);
-  });
-}
-
 function getSummaries(cb) {
   redis.lrange('profilerQueue', 0, -1, (err, results) => {
     if (err) {
       return cb(err);
     }
     console.log('players sampled: %s', results.length);
-    results = results.map(account_id =>
+    results = results.map(accountId =>
       ({
-        account_id,
+        account_id: accountId,
       })
     );
     const container = utility.generateJob('api_summaries', {
       players: results,
     });
-    getData(container.url, (err, body) => {
+    return getData(container.url, (err, body) => {
       if (err) {
         // couldn't get data from api, non-retryable
         return cb(JSON.stringify(err));
       }
       // player summaries response
-      async.each(body.response.players, (player, cb) => {
+      return async.each(body.response.players, (player, cb) => {
         insertPlayer(db, player, cb);
       }, cb);
     });
+  });
+}
+
+function start() {
+  getSummaries((err) => {
+    if (err) {
+      throw err;
+    }
+    return setTimeout(start, 1000);
   });
 }
 
