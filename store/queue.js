@@ -6,6 +6,7 @@ const bull = require('bull');
 const url = require('url');
 const async = require('async');
 const redis = require('./redis');
+
 const types = ['parse'];
 // parse the url
 const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
@@ -29,14 +30,6 @@ function getQueue(type) {
 }
 
 function getCounts(redis, cb) {
-  async.map(types, getQueueCounts, (err, result) => {
-    const obj = {};
-    result.forEach((r, i) => {
-      obj[types[i]] = r;
-    });
-    cb(err, obj);
-  });
-
   function getQueueCounts(type, cb) {
     async.series({
       wait(cb) {
@@ -56,6 +49,13 @@ function getCounts(redis, cb) {
       },
     }, cb);
   }
+  async.map(types, getQueueCounts, (err, result) => {
+    const obj = {};
+    result.forEach((r, i) => {
+      obj[types[i]] = r;
+    });
+    cb(err, obj);
+  });
 }
 
 function cleanup(redis, cb) {
@@ -73,6 +73,28 @@ function cleanup(redis, cb) {
 
 function runQueue(queueName, parallelism, processor) {
   const processingQueueName = `${queueName}:active`;
+  function processOneJob() {
+    redis.blpop(queueName, processingQueueName, '0', (err, job) => {
+      if (err) {
+        console.error(err);
+      }
+      // const jobData = JSON.parse(job);
+      const jobData = JSON.parse(job[1]);
+      processor(jobData, (err) => {
+        if (err) {
+          console.error(err);
+        }
+        /*
+        if (jobData && jobData.id) {
+          // Lock the job so we don't requeue it
+          redis.setex(lockKeyName(jobData), 300, 1);
+        }
+        redis.lrem(processingQueueName, 0, job);
+        */
+        processOneJob();
+      });
+    });
+  }
   // const lockKeyName = (job) => `${queueName}:lock:${job.id}`;
   for (let i = 0; i < parallelism; i += 1) {
     processOneJob();
@@ -108,29 +130,6 @@ function runQueue(queueName, parallelism, processor) {
     });
   }
   */
-
-  function processOneJob() {
-    redis.blpop(queueName, processingQueueName, '0', (err, job) => {
-      if (err) {
-        console.error(err);
-      }
-      // const jobData = JSON.parse(job);
-      const jobData = JSON.parse(job[1]);
-      processor(jobData, (err) => {
-        if (err) {
-          console.error(err);
-        }
-        /*
-        if (jobData && jobData.id) {
-          // Lock the job so we don't requeue it
-          redis.setex(lockKeyName(jobData), 300, 1);
-        }
-        redis.lrem(processingQueueName, 0, job);
-        */
-        processOneJob();
-      });
-    });
-  }
 }
 
 module.exports = {

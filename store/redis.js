@@ -3,7 +3,8 @@
  **/
 const config = require('../config');
 const redis = require('redis');
-console.error('connecting %s', config.REDIS_URL);
+
+console.log('connecting %s', config.REDIS_URL);
 const client = redis.createClient(config.REDIS_URL, {
   detect_buffers: true,
 });

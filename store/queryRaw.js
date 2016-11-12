@@ -1,5 +1,6 @@
 const config = require('../config');
 const knex = require('knex');
+
 module.exports = function queryRaw(input, cb) {
   const conn = knex({
     client: 'pg',

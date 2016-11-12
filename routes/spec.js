@@ -1,8 +1,7 @@
 const async = require('async');
 const constants = require('dotaconstants');
 const config = require('../config');
-const request = require('request');
-const crypto = require('crypto');
+// const crypto = require('crypto');
 const moment = require('moment');
 const queue = require('../store/queue');
 const pQueue = queue.getQueue('parse');
@@ -16,343 +15,342 @@ const subkeys = playerFields.subkeys;
 const countCats = playerFields.countCats;
 const utility = require('../util/utility');
 const countPeers = utility.countPeers;
-const rc_secret = config.RECAPTCHA_SECRET_KEY;
 const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
-const package = require('../package.json');
+const packageJson = require('../package.json');
 const spec = {
-  "swagger": "2.0",
-  "info": {
-    "title": "OpenDota API",
-    "description": `# Introduction
+  swagger: '2.0',
+  info: {
+    title: 'OpenDota API',
+    description: `# Introduction
 This API provides Dota 2 related data.
 Please keep request rate to approximately 1/s.
 `,
-    "version": package.version,
+    version: packageJson.version,
   },
-  "host": "api.opendota.com",
-  "basePath": "/api",
-  "produces": [
-    "application/json"
+  host: 'api.opendota.com',
+  basePath: '/api',
+  produces: [
+    'application/json',
   ],
-  "parameters": {
-    "accountIdParam": {
-      "name": "account_id",
-      "in": "path",
-      "description": "Steam32 account ID",
-      "required": true,
-      "type": "integer"
+  parameters: {
+    accountIdParam: {
+      name: 'account_id',
+      in: 'path',
+      description: 'Steam32 account ID',
+      required: true,
+      type: 'integer',
     },
-    "fieldParam": {
-      "name": "field",
-      "in": "path",
-      "description": "Field to aggregate on",
-      "required": true,
-      "type": "string"
+    fieldParam: {
+      name: 'field',
+      in: 'path',
+      description: 'Field to aggregate on',
+      required: true,
+      type: 'string',
     },
-    "limitParam": {
-      "name": "limit",
-      "in": "query",
-      "description": "Number of matches to limit to",
-      "required": false,
-      "type": "integer"
+    limitParam: {
+      name: 'limit',
+      in: 'query',
+      description: 'Number of matches to limit to',
+      required: false,
+      type: 'integer',
     },
-    "offsetParam": {
-      "name": "offset",
-      "in": "query",
-      "description": "Number of matches to offset start by",
-      "required": false,
-      "type": "integer"
+    offsetParam: {
+      name: 'offset',
+      in: 'query',
+      description: 'Number of matches to offset start by',
+      required: false,
+      type: 'integer',
     },
-    "projectParam": {
-      "name": "project",
-      "in": "query",
-      "description": "Fields to project (array)",
-      "required": false,
-      "type": "string"
+    projectParam: {
+      name: 'project',
+      in: 'query',
+      description: 'Fields to project (array)',
+      required: false,
+      type: 'string',
     },
-    "winParam": {
-      "name": "win",
-      "in": "query",
-      "description": "Whether the player won",
-      "required": false,
-      "type": "integer"
+    winParam: {
+      name: 'win',
+      in: 'query',
+      description: 'Whether the player won',
+      required: false,
+      type: 'integer',
     },
-    "patchParam": {
-      "name": "patch",
-      "in": "query",
-      "description": "Patch ID",
-      "required": false,
-      "type": "integer"
+    patchParam: {
+      name: 'patch',
+      in: 'query',
+      description: 'Patch ID',
+      required: false,
+      type: 'integer',
     },
-    "gameModeParam": {
-      "name": "game_mode",
-      "in": "query",
-      "description": "Game Mode ID",
-      "required": false,
-      "type": "integer"
+    gameModeParam: {
+      name: 'game_mode',
+      in: 'query',
+      description: 'Game Mode ID',
+      required: false,
+      type: 'integer',
     },
-    "lobbyTypeParam": {
-      "name": "lobby_type",
-      "in": "query",
-      "description": "Lobby type ID",
-      "required": false,
-      "type": "integer"
+    lobbyTypeParam: {
+      name: 'lobby_type',
+      in: 'query',
+      description: 'Lobby type ID',
+      required: false,
+      type: 'integer',
     },
-    "regionParam": {
-      "name": "region",
-      "in": "query",
-      "description": "Region ID",
-      "required": false,
-      "type": "integer"
+    regionParam: {
+      name: 'region',
+      in: 'query',
+      description: 'Region ID',
+      required: false,
+      type: 'integer',
     },
-    "dateParam": {
-      "name": "date",
-      "in": "query",
-      "description": "Days previous",
-      "required": false,
-      "type": "integer"
+    dateParam: {
+      name: 'date',
+      in: 'query',
+      description: 'Days previous',
+      required: false,
+      type: 'integer',
     },
-    "laneRoleParam": {
-      "name": "lane_role",
-      "in": "query",
-      "description": "Lane Role ID",
-      "required": false,
-      "type": "integer"
+    laneRoleParam: {
+      name: 'lane_role',
+      in: 'query',
+      description: 'Lane Role ID',
+      required: false,
+      type: 'integer',
     },
-    "heroIdParam": {
-      "name": "hero_id",
-      "in": "query",
-      "description": "Hero ID",
-      "required": false,
-      "type": "integer"
+    heroIdParam: {
+      name: 'hero_id',
+      in: 'query',
+      description: 'Hero ID',
+      required: false,
+      type: 'integer',
     },
-    "isRadiantParam": {
-      "name": "is_radiant",
-      "in": "query",
-      "description": "Whether the player was radiant",
-      "required": false,
-      "type": "integer"
+    isRadiantParam: {
+      name: 'is_radiant',
+      in: 'query',
+      description: 'Whether the player was radiant',
+      required: false,
+      type: 'integer',
     },
-    "withHeroIdParam": {
-      "name": "with_hero_id",
-      "in": "query",
-      "description": "Hero IDs on the player's team (array)",
-      "required": false,
-      "type": "integer"
+    withHeroIdParam: {
+      name: 'with_hero_id',
+      in: 'query',
+      description: "Hero IDs on the player's team (array)",
+      required: false,
+      type: 'integer',
     },
-    "againstHeroIdParam": {
-      "name": "against_hero_id",
-      "in": "query",
-      "description": "Hero IDs against the player's team (array)",
-      "required": false,
-      "type": "integer"
+    againstHeroIdParam: {
+      name: 'against_hero_id',
+      in: 'query',
+      description: "Hero IDs against the player's team (array)",
+      required: false,
+      type: 'integer',
     },
-    "includedAccountIdParam": {
-      "name": "included_account_id",
-      "in": "query",
-      "description": "Account IDs in the match (array)",
-      "required": false,
-      "type": "integer"
+    includedAccountIdParam: {
+      name: 'included_account_id',
+      in: 'query',
+      description: 'Account IDs in the match (array)',
+      required: false,
+      type: 'integer',
     },
-    "excludedAccountIdParam": {
-      "name": "excluded_account_id",
-      "in": "query",
-      "description": "Account IDs not in the match (array)",
-      "required": false,
-      "type": "integer"
+    excludedAccountIdParam: {
+      name: 'excluded_account_id',
+      in: 'query',
+      description: 'Account IDs not in the match (array)',
+      required: false,
+      type: 'integer',
     },
-    "significantParam": {
-      "name": "significant",
-      "in": "query",
-      "description": "Whether the match was significant for aggregation purposes",
-      "required": false,
-      "type": "integer"
+    significantParam: {
+      name: 'significant',
+      in: 'query',
+      description: 'Whether the match was significant for aggregation purposes',
+      required: false,
+      type: 'integer',
     },
-    "sortParam": {
-      "name": "sort",
-      "in": "query",
-      "description": "The field to return matches sorted by in descending order",
-      "required": false,
-      "type": "string"
-    }
+    sortParam: {
+      name: 'sort',
+      in: 'query',
+      description: 'The field to return matches sorted by in descending order',
+      required: false,
+      type: 'string',
+    },
   },
-  "paths": {
-    "/matches/{match_id}": {
-      "get": {
-        "summary": "/",
-        "description": "Match data",
-        "tags": [
-          "matches"
+  paths: {
+    '/matches/{match_id}': {
+      get: {
+        summary: '/',
+        description: 'Match data',
+        tags: [
+          'matches',
         ],
-        "parameters": [{
-          "name": "match_id",
-          "in": "path",
-          "required": true,
-          "type": "integer"
+        parameters: [{
+          name: 'match_id',
+          in: 'path',
+          required: true,
+          type: 'integer',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "match_id": {
-                  "description": "match_id",
-                  "type": "number"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                match_id: {
+                  description: 'match_id',
+                  type: 'number',
                 },
-                "cluster": {
-                  "description": "cluster",
-                  "type": "number"
+                cluster: {
+                  description: 'cluster',
+                  type: 'number',
                 },
-                "replay_salt": {
-                  "description": "replay_salt",
-                  "type": "number"
+                replay_salt: {
+                  description: 'replay_salt',
+                  type: 'number',
                 },
-                "series_id": {
-                  "description": "series_id",
-                  "type": "number"
+                series_id: {
+                  description: 'series_id',
+                  type: 'number',
                 },
-                "series_type": {
-                  "description": "series_type",
-                  "type": "number"
+                series_type: {
+                  description: 'series_type',
+                  type: 'number',
                 },
-                "parties": {
-                  "description": "parties",
-                  "type": "object"
+                parties: {
+                  description: 'parties',
+                  type: 'object',
                 },
-                "skill": {
-                  "description": "skill",
-                  "type": "number"
+                skill: {
+                  description: 'skill',
+                  type: 'number',
                 },
-                "players": {
-                  "description": "players",
-                  "type": "object"
+                players: {
+                  description: 'players',
+                  type: 'object',
                 },
-                "barracks_status_dire": {
-                  "description": "barracks_status_dire",
-                  "type": "number"
+                barracks_status_dire: {
+                  description: 'barracks_status_dire',
+                  type: 'number',
                 },
-                "barracks_status_radiant": {
-                  "description": "barracks_status_radiant",
-                  "type": "number"
+                barracks_status_radiant: {
+                  description: 'barracks_status_radiant',
+                  type: 'number',
                 },
-                "chat": {
-                  "description": "chat",
-                  "type": "object"
+                chat: {
+                  description: 'chat',
+                  type: 'object',
                 },
-                "duration": {
-                  "description": "duration",
-                  "type": "number"
+                duration: {
+                  description: 'duration',
+                  type: 'number',
                 },
-                "engine": {
-                  "description": "engine",
-                  "type": "number"
+                engine: {
+                  description: 'engine',
+                  type: 'number',
                 },
-                "first_blood_time": {
-                  "description": "first_blood_time",
-                  "type": "number"
+                first_blood_time: {
+                  description: 'first_blood_time',
+                  type: 'number',
                 },
-                "game_mode": {
-                  "description": "game_mode",
-                  "type": "number"
+                game_mode: {
+                  description: 'game_mode',
+                  type: 'number',
                 },
-                "human_players": {
-                  "description": "human_players",
-                  "type": "number"
+                human_players: {
+                  description: 'human_players',
+                  type: 'number',
                 },
-                "leagueid": {
-                  "description": "leagueid",
-                  "type": "number"
+                leagueid: {
+                  description: 'leagueid',
+                  type: 'number',
                 },
-                "lobby_type": {
-                  "description": "lobby_type",
-                  "type": "number"
+                lobby_type: {
+                  description: 'lobby_type',
+                  type: 'number',
                 },
-                "match_seq_num": {
-                  "description": "match_seq_num",
-                  "type": "number"
+                match_seq_num: {
+                  description: 'match_seq_num',
+                  type: 'number',
                 },
-                "negative_votes": {
-                  "description": "negative_votes",
-                  "type": "number"
+                negative_votes: {
+                  description: 'negative_votes',
+                  type: 'number',
                 },
-                "objectives": {
-                  "description": "objectives",
-                  "type": "object"
+                objectives: {
+                  description: 'objectives',
+                  type: 'object',
                 },
-                "picks_bans": {
-                  "description": "picks_bans",
-                  "type": "object"
+                picks_bans: {
+                  description: 'picks_bans',
+                  type: 'object',
                 },
-                "positive_votes": {
-                  "description": "positive_votes",
-                  "type": "number"
+                positive_votes: {
+                  description: 'positive_votes',
+                  type: 'number',
                 },
-                "radiant_gold_adv": {
-                  "description": "radiant_gold_adv",
-                  "type": "object"
+                radiant_gold_adv: {
+                  description: 'radiant_gold_adv',
+                  type: 'object',
                 },
-                "radiant_win": {
-                  "description": "radiant_win",
-                  "type": "boolean"
+                radiant_win: {
+                  description: 'radiant_win',
+                  type: 'boolean',
                 },
-                "radiant_xp_adv": {
-                  "description": "radiant_xp_adv",
-                  "type": "object"
+                radiant_xp_adv: {
+                  description: 'radiant_xp_adv',
+                  type: 'object',
                 },
-                "start_time": {
-                  "description": "start_time",
-                  "type": "number"
+                start_time: {
+                  description: 'start_time',
+                  type: 'number',
                 },
-                "teamfights": {
-                  "description": "teamfights",
-                  "type": "object"
+                teamfights: {
+                  description: 'teamfights',
+                  type: 'object',
                 },
-                "tower_status_dire": {
-                  "description": "tower_status_dire",
-                  "type": "number"
+                tower_status_dire: {
+                  description: 'tower_status_dire',
+                  type: 'number',
                 },
-                "tower_status_radiant": {
-                  "description": "tower_status_radiant",
-                  "type": "number"
+                tower_status_radiant: {
+                  description: 'tower_status_radiant',
+                  type: 'number',
                 },
-                "version": {
-                  "description": "version",
-                  "type": "number"
+                version: {
+                  description: 'version',
+                  type: 'number',
                 },
-                "patch": {
-                  "description": "patch",
-                  "type": "number"
+                patch: {
+                  description: 'patch',
+                  type: 'number',
                 },
-                "region": {
-                  "description": "region",
-                  "type": "number"
+                region: {
+                  description: 'region',
+                  type: 'number',
                 },
-                "all_word_counts": {
-                  "description": "all_word_counts",
-                  "type": "object"
+                all_word_counts: {
+                  description: 'all_word_counts',
+                  type: 'object',
                 },
-                "my_word_counts": {
-                  "description": "my_word_counts",
-                  "type": "object"
+                my_word_counts: {
+                  description: 'my_word_counts',
+                  type: 'object',
                 },
-                "throw": {
-                  "description": "throw",
-                  "type": "number"
+                throw: {
+                  description: 'throw',
+                  type: 'number',
                 },
-                "loss": {
-                  "description": "loss",
-                  "type": "number"
+                loss: {
+                  description: 'loss',
+                  type: 'number',
                 },
-                "replay_url": {
-                  "description": "replay_url",
-                  "type": "string"
-                }
-              }
-            }
-          }
+                replay_url: {
+                  description: 'replay_url',
+                  type: 'string',
+                },
+              },
+            },
+          },
         },
         route: () => '/matches/:match_id/:info?',
         func: (req, res, cb) => {
@@ -370,47 +368,47 @@ Please keep request rate to approximately 1/s.
             res.json(match);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}": {
-      "get": {
-        "summary": "/",
-        "description": "Player data",
-        "tags": [
-          "players"
+    '/players/{account_id}': {
+      get: {
+        summary: '/',
+        description: 'Player data',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "tracked_until": {
-                  "description": "tracked_until",
-                  "type": "string"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                tracked_until: {
+                  description: 'tracked_until',
+                  type: 'string',
                 },
-                "solo_competitive_rank": {
-                  "description": "solo_competitive_rank",
-                  "type": "string"
+                solo_competitive_rank: {
+                  description: 'solo_competitive_rank',
+                  type: 'string',
                 },
-                "competitive_rank": {
-                  "description": "competitive_rank",
-                  "type": "string"
+                competitive_rank: {
+                  description: 'competitive_rank',
+                  type: 'string',
                 },
-                "mmr_estimate": {
-                  "description": "mmr_estimate",
-                  "type": "object"
+                mmr_estimate: {
+                  description: 'mmr_estimate',
+                  type: 'object',
                 },
-                "profile": {
-                  "description": "profile",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                profile: {
+                  description: 'profile',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
         route: () => '/players/:account_id',
         func: (req, res, cb) => {
@@ -438,69 +436,69 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/wl": {
-      "get": {
-        "summary": "/wl",
-        "description": "Win/Loss count",
-        "tags": [
-          "players"
+    '/players/{account_id}/wl': {
+      get: {
+        summary: '/wl',
+        description: 'Win/Loss count',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/limitParam"
+          $ref: '#/parameters/limitParam',
         }, {
-          "$ref": "#/parameters/offsetParam"
+          $ref: '#/parameters/offsetParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "win": {
-                  "description": "win",
-                  "type": "number"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                win: {
+                  description: 'win',
+                  type: 'number',
                 },
-                "lose": {
-                  "description": "lose",
-                  "type": "number"
-                }
-              }
-            }
-          }
+                lose: {
+                  description: 'lose',
+                  type: 'number',
+                },
+              },
+            },
+          },
         },
         route: () => '/players/:account_id/wl',
         func: (req, res, cb) => {
@@ -523,64 +521,64 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/matches": {
-      "get": {
-        "summary": "/matches",
-        "description": "Matches played",
-        "tags": [
-          "players"
+    '/players/{account_id}/matches': {
+      get: {
+        summary: '/matches',
+        description: 'Matches played',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/limitParam"
+          $ref: '#/parameters/limitParam',
         }, {
-          "$ref": "#/parameters/offsetParam"
+          $ref: '#/parameters/offsetParam',
         }, {
-          "$ref": "#/parameters/projectParam"
+          $ref: '#/parameters/projectParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/players/:account_id/matches',
         func: (req, res, cb) => {
@@ -605,62 +603,62 @@ Please keep request rate to approximately 1/s.
             }
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/heroes": {
-      "get": {
-        "summary": "/heroes",
-        "description": "Heroes played",
-        "tags": [
-          "players"
+    '/players/{account_id}/heroes': {
+      get: {
+        summary: '/heroes',
+        description: 'Heroes played',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/limitParam"
+          $ref: '#/parameters/limitParam',
         }, {
-          "$ref": "#/parameters/offsetParam"
+          $ref: '#/parameters/offsetParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/players/:account_id/heroes',
         func: (req, res, cb) => {
@@ -714,65 +712,61 @@ Please keep request rate to approximately 1/s.
                 }
               }
             });
-            res.json(Object.keys(heroes).map((k) => {
-              return heroes[k];
-            }).sort((a, b) => {
-              return b.games - a.games;
-            }));
+            res.json(Object.keys(heroes).map(k => heroes[k]).sort((a, b) => b.games - a.games));
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/peers": {
-      "get": {
-        "summary": "/peers",
-        "description": "Players played with",
-        "tags": [
-          "players"
+    '/players/{account_id}/peers': {
+      get: {
+        summary: '/peers',
+        description: 'Players played with',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/players/:account_id/peers',
         func: (req, res, cb) => {
@@ -792,58 +786,58 @@ Please keep request rate to approximately 1/s.
             });
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/pros": {
-      "get": {
-        "summary": "/pros",
-        "description": "Pro players played with",
-        "tags": [
-          "players"
+    '/players/{account_id}/pros': {
+      get: {
+        summary: '/pros',
+        description: 'Pro players played with',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/players/:account_id/pros',
         func: (req, res, cb) => {
@@ -863,177 +857,177 @@ Please keep request rate to approximately 1/s.
             });
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/records": {
-      "get": {
-        "summary": "/records",
-        "description": "Extremes in matches played",
-        "tags": [
-          "players"
+    '/players/{account_id}/records': {
+      get: {
+        summary: '/records',
+        description: 'Extremes in matches played',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/limitParam"
+          $ref: '#/parameters/limitParam',
         }, {
-          "$ref": "#/parameters/offsetParam"
+          $ref: '#/parameters/offsetParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "kills": {
-                  "description": "kills",
-                  "type": "object"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                kills: {
+                  description: 'kills',
+                  type: 'object',
                 },
-                "deaths": {
-                  "description": "deaths",
-                  "type": "object"
+                deaths: {
+                  description: 'deaths',
+                  type: 'object',
                 },
-                "assists": {
-                  "description": "assists",
-                  "type": "object"
+                assists: {
+                  description: 'assists',
+                  type: 'object',
                 },
-                "kda": {
-                  "description": "kda",
-                  "type": "object"
+                kda: {
+                  description: 'kda',
+                  type: 'object',
                 },
-                "gold_per_min": {
-                  "description": "gold_per_min",
-                  "type": "object"
+                gold_per_min: {
+                  description: 'gold_per_min',
+                  type: 'object',
                 },
-                "xp_per_min": {
-                  "description": "xp_per_min",
-                  "type": "object"
+                xp_per_min: {
+                  description: 'xp_per_min',
+                  type: 'object',
                 },
-                "last_hits": {
-                  "description": "last_hits",
-                  "type": "object"
+                last_hits: {
+                  description: 'last_hits',
+                  type: 'object',
                 },
-                "denies": {
-                  "description": "denies",
-                  "type": "object"
+                denies: {
+                  description: 'denies',
+                  type: 'object',
                 },
-                "lane_efficiency_pct": {
-                  "description": "lane_efficiency_pct",
-                  "type": "object"
+                lane_efficiency_pct: {
+                  description: 'lane_efficiency_pct',
+                  type: 'object',
                 },
-                "duration": {
-                  "description": "duration",
-                  "type": "object"
+                duration: {
+                  description: 'duration',
+                  type: 'object',
                 },
-                "level": {
-                  "description": "level",
-                  "type": "object"
+                level: {
+                  description: 'level',
+                  type: 'object',
                 },
-                "hero_damage": {
-                  "description": "hero_damage",
-                  "type": "object"
+                hero_damage: {
+                  description: 'hero_damage',
+                  type: 'object',
                 },
-                "tower_damage": {
-                  "description": "tower_damage",
-                  "type": "object"
+                tower_damage: {
+                  description: 'tower_damage',
+                  type: 'object',
                 },
-                "hero_healing": {
-                  "description": "hero_healing",
-                  "type": "object"
+                hero_healing: {
+                  description: 'hero_healing',
+                  type: 'object',
                 },
-                "stuns": {
-                  "description": "stuns",
-                  "type": "object"
+                stuns: {
+                  description: 'stuns',
+                  type: 'object',
                 },
-                "tower_kills": {
-                  "description": "tower_kills",
-                  "type": "object"
+                tower_kills: {
+                  description: 'tower_kills',
+                  type: 'object',
                 },
-                "neutral_kills": {
-                  "description": "neutral_kills",
-                  "type": "object"
+                neutral_kills: {
+                  description: 'neutral_kills',
+                  type: 'object',
                 },
-                "courier_kills": {
-                  "description": "courier_kills",
-                  "type": "object"
+                courier_kills: {
+                  description: 'courier_kills',
+                  type: 'object',
                 },
-                "purchase_tpscroll": {
-                  "description": "purchase_tpscroll",
-                  "type": "object"
+                purchase_tpscroll: {
+                  description: 'purchase_tpscroll',
+                  type: 'object',
                 },
-                "purchase_ward_observer": {
-                  "description": "purchase_ward_observer",
-                  "type": "object"
+                purchase_ward_observer: {
+                  description: 'purchase_ward_observer',
+                  type: 'object',
                 },
-                "purchase_ward_sentry": {
-                  "description": "purchase_ward_sentry",
-                  "type": "object"
+                purchase_ward_sentry: {
+                  description: 'purchase_ward_sentry',
+                  type: 'object',
                 },
-                "purchase_gem": {
-                  "description": "purchase_gem",
-                  "type": "object"
+                purchase_gem: {
+                  description: 'purchase_gem',
+                  type: 'object',
                 },
-                "purchase_rapier": {
-                  "description": "purchase_rapier",
-                  "type": "object"
+                purchase_rapier: {
+                  description: 'purchase_rapier',
+                  type: 'object',
                 },
-                "pings": {
-                  "description": "pings",
-                  "type": "object"
+                pings: {
+                  description: 'pings',
+                  type: 'object',
                 },
-                "throw": {
-                  "description": "throw",
-                  "type": "object"
+                throw: {
+                  description: 'throw',
+                  type: 'object',
                 },
-                "comeback": {
-                  "description": "comeback",
-                  "type": "object"
+                comeback: {
+                  description: 'comeback',
+                  type: 'object',
                 },
-                "stomp": {
-                  "description": "stomp",
-                  "type": "object"
+                stomp: {
+                  description: 'stomp',
+                  type: 'object',
                 },
-                "loss": {
-                  "description": "loss",
-                  "type": "object"
+                loss: {
+                  description: 'loss',
+                  type: 'object',
                 },
-                "actions_per_min": {
-                  "description": "actions_per_min",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                actions_per_min: {
+                  description: 'actions_per_min',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
         route: () => '/players/:account_id/records',
         func: (req, res, cb) => {
@@ -1053,85 +1047,85 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/counts": {
-      "get": {
-        "summary": "/counts",
-        "description": "Categorical counts",
-        "tags": [
-          "players"
+    '/players/{account_id}/counts': {
+      get: {
+        summary: '/counts',
+        description: 'Categorical counts',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/limitParam"
+          $ref: '#/parameters/limitParam',
         }, {
-          "$ref": "#/parameters/offsetParam"
+          $ref: '#/parameters/offsetParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "leaver_status": {
-                  "description": "leaver_status",
-                  "type": "object"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                leaver_status: {
+                  description: 'leaver_status',
+                  type: 'object',
                 },
-                "game_mode": {
-                  "description": "game_mode",
-                  "type": "object"
+                game_mode: {
+                  description: 'game_mode',
+                  type: 'object',
                 },
-                "lobby_type": {
-                  "description": "lobby_type",
-                  "type": "object"
+                lobby_type: {
+                  description: 'lobby_type',
+                  type: 'object',
                 },
-                "lane_role": {
-                  "description": "lane_role",
-                  "type": "object"
+                lane_role: {
+                  description: 'lane_role',
+                  type: 'object',
                 },
-                "region": {
-                  "description": "region",
-                  "type": "object"
+                region: {
+                  description: 'region',
+                  type: 'object',
                 },
-                "patch": {
-                  "description": "patch",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                patch: {
+                  description: 'patch',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
         route: () => '/players/:account_id/counts',
         func: (req, res, cb) => {
@@ -1159,64 +1153,64 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/histograms/{field}": {
-      "get": {
-        "summary": "/histograms",
-        "description": "Distribution of matches in a single stat",
-        "tags": [
-          "players"
+    '/players/{account_id}/histograms/{field}': {
+      get: {
+        summary: '/histograms',
+        description: 'Distribution of matches in a single stat',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/limitParam"
+          $ref: '#/parameters/limitParam',
         }, {
-          "$ref": "#/parameters/offsetParam"
+          $ref: '#/parameters/offsetParam',
         }, {
-          "$ref": "#/parameters/fieldParam"
+          $ref: '#/parameters/fieldParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
@@ -1250,69 +1244,69 @@ Please keep request rate to approximately 1/s.
             res.json(bucketArray);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/wardmap": {
-      "get": {
-        "summary": "/wardmap",
-        "description": "Wards placed in matches played",
-        "tags": [
-          "players"
+    '/players/{account_id}/wardmap': {
+      get: {
+        summary: '/wardmap',
+        description: 'Wards placed in matches played',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/limitParam"
+          $ref: '#/parameters/limitParam',
         }, {
-          "$ref": "#/parameters/offsetParam"
+          $ref: '#/parameters/offsetParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "obs": {
-                  "description": "obs",
-                  "type": "object"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                obs: {
+                  description: 'obs',
+                  type: 'object',
                 },
-                "sen": {
-                  "description": "sen",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                sen: {
+                  description: 'sen',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
         route: () => '/players/:account_id/wardmap',
         func: (req, res, cb) => {
@@ -1333,69 +1327,69 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/wordcloud": {
-      "get": {
-        "summary": "/wordcloud",
-        "description": "Words said/read in matches played",
-        "tags": [
-          "players"
+    '/players/{account_id}/wordcloud': {
+      get: {
+        summary: '/wordcloud',
+        description: 'Words said/read in matches played',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }, {
-          "$ref": "#/parameters/limitParam"
+          $ref: '#/parameters/limitParam',
         }, {
-          "$ref": "#/parameters/offsetParam"
+          $ref: '#/parameters/offsetParam',
         }, {
-          "$ref": "#/parameters/winParam"
+          $ref: '#/parameters/winParam',
         }, {
-          "$ref": "#/parameters/patchParam"
+          $ref: '#/parameters/patchParam',
         }, {
-          "$ref": "#/parameters/gameModeParam"
+          $ref: '#/parameters/gameModeParam',
         }, {
-          "$ref": "#/parameters/lobbyTypeParam"
+          $ref: '#/parameters/lobbyTypeParam',
         }, {
-          "$ref": "#/parameters/regionParam"
+          $ref: '#/parameters/regionParam',
         }, {
-          "$ref": "#/parameters/dateParam"
+          $ref: '#/parameters/dateParam',
         }, {
-          "$ref": "#/parameters/laneRoleParam"
+          $ref: '#/parameters/laneRoleParam',
         }, {
-          "$ref": "#/parameters/heroIdParam"
+          $ref: '#/parameters/heroIdParam',
         }, {
-          "$ref": "#/parameters/isRadiantParam"
+          $ref: '#/parameters/isRadiantParam',
         }, {
-          "$ref": "#/parameters/includedAccountIdParam"
+          $ref: '#/parameters/includedAccountIdParam',
         }, {
-          "$ref": "#/parameters/excludedAccountIdParam"
+          $ref: '#/parameters/excludedAccountIdParam',
         }, {
-          "$ref": "#/parameters/withHeroIdParam"
+          $ref: '#/parameters/withHeroIdParam',
         }, {
-          "$ref": "#/parameters/againstHeroIdParam"
+          $ref: '#/parameters/againstHeroIdParam',
         }, {
-          "$ref": "#/parameters/significantParam"
+          $ref: '#/parameters/significantParam',
         }, {
-          "$ref": "#/parameters/sortParam"
+          $ref: '#/parameters/sortParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "my_word_counts": {
-                  "description": "my_word_counts",
-                  "type": "object"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                my_word_counts: {
+                  description: 'my_word_counts',
+                  type: 'object',
                 },
-                "all_word_counts": {
-                  "description": "all_word_counts",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                all_word_counts: {
+                  description: 'all_word_counts',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
         route: () => '/players/:account_id/wordcloud',
         func: (req, res, cb) => {
@@ -1416,28 +1410,28 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/ratings": {
-      "get": {
-        "summary": "/ratings",
-        "description": "Player rating history",
-        "tags": [
-          "players"
+    '/players/{account_id}/ratings': {
+      get: {
+        summary: '/ratings',
+        description: 'Player rating history',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/players/:account_id/ratings',
         func: (req, res, cb) => {
@@ -1448,28 +1442,28 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/rankings": {
-      "get": {
-        "summary": "/rankings",
-        "description": "Player hero rankings",
-        "tags": [
-          "players"
+    '/players/{account_id}/rankings': {
+      get: {
+        summary: '/rankings',
+        description: 'Player hero rankings',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/players/:account_id/rankings',
         func: (req, res, cb) => {
@@ -1480,25 +1474,25 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/players/{account_id}/refresh": {
+    '/players/{account_id}/refresh': {
       post: {
-        "summary": "/refresh",
-        "description": "Refresh player match history",
-        "tags": [
-          "players"
+        summary: '/refresh',
+        description: 'Refresh player match history',
+        tags: [
+          'players',
         ],
-        "parameters": [{
-          "$ref": "#/parameters/accountIdParam"
+        parameters: [{
+          $ref: '#/parameters/accountIdParam',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-            }
-          }
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+            },
+          },
         },
         route: () => '/players/:account_id/refresh',
         func: (req, res, cb) => {
@@ -1513,27 +1507,27 @@ Please keep request rate to approximately 1/s.
             });
           });
         },
-      }
+      },
     },
-    "/explorer": {
-      "get": {
-        "summary": "/",
-        "description": "Submit arbitrary SQL queries to the database",
-        tags: ["explorer"],
-        "parameters": [{
-          "name": "sql",
-          "in": "query",
-          "description": "The PostgreSQL query as percent-encoded string.",
-          "required": false,
-          "type": "string"
+    '/explorer': {
+      get: {
+        summary: '/',
+        description: 'Submit arbitrary SQL queries to the database',
+        tags: ['explorer'],
+        parameters: [{
+          name: 'sql',
+          in: 'query',
+          description: 'The PostgreSQL query as percent-encoded string.',
+          required: false,
+          type: 'string',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-            }
-          }
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+            },
+          },
         },
         route: () => '/explorer',
         func: (req, res, cb) => {
@@ -1550,46 +1544,44 @@ Please keep request rate to approximately 1/s.
           });
         },
 
-      }
+      },
     },
-    "/metadata": {
-      "get": {
-        "summary": "/",
-        "description": "Site metadata",
-        "tags": [
-          "metadata"
+    '/metadata': {
+      get: {
+        summary: '/',
+        description: 'Site metadata',
+        tags: [
+          'metadata',
         ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "banner": {
-                  "description": "banner",
-                  "type": "object"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                banner: {
+                  description: 'banner',
+                  type: 'object',
                 },
-                "cheese": {
-                  "description": "cheese",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                cheese: {
+                  description: 'cheese',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
-        route: () => "/metadata",
+        route: () => '/metadata',
         func: (req, res, cb) => {
           async.parallel({
             banner(cb) {
               redis.get('banner', cb);
             },
             cheese(cb) {
-              redis.get('cheese_goal', (err, result) => {
-                return cb(err, {
-                  cheese: result,
-                  goal: config.GOAL,
-                });
-              });
+              redis.get('cheese_goal', (err, result) => cb(err, {
+                cheese: result,
+                goal: config.GOAL,
+              }));
             },
             user(cb) {
               cb(null, req.user);
@@ -1601,32 +1593,32 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/distributions": {
-      "get": {
-        "summary": "/",
-        "description": "Global Dota 2 statistics",
-        "tags": [
-          "distributions"
+    '/distributions': {
+      get: {
+        summary: '/',
+        description: 'Global Dota 2 statistics',
+        tags: [
+          'distributions',
         ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "mmr": {
-                  "description": "mmr",
-                  "type": "object"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                mmr: {
+                  description: 'mmr',
+                  type: 'object',
                 },
-                "country_mmr": {
-                  "description": "country_mmr",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                country_mmr: {
+                  description: 'country_mmr',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
         route: () => '/distributions',
         func: (req, res, cb) => {
@@ -1637,32 +1629,32 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/search": {
-      "get": {
-        "summary": "/",
-        "description": "Search players by personaname",
-        "tags": [
-          "search"
+    '/search': {
+      get: {
+        summary: '/',
+        description: 'Search players by personaname',
+        tags: [
+          'search',
         ],
-        "parameters": [{
-          "name": "q",
-          "in": "query",
-          "description": "Search string",
-          "required": true,
-          "type": "string"
+        parameters: [{
+          name: 'q',
+          in: 'query',
+          description: 'Search string',
+          required: true,
+          type: 'string',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/search',
         func: (req, res, cb) => {
@@ -1676,39 +1668,39 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/rankings": {
-      "get": {
-        "summary": "/",
-        "description": "Top players by hero",
-        "tags": [
-          "rankings"
+    '/rankings': {
+      get: {
+        summary: '/',
+        description: 'Top players by hero',
+        tags: [
+          'rankings',
         ],
-        "parameters": [{
-          "name": "hero_id",
-          "in": "query",
-          "description": "Hero ID",
-          "required": true,
-          "type": "string"
+        parameters: [{
+          name: 'hero_id',
+          in: 'query',
+          description: 'Hero ID',
+          required: true,
+          type: 'string',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "hero_id": {
-                  "description": "hero_id",
-                  "type": "number"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                hero_id: {
+                  description: 'hero_id',
+                  type: 'number',
                 },
-                "rankings": {
-                  "description": "rankings",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                rankings: {
+                  description: 'rankings',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
         route: () => '/rankings',
         func: (req, res, cb) => {
@@ -1719,39 +1711,39 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/benchmarks": {
-      "get": {
-        "summary": "/",
-        "description": "Benchmarks of average stat values for a hero",
-        "tags": [
-          "benchmarks"
+    '/benchmarks': {
+      get: {
+        summary: '/',
+        description: 'Benchmarks of average stat values for a hero',
+        tags: [
+          'benchmarks',
         ],
-        "parameters": [{
-          "name": "hero_id",
-          "in": "query",
-          "description": "Hero ID",
-          "required": true,
-          "type": "string"
+        parameters: [{
+          name: 'hero_id',
+          in: 'query',
+          description: 'Hero ID',
+          required: true,
+          type: 'string',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "hero_id": {
-                  "description": "hero_id",
-                  "type": "number"
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                hero_id: {
+                  description: 'hero_id',
+                  type: 'number',
                 },
-                "result": {
-                  "description": "result",
-                  "type": "object"
-                }
-              }
-            }
-          }
+                result: {
+                  description: 'result',
+                  type: 'object',
+                },
+              },
+            },
+          },
         },
         route: () => '/benchmarks',
         func: (req, res, cb) => {
@@ -1764,20 +1756,20 @@ Please keep request rate to approximately 1/s.
             res.json(result);
           });
         },
-      }
+      },
     },
-    "/status": {
+    '/status': {
       get: {
-        "summary": "/",
-        "description": "Get current service statistics",
+        summary: '/',
+        description: 'Get current service statistics',
         tags: ['status'],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object"
-            }
-          }
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+            },
+          },
         },
         route: () => '/status',
         func: (req, res, cb) => {
@@ -1788,20 +1780,20 @@ Please keep request rate to approximately 1/s.
             res.json(status);
           });
         },
-      }
+      },
     },
-    "/health": {
+    '/health': {
       get: {
-        "summary": "/",
-        "description": "Get service health data",
-        tags: ["health"],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object"
-            }
-          }
+        summary: '/',
+        description: 'Get service health data',
+        tags: ['health'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+            },
+          },
         },
         route: () => '/health/:metric?',
         func: (req, res, cb) => {
@@ -1823,51 +1815,47 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
-    "/request/{jobId}": {
+    '/request/{jobId}': {
       get: {
-        "summary": "GET",
-        description: "Get parse request state",
+        summary: 'GET',
+        description: 'Get parse request state',
         tags: ['request'],
-        "parameters": [{
-          "name": "id",
-          "in": "path",
-          "description": "The job ID to query.",
-          "required": true,
-          "type": "string"
+        parameters: [{
+          name: 'id',
+          in: 'path',
+          description: 'The job ID to query.',
+          required: true,
+          type: 'string',
         }],
         route: () => '/request/:jobId',
-        func: (req, res, cb) => {
-          return pQueue.getJob(req.params.jobId).then((job) => {
-            if (job) {
-              return job.getState().then((state) => {
-                return res.json({
-                  jobId: job.jobId,
-                  data: job.data,
-                  state,
-                  progress: job.progress(),
-                });
-              }).catch(cb);
-            } else {
-              res.json({
-                state: 'failed',
-              });
-            }
-          }).catch(cb);
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object"
-            }
+        func: (req, res, cb) => pQueue.getJob(req.params.jobId).then((job) => {
+          if (job) {
+            return job.getState().then(state => res.json({
+              jobId: job.jobId,
+              data: job.data,
+              state,
+              progress: job.progress(),
+            })).catch(cb);
+          } else {
+            res.json({
+              state: 'failed',
+            });
           }
-        }
+        }).catch(cb),
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+            },
+          },
+        },
       },
     },
-    "/request/{match_id}": {
+    '/request/{match_id}': {
       post: {
-        summary: "POST",
-        description: "Submit a new parse request",
+        summary: 'POST',
+        description: 'Submit a new parse request',
         tags: ['request'],
         route: () => '/request/:match_id',
         func: (req, res, cb) => {
@@ -1933,41 +1921,41 @@ Please keep request rate to approximately 1/s.
           }
           */
         },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object",
-            }
-          }
-        }
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+            },
+          },
+        },
       },
     },
-    "/matchups": {
+    '/matchups': {
       get: {
-        summary: "/",
-        description: "Get hero matchups (teammates and opponents)",
+        summary: '/',
+        description: 'Get hero matchups (teammates and opponents)',
         tags: ['matchups'],
-        "parameters": [{
-          "name": "t0",
-          "in": "query",
-          "description": "Hero 0 ID",
-          "required": false,
-          "type": "number"
+        parameters: [{
+          name: 't0',
+          in: 'query',
+          description: 'Hero 0 ID',
+          required: false,
+          type: 'number',
         }, {
-          "name": "t1",
-          "in": "query",
-          "description": "Hero 1 ID",
-          "required": false,
-          "type": "number"
+          name: 't1',
+          in: 'query',
+          description: 'Hero 1 ID',
+          required: false,
+          type: 'number',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "object"
-            }
-          }
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+            },
+          },
         },
         route: () => '/matchups',
         func: (req, res, cb) => {
@@ -1992,23 +1980,23 @@ Please keep request rate to approximately 1/s.
             });
           });
         },
-      }
+      },
     },
-    "/heroes": {
+    '/heroes': {
       get: {
         summary: '/',
-        description: "Get hero data",
+        description: 'Get hero data',
         tags: ['heroes'],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/heroes',
         func: (req, res, cb) => {
@@ -2018,24 +2006,24 @@ Please keep request rate to approximately 1/s.
             }
             return res.json(result);
           });
-        }
+        },
       },
     },
-    "/leagues": {
+    '/leagues': {
       get: {
-        summary: "/",
-        description: "Get league data",
+        summary: '/',
+        description: 'Get league data',
         tags: ['leagues'],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/leagues',
         func: (req, res, cb) => {
@@ -2045,31 +2033,31 @@ Please keep request rate to approximately 1/s.
             }
             return res.json(result);
           });
-        }
+        },
       },
     },
-    "/replays": {
+    '/replays': {
       get: {
         summary: '/',
-        description: "Get replay data",
+        description: 'Get replay data',
         tags: ['replays'],
-        "parameters": [{
-          "name": "match_id",
-          "in": "query",
-          "description": "Match IDs (array)",
-          "required": true,
-          "type": "integer"
+        parameters: [{
+          name: 'match_id',
+          in: 'query',
+          description: 'Match IDs (array)',
+          required: true,
+          type: 'integer',
         }],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "type": "array",
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
-                "type": "object",
+                type: 'object',
               },
-            }
-          }
+            },
+          },
         },
         route: () => '/replays',
         func: (req, res, cb) => {
@@ -2079,7 +2067,7 @@ Please keep request rate to approximately 1/s.
             }
             return res.json(result);
           });
-        }
+        },
       },
     },
   },
