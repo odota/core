@@ -7,117 +7,11 @@ const db = require('../store/db');
 const cassandra = require('../store/cassandra');
 const utility = require('../util/utility');
 const request = require('request');
-const api_key = config.STEAM_API_KEY.split(',')[0];
-let failing_account_id;
-const health = {
-  random_player: function random_player(cb) {
-    db.raw('select account_id from players tablesample system(1) limit 1').asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      if (!result.rows[0]) {
-        return cb();
-      }
-      request(`${config.ROOT_URL}/api/players/${failing_account_id || result.rows[0].account_id}`, (err, resp, body) => {
-        const fail = err || resp.statusCode !== 200;
-        if (fail) {
-          failing_account_id = result.rows[0].account_id;
-          console.log('[FAILING] account_id %s', failing_account_id);
-        }
-        return cb(fail,
-          {
-            metric: Number(fail),
-            threshold: 1,
-          });
-      });
-    });
-  },
-  steam_api: function steam_api(cb) {
-    request(`${'http://api.steampowered.com' + '/IDOTA2Match_570/GetMatchHistory/V001/?key='}${api_key}`, (err, resp, body) => {
-      if (err || resp.statusCode !== 200) {
-        return cb('bad http response');
-      }
-      try {
-        const fail = err || resp.statusCode !== 200 || JSON.parse(body).result.status !== 1;
-        return cb(fail,
-          {
-            metric: Number(fail),
-            threshold: 1,
-          });
-      } catch (e) {
-        return cb('malformed http response');
-      }
-    });
-  },
-  seq_num_delay: function seq_num_delay(cb) {
-    utility.getData(utility.generateJob('api_history',
-        {}).url, (err, body) => {
-      if (err) {
-        return cb('failed to get current sequence number');
-      }
-            // get match_seq_num, compare with real seqnum
-      const curr_seq_num = body.result.matches[0].match_seq_num;
-      redis.get('match_seq_num', (err, num) => {
-        if (err) {
-          return cb(err);
-        }
-        num = Number(num);
-        const metric = curr_seq_num - num;
-        return cb(err,
-          {
-            metric,
-            threshold: 10000,
-          });
-      });
-    });
-  },
-  redis_usage: function redis_usage(cb) {
-    redis.info((err, info) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(err,
-        {
-          metric: redis.server_info.used_memory,
-          threshold: 13 * Math.pow(10, 9),
-        });
-    });
-  },
-  postgres_usage: function postgres_usage(cb) {
-    db.raw('select pg_database_size(\'yasp\')').asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(err,
-        {
-          metric: result.rows[0].pg_database_size,
-          threshold: 2 * Math.pow(10, 11),
-        });
-    });
-  },
-  cassandra_usage: function cassandra_usage(cb) {
-    cassandra.execute('select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = \'yasp\'', (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      let size = 0;
-      result.rows.forEach((r) => {
-        size += r.mean_partition_size * r.partitions_count * 0.5 * 4;
-      });
-      return cb(err,
-        {
-          metric: size,
-          threshold: 8 * Math.pow(10, 12),
-        });
-    });
-  },
-};
-for (const key in health) {
-  invokeInterval(health[key]);
-}
+
+const apiKey = config.STEAM_API_KEY.split(',')[0];
 
 function invokeInterval(func) {
-    // invokes the function immediately, waits for callback, waits the delay, and then calls it again
+  // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
     console.log('running %s', func.name);
     console.time(func.name);
@@ -130,7 +24,7 @@ function invokeInterval(func) {
         };
       }
       if (result) {
-        result.timestamp = ~~(new Date() / 1000);
+        result.timestamp = Math.floor(new Date() / 1000);
         redis.hset('health', func.name, JSON.stringify(result));
         redis.expire('health', 900);
       }
@@ -139,3 +33,83 @@ function invokeInterval(func) {
     });
   }());
 }
+
+const health = {
+  steam_api: function steamApi(cb) {
+    request(`${'http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key='}${apiKey}`, (err, resp, body) => {
+      if (err || resp.statusCode !== 200) {
+        return cb('bad http response');
+      }
+      try {
+        const fail = err || resp.statusCode !== 200 || JSON.parse(body).result.status !== 1;
+        return cb(fail, {
+          metric: Number(fail),
+          threshold: 1,
+        });
+      } catch (e) {
+        return cb('malformed http response');
+      }
+    });
+  },
+  seq_num_delay: function seqNumDelay(cb) {
+    utility.getData(utility.generateJob('api_history', {}).url, (err, body) => {
+      if (err) {
+        return cb('failed to get current sequence number');
+      }
+      // get match_seq_num, compare with real seqnum
+      const currSeqNum = body.result.matches[0].match_seq_num;
+      return redis.get('match_seq_num', (err, num) => {
+        if (err) {
+          return cb(err);
+        }
+        num = Number(num);
+        const metric = currSeqNum - num;
+        return cb(err, {
+          metric,
+          threshold: 10000,
+        });
+      });
+    });
+  },
+  redis_usage: function redisUsage(cb) {
+    redis.info((err) => {
+      if (err) {
+        return cb(err);
+      }
+      // console.log(info);
+      return cb(err, {
+        metric: redis.server_info.used_memory,
+        threshold: 13 * Math.pow(10, 9),
+      });
+    });
+  },
+  postgres_usage: function postgresUsage(cb) {
+    db.raw('select pg_database_size(\'yasp\')').asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return cb(err, {
+        metric: result.rows[0].pg_database_size,
+        threshold: 2 * Math.pow(10, 11),
+      });
+    });
+  },
+  cassandra_usage: function cassandraUsage(cb) {
+    cassandra.execute('select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = \'yasp\'', (err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      let size = 0;
+      result.rows.forEach((r) => {
+        size += r.mean_partition_size * r.partitions_count * 0.5 * 4;
+      });
+      return cb(err, {
+        metric: size,
+        threshold: 8 * Math.pow(10, 12),
+      });
+    });
+  },
+};
+Object.keys(health).forEach((key) => {
+  invokeInterval(health[key]);
+});
