@@ -93,9 +93,9 @@ before(function setup(done) {
         contactPoints: [initCassandraHost],
       });
       async.series([function drop(cb) {
-          console.log('drop cassandra test keyspace');
-          client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
-        },
+        console.log('drop cassandra test keyspace');
+        client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+      },
         function create(cb) {
           console.log('create cassandra test keyspace');
           client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
@@ -162,8 +162,8 @@ describe('replay parse', function testReplayParse() {
     });
     nock(`http://replay${match.cluster}.valve.net`).get(`/570/${key}`).reply(200, (uri, requestBody, cb) => {
       request(`https://cdn.rawgit.com/odota/testfiles/master/${key}`, {
-          encoding: null,
-        }, (err, resp, body) =>
+        encoding: null,
+      }, (err, resp, body) =>
         cb(err, body)
       );
     });
