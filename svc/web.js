@@ -92,7 +92,7 @@ app.use((req, res, cb) => {
   if (req.originalUrl.indexOf('/api') === 0) {
     redis.zadd('api_hits', moment().format('X'), req.originalUrl);
   }
-  if (req.user) {
+  if (req.user && req.user.account_id) {
     redis.zadd('visitors', moment().format('X'), req.user.account_id);
     redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id);
   }
