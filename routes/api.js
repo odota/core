@@ -52,5 +52,36 @@ module.exports = function () {
       api[verb](route(), func);
     });
   });
+  api.get('/mmstats', (req, res, cb) => {
+    async.map(
+      Object.keys(constants.regions).map(r => ({ region: r, matchgroup: constants.regions[r].matchgroup})),
+      (obj, callback) => {
+        if (obj.matchgroup) {
+          redis.lrange(`mmstats:${obj.matchgroup}`, 0, -1, (err, val) => 
+            callback(err, {region: obj.region, data: val})
+          );
+        } else {
+          callback(null, null);
+        }
+      },
+      (err, result) => {
+        if (err) {
+          return cb(err);
+        }
+        
+        redis.lrange('mmstats:time', 0, -1, (err, times) => {
+          if (err) {
+            return cb(err);
+          }
+          
+          return res.json({
+            times: times,
+            data: result.filter(r => r)
+          });
+        });
+      }
+    );
+  });
+  
   return api;
 };
