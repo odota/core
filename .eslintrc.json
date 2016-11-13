@@ -12,7 +12,7 @@
     "no-mixed-operators": 0,
     "global-require": 0,
     "max-len": ["error", {
-      "code": 100,
+      "code": 150,
       "ignoreTemplateLiterals": true,
       "ignoreStrings": true,
       "ignoreComments": true

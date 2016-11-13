@@ -114,10 +114,11 @@ module.exports = function buildStatus(db, redis, cb) {
         if (err) {
           return cb(err);
         }
-        Object.keys(result).forEach((key) => {
-          result[key] = JSON.parse(result[key]);
+        const response = result || {};
+        Object.keys(response).forEach((key) => {
+          response[key] = JSON.parse(response[key]);
         });
-        return cb(err, result || {});
+        return cb(err, response);
       });
     },
   }, (err, results) => {

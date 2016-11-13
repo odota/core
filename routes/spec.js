@@ -4,21 +4,22 @@ const config = require('../config');
 // const crypto = require('crypto');
 const moment = require('moment');
 const queue = require('../store/queue');
-const pQueue = queue.getQueue('parse');
 const queries = require('../store/queries');
 const search = require('../store/search');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
 const playerFields = require('./playerFields');
-const subkeys = playerFields.subkeys;
-const countCats = playerFields.countCats;
 const utility = require('../util/utility');
-const countPeers = utility.countPeers;
 const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const packageJson = require('../package.json');
+
+const pQueue = queue.getQueue('parse');
+const subkeys = playerFields.subkeys;
+const countCats = playerFields.countCats;
+const countPeers = utility.countPeers;
 const spec = {
   swagger: '2.0',
   info: {
@@ -365,7 +366,7 @@ Please keep request rate to approximately 1/s.
             if (!match) {
               return cb();
             }
-            res.json(match);
+            return res.json(match);
           });
         },
       },
@@ -412,28 +413,28 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/players/:account_id',
         func: (req, res, cb) => {
-          const account_id = Number(req.params.account_id);
+          const accountId = Number(req.params.account_id);
           async.parallel({
             profile(cb) {
-              queries.getPlayer(db, account_id, cb);
+              queries.getPlayer(db, accountId, cb);
             },
             tracked_until(cb) {
-              redis.zscore('tracked', account_id, cb);
+              redis.zscore('tracked', accountId, cb);
             },
             solo_competitive_rank(cb) {
-              redis.zscore('solo_competitive_rank', account_id, cb);
+              redis.zscore('solo_competitive_rank', accountId, cb);
             },
             competitive_rank(cb) {
-              redis.zscore('competitive_rank', account_id, cb);
+              redis.zscore('competitive_rank', accountId, cb);
             },
             mmr_estimate(cb) {
-              queries.getMmrEstimate(db, redis, account_id, cb);
+              queries.getMmrEstimate(db, redis, accountId, cb);
             },
           }, (err, result) => {
             if (err) {
               return cb(err);
             }
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -518,7 +519,7 @@ Please keep request rate to approximately 1/s.
                 result.lose += 1;
               }
             });
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -586,21 +587,19 @@ Please keep request rate to approximately 1/s.
           const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists'];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            if (req.queryObj.project.indexOf('skill') !== -1) {
-              queries.getMatchesSkill(db, cache, {}, render);
-            } else {
-              render();
-            }
-
             function render(err) {
               if (err) {
                 return cb(err);
               }
               return res.json(cache);
             }
+            if (err) {
+              return cb(err);
+            }
+            if (req.queryObj.project.indexOf('skill') !== -1) {
+              return queries.getMatchesSkill(db, cache, {}, render);
+            }
+            return render();
           });
         },
       },
@@ -664,9 +663,9 @@ Please keep request rate to approximately 1/s.
         func: (req, res, cb) => {
           const heroes = {};
           // prefill heroes with every hero
-          for (const hero_id in constants.heroes) {
+          Object.keys(constants.heroes).forEach((heroId) => {
             const hero = {
-              hero_id,
+              hero_id: heroId,
               last_played: 0,
               games: 0,
               win: 0,
@@ -675,8 +674,8 @@ Please keep request rate to approximately 1/s.
               against_games: 0,
               against_win: 0,
             };
-            heroes[hero_id] = hero;
-          }
+            heroes[heroId] = hero;
+          });
           req.queryObj.project = req.queryObj.project.concat('heroes', 'account_id', 'start_time', 'player_slot', 'radiant_win');
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
@@ -684,35 +683,36 @@ Please keep request rate to approximately 1/s.
             }
             cache.forEach((m) => {
               const isRadiant = utility.isRadiant;
-              const player_win = isRadiant(m) === m.radiant_win;
+              const playerWin = isRadiant(m) === m.radiant_win;
               const group = m.heroes || {};
-              for (const key in group) {
+              Object.keys(group).forEach((key) => {
                 const tm = group[key];
-                const tm_hero = tm.hero_id;
+                const tmHero = tm.hero_id;
                 // don't count invalid heroes
-                if (tm_hero in heroes) {
+                if (tmHero in heroes) {
                   if (isRadiant(tm) === isRadiant(m)) {
                     if (tm.account_id === m.account_id) {
                       // console.log("self %s", tm_hero, tm.account_id, m.account_id);
-                      heroes[tm_hero].games += 1;
-                      heroes[tm_hero].win += player_win ? 1 : 0;
-                      if (m.start_time > heroes[tm_hero].last_played) {
-                        heroes[tm_hero].last_played = m.start_time;
+                      heroes[tmHero].games += 1;
+                      heroes[tmHero].win += playerWin ? 1 : 0;
+                      if (m.start_time > heroes[tmHero].last_played) {
+                        heroes[tmHero].last_played = m.start_time;
                       }
                     } else {
                       // console.log("teammate %s", tm_hero);
-                      heroes[tm_hero].with_games += 1;
-                      heroes[tm_hero].with_win += player_win ? 1 : 0;
+                      heroes[tmHero].with_games += 1;
+                      heroes[tmHero].with_win += playerWin ? 1 : 0;
                     }
                   } else {
                     // console.log("opp %s", tm_hero);
-                    heroes[tm_hero].against_games += 1;
-                    heroes[tm_hero].against_win += player_win ? 1 : 0;
+                    heroes[tmHero].against_games += 1;
+                    heroes[tmHero].against_win += playerWin ? 1 : 0;
                   }
                 }
-              }
+              });
             });
-            res.json(Object.keys(heroes).map(k => heroes[k]).sort((a, b) => b.games - a.games));
+            return res.json(Object.keys(heroes).map(k =>
+              heroes[k]).sort((a, b) => b.games - a.games));
           });
         },
       },
@@ -776,13 +776,13 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             const teammates = countPeers(cache);
-            queries.getPeers(db, teammates, {
+            return queries.getPeers(db, teammates, {
               account_id: req.params.account_id,
             }, (err, result) => {
               if (err) {
                 return cb(err);
               }
-              res.json(result);
+              return res.json(result);
             });
           });
         },
@@ -847,13 +847,13 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             const teammates = countPeers(cache);
-            queries.getProPeers(db, teammates, {
+            return queries.getProPeers(db, teammates, {
               account_id: req.params.account_id,
             }, (err, result) => {
               if (err) {
                 return cb(err);
               }
-              res.json(result);
+              return res.json(result);
             });
           });
         },
@@ -1038,13 +1038,13 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
-              for (const key in subkeys) {
+              Object.keys(subkeys).forEach((key) => {
                 if (!result[key] || (m[key] > result[key][key])) {
                   result[key] = m;
                 }
-              }
+              });
             });
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1130,27 +1130,27 @@ Please keep request rate to approximately 1/s.
         route: () => '/players/:account_id/counts',
         func: (req, res, cb) => {
           const result = {};
-          for (const key in countCats) {
+          Object.keys(countCats).forEach((key) => {
             result[key] = {};
-          }
+          });
           req.queryObj.project = req.queryObj.project.concat(Object.keys(countCats));
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
               return cb(err);
             }
             cache.forEach((m) => {
-              for (const key in countCats) {
-                if (!result[key][~~m[key]]) {
-                  result[key][~~m[key]] = {
+              Object.keys(countCats).forEach((key) => {
+                if (!result[key][Math.floor(m[key])]) {
+                  result[key][Math.floor(m[key])] = {
                     games: 0,
                     win: 0,
                   };
                 }
-                result[key][~~m[key]].games += 1;
-                result[key][~~m[key]].win += (m.radiant_win === utility.isRadiant(m)) ? 1 : 0;
-              }
+                result[key][Math.floor(m[key])].games += 1;
+                result[key][Math.floor(m[key])].win += Number(m.radiant_win === utility.isRadiant(m));
+              });
             });
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1241,7 +1241,7 @@ Please keep request rate to approximately 1/s.
                 }
               }
             });
-            res.json(bucketArray);
+            return res.json(bucketArray);
           });
         },
       },
@@ -1320,11 +1320,11 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
-              for (const key in result) {
+              Object.keys(result).forEach((key) => {
                 utility.mergeObjects(result[key], m[key]);
-              }
+              });
             });
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1403,11 +1403,11 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
-              for (const key in result) {
+              Object.keys(result).forEach((key) => {
                 utility.mergeObjects(result[key], m[key]);
-              }
+              });
             });
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1439,7 +1439,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1471,7 +1471,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1530,7 +1530,7 @@ Please keep request rate to approximately 1/s.
           },
         },
         route: () => '/explorer',
-        func: (req, res, cb) => {
+        func: (req, res) => {
           // TODO handle NQL (@nicholashh query language)
           const input = req.query.sql;
           return queryRaw(input, (err, result) => {
@@ -1540,7 +1540,7 @@ Please keep request rate to approximately 1/s.
             const final = Object.assign({}, result, {
               err: err ? err.stack : err,
             });
-            res.status(err ? 400 : 200).json(final);
+            return res.status(err ? 400 : 200).json(final);
           });
         },
 
@@ -1590,7 +1590,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1626,7 +1626,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1661,11 +1661,11 @@ Please keep request rate to approximately 1/s.
           if (!req.query.q) {
             return res.status(400).json([]);
           }
-          search(db, req.query.q, (err, result) => {
+          return search(db, req.query.q, (err, result) => {
             if (err) {
               return cb(err);
             }
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1708,7 +1708,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1753,7 +1753,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json(result);
+            return res.json(result);
           });
         },
       },
@@ -1777,7 +1777,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json(status);
+            return res.json(status);
           });
         },
       },
@@ -1801,16 +1801,15 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            for (const key in result) {
+            Object.keys(result).forEach((key) => {
               result[key] = JSON.parse(result[key]);
-            }
+            });
             if (!req.params.metric) {
-              res.json(result);
-            } else {
-              const single = result[req.params.metric];
-              const healthy = single.metric < single.threshold;
-              res.status(healthy ? 200 : 500).json(single);
+              return res.json(result);
             }
+            const single = result[req.params.metric];
+            const healthy = single.metric < single.threshold;
+            return res.status(healthy ? 200 : 500).json(single);
           });
         },
       },
@@ -1836,11 +1835,10 @@ Please keep request rate to approximately 1/s.
               state,
               progress: job.progress(),
             })).catch(cb);
-          } else {
-            res.json({
-              state: 'failed',
-            });
           }
+          return res.json({
+            state: 'failed',
+          });
         }).catch(cb),
         responses: {
           200: {
@@ -1858,10 +1856,10 @@ Please keep request rate to approximately 1/s.
         description: 'Submit a new parse request',
         tags: ['request'],
         route: () => '/request/:match_id',
-        func: (req, res, cb) => {
-          const match_id = req.params.match_id;
+        func: (req, res) => {
+          const matchId = req.params.match_id;
           const match = {
-            match_id: Number(match_id),
+            match_id: Number(matchId),
           };
           /*
           if (req.file) {
@@ -1895,7 +1893,7 @@ Please keep request rate to approximately 1/s.
               // match details response
               const match = body.result;
               redis.zadd('requests', moment().format('X'), `${moment().format('X')}_${match.match_id}`);
-              queries.insertMatch(match, {
+              return queries.insertMatch(match, {
                 type: 'api',
                 attempts: 1,
                 lifo: true,
@@ -1903,9 +1901,8 @@ Please keep request rate to approximately 1/s.
                 forceParse: true,
               }, exitWithJob);
             });
-          } else {
-            return exitWithJob('invalid input');
           }
+          return exitWithJob('invalid input');
           /*
           else {
             // file upload request
@@ -1974,7 +1971,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            res.json({
+            return res.json({
               t0: Number(result.t0) || 0,
               t1: Number(result.t1) || 0,
             });

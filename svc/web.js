@@ -129,7 +129,7 @@ app.route('/logout').get((req, res) => {
   }
   return res.redirect('/api');
 });
-app.use('/api', api());
+app.use('/api', api);
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
