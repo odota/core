@@ -12,8 +12,6 @@ templatename = "retriever-2"
 
 # Single distribution
 def run1(zoneList):
-  # Invert to cycle through in reverse order, so we create new instances before deleting old ones
-  zoneList.reverse()
   while True:
     # Scale the instance group if it's the correct bucket
     bucketsize = 86400 // len(zoneList)
@@ -21,7 +19,8 @@ def run1(zoneList):
     bucket = epoch % len(zoneList)
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
-      size = targetsize if i == bucket else 0
+      # Invert to cycle through in reverse order, so we create new instances before deleting old ones
+      size = targetsize if i == (len(zoneList) - bucket) else 0
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
       # if size > 0:
       #   # Iterate over instances in the group
