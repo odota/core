@@ -18,6 +18,7 @@
       "ignoreComments": true
     }],
     "no-underscore-dangle": 0,
-    "no-constant-condition": 0
+    "no-constant-condition": 0,
+    "import/no-dynamic-require": 0
   }
 }

@@ -1,9 +1,11 @@
 /**
  * Entry point for the application.
  **/
+const cp = require('child_process');
+
 const args = process.argv.slice(2);
 const group = args[0] || process.env.GROUP;
-const cp = require('child_process');
+
 if (process.env.PROVIDER === 'gce') {
   cp.execSync('curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/.env');
 }

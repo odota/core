@@ -1802,7 +1802,7 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             const response = result || {};
-            Object.keys(response).forEach(key => {
+            Object.keys(response).forEach((key) => {
               response[key] = JSON.parse(response[key]);
             });
             if (!req.params.metric) {
