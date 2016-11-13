@@ -3,7 +3,7 @@
  **/
 const async = require('async');
 const moment = require('moment');
-const config = require('../config');
+
 module.exports = function buildSets(db, redis, cb) {
   console.log('rebuilding sets');
   async.parallel({
@@ -17,10 +17,10 @@ module.exports = function buildSets(db, redis, cb) {
           // Refresh donators with expire date in the future
           redis.zadd('tracked', moment().add(1, 'month').format('X'), player.account_id);
         });
-        cb(err);
+        return cb(err);
       });
     },
-  }, (err, result) => {
+  }, (err) => {
     if (err) {
       console.log('error occurred during buildSets: %s', err);
       return cb(err);

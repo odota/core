@@ -5,7 +5,23 @@
 const queue = require('./queue');
 const async = require('async');
 const moment = require('moment');
+
 module.exports = function buildStatus(db, redis, cb) {
+  function generatePercentiles(arr) {
+    // sort the list
+    arr.sort((a, b) => Number(a) - Number(b));
+    // console.log(arr);
+    const percentiles = [50, 75, 95, 99];
+    const result = {};
+    arr.forEach((time, i) => {
+      if (i >= arr.length * (percentiles[0] / 100)) {
+        result[percentiles[0]] = Number(time);
+        // Pop the first element
+        percentiles.shift();
+      }
+    });
+    return result;
+  }
   redis.zremrangebyscore('added_match', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('error_500', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('api_hits', 0, moment().subtract(1, 'day').format('X'));
@@ -81,7 +97,7 @@ module.exports = function buildStatus(db, redis, cb) {
           hostname: retriever.split('.')[0],
           count: counts[retriever],
         })).sort((a, b) => a.hostname.localeCompare(b.hostname));
-        cb(err, result);
+        return cb(err, result);
       });
     },
     queue(cb) {
@@ -98,29 +114,13 @@ module.exports = function buildStatus(db, redis, cb) {
         if (err) {
           return cb(err);
         }
-        for (const key in result) {
+        Object.keys(result).forEach((key) => {
           result[key] = JSON.parse(result[key]);
-        }
-        cb(err, result || {});
+        });
+        return cb(err, result || {});
       });
     },
   }, (err, results) => {
     cb(err, results);
   });
-
-  function generatePercentiles(arr) {
-    // sort the list
-    arr.sort((a, b) => Number(a) - Number(b));
-    // console.log(arr);
-    const percentiles = [50, 75, 95, 99];
-    const result = {};
-    arr.forEach((time, i) => {
-      if (i >= arr.length * (percentiles[0] / 100)) {
-        result[percentiles[0]] = Number(time);
-        // Pop the first element
-        percentiles.shift();
-      }
-    });
-    return result;
-  }
 };
