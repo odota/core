@@ -56,16 +56,9 @@ passport.use(new SteamStrategy({
 // Compression middleware
 app.use(compression());
 // Dota 2 images middleware (proxy to Dota 2 CDN to serve over https)
-app.use('/apps/dota2/images/:group_name/:image_name', (req, res) => {
+app.use('/apps', (req, res) => {
   res.header('Cache-Control', 'max-age=604800, public');
-  request(`http://cdn.dota2.com/apps/dota2/images/${req.params.group_name}/${req.params.image_name}`).pipe(res);
-});
-// Cosmetics images middleware
-// Doesn't use named parameters since the number can be variable, e.g. omniknight/helmet or wards/ocula/observer
-app.use('/apps/570/icons/econ/items/:path1/:path2/:path3?', (req, res) => {
-  res.header('Cache-Control', 'max-age=604800, public');
-  const suffix = [req.params.path1, req.params.path2, req.params.path3].filter(Boolean).join('/');
-  request(`http://cdn.dota2.com/apps/570/icons/econ/items/${suffix}`).pipe(res);
+  request(`http://cdn.dota2.com/${req.originalUrl}`).pipe(res);
 });
 // Session/Passport middleware
 app.use(session(sessOptions));
