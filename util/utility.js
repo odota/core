@@ -192,7 +192,7 @@ function getData(url, cb) {
     parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
   }
   const target = urllib.format(parse);
-  console.error('%s - getData: %s', new Date(), target);
+  console.log('%s - getData: %s', new Date(), target);
   return setTimeout(() => {
     request({
       proxy,

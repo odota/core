@@ -24,7 +24,7 @@ if (cluster.isMaster) {
     if (code !== 0) {
       throw 'worker died';
     } else {
-      console.error('worker exited successfully');
+      console.log('worker exited successfully');
     }
   });
 } else {

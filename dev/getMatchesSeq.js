@@ -70,9 +70,8 @@ if (cluster.isMaster) {
   cluster.on('exit', (worker, code) => {
     if (code !== 0) {
       throw new Error('worker died');
-    } else {
-      console.error('worker exited successfully');
     }
+    console.log('worker exited successfully');
   });
 } else {
   const bucket = Number(process.env.BUCKET);

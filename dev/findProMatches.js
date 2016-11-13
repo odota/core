@@ -9,7 +9,7 @@ const leagueUrl = generateJob('api_leagues',
 
 function getPage(url, leagueid, cb) {
   getData(url, (err, data) => {
-    console.error(leagueid, data.result.total_results, data.result.results_remaining);
+    console.log(leagueid, data.result.total_results, data.result.results_remaining);
     data.result.matches.forEach((match) => {
       if (match.match_id > 2330655963) {
         console.log(match.match_id);
