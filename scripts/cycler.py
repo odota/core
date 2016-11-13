@@ -6,10 +6,11 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 3
+targetsize = 0
 backendname = "retriever"
-templatename = "retriever-1"
+templatename = "retriever-2"
 
+# Single distribution
 def run1(zoneList):
   while True:
     # Scale the instance group if it's the correct bucket
@@ -18,7 +19,8 @@ def run1(zoneList):
     bucket = epoch % len(zoneList)
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
-      size = targetsize if i == bucket else 0
+      # Invert to cycle through in reverse order, so we create new instances before deleting old ones
+      size = targetsize if i == ((len(zoneList) - 1) - bucket) else 0
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
       # if size > 0:
       #   # Iterate over instances in the group
@@ -35,6 +37,7 @@ def run1(zoneList):
       #     subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
     time.sleep(300)
 
+# Staggered distribution
 def run2(zoneList):
   pool = cycle(zoneList)
   while True:
@@ -48,6 +51,7 @@ def run2(zoneList):
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(nextinstancegroupname, nextzone, nextsize), shell=True)
       time.sleep(300)
 
+# Even distribution, IP cycling
 def run3(zoneList):
   while True:
     for i, zone in enumerate(zoneList):
@@ -77,7 +81,8 @@ def run3(zoneList):
       # Delete the static IP
       # subprocess.call("gcloud compute addresses delete {} --quiet --region={}".format(zone, zone[:-2]), shell=True)
     time.sleep(600)
-    
+
+# Even distribution
 def run4(zoneList):
   while True:
     for i, zone in enumerate(zoneList):
@@ -109,12 +114,12 @@ def start():
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   zoneList = sorted(zoneList, key=lambda x: x[-1])
-  zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
+  # zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
   createGroups(zoneList)
-  # run1(zoneList)
+  run1(zoneList)
   # run2(zoneList)
   # run3(zoneList)
-  run4(zoneList)
+  # run4(zoneList)
   
 # start()
 
