@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 0
+targetsize = 20
 backendname = "retriever"
 templatename = "retriever-2"
 
@@ -20,7 +20,7 @@ def run1(zoneList):
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
       # Invert to cycle through in reverse order, so we create new instances before deleting old ones
-      size = targetsize if i == ((len(zoneList) - 1) - bucket) else 0
+      size = targetsize if i == (len(zoneList) - bucket) else 0
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
       # if size > 0:
       #   # Iterate over instances in the group
@@ -35,7 +35,7 @@ def run1(zoneList):
       #     time.sleep(900 / targetsize)
       #     # Use ephemeral IP
       #     subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
-    time.sleep(300)
+    time.sleep(600)
 
 # Staggered distribution
 def run2(zoneList):
