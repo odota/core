@@ -1,3 +1,4 @@
+/*
 let db = require('../db'),
   fs = require('fs'),
   zlib = require('zlib'),
@@ -108,3 +109,4 @@ gzip.on('end', () => {
   console.log('Done. Exported %s', count);
   process.exit();
 });
+*/

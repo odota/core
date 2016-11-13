@@ -1,3 +1,4 @@
+/*
 const JSONStream = require('JSONStream');
 const db = require('../db');
 const utility = require('../utility');
@@ -14,3 +15,4 @@ stream.pipe(JSONStream.parse());
 stream.on('data', (match) => {
   utility.mergeObjects(counts, compute.count_words(match));
 });
+*/

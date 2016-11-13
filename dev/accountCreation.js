@@ -1,6 +1,7 @@
 const Steam = require('steam');
 const SteamUser = require('steam-user');
 const async = require('async');
+
 const steam = new SteamUser();
 const time = Math.floor(new Date() / 1000);
 async.eachSeries(Array.from(new Array(1000), (v, i) => i), (i, cb) => {

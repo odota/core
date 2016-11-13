@@ -1,3 +1,4 @@
+/*
 const args = process.argv.slice(2);
 const start_id = Number(args[0]) || 0;
 const end_id = Number(args[1]) || 2400000000;
@@ -100,3 +101,4 @@ function run(start_id) {
       }, cb);
   }
 }
+*/

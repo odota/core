@@ -1,6 +1,7 @@
 const db = require('../store/db');
 const queries = require('../store/queries');
 const async = require('async');
+
 db.select(['radiant_team_id', 'dire_team_id', 'match_id']).from('matches').asCallback((err, matches) => {
   if (err) {
     throw err;

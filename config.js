@@ -3,6 +3,7 @@
  **/
 const dotenv = require('dotenv');
 const fs = require('fs');
+
 if (fs.existsSync('.env')) {
   dotenv.load();
 }
@@ -68,9 +69,9 @@ const defaults = {
   BRAIN_TREE_PRIVATE_KEY: '',
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
-for (const key in defaults) {
+Object.keys(defaults).forEach((key) => {
   process.env[key] = (key in process.env) ? process.env[key] : defaults[key];
-}
+});
 if (process.env.NODE_ENV === 'development') {
   // force PORT to null in development so we can run multiple web services without conflict
   process.env.PORT = '';

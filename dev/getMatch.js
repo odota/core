@@ -2,15 +2,16 @@
  * Load a single match by ID from the steam API, insert, and request a parse
  **/
 const utility = require('../util/utility');
+const queries = require('../store/queries');
+
 const generateJob = utility.generateJob;
 const getData = utility.getData;
-const queries = require('../store/queries');
 const insertMatch = queries.insertMatch;
 const args = process.argv.slice(2);
-const match_id = Number(args[0]);
+const matchId = Number(args[0]);
 const delay = 1000;
 const job = generateJob('api_details', {
-  match_id,
+  match_id: matchId,
 });
 const url = job.url;
 getData({

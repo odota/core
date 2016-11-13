@@ -6,11 +6,12 @@ const queries = require('../store/queries');
 const async = require('async');
 const constants = require('dotaconstants');
 const utility = require('../util/utility');
-db.select(['match_id', 'start_time']).from('matches').asCallback((err, match_ids) => {
+
+db.select(['match_id', 'start_time']).from('matches').asCallback((err, matchIds) => {
   if (err) {
     throw err;
   }
-  async.eachSeries(match_ids, (match, cb) => {
+  async.eachSeries(matchIds, (match, cb) => {
     console.log(match.match_id);
     queries.upsert(db, 'match_patch',
       {
