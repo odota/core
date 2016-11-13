@@ -1801,13 +1801,14 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            Object.keys(result).forEach((key) => {
-              result[key] = JSON.parse(result[key]);
+            const response = result || {};
+            Object.keys(response).forEach(key => {
+              response[key] = JSON.parse(response[key]);
             });
             if (!req.params.metric) {
-              return res.json(result);
+              return res.json(response);
             }
-            const single = result[req.params.metric];
+            const single = response[req.params.metric];
             const healthy = single.metric < single.threshold;
             return res.status(healthy ? 200 : 500).json(single);
           });

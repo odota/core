@@ -1,7 +1,39 @@
 /**
+ * Strips off "item_" from strings, and nullifies dota_unknown.  Does not mutate the original string.
+ **/
+function translate(input) {
+  if (input === 'dota_unknown') {
+    return null;
+  }
+  if (input && input.indexOf('item_') === 0) {
+    return input.slice(5);
+  }
+  return input;
+}
+/**
+ * Prepends illusion_ to string if illusion
+ **/
+function computeIllusionString(input, isIllusion) {
+  return (isIllusion ? 'illusion_' : '') + input;
+}
+
+/**
  * Produces a new output array with expanded entries from the original input array
  **/
 function processExpand(entries, meta) {
+  const output = [];
+  /**
+   * Place a copy of the entry in the output
+   **/
+  function expand(e) {
+    // set slot and player_slot
+    const slot = ('slot' in e) ? e.slot : meta.hero_to_slot[e.unit];
+    output.push(Object.assign({}, e, {
+      slot,
+      player_slot: meta.slot_to_playerslot[slot],
+    }));
+  }
+
   const types = {
     DOTA_COMBATLOG_DAMAGE(e) {
       // damage
@@ -71,13 +103,13 @@ function processExpand(entries, meta) {
         type: 'healing',
       }));
     },
-    DOTA_COMBATLOG_MODIFIER_ADD(e) {
+    DOTA_COMBATLOG_MODIFIER_ADD() {
       // gain buff/debuff
       // e.attackername // unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
       // e.inflictor // the buff
       // e.targetname // target of buff (possibly illusion)
     },
-    DOTA_COMBATLOG_MODIFIER_REMOVE(e) {
+    DOTA_COMBATLOG_MODIFIER_REMOVE() {
       // modifier_lost
       // lose buff/debuff
       // this is really only useful if we want to try to "time" modifiers
@@ -130,7 +162,7 @@ function processExpand(entries, meta) {
         type: 'item_uses',
       });
     },
-    DOTA_COMBATLOG_LOCATION(e) {
+    DOTA_COMBATLOG_LOCATION() {
       // not in replay?
     },
     DOTA_COMBATLOG_GOLD(e) {
@@ -143,7 +175,7 @@ function processExpand(entries, meta) {
         type: 'gold_reasons',
       });
     },
-    DOTA_COMBATLOG_GAME_STATE(e) {
+    DOTA_COMBATLOG_GAME_STATE() {
       // state
       // we don't use this here--we already used it during preprocessing to detect game_zero
     },
@@ -187,14 +219,14 @@ function processExpand(entries, meta) {
         type: 'buyback_log',
       });
     },
-    DOTA_COMBATLOG_ABILITY_TRIGGER(e) {
+    DOTA_COMBATLOG_ABILITY_TRIGGER() {
       // ability_trigger
       // only seems to happen for axe spins
       // e.attackername //unit triggered on?
       // e.inflictor; //ability triggered?
       // e.targetname //unit that triggered the skill
     },
-    DOTA_COMBATLOG_PLAYERSTATS(e) {
+    DOTA_COMBATLOG_PLAYERSTATS() {
       // player_stats
       // Don't really know what this does, following fields seem to be populated
       // attackername
@@ -226,7 +258,7 @@ function processExpand(entries, meta) {
         type: 'kill_streaks',
       });
     },
-    DOTA_COMBATLOG_TEAM_BUILDING_KILL(e) {
+    DOTA_COMBATLOG_TEAM_BUILDING_KILL() {
       // team_building_kill
       // System.err.println(cle);
       // e.attackername,  unit that killed the building
@@ -236,11 +268,11 @@ function processExpand(entries, meta) {
       // 2 is rax?
       // 3 is ancient?
     },
-    DOTA_COMBATLOG_FIRST_BLOOD(e) {
+    DOTA_COMBATLOG_FIRST_BLOOD() {
       // first_blood
       // time, involved players?
     },
-    DOTA_COMBATLOG_MODIFIER_REFRESH(e) {
+    DOTA_COMBATLOG_MODIFIER_REFRESH() {
       // modifier_refresh
       // no idea what this means
     },
@@ -265,10 +297,10 @@ function processExpand(entries, meta) {
         key: String(e.value),
       });
     },
-    CHAT_MESSAGE_RUNE_BOTTLE(e) {
+    CHAT_MESSAGE_RUNE_BOTTLE() {
       // not tracking rune bottling atm
     },
-    CHAT_MESSAGE_HERO_KILL(e) {
+    CHAT_MESSAGE_HERO_KILL() {
       // player, assisting players
       // player2 killed player 1
       // subsequent players assisted
@@ -277,12 +309,12 @@ function processExpand(entries, meta) {
       // e.key = String(e.player1);
       // currently disabled in favor of combat log kills
     },
-    CHAT_MESSAGE_GLYPH_USED(e) {
+    CHAT_MESSAGE_GLYPH_USED() {
       // team glyph
       // player1 = team that used glyph (2/3, or 0/1?)
       // e.team = e.player1;
     },
-    CHAT_MESSAGE_PAUSED(e) {
+    CHAT_MESSAGE_PAUSED() {
       // e.slot = e.player1;
       // player1 paused
     },
@@ -355,10 +387,10 @@ function processExpand(entries, meta) {
         team: e.player1,
       });
     },
-    CHAT_MESSAGE_HERO_NOMINATED_BAN(e) {
+    CHAT_MESSAGE_HERO_NOMINATED_BAN() {
       // TODO
     },
-    CHAT_MESSAGE_HERO_BANNED(e) {
+    CHAT_MESSAGE_HERO_BANNED() {
       // TODO
     },
     chat(e) {
@@ -475,8 +507,7 @@ function processExpand(entries, meta) {
       expand(e);
     },
   };
-  const output = [];
-  for (let i = 0; i < entries.length; i++) {
+  for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     if (types[e.type]) {
       types[e.type](e);
@@ -485,34 +516,5 @@ function processExpand(entries, meta) {
     }
   }
   return output;
-  /**
-   * Place a copy of the entry in the output
-   **/
-  function expand(e) {
-    // set slot and player_slot
-    const slot = ('slot' in e) ? e.slot : meta.hero_to_slot[e.unit];
-    output.push(Object.assign({}, e, {
-      slot,
-      player_slot: meta.slot_to_playerslot[slot],
-    }));
-  }
-  /**
-   * Strips off "item_" from strings, and nullifies dota_unknown.  Does not mutate the original string.
-   **/
-  function translate(input) {
-    if (input === 'dota_unknown') {
-      return null;
-    }
-    if (input && input.indexOf('item_') === 0) {
-      return input.slice(5);
-    }
-    return input;
-  }
-  /**
-   * Prepends illusion_ to string if illusion
-   **/
-  function computeIllusionString(input, isIllusion) {
-    return (isIllusion ? 'illusion_' : '') + input;
-  }
 }
 module.exports = processExpand;

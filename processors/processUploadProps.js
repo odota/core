@@ -4,21 +4,22 @@
  **/
 function processUploadProps(entries, meta) {
   const container = {
-    player_map:
-        {},
+    player_map: {},
   };
   container.duration = meta.game_end - meta.game_zero;
-  for (let i = 0; i < entries.length; i++) {
+  for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
+    let dota;
     switch (e.type) {
       case 'epilogue':
-        var dota = JSON.parse(e.key).gameInfo_.dota_;
+        dota = JSON.parse(e.key).gameInfo_.dota_;
         container.match_id = dota.matchId_;
         container.game_mode = dota.gameMode_;
         container.radiant_win = dota.gameWinner_ === 2;
-                // TODO following needs some extraction/transformation
-                // container.picks_bans = dota.picksBans_;
-                // require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
+        // TODO following needs some extraction/transformation
+        // container.picks_bans = dota.picksBans_;
+        // require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
+        break;
       case 'interval':
         if (!container.player_map[e.player_slot]) {
           container.player_map[e.player_slot] = {};

@@ -1,8 +1,8 @@
+const utility = require('../util/utility');
+
 /**
  * Compute data requiring all players in a match for storage in match table
  **/
-const utility = require('../util/utility');
-
 function processAllPlayers(entries, meta) {
   const goldAdvTime = {};
   const xpAdvTime = {};
@@ -10,7 +10,7 @@ function processAllPlayers(entries, meta) {
     radiant_gold_adv: [],
     radiant_xp_adv: [],
   };
-  for (let i = 0; i < entries.length; i++) {
+  for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     if (e.time >= 0 && e.time % 60 === 0 && e.type === 'interval') {
       const g = utility.isRadiant({

@@ -1,4 +1,5 @@
 function populate(e, container) {
+  let t;
   switch (e.type) {
     case 'interval':
       break;
@@ -27,7 +28,7 @@ function populate(e, container) {
       // console.log(e);
         return;
       }
-      var t = container.players[e.slot][e.type];
+      t = container.players[e.slot][e.type];
       if (typeof t === 'undefined') {
       // container.players[0] doesn't have a type for this event
       // console.log("no field in parsed_data.players for %s", e.type);
@@ -67,7 +68,11 @@ function populate(e, container) {
       } else if (typeof t === 'object') {
       // add it to hash of counts
         e.value = e.value || 1;
-        t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
+        if (t[e.key]) {
+          t[e.key] += e.value;
+        } else {
+          t[e.key] = e.value;
+        }
       } else if (typeof t === 'string') {
       // string, used for steam id
         container.players[e.slot][e.type] = e.key;
