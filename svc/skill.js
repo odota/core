@@ -46,7 +46,7 @@ function getPageData(start, options, cb) {
       console.log('total results: %s, added: %s', Object.keys(results).length, Object.keys(added).length);
       // repeat until results_remaining===0
       if (data.result.results_remaining === 0) {
-        cb(err);
+        return cb(err);
       }
       const nextStart = matches[matches.length - 1].match_id - 1;
       return getPageData(nextStart, options, cb);

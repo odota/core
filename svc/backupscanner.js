@@ -68,7 +68,7 @@ function processPlayer(accountId, cb) {
     }
     return redis.get('match_seq_num', (err, res) => {
       if (err) {
-        console.error(err);
+        return cb(err);
       }
       // Get matches with recent seqnums
       const matches = body.result.matches.filter(m =>
@@ -76,7 +76,7 @@ function processPlayer(accountId, cb) {
       ).map(m =>
         m.match_id
       );
-      async.eachLimit(matches, 1, processMatch, cb);
+      return async.eachLimit(matches, 1, processMatch, cb);
     });
   });
 }

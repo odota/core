@@ -902,7 +902,7 @@ function insertMatch(match, options, cb) {
       },
       updateBenchmarks(cb) {
         if (options.origin === 'scanner') {
-          updateBenchmarks(match, cb);
+          return updateBenchmarks(match, cb);
         }
         return cb();
       },
