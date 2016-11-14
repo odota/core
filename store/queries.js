@@ -372,9 +372,9 @@ function getPeers(db, input, player, cb) {
     const tm = teammates[id];
     const numId = Number(id);
     // don't include if anonymous, self or if few games together
-    if (numId 
-      && numId !== Number(player.account_id) 
-      && numId !== utility.getAnonymousAccountId() 
+    if (numId
+      && numId !== Number(player.account_id)
+      && numId !== utility.getAnonymousAccountId()
       && tm.games >= 5) {
       teammatesArr.push(tm);
     }
@@ -527,8 +527,8 @@ function updateBenchmarks(match, cb) {
         if (metric !== undefined && metric !== null && !isNaN(Number(metric))) {
           const rkey = [
             'benchmarks',
-            utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), 
-            key, 
+            utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+            key,
             p.hero_id,
           ].join(':');
           redis.zadd(rkey, metric, match.match_id);
@@ -695,11 +695,11 @@ function insertMatch(match, options, cb) {
   }
 
   function decideLogParse(cb) {
-    if (match.leagueid 
-      && match.human_players === 10 
-      && match.duration > 300 
-      && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2) 
-      && match.players 
+    if (match.leagueid
+      && match.human_players === 10
+      && match.duration > 300
+      && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2)
+      && match.players
       && match.players.every(p => p.hero_id > 0)) {
       redis.sismember('pro_leagueids', match.leagueid, (err, result) => {
         options.doLogParse = options.doLogParse || Boolean(Number(result));
