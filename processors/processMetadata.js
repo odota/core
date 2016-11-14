@@ -51,10 +51,10 @@ function processMetadata(entries) {
     }
   }
   return {
-    gameZero,
+    game_zero: gameZero,
     hero_to_slot: heroToSlot,
     slot_to_playerslot: slotToPlayerslot,
-    gameEnd,
+    game_end: gameEnd,
   };
 }
 module.exports = processMetadata;

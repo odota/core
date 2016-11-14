@@ -83,7 +83,7 @@ function getMatchBenchmarks(redis, m, cb) {
         if (err) {
           return cb(err);
         }
-        if (raw !== undefined && raw !== null && !Number.isNaN(raw)) {
+        if (raw !== undefined && raw !== null && !isNaN(Number(raw))) {
           return redis.zcount(key, '0', raw, (err, count) => {
             if (err) {
               return cb(err);
@@ -319,7 +319,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
 
 function getPlayerRatings(db, accountId, cb) {
   console.time(`[PLAYER] getPlayerRatings ${accountId}`);
-  if (!Number.isNaN(accountId)) {
+  if (!isNaN(Number(accountId))) {
     db.from('player_ratings').where({
       account_id: Number(accountId),
     }).orderBy('time', 'asc').asCallback((err, result) => {
@@ -349,7 +349,7 @@ function getPlayerRankings(redis, accountId, cb) {
 }
 
 function getPlayer(db, accountId, cb) {
-  if (!Number.isNaN(accountId)) {
+  if (!isNaN(Number(accountId))) {
     db.first('players.account_id', 'personaname', 'name', 'cheese', 'steamid', 'avatar', 'avatarmedium', 'avatarfull', 'profileurl', 'last_login', 'loccountrycode')
       .from('players')
       .leftJoin('notable_players', 'players.account_id', 'notable_players.account_id')
@@ -370,12 +370,12 @@ function getPeers(db, input, player, cb) {
   const teammates = input;
   Object.keys(teammates).forEach((id) => {
     const tm = teammates[id];
-    id = Number(id);
+    const numId = Number(id);
     // don't include if anonymous, self or if few games together
-    if (id &&
-      id !== Number(player.account_id) &&
-      id !== utility.getAnonymousAccountId() &&
-      (tm.games >= 5)) {
+    if (numId 
+      && numId !== Number(player.account_id) 
+      && numId !== utility.getAnonymousAccountId() 
+      && tm.games >= 5) {
       teammatesArr.push(tm);
     }
   });
@@ -495,7 +495,7 @@ function updateRankings(match, cb) {
     if (err) {
       return cb(err);
     }
-    const matchScore = (avg && !Number.isNaN(avg)) ?
+    const matchScore = (avg && !isNaN(Number(avg))) ?
       Math.pow(Math.max(avg / 1000, 1), 7) :
       undefined;
     return async.each(match.players, (player, cb) => {
@@ -524,10 +524,12 @@ function updateBenchmarks(match, cb) {
     if (p.hero_id) {
       Object.keys(benchmarks).forEach((key) => {
         const metric = benchmarks[key](match, p);
-        if (metric !== undefined && metric !== null && !Number.isNaN(metric)) {
+        if (metric !== undefined && metric !== null && !isNaN(Number(metric))) {
           const rkey = [
             'benchmarks',
-            utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), key, p.hero_id,
+            utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), 
+            key, 
+            p.hero_id,
           ].join(':');
           redis.zadd(rkey, metric, match.match_id);
           // expire at time two epochs later (after prev/current cycle)
@@ -542,7 +544,7 @@ function updateBenchmarks(match, cb) {
 
 function updateMatchRating(match, cb) {
   getMatchRating(redis, match, (err, avg, num) => {
-    if (avg && !Number.isNaN(avg)) {
+    if (avg && !isNaN(Number(avg))) {
       // For each player, update mmr estimation list
       match.players.forEach((player) => {
         if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
@@ -693,12 +695,12 @@ function insertMatch(match, options, cb) {
   }
 
   function decideLogParse(cb) {
-    if (match.leagueid &&
-      match.human_players === 10 &&
-      match.duration > 300 &&
-      (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2) &&
-      match.players &&
-      match.players.every(p => p.hero_id > 0)) {
+    if (match.leagueid 
+      && match.human_players === 10 
+      && match.duration > 300 
+      && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2) 
+      && match.players 
+      && match.players.every(p => p.hero_id > 0)) {
       redis.sismember('pro_leagueids', match.leagueid, (err, result) => {
         options.doLogParse = options.doLogParse || Boolean(Number(result));
         cb(err);

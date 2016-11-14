@@ -13,6 +13,7 @@ const getMMStats = require('../util/getMMStats');
 const vdf = require('simple-vdf');
 const async = require('async');
 const fs = require('fs');
+const moment = require('moment');
 
 const sql = {};
 const sqlq = fs.readdirSync('./sql');
@@ -49,13 +50,13 @@ function invokeInterval(func, delay) {
 }
 
 console.log('[WORKER] starting worker');
-invokeInterval((cb) => {
+invokeInterval(function doBuildSets(cb) {
   buildSets(db, redis, cb);
 }, 60 * 1000);
-invokeInterval((cb) => {
+invokeInterval(function doMMStats(cb) {
   getMMStats(redis, cb);
 }, config.MMSTATS_DATA_INTERVAL * 60 * 1000); // Sample every 3 minutes
-invokeInterval((cb) => {
+invokeInterval(function doDistributions(cb) {
   function loadData(key, mapFunc, cb) {
     db.raw(sql[key]).asCallback((err, results) => {
       if (err) {
@@ -107,10 +108,10 @@ invokeInterval((cb) => {
     return cb(err);
   });
 }, 60 * 60 * 1000 * 6);
-invokeInterval((cb) => {
+invokeInterval(function doQueueCleanup(cb) {
   queue.cleanup(redis, cb);
 }, 60 * 60 * 1000);
-invokeInterval((cb) => {
+invokeInterval(function doProPlayers(cb) {
   const container = utility.generateJob('api_notable', {});
   utility.getData(container.url, (err, body) => {
     if (err) {
@@ -123,7 +124,7 @@ invokeInterval((cb) => {
     }, cb);
   });
 }, 30 * 60 * 1000);
-invokeInterval((cb) => {
+invokeInterval(function doLeagues(cb) {
   const container = utility.generateJob('api_leagues', {});
   utility.getData(container.url, (err, apiLeagues) => {
     if (err) {
@@ -150,7 +151,7 @@ invokeInterval((cb) => {
     });
   });
 }, 30 * 60 * 1000);
-invokeInterval((cb) => {
+invokeInterval(function doTeams(cb) {
   db.raw('select distinct team_id from team_match').asCallback((err, result) => {
     if (err) {
       return cb(err);
@@ -175,7 +176,7 @@ invokeInterval((cb) => {
     }, cb);
   });
 }, 60 * 60 * 1000);
-invokeInterval((cb) => {
+invokeInterval(function doHeroes(cb) {
   const container = utility.generateJob('api_heroes', {
     language: 'english',
   });
@@ -193,7 +194,7 @@ invokeInterval((cb) => {
     }, cb);
   });
 }, 60 * 60 * 1000);
-invokeInterval((cb) => {
+invokeInterval(function doItems(cb) {
   const container = utility.generateJob('api_items', {
     language: 'english',
   });
@@ -211,7 +212,7 @@ invokeInterval((cb) => {
     });
   });
 }, 60 * 60 * 1000);
-invokeInterval((cb) => {
+invokeInterval(function doCosmetics(cb) {
   utility.getData(utility.generateJob('api_item_schema').url, (err, body) => {
     if (err) {
       return cb(err);
@@ -265,3 +266,13 @@ invokeInterval((cb) => {
     });
   });
 }, 12 * 60 * 60 * 1000);
+invokeInterval(function doTelemetryCleanup(cb) {
+  redis.zremrangebyscore('added_match', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('error_500', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('api_hits', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('parser', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('retriever', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('visitor_match', 0, moment().subtract(1, 'day').format('X'));
+  redis.zremrangebyscore('requests', 0, moment().subtract(1, 'day').format('X'));
+  cb();
+}, 60 * 1000);

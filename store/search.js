@@ -14,7 +14,7 @@ function findPlayer(db, search, cb) {
 function search(db, query, cb) {
   async.parallel({
     account_id(callback) {
-      if (Number.isNaN(Number(query))) {
+      if (isNaN(Number(query))) {
         return callback();
       }
       return findPlayer(db, {

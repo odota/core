@@ -247,11 +247,15 @@ function isRadiant(player) {
 }
 
 /**
- * Recursively sums objects that share some keys
+ * Recursively merges objects that share some keys
+ * Numbers get summed
+ * Arrays get concatenated
+ * Strings get concatenated
+ * Objects get recursively merged
  **/
 function mergeObjects(merge, val) {
   Object.keys(val || {}).forEach((attr) => {
-    // NaN test
+    // check if prop is NaN
     if (Number.isNaN(val[attr])) {
       val[attr] = 0;
     }

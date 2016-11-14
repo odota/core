@@ -30,7 +30,7 @@ passport.serializeUser((user, done) => {
 });
 passport.deserializeUser((accountId, done) => {
   done(null, {
-    accountId,
+    account_id: accountId,
   });
 });
 passport.use(new SteamStrategy({

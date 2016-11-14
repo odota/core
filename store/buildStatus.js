@@ -22,13 +22,6 @@ module.exports = function buildStatus(db, redis, cb) {
     });
     return result;
   }
-  redis.zremrangebyscore('added_match', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('error_500', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('api_hits', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('parser', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('retriever', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('visitor_match', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('requests', 0, moment().subtract(1, 'day').format('X'));
   async.series({
     user_players(cb) {
       redis.zcard('visitors', cb);
