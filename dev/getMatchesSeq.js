@@ -15,7 +15,7 @@ const startSeqNum = Number(args[0]) || 0;
 const endSeqNum = Number(args[1]) || 0;
 const delay = Number(args[2]) || 1000;
 const bucketSize = 100000000;
-// match seq num 59622 has a 32-bit unsigned int max (4294967295) in one of the players' tower damage
+// match seq num 59622 has a 32-bit unsigned int max (4294967295) in tower damage
 // match seq num 239190 for hero_healing
 // match seq num 542284 for hero_healing
 // may need to cap values down to 2.1b if we encounter them

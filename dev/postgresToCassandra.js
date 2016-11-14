@@ -39,7 +39,12 @@ if (cluster.isMaster) {
 }
 
 function run(start_id) {
-  const stream = db.select().from('matches').where('match_id', '>=', start_id).where('match_id', '<', bucket + bucket_size).orderBy('match_id', 'asc').stream();
+  const stream = db.select()
+  .from('matches')
+  .where('match_id', '>=', start_id)
+  .where('match_id', '<', bucket + bucket_size)
+  .orderBy('match_id', 'asc')
+  .stream();
   stream.on('end', exit);
   stream.pipe(JSONStream.parse());
   stream.on('data', (match) => {
@@ -51,7 +56,23 @@ function run(start_id) {
         return exit(err);
       }
 
-      db.select(['player_matches.match_id', 'player_matches.account_id', 'player_slot', 'hero_id', 'item_0', 'item_1', 'item_2', 'item_3', 'item_4', 'item_5', 'kills', 'deaths', 'assists', 'leaver_status', 'gold', 'last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_spent', 'hero_damage', 'tower_damage', 'hero_healing', 'level', 'additional_units', 'stuns', 'max_hero_hit', 'times', 'gold_t', 'lh_t', 'xp_t', 'obs_log', 'sen_log', 'purchase_log', 'kills_log', 'buyback_log', 'lane_pos', 'obs', 'sen', 'actions', 'pings', 'purchase', 'gold_reasons', 'xp_reasons', 'killed', 'item_uses', 'ability_uses', 'hero_hits', 'damage', 'damage_taken', 'damage_inflictor', 'runes', 'killed_by', 'kill_streaks', 'multi_kills', 'life_state']).from('player_matches').join('matches', 'player_matches.match_id', 'matches.match_id').where('matches.match_id', '=', match.match_id).asCallback((err, pms) => {
+      db.select([
+      'player_matches.match_id',
+      'player_matches.account_id',
+      'player_slot',
+      'hero_id',
+      'item_0', 'item_1', 'item_2', 'item_3', 'item_4', 'item_5',
+      'kills', 'deaths', 'assists', 'leaver_status', 'gold', 'last_hits', 'denies',
+      'gold_per_min', 'xp_per_min', 'gold_spent', 'hero_damage', 'tower_damage', 'hero_healing',
+      'level', 'additional_units', 'stuns', 'max_hero_hit', 'times', 'gold_t', 'lh_t', 'xp_t',
+      'obs_log', 'sen_log', 'purchase_log', 'kills_log', 'buyback_log', 'lane_pos', 'obs', 'sen',
+      'actions', 'pings', 'purchase', 'gold_reasons', 'xp_reasons', 'killed',
+      'item_uses', 'ability_uses', 'hero_hits', 'damage', 'damage_taken', 'damage_inflictor',
+      'runes', 'killed_by', 'kill_streaks', 'multi_kills', 'life_state'])
+      .from('player_matches')
+      .join('matches', 'player_matches.match_id', 'matches.match_id')
+      .where('matches.match_id', '=', match.match_id)
+      .asCallback((err, pms) => {
         if (err) {
           return exit(err);
         }

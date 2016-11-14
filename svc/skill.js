@@ -48,8 +48,8 @@ function getPageData(start, options, cb) {
       if (data.result.results_remaining === 0) {
         cb(err);
       }
-      start = matches[matches.length - 1].match_id - 1;
-      return getPageData(start, options, cb);
+      const nextStart = matches[matches.length - 1].match_id - 1;
+      return getPageData(nextStart, options, cb);
     });
   });
 }

@@ -22,10 +22,11 @@ function processMetadata(entries) {
       if (e.hero_id) {
         // grab the end of the name, lowercase it
         const ending = e.unit.slice('CDOTA_Unit_Hero_'.length);
-        // valve is bad at consistency and the combat log name could involve replacing camelCase with _ or not!
+        // the combat log name could involve replacing camelCase with _ or not!
         // double map it so we can look up both cases
         const combatLogName = `npc_dota_hero_${ending.toLowerCase()}`;
-        // don't include final underscore here since the first letter is always capitalized and will be converted to underscore
+        // don't include final underscore here
+        // the first letter is always capitalized and will be converted to underscore
         const combatLogName2 = `npc_dota_hero${ending.replace(/([A-Z])/g, $1 =>
            `_${$1.toLowerCase()}`
         ).toLowerCase()}`;

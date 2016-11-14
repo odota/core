@@ -81,7 +81,10 @@ function processTeamfights(entries, meta) {
             slot: heroToSlot[e.key],
           };
           if (intervalState[r.time] && intervalState[r.time][r.slot]) {
-            // if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
+            // if a hero dies
+            // add to deaths_pos
+            // lookup slot of the killed hero by hero name (e.key)
+            // get position from intervalstate
             const x = intervalState[r.time][r.slot].x;
             const y = intervalState[r.time][r.slot].y;
             // fill in the copy

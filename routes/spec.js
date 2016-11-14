@@ -1147,7 +1147,8 @@ Please keep request rate to approximately 1/s.
                   };
                 }
                 result[key][Math.floor(m[key])].games += 1;
-                result[key][Math.floor(m[key])].win += Number(m.radiant_win === utility.isRadiant(m));
+                const won = Number(m.radiant_win === utility.isRadiant(m));
+                result[key][Math.floor(m[key])].win += won;
               });
             });
             return res.json(result);

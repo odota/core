@@ -18,18 +18,16 @@ function invokeInterval(func) {
     func((err, result) => {
       if (err) {
         console.error(err);
-        result = {
-          metric: 1,
-          threshold: 0,
-        };
       }
-      if (result) {
-        result.timestamp = Math.floor(new Date() / 1000);
-        redis.hset('health', func.name, JSON.stringify(result));
-        redis.expire('health', 900);
-      }
+      const final = result || {
+        metric: 1,
+        threshold: 0,
+      };
+      final.timestamp = Math.floor(new Date() / 1000);
+      redis.hset('health', func.name, JSON.stringify(final));
+      redis.expire('health', 900);
       console.timeEnd(func.name);
-      setTimeout(invoker, result && result.delay ? result.delay : 10000);
+      setTimeout(invoker, final && final.delay ? final.delay : 10000);
     });
   }());
 }

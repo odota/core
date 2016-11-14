@@ -243,7 +243,8 @@ function getMmrEstimate(db, redis, accountId, cb) {
 }
 
 function getMatchesSkill(db, matches, options, cb) {
-  // fill in skill data from table (only necessary if reading from cache since adding skill data doesn't update cache)
+  // fill in skill data from table
+  // only necessary if reading from cache since adding skill data doesn't update cache
   console.time('[PLAYER] fillSkill');
   // get skill data for matches within cache expiry (might not have skill data)
   /*
@@ -457,7 +458,13 @@ function upsert(db, table, row, conflict, cb) {
     const update = Object.keys(row).map(key =>
       util.format('%s=%s', key, `EXCLUDED.${key}`)
     );
-    const query = util.format('INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s', table, Object.keys(row).join(','), values, Object.keys(conflict).join(','), update.join(','));
+    const query = util.format('INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
+      table,
+      Object.keys(row).join(','),
+      values,
+      Object.keys(conflict).join(','),
+      update.join(',')
+    );
     // if (table==='cosmetics') console.log(query.toString(), row);
     return db.raw(query, Object.keys(row).map(key =>
       row[key]
@@ -468,8 +475,17 @@ function upsert(db, table, row, conflict, cb) {
 
 function updateMatchups(match, cb) {
   async.each(utility.generateMatchups(match, 1), (key, cb) => {
-    // db.raw(`INSERT INTO matchups (matchup, num) VALUES (?, 1) ON CONFLICT(matchup) DO UPDATE SET num = matchups.num + 1`, [key]).asCallback(cb);
-    // cassandra.execute(`UPDATE matchups SET num = num + 1 WHERE matchup = ?`, [key], {prepare: true}, cb);
+    /*
+    db.raw(`INSERT INTO matchups (matchup, num)
+    VALUES (?, 1)
+    ON CONFLICT(matchup)
+    DO UPDATE SET num = matchups.num + 1
+    `, [key]).asCallback(cb);
+    cassandra.execute(`UPDATE matchups
+    SET num = num + 1
+    WHERE matchup = ?
+    `, [key], {prepare: true}, cb);
+    */
     redis.hincrby('matchups', key, 2, cb);
   }, cb);
 }
@@ -492,8 +508,9 @@ function updateRankings(match, cb) {
       const win = Number(utility.isRadiant(player) === player.radiant_win);
       const playerScore = win ? matchScore : 0;
       if (playerScore && utility.isSignificant(match)) {
-        redis.zincrby(['hero_rankings', start, player.hero_id].join(':'), playerScore, player.account_id);
-        redis.expireat(['hero_rankings', start, player.hero_id].join(':'), expire);
+        const rankingKey = ['hero_rankings', start, player.hero_id].join(':');
+        redis.zincrby(rankingKey, playerScore, player.account_id);
+        redis.expireat(rankingKey, expire);
       }
       return cb();
     }, cb);
@@ -576,9 +593,10 @@ function writeCache(accountId, cache, cb) {
   }
   return async.each(cache.raw, (m, cb) => {
     m = serialize(reduceAggregable(m));
-    const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)', Object.keys(m).join(','), Object.keys(m).map(() =>
-      '?'
-    ).join(','));
+    const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)',
+      Object.keys(m).join(','),
+      Object.keys(m).map(() => '?').join(',')
+    );
     cassandra.execute(query, Object.keys(m).map(k =>
       m[k]
     ), {
@@ -650,7 +668,7 @@ function insertMatch(match, options, cb) {
         }
       });
     }
-    // build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
+    // build match.pgroup so after parse we can figure out the account_ids for each slot
     if (players && !match.pgroup) {
       match.pgroup = {};
       players.forEach((p) => {
@@ -763,7 +781,8 @@ function insertMatch(match, options, cb) {
         if (!match.logs) {
           return cb();
         }
-        return trx.raw('DELETE FROM match_logs WHERE match_id = ?', [match.match_id]).asCallback((err) => {
+        return trx.raw('DELETE FROM match_logs WHERE match_id = ?', [match.match_id])
+        .asCallback((err) => {
           if (err) {
             return cb(err);
           }
@@ -807,11 +826,13 @@ function insertMatch(match, options, cb) {
       if (!Object.keys(obj).length) {
         return cb(err);
       }
-      const query = util.format('INSERT INTO matches (%s) VALUES (%s)', Object.keys(obj).join(','), Object.keys(obj).map(() =>
-        '?'
-      ).join(','));
+      const query = util.format('INSERT INTO matches (%s) VALUES (%s)',
+        Object.keys(obj).join(','),
+        Object.keys(obj).map(() => '?').join(',')
+      );
       const arr = Object.keys(obj).map(k =>
-        // boolean types need to be expressed as booleans, if strings the cassandra driver will always convert it to true, e.g. 'false'
+        // boolean types need to be expressed as booleans
+        // if strings the cassandra driver will always convert it to true, e.g. 'false'
         ((obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k])
       );
       return cassandra.execute(query, arr, {
@@ -830,9 +851,10 @@ function insertMatch(match, options, cb) {
             if (!Object.keys(obj2).length) {
               return cb(err);
             }
-            const query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)', Object.keys(obj2).join(','), Object.keys(obj2).map(() =>
-              '?'
-            ).join(','));
+            const query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)',
+              Object.keys(obj2).join(','),
+              Object.keys(obj2).map(() => '?').join(',')
+            );
             const arr2 = Object.keys(obj2).map(k =>
               obj2[k]
             );
@@ -923,7 +945,11 @@ function insertMatch(match, options, cb) {
 
   function decideMmr(cb) {
     async.each(match.players, (p, cb) => {
-      if (options.origin === 'scanner' && match.lobby_type === 7 && p.account_id && p.account_id !== utility.getAnonymousAccountId() && config.ENABLE_RANDOM_MMR_UPDATE) {
+      if (options.origin === 'scanner'
+        && match.lobby_type === 7
+        && p.account_id
+        && p.account_id !== utility.getAnonymousAccountId()
+        && config.ENABLE_RANDOM_MMR_UPDATE) {
         redis.lpush('mmrQueue', JSON.stringify({
           match_id: match.match_id,
           account_id: p.account_id,
@@ -937,7 +963,9 @@ function insertMatch(match, options, cb) {
 
   function decideProfile(cb) {
     async.each(match.players, (p, cb) => {
-      if (options.origin === 'scanner' && p.account_id && p.account_id !== utility.getAnonymousAccountId()) {
+      if (options.origin === 'scanner'
+        && p.account_id
+        && p.account_id !== utility.getAnonymousAccountId()) {
         redis.lpush('profilerQueue', p.account_id);
         redis.ltrim('profilerQueue', 0, 99);
       }

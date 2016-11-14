@@ -1,5 +1,6 @@
 /**
- * Strips off "item_" from strings, and nullifies dota_unknown.  Does not mutate the original string.
+ * Strips off "item_" from strings, and nullifies dota_unknown.
+ * Does not mutate the original string.
  **/
 function translate(input) {
   if (input === 'dota_unknown') {
@@ -105,7 +106,7 @@ function processExpand(entries, meta) {
     },
     DOTA_COMBATLOG_MODIFIER_ADD() {
       // gain buff/debuff
-      // e.attackername // unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
+      // e.attackername // unit that buffed (use source to get the hero? chen/enchantress)
       // e.inflictor // the buff
       // e.targetname // target of buff (possibly illusion)
     },
@@ -304,7 +305,8 @@ function processExpand(entries, meta) {
       // player, assisting players
       // player2 killed player 1
       // subsequent players assisted
-      // still not perfect as dota can award kills to players when they're killed by towers/creeps and chat event does not reflect this
+      // still not perfect as dota can award kills to players when they're killed by towers/creeps
+      // chat event does not reflect this
       // e.slot = e.player2;
       // e.key = String(e.player1);
       // currently disabled in favor of combat log kills
@@ -341,7 +343,8 @@ function processExpand(entries, meta) {
       // barracks (player)
       // value id of barracks based on power of 2?
       // Barracks can always be deduced
-      // They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
+      // They go in incremental powers of 2
+      // starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
       // so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
       expand({
         time: e.time,

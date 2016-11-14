@@ -101,7 +101,8 @@ module.exports = function buildStatus(db, redis, cb) {
       });
     },
     queue(cb) {
-      // generate object with properties as queue types, each mapped to json object mapping state to count
+      // generate object with properties as queue types
+      // each mapped to json object mapping state to count
       queue.getCounts(redis, cb);
     },
     load_times(cb) {

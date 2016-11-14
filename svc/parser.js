@@ -1,7 +1,8 @@
 /**
  * Worker that parses replays
  * The actual parsing is done by invoking the Java-based parser.
- * The resulting event stream (newline-delimited JSON) is run through a series of processors to count/aggregate it into a single object
+ * This produces an event stream (newline-delimited JSON)
+ * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  **/
 const utility = require('../util/utility');
@@ -11,7 +12,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
-const compute = require('../util/compute');
+// const compute = require('../util/compute');
 const processAllPlayers = require('../processors/processAllPlayers');
 const processTeamfights = require('../processors/processTeamfights');
 const processLogParse = require('../processors/processLogParse');
@@ -29,10 +30,11 @@ const readline = require('readline');
 const pQueue = queue.getQueue('parse');
 const spawn = cp.spawn;
 const insertMatch = queries.insertMatch;
-const getMatchBenchmarks = queries.getMatchBenchmarks;
-const computeMatchData = compute.computeMatchData;
 const buildReplayUrl = utility.buildReplayUrl;
+// const getMatchBenchmarks = queries.getMatchBenchmarks;
+// const computeMatchData = compute.computeMatchData;
 
+/*
 function insertUploadedParse(match, cb) {
   console.log('saving uploaded parse');
   // save uploaded replay parse in redis as a cached match
@@ -52,9 +54,12 @@ function insertUploadedParse(match, cb) {
     if (err) {
       return cb(err);
     }
-    return redis.setex(`match:${match.replay_blob_key}`, 60 * 60 * 24 * 7, JSON.stringify(match), cb);
+    // Expire in a week
+    const expire = 60 * 60 * 24 * 7;
+    return redis.setex(`match:${match.replay_blob_key}`, expire, JSON.stringify(match), cb);
   });
 }
+*/
 
 function insertStandardParse(match, cb) {
   // fs.writeFileSync('output.json', JSON.stringify(match));
@@ -189,9 +194,6 @@ function runParse(match, job, cb) {
       return cb(err);
     }
     const parsedData = createParsedDataBlob(entries, match);
-    if (match.replay_blob_key) {
-      return insertUploadedParse(parsedData, cb);
-    }
     return insertStandardParse(parsedData, cb);
   }
 

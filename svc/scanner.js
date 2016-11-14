@@ -97,8 +97,8 @@ if (config.START_SEQ_NUM) {
     if (err || !result) {
       throw new Error('failed to get match_seq_num from redis, waiting to retry');
     }
-    result = Number(result);
-    scanApi(result);
+    const numResult = Number(result);
+    scanApi(numResult);
   });
 } else if (config.NODE_ENV !== 'production') {
   // Never do this in production to avoid skipping sequence number if we didn't pull .env properly

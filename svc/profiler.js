@@ -16,13 +16,13 @@ function getSummaries(cb) {
       return cb(err);
     }
     console.log('players sampled: %s', results.length);
-    results = results.map(accountId =>
+    const mappedResults = results.map(accountId =>
       ({
         account_id: accountId,
       })
     );
     const container = utility.generateJob('api_summaries', {
-      players: results,
+      players: mappedResults,
     });
     return getData(container.url, (err, body) => {
       if (err) {

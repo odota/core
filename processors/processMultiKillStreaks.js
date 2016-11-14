@@ -1,6 +1,7 @@
 /**
  * Associates kill streaks with multi kills and team fights
- * THIS PROCESSOR IS CURRENTLY DEPRECATED AND NOT IN PRODUCTION USE (originally implemented by @nickhh)
+ * THIS PROCESSOR IS CURRENTLY DEPRECATED AND NOT IN PRODUCTION USE
+ * (originally implemented by @nickhh)
  **/
 /*
 function processMultiKillStreaks(entries, hero_to_slot, parsed_data) {
