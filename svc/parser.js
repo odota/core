@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 /**
  * Worker that parses replays
  * The actual parsing is done by invoking the Java-based parser.
@@ -180,7 +181,7 @@ function runParse(match, job, cb) {
   });
   const timeout = setTimeout(() => {
     download.abort();
-    // exit('timeout');
+    exit('timeout');
   }, 120000);
 
   function exit(err) {
