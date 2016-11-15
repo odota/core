@@ -104,14 +104,14 @@ function getDistributions(redis, cb) {
   const keys = ['distribution:mmr', 'distribution:country_mmr'];
   const result = {};
   async.each(keys, (r, cb) => {
-      redis.get(r, (err, blob) => {
-        if (err) {
-          return cb(err);
-        }
-        result[r.split(':')[1]] = JSON.parse(blob);
+    redis.get(r, (err, blob) => {
+      if (err) {
         return cb(err);
-      });
-    }, err =>
+      }
+      result[r.split(':')[1]] = JSON.parse(blob);
+      return cb(err);
+    });
+  }, err =>
     cb(err, result)
   );
 }
@@ -120,11 +120,11 @@ function getProPlayers(db, redis, cb) {
   db.raw(`
     SELECT * from notable_players
     `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows);
-  });
+      if (err) {
+        return cb(err);
+      }
+      return cb(err, result.rows);
+    });
 }
 
 function getLeaderboard(db, redis, key, n, cb) {
@@ -168,18 +168,18 @@ function getHeroRankings(db, redis, heroId, options, cb) {
       return cb(err);
     }
     return async.each(entries, (player, cb) => {
-        async.parallel({
-          solo_competitive_rank(cb) {
-            redis.zscore('solo_competitive_rank', player.account_id, cb);
-          },
-        }, (err, result) => {
-          if (err) {
-            return cb(err);
-          }
-          player.solo_competitive_rank = result.solo_competitive_rank;
+      async.parallel({
+        solo_competitive_rank(cb) {
+          redis.zscore('solo_competitive_rank', player.account_id, cb);
+        },
+      }, (err, result) => {
+        if (err) {
           return cb(err);
-        });
-      }, err =>
+        }
+        player.solo_competitive_rank = result.solo_competitive_rank;
+        return cb(err);
+      });
+    }, err =>
       cb(err, {
         hero_id: Number(heroId),
         rankings: entries,
@@ -192,29 +192,29 @@ function getHeroBenchmarks(db, redis, options, cb) {
   const heroId = options.hero_id;
   const ret = {};
   async.each(Object.keys(benchmarks), (metric, cb) => {
-      const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
-      async.each(arr, (percentile, cb) => {
+    const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
+    async.each(arr, (percentile, cb) => {
         // Use data from previous epoch
-        const key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, heroId].join(':');
-        redis.zcard(key, (err, card) => {
-          if (err) {
-            return cb(err);
+      const key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, heroId].join(':');
+      redis.zcard(key, (err, card) => {
+        if (err) {
+          return cb(err);
+        }
+        const position = Math.floor(card * percentile);
+        return redis.zrange(key, position, position, 'WITHSCORES', (err, result) => {
+          const obj = {
+            percentile,
+            value: Number(result[1]),
+          };
+          if (!ret[metric]) {
+            ret[metric] = [];
           }
-          const position = Math.floor(card * percentile);
-          return redis.zrange(key, position, position, 'WITHSCORES', (err, result) => {
-            const obj = {
-              percentile,
-              value: Number(result[1]),
-            };
-            if (!ret[metric]) {
-              ret[metric] = [];
-            }
-            ret[metric].push(obj);
-            cb(err, obj);
-          });
+          ret[metric].push(obj);
+          cb(err, obj);
         });
-      }, cb);
-    }, err =>
+      });
+    }, cb);
+  }, err =>
     cb(err, {
       hero_id: Number(heroId),
       result: ret,
@@ -411,18 +411,18 @@ function getProPeers(db, input, player, cb) {
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
           `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    const arr = result.rows.map(r =>
+            if (err) {
+              return cb(err);
+            }
+            const arr = result.rows.map(r =>
       Object.assign({}, r, teammates[r.account_id])
     ).filter(r =>
       r.games
     ).sort((a, b) =>
       b.games - a.games
     );
-    return cb(err, arr);
-  });
+            return cb(err, arr);
+          });
 }
 
 function getMatchRating(redis, match, cb) {
@@ -697,9 +697,9 @@ function insertMatch(match, options, cb) {
   }
 
   function decideLogParse(cb) {
-    if (match.leagueid 
-      && match.human_players === 10 
-      && match.duration > 300 
+    if (match.leagueid
+      && match.human_players === 10
+      && match.duration > 300
       && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2)
       && match.players
       && match.players.every(p => p.hero_id > 0)) {
@@ -1012,24 +1012,24 @@ function insertMatch(match, options, cb) {
       const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
       if (doParse) {
         return pQueue.add({
-            id: `${moment().format('X')}_${match.match_id}`,
-            payload: {
-              match_id: match.match_id,
-              radiant_win: match.radiant_win,
-              start_time: match.start_time,
-              duration: match.duration,
-              replay_blob_key: match.replay_blob_key,
-              pgroup: match.pgroup,
-              doLogParse,
-            },
-          }, {
-            lifo: options.lifo,
-            attempts: options.attempts || 15,
-            backoff: options.backoff || {
-              delay: 60 * 1000,
-              type: 'exponential',
-            },
-          })
+          id: `${moment().format('X')}_${match.match_id}`,
+          payload: {
+            match_id: match.match_id,
+            radiant_win: match.radiant_win,
+            start_time: match.start_time,
+            duration: match.duration,
+            replay_blob_key: match.replay_blob_key,
+            pgroup: match.pgroup,
+            doLogParse,
+          },
+        }, {
+          lifo: options.lifo,
+          attempts: options.attempts || 15,
+          backoff: options.backoff || {
+            delay: 60 * 1000,
+            type: 'exponential',
+          },
+        })
           .then(parseJob => cb(null, parseJob))
           .catch(cb);
       }
@@ -1037,20 +1037,20 @@ function insertMatch(match, options, cb) {
     });
   }
   async.series({
-      pp: preprocess,
-      dlp: decideLogParse,
-      u: upsertMatch,
-      uc: upsertMatchCassandra,
-      upc: updatePlayerCaches,
-      uct: updateCounts,
-      cmc: clearMatchCache,
-      t: telemetry,
-      dm: decideMmr,
-      dpro: decideProfile,
-      dgcd: decideGcData,
-      dmp: decideMetaParse,
-      dp: decideReplayParse,
-    }, (err, results) =>
+    pp: preprocess,
+    dlp: decideLogParse,
+    u: upsertMatch,
+    uc: upsertMatchCassandra,
+    upc: updatePlayerCaches,
+    uct: updateCounts,
+    cmc: clearMatchCache,
+    t: telemetry,
+    dm: decideMmr,
+    dpro: decideProfile,
+    dgcd: decideGcData,
+    dmp: decideMetaParse,
+    dp: decideReplayParse,
+  }, (err, results) =>
     cb(err, results.dp)
   );
 }

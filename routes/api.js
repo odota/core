@@ -2,16 +2,16 @@ const express = require('express');
 const playerFields = require('./playerFields');
 const filterDeps = require('../util/filterDeps');
 const spec = require('./spec');
+const cors = require('cors');
 
 const api = new express.Router();
 const subkeys = playerFields.subkeys;
 
-api.use((req, res, cb) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Headers', 'origin, content-type, accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  cb();
-});
+api.options('*', cors());
+api.use(cors({
+  origin: true,
+  credentials: true,
+}));
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (isNaN(Number(req.params.account_id))) {

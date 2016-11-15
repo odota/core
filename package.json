@@ -31,6 +31,7 @@
     "cassandra-driver": "^3.1.6",
     "compression": "^1.6.2",
     "cookie-session": "2.0.0-alpha.2",
+    "cors": "^2.8.1",
     "dota2": "^4.1.0",
     "dotaconstants": "^3.6.0",
     "dotenv": "^2.0.0",
