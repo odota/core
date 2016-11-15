@@ -1,12 +1,13 @@
 {
-  "extends": "airbnb",
+  "extends": "airbnb/base",
   "plugins": [
-    "react",
-    "jsx-a11y",
     "import"
   ],
   "rules": {
     "no-console": 0,
-    "no-shadow": 0
+    "no-shadow": 0,
+    "no-param-reassign": 0,
+    "no-constant-condition": 0,
+    "no-underscore-dangle": 0
   }
 }

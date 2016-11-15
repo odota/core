@@ -5,26 +5,20 @@
 const config = require('../config');
 const utility = require('../util/utility');
 const redis = require('../store/redis');
-const status = require('../store/buildStatus');
 const db = require('../store/db');
 const queries = require('../store/queries');
-const search = require('../store/search');
 const api = require('../routes/api');
 const request = require('request');
 const compression = require('compression');
 const session = require('cookie-session');
-const path = require('path');
 const moment = require('moment');
-const async = require('async');
 const express = require('express');
-const app = express();
 const passport = require('passport');
-const api_key = config.STEAM_API_KEY.split(',')[0];
 const SteamStrategy = require('passport-steam').Strategy;
+
+const app = express();
+const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
-const querystring = require('querystring');
-const util = require('util');
-const rc_public = config.RECAPTCHA_PUBLIC_KEY;
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
   maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
@@ -34,15 +28,15 @@ const sessOptions = {
 passport.serializeUser((user, done) => {
   done(null, user.account_id);
 });
-passport.deserializeUser((account_id, done) => {
+passport.deserializeUser((accountId, done) => {
   done(null, {
-    account_id,
+    account_id: accountId,
   });
 });
 passport.use(new SteamStrategy({
   returnURL: `${host}/return`,
   realm: host,
-  apiKey: api_key,
+  apiKey,
 }, (identifier, profile, cb) => {
   const player = profile._json;
   player.last_login = new Date();
@@ -81,9 +75,8 @@ app.use((req, res, cb) => {
       return res.status(429).json({
         error: 'rate limit exceeded',
       });
-    } else {
-      cb();
     }
+    return cb();
   });
 });
 // Telemetry middleware
@@ -92,7 +85,7 @@ app.use((req, res, cb) => {
   if (req.originalUrl.indexOf('/api') === 0) {
     redis.zadd('api_hits', moment().format('X'), req.originalUrl);
   }
-  if (req.user) {
+  if (req.user && req.user.account_id) {
     redis.zadd('visitors', moment().format('X'), req.user.account_id);
     redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id);
   }
@@ -115,7 +108,7 @@ app.route('/login').get(passport.authenticate('steam', {
 }));
 app.route('/return').get(passport.authenticate('steam', {
   failureRedirect: '/api',
-}), (req, res, next) => {
+}), (req, res) => {
   if (config.UI_HOST) {
     return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
   }
@@ -129,35 +122,31 @@ app.route('/logout').get((req, res) => {
   }
   return res.redirect('/api');
 });
-app.use('/api', api());
+app.use('/api', api);
 // 404 route
-app.use((req, res, next) =>
+app.use((req, res) =>
   res.status(404).json({
     error: 'Not Found',
   })
 );
 // 500 route
-app.use((err, req, res, next) => {
+app.use((err, req, res, cb) => {
   redis.zadd('error_500', moment().format('X'), req.originalUrl);
   if (config.NODE_ENV === 'development') {
     // default express handler
-    next(err);
-  } else {
-    return res.status(500).json({
-      error: 'Internal Server Error',
-    });
+    return cb(err);
   }
+  return res.status(500).json({
+    error: 'Internal Server Error',
+  });
 });
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);
 });
-// listen for TERM signal .e.g. kill
-process.once('SIGTERM', gracefulShutdown);
-// listen for INT signal e.g. Ctrl-C
-process.once('SIGINT', gracefulShutdown);
-// this function is called when you want the server to die gracefully
-// i.e. wait for existing connections
+/**
+ * Wait for connections to end, then shut down
+ **/
 function gracefulShutdown() {
   console.log('Received kill signal, shutting down gracefully.');
   server.close(() => {
@@ -170,4 +159,8 @@ function gracefulShutdown() {
     process.exit();
   }, 10 * 1000);
 }
+// listen for TERM signal .e.g. kill
+process.once('SIGTERM', gracefulShutdown);
+// listen for INT signal e.g. Ctrl-C
+process.once('SIGINT', gracefulShutdown);
 module.exports = app;

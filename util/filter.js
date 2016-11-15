@@ -1,11 +1,13 @@
 const utility = require('./utility');
+
 const isRadiant = utility.isRadiant;
 
 function filter(matches, filters) {
-    // accept a hash of filters, run all the filters in the hash in series
-    // console.log(filters);
+  const curtime = Math.floor(Date.now() / 1000);
+  // accept a hash of filters, run all the filters in the hash in series
+  // console.log(filters);
   const conditions = {
-        // filter: player won
+    // filter: player won
     win(m, key) {
       return Number(utility.isRadiant(m) === m.radiant_win) === key;
     },
@@ -35,63 +37,66 @@ function filter(matches, filters) {
     },
     included_account_id(m, key, arr) {
       return arr.every((k) => {
-        for (const key in m.heroes) {
+        let passed = false;
+        Object.keys(m.heroes).forEach((key) => {
           if (m.heroes[key].account_id === k) {
-            return true;
+            passed = true;
           }
-        }
-        return false;
+        });
+        return passed;
       });
     },
     excluded_account_id(m, key, arr) {
       return arr.every((k) => {
-        for (const key in m.heroes) {
+        let passed = true;
+        Object.keys(m.heroes).forEach((key) => {
           if (m.heroes[key].account_id === k) {
-            return false;
+            passed = false;
           }
-        }
-        return true;
+        });
+        return passed;
       });
     },
     with_hero_id(m, key, arr) {
       return arr.every((k) => {
-        for (const key in m.heroes) {
+        let passed = false;
+        Object.keys(m.heroes).forEach((key) => {
           if (m.heroes[key].hero_id === k && isRadiant(m.heroes[key]) === isRadiant(m)) {
-            return true;
+            passed = true;
           }
-        }
-        return false;
+        });
+        return passed;
       });
     },
     against_hero_id(m, key, arr) {
       return arr.every((k) => {
-        for (const key in m.heroes) {
+        let passed = false;
+        Object.keys(m.heroes).forEach((key) => {
           if (m.heroes[key].hero_id === k && isRadiant(m.heroes[key]) !== isRadiant(m)) {
-            return true;
+            passed = true;
           }
-        }
-        return false;
+        });
+        return passed;
       });
     },
-    significant(m, key, arr) {
+    significant(m, key) {
       return Number(utility.isSignificant(m)) === key;
     },
   };
-  let curtime = Math.floor(Date.now() / 1000);
   const filtered = [];
-  for (let i = 0; i < matches.length; i++) {
+  for (let i = 0; i < matches.length; i += 1) {
     let include = true;
-        // verify the match passes each filter test
-    for (const key in filters) {
+    // verify the match passes each filter test
+    Object.keys(filters).forEach((key) => {
       if (conditions[key]) {
-                // earlier, we arrayified everything
-                // pass the first element, as well as the full array
-                // check that it passes all filters
-                // pass the player_match, the first element of array, and the array itself
+        // earlier, we arrayified everything
+        // pass the first element, as well as the full array
+        // check that it passes all filters
+        // pass the player_match, the first element of array, and the array itself
         include = include && conditions[key](matches[i], filters[key][0], filters[key]);
       }
-    }
-        // if we passed, push it
+    });
+    // if we passed, push it
     if (include) {
       filtered.push(matches[i]);
     }

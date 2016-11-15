@@ -1,9 +1,15 @@
+/* eslint-disable global-require,import/no-dynamic-require */
 /**
  * Entry point for the application.
  **/
+const cp = require('child_process');
+const pm2 = require('pm2');
+const async = require('async');
+const apps = require('./manifest.json').apps;
+
 const args = process.argv.slice(2);
 const group = args[0] || process.env.GROUP;
-const cp = require('child_process');
+
 if (process.env.PROVIDER === 'gce') {
   cp.execSync('curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/.env');
 }
@@ -11,11 +17,8 @@ if (process.env.ROLE) {
   // if role variable is set just run that script
   require(`./svc/${process.env.ROLE}.js`);
 } else if (group) {
-  const pm2 = require('pm2');
-  const async = require('async');
-  const manifest = require('./manifest.json').apps;
   pm2.connect(() => {
-    async.each(manifest, (app, cb) => {
+    async.each(apps, (app, cb) => {
       if (group === app.group) {
         console.log(app.script, app.instances);
         pm2.start(app.script, {

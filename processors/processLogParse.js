@@ -1,3 +1,7 @@
+function translate(s) {
+  return s === 'dota_unknown' ? null : s;
+}
+
 /**
  * A processor to reduce the event stream to only logs we want to persist
  **/
@@ -44,9 +48,5 @@ function processReduce(entries, meta) {
   console.log(count);
   */
   return result;
-}
-
-function translate(s) {
-  return s === 'dota_unknown' ? null : s;
 }
 module.exports = processReduce;

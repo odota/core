@@ -1,15 +1,20 @@
-const db = require('../db');
+const db = require('../store/db');
 const async = require('async');
-const utility = require('../utility');
+const utility = require('../util/utility');
+const queries = require('../store/queries');
+const config = require('../config');
+
 const generateJob = utility.generateJob;
 const getData = utility.getData;
-const queries = require('../queries');
-const config = require('../config');
 const retrieverArr = config.RETRIEVER_HOST.split(',');
 let count = 0;
 const args = process.argv.slice(2);
-const start_id = Number(args[0]) || 0;
-db.select('account_id').from('players').where('account_id', '>', start_id).orderByRaw(start_id ? 'account_id asc' : 'random()').asCallback((err, players) => {
+const startId = Number(args[0]) || 0;
+db.select('account_id')
+.from('players')
+.where('account_id', '>', startId)
+.orderByRaw(startId ? 'account_id asc' : 'random()')
+.asCallback((err, players) => {
   if (err) {
     process.exit(1);
   }

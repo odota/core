@@ -1,3 +1,4 @@
+/* eslint-disable */
 const request = require('request');
 const ProtoBuf = require('protobufjs');
 const fs = require('fs');

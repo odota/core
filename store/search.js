@@ -12,20 +12,17 @@ function findPlayer(db, search, cb) {
 }
 
 function search(db, query, cb) {
-  async.parallel(
-    {
-      account_id(callback) {
-        if (Number.isNaN(Number(query))) {
-          return callback();
-        } else {
-          findPlayer(db,
-            {
-              account_id: Number(query),
-            }, callback);
-        }
-      },
-      personaname(callback) {
-        db.raw(`
+  async.parallel({
+    account_id(callback) {
+      if (isNaN(Number(query))) {
+        return callback();
+      }
+      return findPlayer(db, {
+        account_id: Number(query),
+      }, callback);
+    },
+    personaname(callback) {
+      db.raw(`
         SELECT * FROM 
         (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS sml 
         FROM players 
@@ -39,18 +36,18 @@ function search(db, query, cb) {
           }
           return callback(err, result.rows);
         });
-      },
-    }, (err, result) => {
+    },
+  }, (err, result) => {
     if (err) {
       return cb(err);
     }
     let ret = [];
-    for (const key in result) {
+    Object.keys(result).forEach((key) => {
       if (result[key]) {
         ret = ret.concat(result[key]);
       }
-    }
-    cb(null, ret);
+    });
+    return cb(null, ret);
   });
 }
 module.exports = search;

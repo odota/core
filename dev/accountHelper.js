@@ -3,7 +3,6 @@ const arr = input.split('@');
 const user = arr[0];
 let count = 0;
 const limit = 5000;
-permute(user, 1);
 
 function permute(user, n) {
   if (n >= user.length || (limit && count > limit)) {
@@ -18,3 +17,5 @@ function permute(user, n) {
     // add a period
   permute(diff, n + 2);
 }
+
+permute(user, 1);

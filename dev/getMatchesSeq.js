@@ -3,56 +3,32 @@
  **/
 const async = require('async');
 const utility = require('../util/utility');
-const generateJob = utility.generateJob;
-const getData = utility.getData;
-const db = require('../store/db');
 const redis = require('../store/redis');
 const queries = require('../store/queries');
+const cluster = require('cluster');
+
+const generateJob = utility.generateJob;
+const getData = utility.getData;
 const insertMatch = queries.insertMatch;
 const args = process.argv.slice(2);
-const start_seq_num = Number(args[0]) || 0;
-const end_seq_num = Number(args[1]) || 0;
+const startSeqNum = Number(args[0]) || 0;
+const endSeqNum = Number(args[1]) || 0;
 const delay = Number(args[2]) || 1000;
-const cluster = require('cluster');
-// match seq num 59622 has a 32-bit unsigned int max (4294967295) in one of the players' tower damage
+const bucketSize = 100000000;
+// match seq num 59622 has a 32-bit unsigned int max (4294967295) in tower damage
 // match seq num 239190 for hero_healing
 // match seq num 542284 for hero_healing
 // may need to cap values down to 2.1b if we encounter them
 // postgres int type only supports up to 2.1b (signed int)
 // bucket idspace into groups of 100000000
 // save progress to redis key complete_history:n
-const bucket_size = 100000000;
-if (cluster.isMaster) {
-  // Fork workers.
-  for (let i = start_seq_num; i < end_seq_num; i += bucket_size) {
-    cluster.fork({
-      BUCKET: i,
-    });
-  }
-  cluster.on('exit', (worker, code, signal) => {
-    if (code !== 0) {
-      throw 'worker died';
-    } else {
-      console.error('worker exited successfully');
-    }
-  });
-} else {
-  const bucket = Number(process.env.BUCKET);
-  redis.get(`complete_history:${bucket}`, (err, result) => {
-    if (err) {
-      throw err;
-    }
-    result = result ? Number(result) : bucket;
-    getPage(result, bucket);
-  });
-}
 
-function getPage(match_seq_num, bucket) {
-  if (match_seq_num > bucket + bucket_size || match_seq_num > end_seq_num) {
+function getPage(matchSeqNum, bucket) {
+  if (matchSeqNum > bucket + bucketSize || matchSeqNum > endSeqNum) {
     process.exit(0);
   }
   const job = generateJob('api_sequence', {
-    start_at_match_seq_num: match_seq_num,
+    start_at_match_seq_num: matchSeqNum,
   });
   const url = job.url;
   getData({
@@ -74,12 +50,36 @@ function getPage(match_seq_num, bucket) {
         if (err) {
           throw err;
         }
-        const next_seq_num = matches[matches.length - 1].match_seq_num + 1;
-        redis.set(`complete_history:${bucket}`, next_seq_num);
-        return getPage(next_seq_num, bucket);
+        const nextSeqNum = matches[matches.length - 1].match_seq_num + 1;
+        redis.set(`complete_history:${bucket}`, nextSeqNum);
+        return getPage(nextSeqNum, bucket);
       });
     } else {
       throw body;
     }
+  });
+}
+
+if (cluster.isMaster) {
+  // Fork workers.
+  for (let i = startSeqNum; i < endSeqNum; i += bucketSize) {
+    cluster.fork({
+      BUCKET: i,
+    });
+  }
+  cluster.on('exit', (worker, code) => {
+    if (code !== 0) {
+      throw new Error('worker died');
+    }
+    console.log('worker exited successfully');
+  });
+} else {
+  const bucket = Number(process.env.BUCKET);
+  redis.get(`complete_history:${bucket}`, (err, result) => {
+    if (err) {
+      throw err;
+    }
+    result = result ? Number(result) : bucket;
+    getPage(result, bucket);
   });
 }

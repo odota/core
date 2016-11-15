@@ -5,6 +5,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const async = require('async');
 const getGcData = require('../util/getGcData');
+
 db.select(['match_id']).from('matches').asCallback((err, matches) => {
   if (err) {
     throw err;

@@ -2,9 +2,9 @@
  * Creates a 2D array of lane mappings (x,y) to lane constant IDs
  **/
 const laneMappings = [];
-for (let i = 0; i < 128; i++) {
+for (let i = 0; i < 128; i += 1) {
   laneMappings.push([]);
-  for (let j = 0; j < 128; j++) {
+  for (let j = 0; j < 128; j += 1) {
     let lane;
     if (Math.abs(i - (127 - j)) < 8) {
       lane = 2; // mid

@@ -1,3 +1,4 @@
+/*
 const config = require('./config');
 const Steam = require('steam');
 const Dota2 = require('dota2');
@@ -80,3 +81,4 @@ async.each(a, (i, cb) => {
   });
   app.get('/', (req, res, next) => {});
 });
+*/
