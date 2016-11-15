@@ -694,15 +694,15 @@ function getLaneFromPosData(lanePos, isRadiant) {
   // 4 jungle
   const laneRoles = {
     // bot
-    "1": isRadiant ? 1 : 3,
+    1: isRadiant ? 1 : 3,
     // mid
-    "2": 2,
+    2: 2,
     // top
-    "3": isRadiant ? 3 : 1,
+    3: isRadiant ? 3 : 1,
     // radiant jungle
-    "4": 4,
+    4: 4,
     // dire jungle
-    "5": 4,
+    5: 4,
   };
   return {
     lane,
