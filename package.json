@@ -25,7 +25,7 @@
   "dependencies": {
     "async": "2.1.2",
     "big-number": "0.4.0",
-    "bull": "1.0.0",
+    "bull": "1.1.1",
     "cassandra-driver": "3.1.6",
     "compression": "1.6.2",
     "cookie-session": "2.0.0-alpha.1",
