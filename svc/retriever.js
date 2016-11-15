@@ -113,6 +113,63 @@ function getGcMatchData(idx, matchId, cb) {
   });
 }
 
+if (config.STEAM_ACCOUNT_DATA) {
+  const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
+  const accountsToUse = 10;
+  const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
+  console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
+  const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
+  users = accountDataToUse.map(a => a.split('\t')[0]);
+  passes = accountDataToUse.map(a => a.split('\t')[1]);
+}
+console.log(users, passes);
+async.each(Array.from(new Array(users.length), (v, i) => i), (i, cb) => {
+  const client = new Steam.SteamClient();
+  client.steamUser = new Steam.SteamUser(client);
+  client.steamFriends = new Steam.SteamFriends(client);
+  client.Dota2 = new Dota2.Dota2Client(client, false, false);
+  const user = users[i];
+  const pass = passes[i];
+  const logOnDetails = {
+    account_name: user,
+    password: pass,
+  };
+  client.connect();
+  client.on('connected', () => {
+    console.log('[STEAM] Trying to log on with %s,%s', user, pass);
+    client.steamUser.logOn(logOnDetails);
+    client.once('error', (e) => {
+      console.log(e);
+      console.log('reconnecting');
+      client.connect();
+    });
+  });
+  client.on('logOnResponse', (logonResp) => {
+    if (logonResp.eresult !== Steam.EResult.OK) {
+      // try logging on again
+      return client.steamUser.logOn(logOnDetails);
+    }
+    if (client && client.steamID) {
+      console.log('[STEAM] Logged on %s', client.steamID);
+      client.steamFriends.setPersonaName(client.steamID.toString());
+      client.matches = 0;
+      client.profiles = 0;
+      client.Dota2.once('ready', () => {
+        steamObj[client.steamID] = client;
+        count += 1;
+        console.log('acct %s ready, %s/%s', i, count, users.length);
+        cb();
+      });
+      client.Dota2.launch();
+      client.once('loggedOff', () => {
+        console.log('relogging');
+        client.steamUser.logOn(logOnDetails);
+      });
+    }
+    return null;
+  });
+});
+
 app.get('/healthz', (req, res) => {
   res.end('ok');
 });
@@ -175,61 +232,4 @@ app.use((err, req, res) =>
 const server = app.listen(port, () => {
   const host = server.address().address;
   console.log('[RETRIEVER] listening at http://%s:%s', host, port);
-});
-
-if (config.STEAM_ACCOUNT_DATA) {
-  const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
-  const accountsToUse = 10;
-  const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
-  console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
-  const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
-  users = accountDataToUse.map(a => a.split('\t')[0]);
-  passes = accountDataToUse.map(a => a.split('\t')[1]);
-}
-console.log(users, passes);
-async.each(Array.from(new Array(users.length), (v, i) => i), (i, cb) => {
-  const client = new Steam.SteamClient();
-  client.steamUser = new Steam.SteamUser(client);
-  client.steamFriends = new Steam.SteamFriends(client);
-  client.Dota2 = new Dota2.Dota2Client(client, false, false);
-  const user = users[i];
-  const pass = passes[i];
-  const logOnDetails = {
-    account_name: user,
-    password: pass,
-  };
-  client.connect();
-  client.on('connected', () => {
-    console.log('[STEAM] Trying to log on with %s,%s', user, pass);
-    client.steamUser.logOn(logOnDetails);
-    client.once('error', (e) => {
-      console.log(e);
-      console.log('reconnecting');
-      client.connect();
-    });
-  });
-  client.on('logOnResponse', (logonResp) => {
-    if (logonResp.eresult !== Steam.EResult.OK) {
-      // try logging on again
-      return client.steamUser.logOn(logOnDetails);
-    }
-    if (client && client.steamID) {
-      console.log('[STEAM] Logged on %s', client.steamID);
-      client.steamFriends.setPersonaName(client.steamID.toString());
-      client.matches = 0;
-      client.profiles = 0;
-      client.Dota2.once('ready', () => {
-        steamObj[client.steamID] = client;
-        count += 1;
-        console.log('acct %s ready, %s/%s', i, count, users.length);
-        cb();
-      });
-      client.Dota2.launch();
-      client.once('loggedOff', () => {
-        console.log('relogging');
-        client.steamUser.logOn(logOnDetails);
-      });
-    }
-    return null;
-  });
 });
