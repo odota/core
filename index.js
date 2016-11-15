@@ -1,4 +1,4 @@
-/* eslint global-require:0 import/no-dynamic-require:0 */
+/* eslint-disable global-require,import/no-dynamic-require */
 /**
  * Entry point for the application.
  **/
