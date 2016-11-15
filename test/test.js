@@ -1,4 +1,5 @@
 /* global before describe it */
+/* eslint-disable global-require */
 /**
  * Main test script to run tests
  **/

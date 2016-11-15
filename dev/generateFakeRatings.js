@@ -13,7 +13,7 @@ function gaussianRandom(mean, std) {
   if (mean === undefined || std === undefined) {
     throw new Error('Gaussian random needs 2 arguments (mean, standard deviation)');
   }
-  return randByCentralLimitTheorem() * std + mean;
+  return (randByCentralLimitTheorem() * std) + mean;
 }
 
 db.from('players').asCallback((err, players) => {

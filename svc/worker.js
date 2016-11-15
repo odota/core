@@ -40,7 +40,7 @@ function invokeInterval(func, delay) {
           console.error(err);
         } else {
           // mark success, don't redo until this key expires
-          redis.setex(`worker:${func.name}`, delay / 1000 * 0.9, '1');
+          redis.setex(`worker:${func.name}`, (delay / 1000) * 0.9, '1');
         }
         console.timeEnd(func.name);
         setTimeout(invoker, delay);

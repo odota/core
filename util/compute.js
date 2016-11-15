@@ -59,10 +59,10 @@ function computeMatchData(pm) {
     pm.lose = Number(isRadiant(pm) === pm.radiant_win) ? 0 : 1;
   }
   if (pm.duration && pm.gold_per_min) {
-    pm.total_gold = Math.floor(pm.gold_per_min * pm.duration / 60);
+    pm.total_gold = Math.floor((pm.gold_per_min * pm.duration) / 60);
   }
   if (pm.duration && pm.xp_per_min) {
-    pm.total_xp = Math.floor(pm.xp_per_min * pm.duration / 60);
+    pm.total_xp = Math.floor((pm.xp_per_min * pm.duration) / 60);
   }
   if (pm.duration && pm.kills) {
     pm.kills_per_min = pm.kills / (pm.duration / 60);
@@ -146,7 +146,12 @@ function computeMatchData(pm) {
     // lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
     // var tenMinute = (43 * 60 + 48 * 20 + 74 * 2);
     // 6.84 change
-    const tenMinute = (40 * 60 + 45 * 20 + 74 * 2) + (600 / 0.6) + 625;
+    const melee = (40 * 60);
+    const ranged = (45 * 20);
+    const siege = (74 * 2);
+    const passive = (600 / 0.6);
+    const starting = 625;
+    const tenMinute = melee + ranged + siege + passive + starting;
     pm.lane_efficiency = pm.gold_t[10] / tenMinute;
     pm.lane_efficiency_pct = Math.floor(pm.lane_efficiency * 100);
   }
@@ -195,7 +200,7 @@ function computeMatchData(pm) {
     Object.keys(pm.actions).forEach((key) => {
       actionsSum += pm.actions[key];
     });
-    pm.actions_per_min = Math.floor(actionsSum / pm.duration * 60);
+    pm.actions_per_min = Math.floor((actionsSum / pm.duration) * 60);
   }
   // compute throw/comeback levels
   if (pm.radiant_gold_adv && pm.radiant_win !== undefined) {
