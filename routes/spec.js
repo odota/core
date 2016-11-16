@@ -1930,6 +1930,7 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    /*
     '/matchups': {
       get: {
         summary: '/',
@@ -1981,6 +1982,7 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    */
     '/heroes': {
       get: {
         summary: '/',

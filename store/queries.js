@@ -471,11 +471,9 @@ function upsert(db, table, row, conflict, cb) {
     )).asCallback(cb);
   });
 }
-
-
+/*
 function updateMatchups(match, cb) {
   async.each(utility.generateMatchups(match, 1), (key, cb) => {
-    /*
     db.raw(`INSERT INTO matchups (matchup, num)
     VALUES (?, 1)
     ON CONFLICT(matchup)
@@ -485,11 +483,10 @@ function updateMatchups(match, cb) {
     SET num = num + 1
     WHERE matchup = ?
     `, [key], {prepare: true}, cb);
-    */
     redis.hincrby('matchups', key, 2, cb);
   }, cb);
 }
-
+*/
 function updateRankings(match, cb) {
   getMatchRating(redis, match, (err, avg) => {
     if (err) {
@@ -896,18 +893,20 @@ function insertMatch(match, options, cb) {
         }
         return cb();
       },
-      updateMatchups(cb) {
-        if (options.origin === 'scanner') {
-          return updateMatchups(match, cb);
-        }
-        return cb();
-      },
       updateBenchmarks(cb) {
         if (options.origin === 'scanner') {
           return updateBenchmarks(match, cb);
         }
         return cb();
       },
+      /*
+      updateMatchups(cb) {
+        if (options.origin === 'scanner') {
+          return updateMatchups(match, cb);
+        }
+        return cb();
+      },
+      */
     }, cb);
   }
 
