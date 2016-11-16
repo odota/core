@@ -233,6 +233,7 @@ describe('api', () => {
     });
   });
 });
+/*
 describe('generateMatchups', () => {
   it('should generate matchups', (done) => {
     // in this sample match
@@ -298,3 +299,4 @@ describe('generateMatchups', () => {
     ], done);
   });
 });
+*/
