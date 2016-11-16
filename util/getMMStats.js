@@ -2,18 +2,13 @@ const utility = require('../util/utility');
 const config = require('../config');
 
 const secret = config.RETRIEVER_SECRET;
-const retrieverConfig = config.RETRIEVER_HOST;
 const getData = utility.getData;
+const retrieverArr = utility.getRetrieverArr();
 const DATA_POINTS = (60 / (config.MMSTATS_DATA_INTERVAL || 1)) * 24; // Store 24 hours worth of data
 
 function getMMStats(redis, cb) {
-  const retrievers = retrieverConfig.split(',').map(r =>
-    `http://${r}?key=${secret}`
-  );
-  const result = retrievers;
-  // make array of retriever urls and use a random one on each retry
-  const urls = result.map(r =>
-    `${r}&mmstats=1`
+  const urls = retrieverArr.map(r =>
+    `http://${r}?key=${secret}&mmstats=1`
   );
   getData(urls, (err, body) => {
     if (err) {

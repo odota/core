@@ -8,9 +8,10 @@ const moment = require('moment');
 const queries = require('../store/queries');
 
 const secret = config.RETRIEVER_SECRET;
-const retrieverConfig = config.RETRIEVER_HOST;
+const retrieverArr = utility.getRetrieverArr();
 const getData = utility.getData;
 const insertMatch = queries.insertMatch;
+
 module.exports = function getGcData(db, redis, match, cb) {
   db.first().from('match_gcdata').where({
     match_id: match.match_id,
@@ -23,7 +24,7 @@ module.exports = function getGcData(db, redis, match, cb) {
       return cb(err, gcdata);
     }
     // make array of retriever urls and use a random one on each retry
-    const urls = retrieverConfig.split(',').map(r =>
+    const urls = retrieverArr.map(r =>
       `http://${r}?key=${secret}&match_id=${match.match_id}`
     );
     return getData(urls, (err, body, metadata) => {

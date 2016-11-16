@@ -43,17 +43,17 @@ function generateJob(type, payload) {
   const apiUrl = 'http://api.steampowered.com';
   let apiKey;
   const opts = {
-    api_details() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
-        title: [type, payload.match_id].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_history() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${payload.account_id ? `&account_id=${payload.account_id}` : ''}${payload.matches_requested ? `&matches_requested=${payload.matches_requested}` : ''}${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${payload.leagueid ? `&league_id=${payload.leagueid}` : ''}${payload.start_at_match_id ? `&start_at_match_id=${payload.start_at_match_id}` : ''}`,
+      api_details() {
+        return {
+          url: `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
+          title: [type, payload.match_id].join(),
+          type: 'api',
+          payload,
+        };
+      },
+      api_history() {
+        return {
+          url: `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${payload.account_id ? `&account_id=${payload.account_id}` : ''}${payload.matches_requested ? `&matches_requested=${payload.matches_requested}` : ''}${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${payload.leagueid ? `&league_id=${payload.leagueid}` : ''}${payload.start_at_match_id ? `&start_at_match_id=${payload.start_at_match_id}` : ''}`,
         title: [type, payload.account_id].join(),
         type: 'api',
         payload,
@@ -715,6 +715,19 @@ function getLaneFromPosData(lanePos, isRadiant) {
   };
 }
 
+function getRetrieverArr() {
+  const input = config.RETRIEVER_HOST;
+  const output = [];
+  const arr = input.split(',');
+  arr.forEach((element) => {
+    const parsedUrl = urllib.parse(`http://${element}`, true);
+    for (let i = 0; i<(parsedUrl.query.size || 1); i+=1) {
+      output.push(parsedUrl.host);
+    }
+  });
+  return output;
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -745,4 +758,5 @@ module.exports = {
   countPeers,
   getAnonymousAccountId,
   getLaneFromPosData,
+  getRetrieverArr,
 };

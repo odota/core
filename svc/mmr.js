@@ -9,16 +9,14 @@ const redis = require('../store/redis');
 const config = require('../config');
 
 const getData = utility.getData;
-const retrieverArr = config.RETRIEVER_HOST.split(',');
+const retrieverArr = utility.getRetrieverArr();
 
 function processMmr(job, cb) {
   const accountId = job.account_id;
-  getData({
-    url: retrieverArr.map(r =>
-      `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
-    )[accountId % retrieverArr.length],
-    noRetry: true,
-  }, (err, data) => {
+  const urls = retrieverArr.map(r =>
+    `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
+  );
+  getData(urls, (err, data) => {
     if (err) {
       return cb(err);
     }
