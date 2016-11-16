@@ -687,31 +687,26 @@ function getLaneFromPosData(lanePos, isRadiant) {
     });
   });
   const lane = mode(lanes);
+  // Roles, currently doesn't distinguish between carry/support in safelane
+  // 1 safelane
+  // 2 mid
+  // 3 offlane
+  // 4 jungle
   const laneRoles = {
-    1() {
-      // bot
-      return isRadiant ? 1 : 3;
-    },
-    2() {
-      // mid
-      return 2;
-    },
-    3() {
-      // top
-      return isRadiant ? 3 : 1;
-    },
-    4() {
-      // rjung
-      return 4;
-    },
-    5() {
-      // djung
-      return 4;
-    },
+    // bot
+    1: isRadiant ? 1 : 3,
+    // mid
+    2: 2,
+    // top
+    3: isRadiant ? 3 : 1,
+    // radiant jungle
+    4: 4,
+    // dire jungle
+    5: 4,
   };
   return {
     lane,
-    lane_role: laneRoles[lane] ? laneRoles[lane]() : null,
+    lane_role: laneRoles[lane],
   };
 }
 
