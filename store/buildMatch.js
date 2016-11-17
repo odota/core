@@ -134,19 +134,44 @@ function getMatch(matchId, options, cb) {
           return cb(err, cosmetics.filter(c => c));
         });
       },
+      prodata(cb) {
+        db.first(['radiant_team_id', 'dire_team_id', 'leagueid'])
+          .from('matches')
+          .where({
+            match_id: matchId,
+          }).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            if (!result) {
+              return cb(null, {});
+            }
+            return async.parallel({
+              league: (cb) => db.first().from('leagues').where({
+                leagueid: result.leagueid,
+              }).asCallback(cb),
+              radiant_team: (cb) => db.first().from('teams').where({
+                team_id: result.radiant_team_id,
+              }).asCallback(cb),
+              dire_team: (cb) => db.first().from('teams').where({
+                team_id: result.dire_team_id,
+              }).asCallback(cb),
+            }, cb);
+          });
+      }
     }, (err, result) => {
       if (err) {
         return cb(err);
       }
-      match = Object.assign({}, match, result.gcdata, result.skill, {
+      match = Object.assign({}, match, result.gcdata, result.skill, result.prodata, {
         players: result.players,
       });
       // Assign cosmetics to each player
       if (result.cosmetics) {
         match.players.forEach((p) => {
           const hero = constants.heroes[p.hero_id] || {};
-          p.cosmetics = result.cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot
-            && (!c.used_by_heroes || c.used_by_heroes === hero.name));
+          p.cosmetics = result.cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot &&
+            (!c.used_by_heroes || c.used_by_heroes === hero.name));
         });
       }
       computeMatchData(match);
