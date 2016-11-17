@@ -147,18 +147,18 @@ function getMatch(matchId, options, cb) {
               return cb(null, {});
             }
             return async.parallel({
-              league: (cb) => db.first().from('leagues').where({
+              league: cb => db.first().from('leagues').where({
                 leagueid: result.leagueid,
               }).asCallback(cb),
-              radiant_team: (cb) => db.first().from('teams').where({
+              radiant_team: cb => db.first().from('teams').where({
                 team_id: result.radiant_team_id,
               }).asCallback(cb),
-              dire_team: (cb) => db.first().from('teams').where({
+              dire_team: cb => db.first().from('teams').where({
                 team_id: result.dire_team_id,
               }).asCallback(cb),
             }, cb);
           });
-      }
+      },
     }, (err, result) => {
       if (err) {
         return cb(err);
