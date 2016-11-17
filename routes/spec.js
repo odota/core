@@ -1983,6 +1983,37 @@ Please keep request rate to approximately 1/s.
       },
     },
     */
+    '/proPlayers': {
+      get: {
+        summary: '/',
+        description: 'Get list of pro players',
+        tags: ['pro players'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        route: () => '/proPlayers',
+        func: (req, res, cb) => {
+          db.select()
+          .from('players')
+          .rightJoin('notable_players', 'players.account_id', 'notable_players.account_id')
+          .orderBy('notable_players.account_id', 'asc')
+          .asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result);
+          });
+        },
+      },
+    },
     '/heroes': {
       get: {
         summary: '/',
@@ -2001,7 +2032,10 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/heroes',
         func: (req, res, cb) => {
-          db.select().from('heroes').orderBy('id', 'asc').asCallback((err, result) => {
+          db.select()
+          .from('heroes')
+          .orderBy('id', 'asc')
+          .asCallback((err, result) => {
             if (err) {
               return cb(err);
             }
@@ -2028,7 +2062,9 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/leagues',
         func: (req, res, cb) => {
-          db.select().from('leagues').asCallback((err, result) => {
+          db.select()
+          .from('leagues')
+          .asCallback((err, result) => {
             if (err) {
               return cb(err);
             }
@@ -2062,7 +2098,10 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/replays',
         func: (req, res, cb) => {
-          db.select(['match_id', 'cluster', 'replay_salt']).from('match_gcdata').whereIn('match_id', (req.query.match_id || []).slice(0, 100)).asCallback((err, result) => {
+          db.select(['match_id', 'cluster', 'replay_salt'])
+          .from('match_gcdata')
+          .whereIn('match_id', (req.query.match_id || []).slice(0, 100))
+          .asCallback((err, result) => {
             if (err) {
               return cb(err);
             }
