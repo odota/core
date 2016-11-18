@@ -53,11 +53,12 @@ const defaults = {
   BENCHMARK_RETENTION_MINUTES: 60, // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: 0, // percent of inserted matches to queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
+  PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
   ENABLE_RECAPTCHA: '', // set to enable the recaptcha on the Request page
   ENABLE_ADS: '', // set to turn on ads
   ENABLE_MATCH_CACHE: '', // set to enable caching matches (Redis)
   ENABLE_RANDOM_MMR_UPDATE: '', // set to update MMRs after ranked matches
-  ENABLE_POSTGRES_MATCH_STORE_WRITE: '1', // set to enable writing match data to postgres, if off, only pro matches are written
+  ENABLE_POSTGRES_MATCH_STORE_WRITE: '', // set to enable writing match data to postgres, if off, only pro matches are written
   ENABLE_CASSANDRA_MATCH_STORE_READ: '1', // set to enable reading match data from cassandra
   ENABLE_CASSANDRA_MATCH_STORE_WRITE: '1', // set to enable writing match data to cassandra
   RECAPTCHA_PUBLIC_KEY: '', // for preventing automated requests, in web

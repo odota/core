@@ -296,12 +296,29 @@ function mode(array) {
  * Determines if a match is significant for aggregation purposes
  **/
 function isSignificant(m) {
-  return Boolean(constants.game_mode[m.game_mode]
+  return Boolean(m.human_players === 10
+    && constants.game_mode[m.game_mode]
     && constants.game_mode[m.game_mode].balanced
     && constants.lobby_type[m.lobby_type]
     && constants.lobby_type[m.lobby_type].balanced
     && m.radiant_win !== undefined
-    && m.duration > 60 * 5);
+    && m.duration > 300);
+}
+
+/**
+ * Determines if a match is a pro match
+ **/
+function isProMatch(match, redis, cb) {
+  if (match.leagueid
+  && match.human_players === 10
+  && match.duration > 300
+  && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2)
+  && match.players
+  && match.players.every(p => p.hero_id > 0)) {
+    redis.sismember('pro_leagueids', match.leagueid, cb);
+  } else {
+    cb(null, false);
+  }
 }
 
 /**
@@ -710,6 +727,9 @@ function getLaneFromPosData(lanePos, isRadiant) {
   };
 }
 
+/**
+ * Get array of retriever endpoints from config
+ **/
 function getRetrieverArr() {
   const input = config.RETRIEVER_HOST;
   const output = [];
@@ -754,4 +774,5 @@ module.exports = {
   getAnonymousAccountId,
   getLaneFromPosData,
   getRetrieverArr,
+  isProMatch,
 };
