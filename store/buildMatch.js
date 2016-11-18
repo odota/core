@@ -10,7 +10,7 @@ const constants = require('dotaconstants');
 const cassandra = require('../store/cassandra');
 const redis = require('../store/redis');
 const db = require('../store/db');
-  
+
 const computeMatchData = compute.computeMatchData;
 const deserialize = utility.deserialize;
 const buildReplayUrl = utility.buildReplayUrl;
