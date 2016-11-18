@@ -556,7 +556,7 @@ function updateMmrEstimate(match, cb) {
 }
 
 function upsertMatchSample(match, cb) {
-  if (match.match_id % 100 >= config.PUBLIC_SAMPLE_PERCENT && utility.isSignificant(match)) {
+  if (match.match_id % 100 >= config.PUBLIC_SAMPLE_PERCENT || !utility.isSignificant(match)) {
     return cb();
   }
   return db.transaction((trx) => {
