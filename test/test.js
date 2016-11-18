@@ -182,10 +182,7 @@ describe('replay parse', function testReplayParse() {
               if (state === 'completed') {
                 clearInterval(poll);
                 // ensure parse data got inserted
-                buildMatch(tests[key].match_id, {
-                  db,
-                  redis,
-                }, (err, match) => {
+                buildMatch(tests[key].match_id, (err, match) => {
                   if (err) {
                     return done(err);
                   }
@@ -224,7 +221,7 @@ describe('api', () => {
             return cb(err);
           }
           return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
-            console.log(verb, replacedPath);
+            console.log(verb, replacedPath, res.body);
             assert.equal(res.statusCode, 200);
             return cb(err);
           });

@@ -355,11 +355,7 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/matches/:match_id/:info?',
         func: (req, res, cb) => {
-          buildMatch(req.params.match_id, {
-            db,
-            redis,
-            cassandra,
-          }, (err, match) => {
+          buildMatch(req.params.match_id, (err, match) => {
             if (err) {
               return cb(err);
             }
