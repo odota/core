@@ -1961,7 +1961,7 @@ Please keep request rate to approximately 1/s.
 
           if (match && match.match_id) {
             // match id request, get data from API
-            utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
+            return utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
               if (err) {
                 // couldn't get data from api, non-retryable
                 return exitWithJob(JSON.stringify(err));
