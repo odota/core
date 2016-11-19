@@ -1,7 +1,7 @@
 {
   "name": "opendota-core",
   "description": "Open source Dota data platform",
-  "version": "9.0.0",
+  "version": "9.1.0",
   "license": "GPL-3.0",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
     "JSONStream": "^1.2.1",
     "async": "^2.1.2",
     "big-number": "^0.4.0",
-    "bull": "^1.0.0",
+    "bull": "^1.1.2",
     "cassandra-driver": "^3.1.6",
     "compression": "^1.6.2",
     "cookie-session": "2.0.0-alpha.2",
