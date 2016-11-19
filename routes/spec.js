@@ -180,7 +180,7 @@ Please keep request rate to approximately 1/s.
   paths: {
     '/matches/{match_id}': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Match data',
         tags: [
           'matches',
@@ -373,7 +373,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Player data',
         tags: [
           'players',
@@ -441,7 +441,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/wl': {
       get: {
-        summary: '/wl',
+        summary: 'GET /wl',
         description: 'Win/Loss count',
         tags: [
           'players',
@@ -526,7 +526,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/matches': {
       get: {
-        summary: '/matches',
+        summary: 'GET /matches',
         description: 'Matches played',
         tags: [
           'players',
@@ -606,7 +606,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/heroes': {
       get: {
-        summary: '/heroes',
+        summary: 'GET /heroes',
         description: 'Heroes played',
         tags: [
           'players',
@@ -719,7 +719,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/peers': {
       get: {
-        summary: '/peers',
+        summary: 'GET /peers',
         description: 'Players played with',
         tags: [
           'players',
@@ -790,7 +790,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/pros': {
       get: {
-        summary: '/pros',
+        summary: 'GET /pros',
         description: 'Pro players played with',
         tags: [
           'players',
@@ -861,7 +861,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/records': {
       get: {
-        summary: '/records',
+        summary: 'GET /records',
         description: 'Extremes in matches played',
         tags: [
           'players',
@@ -1051,7 +1051,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/counts': {
       get: {
-        summary: '/counts',
+        summary: 'GET /counts',
         description: 'Categorical counts',
         tags: [
           'players',
@@ -1158,7 +1158,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/histograms/{field}': {
       get: {
-        summary: '/histograms',
+        summary: 'GET /histograms',
         description: 'Distribution of matches in a single stat',
         tags: [
           'players',
@@ -1249,7 +1249,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/wardmap': {
       get: {
-        summary: '/wardmap',
+        summary: 'GET /wardmap',
         description: 'Wards placed in matches played',
         tags: [
           'players',
@@ -1332,7 +1332,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/wordcloud': {
       get: {
-        summary: '/wordcloud',
+        summary: 'GET /wordcloud',
         description: 'Words said/read in matches played',
         tags: [
           'players',
@@ -1415,7 +1415,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/ratings': {
       get: {
-        summary: '/ratings',
+        summary: 'GET /ratings',
         description: 'Player rating history',
         tags: [
           'players',
@@ -1447,7 +1447,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/rankings': {
       get: {
-        summary: '/rankings',
+        summary: 'GET /rankings',
         description: 'Player hero rankings',
         tags: [
           'players',
@@ -1479,7 +1479,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/refresh': {
       post: {
-        summary: '/refresh',
+        summary: 'POST /refresh',
         description: 'Refresh player match history',
         tags: [
           'players',
@@ -1510,9 +1510,83 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    '/proPlayers': {
+      get: {
+        summary: 'GET /',
+        description: 'Get list of pro players',
+        tags: ['pro players'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        route: () => '/proPlayers',
+        func: (req, res, cb) => {
+          db.select()
+            .from('players')
+            .rightJoin('notable_players', 'players.account_id', 'notable_players.account_id')
+            .orderBy('notable_players.account_id', 'asc')
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
+        },
+      },
+    },
+    '/proMatches': {
+      get: {
+        summary: 'GET /',
+        description: 'Get list of pro matches',
+        tags: ['pro matches'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        route: () => '/proMatches',
+        func: (req, res, cb) => {
+          db.raw(`
+          SELECT match_id, duration, start_time, 
+          radiant_team_id, radiant.name as radiant_name, 
+          dire_team_id, dire.name as dire_name, 
+          leagueid, leagues.name as league_name,
+          series_id, series_type
+          FROM matches
+          LEFT JOIN teams radiant
+          ON radiant.team_id = matches.radiant_team_id
+          LEFT JOIN teams dire
+          ON dire.team_id = matches.dire_team_id
+          LEFT JOIN leagues USING(leagueid)
+          LEFT JOIN match_gcdata USING(match_id)
+          ORDER BY match_id DESC
+          LIMIT 100
+          `)
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
     '/explorer': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Submit arbitrary SQL queries to the database',
         tags: ['explorer'],
         parameters: [{
@@ -1549,7 +1623,7 @@ Please keep request rate to approximately 1/s.
     },
     '/metadata': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Site metadata',
         tags: [
           'metadata',
@@ -1598,8 +1672,8 @@ Please keep request rate to approximately 1/s.
     },
     '/distributions': {
       get: {
-        summary: '/',
-        description: 'Global Dota 2 statistics',
+        summary: 'GET /',
+        description: 'Distributions of MMR data',
         tags: [
           'distributions',
         ],
@@ -1634,7 +1708,7 @@ Please keep request rate to approximately 1/s.
     },
     '/search': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Search players by personaname',
         tags: [
           'search',
@@ -1673,7 +1747,7 @@ Please keep request rate to approximately 1/s.
     },
     '/rankings': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Top players by hero',
         tags: [
           'rankings',
@@ -1716,7 +1790,7 @@ Please keep request rate to approximately 1/s.
     },
     '/benchmarks': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Benchmarks of average stat values for a hero',
         tags: [
           'benchmarks',
@@ -1761,7 +1835,7 @@ Please keep request rate to approximately 1/s.
     },
     '/status': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Get current service statistics',
         tags: ['status'],
         responses: {
@@ -1785,7 +1859,7 @@ Please keep request rate to approximately 1/s.
     },
     '/health': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Get service health data',
         tags: ['health'],
         responses: {
@@ -1818,7 +1892,7 @@ Please keep request rate to approximately 1/s.
     },
     '/request/{jobId}': {
       get: {
-        summary: 'GET',
+        summary: 'GET /',
         description: 'Get parse request state',
         tags: ['request'],
         parameters: [{
@@ -1854,7 +1928,7 @@ Please keep request rate to approximately 1/s.
     },
     '/request/{match_id}': {
       post: {
-        summary: 'POST',
+        summary: 'POST /',
         description: 'Submit a new parse request',
         tags: ['request'],
         route: () => '/request/:match_id',
@@ -1933,7 +2007,7 @@ Please keep request rate to approximately 1/s.
     /*
     '/matchups': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Get hero matchups (teammates and opponents)',
         tags: ['matchups'],
         parameters: [{
@@ -1985,7 +2059,7 @@ Please keep request rate to approximately 1/s.
     */
     '/heroes': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Get hero data',
         tags: ['heroes'],
         responses: {
@@ -2001,18 +2075,21 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/heroes',
         func: (req, res, cb) => {
-          db.select().from('heroes').orderBy('id', 'asc').asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+          db.select()
+            .from('heroes')
+            .orderBy('id', 'asc')
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
         },
       },
     },
     '/leagues': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Get league data',
         tags: ['leagues'],
         responses: {
@@ -2028,18 +2105,20 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/leagues',
         func: (req, res, cb) => {
-          db.select().from('leagues').asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+          db.select()
+            .from('leagues')
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
         },
       },
     },
     '/replays': {
       get: {
-        summary: '/',
+        summary: 'GET /',
         description: 'Get replay data',
         tags: ['replays'],
         parameters: [{
@@ -2062,12 +2141,15 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/replays',
         func: (req, res, cb) => {
-          db.select(['match_id', 'cluster', 'replay_salt']).from('match_gcdata').whereIn('match_id', (req.query.match_id || []).slice(0, 100)).asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+          db.select(['match_id', 'cluster', 'replay_salt'])
+            .from('match_gcdata')
+            .whereIn('match_id', (req.query.match_id || []).slice(0, 100))
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
         },
       },
     },
