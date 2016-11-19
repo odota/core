@@ -295,14 +295,14 @@ function mode(array) {
 /**
  * Determines if a match is significant for aggregation purposes
  **/
-function isSignificant(m) {
-  return Boolean(m.human_players === 10
-    && constants.game_mode[m.game_mode]
-    && constants.game_mode[m.game_mode].balanced
-    && constants.lobby_type[m.lobby_type]
-    && constants.lobby_type[m.lobby_type].balanced
-    && m.radiant_win !== undefined
-    && m.duration > 300);
+function isSignificant(match) {
+  return Boolean(match.human_players === 10
+  && constants.game_mode[match.game_mode]
+  && constants.game_mode[match.game_mode].balanced
+  && constants.lobby_type[match.lobby_type]
+  && constants.lobby_type[match.lobby_type].balanced
+  && match.radiant_win !== undefined
+  && match.duration > 300);
 }
 
 /**
