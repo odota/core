@@ -565,7 +565,8 @@ function upsertMatchSample(match, cb) {
         if (err) {
           return cb(err);
         }
-        const newMatch = Object.assign({}, match, { avg_mmr: avg, num_mmr: num });
+        const matchMmrData = avg ? { avg_mmr: avg, num_mmr: num } : {};
+        const newMatch = Object.assign({}, match, matchMmrData);
         return upsert(trx, 'public_matches', newMatch, {
           match_id: newMatch.match_id,
         }, cb);
