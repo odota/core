@@ -2002,15 +2002,58 @@ Please keep request rate to approximately 1/s.
         route: () => '/proPlayers',
         func: (req, res, cb) => {
           db.select()
-          .from('players')
-          .rightJoin('notable_players', 'players.account_id', 'notable_players.account_id')
-          .orderBy('notable_players.account_id', 'asc')
-          .asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+            .from('players')
+            .rightJoin('notable_players', 'players.account_id', 'notable_players.account_id')
+            .orderBy('notable_players.account_id', 'asc')
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
+        },
+      },
+    },
+    '/proMatches': {
+      get: {
+        summary: '/',
+        description: 'Get list of pro matches',
+        tags: ['pro matches'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        route: () => '/proMatches',
+        func: (req, res, cb) => {
+          db.raw(`
+          SELECT match_id, duration, start_time, 
+          radiant_team_id, radiant.name as radiant_name, 
+          dire_team_id, dire.name as dire_name, 
+          leagueid, leagues.name as league_name,
+          series_id, series_type
+          FROM matches
+          LEFT JOIN teams radiant
+          ON radiant.team_id = matches.radiant_team_id
+          LEFT JOIN teams dire
+          ON dire.team_id = matches.dire_team_id
+          LEFT JOIN leagues USING(leagueid)
+          LEFT JOIN match_gcdata USING(match_id)
+          ORDER BY match_id DESC
+          LIMIT 100
+          `)
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
         },
       },
     },
@@ -2033,14 +2076,14 @@ Please keep request rate to approximately 1/s.
         route: () => '/heroes',
         func: (req, res, cb) => {
           db.select()
-          .from('heroes')
-          .orderBy('id', 'asc')
-          .asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+            .from('heroes')
+            .orderBy('id', 'asc')
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
         },
       },
     },
@@ -2063,13 +2106,13 @@ Please keep request rate to approximately 1/s.
         route: () => '/leagues',
         func: (req, res, cb) => {
           db.select()
-          .from('leagues')
-          .asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+            .from('leagues')
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
         },
       },
     },
@@ -2099,14 +2142,14 @@ Please keep request rate to approximately 1/s.
         route: () => '/replays',
         func: (req, res, cb) => {
           db.select(['match_id', 'cluster', 'replay_salt'])
-          .from('match_gcdata')
-          .whereIn('match_id', (req.query.match_id || []).slice(0, 100))
-          .asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+            .from('match_gcdata')
+            .whereIn('match_id', (req.query.match_id || []).slice(0, 100))
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
         },
       },
     },
