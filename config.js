@@ -41,11 +41,11 @@ const defaults = {
   INIT_CASSANDRA_HOST: 'localhost',
   RETRIEVER_SECRET: '', // string to use as shared secret with retriever/parser
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
-  COOKIE_DOMAIN: '',
+  COOKIE_DOMAIN: '', // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
   UNTRACK_DAYS: 14, // The number of days a user is tracked for after every visit
   GOAL: 5, // The cheese goal
   MMSTATS_DATA_INTERVAL: 3, // minutes between requests for MMStats data
-  DEFAULT_DELAY: 1000, // delay between API requests (default: 1000)
+  DEFAULT_DELAY: 1000, // delay between API requests
   SCANNER_DELAY: 2000, // delay for scanner API requests (stricter rate limit)
   MMR_PARALLELISM: 10, // Number of simulataneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
@@ -54,20 +54,11 @@ const defaults = {
   GCDATA_PERCENT: 0, // percent of inserted matches to queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
-  ENABLE_RECAPTCHA: '', // set to enable the recaptcha on the Request page
-  ENABLE_ADS: '', // set to turn on ads
   ENABLE_MATCH_CACHE: '', // set to enable caching matches (Redis)
   ENABLE_RANDOM_MMR_UPDATE: '', // set to update MMRs after ranked matches
-  ENABLE_POSTGRES_MATCH_STORE_WRITE: '', // set to enable writing match data to postgres, if off, only pro matches are written
-  ENABLE_CASSANDRA_MATCH_STORE_READ: '1', // set to enable reading match data from cassandra
-  ENABLE_CASSANDRA_MATCH_STORE_WRITE: '1', // set to enable writing match data to cassandra
+  ENABLE_RECAPTCHA: '', // set to enable the recaptcha on the Request page
   RECAPTCHA_PUBLIC_KEY: '', // for preventing automated requests, in web
   RECAPTCHA_SECRET_KEY: '',
-  STRIPE_SECRET: '', // for donations, in web
-  STRIPE_PUBLIC: '',
-  BRAIN_TREE_MERCHANT_ID: '',
-  BRAIN_TREE_PUBLIC_KEY: '',
-  BRAIN_TREE_PRIVATE_KEY: '',
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

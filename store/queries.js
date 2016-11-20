@@ -275,7 +275,7 @@ function getMatchesSkill(db, matches, options, cb) {
 }
 
 function getPlayerMatches(accountId, queryObj, cb) {
-  if (config.ENABLE_CASSANDRA_MATCH_STORE_READ && cassandra) {
+  if (cassandra) {
     // call clean method to ensure we have column info cached
     return cleanRowCassandra(cassandra, 'player_caches', {}, (err) => {
       if (err) {
@@ -738,7 +738,7 @@ function insertMatch(match, options, cb) {
   }
 
   function upsertMatch(cb) {
-    if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !options.doLogParse) {
+    if (!options.doLogParse) {
       return cb();
     }
     return db.transaction((trx) => {
@@ -843,7 +843,7 @@ function insertMatch(match, options, cb) {
   }
 
   function upsertMatchCassandra(cb) {
-    if (!config.ENABLE_CASSANDRA_MATCH_STORE_WRITE) {
+    if (!cassandra) {
       return cb();
     }
     // console.log('[INSERTMATCH] upserting into Cassandra');
@@ -897,7 +897,7 @@ function insertMatch(match, options, cb) {
   }
 
   function updatePlayerCaches(cb) {
-    if (!config.ENABLE_CASSANDRA_MATCH_STORE_WRITE) {
+    if (!cassandra) {
       return cb();
     }
     const copy = createMatchCopy(match, players, options);

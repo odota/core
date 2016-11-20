@@ -294,12 +294,6 @@ CREATE TABLE match_gcdata(
   series_type int
 );
 
-CREATE TABLE match_rating(
-  match_id bigint PRIMARY KEY,
-  rating int,
-  num_players int
-);
-
 CREATE TABLE items(
   id int PRIMARY KEY,
   name text,
