@@ -275,7 +275,7 @@ function getMatchesSkill(db, matches, options, cb) {
 }
 
 function getPlayerMatches(accountId, queryObj, cb) {
-  if (config.ENABLE_CASSANDRA_MATCH_STORE_READ && cassandra) {
+  if (cassandra) {
     // call clean method to ensure we have column info cached
     return cleanRowCassandra(cassandra, 'player_caches', {}, (err) => {
       if (err) {
@@ -539,8 +539,8 @@ function updateBenchmarks(match, cb) {
   return cb();
 }
 
-function updateMatchRating(match, cb) {
-  getMatchRating(redis, match, (err, avg, num) => {
+function updateMmrEstimate(match, cb) {
+  getMatchRating(redis, match, (err, avg) => {
     if (avg && !isNaN(Number(avg))) {
       // For each player, update mmr estimation list
       match.players.forEach((player) => {
@@ -550,16 +550,53 @@ function updateMatchRating(match, cb) {
           redis.ltrim(`mmr_estimates:${player.account_id}`, 0, 19);
         }
       });
-      // Persist match average MMR into postgres
-      return upsert(db, 'match_rating', {
-        match_id: match.match_id,
-        rating: avg,
-        num_players: num,
-      }, {
-        match_id: match.match_id,
-      }, cb);
     }
     return cb(err);
+  });
+}
+
+function upsertMatchSample(match, cb) {
+  if (match.match_id % 100 >= config.PUBLIC_SAMPLE_PERCENT || !utility.isSignificant(match)) {
+    return cb();
+  }
+  return db.transaction((trx) => {
+    function upsertMatchSample(cb) {
+      getMatchRating(redis, match, (err, avg, num) => {
+        if (err) {
+          return cb(err);
+        }
+        const matchMmrData = avg ? { avg_mmr: avg, num_mmr: num } : {};
+        const newMatch = Object.assign({}, match, matchMmrData);
+        return upsert(trx, 'public_matches', newMatch, {
+          match_id: newMatch.match_id,
+        }, cb);
+      });
+    }
+
+    function upsertPlayerMatchesSample(cb) {
+      async.each(match.players || [], (pm, cb) => {
+        pm.match_id = match.match_id;
+        upsert(trx, 'public_player_matches', pm, {
+          match_id: pm.match_id,
+          player_slot: pm.player_slot,
+        }, cb);
+      }, cb);
+    }
+
+    function exit(err) {
+      if (err) {
+        console.error(err);
+        trx.rollback(err);
+      } else {
+        trx.commit();
+      }
+      cb(err);
+    }
+
+    async.series({
+      upsertMatchSample,
+      upsertPlayerMatchesSample,
+    }, exit);
   });
 }
 
@@ -694,23 +731,14 @@ function insertMatch(match, options, cb) {
   }
 
   function decideLogParse(cb) {
-    if (match.leagueid
-      && match.human_players === 10
-      && match.duration > 300
-      && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2)
-      && match.players
-      && match.players.every(p => p.hero_id > 0)) {
-      redis.sismember('pro_leagueids', match.leagueid, (err, result) => {
-        options.doLogParse = options.doLogParse || Boolean(Number(result));
-        cb(err);
-      });
-    } else {
-      cb();
-    }
+    utility.isProMatch(match, redis, (err, result) => {
+      options.doLogParse = options.doLogParse || Boolean(Number(result));
+      cb(err);
+    });
   }
 
   function upsertMatch(cb) {
-    if (!config.ENABLE_POSTGRES_MATCH_STORE_WRITE && !options.doLogParse) {
+    if (!options.doLogParse) {
       return cb();
     }
     return db.transaction((trx) => {
@@ -804,18 +832,18 @@ function insertMatch(match, options, cb) {
       }
 
       async.series({
-        m: upsertMatch,
-        pm: upsertPlayerMatches,
-        pb: upsertPicksBans,
-        mp: upsertMatchPatch,
-        utm: upsertTeamMatch,
-        l: upsertMatchLogs,
+        upsertMatch,
+        upsertPlayerMatches,
+        upsertPicksBans,
+        upsertMatchPatch,
+        upsertTeamMatch,
+        upsertMatchLogs,
       }, exit);
     });
   }
 
   function upsertMatchCassandra(cb) {
-    if (!config.ENABLE_CASSANDRA_MATCH_STORE_WRITE) {
+    if (!cassandra) {
       return cb();
     }
     // console.log('[INSERTMATCH] upserting into Cassandra');
@@ -869,7 +897,7 @@ function insertMatch(match, options, cb) {
   }
 
   function updatePlayerCaches(cb) {
-    if (!config.ENABLE_CASSANDRA_MATCH_STORE_WRITE) {
+    if (!cassandra) {
       return cb();
     }
     const copy = createMatchCopy(match, players, options);
@@ -887,15 +915,21 @@ function insertMatch(match, options, cb) {
         }
         return cb();
       },
-      updateMatchRating(cb) {
-        if (options.origin === 'scanner') {
-          return updateMatchRating(match, cb);
-        }
-        return cb();
-      },
       updateBenchmarks(cb) {
         if (options.origin === 'scanner') {
           return updateBenchmarks(match, cb);
+        }
+        return cb();
+      },
+      updateMmrEstimate(cb) {
+        if (options.origin === 'scanner') {
+          return updateMmrEstimate(match, cb);
+        }
+        return cb();
+      },
+      upsertMatchSample(cb) {
+        if (options.origin === 'scanner') {
+          return upsertMatchSample(match, cb);
         }
         return cb();
       },
@@ -1036,21 +1070,21 @@ function insertMatch(match, options, cb) {
     });
   }
   async.series({
-    pp: preprocess,
-    dlp: decideLogParse,
-    u: upsertMatch,
-    uc: upsertMatchCassandra,
-    upc: updatePlayerCaches,
-    uct: updateCounts,
-    cmc: clearMatchCache,
-    t: telemetry,
-    dm: decideMmr,
-    dpro: decideProfile,
-    dgcd: decideGcData,
-    dmp: decideMetaParse,
-    dp: decideReplayParse,
+    preprocess,
+    decideLogParse,
+    upsertMatch,
+    upsertMatchCassandra,
+    updatePlayerCaches,
+    updateCounts,
+    clearMatchCache,
+    telemetry,
+    decideMmr,
+    decideProfile,
+    decideGcData,
+    decideMetaParse,
+    decideReplayParse,
   }, (err, results) =>
-    cb(err, results.dp)
+    cb(err, results.decideReplayParse)
   );
 }
 

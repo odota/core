@@ -294,12 +294,6 @@ CREATE TABLE match_gcdata(
   series_type int
 );
 
-CREATE TABLE match_rating(
-  match_id bigint PRIMARY KEY,
-  rating int,
-  num_players int
-);
-
 CREATE TABLE items(
   id int PRIMARY KEY,
   name text,
@@ -323,3 +317,21 @@ CREATE TABLE cosmetics(
   item_type_name text,
   used_by_heroes text
 );
+
+CREATE TABLE public_matches (
+  match_id bigint PRIMARY KEY,
+  match_seq_num bigint,
+  radiant_win boolean,
+  start_time integer,
+  duration integer,
+  avg_mmr integer,
+  num_mmr integer
+);
+
+CREATE TABLE public_player_matches (
+  PRIMARY KEY(match_id, player_slot),
+  match_id bigint REFERENCES public_matches(match_id) ON DELETE CASCADE,
+  player_slot integer,
+  hero_id integer
+);
+CREATE INDEX on public_player_matches(hero_id);

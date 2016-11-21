@@ -1,7 +1,7 @@
 /**
  * Interface to Cassandra client
  **/
-const cass = require('cassandra-driver');
+const cassandraDriver = require('cassandra-driver');
 const config = require('../config');
 const url = require('url');
 
@@ -10,7 +10,7 @@ const cps = spl.map(u =>
    url.parse(u).host
 );
 console.log('connecting %s', config.CASSANDRA_URL);
-const cassandra = new cass.Client(
+const cassandra = new cassandraDriver.Client(
   {
     contactPoints: cps,
     keyspace: url.parse(spl[0]).path.substring(1),

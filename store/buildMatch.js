@@ -7,81 +7,59 @@ const queries = require('./queries');
 const compute = require('../util/compute');
 const utility = require('../util/utility');
 const constants = require('dotaconstants');
+const cassandra = require('../store/cassandra');
+const redis = require('../store/redis');
+const db = require('../store/db');
 
 const computeMatchData = compute.computeMatchData;
 const deserialize = utility.deserialize;
 const buildReplayUrl = utility.buildReplayUrl;
 
-function getMatch(matchId, options, cb) {
-  const cassandra = options.cassandra;
-  const redis = options.redis;
-  const db = options.db;
-
+function getMatch(matchId, cb) {
   function getMatchData(matchId, cb) {
-    if (cassandra) {
-      cassandra.execute('SELECT * FROM matches where match_id = ?', [Number(matchId)], {
-        prepare: true,
-        fetchSize: 10,
-        autoPage: true,
-      }, (err, result) => {
-        if (err) {
-          return cb(err);
-        }
-        result = result.rows.map(m =>
-          deserialize(m)
-        );
-        return cb(err, result[0]);
-      });
-    } else {
-      db.first(['matches.match_id', 'match_skill.skill', 'radiant_win', 'start_time', 'duration', 'tower_status_dire', 'tower_status_radiant', 'barracks_status_dire', 'barracks_status_radiant', 'cluster', 'lobby_type', 'leagueid', 'game_mode', 'picks_bans', 'chat', 'teamfights', 'objectives', 'radiant_gold_adv', 'radiant_xp_adv', 'version'])
-        .from('matches')
-        .leftJoin('match_skill', 'matches.match_id', 'match_skill.match_id')
-        .where({
-          'matches.match_id': Number(matchId),
-        })
-        .asCallback(cb);
-    }
+    cassandra.execute('SELECT * FROM matches where match_id = ?', [Number(matchId)], {
+      prepare: true,
+      fetchSize: 10,
+      autoPage: true,
+    }, (err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      result = result.rows.map(m =>
+        deserialize(m)
+      );
+      return cb(err, result[0]);
+    });
   }
 
   function getPlayerMatchData(matchId, cb) {
-    if (cassandra) {
-      cassandra.execute('SELECT * FROM player_matches where match_id = ?', [Number(matchId)], {
-        prepare: true,
-        fetchSize: 10,
-        autoPage: true,
-      }, (err, result) => {
-        if (err) {
-          return cb(err);
-        }
-        result = result.rows.map(m =>
-          deserialize(m)
-        );
-        // get personanames
-        return async.map(result, (r, cb) => {
-          db.raw(`
-            SELECT personaname, name, last_login 
-            FROM players
-            LEFT JOIN notable_players
-            ON players.account_id = notable_players.account_id
-            WHERE players.account_id = ?
-          `, [r.account_id]).asCallback((err, names) => {
-            if (err) {
-              return cb(err);
-            }
-            return cb(err, Object.assign({}, r, names.rows[0]));
-          });
-        }, cb);
-      });
-    } else {
-      db.select(['personaname', 'last_login', 'player_matches.match_id', 'player_matches.account_id', 'player_slot', 'hero_id', 'item_0', 'item_1', 'item_2', 'item_3', 'item_4', 'item_5', 'kills', 'deaths', 'assists', 'leaver_status', 'gold', 'last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_spent', 'hero_damage', 'tower_damage', 'hero_healing', 'level', 'additional_units', 'stuns', 'max_hero_hit', 'times', 'gold_t', 'lh_t', 'dn_t', 'xp_t', 'obs_log', 'sen_log', 'purchase_log', 'kills_log', 'buyback_log', 'lane_pos', 'obs', 'sen', 'actions', 'pings', 'purchase', 'gold_reasons', 'xp_reasons', 'killed', 'item_uses', 'ability_uses', 'hero_hits', 'damage', 'damage_taken', 'damage_inflictor', 'runes', 'killed_by', 'kill_streaks', 'multi_kills', 'life_state'])
-        .from('player_matches')
-        .where({
-          'player_matches.match_id': Number(matchId),
-        })
-        .leftJoin('players', 'player_matches.account_id', 'players.account_id')
-        .orderBy('player_slot', 'asc')
-        .asCallback(cb);
-    }
+    cassandra.execute('SELECT * FROM player_matches where match_id = ?', [Number(matchId)], {
+      prepare: true,
+      fetchSize: 10,
+      autoPage: true,
+    }, (err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      result = result.rows.map(m =>
+        deserialize(m)
+      );
+      // get personanames
+      return async.map(result, (r, cb) => {
+        db.raw(`
+          SELECT personaname, name, last_login 
+          FROM players
+          LEFT JOIN notable_players
+          ON players.account_id = notable_players.account_id
+          WHERE players.account_id = ?
+        `, [r.account_id]).asCallback((err, names) => {
+          if (err) {
+            return cb(err);
+          }
+          return cb(err, Object.assign({}, r, names.rows[0]));
+        });
+      }, cb);
+    });
   }
 
   getMatchData(matchId, (err, match) => {
@@ -185,8 +163,7 @@ function getMatch(matchId, options, cb) {
   });
 }
 
-function buildMatch(matchId, options, cb) {
-  const redis = options.redis;
+function buildMatch(matchId, cb) {
   const key = `match:${matchId}`;
   redis.get(key, (err, reply) => {
     if (err) {
@@ -197,7 +174,7 @@ function buildMatch(matchId, options, cb) {
       return cb(err, match);
     }
     console.log(`Cache miss for match ${matchId}`);
-    return getMatch(matchId, options, (err, match) => {
+    return getMatch(matchId, (err, match) => {
       if (err) {
         return cb(err);
       }
