@@ -7,11 +7,13 @@ const cors = require('cors');
 const api = new express.Router();
 const subkeys = playerFields.subkeys;
 
-api.options('*', cors());
-api.use(cors({
+// CORS headers
+api.use(cors());
+api.use('/metadata', cors({
   origin: true,
   credentials: true,
 }));
+
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (isNaN(Number(req.params.account_id))) {
@@ -40,9 +42,13 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   };
   return cb();
 });
+
+// API spec
 api.get('/', (req, res) => {
   res.json(spec);
 });
+
+// API endpoints
 Object.keys(spec.paths).forEach((path) => {
   Object.keys(spec.paths[path]).forEach((verb) => {
     const {
