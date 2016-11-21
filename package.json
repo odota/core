@@ -42,12 +42,12 @@
     "nock": "^9.0.2",
     "passport": "^0.3.2",
     "passport-steam": "^1.0.7",
-    "pg": "^6.0.3",
+    "pg": "^6.1.0",
     "pg-query-stream": "^1.0.0",
     "pm2": "^2.1.5",
     "protobufjs": "^5.0.1",
     "redis": "^2.6.3",
-    "request": "^2.78.0",
+    "request": "^2.79.0",
     "request-progress": "^2.0.1",
     "simple-vdf": "^1.1.0",
     "steam": "^1.4.0",
@@ -55,7 +55,7 @@
     "supertest": "^2.0.1"
   },
   "devDependencies": {
-    "eslint": "^3.10.1",
+    "eslint": "^3.10.2",
     "eslint-config-airbnb": "^12.0.0",
     "eslint-plugin-import": "^2.2.0",
     "mocha": "^3.1.2"
