@@ -296,8 +296,7 @@ function mode(array) {
  * Determines if a match is significant for aggregation purposes
  **/
 function isSignificant(match) {
-  return Boolean(match.human_players === 10
-  && constants.game_mode[match.game_mode]
+  return Boolean(constants.game_mode[match.game_mode]
   && constants.game_mode[match.game_mode].balanced
   && constants.lobby_type[match.lobby_type]
   && constants.lobby_type[match.lobby_type].balanced
