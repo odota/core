@@ -13,7 +13,7 @@ const app = express();
 const steamObj = {};
 const launch = new Date();
 const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
-const matchRequestDelay = 300;
+const matchRequestDelay = 100;
 const timeoutMs = 15000;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
@@ -107,6 +107,7 @@ function getGcMatchData(idx, matchId, cb) {
     timeouts += 1;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
+    console.log('received match %s', matchId);
     clearTimeout(timeout);
     cb(err, matchData);
   });
