@@ -11,10 +11,9 @@ const cp = require('child_process');
 
 const app = express();
 const steamObj = {};
-// const accountToIdx = {};
 const launch = new Date();
-const matchRequestDelay = 1200;
 const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
+const matchRequestDelay = 500;
 const timeoutMs = 15000;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
