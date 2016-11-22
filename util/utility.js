@@ -695,7 +695,7 @@ function getLaneFromPosData(lanePos, isRadiant) {
     Object.keys(lanePos[x]).forEach((y) => {
       const val = lanePos[x][y];
       const adjX = Number(x) - 64;
-      const adjY = 127 - (Number(y) - 64);
+      const adjY = 128 - (Number(y) - 64);
       // Add it N times to the array
       for (let i = 0; i < val; i += 1) {
         lanes.push(laneMappings[adjY][adjX]);
