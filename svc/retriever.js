@@ -13,7 +13,7 @@ const app = express();
 const steamObj = {};
 const launch = new Date();
 const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
-const matchRequestDelay = 500;
+const matchRequestDelay = 300;
 const timeoutMs = 15000;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
@@ -97,7 +97,7 @@ function getPlayerProfile(idx, accountId, cb) {
 
 function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
-  console.log('[DOTA] requesting match %s, numReady: %s, requests: %s', matchId, Object.keys(steamObj).length, matchRequests);
+  console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
   matchRequests += 1;
   steamObj[idx].matches += 1;
   if (matchRequests > 500 && getUptime() > minUpTimeSeconds && config.NODE_ENV !== 'development') {
@@ -180,7 +180,6 @@ app.use((req, res, cb) => {
   return cb();
 });
 app.get('/', (req, res, cb) => {
-  // console.log(process.memoryUsage());
   const keys = Object.keys(steamObj);
   if (!keys.length) {
     return cb('No accounts ready');
