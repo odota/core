@@ -301,7 +301,7 @@ function isSignificant(match) {
   && constants.lobby_type[match.lobby_type]
   && constants.lobby_type[match.lobby_type].balanced
   && match.radiant_win !== undefined
-  && match.duration > 300);
+  && match.duration > 360);
 }
 
 /**
