@@ -1892,7 +1892,7 @@ Please keep request rate to approximately 1/s.
         description: 'Get parse request state',
         tags: ['request'],
         parameters: [{
-          name: 'id',
+          name: 'jobId',
           in: 'path',
           description: 'The job ID to query.',
           required: true,
@@ -1927,6 +1927,12 @@ Please keep request rate to approximately 1/s.
         summary: 'POST /',
         description: 'Submit a new parse request',
         tags: ['request'],
+        parameters: [{
+          name: 'match_id',
+          in: 'path',
+          required: true,
+          type: 'integer',
+        }],
         route: () => '/request/:match_id',
         func: (req, res) => {
           const matchId = req.params.match_id;
