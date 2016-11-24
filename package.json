@@ -17,7 +17,7 @@
     "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
     "resetrankings": "redis-cli keys 'hero_rankings*' | xargs redis-cli del",
     "dockerbuild": "sudo docker build -t odota/core .",
-    "reparse": "cat matches.csv | xargs -n1 node tasks/getMatch.js"
+    "reparse": "cat matches.csv | xargs -n1 node dev/getMatch.js"
   },
   "repository": {
     "type": "git",

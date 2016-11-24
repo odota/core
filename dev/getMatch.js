@@ -25,7 +25,6 @@ getData({
     const match = body.result;
     insertMatch(match, {
       skipCounts: true,
-      skipAbilityUpgrades: true,
       forceParse: true,
       attempts: 1,
     }, (err) => {

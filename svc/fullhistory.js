@@ -118,7 +118,6 @@ function processFullHistory(job, cb) {
             const match = body.result;
             return insertMatch(match, {
               type: 'api',
-              skipAbilityUpgrades: true,
               skipParse: true,
             }, cb);
           });

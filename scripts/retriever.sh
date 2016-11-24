@@ -10,4 +10,4 @@ sudo docker run -d --name=retriever --restart=always --net=host --log-opt max-si
 
 # If already initialized
 sudo docker start retriever
-sudo docker logs -f retriever && sudo shutdown -h now
+sudo docker logs -f retriever && gcloud compute instances delete $VMNAME --quiet

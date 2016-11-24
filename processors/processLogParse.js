@@ -1,3 +1,9 @@
+const significantModifiers = {
+  modifier_stunned: 1,
+  modifier_smoke_of_deceit: 1,
+  modifier_silence: 1,
+};
+
 function translate(s) {
   return s === 'dota_unknown' ? null : s;
 }
@@ -7,25 +13,36 @@ function translate(s) {
  **/
 function processReduce(entries, meta) {
   const result = entries.filter((e) => {
-    if (e.type === 'actions') {
-      return false;
+    if (e.type === 'DOTA_COMBATLOG_PURCHASE' ||
+      e.type === 'DOTA_COMBATLOG_ABILITY' ||
+      e.type === 'DOTA_COMBATLOG_ITEM' ||
+      e.type === 'DOTA_COMBATLOG_PLAYERSTATS' ||
+      e.type === 'DOTA_COMBATLOG_BUYBACK' ||
+      e.type === 'DOTA_COMBATLOG_KILL' ||
+      (e.type === 'DOTA_COMBATLOG_MODIFIER_ADD' && significantModifiers[e.inflictor] && e.targethero) ||
+      (e.type === 'DOTA_COMBATLOG_DAMAGE' && e.targethero) ||
+      (e.type === 'DOTA_COMBATLOG_HEAL' && e.targethero) ||
+      e.type === 'CHAT_MESSAGE_AEGIS' ||
+      e.type === 'CHAT_MESSAGE_AEGIS_STOLEN' ||
+      e.type === 'CHAT_MESSAGE_DENIED_AEGIS' ||
+      e.type === 'CHAT_MESSAGE_ROSHAN_KILL' ||
+      e.type === 'CHAT_MESSAGE_BARRACKS_KILL' ||
+      e.type === 'CHAT_MESSAGE_TOWER_KILL' ||
+      e.type === 'CHAT_MESSAGE_SCAN_USED' ||
+      e.type === 'CHAT_MESSAGE_GLYPH_USED' ||
+      e.type === 'CHAT_MESSAGE_PAUSED' ||
+      e.type === 'CHAT_MESSAGE_UNPAUSED' ||
+      e.type === 'CHAT_MESSAGE_RUNE_PICKUP' ||
+      e.type === 'CHAT_MESSAGE_FIRSTBLOOD' ||
+      e.type === 'obs' ||
+      e.type === 'sen' ||
+      e.type === 'obs_left' ||
+      e.type === 'sen_left' ||
+      e.type === 'chat' ||
+      (e.type === 'interval' && e.time % 60 === 0)) {
+      return Boolean(e.time);
     }
-    if (e.type === 'DOTA_COMBATLOG_XP' || e.type === 'DOTA_COMBATLOG_GOLD') {
-      return false;
-    }
-    if ((e.type === 'DOTA_COMBATLOG_MODIFIER_ADD' || e.type === 'DOTA_COMBATLOG_MODIFIER_REMOVE') && !e.targethero) {
-      return false;
-    }
-    if (e.type === 'DOTA_COMBATLOG_DAMAGE' && (e.targetname.indexOf('neutral') === -1 || e.targetname.indexOf('creep') === -1)) {
-      return false;
-    }
-    if (e.type === 'interval' && e.time % 60 !== 0) {
-      return false;
-    }
-    if (!e.time) {
-      return false;
-    }
-    return true;
+    return false;
   }).map((e) => {
     const e2 = Object.assign({}, e, {
       match_id: meta.match_id,

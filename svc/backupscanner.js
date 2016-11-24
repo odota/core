@@ -40,7 +40,6 @@ function processMatch(matchId, cb) {
         type: 'api',
         origin: 'scanner',
         skipCounts: false,
-        skipAbilityUpgrades: false,
       }, (err) => {
         if (!err) {
           redis.set(`scanner_insert:${match.match_id}`, 1);
