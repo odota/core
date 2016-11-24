@@ -43,7 +43,6 @@ function getPage(matchSeqNum, bucket) {
       async.each(matches, (match, cb) => {
         insertMatch(match, {
           skipCounts: true,
-          skipAbilityUpgrades: true,
           skipParse: true,
         }, cb);
       }, (err) => {

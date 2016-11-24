@@ -681,8 +681,6 @@ function insertPlayerCache(match, cb) {
 function createMatchCopy(match, players, options) {
   const copy = JSON.parse(JSON.stringify(match));
   copy.players = JSON.parse(JSON.stringify(players));
-  copy.insert_type = options.type;
-  copy.origin = options.origin;
   return copy;
 }
 

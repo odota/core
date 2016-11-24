@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 /**
  * Worker that parses replays
  * The actual parsing is done by invoking the Java-based parser.
@@ -151,8 +150,7 @@ function createParsedDataBlob(entries, match) {
   const parsedData = processParsedData(expanded, getParseSchema());
   console.timeEnd('processParsedData');
   console.time('processTeamfights');
-  const teamfights = processTeamfights(expanded, meta);
-  parsedData.teamfights = teamfights;
+  parsedData.teamfights = processTeamfights(expanded, meta);
   console.timeEnd('processTeamfights');
   console.time('processAllPlayers');
   const ap = processAllPlayers(adjustedEntries, meta);
@@ -161,8 +159,7 @@ function createParsedDataBlob(entries, match) {
   console.timeEnd('processAllPlayers');
   if (match.doLogParse) {
     console.time('processLogParse');
-    const logs = processLogParse(adjustedEntries, meta);
-    parsedData.logs = logs;
+    parsedData.logs = processLogParse(adjustedEntries, meta);
     console.timeEnd('processLogParse');
   }
   return Object.assign({}, parsedData, match);
@@ -181,7 +178,9 @@ function runParse(match, job, cb) {
   });
   const timeout = setTimeout(() => {
     download.abort();
+    /* eslint-disable no-use-before-define */
     exit('timeout');
+    /* eslint-enable no-use-before-define */
   }, 120000);
 
   function exit(err) {
