@@ -678,7 +678,7 @@ function insertPlayerCache(match, cb) {
   }, cb);
 }
 
-function createMatchCopy(match, players, options) {
+function createMatchCopy(match, players) {
   const copy = JSON.parse(JSON.stringify(match));
   copy.players = JSON.parse(JSON.stringify(players));
   return copy;
@@ -898,7 +898,7 @@ function insertMatch(match, options, cb) {
     if (!cassandra) {
       return cb();
     }
-    const copy = createMatchCopy(match, players, options);
+    const copy = createMatchCopy(match, players);
     return insertPlayerCache(copy, cb);
   }
 
