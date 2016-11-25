@@ -20,7 +20,7 @@ function processReduce(entries, meta) {
       e.type === 'DOTA_COMBATLOG_BUYBACK' ||
       e.type === 'DOTA_COMBATLOG_DEATH' ||
       (e.type === 'DOTA_COMBATLOG_MODIFIER_ADD' && significantModifiers[e.inflictor] && e.targethero) ||
-      (e.type === 'DOTA_COMBATLOG_DAMAGE' && e.targethero) ||
+      //(e.type === 'DOTA_COMBATLOG_DAMAGE' && e.targethero) ||
       (e.type === 'DOTA_COMBATLOG_HEAL' && e.targethero) ||
       e.type === 'CHAT_MESSAGE_AEGIS' ||
       e.type === 'CHAT_MESSAGE_AEGIS_STOLEN' ||
