@@ -14,10 +14,10 @@ const args = process.argv.slice(2);
 const matchId = Number(args[0]);
 
 db.select('match_id')
-  .from('matches')
-  .where('match_id', '>', matchId)
-  .orderBy('match_id')
-  .asCallback((err, result) => {
+.from('matches')
+.where('match_id', '>', matchId)
+.orderBy('match_id')
+.asCallback((err, result) => {
   if (err) {
     throw err;
   }
