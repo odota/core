@@ -9,9 +9,11 @@ const async = require('async');
 const generateJob = utility.generateJob;
 const getData = utility.getData;
 const insertMatch = queries.insertMatch;
-const delay = 100;
+const delay = 50;
+const args = process.argv.slice(2);
+const matchId = Number(args[0]);
 
-db.select('match_id').from('matches').asCallback((err, result) => {
+db.select('match_id').from('matches').where('match_id', '>', matchId).asCallback((err, result) => {
   if (err) {
     throw err;
   }
