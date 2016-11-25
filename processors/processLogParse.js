@@ -18,7 +18,7 @@ function processReduce(entries, meta) {
       e.type === 'DOTA_COMBATLOG_ITEM' ||
       e.type === 'DOTA_COMBATLOG_PLAYERSTATS' ||
       e.type === 'DOTA_COMBATLOG_BUYBACK' ||
-      e.type === 'DOTA_COMBATLOG_KILL' ||
+      e.type === 'DOTA_COMBATLOG_DEATH' ||
       (e.type === 'DOTA_COMBATLOG_MODIFIER_ADD' && significantModifiers[e.inflictor] && e.targethero) ||
       (e.type === 'DOTA_COMBATLOG_DAMAGE' && e.targethero) ||
       (e.type === 'DOTA_COMBATLOG_HEAL' && e.targethero) ||
