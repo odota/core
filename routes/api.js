@@ -8,8 +8,7 @@ const api = new express.Router();
 const subkeys = playerFields.subkeys;
 
 // CORS headers
-api.use(cors());
-api.use('/metadata', cors({
+api.use(cors({
   origin: true,
   credentials: true,
 }));
