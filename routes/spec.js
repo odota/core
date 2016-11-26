@@ -20,6 +20,205 @@ const pQueue = queue.getQueue('parse');
 const subkeys = playerFields.subkeys;
 const countCats = playerFields.countCats;
 const countPeers = utility.countPeers;
+
+const params = {
+  matchIdParam: {
+    name: 'match_id',
+    in: 'path',
+    required: true,
+    type: 'integer',
+  },
+  accountIdParam: {
+    name: 'account_id',
+    in: 'path',
+    description: 'Steam32 account ID',
+    required: true,
+    type: 'integer',
+  },
+  fieldParam: {
+    name: 'field',
+    in: 'path',
+    description: 'Field to aggregate on',
+    required: true,
+    type: 'string',
+  },
+  limitParam: {
+    name: 'limit',
+    in: 'query',
+    description: 'Number of matches to limit to',
+    required: false,
+    type: 'integer',
+  },
+  offsetParam: {
+    name: 'offset',
+    in: 'query',
+    description: 'Number of matches to offset start by',
+    required: false,
+    type: 'integer',
+  },
+  projectParam: {
+    name: 'project',
+    in: 'query',
+    description: 'Fields to project (array)',
+    required: false,
+    type: 'string',
+  },
+  winParam: {
+    name: 'win',
+    in: 'query',
+    description: 'Whether the player won',
+    required: false,
+    type: 'integer',
+  },
+  patchParam: {
+    name: 'patch',
+    in: 'query',
+    description: 'Patch ID',
+    required: false,
+    type: 'integer',
+  },
+  gameModeParam: {
+    name: 'game_mode',
+    in: 'query',
+    description: 'Game Mode ID',
+    required: false,
+    type: 'integer',
+  },
+  lobbyTypeParam: {
+    name: 'lobby_type',
+    in: 'query',
+    description: 'Lobby type ID',
+    required: false,
+    type: 'integer',
+  },
+  regionParam: {
+    name: 'region',
+    in: 'query',
+    description: 'Region ID',
+    required: false,
+    type: 'integer',
+  },
+  dateParam: {
+    name: 'date',
+    in: 'query',
+    description: 'Days previous',
+    required: false,
+    type: 'integer',
+  },
+  laneRoleParam: {
+    name: 'lane_role',
+    in: 'query',
+    description: 'Lane Role ID',
+    required: false,
+    type: 'integer',
+  },
+  heroIdParam: {
+    name: 'hero_id',
+    in: 'query',
+    description: 'Hero ID',
+    required: false,
+    type: 'integer',
+  },
+  isRadiantParam: {
+    name: 'is_radiant',
+    in: 'query',
+    description: 'Whether the player was radiant',
+    required: false,
+    type: 'integer',
+  },
+  withHeroIdParam: {
+    name: 'with_hero_id',
+    in: 'query',
+    description: "Hero IDs on the player's team (array)",
+    required: false,
+    type: 'integer',
+  },
+  againstHeroIdParam: {
+    name: 'against_hero_id',
+    in: 'query',
+    description: "Hero IDs against the player's team (array)",
+    required: false,
+    type: 'integer',
+  },
+  includedAccountIdParam: {
+    name: 'included_account_id',
+    in: 'query',
+    description: 'Account IDs in the match (array)',
+    required: false,
+    type: 'integer',
+  },
+  excludedAccountIdParam: {
+    name: 'excluded_account_id',
+    in: 'query',
+    description: 'Account IDs not in the match (array)',
+    required: false,
+    type: 'integer',
+  },
+  significantParam: {
+    name: 'significant',
+    in: 'query',
+    description: 'Whether the match was significant for aggregation purposes',
+    required: false,
+    type: 'integer',
+  },
+  sortParam: {
+    name: 'sort',
+    in: 'query',
+    description: 'The field to return matches sorted by in descending order',
+    required: false,
+    type: 'string',
+  },
+  minMmrParam: {
+    name: 'min_mmr',
+    in: 'query',
+    description: 'Minimum average MMR',
+    required: false,
+    type: 'integer',
+  },
+  maxMmrParam: {
+    name: 'max_mmr',
+    in: 'query',
+    description: 'Maximum average MMR',
+    required: false,
+    type: 'integer',
+  },
+  minTimeParam: {
+    name: 'min_time',
+    in: 'query',
+    description: 'Minimum start time (Unix time)',
+    required: false,
+    type: 'integer',
+  },
+  maxTimeParam: {
+    name: 'max_time',
+    in: 'query',
+    description: 'Maximum start time (Unix time)',
+    required: false,
+    type: 'integer',
+  },
+};
+
+const playerParams = [
+  params.accountIdParam,
+  params.limitParam,
+  params.offsetParam,
+  params.winParam,
+  params.patchParam,
+  params.gameModeparam,
+  params.lobbyTypeParam,
+  params.regionParam,
+  params.dateParam,
+  params.laneRoleParam,
+  params.heroIdParam,
+  params.isRadiantParam,
+  params.includedAccountIdParam,
+  params.excludedAccountIdParam,
+  params.withHeroIdParam,
+  params.againstHeroIdParam,
+  params.significantParam,
+  params.sortParam,
+];
+
 const spec = {
   swagger: '2.0',
   info: {
@@ -35,148 +234,6 @@ Please keep request rate to approximately 1/s.
   produces: [
     'application/json',
   ],
-  parameters: {
-    accountIdParam: {
-      name: 'account_id',
-      in: 'path',
-      description: 'Steam32 account ID',
-      required: true,
-      type: 'integer',
-    },
-    fieldParam: {
-      name: 'field',
-      in: 'path',
-      description: 'Field to aggregate on',
-      required: true,
-      type: 'string',
-    },
-    limitParam: {
-      name: 'limit',
-      in: 'query',
-      description: 'Number of matches to limit to',
-      required: false,
-      type: 'integer',
-    },
-    offsetParam: {
-      name: 'offset',
-      in: 'query',
-      description: 'Number of matches to offset start by',
-      required: false,
-      type: 'integer',
-    },
-    projectParam: {
-      name: 'project',
-      in: 'query',
-      description: 'Fields to project (array)',
-      required: false,
-      type: 'string',
-    },
-    winParam: {
-      name: 'win',
-      in: 'query',
-      description: 'Whether the player won',
-      required: false,
-      type: 'integer',
-    },
-    patchParam: {
-      name: 'patch',
-      in: 'query',
-      description: 'Patch ID',
-      required: false,
-      type: 'integer',
-    },
-    gameModeParam: {
-      name: 'game_mode',
-      in: 'query',
-      description: 'Game Mode ID',
-      required: false,
-      type: 'integer',
-    },
-    lobbyTypeParam: {
-      name: 'lobby_type',
-      in: 'query',
-      description: 'Lobby type ID',
-      required: false,
-      type: 'integer',
-    },
-    regionParam: {
-      name: 'region',
-      in: 'query',
-      description: 'Region ID',
-      required: false,
-      type: 'integer',
-    },
-    dateParam: {
-      name: 'date',
-      in: 'query',
-      description: 'Days previous',
-      required: false,
-      type: 'integer',
-    },
-    laneRoleParam: {
-      name: 'lane_role',
-      in: 'query',
-      description: 'Lane Role ID',
-      required: false,
-      type: 'integer',
-    },
-    heroIdParam: {
-      name: 'hero_id',
-      in: 'query',
-      description: 'Hero ID',
-      required: false,
-      type: 'integer',
-    },
-    isRadiantParam: {
-      name: 'is_radiant',
-      in: 'query',
-      description: 'Whether the player was radiant',
-      required: false,
-      type: 'integer',
-    },
-    withHeroIdParam: {
-      name: 'with_hero_id',
-      in: 'query',
-      description: "Hero IDs on the player's team (array)",
-      required: false,
-      type: 'integer',
-    },
-    againstHeroIdParam: {
-      name: 'against_hero_id',
-      in: 'query',
-      description: "Hero IDs against the player's team (array)",
-      required: false,
-      type: 'integer',
-    },
-    includedAccountIdParam: {
-      name: 'included_account_id',
-      in: 'query',
-      description: 'Account IDs in the match (array)',
-      required: false,
-      type: 'integer',
-    },
-    excludedAccountIdParam: {
-      name: 'excluded_account_id',
-      in: 'query',
-      description: 'Account IDs not in the match (array)',
-      required: false,
-      type: 'integer',
-    },
-    significantParam: {
-      name: 'significant',
-      in: 'query',
-      description: 'Whether the match was significant for aggregation purposes',
-      required: false,
-      type: 'integer',
-    },
-    sortParam: {
-      name: 'sort',
-      in: 'query',
-      description: 'The field to return matches sorted by in descending order',
-      required: false,
-      type: 'string',
-    },
-  },
   paths: {
     '/matches/{match_id}': {
       get: {
@@ -185,12 +242,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'matches',
         ],
-        parameters: [{
-          name: 'match_id',
-          in: 'path',
-          required: true,
-          type: 'integer',
-        }],
+        parameters: [params.matchIdParam],
         responses: {
           200: {
             description: 'Success',
@@ -374,9 +426,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }],
+        parameters: [params.accountIdParam],
         responses: {
           200: {
             description: 'Success',
@@ -442,43 +492,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/limitParam',
-        }, {
-          $ref: '#/parameters/offsetParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams,
         responses: {
           200: {
             description: 'Success',
@@ -527,45 +541,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/limitParam',
-        }, {
-          $ref: '#/parameters/offsetParam',
-        }, {
-          $ref: '#/parameters/projectParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams.concat(params.projectParam),
         responses: {
           200: {
             description: 'Success',
@@ -604,57 +580,8 @@ Please keep request rate to approximately 1/s.
       get: {
         summary: 'GET /heroes',
         description: 'Heroes played',
-        tags: [
-          'players',
-        ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/limitParam',
-        }, {
-          $ref: '#/parameters/offsetParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'array',
-              items: {
-                type: 'object',
-              },
-            },
-          },
-        },
+        tags: ['players'],
+        parameters: playerParams,
         route: () => '/players/:account_id/heroes',
         func: (req, res, cb) => {
           const heroes = {};
@@ -720,39 +647,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams,
         responses: {
           200: {
             description: 'Success',
@@ -791,39 +686,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams,
         responses: {
           200: {
             description: 'Success',
@@ -862,43 +725,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/limitParam',
-        }, {
-          $ref: '#/parameters/offsetParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams,
         responses: {
           200: {
             description: 'Success',
@@ -1052,43 +879,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/limitParam',
-        }, {
-          $ref: '#/parameters/offsetParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams,
         responses: {
           200: {
             description: 'Success',
@@ -1159,45 +950,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/limitParam',
-        }, {
-          $ref: '#/parameters/offsetParam',
-        }, {
-          $ref: '#/parameters/fieldParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams.concat(params.fieldParam),
         responses: {
           200: {
             description: 'Success',
@@ -1250,43 +1003,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/limitParam',
-        }, {
-          $ref: '#/parameters/offsetParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams,
         responses: {
           200: {
             description: 'Success',
@@ -1333,43 +1050,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }, {
-          $ref: '#/parameters/limitParam',
-        }, {
-          $ref: '#/parameters/offsetParam',
-        }, {
-          $ref: '#/parameters/winParam',
-        }, {
-          $ref: '#/parameters/patchParam',
-        }, {
-          $ref: '#/parameters/gameModeParam',
-        }, {
-          $ref: '#/parameters/lobbyTypeParam',
-        }, {
-          $ref: '#/parameters/regionParam',
-        }, {
-          $ref: '#/parameters/dateParam',
-        }, {
-          $ref: '#/parameters/laneRoleParam',
-        }, {
-          $ref: '#/parameters/heroIdParam',
-        }, {
-          $ref: '#/parameters/isRadiantParam',
-        }, {
-          $ref: '#/parameters/includedAccountIdParam',
-        }, {
-          $ref: '#/parameters/excludedAccountIdParam',
-        }, {
-          $ref: '#/parameters/withHeroIdParam',
-        }, {
-          $ref: '#/parameters/againstHeroIdParam',
-        }, {
-          $ref: '#/parameters/significantParam',
-        }, {
-          $ref: '#/parameters/sortParam',
-        }],
+        parameters: playerParams,
         responses: {
           200: {
             description: 'Success',
@@ -1416,9 +1097,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }],
+        parameters: [params.accountIdParam],
         responses: {
           200: {
             description: 'Success',
@@ -1448,9 +1127,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }],
+        parameters: [params.accountIdParam],
         responses: {
           200: {
             description: 'Success',
@@ -1480,9 +1157,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [{
-          $ref: '#/parameters/accountIdParam',
-        }],
+        parameters: [params.accountIdParam],
         responses: {
           200: {
             description: 'Success',
@@ -1571,6 +1246,105 @@ Please keep request rate to approximately 1/s.
           ORDER BY match_id DESC
           LIMIT 100
           `)
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/publicMatches': {
+      get: {
+        summary: 'GET /',
+        description: 'Get list of public matches',
+        tags: ['public matches'],
+        parameters: [
+          params.minMmrParam,
+          params.maxMmrParam,
+          params.minTimeParam,
+          params.maxTimeParam,
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        route: () => '/publicMatches',
+        func: (req, res, cb) => {
+          const minMmr = req.query.min_mmr || 0;
+          const maxMmr = req.query.max_mmr || 0;
+          const minTime = req.query.min_time || 0;
+          const maxTime = req.query.max_time || 0;
+          db.raw(`
+          SELECT * FROM public_matches
+          WHERE TRUE
+          AND ${minMmr ? 'avg_mmr > ?' : '0 = ?'}
+          AND ${maxMmr ? 'avg_mmr < ?' : '0 = ?'}
+          AND ${minTime ? 'start_time > ?' : '0 = ?'}
+          AND ${maxTime ? 'start_time < ?' : '0 = ?'}
+          ORDER BY match_id desc
+          LIMIT 100
+          `, [minMmr, maxMmr, minTime, maxTime])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/publicHeroes': {
+      get: {
+        summary: 'GET /',
+        description: 'Get list of heroes in public matches',
+        tags: ['public heroes'],
+        parameters: [
+          params.minMmrParam,
+          params.maxMmrParam,
+          params.minTimeParam,
+          params.maxTimeParam,
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        route: () => '/publicHeroes',
+        func: (req, res, cb) => {
+          const minMmr = req.query.min_mmr || 0;
+          const maxMmr = req.query.max_mmr || 0;
+          const minTime = req.query.min_time || 0;
+          const maxTime = req.query.max_time || 0;
+          db.raw(`
+          SELECT sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as win, count(*), hero_id FROM public_player_matches 
+          JOIN 
+          (SELECT * FROM public_matches 
+          WHERE TRUE
+          AND ${minMmr ? 'avg_mmr > ?' : '0 = ?'}
+          AND ${maxMmr ? 'avg_mmr < ?' : '0 = ?'}
+          AND ${minTime ? 'start_time > ?' : '0 = ?'}
+          AND ${maxTime ? 'start_time < ?' : '0 = ?'}
+          ORDER BY match_id desc LIMIT 10000) 
+          limited_public_matches USING(match_id)
+          WHERE hero_id > 0
+          GROUP BY hero_id
+          ORDER BY hero_id
+          `, [minMmr, maxMmr, minTime, maxTime])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
