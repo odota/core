@@ -1280,16 +1280,16 @@ Please keep request rate to approximately 1/s.
         route: () => '/publicMatches',
         func: (req, res, cb) => {
           const minMmr = req.query.min_mmr || 0;
-          const maxMmr = req.query.max_mmr || 0;
+          const maxMmr = req.query.max_mmr || Math.pow(2, 31) - 1;
           const minTime = req.query.min_time || 0;
-          const maxTime = req.query.max_time || 0;
+          const maxTime = req.query.max_time || Math.pow(2, 31) - 1;
           db.raw(`
           SELECT * FROM public_matches
           WHERE TRUE
-          AND ${minMmr ? 'avg_mmr > ?' : '0 = ?'}
-          AND ${maxMmr ? 'avg_mmr < ?' : '0 = ?'}
-          AND ${minTime ? 'start_time > ?' : '0 = ?'}
-          AND ${maxTime ? 'start_time < ?' : '0 = ?'}
+          AND avg_mmr > ?
+          AND avg_mmr < ?
+          AND start_time > ?
+          AND start_time < ?
           ORDER BY match_id desc
           LIMIT 100
           `, [minMmr, maxMmr, minTime, maxTime])
@@ -1327,18 +1327,18 @@ Please keep request rate to approximately 1/s.
         route: () => '/publicHeroes',
         func: (req, res, cb) => {
           const minMmr = req.query.min_mmr || 0;
-          const maxMmr = req.query.max_mmr || 0;
+          const maxMmr = req.query.max_mmr || Math.pow(2, 31) - 1;
           const minTime = req.query.min_time || 0;
-          const maxTime = req.query.max_time || 0;
+          const maxTime = req.query.max_time || Math.pow(2, 31) - 1;
           db.raw(`
           SELECT sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as win, count(*), hero_id FROM public_player_matches 
           JOIN 
           (SELECT * FROM public_matches 
           WHERE TRUE
-          AND ${minMmr ? 'avg_mmr > ?' : '0 = ?'}
-          AND ${maxMmr ? 'avg_mmr < ?' : '0 = ?'}
-          AND ${minTime ? 'start_time > ?' : '0 = ?'}
-          AND ${maxTime ? 'start_time < ?' : '0 = ?'}
+          AND avg_mmr > ?
+          AND avg_mmr < ?
+          AND start_time > ?
+          AND start_time < ?
           ORDER BY match_id desc LIMIT 10000) 
           limited_public_matches USING(match_id)
           WHERE hero_id > 0
