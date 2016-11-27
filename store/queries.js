@@ -565,7 +565,13 @@ function upsertMatchSample(match, cb) {
         if (err) {
           return cb(err);
         }
-        const matchMmrData = avg ? { avg_mmr: avg, num_mmr: num } : {};
+        if (!avg || num < 2) {
+          return cb();
+        }
+        const matchMmrData = avg ? {
+          avg_mmr: avg,
+          num_mmr: num,
+        } : {};
         const newMatch = Object.assign({}, match, matchMmrData);
         return upsert(trx, 'public_matches', newMatch, {
           match_id: newMatch.match_id,
