@@ -559,12 +559,15 @@ function upsertMatchSample(match, cb) {
   if (match.match_id % 100 >= config.PUBLIC_SAMPLE_PERCENT || !utility.isSignificant(match)) {
     return cb();
   }
-  return db.transaction((trx) => {
-    function upsertMatchSample(cb) {
-      getMatchRating(redis, match, (err, avg, num) => {
-        if (err) {
-          return cb(err);
-        }
+  return getMatchRating(redis, match, (err, avg, num) => {
+    if (err) {
+      return cb(err);
+    }
+    if (!avg || num < 2) {
+      return cb();
+    }
+    return db.transaction((trx) => {
+      function upsertMatchSample(cb) {
         const matchMmrData = avg ? {
           avg_mmr: avg,
           num_mmr: num,
@@ -573,33 +576,33 @@ function upsertMatchSample(match, cb) {
         return upsert(trx, 'public_matches', newMatch, {
           match_id: newMatch.match_id,
         }, cb);
-      });
-    }
-
-    function upsertPlayerMatchesSample(cb) {
-      async.each(match.players || [], (pm, cb) => {
-        pm.match_id = match.match_id;
-        upsert(trx, 'public_player_matches', pm, {
-          match_id: pm.match_id,
-          player_slot: pm.player_slot,
-        }, cb);
-      }, cb);
-    }
-
-    function exit(err) {
-      if (err) {
-        console.error(err);
-        trx.rollback(err);
-      } else {
-        trx.commit();
       }
-      cb(err);
-    }
 
-    async.series({
-      upsertMatchSample,
-      upsertPlayerMatchesSample,
-    }, exit);
+      function upsertPlayerMatchesSample(cb) {
+        async.each(match.players || [], (pm, cb) => {
+          pm.match_id = match.match_id;
+          upsert(trx, 'public_player_matches', pm, {
+            match_id: pm.match_id,
+            player_slot: pm.player_slot,
+          }, cb);
+        }, cb);
+      }
+
+      function exit(err) {
+        if (err) {
+          console.error(err);
+          trx.rollback(err);
+        } else {
+          trx.commit();
+        }
+        cb(err);
+      }
+
+      async.series({
+        upsertMatchSample,
+        upsertPlayerMatchesSample,
+      }, exit);
+    });
   });
 }
 
