@@ -204,7 +204,7 @@ const playerParams = [
   params.offsetParam,
   params.winParam,
   params.patchParam,
-  params.gameModeparam,
+  params.gameModeParam,
   params.lobbyTypeParam,
   params.regionParam,
   params.dateParam,
