@@ -15,6 +15,7 @@ const moment = require('moment');
 const express = require('express');
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
+const cors = require('cors');
 
 const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
@@ -100,6 +101,11 @@ app.use((req, res, cb) => {
   });
   cb();
 });
+// CORS headers
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
 app.route('/healthz').get((req, res) => {
   res.send('ok');
 });

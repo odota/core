@@ -2,26 +2,20 @@ const express = require('express');
 const playerFields = require('./playerFields');
 const filterDeps = require('../util/filterDeps');
 const spec = require('./spec');
-const cors = require('cors');
 
 const api = new express.Router();
 const subkeys = playerFields.subkeys;
-
-// CORS headers
-api.use(cors({
-  origin: true,
-  credentials: true,
-}));
 
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (isNaN(Number(req.params.account_id))) {
     return cb('invalid account_id');
   }
-  if (req.params.info !== 'matches') {
-    // We want to show insignificant/unbalanced matches in match view
-    // Set default significant to true in all other views
-    req.query.significant = [1];
+  // Enable significance filter by default, disable it if 0 is passed
+  if (req.query.significant === '0') {
+    delete req.query.significant;
+  } else {
+    req.query.significant = 1;
   }
   let filterCols = [];
   Object.keys(req.query).forEach((key) => {
