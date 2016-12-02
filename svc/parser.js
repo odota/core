@@ -205,7 +205,7 @@ function runParse(match, job, cb) {
       state,
     }));
     if (job) {
-      job.progress(state.percentage * 100);
+      job.progress(state.percent * 100);
     }
   }).on('response', (response) => {
     if (response.statusCode !== 200) {
