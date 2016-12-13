@@ -16,6 +16,7 @@ const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
 const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 100;
 const timeoutMs = 15000;
+const accountsToUse = 7;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
@@ -58,7 +59,8 @@ function getMMStats(idx, cb) {
   steamObj[idx].Dota2.once('matchmakingStatsData', (waitTimes, searchingPlayers, disabledGroups) => {
     if (disabledGroups) {
       cb(null, disabledGroups.legacy_searching_players_by_group_source2);
-    } else {
+    }
+    else {
       cb('error mmstats');
     }
   });
@@ -101,8 +103,8 @@ function getGcMatchData(idx, matchId, cb) {
   console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
   matchRequests += 1;
   steamObj[idx].matches += 1;
-  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
-    || getUptime() > maxUpTimeSeconds;
+  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds) ||
+    getUptime() > maxUpTimeSeconds;
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
@@ -118,7 +120,6 @@ function getGcMatchData(idx, matchId, cb) {
 
 if (config.STEAM_ACCOUNT_DATA) {
   const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
-  const accountsToUse = 10;
   const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
   console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
   const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
@@ -194,7 +195,8 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.match_id) {
+  }
+  else if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
     if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
@@ -214,7 +216,8 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.account_id) {
+  }
+  else if (req.query.account_id) {
     return getPlayerProfile(r, req.query.account_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
