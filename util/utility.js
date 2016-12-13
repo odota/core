@@ -92,7 +92,7 @@ function generateJob(type, payload) {
     },
     api_leagues() {
       return {
-        url: `${apiUrl}/IDOTA2Match_570/GetLeagueListing/v0001/?key=${apiKey}`,
+        url: `${apiUrl}/IDOTA2Match_570/GetLeagueListing/v0001/?key=${apiKey}&language=${payload.language}`,
         title: [type].join(),
         type: 'api',
         payload,

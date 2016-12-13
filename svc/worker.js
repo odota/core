@@ -48,12 +48,15 @@ function invokeInterval(func, delay) {
     });
   }());
 }
+
 function doBuildSets(cb) {
   buildSets(db, redis, cb);
 }
+
 function doMMStats(cb) {
   getMMStats(redis, cb);
 }
+
 function doDistributions(cb) {
   function loadData(key, mapFunc, cb) {
     db.raw(sql[key]).asCallback((err, results) => {
@@ -106,9 +109,11 @@ function doDistributions(cb) {
     return cb(err);
   });
 }
+
 function doQueueCleanup(cb) {
   queue.cleanup(redis, cb);
 }
+
 function doProPlayers(cb) {
   const container = utility.generateJob('api_notable', {});
   utility.getData(container.url, (err, body) => {
@@ -122,8 +127,11 @@ function doProPlayers(cb) {
     }, cb);
   });
 }
+
 function doLeagues(cb) {
-  const container = utility.generateJob('api_leagues', {});
+  const container = utility.generateJob('api_leagues', {
+    language: 'english',
+  });
   utility.getData(container.url, (err, apiLeagues) => {
     if (err) {
       return cb(err);
@@ -138,7 +146,6 @@ function doLeagues(cb) {
           l.ticket = leagues[l.leagueid].ticket;
           l.banner = leagues[l.leagueid].banner;
         }
-        l.name = l.name.substring('#DOTA_Item_'.length).split('_').join(' ');
         if (l.tier === 'professional' || l.tier === 'premium') {
           redis.sadd('pro_leagueids', l.leagueid);
         }
@@ -149,6 +156,7 @@ function doLeagues(cb) {
     });
   });
 }
+
 function doTeams(cb) {
   db.raw('select distinct team_id from team_match').asCallback((err, result) => {
     if (err) {
@@ -174,6 +182,7 @@ function doTeams(cb) {
     }, cb);
   });
 }
+
 function doHeroes(cb) {
   const container = utility.generateJob('api_heroes', {
     language: 'english',
@@ -192,6 +201,7 @@ function doHeroes(cb) {
     }, cb);
   });
 }
+
 function doItems(cb) {
   const container = utility.generateJob('api_items', {
     language: 'english',
@@ -210,6 +220,7 @@ function doItems(cb) {
     });
   });
 }
+
 function doCosmetics(cb) {
   utility.getData(utility.generateJob('api_item_schema').url, (err, body) => {
     if (err) {
@@ -264,6 +275,7 @@ function doCosmetics(cb) {
     });
   });
 }
+
 function doTelemetryCleanup(cb) {
   redis.zremrangebyscore('added_match', 0, moment().subtract(1, 'day').format('X'));
   redis.zremrangebyscore('error_500', 0, moment().subtract(1, 'day').format('X'));
