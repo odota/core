@@ -13,6 +13,7 @@ const app = express();
 const steamObj = {};
 const launch = new Date();
 const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
+const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 100;
 const timeoutMs = 15000;
 const port = config.PORT || config.RETRIEVER_PORT;
@@ -100,7 +101,9 @@ function getGcMatchData(idx, matchId, cb) {
   console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
   matchRequests += 1;
   steamObj[idx].matches += 1;
-  if (matchRequests > 500 && getUptime() > minUpTimeSeconds && config.NODE_ENV !== 'development') {
+  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
+    || getUptime() > maxUpTimeSeconds;
+  if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
   const timeout = setTimeout(() => {
