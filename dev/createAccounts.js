@@ -16,7 +16,7 @@ async.eachSeries(Array.from(new Array(1000), (v, i) => i), (i, cb) => {
         console.log('%s\t%s', name, password);
       }
       steam.logOff();
-      setTimeout(cb, 70000);
+      setTimeout(cb, 61000);
     });
   });
 }, (err) => {

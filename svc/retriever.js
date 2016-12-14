@@ -138,6 +138,12 @@ async.each(Array.from(new Array(users.length), (v, i) => i), (i, cb) => {
     password: pass,
   };
   client.connect();
+  client.on('error', (err) => {
+    console.error(err);
+  });
+  client.on('logOnResponse', (logOnResponse) => {
+    console.log(logOnResponse);
+  });
   client.on('connected', () => {
     console.log('[STEAM] Trying to log on with %s,%s', user, pass);
     client.steamUser.logOn(logOnDetails);
