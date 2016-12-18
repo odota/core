@@ -31,8 +31,6 @@ CREATE TABLE matches (
   dire_team_complete smallint,
   radiant_captain bigint,
   dire_captain bigint,
-  radiant_logo bigint,
-  dire_logo bigint,
   chat json[],
   objectives json[],
   radiant_gold_adv integer[],
