@@ -1258,7 +1258,7 @@ Please keep request rate to approximately 1/s.
     '/publicMatches': {
       get: {
         summary: 'GET /',
-        description: 'Get list of public matches',
+        description: 'Get list of randomly sampled public matches',
         tags: ['public matches'],
         parameters: [
           params.minMmrParam,
