@@ -297,6 +297,12 @@ function processExpand(entries, meta) {
         slot: e.player1,
         key: String(e.value),
       });
+      expand({
+        time: e.time,
+        key: e.value,
+        slot: e.player1,
+        type: 'runes_log',
+      });
     },
     CHAT_MESSAGE_RUNE_BOTTLE() {
       // not tracking rune bottling atm
