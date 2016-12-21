@@ -73,6 +73,7 @@ CREATE TABLE player_matches (
   purchase_log text,
   kills_log text,
   buyback_log text,
+  runes_log text,
   lane_pos text,
   obs text,
   sen text,

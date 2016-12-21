@@ -56,7 +56,7 @@ function populate(e, container) {
         let arrEntry;
         if (e.interval) {
           arrEntry = e.value;
-        } else if (e.type === 'purchase_log' || e.type === 'kills_log') {
+        } else if (e.type === 'purchase_log' || e.type === 'kills_log' || e.type === 'runes_log') {
           arrEntry = {
             time: e.time,
             key: e.key,

@@ -87,6 +87,7 @@ CREATE TABLE player_matches (
   purchase_log json[],
   kills_log json[],
   buyback_log json[],
+  runes_log json[],
   lane_pos json,
   obs json,
   sen json,
