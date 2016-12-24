@@ -22,6 +22,7 @@ let lastRequestTime;
 let matchRequests = 0;
 let matchSuccesses = 0;
 let profileRequests = 0;
+let profileSuccesses = 0;
 let timeouts = 0;
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
@@ -76,6 +77,7 @@ function getPlayerProfile(idx, accountId, cb) {
     }
     const response = {};
     profileData.slots.forEach((s) => {
+      profileSuccesses += 1;
       if (s.stat && s.stat.stat_id === 1) {
         response.solo_competitive_rank = s.stat.stat_score;
       }
@@ -89,11 +91,12 @@ function getPlayerProfile(idx, accountId, cb) {
 
 function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
-  console.log('requesting match %s, numReady: %s, matchRequests: %s, matchSuccesses: %s, profileRequests: %s, uptime: %s',
+  console.log('requesting match %s, numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s',
     matchId,
     Object.keys(steamObj).length,
-    matchRequests,
     matchSuccesses,
+    matchRequests,
+    profileSuccesses,
     profileRequests,
     getUptime());
   matchRequests += 1;
