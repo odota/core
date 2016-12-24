@@ -15,7 +15,7 @@ const launch = new Date();
 const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
 const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 100;
-const timeoutMs = 15000;
+const timeoutMs = 10000;
 const accountsToUse = 15;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
@@ -110,11 +110,9 @@ function getGcMatchData(idx, matchId, cb) {
   }
   const timeout = setTimeout(() => {
     timeouts += 1;
-  }, timeoutMs);
   // TODO remove this if steam fixes the one replay salt per connection issue
-  setTimeout(() => {
     client.disconnect();
-  }, 2000);
+  }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     console.log('received match %s', matchId);
     clearTimeout(timeout);
