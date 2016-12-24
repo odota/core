@@ -97,35 +97,28 @@ function getPlayerProfile(idx, accountId, cb) {
   });
 }
 
-function reconnectToSteam(client, cb) {
-  // TODO remove this if steam fixes the one replay salt per connection issue
-  client.disconnect();
-  client.connect();
-  client.on('connected', () => {
-    client.steamUser.logOn(client.logOnDetails);
-    cb();
-  });
-}
-
 function getGcMatchData(idx, matchId, cb) {
-  reconnectToSteam(steamObj[idx], () => {
-    const Dota2 = steamObj[idx].Dota2;
-    console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
-    matchRequests += 1;
-    steamObj[idx].matches += 1;
-    const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds) ||
-      getUptime() > maxUpTimeSeconds;
-    if (shouldRestart && config.NODE_ENV !== 'development') {
-      return selfDestruct();
-    }
-    const timeout = setTimeout(() => {
-      timeouts += 1;
-    }, timeoutMs);
-    return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
-      console.log('received match %s', matchId);
-      clearTimeout(timeout);
-      cb(err, matchData);
-    });
+  const client = steamObj[idx];
+  const Dota2 = steamObj[idx].Dota2;
+  console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
+  matchRequests += 1;
+  steamObj[idx].matches += 1;
+  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds) ||
+    getUptime() > maxUpTimeSeconds;
+  if (shouldRestart && config.NODE_ENV !== 'development') {
+    return selfDestruct();
+  }
+  const timeout = setTimeout(() => {
+    timeouts += 1;
+  }, timeoutMs);
+  // TODO remove this if steam fixes the one replay salt per connection issue
+  setTimeout(() => {
+    client.disconnect();
+  }, 2000);
+  return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
+    console.log('received match %s', matchId);
+    clearTimeout(timeout);
+    cb(err, matchData);
   });
 }
 
