@@ -47,7 +47,8 @@ function getMMStats(idx, cb) {
   steamObj[idx].Dota2.once('matchmakingStatsData', (waitTimes, searchingPlayers, disabledGroups) => {
     if (disabledGroups) {
       cb(null, disabledGroups.legacy_searching_players_by_group_source2);
-    } else {
+    }
+    else {
       cb('error mmstats');
     }
   });
@@ -85,7 +86,6 @@ function getPlayerProfile(idx, accountId, cb) {
 }
 
 function getGcMatchData(idx, matchId, cb) {
-  const client = steamObj[idx];
   const Dota2 = steamObj[idx].Dota2;
   console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
   matchRequests += 1;
@@ -96,9 +96,6 @@ function getGcMatchData(idx, matchId, cb) {
   }
   const timeout = setTimeout(() => {
     timeouts += 1;
-    // TODO remove this disconnect if steam fixes the one replay salt per connection issue
-    client.disconnect();
-    client.connect();
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     console.log('received match %s', matchId);
@@ -152,6 +149,11 @@ function login() {
       console.log('relogging');
       client.steamUser.logOn(logOnDetails);
     });
+    setInterval(() => {
+      // TODO remove this loop if steam fixes the one replay salt per connection issue
+      client.disconnect();
+      client.connect();
+    }, 30000);
   });
 }
 
@@ -187,7 +189,8 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.match_id) {
+  }
+  else if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
     if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
@@ -207,7 +210,8 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.account_id) {
+  }
+  else if (req.query.account_id) {
     return getPlayerProfile(r, req.query.account_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
