@@ -173,8 +173,8 @@ function login() {
 }
 
 function relog() {
-  Object.keys(steamObj).forEach((client) => {
-    client.disconnect();
+  Object.keys(steamObj).forEach((steamId) => {
+    steamObj[steamId].disconnect();
   });
   login();
   timeouts = 0;
