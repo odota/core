@@ -174,7 +174,7 @@ function login() {
 
 function relog() {
   Object.keys(steamObj).forEach((client) => {
-    client.logOff();
+    client.disconnect();
   });
   login();
   timeouts = 0;
