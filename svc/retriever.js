@@ -118,6 +118,11 @@ function login() {
     client.steamUser = new Steam.SteamUser(client);
     client.steamFriends = new Steam.SteamFriends(client);
     client.logOnDetails = logOnDetails;
+    client.Dota2 = new Dota2.Dota2Client(client, false, false);
+    client.Dota2.on('ready', () => {
+      console.log('acct %s ready', i);
+      cb();
+    });
     steamObj[client.steamID] = client;
     client.connect();
     client.on('connected', () => {
@@ -135,11 +140,6 @@ function login() {
         console.log('[STEAM] Logged on %s', client.steamID);
         client.steamFriends.setPersonaName(client.steamID.toString());
       }
-      client.Dota2 = new Dota2.Dota2Client(client, false, false);
-      client.Dota2.once('ready', () => {
-        console.log('acct %s ready', i);
-        cb();
-      });
       client.Dota2.launch();
     });
     client.on('error', (err) => {
