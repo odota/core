@@ -151,8 +151,7 @@ function login() {
     setInterval(() => {
       // TODO remove this loop if steam fixes the one replay salt per connection issue
       client.disconnect();
-      client.connect();
-    }, 30000);
+    }, 20000);
   });
 }
 
@@ -196,7 +195,7 @@ app.get('/', (req, res, cb) => {
         error: 'too many requests',
       });
     }
-    if (timeouts > 30) {
+    if (timeouts > 50) {
       // If we keep timing out, stop making requests
       if (getUptime() > minUpTimeSeconds) {
         return selfDestruct();
