@@ -21,7 +21,6 @@ const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
 let timeouts = 0;
-let count = 0;
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
 
@@ -48,7 +47,8 @@ function getMMStats(idx, cb) {
   steamObj[idx].Dota2.once('matchmakingStatsData', (waitTimes, searchingPlayers, disabledGroups) => {
     if (disabledGroups) {
       cb(null, disabledGroups.legacy_searching_players_by_group_source2);
-    } else {
+    }
+    else {
       cb('error mmstats');
     }
   });
@@ -58,7 +58,6 @@ function getPlayerProfile(idx, accountId, cb) {
   accountId = Number(accountId);
   const Dota2 = steamObj[idx].Dota2;
   console.log('requesting player profile %s', accountId);
-  steamObj[idx].profiles += 1;
   Dota2.requestProfileCard(accountId, (err, profileData) => {
     /*
     enum EStatID {
@@ -91,7 +90,6 @@ function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
   console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
   matchRequests += 1;
-  steamObj[idx].matches += 1;
   const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds) ||
     getUptime() > maxUpTimeSeconds;
   if (shouldRestart && config.NODE_ENV !== 'development') {
@@ -118,47 +116,41 @@ function login() {
       account_name: user,
       password: pass,
     };
-    client.logOnDetails = logOnDetails;
     client.steamUser = new Steam.SteamUser(client);
     client.steamFriends = new Steam.SteamFriends(client);
-    client.Dota2 = new Dota2.Dota2Client(client, false, false);
+    client.logOnDetails = logOnDetails;
+    steamObj[client.steamID] = client;
     client.connect();
-    client.on('error', (err) => {
-      console.error(err);
-    });
     client.on('connected', () => {
       console.log('[STEAM] Trying to log on with %s,%s', user, pass);
       client.steamUser.logOn(logOnDetails);
-      client.once('error', (e) => {
-        console.log(e);
-        console.log('reconnecting');
-        client.connect();
-      });
     });
     client.on('logOnResponse', (logOnResp) => {
       if (logOnResp.eresult !== Steam.EResult.OK) {
         // try logging on again
         console.error(logOnResp);
-        return client.steamUser.logOn(logOnDetails);
+        client.steamUser.logOn(logOnDetails);
+        return;
       }
       if (client && client.steamID) {
         console.log('[STEAM] Logged on %s', client.steamID);
         client.steamFriends.setPersonaName(client.steamID.toString());
-        client.matches = 0;
-        client.profiles = 0;
-        client.Dota2.once('ready', () => {
-          steamObj[client.steamID] = client;
-          count += 1;
-          console.log('acct %s ready, %s/%s', i, count, users.length);
-          cb();
-        });
-        client.Dota2.launch();
-        client.once('loggedOff', () => {
-          console.log('relogging');
-          client.steamUser.logOn(logOnDetails);
-        });
       }
-      return null;
+      client.Dota2 = new Dota2.Dota2Client(client, false, false);
+      client.Dota2.once('ready', () => {
+        console.log('acct %s ready', i);
+        cb();
+      });
+      client.Dota2.launch();
+    });
+    client.on('error', (err) => {
+      console.error(err);
+      console.log('reconnecting');
+      client.connect();
+    });
+    client.on('loggedOff', () => {
+      console.log('relogging');
+      client.steamUser.logOn(logOnDetails);
     });
   });
 }
@@ -195,7 +187,8 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.match_id) {
+  }
+  else if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
     if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
@@ -215,7 +208,8 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.account_id) {
+  }
+  else if (req.query.account_id) {
     return getPlayerProfile(r, req.query.account_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
