@@ -59,8 +59,7 @@ function getMMStats(idx, cb) {
   steamObj[idx].Dota2.once('matchmakingStatsData', (waitTimes, searchingPlayers, disabledGroups) => {
     if (disabledGroups) {
       cb(null, disabledGroups.legacy_searching_players_by_group_source2);
-    }
-    else {
+    } else {
       cb('error mmstats');
     }
   });
@@ -98,6 +97,14 @@ function getPlayerProfile(idx, accountId, cb) {
   });
 }
 
+function reconnectToSteam(client) {
+  client.disconnect();
+  client.connect();
+  client.on('connected', () => {
+    client.steamUser.logOn(client.logOnDetails);
+  });
+}
+
 function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
   console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
@@ -117,14 +124,6 @@ function getGcMatchData(idx, matchId, cb) {
     cb(err, matchData);
     // TODO remove this if not necessary, relog the account
     reconnectToSteam(steamObj[idx]);
-  });
-}
-
-function reconnectToSteam(client) {
-  client.disconnect();
-  client.connect();
-  client.on('connected', () => {
-    client.steamUser.logOn(client.logOnDetails);
   });
 }
 
@@ -177,7 +176,7 @@ function login() {
           client.steamUser.logOn(logOnDetails);
         });
       }
-      return;
+      return null;
     });
   });
 }
@@ -214,8 +213,7 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  }
-  else if (req.query.match_id) {
+  } else if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
     if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
@@ -235,8 +233,7 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  }
-  else if (req.query.account_id) {
+  } else if (req.query.account_id) {
     return getPlayerProfile(r, req.query.account_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
