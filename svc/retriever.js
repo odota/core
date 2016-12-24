@@ -34,17 +34,6 @@ function getUptime() {
 }
 
 function genStats() {
-  /*
-  const stats = {};
-  Object.keys(steamObj).forEach(key => {
-    stats[key] = {
-      steamID: key,
-      matches: steamObj[key].matches,
-      profiles: steamObj[key].profiles,
-      friends: Object.keys(steamObj[key].steamFriends.friends).length,
-    };
-  });
-  */
   const data = {
     matchRequests,
     uptime: getUptime(),
@@ -110,8 +99,9 @@ function getGcMatchData(idx, matchId, cb) {
   }
   const timeout = setTimeout(() => {
     timeouts += 1;
-  // TODO remove this if steam fixes the one replay salt per connection issue
-    client.disconnect();
+    // TODO remove this disconnect if steam fixes the one replay salt per connection issue
+    client.steamUser.logOff();
+    // client.disconnect();
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     console.log('received match %s', matchId);
