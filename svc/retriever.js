@@ -117,6 +117,69 @@ function getGcMatchData(idx, matchId, cb) {
   });
 }
 
+function login() {
+  async.each(Array.from(new Array(users.length), (v, i) => i), (i, cb) => {
+    const client = new Steam.SteamClient();
+    client.steamUser = new Steam.SteamUser(client);
+    client.steamFriends = new Steam.SteamFriends(client);
+    client.Dota2 = new Dota2.Dota2Client(client, false, false);
+    const user = users[i];
+    const pass = passes[i];
+    const logOnDetails = {
+      account_name: user,
+      password: pass,
+    };
+    client.connect();
+    client.on('error', (err) => {
+      console.error(err);
+    });
+    client.on('logOnResponse', (logOnResponse) => {
+      console.log(logOnResponse);
+    });
+    client.on('connected', () => {
+      console.log('[STEAM] Trying to log on with %s,%s', user, pass);
+      client.steamUser.logOn(logOnDetails);
+      client.once('error', (e) => {
+        console.log(e);
+        console.log('reconnecting');
+        client.connect();
+      });
+    });
+    client.on('logOnResponse', (logonResp) => {
+      if (logonResp.eresult !== Steam.EResult.OK) {
+        // try logging on again
+        return client.steamUser.logOn(logOnDetails);
+      }
+      if (client && client.steamID) {
+        console.log('[STEAM] Logged on %s', client.steamID);
+        client.steamFriends.setPersonaName(client.steamID.toString());
+        client.matches = 0;
+        client.profiles = 0;
+        client.Dota2.once('ready', () => {
+          steamObj[client.steamID] = client;
+          count += 1;
+          console.log('acct %s ready, %s/%s', i, count, users.length);
+          cb();
+        });
+        client.Dota2.launch();
+        client.once('loggedOff', () => {
+          console.log('relogging');
+          client.steamUser.logOn(logOnDetails);
+        });
+      }
+      return null;
+    });
+  });
+}
+
+function relog() {
+  Object.keys(steamObj).forEach((client) => {
+    client.logOff();
+  });
+  login();
+  timeouts = 0;
+}
+
 if (config.STEAM_ACCOUNT_DATA) {
   const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
   const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
@@ -126,58 +189,7 @@ if (config.STEAM_ACCOUNT_DATA) {
   passes = accountDataToUse.map(a => a.split('\t')[1]);
 }
 console.log(users, passes);
-async.each(Array.from(new Array(users.length), (v, i) => i), (i, cb) => {
-  const client = new Steam.SteamClient();
-  client.steamUser = new Steam.SteamUser(client);
-  client.steamFriends = new Steam.SteamFriends(client);
-  client.Dota2 = new Dota2.Dota2Client(client, false, false);
-  const user = users[i];
-  const pass = passes[i];
-  const logOnDetails = {
-    account_name: user,
-    password: pass,
-  };
-  client.connect();
-  client.on('error', (err) => {
-    console.error(err);
-  });
-  client.on('logOnResponse', (logOnResponse) => {
-    console.log(logOnResponse);
-  });
-  client.on('connected', () => {
-    console.log('[STEAM] Trying to log on with %s,%s', user, pass);
-    client.steamUser.logOn(logOnDetails);
-    client.once('error', (e) => {
-      console.log(e);
-      console.log('reconnecting');
-      client.connect();
-    });
-  });
-  client.on('logOnResponse', (logonResp) => {
-    if (logonResp.eresult !== Steam.EResult.OK) {
-      // try logging on again
-      return client.steamUser.logOn(logOnDetails);
-    }
-    if (client && client.steamID) {
-      console.log('[STEAM] Logged on %s', client.steamID);
-      client.steamFriends.setPersonaName(client.steamID.toString());
-      client.matches = 0;
-      client.profiles = 0;
-      client.Dota2.once('ready', () => {
-        steamObj[client.steamID] = client;
-        count += 1;
-        console.log('acct %s ready, %s/%s', i, count, users.length);
-        cb();
-      });
-      client.Dota2.launch();
-      client.once('loggedOff', () => {
-        console.log('relogging');
-        client.steamUser.logOn(logOnDetails);
-      });
-    }
-    return null;
-  });
-});
+login();
 
 app.get('/healthz', (req, res) => {
   res.end('ok');
@@ -211,7 +223,8 @@ app.get('/', (req, res, cb) => {
     if (timeouts > 20) {
       // If we keep timing out, stop making requests
       if (getUptime() > minUpTimeSeconds) {
-        return selfDestruct();
+        return relog();
+        // return selfDestruct();
       }
       return cb('timeout count threshold exceeded');
     }
