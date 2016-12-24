@@ -221,12 +221,14 @@ app.get('/', (req, res, cb) => {
       });
     }
     if (timeouts > 20) {
+      return relog();
+      /*
       // If we keep timing out, stop making requests
       if (getUptime() > minUpTimeSeconds) {
-        return relog();
-        // return selfDestruct();
+        return selfDestruct();
       }
       return cb('timeout count threshold exceeded');
+      */
     }
     lastRequestTime = curRequestTime;
     return getGcMatchData(r, req.query.match_id, (err, data) => {
