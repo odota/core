@@ -47,8 +47,7 @@ function getMMStats(idx, cb) {
   steamObj[idx].Dota2.once('matchmakingStatsData', (waitTimes, searchingPlayers, disabledGroups) => {
     if (disabledGroups) {
       cb(null, disabledGroups.legacy_searching_players_by_group_source2);
-    }
-    else {
+    } else {
       cb('error mmstats');
     }
   });
@@ -189,8 +188,7 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  }
-  else if (req.query.match_id) {
+  } else if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
     if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
@@ -210,8 +208,7 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  }
-  else if (req.query.account_id) {
+  } else if (req.query.account_id) {
     return getPlayerProfile(r, req.query.account_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
