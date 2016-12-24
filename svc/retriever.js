@@ -98,6 +98,7 @@ function getGcMatchData(idx, matchId, cb) {
     timeouts += 1;
     // TODO remove this disconnect if steam fixes the one replay salt per connection issue
     client.disconnect();
+    client.connect();
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     console.log('received match %s', matchId);
