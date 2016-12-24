@@ -1489,6 +1489,12 @@ Please keep request rate to approximately 1/s.
           description: 'Search string',
           required: true,
           type: 'string',
+        }, {
+          name: 'similarity',
+          in: 'query',
+          description: 'Minimum similarity threshold, between 0 and 1',
+          required: false,
+          type: 'number',
         }],
         responses: {
           200: {
@@ -1506,7 +1512,7 @@ Please keep request rate to approximately 1/s.
           if (!req.query.q) {
             return res.status(400).json([]);
           }
-          return search(db, req.query.q, (err, result) => {
+          return search(req.query, (err, result) => {
             if (err) {
               return cb(err);
             }

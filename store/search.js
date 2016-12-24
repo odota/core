@@ -2,35 +2,37 @@
  * Methods for search functionality
  **/
 const async = require('async');
+const db = require('./db');
 /**
  * @param db - database object
  * @param search - object for where parameter of query
  * @param cb - callback
  */
-function findPlayer(db, search, cb) {
+function findPlayer(search, cb) {
   db.first(['account_id', 'personaname', 'avatarfull']).from('players').where(search).asCallback(cb);
 }
 
-function search(db, query, cb) {
+function search(options, cb) {
+  const query = options.q;
   async.parallel({
     account_id(callback) {
       if (isNaN(Number(query))) {
         return callback();
       }
-      return findPlayer(db, {
+      return findPlayer({
         account_id: Number(query),
       }, callback);
     },
     personaname(callback) {
       db.raw(`
         SELECT * FROM 
-        (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS sml 
+        (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS similarity
         FROM players 
         WHERE personaname % ? 
-        AND similarity(personaname, ?) > 0.4
+        AND similarity(personaname, ?) > ?
         LIMIT 500) search 
-        ORDER BY sml DESC;
-        `, [query, query, query]).asCallback((err, result) => {
+        ORDER BY similarity DESC;
+        `, [query, query, query, options.similarity || 0.4]).asCallback((err, result) => {
           if (err) {
             return callback(err);
           }
