@@ -120,7 +120,6 @@ function login() {
       console.log('acct %s ready', i);
       cb();
     });
-    steamObj[client.steamID] = client;
     client.connect();
     client.on('connected', () => {
       console.log('[STEAM] Trying to log on with %s,%s', user, pass);
@@ -136,6 +135,7 @@ function login() {
       if (client && client.steamID) {
         console.log('[STEAM] Logged on %s', client.steamID);
         client.steamFriends.setPersonaName(client.steamID.toString());
+        steamObj[client.steamID] = client;
       }
       client.Dota2.launch();
     });
