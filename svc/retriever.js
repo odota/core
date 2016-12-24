@@ -20,6 +20,8 @@ const accountsToUse = 15;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
+let matchSuccesses = 0;
+let profileRequests = 0;
 let timeouts = 0;
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
@@ -57,6 +59,7 @@ function getPlayerProfile(idx, accountId, cb) {
   accountId = Number(accountId);
   const Dota2 = steamObj[idx].Dota2;
   console.log('requesting player profile %s', accountId);
+  profileRequests += 1;
   Dota2.requestProfileCard(accountId, (err, profileData) => {
     /*
     enum EStatID {
@@ -86,7 +89,13 @@ function getPlayerProfile(idx, accountId, cb) {
 
 function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
-  console.log('requesting match %s, numReady: %s, requests: %s, uptime: %s', matchId, Object.keys(steamObj).length, matchRequests, getUptime());
+  console.log('requesting match %s, numReady: %s, matchRequests: %s, matchSuccesses: %s, profileRequests: %s, uptime: %s',
+    matchId,
+    Object.keys(steamObj).length,
+    matchRequests,
+    matchSuccesses,
+    profileRequests,
+    getUptime());
   matchRequests += 1;
   const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds) ||
     getUptime() > maxUpTimeSeconds;
@@ -97,6 +106,7 @@ function getGcMatchData(idx, matchId, cb) {
     timeouts += 1;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
+    matchSuccesses += 1;
     console.log('received match %s', matchId);
     clearTimeout(timeout);
     cb(err, matchData);
@@ -144,10 +154,14 @@ function login() {
       console.log('reconnecting');
       client.connect();
     });
+    /*
     client.on('loggedOff', () => {
       console.log('relogging');
-      client.steamUser.logOn(logOnDetails);
+      setTimeout(()=> {
+        client.steamUser.logOn(logOnDetails)
+      }, 5000);
     });
+    */
     setInterval(() => {
       // TODO remove this loop if steam fixes the one replay salt per connection issue
       client.disconnect();
