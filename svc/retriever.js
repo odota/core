@@ -59,7 +59,8 @@ function getMMStats(idx, cb) {
   steamObj[idx].Dota2.once('matchmakingStatsData', (waitTimes, searchingPlayers, disabledGroups) => {
     if (disabledGroups) {
       cb(null, disabledGroups.legacy_searching_players_by_group_source2);
-    } else {
+    }
+    else {
       cb('error mmstats');
     }
   });
@@ -114,27 +115,35 @@ function getGcMatchData(idx, matchId, cb) {
     console.log('received match %s', matchId);
     clearTimeout(timeout);
     cb(err, matchData);
+    // TODO remove this if not necessary, relog the account
+    reconnectToSteam(steamObj[idx]);
+  });
+}
+
+function reconnectToSteam(client) {
+  client.disconnect();
+  client.connect();
+  client.on('connected', () => {
+    client.steamUser.logOn(client.logOnDetails);
   });
 }
 
 function login() {
   async.each(Array.from(new Array(users.length), (v, i) => i), (i, cb) => {
     const client = new Steam.SteamClient();
-    client.steamUser = new Steam.SteamUser(client);
-    client.steamFriends = new Steam.SteamFriends(client);
-    client.Dota2 = new Dota2.Dota2Client(client, false, false);
     const user = users[i];
     const pass = passes[i];
     const logOnDetails = {
       account_name: user,
       password: pass,
     };
+    client.logOnDetails = logOnDetails;
+    client.steamUser = new Steam.SteamUser(client);
+    client.steamFriends = new Steam.SteamFriends(client);
+    client.Dota2 = new Dota2.Dota2Client(client, false, false);
     client.connect();
     client.on('error', (err) => {
       console.error(err);
-    });
-    client.on('logOnResponse', (logOnResponse) => {
-      console.log(logOnResponse);
     });
     client.on('connected', () => {
       console.log('[STEAM] Trying to log on with %s,%s', user, pass);
@@ -145,9 +154,10 @@ function login() {
         client.connect();
       });
     });
-    client.on('logOnResponse', (logonResp) => {
-      if (logonResp.eresult !== Steam.EResult.OK) {
+    client.on('logOnResponse', (logOnResp) => {
+      if (logOnResp.eresult !== Steam.EResult.OK) {
         // try logging on again
+        console.error(logOnResp);
         return client.steamUser.logOn(logOnDetails);
       }
       if (client && client.steamID) {
@@ -167,17 +177,9 @@ function login() {
           client.steamUser.logOn(logOnDetails);
         });
       }
-      return null;
+      return;
     });
   });
-}
-
-function relog() {
-  Object.keys(steamObj).forEach((steamId) => {
-    steamObj[steamId].disconnect();
-  });
-  login();
-  timeouts = 0;
 }
 
 if (config.STEAM_ACCOUNT_DATA) {
@@ -212,7 +214,8 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.match_id) {
+  }
+  else if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
     if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
@@ -220,22 +223,20 @@ app.get('/', (req, res, cb) => {
         error: 'too many requests',
       });
     }
-    if (timeouts > 20) {
-      return relog();
-      /*
+    if (timeouts > 30) {
       // If we keep timing out, stop making requests
       if (getUptime() > minUpTimeSeconds) {
         return selfDestruct();
       }
       return cb('timeout count threshold exceeded');
-      */
     }
     lastRequestTime = curRequestTime;
     return getGcMatchData(r, req.query.match_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.account_id) {
+  }
+  else if (req.query.account_id) {
     return getPlayerProfile(r, req.query.account_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
