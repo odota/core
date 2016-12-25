@@ -91,14 +91,6 @@ function getPlayerProfile(idx, accountId, cb) {
 
 function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
-  console.log('requesting match %s, numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s',
-    matchId,
-    Object.keys(steamObj).length,
-    matchSuccesses,
-    matchRequests,
-    profileSuccesses,
-    profileRequests,
-    getUptime());
   matchRequests += 1;
   const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds) ||
     getUptime() > maxUpTimeSeconds;
@@ -116,7 +108,7 @@ function getGcMatchData(idx, matchId, cb) {
   });
 }
 
-function login() {
+function init() {
   async.each(Array.from(new Array(users.length), (v, i) => i), (i, cb) => {
     const client = new Steam.SteamClient();
     const user = users[i];
@@ -152,12 +144,12 @@ function login() {
       }
       client.Dota2.launch();
     });
+    /*
     client.on('error', (err) => {
       console.error(err);
       console.log('reconnecting');
       client.connect();
     });
-    /*
     client.on('loggedOff', () => {
       console.log('relogging');
       setTimeout(()=> {
@@ -169,6 +161,13 @@ function login() {
       // TODO remove this loop if steam fixes the one replay salt per connection issue
       client.disconnect();
       client.connect();
+      console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s',
+        Object.keys(steamObj).length,
+        matchSuccesses,
+        matchRequests,
+        profileSuccesses,
+        profileRequests,
+        getUptime());
     }, 20000);
   });
 }
@@ -181,8 +180,7 @@ if (config.STEAM_ACCOUNT_DATA) {
   users = accountDataToUse.map(a => a.split('\t')[0]);
   passes = accountDataToUse.map(a => a.split('\t')[1]);
 }
-console.log(users, passes);
-login();
+init();
 
 app.get('/healthz', (req, res) => {
   res.end('ok');
