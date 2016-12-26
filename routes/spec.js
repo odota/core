@@ -1332,7 +1332,7 @@ Please keep request rate to approximately 1/s.
           const maxTime = req.query.max_time || Math.pow(2, 31) - 1;
           async.parallel({
             publicHeroes(cb) {
-            db.raw(`
+              db.raw(`
             SELECT 
             sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as public_win, 
             count(*) as public_count, 
@@ -1355,7 +1355,7 @@ Please keep request rate to approximately 1/s.
             .asCallback(cb);
             },
             proHeroes(cb) {
-            db.raw(`
+              db.raw(`
             SELECT 
             sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
             count(*) as pro_count,
@@ -1371,7 +1371,7 @@ Please keep request rate to approximately 1/s.
             .asCallback(cb);
             },
             proBans(cb) {
-            db.raw(`
+              db.raw(`
             SELECT 
             count(*) ban_count,
             hero_id
@@ -1384,19 +1384,19 @@ Please keep request rate to approximately 1/s.
             GROUP BY hero_id
             ORDER BY hero_id
           `, [minTime, maxTime])
-            .asCallback(cb);                
-            }
+            .asCallback(cb);
+            },
           }, (err, result) => {
-              if (err) {
-                return cb(err);
-              }
+            if (err) {
+              return cb(err);
+            }
               // Build object keyed by hero_id for each result array
-              const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
-              Object.keys(result).forEach(key => {
-                result[key].rows.forEach(row => {
-                  objectResponse[row.hero_id] = Object.assign({}, objectResponse[row.hero_id], row);
-                });
+            const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
+            Object.keys(result).forEach((key) => {
+              result[key].rows.forEach((row) => {
+                objectResponse[row.hero_id] = Object.assign({}, objectResponse[row.hero_id], row);
               });
+            });
               // Assemble the result array
               // hero_id
               // P+B%
@@ -1405,8 +1405,8 @@ Please keep request rate to approximately 1/s.
               // W% - pro_win / pro_count
               // PubP% public_count / (sum of all public counts / 10)
               // PubW% public_win / public_count
-              return res.json(Object.keys(objectResponse).map(key => objectResponse[key]));
-            });
+            return res.json(Object.keys(objectResponse).map(key => objectResponse[key]));
+          });
         },
       },
     },
