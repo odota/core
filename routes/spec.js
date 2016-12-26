@@ -1397,14 +1397,6 @@ Please keep request rate to approximately 1/s.
                 objectResponse[row.hero_id] = Object.assign({}, objectResponse[row.hero_id], row);
               });
             });
-              // Assemble the result array
-              // hero_id
-              // P+B%
-              // P% - pro_count / (sum of all pro counts / 10)
-              // B% - ban_count / (sum of all pro counts / 10)
-              // W% - pro_win / pro_count
-              // PubP% public_count / (sum of all public counts / 10)
-              // PubW% public_win / public_count
             return res.json(Object.keys(objectResponse).map(key => objectResponse[key]));
           });
         },
