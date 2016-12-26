@@ -1335,7 +1335,7 @@ Please keep request rate to approximately 1/s.
               db.raw(`
             SELECT 
             sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as public_win, 
-            count(*) as public_count, 
+            count(*) as public_pick, 
             hero_id 
             FROM public_player_matches 
             JOIN 
@@ -1358,7 +1358,7 @@ Please keep request rate to approximately 1/s.
               db.raw(`
             SELECT 
             sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
-            count(*) as pro_count,
+            count(*) as pro_pick,
             hero_id
             FROM player_matches
             JOIN matches USING(match_id)
@@ -1373,7 +1373,7 @@ Please keep request rate to approximately 1/s.
             proBans(cb) {
               db.raw(`
             SELECT 
-            count(*) ban_count,
+            count(*) pro_ban,
             hero_id
             FROM picks_bans
             JOIN matches USING(match_id)
@@ -1390,7 +1390,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-              // Build object keyed by hero_id for each result array
+            // Build object keyed by hero_id for each result array
             const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
             Object.keys(result).forEach((key) => {
               result[key].rows.forEach((row) => {
