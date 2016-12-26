@@ -1302,11 +1302,11 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
-    '/publicHeroes': {
+    '/heroStats': {
       get: {
         summary: 'GET /',
-        description: 'Get list of heroes in public matches',
-        tags: ['public heroes'],
+        description: 'Get stats about hero performance in recent matches',
+        tags: ['hero stats'],
         parameters: [
           params.minMmrParam,
           params.maxMmrParam,
@@ -1324,32 +1324,87 @@ Please keep request rate to approximately 1/s.
             },
           },
         },
-        route: () => '/publicHeroes',
+        route: () => '/heroStats',
         func: (req, res, cb) => {
           const minMmr = req.query.min_mmr || 0;
           const maxMmr = req.query.max_mmr || Math.pow(2, 31) - 1;
           const minTime = req.query.min_time || 0;
           const maxTime = req.query.max_time || Math.pow(2, 31) - 1;
-          db.raw(`
-          SELECT sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as win, count(*), hero_id FROM public_player_matches 
-          JOIN 
-          (SELECT * FROM public_matches 
-          WHERE TRUE
-          AND avg_mmr > ?
-          AND avg_mmr < ?
-          AND start_time > ?
-          AND start_time < ?
-          ORDER BY match_id desc LIMIT 10000) 
-          limited_public_matches USING(match_id)
-          WHERE hero_id > 0
-          GROUP BY hero_id
-          ORDER BY hero_id
+          async.parallel({
+            publicHeroes(cb) {
+            db.raw(`
+            SELECT 
+            sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as public_win, 
+            count(*) as public_count, 
+            hero_id 
+            FROM public_player_matches 
+            JOIN 
+            (SELECT * FROM public_matches 
+            WHERE TRUE
+            AND avg_mmr > ?
+            AND avg_mmr < ?
+            AND start_time > ?
+            AND start_time < ?
+            ORDER BY match_id desc LIMIT 10000) 
+            matches_list USING(match_id)
+            WHERE hero_id > 0
+            GROUP BY hero_id
+            ORDER BY hero_id
           `, [minMmr, maxMmr, minTime, maxTime])
-            .asCallback((err, result) => {
+            .asCallback(cb);
+            },
+            proHeroes(cb) {
+            db.raw(`
+            SELECT 
+            sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
+            count(*) as pro_count,
+            hero_id
+            FROM player_matches
+            JOIN matches USING(match_id)
+            WHERE hero_id > 0
+            AND start_time > ?
+            AND start_time < ?
+            GROUP BY hero_id
+            ORDER BY hero_id
+          `, [minTime, maxTime])
+            .asCallback(cb);
+            },
+            proBans(cb) {
+            db.raw(`
+            SELECT 
+            count(*) ban_count,
+            hero_id
+            FROM picks_bans
+            JOIN matches USING(match_id)
+            WHERE hero_id > 0
+            AND start_time > ?
+            AND start_time < ?
+            AND is_pick IS FALSE
+            GROUP BY hero_id
+            ORDER BY hero_id
+          `, [minTime, maxTime])
+            .asCallback(cb);                
+            }
+          }, (err, result) => {
               if (err) {
                 return cb(err);
               }
-              return res.json(result.rows);
+              // Build object keyed by hero_id for each result array
+              const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
+              Object.keys(result).forEach(key => {
+                result[key].rows.forEach(row => {
+                  objectResponse[row.hero_id] = Object.assign({}, objectResponse[row.hero_id], row);
+                });
+              });
+              // Assemble the result array
+              // hero_id
+              // P+B%
+              // P% - pro_count / (sum of all pro counts / 10)
+              // B% - ban_count / (sum of all pro counts / 10)
+              // W% - pro_win / pro_count
+              // PubP% public_count / (sum of all public counts / 10)
+              // PubW% public_win / public_count
+              return res.json(Object.keys(objectResponse).map(key => objectResponse[key]));
             });
         },
       },
