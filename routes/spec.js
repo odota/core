@@ -237,7 +237,7 @@ Please keep request rate to approximately 1/s.
   paths: {
     '/matches/{match_id}': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /matches',
         description: 'Match data',
         tags: [
           'matches',
@@ -421,7 +421,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /players',
         description: 'Player data',
         tags: [
           'players',
@@ -487,7 +487,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/wl': {
       get: {
-        summary: 'GET /wl',
+        summary: 'GET /players/{account_id}/wl',
         description: 'Win/Loss count',
         tags: [
           'players',
@@ -536,7 +536,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/matches': {
       get: {
-        summary: 'GET /matches',
+        summary: 'GET /players/{account_id}/matches',
         description: 'Matches played',
         tags: [
           'players',
@@ -578,7 +578,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/heroes': {
       get: {
-        summary: 'GET /heroes',
+        summary: 'GET /players/{account_id}/heroes',
         description: 'Heroes played',
         tags: ['players'],
         parameters: playerParams,
@@ -642,7 +642,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/peers': {
       get: {
-        summary: 'GET /peers',
+        summary: 'GET /players/{account_id}/peers',
         description: 'Players played with',
         tags: [
           'players',
@@ -681,7 +681,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/pros': {
       get: {
-        summary: 'GET /pros',
+        summary: 'GET /players/{account_id}/pros',
         description: 'Pro players played with',
         tags: [
           'players',
@@ -720,7 +720,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/records': {
       get: {
-        summary: 'GET /records',
+        summary: 'GET /players/{account_id}/records',
         description: 'Extremes in matches played',
         tags: [
           'players',
@@ -874,7 +874,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/counts': {
       get: {
-        summary: 'GET /counts',
+        summary: 'GET /players/{account_id}/counts',
         description: 'Categorical counts',
         tags: [
           'players',
@@ -945,7 +945,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/histograms/{field}': {
       get: {
-        summary: 'GET /histograms',
+        summary: 'GET /players/{account_id}/histograms',
         description: 'Distribution of matches in a single stat',
         tags: [
           'players',
@@ -998,7 +998,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/wardmap': {
       get: {
-        summary: 'GET /wardmap',
+        summary: 'GET /players/{account_id}/wardmap',
         description: 'Wards placed in matches played',
         tags: [
           'players',
@@ -1045,7 +1045,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/wordcloud': {
       get: {
-        summary: 'GET /wordcloud',
+        summary: 'GET /players/{account_id}/wordcloud',
         description: 'Words said/read in matches played',
         tags: [
           'players',
@@ -1092,7 +1092,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/ratings': {
       get: {
-        summary: 'GET /ratings',
+        summary: 'GET /players/{account_id}/ratings',
         description: 'Player rating history',
         tags: [
           'players',
@@ -1122,7 +1122,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/rankings': {
       get: {
-        summary: 'GET /rankings',
+        summary: 'GET /players/{account_id}/rankings',
         description: 'Player hero rankings',
         tags: [
           'players',
@@ -1152,7 +1152,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}/refresh': {
       post: {
-        summary: 'POST /refresh',
+        summary: 'POST /players/{account_id}/refresh',
         description: 'Refresh player match history',
         tags: [
           'players',
@@ -1183,7 +1183,7 @@ Please keep request rate to approximately 1/s.
     },
     '/proPlayers': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /proPlayers',
         description: 'Get list of pro players',
         tags: ['pro players'],
         responses: {
@@ -1214,7 +1214,7 @@ Please keep request rate to approximately 1/s.
     },
     '/proMatches': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /proMatches',
         description: 'Get list of pro matches',
         tags: ['pro matches'],
         responses: {
@@ -1257,7 +1257,7 @@ Please keep request rate to approximately 1/s.
     },
     '/publicMatches': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /publicMatches',
         description: 'Get list of randomly sampled public matches',
         tags: ['public matches'],
         parameters: [
@@ -1304,7 +1304,7 @@ Please keep request rate to approximately 1/s.
     },
     '/heroStats': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /heroStats',
         description: 'Get stats about hero performance in recent matches',
         tags: ['hero stats'],
         parameters: [
@@ -1339,13 +1339,14 @@ Please keep request rate to approximately 1/s.
             hero_id 
             FROM public_player_matches 
             JOIN 
-            (SELECT * FROM public_matches 
+            (SELECT * FROM public_matches
+            TABLESAMPLE SYSTEM_ROWS(10000)
             WHERE TRUE
             AND avg_mmr > ?
             AND avg_mmr < ?
             AND start_time > ?
             AND start_time < ?
-            ORDER BY match_id desc LIMIT 10000) 
+            ORDER BY match_id desc) 
             matches_list USING(match_id)
             WHERE hero_id > 0
             GROUP BY hero_id
@@ -1411,7 +1412,7 @@ Please keep request rate to approximately 1/s.
     },
     '/explorer': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /explorer',
         description: 'Submit arbitrary SQL queries to the database',
         tags: ['explorer'],
         parameters: [{
@@ -1448,7 +1449,7 @@ Please keep request rate to approximately 1/s.
     },
     '/metadata': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /metadata',
         description: 'Site metadata',
         tags: [
           'metadata',
@@ -1497,7 +1498,7 @@ Please keep request rate to approximately 1/s.
     },
     '/distributions': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /distributions',
         description: 'Distributions of MMR data',
         tags: [
           'distributions',
@@ -1533,7 +1534,7 @@ Please keep request rate to approximately 1/s.
     },
     '/search': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /search',
         description: 'Search players by personaname',
         tags: [
           'search',
@@ -1578,7 +1579,7 @@ Please keep request rate to approximately 1/s.
     },
     '/rankings': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /rankings',
         description: 'Top players by hero',
         tags: [
           'rankings',
@@ -1621,7 +1622,7 @@ Please keep request rate to approximately 1/s.
     },
     '/benchmarks': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /benchmarks',
         description: 'Benchmarks of average stat values for a hero',
         tags: [
           'benchmarks',
@@ -1666,7 +1667,7 @@ Please keep request rate to approximately 1/s.
     },
     '/status': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /status',
         description: 'Get current service statistics',
         tags: ['status'],
         responses: {
@@ -1690,7 +1691,7 @@ Please keep request rate to approximately 1/s.
     },
     '/health': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /health',
         description: 'Get service health data',
         tags: ['health'],
         responses: {
@@ -1723,7 +1724,7 @@ Please keep request rate to approximately 1/s.
     },
     '/request/{jobId}': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /request',
         description: 'Get parse request state',
         tags: ['request'],
         parameters: [{
@@ -1759,7 +1760,7 @@ Please keep request rate to approximately 1/s.
     },
     '/request/{match_id}': {
       post: {
-        summary: 'POST /',
+        summary: 'POST /request',
         description: 'Submit a new parse request',
         tags: ['request'],
         parameters: [{
@@ -1896,7 +1897,7 @@ Please keep request rate to approximately 1/s.
     */
     '/heroes': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /heroes',
         description: 'Get hero data',
         tags: ['heroes'],
         responses: {
@@ -1926,7 +1927,7 @@ Please keep request rate to approximately 1/s.
     },
     '/leagues': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /leagues',
         description: 'Get league data',
         tags: ['leagues'],
         responses: {
@@ -1955,7 +1956,7 @@ Please keep request rate to approximately 1/s.
     },
     '/replays': {
       get: {
-        summary: 'GET /',
+        summary: 'GET /replays',
         description: 'Get replay data',
         tags: ['replays'],
         parameters: [{
