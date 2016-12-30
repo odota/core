@@ -237,7 +237,7 @@ Please keep request rate to approximately 1/s.
   paths: {
     '/matches/{match_id}': {
       get: {
-        summary: 'GET /matches',
+        summary: 'GET /matches/{match_id}',
         description: 'Match data',
         tags: [
           'matches',
@@ -421,7 +421,7 @@ Please keep request rate to approximately 1/s.
     },
     '/players/{account_id}': {
       get: {
-        summary: 'GET /players',
+        summary: 'GET /players/{account_id}',
         description: 'Player data',
         tags: [
           'players',
@@ -1333,56 +1333,56 @@ Please keep request rate to approximately 1/s.
           async.parallel({
             publicHeroes(cb) {
               db.raw(`
-            SELECT 
-            sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as public_win, 
-            count(*) as public_pick, 
-            hero_id 
-            FROM public_player_matches 
-            JOIN 
-            (SELECT * FROM public_matches
-            TABLESAMPLE SYSTEM_ROWS(10000)
-            WHERE TRUE
-            AND avg_mmr > ?
-            AND avg_mmr < ?
-            AND start_time > ?
-            AND start_time < ?
-            ORDER BY match_id desc) 
-            matches_list USING(match_id)
-            WHERE hero_id > 0
-            GROUP BY hero_id
-            ORDER BY hero_id
+              SELECT 
+              sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as public_win, 
+              count(*) as public_pick, 
+              hero_id 
+              FROM public_player_matches 
+              JOIN 
+              (SELECT * FROM public_matches
+              TABLESAMPLE SYSTEM_ROWS(10000)
+              WHERE TRUE
+              AND avg_mmr > ?
+              AND avg_mmr < ?
+              AND start_time > ?
+              AND start_time < ?
+              ORDER BY match_id desc) 
+              matches_list USING(match_id)
+              WHERE hero_id > 0
+              GROUP BY hero_id
+              ORDER BY hero_id
           `, [minMmr, maxMmr, minTime, maxTime])
             .asCallback(cb);
             },
             proHeroes(cb) {
               db.raw(`
-            SELECT 
-            sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
-            count(*) as pro_pick,
-            hero_id
-            FROM player_matches
-            JOIN matches USING(match_id)
-            WHERE hero_id > 0
-            AND start_time > ?
-            AND start_time < ?
-            GROUP BY hero_id
-            ORDER BY hero_id
+              SELECT 
+              sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
+              count(*) as pro_pick,
+              hero_id
+              FROM player_matches
+              JOIN matches USING(match_id)
+              WHERE hero_id > 0
+              AND start_time > ?
+              AND start_time < ?
+              GROUP BY hero_id
+              ORDER BY hero_id
           `, [minTime, maxTime])
             .asCallback(cb);
             },
             proBans(cb) {
               db.raw(`
-            SELECT 
-            count(*) pro_ban,
-            hero_id
-            FROM picks_bans
-            JOIN matches USING(match_id)
-            WHERE hero_id > 0
-            AND start_time > ?
-            AND start_time < ?
-            AND is_pick IS FALSE
-            GROUP BY hero_id
-            ORDER BY hero_id
+              SELECT 
+              count(*) pro_ban,
+              hero_id
+              FROM picks_bans
+              JOIN matches USING(match_id)
+              WHERE hero_id > 0
+              AND start_time > ?
+              AND start_time < ?
+              AND is_pick IS FALSE
+              GROUP BY hero_id
+              ORDER BY hero_id
           `, [minTime, maxTime])
             .asCallback(cb);
             },
@@ -1752,7 +1752,7 @@ Please keep request rate to approximately 1/s.
     },
     '/request/{match_id}': {
       post: {
-        summary: 'POST /request',
+        summary: 'POST /request/{match_id}',
         description: 'Submit a new parse request',
         tags: ['request'],
         parameters: [{
