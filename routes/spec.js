@@ -1397,7 +1397,11 @@ Please keep request rate to approximately 1/s.
                 objectResponse[row.hero_id] = Object.assign({}, objectResponse[row.hero_id], row);
               });
             });
-            return res.json(Object.keys(objectResponse).map(key => objectResponse[key]));
+            return res.json(Object.keys(objectResponse).map(key => {
+              // add hero_id prop to each object that is a copy of id
+              const heroId = objectResponse[key].id;
+              return Object.assign({}, objectResponse[key], { hero_id: heroId });
+            }));
           });
         },
       },
