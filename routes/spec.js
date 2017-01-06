@@ -1977,7 +1977,7 @@ Please keep request rate to approximately 1/s.
         func: (req, res, cb) => {
           db.select(['match_id', 'cluster', 'replay_salt'])
             .from('match_gcdata')
-            .whereIn('match_id', (req.query.match_id || []).slice(0, 100))
+            .whereIn('match_id', (req.query.match_id || []).slice(0, 1000))
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
