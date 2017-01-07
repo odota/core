@@ -16,6 +16,7 @@ const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
 const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 100;
 const timeoutMs = 10000;
+const timeoutThreshold = 80;
 const accountsToUse = 15;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
@@ -76,8 +77,8 @@ function getPlayerProfile(idx, accountId, cb) {
       return cb(err);
     }
     const response = {};
+    profileSuccesses += 1;
     profileData.slots.forEach((s) => {
-      profileSuccesses += 1;
       if (s.stat && s.stat.stat_id === 1) {
         response.solo_competitive_rank = s.stat.stat_score;
       }
@@ -92,8 +93,8 @@ function getPlayerProfile(idx, accountId, cb) {
 function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
   matchRequests += 1;
-  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds) ||
-    getUptime() > maxUpTimeSeconds;
+  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
+    || getUptime() > maxUpTimeSeconds;
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
@@ -168,7 +169,7 @@ function init() {
         profileSuccesses,
         profileRequests,
         getUptime());
-    }, 20000);
+    }, 15000);
   });
 }
 
@@ -211,7 +212,7 @@ app.get('/', (req, res, cb) => {
         error: 'too many requests',
       });
     }
-    if (timeouts > 50) {
+    if (timeouts > timeoutThreshold) {
       // If we keep timing out, stop making requests
       if (getUptime() > minUpTimeSeconds) {
         return selfDestruct();
