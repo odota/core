@@ -142,8 +142,8 @@ function init() {
         console.log('[STEAM] Logged on %s', client.steamID);
         client.steamFriends.setPersonaName(client.steamID.toString());
         steamObj[client.steamID] = client;
+        client.Dota2.launch();
       }
-      client.Dota2.launch();
     });
     /*
     client.on('error', (err) => {
