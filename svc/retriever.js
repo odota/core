@@ -16,7 +16,7 @@ const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
 const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 100;
 const timeoutMs = 10000;
-const timeoutThreshold = 80;
+const timeoutThreshold = 125;
 const accountsToUse = 15;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
@@ -162,13 +162,6 @@ function init() {
       // TODO remove this loop if steam fixes the one replay salt per connection issue
       client.disconnect();
       client.connect();
-      console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s',
-        Object.keys(steamObj).length,
-        matchSuccesses,
-        matchRequests,
-        profileSuccesses,
-        profileRequests,
-        getUptime());
     }, 15000);
   });
 }
@@ -199,6 +192,13 @@ app.get('/', (req, res, cb) => {
     return cb('No accounts ready');
   }
   const r = keys[Math.floor((Math.random() * keys.length))];
+  console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s',
+    Object.keys(steamObj).length,
+    matchSuccesses,
+    matchRequests,
+    profileSuccesses,
+    profileRequests,
+    getUptime());
   if (req.query.mmstats) {
     return getMMStats(r, (err, data) => {
       res.locals.data = data;
