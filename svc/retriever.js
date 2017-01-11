@@ -158,11 +158,6 @@ function init() {
       }, 5000);
     });
     */
-    setInterval(() => {
-      // TODO remove this loop if steam fixes the one replay salt per connection issue
-      client.disconnect();
-      client.connect();
-    }, accountsToUse * 1000);
   });
 }
 
@@ -191,7 +186,7 @@ app.get('/', (req, res, cb) => {
   if (!keys.length) {
     return cb('No accounts ready');
   }
-  const r = keys[Math.floor((Math.random() * keys.length))];
+  const rKey = keys[Math.floor((Math.random() * keys.length))];
   console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s',
     Object.keys(steamObj).length,
     matchSuccesses,
@@ -200,7 +195,7 @@ app.get('/', (req, res, cb) => {
     profileRequests,
     getUptime());
   if (req.query.mmstats) {
-    return getMMStats(r, (err, data) => {
+    return getMMStats(rKey, (err, data) => {
       res.locals.data = data;
       return cb(err);
     });
@@ -220,12 +215,15 @@ app.get('/', (req, res, cb) => {
       return cb('timeout count threshold exceeded');
     }
     lastRequestTime = curRequestTime;
-    return getGcMatchData(r, req.query.match_id, (err, data) => {
+    return getGcMatchData(rKey, req.query.match_id, (err, data) => {
       res.locals.data = data;
+      const client = steamObj[rKey];
+      client.disconnect();
+      client.connect();
       return cb(err);
     });
   } else if (req.query.account_id) {
-    return getPlayerProfile(r, req.query.account_id, (err, data) => {
+    return getPlayerProfile(rKey, req.query.account_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
     });
