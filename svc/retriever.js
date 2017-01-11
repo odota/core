@@ -12,12 +12,12 @@ const cp = require('child_process');
 const app = express();
 const steamObj = {};
 const launch = new Date();
-const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 610;
+const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 630;
 const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 100;
 const timeoutMs = 10000;
 const timeoutThreshold = 125;
-const accountsToUse = 25;
+const accountsToUse = 30;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
@@ -158,6 +158,11 @@ function init() {
       }, 5000);
     });
     */
+    setInterval(() => {
+      // TODO remove this loop if steam fixes the one replay salt per connection issue
+      client.disconnect();
+      client.connect();
+    }, accountsToUse * 1000);
   });
 }
 
@@ -217,9 +222,6 @@ app.get('/', (req, res, cb) => {
     lastRequestTime = curRequestTime;
     return getGcMatchData(rKey, req.query.match_id, (err, data) => {
       res.locals.data = data;
-      const client = steamObj[rKey];
-      client.disconnect();
-      client.connect();
       return cb(err);
     });
   } else if (req.query.account_id) {
