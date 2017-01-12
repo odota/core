@@ -158,13 +158,11 @@ function init() {
       }, 5000);
     });
     */
-    /*
     setInterval(() => {
       // TODO remove this loop if steam fixes the one replay salt per connection issue
       client.disconnect();
       client.connect();
-    }, accountsToUse * 1000);
-    */
+    }, accountsToUse * 1500);
   });
 }
 
