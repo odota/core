@@ -14,7 +14,7 @@ const steamObj = {};
 const launch = new Date();
 const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 630;
 const maxUpTimeSeconds = 3600;
-const matchRequestDelay = 100;
+const matchRequestDelay = 500;
 const timeoutMs = 10000;
 const timeoutThreshold = 125;
 const accountsToUse = 30;
