@@ -17,7 +17,7 @@ const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 1000;
 const timeoutMs = 10000;
 const timeoutThreshold = 125;
-const accountsToUse = 20;
+const accountsToUse = 10;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
@@ -162,7 +162,7 @@ function init() {
       // TODO remove this loop if steam fixes the one replay salt per connection issue
       client.disconnect();
       client.connect();
-    }, accountsToUse * 1500);
+    }, 10000);
   });
 }
 
