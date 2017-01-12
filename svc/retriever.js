@@ -12,11 +12,11 @@ const cp = require('child_process');
 const app = express();
 const steamObj = {};
 const launch = new Date();
-const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 630;
+const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 700;
 const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 1000;
 const timeoutMs = 10000;
-const timeoutThreshold = 125;
+const timeoutThreshold = 100;
 const accountsToUse = 10;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
@@ -94,12 +94,14 @@ function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
   matchRequests += 1;
   const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
-    || getUptime() > maxUpTimeSeconds;
+    || getUptime() > maxUpTimeSeconds
+    || timeouts > timeoutThreshold && getUptime() > minUpTimeSeconds;
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
   const timeout = setTimeout(() => {
     timeouts += 1;
+    matchRequestDelay += 10;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     matchSuccesses += 1;
@@ -189,13 +191,14 @@ app.use((req, res, cb) => {
 app.get('/', (req, res, cb) => {
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor((Math.random() * keys.length))];
-  console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s',
+  console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
     Object.keys(steamObj).length,
     matchSuccesses,
     matchRequests,
     profileSuccesses,
     profileRequests,
-    getUptime());
+    getUptime(),
+    matchRequestDelay);
   if (req.query.mmstats) {
     return getMMStats(rKey, (err, data) => {
       res.locals.data = data;
@@ -208,13 +211,6 @@ app.get('/', (req, res, cb) => {
       return res.status(429).json({
         error: 'too many requests',
       });
-    }
-    if (timeouts > timeoutThreshold) {
-      // If we keep timing out, stop making requests
-      if (getUptime() > minUpTimeSeconds) {
-        return selfDestruct();
-      }
-      return cb('timeout count threshold exceeded');
     }
     lastRequestTime = curRequestTime;
     return getGcMatchData(rKey, req.query.match_id, (err, data) => {
