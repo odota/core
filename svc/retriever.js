@@ -18,7 +18,7 @@ const timeoutMs = 10000;
 const timeoutThreshold = 50;
 const accountsToUse = 10;
 const port = config.PORT || config.RETRIEVER_PORT;
-let matchRequestDelay = 10000;
+let matchRequestDelay = 300;
 let lastRequestTime;
 let matchRequests = 0;
 let matchSuccesses = 0;
