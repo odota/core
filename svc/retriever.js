@@ -95,7 +95,7 @@ function getGcMatchData(idx, matchId, cb) {
   matchRequests += 1;
   const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
     || getUptime() > maxUpTimeSeconds
-    || timeouts > timeoutThreshold && getUptime() > minUpTimeSeconds;
+    || (timeouts > timeoutThreshold && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
