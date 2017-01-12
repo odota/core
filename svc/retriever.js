@@ -12,7 +12,7 @@ const cp = require('child_process');
 const app = express();
 const steamObj = {};
 const launch = new Date();
-const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 700;
+const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 630;
 const maxUpTimeSeconds = 3600;
 const timeoutMs = 10000;
 const timeoutThreshold = 100;
@@ -162,20 +162,25 @@ function init() {
     */
     setInterval(() => {
       // TODO remove this loop if steam fixes the one replay salt per connection issue
+      chooseLoginInfo();
       client.disconnect();
       client.connect();
     }, 10000);
   });
 }
 
-if (config.STEAM_ACCOUNT_DATA) {
-  const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
-  const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
-  console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
-  const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
-  users = accountDataToUse.map(a => a.split('\t')[0]);
-  passes = accountDataToUse.map(a => a.split('\t')[1]);
+function chooseLoginInfo() {
+  if (config.STEAM_ACCOUNT_DATA) {
+    const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`).toString().split(/\r\n|\r|\n/g);
+    const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
+    console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
+    const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
+    users = accountDataToUse.map(a => a.split('\t')[0]);
+    passes = accountDataToUse.map(a => a.split('\t')[1]);
+  }
 }
+
+chooseLoginInfo();
 init();
 
 app.get('/healthz', (req, res) => {
