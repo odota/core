@@ -17,7 +17,7 @@ const maxUpTimeSeconds = 3600;
 const matchRequestDelay = 500;
 const timeoutMs = 10000;
 const timeoutThreshold = 125;
-const accountsToUse = 30;
+const accountsToUse = 40;
 const port = config.PORT || config.RETRIEVER_PORT;
 let lastRequestTime;
 let matchRequests = 0;
@@ -188,9 +188,6 @@ app.use((req, res, cb) => {
 });
 app.get('/', (req, res, cb) => {
   const keys = Object.keys(steamObj);
-  if (!keys.length) {
-    return cb('No accounts ready');
-  }
   const rKey = keys[Math.floor((Math.random() * keys.length))];
   console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s',
     Object.keys(steamObj).length,
