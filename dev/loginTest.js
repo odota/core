@@ -1,5 +1,6 @@
 const Steam = require('steam');
 const Dota2 = require('dota2');
+
 const client = new Steam.SteamClient();
 const user = process.env.STEAM_USER;
 const pass = process.env.STEAM_PASS;
