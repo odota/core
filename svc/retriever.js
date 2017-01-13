@@ -16,7 +16,7 @@ const minUpTimeSeconds = config.PROVIDER === 'gce' ? 0 : 630;
 const maxUpTimeSeconds = 3600;
 const timeoutMs = 10000;
 const timeoutThreshold = 50;
-const accountsToUse = 5;
+const accountsToUse = 2;
 const port = config.PORT || config.RETRIEVER_PORT;
 let matchRequestDelay = 300;
 let lastRequestTime;
