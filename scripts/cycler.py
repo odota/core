@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 8
+targetsize = 6
 backendname = "retriever"
 templatename = "retriever-8"
 
@@ -84,12 +84,10 @@ def run3(zoneList):
 
 # Even distribution
 def run4(zoneList):
-  while True:
-    for i, zone in enumerate(zoneList):
-      instancegroupname = "retriever-group-" + zone
-      # Scale to target
-      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
-    time.sleep(300)
+  for i, zone in enumerate(zoneList):
+    instancegroupname = "retriever-group-" + zone
+    # Scale to target
+    subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
 
 def createGroups(zoneList):
   for i, zone in enumerate(zoneList):
@@ -102,7 +100,7 @@ def createGroups(zoneList):
     # Add it to backend
     subprocess.call("gcloud compute backend-services add-backend {} --quiet --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
     # Configure load balancing policy
-    subprocess.call("gcloud compute backend-services update-backend {} --quiet --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1 --capacity-scaler={}".format(backendname, instancegroupname, zone, 2/float(targetsize)), shell=True)
+    subprocess.call("gcloud compute backend-services update-backend {} --quiet --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1 --capacity-scaler={}".format(backendname, instancegroupname, zone, 0.5), shell=True)
     # Scale to 0 (recreate instances)
     subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
     # Set autoscaler
@@ -116,7 +114,7 @@ def start():
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   # zoneList = sorted(zoneList, key=lambda x: x[-1])
-  # zoneList = ['asia-east1-b', 'asia-northeast1-b', 'europe-west1-b', 'us-central1-b', 'us-east1-b', 'us-west1-b']
+  # zoneList = ['us-central1-b', 'us-east1-b', 'us-west1-b']
   createGroups(zoneList)
   # run1(zoneList)
   # run2(zoneList)

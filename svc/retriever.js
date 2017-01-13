@@ -162,7 +162,6 @@ function init() {
     */
     setInterval(() => {
       // TODO remove this loop if steam fixes the one replay salt per connection issue
-      client.disconnect();
       client.connect();
     }, 10000);
   });
