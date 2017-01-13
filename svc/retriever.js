@@ -147,8 +147,6 @@ function init() {
         steamObj[client.steamID] = client;
         client.Dota2.launch();
       }
-    }, () => {
-      allReady = true;
     });
     /*
     client.on('error', (err) => {
@@ -169,6 +167,8 @@ function init() {
       client.connect();
     }, 10000);
     */
+  }, () => {
+    allReady = true;
   });
 }
 
