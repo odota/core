@@ -25,6 +25,7 @@ let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
 let timeouts = 0;
+let allReady = false;
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
 
@@ -146,6 +147,8 @@ function init() {
         steamObj[client.steamID] = client;
         client.Dota2.launch();
       }
+    }, () => {
+      allReady = true;
     });
     /*
     client.on('error', (err) => {
@@ -190,6 +193,9 @@ app.use((req, res, cb) => {
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     // reject request if it doesn't have key
     return cb('invalid key');
+  }
+  if (!allReady) {
+    return cb('not ready');
   }
   return cb();
 });
