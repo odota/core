@@ -34,7 +34,7 @@
     "cors": "^2.8.1",
     "dota2": "^4.1.0",
     "dotaconstants": "^4.4.0",
-    "dotenv": "^2.0.0",
+    "dotenv": "^3.0.0",
     "express": "^4.14.0",
     "http-proxy": "^1.15.2",
     "knex": "^0.12.6",
