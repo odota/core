@@ -331,6 +331,8 @@ CREATE TABLE public_matches (
   avg_mmr integer,
   num_mmr integer
 );
+CREATE INDEX on public_matches(start_time);
+CREATE INDEX on public_matches(avg_mmr);
 
 CREATE TABLE public_player_matches (
   PRIMARY KEY(match_id, player_slot),
