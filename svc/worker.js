@@ -146,7 +146,20 @@ function doLeagues(cb) {
           l.ticket = leagues[l.leagueid].ticket;
           l.banner = leagues[l.leagueid].banner;
         }
-        if (l.tier === 'professional' || l.tier === 'premium') {
+        /*
+        Excluded leagues (premium/professional)
+        4177 - CDEC Master
+        4649 - Manila Major Open Qualifiers
+        4325 - Shanghai Open Qualifiers
+        4768 - TI6 Open Qualifiers
+        3990 - Frankfurt Open Qualifiers
+        4181 - Dota 2 Canada Cup Season 6 Open Qualifiers
+        5027 - Boston Major Open Qualifier
+        */
+        const excludedLeagues = [4177, 4649, 4325, 4768, 3990, 4181, 5027];
+        if ((l.tier === 'professional' || l.tier === 'premium')
+          && !excludedLeagues.includes(Number(l.leagueid))
+          && l.name.indexOf('Open Qualifier') === -1) {
           redis.sadd('pro_leagueids', l.leagueid);
         }
         queries.upsert(db, 'leagues', l, {
