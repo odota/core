@@ -1327,9 +1327,9 @@ Please keep request rate to approximately 1/s.
         route: () => '/heroStats',
         func: (req, res, cb) => {
           const minMmr = req.query.min_mmr || 0;
-          const maxMmr = req.query.max_mmr || Math.pow(2, 31) - 1;
+          const maxMmr = req.query.max_mmr || 0;
           const minTime = req.query.min_time || 0;
-          const maxTime = req.query.max_time || Math.pow(2, 31) - 1;
+          const maxTime = req.query.max_time || 0;
           async.parallel({
             publicHeroes(cb) {
               db.raw(`
@@ -1342,16 +1342,16 @@ Please keep request rate to approximately 1/s.
               (SELECT * FROM public_matches
               TABLESAMPLE SYSTEM_ROWS(10000)
               WHERE TRUE
-              AND avg_mmr > ?
-              AND avg_mmr < ?
-              AND start_time > ?
-              AND start_time < ?
+              AND (? = 0 OR avg_mmr > ?)
+              AND (? = 0 OR avg_mmr < ?)
+              AND (? = 0 OR start_time > ?)
+              AND (? = 0 OR start_time < ?)
               ORDER BY match_id desc) 
               matches_list USING(match_id)
               WHERE hero_id > 0
               GROUP BY hero_id
               ORDER BY hero_id
-          `, [minMmr, maxMmr, minTime, maxTime])
+          `, [minMmr, minMmr, maxMmr, maxMmr, minTime, minTime, maxTime, maxTime])
             .asCallback(cb);
             },
             proHeroes(cb) {
@@ -1363,11 +1363,11 @@ Please keep request rate to approximately 1/s.
               FROM player_matches
               JOIN matches USING(match_id)
               WHERE hero_id > 0
-              AND start_time > ?
-              AND start_time < ?
+              AND (? = 0 OR start_time > ?)
+              AND (? = 0 OR start_time < ?)
               GROUP BY hero_id
               ORDER BY hero_id
-          `, [minTime, maxTime])
+          `, [minTime, minTime, maxTime, maxTime])
             .asCallback(cb);
             },
             proBans(cb) {
@@ -1378,12 +1378,12 @@ Please keep request rate to approximately 1/s.
               FROM picks_bans
               JOIN matches USING(match_id)
               WHERE hero_id > 0
-              AND start_time > ?
-              AND start_time < ?
+              AND (? = 0 OR start_time > ?)
+              AND (? = 0 OR start_time < ?)
               AND is_pick IS FALSE
               GROUP BY hero_id
               ORDER BY hero_id
-          `, [minTime, maxTime])
+          `, [minTime, minTime, maxTime, maxTime])
             .asCallback(cb);
             },
           }, (err, result) => {
