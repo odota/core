@@ -1308,10 +1308,6 @@ Please keep request rate to approximately 1/s.
         description: 'Get stats about hero performance in recent matches',
         tags: ['hero stats'],
         parameters: [
-          params.minMmrParam,
-          params.maxMmrParam,
-          params.minTimeParam,
-          params.maxTimeParam,
         ],
         responses: {
           200: {
