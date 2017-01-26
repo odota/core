@@ -1330,7 +1330,7 @@ Please keep request rate to approximately 1/s.
           // key by current month
           // fetch based on current month
           const key = moment().startOf('month').format('X');
-          redis.get('heroStats:' + key, (err, result) => {
+          redis.get(`heroStats:${key}`, (err, result) => {
             if (err) {
               return cb(err);
             }

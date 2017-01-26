@@ -38,8 +38,7 @@ function invokeInterval(func, delay) {
         if (err) {
           // log the error, but wait until next interval to retry
           console.error(err);
-        }
-        else {
+        } else {
           // mark success, don't redo until this key expires
           redis.setex(`worker:${func.name}`, (delay / 1000) * 0.9, '1');
         }
@@ -53,11 +52,11 @@ function invokeInterval(func, delay) {
 function doBuildSets(cb) {
   buildSets(db, redis, cb);
 }
-
+/*
 function doMMStats(cb) {
   getMMStats(redis, cb);
 }
-
+*/
 function doDistributions(cb) {
   function loadData(key, mapFunc, cb) {
     db.raw(sql[key]).asCallback((err, results) => {
@@ -253,7 +252,7 @@ function doCosmetics(cb) {
       return async.eachLimit(Object.keys(itemData.items_game.items), 5, (itemId, cb) => {
         const item = itemData.items_game.items[itemId];
         item.item_id = Number(itemId);
-        const hero = item.used_by_heroes && typeof(item.used_by_heroes) === 'object' && Object.keys(item.used_by_heroes)[0];
+        const hero = item.used_by_heroes && typeof (item.used_by_heroes) === 'object' && Object.keys(item.used_by_heroes)[0];
 
         function insert(cb) {
           // console.log(item);
@@ -374,7 +373,7 @@ function doHeroStats(cb) {
           } : row);
       });
     });
-    return redis.set('heroStats:' + minTime, JSON.stringify(objectResponse), cb);
+    return redis.set(`heroStats:${minTime}`, JSON.stringify(objectResponse), cb);
   });
 }
 
