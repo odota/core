@@ -38,7 +38,8 @@ function invokeInterval(func, delay) {
         if (err) {
           // log the error, but wait until next interval to retry
           console.error(err);
-        } else {
+        }
+        else {
           // mark success, don't redo until this key expires
           redis.setex(`worker:${func.name}`, (delay / 1000) * 0.9, '1');
         }
@@ -157,9 +158,9 @@ function doLeagues(cb) {
         5027 - Boston Major Open Qualifier
         */
         const excludedLeagues = [4177, 4649, 4325, 4768, 3990, 4181, 5027];
-        if ((l.tier === 'professional' || l.tier === 'premium')
-          && !excludedLeagues.includes(Number(l.leagueid))
-          && l.name.indexOf('Open Qualifier') === -1) {
+        if ((l.tier === 'professional' || l.tier === 'premium') &&
+          !excludedLeagues.includes(Number(l.leagueid)) &&
+          l.name.indexOf('Open Qualifier') === -1) {
           redis.sadd('pro_leagueids', l.leagueid);
         }
         queries.upsert(db, 'leagues', l, {
@@ -252,7 +253,7 @@ function doCosmetics(cb) {
       return async.eachLimit(Object.keys(itemData.items_game.items), 5, (itemId, cb) => {
         const item = itemData.items_game.items[itemId];
         item.item_id = Number(itemId);
-        const hero = item.used_by_heroes && typeof (item.used_by_heroes) === 'object' && Object.keys(item.used_by_heroes)[0];
+        const hero = item.used_by_heroes && typeof(item.used_by_heroes) === 'object' && Object.keys(item.used_by_heroes)[0];
 
         function insert(cb) {
           // console.log(item);
@@ -299,8 +300,86 @@ function doTelemetryCleanup(cb) {
   redis.zremrangebyscore('requests', 0, moment().subtract(1, 'day').format('X'));
   cb();
 }
+
+function doHeroStats(cb) {
+  const now = moment();
+  const minTime = now.startOf('month').format('X');
+  const maxTime = now.endOf('month').format('X');
+  async.parallel({
+    publicHeroes(cb) {
+      db.raw(`
+              SELECT
+              LEAST(avg_mmr / 1000 * 1000, 5000) as avg_mmr_bucket,
+              sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as win, 
+              count(*) as pick,
+              hero_id 
+              FROM public_player_matches 
+              JOIN 
+              (SELECT * FROM public_matches
+              TABLESAMPLE SYSTEM_ROWS(50000)
+              WHERE start_time > ?
+              AND start_time < ?
+              ORDER BY match_id desc) 
+              matches_list USING(match_id)
+              WHERE hero_id > 0
+              GROUP BY avg_mmr_bucket, hero_id
+              ORDER BY hero_id
+          `, [minTime, maxTime])
+        .asCallback(cb);
+    },
+    proHeroes(cb) {
+      db.raw(`
+              SELECT 
+              sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
+              count(*) as pro_pick,
+              hero_id
+              FROM player_matches
+              JOIN matches USING(match_id)
+              WHERE hero_id > 0
+              AND start_time > ?
+              AND start_time < ?
+              GROUP BY hero_id
+              ORDER BY hero_id
+          `, [minTime, maxTime])
+        .asCallback(cb);
+    },
+    proBans(cb) {
+      db.raw(`
+              SELECT 
+              count(*) as pro_ban,
+              hero_id
+              FROM picks_bans
+              JOIN matches USING(match_id)
+              WHERE hero_id > 0
+              AND start_time > ?
+              AND start_time < ?
+              AND is_pick IS FALSE
+              GROUP BY hero_id
+              ORDER BY hero_id
+          `, [minTime, maxTime])
+        .asCallback(cb);
+    },
+  }, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    // Build object keyed by hero_id for each result array
+    const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
+    Object.keys(result).forEach((key) => {
+      result[key].rows.forEach((row) => {
+        objectResponse[row.hero_id] = Object.assign({}, objectResponse[row.hero_id],
+          key === 'publicHeroes' ? {
+            [`${row.avg_mmr_bucket}_pick`]: row.pick,
+            [`${row.avg_mmr_bucket}_win`]: row.win,
+          } : row);
+      });
+    });
+    return redis.set('heroStats:' + minTime, JSON.stringify(objectResponse), cb);
+  });
+}
+
 invokeInterval(doBuildSets, 60 * 1000);
-invokeInterval(doMMStats, config.MMSTATS_DATA_INTERVAL * 60 * 1000); // Sample every 3 minutes
+// invokeInterval(doMMStats, config.MMSTATS_DATA_INTERVAL * 60 * 1000); // Sample every 3 minutes
 invokeInterval(doDistributions, 60 * 60 * 1000 * 6);
 invokeInterval(doQueueCleanup, 60 * 60 * 1000);
 invokeInterval(doProPlayers, 30 * 60 * 1000);
@@ -310,3 +389,4 @@ invokeInterval(doHeroes, 60 * 60 * 1000);
 invokeInterval(doItems, 60 * 60 * 1000);
 invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);
 invokeInterval(doTelemetryCleanup, 3 * 60 * 1000);
+invokeInterval(doHeroStats, 6 * 60 * 60 * 1000);

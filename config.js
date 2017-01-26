@@ -50,7 +50,7 @@ const defaults = {
   MMR_PARALLELISM: 10, // Number of simulataneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
   PLAYER_MATCH_LIMIT: 50000, // max results to return from player matches
-  BENCHMARK_RETENTION_MINUTES: 60, // minutes in block to retain benchmark data for percentile
+  BENCHMARK_RETENTION_MINUTES: 30, // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: 0, // percent of inserted matches to queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
