@@ -1649,7 +1649,7 @@ Please keep request rate to approximately 1/s.
     },
     '/request/{jobId}': {
       get: {
-        summary: 'GET /request',
+        summary: 'GET /request/{jobId}',
         description: 'Get parse request state',
         tags: ['request'],
         parameters: [{
