@@ -245,7 +245,6 @@ function getMmrEstimate(db, redis, accountId, cb) {
 function getMatchesSkill(db, matches, options, cb) {
   // fill in skill data from table
   // only necessary if reading from cache since adding skill data doesn't update cache
-  console.time('[PLAYER] fillSkill');
   // get skill data for matches within cache expiry (might not have skill data)
   /*
   var recents = matches.filter(function(m)
@@ -269,7 +268,6 @@ function getMatchesSkill(db, matches, options, cb) {
     matches.forEach((m) => {
       m.skill = m.skill || skillMap[m.match_id];
     });
-    console.timeEnd('[PLAYER] fillSkill');
     return cb(err, matches);
   });
 }
