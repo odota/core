@@ -379,7 +379,7 @@ function doHeroStats(cb) {
 
 invokeInterval(doBuildSets, 60 * 1000);
 // invokeInterval(doMMStats, config.MMSTATS_DATA_INTERVAL * 60 * 1000); // Sample every 3 minutes
-invokeInterval(doDistributions, 60 * 60 * 1000 * 6);
+invokeInterval(doDistributions, 6 * 60 * 60 * 1000);
 invokeInterval(doQueueCleanup, 60 * 60 * 1000);
 invokeInterval(doProPlayers, 30 * 60 * 1000);
 invokeInterval(doLeagues, 30 * 60 * 1000);
@@ -388,4 +388,4 @@ invokeInterval(doHeroes, 60 * 60 * 1000);
 invokeInterval(doItems, 60 * 60 * 1000);
 invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);
 invokeInterval(doTelemetryCleanup, 3 * 60 * 1000);
-invokeInterval(doHeroStats, 6 * 60 * 60 * 1000);
+invokeInterval(doHeroStats, 60 * 60 * 1000);
