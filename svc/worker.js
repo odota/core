@@ -308,7 +308,7 @@ function doHeroStats(cb) {
     publicHeroes(cb) {
       db.raw(`
               SELECT
-              LEAST(GREATEST(avg_mmr / 1000 * 1000, 2000), 5000) as avg_mmr,
+              LEAST(GREATEST(avg_mmr / 1000 * 1000, 1000), 5000) as avg_mmr,
               sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as win, 
               count(*) as pick,
               hero_id 
