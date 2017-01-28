@@ -112,3 +112,7 @@ if (config.START_SEQ_NUM) {
 } else {
   throw new Error('failed to initialize sequence number');
 }
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  throw p;
+});
