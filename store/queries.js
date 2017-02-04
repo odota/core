@@ -1014,7 +1014,7 @@ function insertMatch(match, options, cb) {
 
   function decideGcData(cb) {
     // TODO use reliable queue
-    if (options.origin === 'scanner' && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
+    if (options.origin === 'scanner' && utility.isSignificant(match) && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
       redis.lpush('gcQueue', JSON.stringify({
         match_id: match.match_id,
       }));
@@ -1030,7 +1030,7 @@ function insertMatch(match, options, cb) {
   }
 
   function decideReplayParse(cb) {
-    if (options.skipParse) {
+    if (options.skipParse || !utility.isSignificant(match)) {
       // not parsing this match
       return cb();
     }
