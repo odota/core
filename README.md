@@ -4,6 +4,7 @@ core
 Overview
 ----
 * This project provides the [OpenDota API](https://docs.opendota.com/) for consumption.
+* This API powers the [OpenDota UI](https://www.opendota.com)
 * Raw data comes from the WebAPI provided by Valve and fully automated parsing of match replays (.dem files).
 * A public deployment of this code is maintained by The OpenDota Project.
 
