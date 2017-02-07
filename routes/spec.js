@@ -1322,11 +1322,8 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/heroStats',
         func: (req, res, cb) => {
-          // fetch from cached redis values
-          // key by current month
-          // fetch based on current month
-          const key = moment().startOf('month').format('X');
-          redis.get(`heroStats:${key}`, (err, result) => {
+          // fetch from cached redis value
+          redis.get(`heroStats`, (err, result) => {
             if (err) {
               return cb(err);
             }

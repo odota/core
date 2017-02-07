@@ -373,7 +373,7 @@ function doHeroStats(cb) {
           } : row);
       });
     });
-    return redis.set(`heroStats:${minTime}`, JSON.stringify(Object.keys(objectResponse).map(key => objectResponse[key])), cb);
+    return redis.set(`heroStats`, JSON.stringify(Object.keys(objectResponse).map(key => objectResponse[key])), cb);
   });
 }
 
