@@ -1323,7 +1323,7 @@ Please keep request rate to approximately 1/s.
         route: () => '/heroStats',
         func: (req, res, cb) => {
           // fetch from cached redis value
-          redis.get(`heroStats`, (err, result) => {
+          redis.get('heroStats', (err, result) => {
             if (err) {
               return cb(err);
             }
