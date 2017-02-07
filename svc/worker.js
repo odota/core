@@ -301,9 +301,8 @@ function doTelemetryCleanup(cb) {
 }
 
 function doHeroStats(cb) {
-  const now = moment();
-  const minTime = now.subtract(30, 'day').format('X');
-  const maxTime = now.format('X');
+  const minTime = moment().subtract(30, 'day').format('X');
+  const maxTime = moment().format('X');
   async.parallel({
     publicHeroes(cb) {
       db.raw(`
