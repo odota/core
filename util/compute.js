@@ -187,7 +187,6 @@ function computeMatchData(pm) {
   }
   if (pm.purchase) {
     // account for stacks
-    pm.purchase.ward_sentry *= 2;
     pm.purchase.dust *= 2;
     pm.purchase_ward_observer = pm.purchase.ward_observer;
     pm.purchase_ward_sentry = pm.purchase.ward_sentry;
