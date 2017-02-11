@@ -7,6 +7,7 @@ const db = require('../store/db');
 const cassandra = require('../store/cassandra');
 const utility = require('../util/utility');
 const request = require('request');
+const queue = require('../store/queue');
 
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
@@ -70,6 +71,18 @@ function seqNumDelay(cb) {
   });
 }
 
+function parseDelay(cb) {
+  queue.getCounts(redis, (err, counts) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, {
+      metric: counts.parse.wait,
+      threshold: 1000,
+    });
+  });
+}
+
 function postgresUsage(cb) {
   db.raw('select pg_database_size(\'yasp\')').asCallback((err, result) => {
     if (err) {
@@ -113,6 +126,7 @@ function redisUsage(cb) {
 const health = {
   steamApi,
   seqNumDelay,
+  parseDelay,
   postgresUsage,
   cassandraUsage,
   redisUsage,
