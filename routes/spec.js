@@ -1242,7 +1242,8 @@ Please keep request rate to approximately 1/s.
           radiant_team_id, radiant.name as radiant_name, 
           dire_team_id, dire.name as dire_name, 
           leagueid, leagues.name as league_name,
-          series_id, series_type
+          series_id, series_type,
+          radiant_win
           FROM matches
           LEFT JOIN teams radiant
           ON radiant.team_id = matches.radiant_team_id
