@@ -196,6 +196,13 @@ const params = {
     required: false,
     type: 'integer',
   },
+  mmrAscendingParam: {
+    name: 'mmr_ascending',
+    in: 'query',
+    description: 'Order by MMR ascending',
+    required: false,
+    type: 'integer',
+  }
 };
 
 const playerParams = [
@@ -1258,13 +1265,10 @@ Please keep request rate to approximately 1/s.
     '/publicMatches': {
       get: {
         summary: 'GET /publicMatches',
-        description: 'Get list of randomly sampled public matches',
+        description: 'Get list of randomly sampled public matches ordered by MMR',
         tags: ['public matches'],
         parameters: [
-          params.minMmrParam,
-          params.maxMmrParam,
-          params.minTimeParam,
-          params.maxTimeParam,
+          params.mmrAscendingParam
         ],
         responses: {
           200: {
@@ -1279,20 +1283,14 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/publicMatches',
         func: (req, res, cb) => {
-          const minMmr = req.query.min_mmr || 0;
-          const maxMmr = req.query.max_mmr || Math.pow(2, 31) - 1;
-          const minTime = req.query.min_time || 0;
-          const maxTime = req.query.max_time || Math.pow(2, 31) - 1;
+          const minTime = moment().subtract(7, 'day').format('X');
+          const order = params.mmrAscending ? 'ASC' : 'DESC';
           db.raw(`
           SELECT * FROM public_matches
-          WHERE TRUE
-          AND avg_mmr > ?
-          AND avg_mmr < ?
-          AND start_time > ?
-          AND start_time < ?
-          ORDER BY match_id desc
+          WHERE start_time > ?
+          ORDER BY avg_mmr ${order}
           LIMIT 100
-          `, [minMmr, maxMmr, minTime, maxTime])
+          `, [minTime])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
