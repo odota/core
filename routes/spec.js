@@ -1284,7 +1284,7 @@ Please keep request rate to approximately 1/s.
         route: () => '/publicMatches',
         func: (req, res, cb) => {
           const minTime = moment().subtract(7, 'day').format('X');
-          const order = params.mmrAscending ? 'ASC' : 'DESC';
+          const order = req.query.mmr_ascending ? 'ASC' : 'DESC';
           db.raw(`
           SELECT * FROM public_matches
           WHERE start_time > ?
