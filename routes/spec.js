@@ -202,7 +202,7 @@ const params = {
     description: 'Order by MMR ascending',
     required: false,
     type: 'integer',
-  }
+  },
 };
 
 const playerParams = [
@@ -1268,7 +1268,7 @@ Please keep request rate to approximately 1/s.
         description: 'Get list of randomly sampled public matches ordered by MMR',
         tags: ['public matches'],
         parameters: [
-          params.mmrAscendingParam
+          params.mmrAscendingParam,
         ],
         responses: {
           200: {
