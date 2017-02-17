@@ -1287,10 +1287,19 @@ Please keep request rate to approximately 1/s.
           const minTime = moment().subtract(7, 'day').format('X');
           const order = req.query.mmr_ascending ? 'ASC' : 'DESC';
           db.raw(`
-          SELECT * FROM public_matches
+          WITH match_ids AS (SELECT match_id FROM public_matches
           WHERE start_time > ?
           ORDER BY avg_mmr ${order}
-          LIMIT 100
+          LIMIT 100)
+          SELECT * FROM
+          (SELECT * FROM public_matches
+          WHERE match_id IN (SELECT match_id FROM match_ids)) matches
+          JOIN 
+          (SELECT match_id, string_agg(hero_id::text, ',') radiant_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot <= 127 GROUP BY match_id) radiant_team
+          USING(match_id)
+          JOIN
+          (SELECT match_id, string_agg(hero_id::text, ',') dire_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot > 127 GROUP BY match_id) dire_team
+          USING(match_id)
           `, [minTime])
             .asCallback((err, result) => {
               if (err) {
