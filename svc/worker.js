@@ -314,7 +314,7 @@ function doHeroStats(cb) {
               FROM public_player_matches 
               JOIN 
               (SELECT * FROM public_matches
-              TABLESAMPLE SYSTEM_ROWS(2000000)
+              TABLESAMPLE SYSTEM_ROWS(3000000)
               WHERE start_time > ?
               AND start_time < ?)
               matches_list USING(match_id)
