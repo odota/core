@@ -4,6 +4,11 @@ const significantModifiers = {
   modifier_silence: 1,
 };
 
+const insignificantDeaths = [
+  'npc_dota_creep',
+  'npc_dota_neutral',
+];
+
 function translate(s) {
   return s === 'dota_unknown' ? null : s;
 }
@@ -14,11 +19,8 @@ function translate(s) {
 function processReduce(entries, meta) {
   const result = entries.filter((e) => {
     if (e.type === 'DOTA_COMBATLOG_PURCHASE' ||
-      e.type === 'DOTA_COMBATLOG_ABILITY' ||
-      e.type === 'DOTA_COMBATLOG_ITEM' ||
-      e.type === 'DOTA_COMBATLOG_PLAYERSTATS' ||
       e.type === 'DOTA_COMBATLOG_BUYBACK' ||
-      e.type === 'DOTA_COMBATLOG_DEATH' ||
+      (e.type === 'DOTA_COMBATLOG_DEATH' && insignificantDeaths.every(prefix => e.targetname.indexOf(prefix) !== 0)) ||
       (e.type === 'DOTA_COMBATLOG_MODIFIER_ADD' && significantModifiers[e.inflictor] && e.targethero) ||
       // (e.type === 'DOTA_COMBATLOG_DAMAGE' && e.targethero) ||
       (e.type === 'DOTA_COMBATLOG_HEAL' && e.targethero) ||
