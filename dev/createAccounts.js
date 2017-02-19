@@ -1,3 +1,4 @@
+/* eslint-disable */
 const Steam = require('steam');
 const SteamUser = require('steam-user');
 const async = require('async');
