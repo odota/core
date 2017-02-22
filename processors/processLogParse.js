@@ -52,7 +52,7 @@ function processReduce(entries, meta) {
       targetname_slot: meta.slot_to_playerslot[meta.hero_to_slot[e.targetname]],
       sourcename_slot: meta.slot_to_playerslot[meta.hero_to_slot[e.sourcename]],
       targetsourcename_slot: meta.slot_to_playerslot[meta.hero_to_slot[e.targetname]],
-      player1_slot: meta.slot_to_playerslot[meta.slot_to_playerslot[e.player1]],
+      player1_slot: meta.slot_to_playerslot[e.player1],
       player_slot: e.player_slot || meta.slot_to_playerslot[e.slot],
       inflictor: translate(e.inflictor),
     });
