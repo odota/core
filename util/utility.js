@@ -314,7 +314,9 @@ function isProMatch(match, redis, cb) {
   && match.human_players === 10
   && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2)
   && match.players
-  && match.players.every(p => p.hero_id > 0)) {
+  && match.players.every(player => player.level > 1)
+  && match.players.every(player => player.xp_per_min > 0)
+  && match.players.every(player => player.hero_id > 0)) {
     redis.sismember('pro_leagueids', match.leagueid, cb);
   } else {
     cb(null, false);
