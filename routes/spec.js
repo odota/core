@@ -1885,6 +1885,35 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    '/teams': {
+      get: {
+        summary: 'GET /teams',
+        description: 'Get team data',
+        tags: ['teams'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        route: () => '/teams',
+        func: (req, res, cb) => {
+          db.select()
+            .from('teams')
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
+        },
+      },
+    },
     '/replays': {
       get: {
         summary: 'GET /replays',
