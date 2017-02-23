@@ -98,13 +98,13 @@ def createGroups(zoneList):
     # Set instance template
     subprocess.call("gcloud compute instance-groups managed set-instance-template {} --quiet --zone={} --template={}".format(instancegroupname, zone, templatename), shell=True)
     # Add it to backend
-    subprocess.call("gcloud compute backend-services add-backend {} --quiet --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
+    subprocess.call("gcloud compute backend-services add-backend {} --quiet --global --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
     # Configure load balancing policy
-    subprocess.call("gcloud compute backend-services update-backend {} --quiet --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1 --capacity-scaler={}".format(backendname, instancegroupname, zone, 0.5), shell=True)
-    # Scale to 0 (recreate instances)
+    subprocess.call("gcloud compute backend-services update-backend {} --quiet --global --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1 --capacity-scaler={}".format(backendname, instancegroupname, zone, 0.5), shell=True)
+    # Scale (0 to recreate instances)
     subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
-    # Set autoscaler
-    subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 0, 0), shell=True)
+    # Set autoscaler (0, 0 to empty group)
+    subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 1, 30), shell=True)
 
 def start():
   # Get the available zones
@@ -114,7 +114,7 @@ def start():
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   # zoneList = sorted(zoneList, key=lambda x: x[-1])
-  # zoneList = ['us-central1-b', 'us-east1-b', 'us-west1-b']
+  zoneList = ['us-central1-b', 'us-east1-b', 'us-west1-b']
   createGroups(zoneList)
   # run1(zoneList)
   # run2(zoneList)
