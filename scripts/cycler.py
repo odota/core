@@ -8,7 +8,7 @@ import time
 # For completeness this should also create the backend, HTTP load balancer, template, and network
 targetsize = 6
 backendname = "retriever"
-templatename = "retriever-8"
+templatename = "retriever-1"
 
 # Single distribution
 def run1(zoneList):
@@ -90,6 +90,7 @@ def run4(zoneList):
     subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
 
 def createGroups(zoneList):
+  filteredZoneList = filter(lambda s: s.startswith('us-'), zoneList)
   for i, zone in enumerate(zoneList):
     instancegroupname = "retriever-group-" + zone
     print i, zone, instancegroupname
@@ -100,12 +101,15 @@ def createGroups(zoneList):
     # Add it to backend
     subprocess.call("gcloud compute backend-services add-backend {} --quiet --global --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
     # Configure load balancing policy
-    subprocess.call("gcloud compute backend-services update-backend {} --quiet --global --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1 --capacity-scaler={}".format(backendname, instancegroupname, zone, 0.5), shell=True)
+    subprocess.call("gcloud compute backend-services update-backend {} --quiet --global --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1 --capacity-scaler={}".format(backendname, instancegroupname, zone, 0.3), shell=True)
     # Scale (0 to recreate instances)
     subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
-    # Set autoscaler (0, 0 to empty group)
-    subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 1, 30), shell=True)
-
+    if zone in filteredZoneList:
+      # Set autoscaler (0, 0 to empty group)
+      subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 1, 10), shell=True)
+    else:
+      subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 0, 0), shell=True)
+      
 def start():
   # Get the available zones
   zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
@@ -114,17 +118,17 @@ def start():
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   # zoneList = sorted(zoneList, key=lambda x: x[-1])
-  zoneList = ['us-central1-b', 'us-east1-b', 'us-west1-b']
   createGroups(zoneList)
-  # run1(zoneList)
-  # run2(zoneList)
-  # run3(zoneList)
-  # run4(zoneList)
-  
-start()
+  while True:
+    try:
+      # run1(zoneList)
+      # run2(zoneList)
+      # run3(zoneList)
+      # run4(zoneList)
+      pass
+    except KeyboardInterrupt:
+      raise
+    except:
+      time.sleep(5)
 
-#while True:
-#  try:
-#    start()
-#  except:
-#    pass
+start();
