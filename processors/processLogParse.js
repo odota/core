@@ -40,8 +40,7 @@ function processReduce(entries, meta) {
       e.type === 'sen' ||
       e.type === 'obs_left' ||
       e.type === 'sen_left' ||
-      e.type === 'chat' ||
-      (e.type === 'interval' && e.time % 60 === 0)) {
+      e.type === 'chat') {
       return Boolean(e.time);
     }
     return false;
