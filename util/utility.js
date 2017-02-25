@@ -273,9 +273,9 @@ function mergeObjects(merge, val) {
 }
 
 /**
- * Finds the mode of the input array
+ * Finds the mode and its occurances of the input array
  **/
-function mode(array) {
+function modeWithCount(array) {
   if (!array.length) return null;
   const modeMap = {};
   let maxEl = array[0];
@@ -289,7 +289,7 @@ function mode(array) {
       maxCount = modeMap[el];
     }
   }
-  return maxEl;
+  return { mode: maxEl, count: maxCount };
 }
 
 /**
@@ -705,12 +705,22 @@ function getLaneFromPosData(lanePos, isRadiant) {
       }
     });
   });
-  const lane = mode(lanes);
+  const laneWithCount = modeWithCount(lanes);
+  let { mode: lane } = laneWithCount;
+  const { count } = laneWithCount;
+  const allPositions = lanes.length;
+  const presenceRatio = count / allPositions;
+  if (presenceRatio < 0.45) {
+    // Roaming
+    lane = 6;
+  }
+
   // Roles, currently doesn't distinguish between carry/support in safelane
   // 1 safelane
   // 2 mid
   // 3 offlane
   // 4 jungle
+  // 5 roaming
   const laneRoles = {
     // bot
     1: isRadiant ? 1 : 3,
@@ -722,6 +732,8 @@ function getLaneFromPosData(lanePos, isRadiant) {
     4: 4,
     // dire jungle
     5: 4,
+    // roaming
+    6: 5,
   };
   return {
     lane,
@@ -753,7 +765,7 @@ module.exports = {
   convert64to32,
   isRadiant,
   mergeObjects,
-  mode,
+  modeWithCount,
   isSignificant,
   max,
   min,
