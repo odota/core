@@ -374,6 +374,7 @@ function getAggs() {
     neutral_kills: 'parsed',
     lane: 'parsed',
     lane_role: 'parsed',
+    is_roaming: 'parsed',
     obs: 'parsed',
     sen: 'parsed',
     item_uses: 'parsed',
