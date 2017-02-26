@@ -89,7 +89,7 @@ def start():
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   # zoneList = sorted(zoneList, key=lambda x: x[-1])
-  zoneList = filter(lambda s: s.startswith('us-'), zoneList)
+  zoneList = filter(lambda s: s.startswith('us-') or s.startswith('europe-'), zoneList)
   while True:
     try:
       run1(zoneList)
