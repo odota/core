@@ -6,11 +6,11 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 6
+targetsize = 8
 backendname = "retriever"
 templatename = "retriever-1"
 
-# Single distribution
+# Rotating single group
 def run1(zoneList):
   while True:
     # Scale the instance group if it's the correct bucket
@@ -20,7 +20,11 @@ def run1(zoneList):
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
       # Invert to cycle through in reverse order, so we create new instances before deleting old ones
-      size = targetsize if i == (len(zoneList) - bucket) else 0
+      size = targetsize * len(zoneList) if i == (len(zoneList) - bucket - 1) else 0
+      minsize = 1 if i == (len(zoneList) - bucket - 1) else 0
+      print bucket, size, minsize
+      subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
+      #subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, minsize, size), shell=True)
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
       # if size > 0:
       #   # Iterate over instances in the group
@@ -37,7 +41,7 @@ def run1(zoneList):
       #     subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
     time.sleep(600)
 
-# Staggered distribution
+# Rolling group
 def run2(zoneList):
   pool = cycle(zoneList)
   while True:
@@ -51,46 +55,16 @@ def run2(zoneList):
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(nextinstancegroupname, nextzone, nextsize), shell=True)
       time.sleep(300)
 
-# Even distribution, IP cycling
+# Even distribution
 def run3(zoneList):
   while True:
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
-      # Scale to target
-      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
-      # Delete the static IP
-      # subprocess.call("gcloud compute addresses delete {} --quiet --region={}".format(zone, zone[:-2]), shell=True)
-      # Create a static IP
-      # subprocess.call("gcloud compute addresses create {} --region={}".format(zone, zone[:-2]), shell=True)
-      # Iterate over instances in the group
-      # instancesCmd = "gcloud compute instance-groups managed list-instances {} --zone={} --format='value(NAME)'".format(instancegroupname, zone);
-      # print instancesCmd
-      # instances = subprocess.check_output(instancesCmd, shell=True)
-      # instanceList = instances.strip().split('\n')
-      # for i, instance in enumerate(instanceList):
-      #   # Delete access config
-      #   subprocess.call("gcloud compute instances delete-access-config {} --quiet --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
-      #   # Use static IP
-      #   # subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --address={} --zone={}".format(instance, "external-nat", zone, zone), shell=True)
-      #   # Delete access config
-      #   # subprocess.call("gcloud compute instances delete-access-config {} --quiet --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
-      #   # Use ephemeral IP
-      #   subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
-      #   # Restart the instance
-      #   # subprocess.call("gloud compute instances reset {} --quiet --zone={}".format(instance, zone), shell=True)
-      # # Delete the static IP
-      # # subprocess.call("gcloud compute addresses delete {} --quiet --region={}".format(zone, zone[:-2]), shell=True)
-    time.sleep(600)
-
-# Even distribution
-def run4(zoneList):
-  for i, zone in enumerate(zoneList):
-    instancegroupname = "retriever-group-" + zone
-    # Scale to target
-    subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
-
+      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
+      subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 1, targetsize), shell=True)
+    time.sleep(3600)
+    
 def createGroups(zoneList):
-  filteredZoneList = filter(lambda s: s.startswith('us-'), zoneList)
   for i, zone in enumerate(zoneList):
     instancegroupname = "retriever-group-" + zone
     print i, zone, instancegroupname
@@ -101,34 +75,31 @@ def createGroups(zoneList):
     # Add it to backend
     subprocess.call("gcloud compute backend-services add-backend {} --quiet --global --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
     # Configure load balancing policy
-    subprocess.call("gcloud compute backend-services update-backend {} --quiet --global --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1 --capacity-scaler={}".format(backendname, instancegroupname, zone, 0.3), shell=True)
+    subprocess.call("gcloud compute backend-services update-backend {} --quiet --global --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance=1 --capacity-scaler={}".format(backendname, instancegroupname, zone, 1), shell=True)
     # Scale (0 to recreate instances)
-    subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
-    if zone in filteredZoneList:
-      # Set autoscaler (0, 0 to empty group)
-      subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 1, 10), shell=True)
-    else:
-      subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 0, 0), shell=True)
+    #subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
+    #subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
       
 def start():
   # Get the available zones
   zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
   zoneList = zones.strip().split('\n')
+  # createGroups(zoneList)
   # sort by zone (alphabetical)
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   # zoneList = sorted(zoneList, key=lambda x: x[-1])
-  createGroups(zoneList)
+  zoneList = filter(lambda s: s.startswith('us-'), zoneList)
   while True:
     try:
-      # run1(zoneList)
+      run1(zoneList)
       # run2(zoneList)
       # run3(zoneList)
-      # run4(zoneList)
       pass
     except KeyboardInterrupt:
       raise
-    except:
-      time.sleep(5)
+    except Exception as e:
+      print(e)
+      time.sleep(600)
 
 start();
