@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 8
+targetsize = 5
 backendname = "retriever"
 templatename = "retriever-1"
 
@@ -79,7 +79,7 @@ def createGroups(zoneList):
     # Scale (0 to recreate instances)
     #subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
     #subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
-      
+
 def start():
   # Get the available zones
   zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
@@ -88,8 +88,8 @@ def start():
   # sort by zone (alphabetical)
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
-  # zoneList = sorted(zoneList, key=lambda x: x[-1])
-  zoneList = filter(lambda s: s.startswith('us-') or s.startswith('europe-'), zoneList)
+  zoneList = sorted(zoneList, key=lambda x: x[-1])
+  # zoneList = filter(lambda s: s.startswith('us-') or s.startswith('europe-'), zoneList)
   while True:
     try:
       run1(zoneList)
