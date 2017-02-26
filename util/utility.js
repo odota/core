@@ -273,9 +273,9 @@ function mergeObjects(merge, val) {
 }
 
 /**
- * Finds the mode of the input array
+ * Finds the mode and its occurances of the input array
  **/
-function mode(array) {
+function modeWithCount(array) {
   if (!array.length) return null;
   const modeMap = {};
   let maxEl = array[0];
@@ -289,7 +289,11 @@ function mode(array) {
       maxCount = modeMap[el];
     }
   }
-  return maxEl;
+  return { mode: maxEl, count: maxCount };
+}
+
+function mode(array) {
+  return modeWithCount(array).mode;
 }
 
 /**
@@ -374,6 +378,7 @@ function getAggs() {
     neutral_kills: 'parsed',
     lane: 'parsed',
     lane_role: 'parsed',
+    is_roaming: 'parsed',
     obs: 'parsed',
     sen: 'parsed',
     item_uses: 'parsed',
@@ -705,7 +710,14 @@ function getLaneFromPosData(lanePos, isRadiant) {
       }
     });
   });
-  const lane = mode(lanes);
+  const { mode: lane, count } = modeWithCount(lanes);
+  /**
+  * Player presence on lane. Calculated by the count of the prominant
+  * lane (`count` of mode) divided by the presence on all lanes (`lanes.length`).
+  * Having low presence (<45%) probably means the player is roaming.
+  **/
+  const isRoaming = (count / lanes.length) < 0.45;
+
   // Roles, currently doesn't distinguish between carry/support in safelane
   // 1 safelane
   // 2 mid
@@ -726,6 +738,7 @@ function getLaneFromPosData(lanePos, isRadiant) {
   return {
     lane,
     lane_role: laneRoles[lane],
+    is_roaming: isRoaming,
   };
 }
 
@@ -753,6 +766,7 @@ module.exports = {
   convert64to32,
   isRadiant,
   mergeObjects,
+  modeWithCount,
   mode,
   isSignificant,
   max,

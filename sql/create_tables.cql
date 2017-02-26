@@ -139,6 +139,7 @@ CREATE TABLE player_caches (
   neutral_kills text,
   lane text,
   lane_role text,
+  is_roaming text,
   obs text,
   sen text,
   item_uses text,

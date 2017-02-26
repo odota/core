@@ -159,6 +159,7 @@ function computeMatchData(pm) {
     const laneData = utility.getLaneFromPosData(pm.lane_pos, isRadiant(pm));
     pm.lane = laneData.lane;
     pm.lane_role = laneData.lane_role;
+    pm.is_roaming = laneData.is_roaming;
   }
   // compute hashes of purchase time sums and counts from logs
   if (pm.purchase_log) {
