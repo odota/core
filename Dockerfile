@@ -1,4 +1,6 @@
-FROM node:6.9.0
+FROM node:7.6.0-alpine
+
+RUN apk update && apk add bash
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
