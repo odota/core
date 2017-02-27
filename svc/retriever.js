@@ -102,7 +102,7 @@ function getGcMatchData(idx, matchId, cb) {
   }
   const timeout = setTimeout(() => {
     timeouts += 1;
-    matchRequestDelay += 20;
+    matchRequestDelay += 40;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     matchSuccesses += 1;
