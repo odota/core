@@ -16,6 +16,8 @@ const express = require('express');
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
+const async = require('async');
+const uuidV4 = require('uuid/v4');
 
 const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
@@ -67,7 +69,8 @@ app.use((req, res, cb) => {
   console.log('%s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   redis.multi().incr(key).expireat(key, utility.getStartOfBlockMinutes(1, 1)).exec((err, resp) => {
     if (err) {
-      return cb(err);
+      console.log(err);
+      return cb();
     }
     if (config.NODE_ENV === 'development') {
       console.log(resp);
@@ -83,21 +86,45 @@ app.use((req, res, cb) => {
 // Telemetry middleware
 app.use((req, res, cb) => {
   const timeStart = new Date();
-  if (req.originalUrl.indexOf('/api') === 0) {
-    redis.zadd('api_hits', moment().format('X'), req.originalUrl);
-  }
-  if (req.user && req.user.account_id) {
-    redis.zadd('visitors', moment().format('X'), req.user.account_id);
-    redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id);
-  }
   res.once('finish', () => {
     const timeEnd = new Date();
     const elapsed = timeEnd - timeStart;
     if (elapsed > 1000 || config.NODE_ENV === 'development') {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
-    redis.lpush('load_times', elapsed);
-    redis.ltrim('load_times', 0, 9999);
+    async.series({
+      api_hit: (cb) => {
+        if (req.originalUrl.indexOf('/api') === 0) {
+          redis.zadd('api_hits', moment().format('X'), `${uuidV4()}:${req.originalUrl}`, cb);
+        } else {
+          cb();
+        }
+      },
+      visitors: (cb) => {
+        if (req.user && req.user.account_id) {
+          redis.zadd('visitors', moment().format('X'), req.user.account_id, cb);
+        } else {
+          cb();
+        }
+      },
+      tracked: (cb) => {
+        if (req.user && req.user.account_id) {
+          redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id, cb);
+        } else {
+          cb();
+        }
+      },
+      load_add: (cb) => {
+        redis.lpush('load_times', elapsed, cb);
+      },
+      load_trim: (cb) => {
+        redis.ltrim('load_times', 0, 9999, cb);
+      },
+    }, (err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
   });
   cb();
 });
@@ -137,7 +164,7 @@ app.use((req, res) =>
 );
 // 500 route
 app.use((err, req, res, cb) => {
-  redis.zadd('error_500', moment().format('X'), req.originalUrl);
+  redis.zadd('error_500', moment().format('X'), `${uuidV4()}:${req.originalUrl}`);
   if (config.NODE_ENV === 'development') {
     // default express handler
     return cb(err);

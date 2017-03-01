@@ -29,10 +29,10 @@ function search(options, cb) {
         (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS similarity
         FROM players 
         WHERE personaname % ? 
-        AND similarity(personaname, ?) > ?
+        AND similarity(personaname, ?) >= ?
         LIMIT 500) search 
         ORDER BY similarity DESC;
-        `, [query, query, query, options.similarity || 0.4]).asCallback((err, result) => {
+        `, [query, query, query, options.similarity || 0.51]).asCallback((err, result) => {
           if (err) {
             return callback(err);
           }
