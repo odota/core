@@ -222,7 +222,8 @@ app.get('/', (req, res, cb) => {
   } else if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
-    if (lastRequestTime && (curRequestTime - lastRequestTime < (matchRequestDelay + matchRequestDelayIncr))) {
+    if (lastRequestTime
+      && (curRequestTime - lastRequestTime < (matchRequestDelay + matchRequestDelayIncr))) {
       return res.status(429).json({
         error: 'too many requests',
       });
