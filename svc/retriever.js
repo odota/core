@@ -102,7 +102,7 @@ function getGcMatchData(idx, matchId, cb) {
   }
   const timeout = setTimeout(() => {
     timeouts += 1;
-    matchRequestDelay += 200;
+    matchRequestDelay += 300;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     matchSuccesses += 1;
@@ -161,12 +161,11 @@ function init() {
       }, 5000);
     });
     */
-    /*
     setInterval(() => {
-      // TODO remove this loop if steam fixes the one replay salt per connection issue
-      client.connect();
+      if (timeouts > timeoutThreshold) {
+        client.connect();
+      }
     }, 10000);
-    */
   }, () => {
     allReady = true;
   });
