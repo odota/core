@@ -3,7 +3,6 @@
  * Calls back with an object containing the GC data
  **/
 const moment = require('moment');
-const uuidV4 = require('uuid/v4');
 const utility = require('../util/utility');
 const config = require('../config');
 const queries = require('../store/queries');
@@ -28,13 +27,13 @@ module.exports = function getGcData(db, redis, match, cb) {
     const urls = retrieverArr.map(r =>
       `http://${r}?key=${secret}&match_id=${match.match_id}`
     );
-    return getData(urls, (err, body) => {
+    return getData(urls, (err, body, metadata) => {
       if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
         // non-retryable error
         return cb('invalid body or error');
       }
       // count retriever calls
-      redis.zadd('retriever', moment().format('X'), `${uuidV4()}:${match.match_id}`);
+      redis.zadd('retriever', moment().format('X'), `${metadata.hostname}_${match.match_id}`);
       // Persist parties and permanent buffs
       const players = body.match.players.map(p => ({
         player_slot: p.player_slot,
