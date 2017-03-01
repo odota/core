@@ -18,7 +18,7 @@ const timeoutMs = 10000;
 const timeoutThreshold = 20;
 const accountsToUse = 6;
 const port = config.PORT || config.RETRIEVER_PORT;
-let matchRequestDelay = 300;
+let matchRequestDelay = 1000;
 let lastRequestTime;
 let matchRequests = 0;
 let matchSuccesses = 0;
@@ -161,11 +161,13 @@ function init() {
       }, 5000);
     });
     */
+    /*
     setInterval(() => {
       if (timeouts > timeoutThreshold) {
         client.connect();
       }
     }, 10000);
+    */
   }, () => {
     allReady = true;
   });
