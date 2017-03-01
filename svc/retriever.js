@@ -18,7 +18,8 @@ const timeoutMs = 10000;
 const timeoutThreshold = 20;
 const accountsToUse = 6;
 const port = config.PORT || config.RETRIEVER_PORT;
-let matchRequestDelay = 500;
+const matchRequestDelay = 500;
+let matchRequestDelayIncr = 0;
 let lastRequestTime;
 let matchRequests = 0;
 let matchSuccesses = 0;
@@ -102,10 +103,12 @@ function getGcMatchData(idx, matchId, cb) {
   }
   const timeout = setTimeout(() => {
     timeouts += 1;
-    matchRequestDelay += 300;
+    matchRequestDelayIncr += 300;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     matchSuccesses += 1;
+    // Reset delay on success
+    matchRequestDelayIncr = 0;
     console.log('received match %s', matchId);
     clearTimeout(timeout);
     cb(err, matchData);
@@ -210,7 +213,7 @@ app.get('/', (req, res, cb) => {
     profileSuccesses,
     profileRequests,
     getUptime(),
-    matchRequestDelay);
+    matchRequestDelay + matchRequestDelayIncr);
   if (req.query.mmstats) {
     return getMMStats(rKey, (err, data) => {
       res.locals.data = data;
@@ -219,7 +222,7 @@ app.get('/', (req, res, cb) => {
   } else if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
-    if (lastRequestTime && (curRequestTime - lastRequestTime < matchRequestDelay)) {
+    if (lastRequestTime && (curRequestTime - lastRequestTime < (matchRequestDelay + matchRequestDelayIncr))) {
       return res.status(429).json({
         error: 'too many requests',
       });

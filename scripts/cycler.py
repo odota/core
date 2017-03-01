@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 8
+targetsize = 4
 backendname = "retriever"
 templatename = "retriever-1"
 
