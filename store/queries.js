@@ -490,8 +490,9 @@ function updateRankings(match, cb) {
     if (err) {
       return cb(err);
     }
-    const matchScore = (avg && !isNaN(Number(avg))) ?
-      Math.pow(Math.max(avg / 1000, 1), 7) :
+    const ratingMin = 2000;
+    const matchScore = (avg && !isNaN(Number(avg)) && avg >= ratingMin) ?
+      Math.pow(avg / ratingMin, 7) :
       undefined;
     return async.each(match.players, (player, cb) => {
       if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
