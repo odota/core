@@ -182,7 +182,12 @@ function buildMatch(matchId, cb) {
         return cb();
       }
       if (match.version && config.ENABLE_MATCH_CACHE) {
-        redis.setex(key, 1800, JSON.stringify(match));
+        return redis.setex(key, 600, JSON.stringify(match), (err) => {
+          if (err) {
+            console.error(err);
+          }
+          return cb(null, match);
+        });
       }
       return cb(err, match);
     });
