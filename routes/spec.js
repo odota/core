@@ -11,6 +11,7 @@ const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
 const playerFields = require('./playerFields');
+const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const db = require('../store/db');
 const redis = require('../store/redis');
@@ -1317,8 +1318,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /heroStats',
         description: 'Get stats about hero performance in recent matches',
         tags: ['hero stats'],
-        parameters: [
-        ],
+        parameters: [],
         responses: {
           200: {
             description: 'Success',
@@ -1940,10 +1940,11 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/replays',
         func: (req, res, cb) => {
-          db.select(['match_id', 'cluster', 'replay_salt'])
-            .from('match_gcdata')
-            .whereIn('match_id', (req.query.match_id || []).slice(0, 1000))
-            .asCallback((err, result) => {
+          async.map([].concat(req.query.match_id || []).slice(0, 100),
+            (matchId, cb) => getGcData(db, redis, {
+              match_id: matchId,
+            }, cb),
+            (err, result) => {
               if (err) {
                 return cb(err);
               }
