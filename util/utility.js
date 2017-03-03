@@ -273,10 +273,12 @@ function mergeObjects(merge, val) {
 }
 
 /**
- * Finds the mode and its occurances of the input array
+ * Finds the mode and its occurrence count in the input array
  **/
 function modeWithCount(array) {
-  if (!array.length) return null;
+  if (!array.length) {
+    return {};
+  }
   const modeMap = {};
   let maxEl = array[0];
   let maxCount = 1;
