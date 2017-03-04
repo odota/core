@@ -13,4 +13,4 @@ function processGcData(job, cb) {
   getGcData(db, redis, job, cb);
 }
 
-queue.runQueue('gcQueue', 30, processGcData);
+queue.runQueue('gcQueue', 40, processGcData);
