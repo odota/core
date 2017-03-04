@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 2
+targetsize = 10
 backendname = "retriever"
 templatename = "retriever-1"
 
@@ -20,7 +20,7 @@ def run1(zoneList):
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
       # Invert to cycle through in reverse order, so we create new instances before deleting old ones
-      size = targetsize * len(zoneList) if i == (len(zoneList) - bucket - 1) else 0
+      size = targetsize if i == (len(zoneList) - bucket - 1) else 0
       minsize = 1 if i == (len(zoneList) - bucket - 1) else 0
       print bucket, size, minsize
       subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
