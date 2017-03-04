@@ -669,7 +669,7 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/players/:account_id/peers',
         func: (req, res, cb) => {
-          req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
+          req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win', 'gold_per_min', 'xp_per_min');
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
               return cb(err);
@@ -934,6 +934,7 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
+              m.is_radiant = utility.isRadiant(m);
               Object.keys(countCats).forEach((key) => {
                 if (!result[key][Math.floor(m[key])]) {
                   result[key][Math.floor(m[key])] = {

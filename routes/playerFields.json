@@ -36,9 +36,7 @@
     "lobby_type": 1,
     "lane_role": 1,
     "region": 1,
-    "patch": 1
-  },
-  "times": {
-    "duration": 1
+    "patch": 1,
+    "is_radiant": 1
   }
 }
