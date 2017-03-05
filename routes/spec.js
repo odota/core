@@ -11,7 +11,7 @@ const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
 const playerFields = require('./playerFields');
-const getGcData = require('../util/getGcData');
+// const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const db = require('../store/db');
 const redis = require('../store/redis');
@@ -1954,11 +1954,11 @@ Please keep request rate to approximately 1/s.
             }, cb),
             (err, result) => {
           */
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
+             if (err) {
+               return cb(err);
+             }
+             return res.json(result);
+           });
         },
       },
     },
