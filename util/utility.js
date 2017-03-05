@@ -170,8 +170,7 @@ function getData(url, cb) {
     if (Array.isArray(url.url)) {
       // select a random element if array
       u = url.url[Math.floor(Math.random() * url.url.length)];
-    }
-    else {
+    } else {
       u = url.url;
     }
     delay = url.delay || delay;
