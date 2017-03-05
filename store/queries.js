@@ -306,7 +306,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
             b[queryObj.sort] - a[queryObj.sort]
           );
         }
-        matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
+        matches = matches.slice(queryObj.offset).slice(0, queryObj.limit);
         return cb(err, matches);
       }).on('error', cb);
     });
