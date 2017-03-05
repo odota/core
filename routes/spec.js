@@ -226,6 +226,153 @@ const playerParams = [
   params.sortParam,
 ];
 
+const recordsMatch = {
+  match_id: {
+    description: 'match_id',
+    type: 'number'
+  },
+  player_slot: {
+    description: 'player_slot',
+    type: 'number'
+  },
+  radiant_win: {
+    description: 'radiant_win',
+    type: 'boolean'
+  },
+  duration: {
+    description: 'duration',
+    type: 'number'
+  },
+  game_mode: {
+    description: 'game_mode',
+    type: 'number'
+  },
+  lobby_type: {
+    description: 'lobby_type',
+    type: 'number'
+  },
+  kills: {
+    description: 'kills',
+    type: 'number'
+  },
+  deaths: {
+    description: 'deaths',
+    type: 'number'
+  },
+  assists: {
+    description: 'assists',
+    type: 'number'
+  },
+  kda: {
+    description: 'kda',
+    type: 'number'
+  },
+  gold_per_min: {
+    description: 'gold_per_min',
+    type: 'number'
+  },
+  xp_per_min: {
+    description: 'xp_per_min',
+    type: 'number'
+  },
+  last_hits: {
+    description: 'last_hits',
+    type: 'number'
+  },
+  denies: {
+    description: 'denies',
+    type: 'number'
+  },
+  lane_efficiency_pct: {
+    description: 'lane_efficiency_pct',
+    type: 'number'
+  },
+  level: {
+    description: 'level',
+    type: 'number'
+  },
+  hero_damage: {
+    description: 'hero_damage',
+    type: 'number'
+  },
+  tower_damage: {
+    description: 'tower_damage',
+    type: 'number'
+  },
+  hero_healing: {
+    description: 'hero_healing',
+    type: 'number'
+  },
+  stuns: {
+    description: 'stuns',
+    type: 'number'
+  },
+  tower_kills: {
+    description: 'tower_kills',
+    type: 'number'
+  },
+  neutral_kills: {
+    description: 'neutral_kills',
+    type: 'number'
+  },
+  courier_kills: {
+    description: 'courier_kills',
+    type: 'number'
+  },
+  purchase_tpscroll: {
+    description: 'purchase_tpscroll',
+    type: 'number'
+  },
+  purchase_ward_observer: {
+    description: 'purchase_ward_observer',
+    type: 'number'
+  },
+  purchase_ward_sentry: {
+    description: 'purchase_ward_sentry',
+    type: 'number'
+  },
+  purchase_gem: {
+    description: 'purchase_gem',
+    type: 'number'
+  },
+  purchase_rapier: {
+    description: 'purchase_rapier',
+    type: 'number'
+  },
+  pings: {
+    description: 'pings',
+    type: 'number'
+  },
+  throw: {
+    description: 'throw',
+    type: 'number'
+  },
+  comeback: {
+    description: 'comeback',
+    type: 'number'
+  },
+  stomp: {
+    description: 'stomp',
+    type: 'number'
+  },
+  loss: {
+    description: 'loss',
+    type: 'number'
+  },
+  actions_per_min: {
+    description: 'actions_per_min',
+    type: 'number'
+  },
+  hero_id: {
+    description: 'hero_id',
+    type: 'number'
+  },
+  start_time: {
+    description: 'start_time',
+    type: 'number'
+  }
+};
+
 const spec = {
   swagger: '2.0',
   info: {
@@ -260,34 +407,6 @@ Please keep request rate to approximately 1/s.
                   description: 'match_id',
                   type: 'number',
                 },
-                cluster: {
-                  description: 'cluster',
-                  type: 'number',
-                },
-                replay_salt: {
-                  description: 'replay_salt',
-                  type: 'number',
-                },
-                series_id: {
-                  description: 'series_id',
-                  type: 'number',
-                },
-                series_type: {
-                  description: 'series_type',
-                  type: 'number',
-                },
-                parties: {
-                  description: 'parties',
-                  type: 'object',
-                },
-                skill: {
-                  description: 'skill',
-                  type: 'number',
-                },
-                players: {
-                  description: 'players',
-                  type: 'object',
-                },
                 barracks_status_dire: {
                   description: 'barracks_status_dire',
                   type: 'number',
@@ -299,6 +418,18 @@ Please keep request rate to approximately 1/s.
                 chat: {
                   description: 'chat',
                   type: 'object',
+                },
+                cluster: {
+                  description: 'cluster',
+                  type: 'number',
+                },
+                cosmetics: {
+                  description: 'cosmetics',
+                  type: 'object'
+                },
+                dire_score: {
+                  description: 'dire_score',
+                  type: 'number'
                 },
                 duration: {
                   description: 'duration',
@@ -352,6 +483,10 @@ Please keep request rate to approximately 1/s.
                   description: 'radiant_gold_adv',
                   type: 'object',
                 },
+                radiant_score: {
+                  description: 'radiant_score',
+                  type: 'number'
+                },
                 radiant_win: {
                   description: 'radiant_win',
                   type: 'boolean',
@@ -379,6 +514,532 @@ Please keep request rate to approximately 1/s.
                 version: {
                   description: 'version',
                   type: 'number',
+                },
+                replay_salt: {
+                  description: 'replay_salt',
+                  type: 'number',
+                },
+                series_id: {
+                  description: 'series_id',
+                  type: 'number',
+                },
+                series_type: {
+                  description: 'series_type',
+                  type: 'number',
+                },
+                radiant_team: {
+                  description: 'radiant_team',
+                  type: 'object'
+                },
+                dire_team: {
+                  description: 'dire_team',
+                  type: 'object'
+                },
+                league: {
+                  description: 'league',
+                  type: 'object'
+                },
+                skill: {
+                  description: 'skill',
+                  type: 'number',
+                },
+                players: {
+                  description: 'players',
+                  type: 'array',
+                  items: {
+                    description: 'player',
+                    type: 'object',
+                    properties: {
+                      match_id: {
+                        description: 'match_id',
+                        type: 'number'
+                      },
+                      player_slot: {
+                        description: 'player_slot',
+                        type: 'number'
+                      },
+                      ability_upgrades_arr: {
+                        description: 'ability_upgrades_arr',
+                        type: 'array'
+                      },
+                      ability_uses: {
+                        description: 'ability_uses',
+                        type: 'object'
+                      },
+                      account_id: {
+                        description: 'account_id',
+                        type: 'number'
+                      },
+                      actions: {
+                        description: 'actions',
+                        type: 'object'
+                      },
+                      additional_units: {
+                        description: 'additional_units',
+                        type: 'object'
+                      },
+                      assists: {
+                        description: 'assists',
+                        type: 'number'
+                      },
+                      backpack_0: {
+                        description: 'backpack_0',
+                        type: 'number'
+                      },
+                      backpack_1: {
+                        description: 'backpack_1',
+                        type: 'number'
+                      },
+                      backpack_2: {
+                        description: 'backpack_2',
+                        type: 'number'
+                      },
+                      buyback_log: {
+                        description: 'buyback_log',
+                        type: 'array'
+                      },
+                      camps_stacked: {
+                        description: 'camps_stacked',
+                        type: 'number'
+                      },
+                      creeps_stacked: {
+                        description: 'creeps_stacked',
+                        type: 'number'
+                      },
+                      damage: {
+                        description: 'damage',
+                        type: 'object'
+                      },
+                      damage_inflictor: {
+                        description: 'damage_inflictor',
+                        type: 'object'
+                      },
+                      damage_inflictor_received: {
+                        description: 'damage_inflictor_received',
+                        type: 'object'
+                      },
+                      damage_taken: {
+                        description: 'damage_taken',
+                        type: 'object'
+                      },
+                      deaths: {
+                        description: 'deaths',
+                        type: 'number'
+                      },
+                      denies: {
+                        description: 'denies',
+                        type: 'number'
+                      },
+                      denies: {
+                        description: 'denies',
+                        type: 'number'
+                      },
+                      dn_t: {
+                        description: 'dn_t',
+                        type: 'array'
+                      },
+                      denies: {
+                        description: 'denies',
+                        type: 'number'
+                      },
+                      gold: {
+                        description: 'gold',
+                        type: 'number'
+                      },
+                      gold_per_min: {
+                        description: 'gold_per_min',
+                        type: 'number'
+                      },
+                      gold_reasons: {
+                        description: 'gold_reasons',
+                        type: 'object'
+                      },
+                      gold_spent: {
+                        description: 'gold_spent',
+                        type: 'number'
+                      },
+                      gold_t: {
+                        description: 'gold_t',
+                        type: 'array'
+                      },
+                      hero_damage: {
+                        description: 'hero_damage',
+                        type: 'number'
+                      },
+                      hero_healing: {
+                        description: 'hero_healing',
+                        type: 'number'
+                      },
+                      hero_hits: {
+                        description: 'hero_hits',
+                        type: 'object'
+                      },
+                      hero_id: {
+                        description: 'hero_id',
+                        type: 'number'
+                      },
+                      item_0: {
+                        description: 'item_0',
+                        type: 'number'
+                      },
+                      item_1: {
+                        description: 'item_1',
+                        type: 'number'
+                      },
+                      item_2: {
+                        description: 'item_2',
+                        type: 'number'
+                      },
+                      item_3: {
+                        description: 'item_3',
+                        type: 'number'
+                      },
+                      item_4: {
+                        description: 'item_4',
+                        type: 'number'
+                      },
+                      item_5: {
+                        description: 'item_5',
+                        type: 'number'
+                      },
+                      item_uses: {
+                        description: 'item_uses',
+                        type: 'object'
+                      },
+                      kill_streaks: {
+                        description: 'kill_streaks',
+                        type: 'object'
+                      },
+                      killed: {
+                        description: 'killed',
+                        type: 'object'
+                      },
+                      killed_by: {
+                        description: 'killed_by',
+                        type: 'object'
+                      },
+                      kills: {
+                        description: 'kills',
+                        type: 'number'
+                      },
+                      kills_log: {
+                        description: 'kills_log',
+                        type: 'array'
+                      },
+                      lane_pos: {
+                        description: 'lane_pos',
+                        type: 'object'
+                      },
+                      last_hits: {
+                        description: 'last_hits',
+                        type: 'number'
+                      },
+                      leaver_status: {
+                        description: 'leaver_status',
+                        type: 'number'
+                      },
+                      level: {
+                        description: 'level',
+                        type: 'number'
+                      },
+                      lh_t: {
+                        description: 'lh_t',
+                        type: 'array'
+                      },
+                      life_state: {
+                        description: 'life_state',
+                        type: 'object'
+                      },
+                      max_hero_hit: {
+                        description: 'max_hero_hit',
+                        type: 'object'
+                      },
+                      multi_kills: {
+                        description: 'multi_kills',
+                        type: 'object'
+                      },
+                      obs: {
+                        description: 'obs',
+                        type: 'object'
+                      },
+                      obs_left_log: {
+                        description: 'obs_left_log',
+                        type: 'array'
+                      },
+                      obs_log: {
+                        description: 'obs_log',
+                        type: 'array'
+                      },
+                      obs_placed: {
+                        description: 'obs_placed',
+                        type: 'number'
+                      },
+                      party_id: {
+                        description: 'party_id',
+                        type: 'number'
+                      },
+                      permanent_buffs: {
+                        description: 'permanent_buffs',
+                        type: 'array'
+                      },
+                      pings: {
+                        description: 'pings',
+                        type: 'number'
+                      },
+                      purchase: {
+                        description: 'purchase',
+                        type: 'object'
+                      },
+                      purchase_log: {
+                        description: 'purchase_log',
+                        type: 'array'
+                      },
+                      rune_pickups: {
+                        description: 'rune_pickups',
+                        type: 'number'
+                      },
+                      runes: {
+                        description: 'runes',
+                        type: 'object'
+                      },
+                      runes_log: {
+                        description: 'runes_log',
+                        type: 'array'
+                      },
+                      sen: {
+                        description: 'sen',
+                        type: 'object'
+                      },
+                      sen_left_log: {
+                        description: 'sen_left_log',
+                        type: 'array'
+                      },
+                      sen_log: {
+                        description: 'sen_log',
+                        type: 'array'
+                      },
+                      sen_placed: {
+                        description: 'sen_placed',
+                        type: 'number'
+                      },
+                      stuns: {
+                        description: 'stuns',
+                        type: 'number'
+                      },
+                      times: {
+                        description: 'times',
+                        type: 'array'
+                      },
+                      tower_damage: {
+                        description: 'tower_damage',
+                        type: 'number'
+                      },
+                      xp_per_min: {
+                        description: 'xp_per_min',
+                        type: 'number'
+                      },
+                      xp_reasons: {
+                        description: 'xp_reasons',
+                        type: 'object'
+                      },
+                      xp_t: {
+                        description: 'xp_t',
+                        type: 'array'
+                      },
+                      xp_t: {
+                        description: 'xp_t',
+                        type: 'array'
+                      },
+                      personaname: {
+                        description: 'personaname',
+                        type: 'string'
+                      },
+                      name: {
+                        description: 'name',
+                        type: 'string'
+                      },
+                      last_login: {
+                        description: 'last_login',
+                        type: 'dateTime'
+                      },
+                      radiant_win: {
+                        description: 'radiant_win',
+                        type: 'boolean'
+                      },
+                      start_time: {
+                        description: 'start_time',
+                        type: 'number'
+                      },
+                      duration: {
+                        description: 'duration',
+                        type: 'number'
+                      },
+                      cluster: {
+                        description: 'cluster',
+                        type: 'number'
+                      },
+                      lobby_type: {
+                        description: 'lobby_type',
+                        type: 'number'
+                      },
+                      game_mode: {
+                        description: 'game_mode',
+                        type: 'number'
+                      },
+                      patch: {
+                        description: 'patch',
+                        type: 'number'
+                      },
+                      region: {
+                        description: 'region',
+                        type: 'number'
+                      },
+                      isRadiant: {
+                        description: 'isRadiant',
+                        type: 'boolean'
+                      },
+                      win: {
+                        description: 'win',
+                        type: 'number'
+                      },
+                      lose: {
+                        description: 'win',
+                        type: 'number'
+                      },
+                      total_gold: {
+                        description: 'total_gold',
+                        type: 'number'
+                      },
+                      total_xp: {
+                        description: 'total_xp',
+                        type: 'number'
+                      },
+                      kills_per_min: {
+                        description: 'kills_per_min',
+                        type: 'number'
+                      },
+                      kda: {
+                        description: 'kda',
+                        type: 'number'
+                      },
+                      abandons: {
+                        description: 'abandons',
+                        type: 'number'
+                      },
+                      neutral_kills: {
+                        description: 'neutral_kills',
+                        type: 'number'
+                      },
+                      tower_kills: {
+                        description: 'tower_kills',
+                        type: 'number'
+                      },
+                      courier_kills: {
+                        description: 'courier_kills',
+                        type: 'number'
+                      },
+                      lane_kills: {
+                        description: 'lane_kills',
+                        type: 'number'
+                      },
+                      hero_kills: {
+                        description: 'hero_kills',
+                        type: 'number'
+                      },
+                      observer_kills: {
+                        description: 'observer_kills',
+                        type: 'number'
+                      },
+                      sentry_kills: {
+                        description: 'sentry_kills',
+                        type: 'number'
+                      },
+                      roshan_kills: {
+                        description: 'roshan_kills',
+                        type: 'number'
+                      },
+                      necronomicon_kills: {
+                        description: 'necronomicon_kills',
+                        type: 'number'
+                      },
+                      ancient_kills: {
+                        description: 'ancient_kills',
+                        type: 'number'
+                      },
+                      buyback_count: {
+                        description: 'buyback_count',
+                        type: 'number'
+                      },
+                      observer_uses: {
+                        description: 'observer_uses',
+                        type: 'number'
+                      },
+                      sentry_uses: {
+                        description: 'sentry_uses',
+                        type: 'number'
+                      },
+                      lane_efficiency: {
+                        description: 'lane_efficiency',
+                        type: 'number'
+                      },
+                      lane_efficiency_pct: {
+                        description: 'lane_efficiency_pct',
+                        type: 'number'
+                      },
+                      lane: {
+                        description: 'lane',
+                        type: 'number'
+                      },
+                      lane_role: {
+                        description: 'lane_role',
+                        type: 'number'
+                      },
+                      is_roaming: {
+                        description: 'is_roaming',
+                        type: 'boolean'
+                      },
+                      purchase_time: {
+                        description: 'purchase_time',
+                        type: 'object'
+                      },
+                      first_purchase_time: {
+                        description: 'first_purchase_time',
+                        type: 'object'
+                      },
+                      item_win: {
+                        description: 'item_win',
+                        type: 'object'
+                      },
+                      item_usage: {
+                        description: 'item_usage',
+                        type: 'object'
+                      },
+                      purchase_tpscroll: {
+                        description: 'purchase_tpscroll',
+                        type: 'object'
+                      },
+                      actions_per_min: {
+                        description: 'actions_per_min',
+                        type: 'number'
+                      },
+                      life_state_dead: {
+                        description: 'life_state_dead',
+                        type: 'number'
+                      },
+                      solo_competitive_rank: {
+                        description: 'solo_competitive_rank',
+                        type: 'string'
+                      },
+                      cosmetics: {
+                        description: 'cosmetics',
+                        type: 'array'
+                      },
+                      benchmarks: {
+                        description: 'benchmarks',
+                        type: 'object'
+                      }
+                    }
+                  }
                 },
                 patch: {
                   description: 'patch',
@@ -455,10 +1116,70 @@ Please keep request rate to approximately 1/s.
                 mmr_estimate: {
                   description: 'mmr_estimate',
                   type: 'object',
+                  properties: {
+                    estimate: {
+                      description: 'estimate',
+                      type: 'number'
+                    }, 
+                    stdDev: {
+                      description: 'stdDev',
+                      type: 'number'
+                    }, 
+                    n: {
+                      description: 'n',
+                      type: 'number'
+                    }
+                  }
                 },
                 profile: {
                   description: 'profile',
                   type: 'object',
+                  properties: {
+                    account_id: {
+                      description: 'account_id',
+                      type: 'number'
+                    },
+                    personaname: {
+                      description: 'personaname',
+                      type: 'string'
+                    },
+                    name: {
+                      description: 'name',
+                      type: 'string'
+                    },
+                    cheese: {
+                      description: 'cheese',
+                      type: 'number'
+                    },
+                    steamid: {
+                      description: 'steamid',
+                      type: 'string'
+                    },
+                    avatar: {
+                      description: 'avatar',
+                      type: 'string'
+                    },
+                    avatarmedium: {
+                      description: 'avatarmedium',
+                      type: 'string'
+                    },
+                    avatarfull: {
+                      description: 'avatarfull',
+                      type: 'string'
+                    },
+                    profileurl: {
+                      description: 'profileurl',
+                      type: 'string'
+                    },
+                    last_login: {
+                      description: 'last_login',
+                      type: 'string'
+                    },
+                    loccountrycode: {
+                      description: 'loccountrycode',
+                      type: 'string'
+                    }
+                  }
                 },
               },
             },
@@ -555,7 +1276,78 @@ Please keep request rate to approximately 1/s.
             schema: {
               type: 'array',
               items: {
+                description: 'match',
                 type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number'
+                  },
+                  player_slot: {
+                    description: 'player_slot',
+                    type: 'number'
+                  },
+                  heroes: {
+                    description: 'heroes',
+                    type: 'object',
+                    properties: {
+                      player_slot: {
+                        description: 'player_slot',
+                        type: 'object',
+                        properties: {
+                          account_id: {
+                            description: 'account_id',
+                            type: 'number'
+                          },
+                          hero_id: {
+                            description: 'hero_id',
+                            type: 'number'
+                          },
+                          player_slot: {
+                            description: 'player_slot',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    }
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'number'
+                  },
+                  game_mode: {
+                    description: 'game_mode',
+                    type: 'number'
+                  },
+                  lobby_type: {
+                    description: 'lobby_type',
+                    type: 'number'
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number'
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number'
+                  },
+                  version: {
+                    description: 'version',
+                    type: 'number'
+                  },
+                  kills: {
+                    description: 'kills',
+                    type: 'number'
+                  },
+                  deaths: {
+                    description: 'deaths',
+                    type: 'number'
+                  },
+                  assists: {
+                    description: 'assists',
+                    type: 'number'
+                  },
+                },
               },
             },
           },
@@ -589,6 +1381,52 @@ Please keep request rate to approximately 1/s.
         description: 'Heroes played',
         tags: ['players'],
         parameters: playerParams,
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                description: 'hero',
+                type: 'object',
+                properties: {
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'string'
+                  },
+                  last_played: {
+                    description: 'last_played',
+                    type: 'number'
+                  },
+                  games: {
+                    description: 'games',
+                    type: 'number'
+                  },
+                  win: {
+                    description: 'win',
+                    type: 'number'
+                  },
+                  with_games: {
+                    description: 'with_games',
+                    type: 'number'
+                  },
+                  with_win: {
+                    description: 'with_win',
+                    type: 'number'
+                  },
+                  against_games: {
+                    description: 'against_games',
+                    type: 'number'
+                  },
+                  against_win: {
+                    description: 'against_win',
+                    type: 'number'
+                  }
+                }
+              }
+            }
+          }
+        },
         route: () => '/players/:account_id/heroes',
         func: (req, res, cb) => {
           const heroes = {};
@@ -662,6 +1500,60 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number'
+                  },
+                  last_played: {
+                    description: 'last_played',
+                    type: 'number'
+                  },
+                  win: {
+                    description: 'win',
+                    type: 'number'
+                  },
+                  games: {
+                    description: 'games',
+                    type: 'number'
+                  },
+                  with_win: {
+                    description: 'with_win',
+                    type: 'number'
+                  },
+                  with_games: {
+                    description: 'with_games',
+                    type: 'number'
+                  },
+                  against_win: {
+                    description: 'against_win',
+                    type: 'number'
+                  },
+                  against_games: {
+                    description: 'against_games',
+                    type: 'number'
+                  },
+                  with_gpm_sum: {
+                    description: 'with_gpm_sum',
+                    type: 'number'
+                  },
+                  with_xpm_sum: {
+                    description: 'with_xpm_sum',
+                    type: 'number'
+                  },
+                  personaname: {
+                    description: 'personaname',
+                    type: 'string'
+                  },
+                  last_login: {
+                    description: 'last_login',
+                    type: 'string'
+                  },
+                  avatar: {
+                    description: 'avatar',
+                    type: 'string'
+                  },
+                },
               },
             },
           },
@@ -701,6 +1593,128 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number'
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string'
+                  },
+                  country_code: {
+                    description: 'country_code',
+                    type: 'string'
+                  },
+                  fantasy_role: {
+                    description: 'fantasy_role',
+                    type: 'number'
+                  },
+                  team_id: {
+                    description: 'team_id',
+                    type: 'number'
+                  },
+                  team_name: {
+                    description: 'team_name',
+                    type: 'string'
+                  },
+                  team_tag: {
+                    description: 'team_tag',
+                    type: 'string'
+                  },
+                  is_locked: {
+                    description: 'is_locked',
+                    type: 'boolean'
+                  },
+                  is_pro: {
+                    description: 'is_pro',
+                    type: 'boolean'
+                  },
+                  locked_until: {
+                    description: 'locked_until',
+                    type: 'number'
+                  },
+                  steamid: {
+                    description: 'steamid',
+                    type: 'string'
+                  },
+                  avatar: {
+                    description: 'avatar',
+                    type: 'string'
+                  },
+                  avatarmedium: {
+                    description: 'avatarmedium',
+                    type: 'string'
+                  },
+                  avatarfull: {
+                    description: 'avatarfull',
+                    type: 'string'
+                  },
+                  profileurl: {
+                    description: 'profileurl',
+                    type: 'string'
+                  },
+                  last_login: {
+                    description: 'last_login',
+                    type: 'dateTime'
+                  },
+                  full_history_time: {
+                    description: 'full_history_time',
+                    type: 'dateTime'
+                  },
+                  cheese: {
+                    description: 'cheese',
+                    type: 'number'
+                  },
+                  fh_unavailable: {
+                    description: 'fh_unavailable',
+                    type: 'boolean'
+                  },
+                  loccountrycode: {
+                    description: 'loccountrycode',
+                    type: 'string'
+                  },
+                  last_played: {
+                    description: 'last_played',
+                    type: 'number'
+                  },
+                  win: {
+                    description: 'win',
+                    type: 'number'
+                  },
+                  games: {
+                    description: 'games',
+                    type: 'number'
+                  },
+                  with_win: {
+                    description: 'with_win',
+                    type: 'number'
+                  },
+                  with_games: {
+                    description: 'with_games',
+                    type: 'number'
+                  },
+                  against_win: {
+                    description: 'against_win',
+                    type: 'number'
+                  },
+                  against_games: {
+                    description: 'against_games',
+                    type: 'number'
+                  },
+                  last_played: {
+                    description: 'last_played',
+                    type: 'number'
+                  },
+                  with_gpm_sum: {
+                    description: 'with_gpm_sum',
+                    type: 'number'
+                  },
+                  with_xpm_sum: {
+                    description: 'with_xpm_sum',
+                    type: 'number'
+                  }
+                }
               },
             },
           },
@@ -742,6 +1756,7 @@ Please keep request rate to approximately 1/s.
                 kills: {
                   description: 'kills',
                   type: 'object',
+                  properties: recordsMatch
                 },
                 deaths: {
                   description: 'deaths',
@@ -1112,6 +2127,28 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number'
+                  },
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number'
+                  },
+                  solo_competitive_rank: {
+                    description: 'solo_competitive_rank',
+                    type: 'number'
+                  },
+                  competitive_rank: {
+                    description: 'competitive_rank',
+                    type: 'number'
+                  },
+                  time: {
+                    description: 'time',
+                    type: 'dateTime'
+                  }
+                }
               },
             },
           },
@@ -1142,6 +2179,20 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properies: {
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'string'
+                  },
+                  rank: {
+                    description: 'rank',
+                    type: 'number'
+                  },
+                  card: {
+                    description: 'card',
+                    type: 'number'
+                  }
+                }
               },
             },
           },
@@ -1200,6 +2251,92 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number'
+                  },
+                  steamid: {
+                    description: 'steamid',
+                    type: 'string'
+                  },
+                  avatar: {
+                    description: 'avatar',
+                    type: 'string'
+                  },
+                  avatarmedium: {
+                    description: 'avatarmedium',
+                    type: 'string'
+                  },
+                  avatarfull: {
+                    description: 'avatarfull',
+                    type: 'string'
+                  },
+                  profileurl: {
+                    description: 'profileurl',
+                    type: 'string'
+                  },
+                  personaname: {
+                    description: 'personaname',
+                    type: 'string'
+                  },
+                  last_login: {
+                    description: 'last_login',
+                    type: 'dateTime'
+                  },
+                  full_history_time: {
+                    description: 'full_history_time',
+                    type: 'dateTime'
+                  },
+                  cheese: {
+                    description: 'cheese',
+                    type: 'number'
+                  },
+                  fh_unavailable: {
+                    description: 'fh_unavailable',
+                    type: 'boolean'
+                  },
+                  loccountrycode: {
+                    description: 'loccountrycode',
+                    type: 'string'
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string'
+                  },
+                  country_code: {
+                    description: 'country_code',
+                    type: 'string'
+                  },
+                  fantasy_role: {
+                    description: 'fantasy_role',
+                    type: 'number'
+                  },
+                  team_id: {
+                    description: 'team_id',
+                    type: 'number'
+                  },
+                  team_name: {
+                    description: 'team_name',
+                    type: 'string'
+                  },
+                  team_tag: {
+                    description: 'team_tag',
+                    type: 'string'
+                  },
+                  is_locked: {
+                    description: 'is_locked',
+                    type: 'boolean'
+                  },
+                  is_pro: {
+                    description: 'is_pro',
+                    type: 'boolean'
+                  },
+                  locked_until: {
+                    description: 'locked_until',
+                    type: 'number'
+                  }
+                }
               },
             },
           },
@@ -1231,6 +2368,56 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number'
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'number'
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number'
+                  },
+                  radiant_team_id: {
+                    description: 'radiant_team_id',
+                    type: 'number'
+                  },
+                  radiant_name: {
+                    description: 'radiant_name',
+                    type: 'string'
+                  },
+                  dire_team_id: {
+                    description: 'dire_team_id',
+                    type: 'number'
+                  },
+                  dire_name: {
+                    description: 'dire_name',
+                    type: 'string'
+                  },
+                  leagueid: {
+                    description: 'leagueid',
+                    type: 'number'
+                  },
+                  league_name: {
+                    description: 'league_name',
+                    type: 'string'
+                  },
+                  series_id: {
+                    description: 'series_id',
+                    type: 'number'
+                  },
+                  series_type: {
+                    description: 'series_type',
+                    type: 'number'
+                  },
+                  radiant_win: {
+                    description: 'radiant_win',
+                    type: 'boolean'
+                  }
+                }
               },
             },
           },
@@ -1278,6 +2465,44 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number'
+                  },
+                  match_seq_num: {
+                    description: 'match_seq_num',
+                    type: 'number'
+                  },
+                  radiant_win: {
+                    description: 'radiant_win',
+                    type: 'number'
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number'
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'number'
+                  },
+                  avg_mmr: {
+                    description: 'avg_mmr',
+                    type: 'number'
+                  },
+                  num_mmr: {
+                    description: 'num_mmr',
+                    type: 'number'
+                  },
+                  radiant_team: {
+                    description: 'radiant_team',
+                    type: 'string'
+                  },
+                  dire_team: {
+                    description: 'dire_team',
+                    type: 'string'
+                  }
+                }
               },
             },
           },
@@ -1325,6 +2550,84 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  id: {
+                    description: 'id',
+                    type: 'number'
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string'
+                  },
+                  localized_name: {
+                    description: 'localized_name',
+                    type: 'string'
+                  },
+                  img: {
+                    description: 'img',
+                    type: 'string'
+                  },
+                  icon: {
+                    description: 'icon',
+                    type: 'string'
+                  },
+                  pro_win: {
+                    description: 'pro_win',
+                    type: 'number'
+                  },
+                  pro_pick: {
+                    description: 'pro_pick',
+                    type: 'number'
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number'
+                  },
+                  pro_ban: {
+                    description: 'pro_ban',
+                    type: 'number'
+                  },
+                  '1000_pick': {
+                    description: '1000_pick',
+                    type: 'number'
+                  },
+                  '1000_win': {
+                    description: '1000_win',
+                    type: 'number'
+                  },
+                  '2000_pick': {
+                    description: '2000_pick',
+                    type: 'number'
+                  },
+                  '2000_win': {
+                    description: '2000_win',
+                    type: 'number'
+                  },
+                  '3000_pick': {
+                    description: '3000_pick',
+                    type: 'number'
+                  },
+                  '3000_win': {
+                    description: '3000_win',
+                    type: 'number'
+                  },
+                  '4000_pick': {
+                    description: '4000_pick',
+                    type: 'number'
+                  },
+                  '4000_win': {
+                    description: '4000_win',
+                    type: 'number'
+                  },
+                  '5000_pick': {
+                    description: '5000_pick',
+                    type: 'number'
+                  },
+                  '5000_win': {
+                    description: '5000_win',
+                    type: 'number'
+                  }
+                }
               },
             },
           },
@@ -1398,6 +2701,16 @@ Please keep request rate to approximately 1/s.
                 cheese: {
                   description: 'cheese',
                   type: 'object',
+                  properties: {
+                    cheese: {
+                      description: 'cheese',
+                      type: 'string'
+                    },
+                    goal: {
+                      description: 'goal',
+                      type: 'string'
+                    }
+                  }
                 },
               },
             },
@@ -1430,7 +2743,7 @@ Please keep request rate to approximately 1/s.
     '/distributions': {
       get: {
         summary: 'GET /distributions',
-        description: 'Distributions of MMR data',
+        description: 'Distributions of MMR data by bracket and country',
         tags: [
           'distributions',
         ],
@@ -1443,10 +2756,172 @@ Please keep request rate to approximately 1/s.
                 mmr: {
                   description: 'mmr',
                   type: 'object',
+                  properties: {
+                    commmand: {
+                      description: 'command',
+                      type: 'string'
+                    }, 
+                    rowCount: {
+                      description: 'rowCount',
+                      type: 'number'
+                    },
+                    rows: {
+                      description: 'rows',
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          bin: {
+                            description: 'bin',
+                            type: 'number'
+                          },
+                          bin_name: {
+                            description: 'bin_name',
+                            type: 'number'
+                          },
+                          count: {
+                            description: 'count',
+                            type: 'number'
+                          },
+                          cumulative_sum: {
+                            description: 'cumulative_sum',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    }, 
+                    fields: {
+                      description: 'fields',
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          name: {
+                            description: 'name',
+                            type: 'string'
+                          },
+                          tableID: {
+                            description: 'tableID',
+                            type: 'number'
+                          },
+                          columnID: {
+                            description: 'columnID',
+                            type: 'number'
+                          },
+                          dataTypeID: {
+                            description: 'dataTypeID',
+                            type: 'number'
+                          },
+                          dataTypeSize: {
+                            description: 'dataTypeSize',
+                            type: 'number'
+                          },
+                          dataTypeModifier: {
+                            description: 'dataTypeModifier',
+                            type: 'number'
+                          },
+                          format: {
+                            description: 'format',
+                            type: 'string'
+                          }
+                        }
+                      }
+                    }, 
+                    rowAsArray: {
+                      description: 'rowAsArray',
+                      type: 'boolean'
+                    }, 
+                    sum: {
+                      description: 'sum',
+                      type: 'object',
+                      properties: {
+                        count: {
+                          description: 'count',
+                          type: 'number'
+                        }
+                      }
+                    }
+                  }
                 },
                 country_mmr: {
                   description: 'country_mmr',
                   type: 'object',
+                  properties: {
+                    commmand: {
+                      description: 'command',
+                      type: 'string'
+                    }, 
+                    rowCount: {
+                      description: 'rowCount',
+                      type: 'number'
+                    },
+                    rows: {
+                      description: 'rows',
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          loccountrycode: {
+                            description: 'loccountrycode',
+                            type: 'string'
+                          },
+                          count: {
+                            description: 'count',
+                            type: 'number'
+                          },
+                          avg: {
+                            description: 'avg',
+                            type: 'string'
+                          },
+                          common: {
+                            description: 'common',
+                            type: 'string'
+                          }
+                        }
+                      }
+                    }, 
+                    fields: {
+                      description: 'fields',
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          name: {
+                            description: 'name',
+                            type: 'string'
+                          },
+                          tableID: {
+                            description: 'tableID',
+                            type: 'number'
+                          },
+                          columnID: {
+                            description: 'columnID',
+                            type: 'number'
+                          },
+                          dataTypeID: {
+                            description: 'dataTypeID',
+                            type: 'number'
+                          },
+                          dataTypeSize: {
+                            description: 'dataTypeSize',
+                            type: 'number'
+                          },
+                          dataTypeModifier: {
+                            description: 'dataTypeModifier',
+                            type: 'number'
+                          },
+                          format: {
+                            description: 'format',
+                            type: 'string'
+                          }
+                        }
+                      }
+                    }, 
+                    rowAsArray: {
+                      description: 'rowAsArray',
+                      type: 'boolean'
+                    }, 
+                  }
                 },
               },
             },
@@ -1466,7 +2941,7 @@ Please keep request rate to approximately 1/s.
     '/search': {
       get: {
         summary: 'GET /search',
-        description: 'Search players by personaname',
+        description: 'Search players by personaname. Default similarity is 0.4',
         tags: [
           'search',
         ],
@@ -1490,6 +2965,24 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number'
+                  },
+                  avatarfull: {
+                    description: 'avatarfull',
+                    type: 'string'
+                  },
+                  personaname: {
+                    description: 'personaname',
+                    type: 'string'
+                  },
+                  similarity: {
+                    description: 'similarity',
+                    type: 'number'
+                  }
+                }
               },
             },
           },
@@ -1535,6 +3028,64 @@ Please keep request rate to approximately 1/s.
                 rankings: {
                   description: 'rankings',
                   type: 'object',
+                  properties: {
+                    account_id: {
+                      description: 'account_id',
+                      type: 'string'
+                    },
+                    score: {
+                      description: 'score',
+                      type: 'string'
+                    },
+                    steamid: {
+                      description: 'steamid',
+                      type: 'string'
+                    },
+                    avatar: {
+                      description: 'avatar',
+                      type: 'string'
+                    },
+                    avatarmedium: {
+                      description: 'avatarmedium',
+                      type: 'string'
+                    },
+                    avatarfull: {
+                      description: 'avatarfull',
+                      type: 'string'
+                    },
+                    profileurl: {
+                      description: 'profileurl',
+                      type: 'string'
+                    },
+                    personaname: {
+                      description: 'personaname',
+                      type: 'string'
+                    },
+                    last_login: {
+                      description: 'last_login',
+                      type: 'dateTime'
+                    },
+                    full_history_time: {
+                      description: 'full_history_time',
+                      type: 'dateTime'
+                    },
+                    cheese: {
+                      description: 'cheese',
+                      type: 'number'
+                    },
+                    fh_unavailable: {
+                      description: 'fh_unavailable',
+                      type: 'boolean'
+                    },
+                    loccountrycode: {
+                      description: 'loccountrycode',
+                      type: 'string'
+                    },
+                    solo_competitive_rank: {
+                      description: 'solo_competitive_rank',
+                      type: 'string'
+                    }
+                  }
                 },
               },
             },
@@ -1578,6 +3129,120 @@ Please keep request rate to approximately 1/s.
                 result: {
                   description: 'result',
                   type: 'object',
+                  properties: {
+                    gold_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number'
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    },
+                    xp_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number'
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    },
+                    kills_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number'
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    },
+                    last_hits_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number'
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    },
+                    hero_damage_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number'
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    },
+                    hero_healing_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number'
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    },
+                    tower_damage: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number'
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number'
+                          }
+                        }
+                      }
+                    }
+                  }
                 },
               },
             },
@@ -1838,6 +3503,20 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  id: {
+                    description: 'id',
+                    type: 'number'
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string'
+                  },
+                  localized_name: {
+                    description: 'localized_name',
+                    type: 'string'
+                  }
+                }
               },
             },
           },
@@ -1868,6 +3547,28 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  leagueid: {
+                    description: 'leagueid',
+                    type: 'number'
+                  },
+                  ticket: {
+                    description: 'ticket',
+                    type: 'string'
+                  },
+                  banner: {
+                    description: 'banner',
+                    type: 'string'
+                  },
+                  tier: {
+                    description: 'tier',
+                    type: 'string'
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string'
+                  }
+                }
               },
             },
           },
@@ -1888,7 +3589,7 @@ Please keep request rate to approximately 1/s.
     '/replays': {
       get: {
         summary: 'GET /replays',
-        description: 'Get replay data',
+        description: 'Get data in which a replay URL can be constructed from.',
         tags: ['replays'],
         parameters: [{
           name: 'match_id',
@@ -1904,6 +3605,20 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number'
+                  },
+                  cluster: {
+                    description: 'cluster',
+                    type: 'number'
+                  },
+                  replay_salt: {
+                    description: 'replay_salt',
+                    type: 'number'
+                  }
+                }
               },
             },
           },
