@@ -2941,7 +2941,7 @@ Please keep request rate to approximately 1/s.
     '/search': {
       get: {
         summary: 'GET /search',
-        description: 'Search players by personaname. Default similarity is 0.4',
+        description: 'Search players by personaname. Default similarity is 0.51',
         tags: [
           'search',
         ],
@@ -3589,7 +3589,7 @@ Please keep request rate to approximately 1/s.
     '/replays': {
       get: {
         summary: 'GET /replays',
-        description: 'Get data in which a replay URL can be constructed from.',
+        description: 'Get data to construct a replay URL with',
         tags: ['replays'],
         parameters: [{
           name: 'match_id',
