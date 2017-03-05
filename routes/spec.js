@@ -11,7 +11,7 @@ const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
 const playerFields = require('./playerFields');
-// const getGcData = require('../util/getGcData');
+const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const db = require('../store/db');
 const redis = require('../store/redis');
@@ -3640,19 +3640,18 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/replays',
         func: (req, res, cb) => {
+          /*
           db.select(['match_id', 'cluster', 'replay_salt'])
            .from('match_gcdata')
            .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 20))
            .asCallback((err, result) => {
-          /*
-          // TODO need to pass noretry in order to avoid backlogging requests
+          */
           async.map([].concat(req.query.match_id || []).slice(0, 20),
             (matchId, cb) => getGcData(db, redis, {
               match_id: matchId,
               noRetry: true,
             }, cb),
             (err, result) => {
-          */
              if (err) {
                return cb(err);
              }

@@ -165,12 +165,15 @@ function getData(url, cb) {
   let delay = Number(config.DEFAULT_DELAY);
   let proxyAffinityRange;
   let timeout = 5000;
-  if (url.constructor === Array) {
-    // select a random element if array
-    u = url[Math.floor(Math.random() * url.length)];
-  } else if (typeof url === 'object') {
+  if (typeof url === 'object' && url && url.url) {
     // options object
-    u = url.url;
+    if (Array.isArray(url.url)) {
+      // select a random element if array
+      u = url.url[Math.floor(Math.random() * url.url.length)];
+    }
+    else {
+      u = url.url;
+    }
     delay = url.delay || delay;
     proxyAffinityRange = url.proxyAffinityRange || proxyAffinityRange;
     timeout = url.timeout || timeout;

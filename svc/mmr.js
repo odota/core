@@ -16,7 +16,7 @@ function processMmr(job, cb) {
   const urls = retrieverArr.map(r =>
     `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
   );
-  getData(urls, (err, data) => {
+  getData({ url: urls }, (err, data) => {
     if (err) {
       return cb(err);
     }
