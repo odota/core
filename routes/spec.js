@@ -1941,7 +1941,7 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/replays',
         func: (req, res, cb) => {
-          async.map([].concat(req.query.match_id || []).slice(0, 100),
+          async.map([].concat(req.query.match_id || []).slice(0, 20),
             (matchId, cb) => getGcData(db, redis, {
               match_id: matchId,
             }, cb),
