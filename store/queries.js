@@ -282,7 +282,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
       // console.log(queryObj.project, cassandraColumnInfo.player_caches);
       const query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC',
         queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','));
-      let matches = [];
+      const matches = [];
       return cassandra.stream(query, [accountId], {
         prepare: true,
         fetchSize: 1000,
@@ -306,8 +306,9 @@ function getPlayerMatches(accountId, queryObj, cb) {
             b[queryObj.sort] - a[queryObj.sort]
           );
         }
-        matches = matches.slice(queryObj.offset).slice(0, queryObj.limit);
-        return cb(err, matches);
+        const offset = matches.slice(queryObj.offset);
+        const result = offset.slice(0, queryObj.limit || offset.length);
+        return cb(err, result);
       }).on('error', cb);
     });
   }
