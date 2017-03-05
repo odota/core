@@ -2496,7 +2496,7 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/publicMatches',
         func: (req, res, cb) => {
-          const minTime = moment().subtract(7, 'day').format('X');
+          const minTime = moment().subtract(3, 'day').format('X');
           const order = req.query.mmr_ascending ? 'ASC' : 'DESC';
           db.raw(`
           WITH match_ids AS (SELECT match_id FROM public_matches
