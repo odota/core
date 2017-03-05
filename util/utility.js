@@ -665,6 +665,8 @@ function countPeers(matches) {
           with_games: 0,
           against_win: 0,
           against_games: 0,
+          with_gpm_sum: 0,
+          with_xpm_sum: 0,
         };
       }
       if (m.start_time > teammates[tm.account_id].last_played) {
@@ -677,6 +679,8 @@ function countPeers(matches) {
         // played with
         teammates[tm.account_id].with_games += 1;
         teammates[tm.account_id].with_win += playerWin ? 1 : 0;
+        teammates[tm.account_id].with_gpm_sum += m.gold_per_min;
+        teammates[tm.account_id].with_xpm_sum += m.xp_per_min;
       } else {
         // played against
         teammates[tm.account_id].against_games += 1;
