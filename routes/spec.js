@@ -630,17 +630,9 @@ Please keep request rate to approximately 1/s.
                         description: 'denies',
                         type: 'number',
                       },
-                      denies: {
-                        description: 'denies',
-                        type: 'number',
-                      },
                       dn_t: {
                         description: 'dn_t',
                         type: 'array',
-                      },
-                      denies: {
-                        description: 'denies',
-                        type: 'number',
                       },
                       gold: {
                         description: 'gold',
@@ -841,10 +833,6 @@ Please keep request rate to approximately 1/s.
                       xp_reasons: {
                         description: 'xp_reasons',
                         type: 'object',
-                      },
-                      xp_t: {
-                        description: 'xp_t',
-                        type: 'array',
                       },
                       xp_t: {
                         description: 'xp_t',
@@ -1700,10 +1688,6 @@ Please keep request rate to approximately 1/s.
                   },
                   against_games: {
                     description: 'against_games',
-                    type: 'number',
-                  },
-                  last_played: {
-                    description: 'last_played',
                     type: 'number',
                   },
                   with_gpm_sum: {
