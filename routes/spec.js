@@ -1277,6 +1277,10 @@ Please keep request rate to approximately 1/s.
                     description: 'player_slot',
                     type: 'number',
                   },
+                  radiant_win: {
+                    description: 'radiant_win',
+                    type: 'boolean',
+                  },
                   heroes: {
                     description: 'heroes',
                     type: 'object',
