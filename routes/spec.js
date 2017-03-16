@@ -3651,15 +3651,22 @@ Please keep request rate to approximately 1/s.
            .asCallback((err, result) => {
           */
           async.map([].concat(req.query.match_id || []).slice(0, 20),
-            (matchId, cb) => getGcData(db, redis, {
-              match_id: matchId,
-              noRetry: true,
-            }, cb),
+            (matchId, cb) =>
+              getGcData(db, redis, {
+                match_id: matchId,
+                noRetry: true,
+              }, (err, result) => {
+                if (err) {
+                  console.error(err);
+                }
+                return cb(null, result);
+              }
+            ),
             (err, result) => {
               if (err) {
                 return cb(err);
               }
-              return res.json(result);
+              return res.json(result.filter(Boolean));
             });
         },
       },
