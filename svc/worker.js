@@ -207,11 +207,22 @@ function doHeroes(cb) {
     if (!body || !body.result || !body.result.heroes) {
       return cb();
     }
-    return async.eachSeries(body.result.heroes, (hero, cb) => {
-      queries.upsert(db, 'heroes', hero, {
-        id: hero.id,
+    return utility.getData('http://www.dota2.com/jsfeed/heropediadata?feeds=herodata', (err, heroData) => {
+      if (err || !heroData || !heroData.herodata) {
+        return cb();
+      }
+      return async.eachSeries(body.result.heroes, (hero, cb) => {
+        const shortName = hero.name.substring('npc_dota_hero_'.length);
+        const heroDataHero = heroData.herodata[shortName] || {};
+        queries.upsert(db, 'heroes', Object.assign({}, hero, {
+          primary_attr: heroDataHero.pa,
+          attack_type: heroDataHero.dac,
+          roles: (heroDataHero.droles || '').split(' - '),
+        }), {
+          id: hero.id,
+        }, cb);
       }, cb);
-    }, cb);
+    });
   });
 }
 

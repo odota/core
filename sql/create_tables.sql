@@ -275,7 +275,10 @@ CREATE TABLE teams(
 CREATE TABLE heroes(
   id int PRIMARY KEY,
   name text,
-  localized_name text
+  localized_name text,
+  primary_attr text,
+  attack_type text,
+  roles text[]
 );
 
 CREATE TABLE match_patch(
