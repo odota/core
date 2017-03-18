@@ -3671,6 +3671,48 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    '/schema': {
+      get: {
+        summary: 'GET /schema',
+        description: 'Get database schema',
+        tags: ['schema'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'table_name',
+                    type: 'string',
+                  },
+                  cluster: {
+                    description: 'column_name',
+                    type: 'string',
+                  },
+                  replay_salt: {
+                    description: 'data_type',
+                    type: 'string',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/schema',
+        func: (req, res, cb) => {
+          db.select(['table_name', 'column_name', 'data_type']).from('information_schema.columns').where({ table_schema: 'public' }).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result);
+          });
+        },
+      },
+    },
   },
 };
 module.exports = spec;
