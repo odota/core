@@ -3685,15 +3685,15 @@ Please keep request rate to approximately 1/s.
               items: {
                 type: 'object',
                 properties: {
-                  match_id: {
+                  table_name: {
                     description: 'table_name',
                     type: 'string',
                   },
-                  cluster: {
+                  column_name: {
                     description: 'column_name',
                     type: 'string',
                   },
-                  replay_salt: {
+                  data_type: {
                     description: 'data_type',
                     type: 'string',
                   },
