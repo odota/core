@@ -136,16 +136,30 @@ function doLeagues(cb) {
     if (err) {
       return cb(err);
     }
-    return utility.getData('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/leagues.json', (err, leagues) => {
-      if (err) {
-        return cb(err);
-      }
-      return async.each(apiLeagues.result.leagues, (l, cb) => {
-        if (leagues[l.leagueid]) {
-          l.tier = leagues[l.leagueid].tier;
-          l.ticket = leagues[l.leagueid].ticket;
-          l.banner = leagues[l.leagueid].banner;
+    return utility.getData(
+      'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
+      (err, body) => {
+        if (err) {
+          return cb(err);
         }
+        const itemData = vdf.parse(body);
+        const leagues = {};
+        Object.keys(itemData.items_game.items).forEach((key) => {
+          const item = itemData.items_game.items[key];
+          if (item.prefab === 'league' && item.tool && item.tool.usage) {
+            const leagueid = item.tool.usage.league_id;
+            const tier = item.tool.usage.tier;
+            const ticket = item.image_inventory;
+            const banner = item.image_banner;
+            leagues[leagueid] = { tier, ticket, banner };
+          }
+        });
+        return async.each(apiLeagues.result.leagues, (l, cb) => {
+          if (leagues[l.leagueid]) {
+            l.tier = leagues[l.leagueid].tier || null;
+            l.ticket = leagues[l.leagueid].ticket || null;
+            l.banner = leagues[l.leagueid].banner || null;
+          }
         /*
         Excluded leagues (premium/professional)
         4177 - CDEC Master
@@ -156,17 +170,17 @@ function doLeagues(cb) {
         4181 - Dota 2 Canada Cup Season 6 Open Qualifiers
         5027 - Boston Major Open Qualifier
         */
-        const excludedLeagues = [4177, 4649, 4325, 4768, 3990, 4181, 5027];
-        if ((l.tier === 'professional' || l.tier === 'premium') &&
+          const excludedLeagues = [4177, 4649, 4325, 4768, 3990, 4181, 5027];
+          if ((l.tier === 'professional' || l.tier === 'premium') &&
           !excludedLeagues.includes(Number(l.leagueid)) &&
           l.name.indexOf('Open Qualifier') === -1) {
-          redis.sadd('pro_leagueids', l.leagueid);
-        }
-        queries.upsert(db, 'leagues', l, {
-          leagueid: l.league_id,
+            redis.sadd('pro_leagueids', l.leagueid);
+          }
+          queries.upsert(db, 'leagues', l, {
+            leagueid: l.league_id,
+          }, cb);
         }, cb);
-      }, cb);
-    });
+      });
   });
 }
 
@@ -246,15 +260,9 @@ function doItems(cb) {
 }
 
 function doCosmetics(cb) {
-  utility.getData(utility.generateJob('api_item_schema').url, (err, body) => {
-    if (err) {
-      return cb(err);
-    }
-    // Get the item schema URL
-    if (!body || !body.result || !body.result.items_game_url) {
-      return cb();
-    }
-    return utility.getData(body.result.items_game_url, (err, body) => {
+  utility.getData(
+    'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
+    (err, body) => {
       if (err) {
         return cb(err);
       }
@@ -297,7 +305,6 @@ function doCosmetics(cb) {
         return insert(cb);
       }, cb);
     });
-  });
 }
 
 function doTelemetryCleanup(cb) {
