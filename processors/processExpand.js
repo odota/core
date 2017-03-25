@@ -363,6 +363,7 @@ function processExpand(entries, meta) {
         time: e.time,
         type: e.type,
         slot: e.player1,
+        key: e.player2,
       });
     },
     CHAT_MESSAGE_AEGIS(e) {
