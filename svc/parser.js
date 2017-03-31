@@ -72,7 +72,7 @@ function insertStandardParse(match, cb) {
 
 function getParseSchema() {
   return {
-    version: 17,
+    version: 18,
     match_id: 0,
     teamfights: [],
     objectives: [],
@@ -128,6 +128,9 @@ function getParseSchema() {
         life_state: {},
         healing: {},
         damage_inflictor_received: {},
+        randomed: false,
+        repicked: false,
+        pred_vict: false,
       })
     ),
   };
