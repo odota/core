@@ -736,15 +736,18 @@ function insertMatch(match, options, cb) {
 
   function decideLogParse(cb) {
     if (match.leagueid) {
-      db.select('leagueid').from('leagues').where('tier', 'premium').orWhere('tier', 'professional').asCallback((err, leagueids) => {
+      db.select('leagueid')
+      .from('leagues')
+      .where('tier', 'premium')
+      .orWhere('tier', 'professional')
+      .asCallback((err, leagueids) => {
         if (err) {
           return cb(err);
         }
         options.doLogParse = options.doLogParse || utility.isProMatch(match, leagueids);
-        cb(err);
+        return cb(err);
       });
-    }
-    else {
+    } else {
       cb();
     }
   }
