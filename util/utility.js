@@ -316,19 +316,16 @@ function isSignificant(match) {
 /**
  * Determines if a match is a pro match
  **/
-function isProMatch(match, redis, cb) {
-  if (isSignificant(match)
+function isProMatch(match, leagueids) {
+  return Boolean(isSignificant(match)
   && match.leagueid
   && match.human_players === 10
   && (match.game_mode === 0 || match.game_mode === 1 || match.game_mode === 2)
   && match.players
   && match.players.every(player => player.level > 1)
   && match.players.every(player => player.xp_per_min > 0)
-  && match.players.every(player => player.hero_id > 0)) {
-    redis.sismember('pro_leagueids', match.leagueid, cb);
-  } else {
-    cb(null, false);
-  }
+  && match.players.every(player => player.hero_id > 0)
+  && leagueids.includes(match.leagueid));
 }
 
 /**

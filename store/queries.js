@@ -735,10 +735,18 @@ function insertMatch(match, options, cb) {
   }
 
   function decideLogParse(cb) {
-    utility.isProMatch(match, redis, (err, result) => {
-      options.doLogParse = options.doLogParse || Boolean(Number(result));
-      cb(err);
-    });
+    if (match.leagueid) {
+      db.select('leagueid').from('leagues').where('tier', 'premium').orWhere('tier', 'professional').asCallback((err, leagueids) => {
+        if (err) {
+          return cb(err);
+        }
+        options.doLogParse = options.doLogParse || utility.isProMatch(match, leagueids);
+        cb(err);
+      });
+    }
+    else {
+      cb();
+    }
   }
 
   function upsertMatch(cb) {
