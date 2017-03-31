@@ -212,11 +212,42 @@ function doLeagues(cb) {
           13: 'professional', // Star Series Season III
           65001: 'professional', // The International 2012
           24: 'professional', // G-League 2012
+          176: 'professional', // Netolic Pro League 5 West
+          54: 'professional', // Alienware Cup - 2013 Season 1
+          135: 'professional', // Raidcall Southeast Asian Invitational League
+          38: 'professional', // E2Max L33T Championship
+          58: 'professional', // AMD Dota2 Premier League Season 2
+          92: 'professional', // Arms of Burning Turmoil Set
+          65008: 'professional', // 2013 National Electronic Sports Tournament
+          235: 'professional', // The Monster Invitational
+          18: 'professional', // atoD 2
+          22: 'professional', // RaidCall Dota 2 League Season 2
+          65002: 'professional', // DreamHack Dota 2 Corsair Vengeance Cup
+          34: 'professional', // G-1 Champions League Season 5
+          40: 'professional', // AMD Dota2 Premier League
+          60: 'professional', // Neolution GosuCup
+          0: 'amateur', // JetsetPro Amateur League 1x1 Season 1
+          67: 'professional', // MLG NA League and Full Sail LAN
+          71: 'professional', // The National
+          80: 'professional', // Nexon Sponsorship League - ADMIN
+          44: 'professional', // Rapture Gaming Network League
+          76: 'professional', // Sina Cup Supernova Dota 2 Open
+          81: 'professional', // WPC-ACE Dota 2 League
+          114: 'professional', // G-League 2013
+          177: 'professional', // Netolic Pro League 5 East
+          17: 'professional', // G-1 Championship League
+          23: 'professional', // Dota 2 The Asia
+          37: 'professional', // AtoD 3
+          42: 'professional', // Dota 2 Super League
+          65007: 'professional', // Nexon Starter League
+          57: 'professional', // Corsair Summer 2013
+          120: 'professional', // Sina Cup Supernova Dota 2 Open Season 2
+          125: 'professional', // Nexon Sponsorship League Season 2 & Gama Brothers Courier
         };
-        const isOpenQualifier = league => (league.name.indexOf('Open Qualifier') === -1 ? null : 'excluded');
+        const openQualifierTier = league => (league.name.indexOf('Open Qualifier') === -1 ? null : 'excluded');
         return async.each(apiLeagues.result.leagues, (l, cb) => {
           const itemSchemaLeague = leagues[l.leagueid] || {};
-          l.tier = leagueTiers[l.leagueid] || isOpenQualifier(l) || itemSchemaLeague.tier || null;
+          l.tier = leagueTiers[l.leagueid] || openQualifierTier(l) || itemSchemaLeague.tier || null;
           l.ticket = itemSchemaLeague.ticket || null;
           l.banner = itemSchemaLeague.banner || null;
           queries.upsert(db, 'leagues', l, {
