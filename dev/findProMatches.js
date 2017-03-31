@@ -21,7 +21,7 @@ function getPage(url, leagueid, cb) {
       const url = job.url;
       getData({
         url,
-        delay: 500,
+        delay: 200,
       }, (err, body) => {
         if (err) {
           throw err;
