@@ -744,7 +744,8 @@ function insertMatch(match, options, cb) {
         if (err) {
           return cb(err);
         }
-        options.doLogParse = options.doLogParse || utility.isProMatch(match, leagueids.map(l => l.leagueid));
+        options.doLogParse = options.doLogParse ||
+          utility.isProMatch(match, leagueids.map(l => l.leagueid));
         return cb(err);
       });
     } else {
