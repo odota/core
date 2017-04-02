@@ -4,11 +4,10 @@
 const constants = require('dotaconstants');
 const config = require('../config.js');
 const utility = require('../util/utility');
-const db = require('../store/db');
 const queries = require('../store/queries');
 const async = require('async');
 
-const insertMatchSkill = queries.insertMatchSkill;
+const insertMatchSkillCassandra = queries.insertMatchSkillCassandra;
 const results = {};
 const added = {};
 const apiKeys = config.STEAM_API_KEY.split(',');
@@ -35,9 +34,10 @@ function getPageData(start, options, cb) {
     // data is in data.result.matches
     const matches = data.result.matches;
     return async.eachSeries(matches, (m, cb) => {
-      insertMatchSkill(db, {
+      insertMatchSkillCassandra({
         match_id: m.match_id,
         skill: options.skill,
+        players: m.players,
       }, cb);
     }, (err) => {
       if (err) {
