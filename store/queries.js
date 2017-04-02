@@ -901,7 +901,7 @@ function insertMatch(match, options, cb) {
               Object.keys(obj2).map(() => '?').join(',')
             );
             const arr2 = Object.keys(obj2).map(k =>
-              obj2[k]
+              ((obj2[k] === 'true' || obj2[k] === 'false') ? JSON.parse(obj2[k]) : obj2[k])
             );
             return cassandra.execute(query2, arr2, {
               prepare: true,

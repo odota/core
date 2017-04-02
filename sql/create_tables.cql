@@ -103,6 +103,9 @@ CREATE TABLE player_matches (
   ability_upgrades_arr text,
   party_id int,
   permanent_buffs text,
+  repicked boolean,
+  randomed boolean,
+  pred_vict boolean,
 );
 
 CREATE TABLE player_caches (
