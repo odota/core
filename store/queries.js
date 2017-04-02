@@ -54,8 +54,8 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   if (cassandraColumnInfo[table]) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   }
-  return cassandra.execute('SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?', 
-  [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table], 
+  return cassandra.execute('SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
+  [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
   (err, result) => {
     if (err) {
       return cb(err);
@@ -596,29 +596,24 @@ function insertPlayerRating(db, row, cb) {
 }
 
 function insertMatchSkillCassandra(row, cb) {
-  cassandra.execute('INSERT INTO matches (match_id, skill) VALUES (?, ?)', 
-  [row.match_id, row.skill], 
-  { prepare: true }, 
+  cassandra.execute('INSERT INTO matches (match_id, skill) VALUES (?, ?)',
+  [row.match_id, row.skill],
+  { prepare: true },
   (err) => {
     if (err) {
       return cb(err);
     }
     if (row.players) {
-      async.eachSeries(row.players, (player, cb) => {
-        if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
-      cassandra.execute('INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)', 
-      [player.account_id, row.match_id, row.skill], 
-      { prepare: true }, 
-      cb);
-        }
-        else {
-          cb();
-        }
+      const filteredPlayers = row.players.filter(player => player.account_id
+        && player.account_id !== utility.getAnonymousAccountId());
+      return async.eachSeries(filteredPlayers, (player, cb) => {
+        cassandra.execute('INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)',
+          [player.account_id, row.match_id, row.skill],
+          { prepare: true },
+          cb);
       });
     }
-    else {
-      return cb();
-    }
+    return cb();
   });
 }
 
