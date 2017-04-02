@@ -608,10 +608,10 @@ function insertMatchSkillCassandra(row, cb) {
         && player.account_id !== utility.getAnonymousAccountId());
       return async.eachSeries(filteredPlayers, (player, cb) => {
         cassandra.execute('INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)',
-          [player.account_id, row.match_id, row.skill],
+          [String(player.account_id), String(row.match_id), String(row.skill)],
           { prepare: true },
           cb);
-      });
+      }, cb);
     }
     return cb();
   });

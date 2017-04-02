@@ -1349,7 +1349,7 @@ Please keep request rate to approximately 1/s.
         route: () => '/players/:account_id/matches',
         func: (req, res, cb) => {
           // Use passed fields as additional fields, if available
-          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists'];
+          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill'];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {

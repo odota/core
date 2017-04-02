@@ -8,8 +8,6 @@ const queries = require('../store/queries');
 const async = require('async');
 
 const insertMatchSkillCassandra = queries.insertMatchSkillCassandra;
-const results = {};
-const added = {};
 const apiKeys = config.STEAM_API_KEY.split(',');
 const parallelism = Math.min(3, apiKeys.length);
 const skills = [1, 2, 3];
@@ -43,7 +41,6 @@ function getPageData(start, options, cb) {
       if (err) {
         return cb(err);
       }
-      console.log('total results: %s, added: %s', Object.keys(results).length, Object.keys(added).length);
       // repeat until results_remaining===0
       if (data.result.results_remaining === 0) {
         return cb(err);
