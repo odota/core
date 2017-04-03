@@ -19,7 +19,6 @@ const pQueue = queue.getQueue('parse');
 const convert64to32 = utility.convert64to32;
 const serialize = utility.serialize;
 const deserialize = utility.deserialize;
-const reduceAggregable = utility.reduceAggregable;
 const computeMatchData = compute.computeMatchData;
 const columnInfo = {};
 const cassandraColumnInfo = {};
@@ -37,7 +36,7 @@ function doCleanRow(err, schema, row, cb) {
   return cb(err, obj);
 }
 
-function cleanRow(db, table, row, cb) {
+function cleanRowPostgres(db, table, row, cb) {
   if (columnInfo[table]) {
     return doCleanRow(null, columnInfo[table], row, cb);
   }
@@ -419,7 +418,7 @@ function getMatchRating(redis, match, cb) {
 }
 
 function upsert(db, table, row, conflict, cb) {
-  cleanRow(db, table, row, (err, row) => {
+  cleanRowPostgres(db, table, row, (err, row) => {
     if (err) {
       return cb(err);
     }
@@ -618,26 +617,24 @@ function insertMatchSkillCassandra(row, cb) {
 }
 
 function writeCache(accountId, cache, cb) {
-  if (!cassandra) {
-    return cb();
-  }
-  return async.each(cache.raw, (m, cb) => {
-    m = serialize(reduceAggregable(m));
-    const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)',
-      Object.keys(m).join(','),
-      Object.keys(m).map(() => '?').join(',')
-    );
-    cassandra.execute(query, Object.keys(m).map(k =>
-      m[k]
-    ), {
-      prepare: true,
-    }, cb);
-  }, (err) => {
-    if (err) {
-      console.error(err.stack);
-    }
-    return cb(err);
-  });
+  return async.each(cache.raw, (match, cb) => {
+    cleanRowCassandra(cassandra, 'player_caches', match, (err, cleanedMatch) => {
+      if (err) {
+        return cb(err);
+      }
+      const serializedMatch = serialize(cleanedMatch);
+      const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)',
+        Object.keys(serializedMatch).join(','),
+        Object.keys(serializedMatch).map(() => '?').join(',')
+      );
+      const arr = Object.keys(serializedMatch).map(k =>
+        serializedMatch[k]
+      );
+      return cassandra.execute(query, arr, {
+        prepare: true,
+      }, cb);
+    });
+  }, cb);
 }
 
 function insertPlayerCache(match, cb) {
@@ -901,9 +898,6 @@ function insertMatch(match, options, cb) {
   }
 
   function updatePlayerCaches(cb) {
-    if (!cassandra) {
-      return cb();
-    }
     const copy = createMatchCopy(match, players);
     return insertPlayerCache(copy, cb);
   }

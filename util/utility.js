@@ -1,7 +1,6 @@
 /**
  * Provides utility functions.
- * All functions should have external dependencies (DB, etc.) self-contained.
- * A bare Node installation should be able to require() this file without errors.
+ * All functions should have external dependencies (DB, etc.) passed as parameters
  **/
 const config = require('../config');
 const constants = require('dotaconstants');
@@ -20,22 +19,25 @@ const laneMappings = require('./laneMappings');
 function tokenize(input) {
   return input.replace(/[^a-zA-Z- ]+/g, '').replace('/ {2,}/', ' ').toLowerCase().split(' ');
 }
+
 /*
  * Converts a steamid 64 to a steamid 32
  *
- * Returns a string
+ * Takes and returns a string
  */
 function convert64to32(id) {
   return new BigNumber(id).minus('76561197960265728').toString();
 }
+
 /*
  * Converts a steamid 64 to a steamid 32
  *
- * Returns a string
+ * Takes and returns a string
  */
 function convert32to64(id) {
   return new BigNumber('76561197960265728').plus(id).toString();
 }
+
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
  **/
@@ -343,81 +345,6 @@ function min(array) {
 }
 
 /**
- * Gets the player_match fields that should be saved in player_caches
- **/
-function getAggs() {
-  return {
-    account_id: 'api',
-    match_id: 'api',
-    player_slot: 'api',
-    heroes: 'api',
-    radiant_win: 'api',
-    start_time: 'api',
-    duration: 'api',
-    cluster: 'api',
-    region: 'api',
-    patch: 'api',
-    lobby_type: 'api',
-    game_mode: 'api',
-    level: 'api',
-    kills: 'api',
-    deaths: 'api',
-    assists: 'api',
-    kda: 'api',
-    last_hits: 'api',
-    denies: 'api',
-    hero_damage: 'api',
-    tower_damage: 'api',
-    hero_healing: 'api',
-    gold_per_min: 'api',
-    xp_per_min: 'api',
-    hero_id: 'api',
-    leaver_status: 'api',
-    version: 'parsed',
-    courier_kills: 'parsed',
-    tower_kills: 'parsed',
-    neutral_kills: 'parsed',
-    lane: 'parsed',
-    lane_role: 'parsed',
-    is_roaming: 'parsed',
-    obs: 'parsed',
-    sen: 'parsed',
-    item_uses: 'parsed',
-    purchase_time: 'parsed',
-    item_usage: 'parsed',
-    item_win: 'parsed',
-    purchase: 'parsed',
-    multi_kills: 'parsed',
-    kill_streaks: 'parsed',
-    all_word_counts: 'parsed',
-    my_word_counts: 'parsed',
-    throw: 'parsed',
-    comeback: 'parsed',
-    stomp: 'parsed',
-    loss: 'parsed',
-    actions_per_min: 'parsed',
-    purchase_ward_observer: 'parsed',
-    purchase_ward_sentry: 'parsed',
-    purchase_tpscroll: 'parsed',
-    purchase_rapier: 'parsed',
-    purchase_gem: 'parsed',
-    pings: 'parsed',
-    stuns: 'parsed',
-    lane_efficiency_pct: 'parsed',
-    skill: 'skill',
-  };
-}
-/**
- * Reduce input match to only fields needed for aggregation/filtering
- **/
-function reduceAggregable(pm) {
-  const result = {};
-  Object.keys(getAggs()).forEach((key) => {
-    result[key] = pm[key];
-  });
-  return result;
-}
-/**
  * Serializes a JSON object to row for storage in Cassandra
  **/
 function serialize(row) {
@@ -429,6 +356,7 @@ function serialize(row) {
   });
   return obj;
 }
+
 /**
  * Deserializes a row to JSON object read from Cassandra
  **/
@@ -443,6 +371,7 @@ function deserialize(row) {
   });
   return obj;
 }
+
 /**
  * Returns the unix timestamp at the beginning of a block of n minutes
  * Offset controls the number of blocks to look ahead
@@ -776,8 +705,6 @@ module.exports = {
   isSignificant,
   max,
   min,
-  getAggs,
-  reduceAggregable,
   serialize,
   getStartOfBlockMinutes,
   average,

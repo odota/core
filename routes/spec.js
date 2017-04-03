@@ -3366,6 +3366,9 @@ Please keep request rate to approximately 1/s.
           */
 
           function exitWithJob(err, parseJob) {
+            if (err) {
+              console.error(err);
+            }
             res.status(err ? 400 : 200).json({
               err,
               job: {
