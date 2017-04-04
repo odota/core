@@ -1105,6 +1105,96 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    '/players/{account_id}/recentMatches': {
+      get: {
+        summary: 'GET /players/{account_id}/recentMatches',
+        description: 'Recent matches played',
+        tags: [
+          'players',
+        ],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                description: 'match',
+                type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  player_slot: {
+                    description: 'player_slot',
+                    type: 'number',
+                  },
+                  radiant_win: {
+                    description: 'radiant_win',
+                    type: 'boolean',
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'number',
+                  },
+                  game_mode: {
+                    description: 'game_mode',
+                    type: 'number',
+                  },
+                  lobby_type: {
+                    description: 'lobby_type',
+                    type: 'number',
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number',
+                  },
+                  version: {
+                    description: 'version',
+                    type: 'number',
+                  },
+                  kills: {
+                    description: 'kills',
+                    type: 'number',
+                  },
+                  deaths: {
+                    description: 'deaths',
+                    type: 'number',
+                  },
+                  assists: {
+                    description: 'assists',
+                    type: 'number',
+                  },
+                  skill: {
+                    description: 'skill',
+                    type: 'number',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/players/:account_id/recentMatches',
+        func: (req, res, cb) => {
+          queries.getPlayerMatches(req.params.account_id, {
+            project: req.queryObj.project.concat(
+              ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill']
+            ),
+            dbLimit: 20,
+          }, (err, cache) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(cache);
+          });
+        },
+      },
+    },
     '/players/{account_id}/matches': {
       get: {
         summary: 'GET /players/{account_id}/matches',
@@ -1192,6 +1282,10 @@ Please keep request rate to approximately 1/s.
                   },
                   assists: {
                     description: 'assists',
+                    type: 'number',
+                  },
+                  skill: {
+                    description: 'skill',
                     type: 'number',
                   },
                 },

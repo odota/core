@@ -251,7 +251,12 @@ function getPlayerMatches(accountId, queryObj, cb) {
         return cb(err);
       }
       // console.log(queryObj.project, cassandraColumnInfo.player_caches);
-      const query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC',
+      const query = util.format(`
+        SELECT %s FROM player_caches 
+        WHERE account_id = ?
+        ORDER BY match_id DESC
+        ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
+      `,
         queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','));
       const matches = [];
       return cassandra.stream(query, [accountId], {
@@ -283,7 +288,6 @@ function getPlayerMatches(accountId, queryObj, cb) {
       }).on('error', cb);
     });
   }
-  // TODO support reading from postgres
   return cb(null, []);
 }
 
