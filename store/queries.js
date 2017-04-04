@@ -819,7 +819,12 @@ function insertMatch(match, options, cb) {
               return cb(err);
             }
             return async.eachLimit(match.logs, 10, (e, cb) => {
-              trx('match_logs').insert(e).asCallback(cb);
+              cleanRowPostgres(db, 'match_logs', e, (err, cleanedRow) => {
+                if (err) {
+                  return cb(err);
+                }
+                return trx('match_logs').insert(cleanedRow).asCallback(cb);
+              });
             }, cb);
           });
       }
