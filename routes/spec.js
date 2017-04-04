@@ -1202,22 +1202,13 @@ Please keep request rate to approximately 1/s.
         route: () => '/players/:account_id/matches',
         func: (req, res, cb) => {
           // Use passed fields as additional fields, if available
-          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists'];
+          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill'];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            function render(err) {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(cache);
-            }
             if (err) {
               return cb(err);
             }
-            if (req.queryObj.project.indexOf('skill') !== -1) {
-              return queries.getMatchesSkill(db, cache, {}, render);
-            }
-            return render();
+            return res.json(cache);
           });
         },
       },
@@ -3073,6 +3064,9 @@ Please keep request rate to approximately 1/s.
           */
 
           function exitWithJob(err, parseJob) {
+            if (err) {
+              console.error(err);
+            }
             res.status(err ? 400 : 200).json({
               err,
               job: {
@@ -3402,7 +3396,10 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/schema',
         func: (req, res, cb) => {
-          db.select(['table_name', 'column_name', 'data_type']).from('information_schema.columns').where({ table_schema: 'public' }).asCallback((err, result) => {
+          db.select(['table_name', 'column_name', 'data_type'])
+          .from('information_schema.columns')
+          .where({ table_schema: 'public' })
+          .asCallback((err, result) => {
             if (err) {
               return cb(err);
             }

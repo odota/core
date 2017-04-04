@@ -171,11 +171,6 @@ CREATE TABLE subscriptions (
 CREATE INDEX on subscriptions(account_id);
 CREATE INDEX on subscriptions(customer_id);
 
-CREATE TABLE match_skill (
-  match_id bigint PRIMARY KEY,
-  skill integer
-);
-
 CREATE TABLE notable_players (
   account_id bigint PRIMARY KEY,
   name varchar(255),

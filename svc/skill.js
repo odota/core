@@ -4,13 +4,10 @@
 const constants = require('dotaconstants');
 const config = require('../config.js');
 const utility = require('../util/utility');
-const db = require('../store/db');
 const queries = require('../store/queries');
 const async = require('async');
 
-const insertMatchSkill = queries.insertMatchSkill;
-const results = {};
-const added = {};
+const insertMatchSkillCassandra = queries.insertMatchSkillCassandra;
 const apiKeys = config.STEAM_API_KEY.split(',');
 const parallelism = Math.min(3, apiKeys.length);
 const skills = [1, 2, 3];
@@ -35,15 +32,15 @@ function getPageData(start, options, cb) {
     // data is in data.result.matches
     const matches = data.result.matches;
     return async.eachSeries(matches, (m, cb) => {
-      insertMatchSkill(db, {
+      insertMatchSkillCassandra({
         match_id: m.match_id,
         skill: options.skill,
+        players: m.players,
       }, cb);
     }, (err) => {
       if (err) {
         return cb(err);
       }
-      console.log('total results: %s, added: %s', Object.keys(results).length, Object.keys(added).length);
       // repeat until results_remaining===0
       if (data.result.results_remaining === 0) {
         return cb(err);
