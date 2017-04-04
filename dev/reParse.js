@@ -17,7 +17,7 @@ db.select('match_id')
 .from('matches')
 .where('match_id', '>', matchId)
 // Only parse unparsed matches
-.andWhere('version', '0')
+.where('version', null)
 .orderBy('match_id')
 .asCallback((err, result) => {
   if (err) {
