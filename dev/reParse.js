@@ -16,6 +16,8 @@ const matchId = Number(args[0]);
 db.select('match_id')
 .from('matches')
 .where('match_id', '>', matchId)
+// Only parse unparsed matches
+.where('version', '0')
 .orderBy('match_id')
 .asCallback((err, result) => {
   if (err) {
