@@ -242,6 +242,8 @@ CREATE INDEX ON match_logs(match_id, attackername_slot) WHERE attackername_slot 
 CREATE INDEX ON match_logs(match_id, targetname_slot) WHERE targetname_slot IS NOT NULL;
 CREATE INDEX ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS NOT NULL;
 CREATE INDEX ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, valuename) WHERE valuename IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, type);
 CREATE INDEX on match_logs(type);
 
 CREATE TABLE picks_bans(

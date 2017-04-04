@@ -274,6 +274,9 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
     if (err) {
       console.error(err.stack || err);
     }
+    else {
+      console.log('completed parse of match %s', match.match_id);
+    }
     return cb(err, match.match_id);
   });
 });

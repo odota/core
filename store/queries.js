@@ -740,8 +740,10 @@ function insertMatch(match, options, cb) {
 
   function upsertMatch(cb) {
     if (!options.doLogParse) {
+      // Skip this if not a pro match (doLogParse true)
       return cb();
     }
+    console.log('[INSERTMATCH] upserting into Postgres');
     return db.transaction((trx) => {
       function upsertMatch(cb) {
         upsert(trx, 'matches', match, {
@@ -816,7 +818,7 @@ function insertMatch(match, options, cb) {
             if (err) {
               return cb(err);
             }
-            return async.eachLimit(match.logs, 10000, (e, cb) => {
+            return async.eachLimit(match.logs, 10, (e, cb) => {
               trx('match_logs').insert(e).asCallback(cb);
             }, cb);
           });
@@ -844,10 +846,7 @@ function insertMatch(match, options, cb) {
   }
 
   function upsertMatchCassandra(cb) {
-    if (!cassandra) {
-      return cb();
-    }
-    // console.log('[INSERTMATCH] upserting into Cassandra');
+    console.log('[INSERTMATCH] upserting into Cassandra');
     return cleanRowCassandra(cassandra, 'matches', match, (err, match) => {
       if (err) {
         return cb(err);
@@ -898,6 +897,7 @@ function insertMatch(match, options, cb) {
   }
 
   function updatePlayerCaches(cb) {
+    console.log('[INSERTMATCH] upserting into Cassandra player_caches');
     const copy = createMatchCopy(match, players);
     return insertPlayerCache(copy, cb);
   }
@@ -943,7 +943,7 @@ function insertMatch(match, options, cb) {
   }
 
   function telemetry(cb) {
-    // console.log('[INSERTMATCH] updating telemetry');
+    console.log('[INSERTMATCH] updating telemetry');
     const types = {
       api: 'matches_last_added',
       parsed: 'matches_last_parsed',
@@ -1081,8 +1081,9 @@ function insertMatch(match, options, cb) {
     decideGcData,
     decideMetaParse,
     decideReplayParse,
-  }, (err, results) =>
-    cb(err, results.decideReplayParse)
+  }, (err, results) => {
+    cb(err, results.decideReplayParse);
+  }
   );
 }
 
