@@ -2,15 +2,41 @@ const express = require('express');
 const playerFields = require('./playerFields');
 const filterDeps = require('../util/filterDeps');
 const spec = require('./spec');
+const cacheFunctions = require('../store/cacheFunctions');
 
 const api = new express.Router();
 const subkeys = playerFields.subkeys;
+
+// Player caches middleware
+api.use('/players/:account_id/:info?', (req, res, cb) => {
+  // Check cache
+  if (!Object.keys(req.query).length) {
+    return cacheFunctions.read({ key: req.params.info, account_id: req.params.account_id }, (err, result) => {
+      if (err) {
+        console.error(err);
+      }
+      if (result) {
+        console.log('[READCACHEHIT] %s', req.originalUrl);
+        try {
+          return res.json(JSON.parse(result));
+        } catch (e) {
+          console.error(e);
+          return cb();
+        }
+      }
+      console.log('[READCACHEMISS] %s', req.originalUrl);
+      return cb();
+    });
+  }
+  return cb();
+});
 
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (isNaN(Number(req.params.account_id))) {
     return cb('invalid account_id');
   }
+  req.originalQuery = JSON.parse(JSON.stringify(req.query));
   // Enable significance filter by default, disable it if 0 is passed
   if (req.query.significant === '0') {
     delete req.query.significant;
