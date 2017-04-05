@@ -11,7 +11,10 @@ const subkeys = playerFields.subkeys;
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   // Check cache
   if (!Object.keys(req.query).length) {
-    return cacheFunctions.read({ key: req.params.info, account_id: req.params.account_id }, (err, result) => {
+    return cacheFunctions.read({
+      key: req.params.info,
+      account_id: req.params.account_id,
+    }, (err, result) => {
       if (err) {
         console.error(err);
       }

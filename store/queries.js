@@ -987,7 +987,7 @@ function insertMatch(match, options, cb) {
   function clearMatchCache(cb) {
     redis.del(`match:${match.match_id}`, cb);
   }
-  
+
   function clearPlayerCaches(cb) {
     async.each((match.players || []).filter(player => Boolean(player.account_id)), (player, cb) => {
       async.each(cacheFunctions.getKeys(), (key, cb) => {

@@ -231,7 +231,10 @@ const playerParams = [
 
 function sendDataWithCache(req, res, data, key) {
   if (req.originalQuery && !Object.keys(req.originalQuery).length) {
-    cacheFunctions.write({ key, account_id: req.params.account_id }, JSON.stringify(data), () => {});
+    cacheFunctions.write({
+      key,
+      account_id: req.params.account_id,
+    }, JSON.stringify(data), () => {});
   }
   return res.json(data);
 }
@@ -1419,7 +1422,9 @@ Please keep request rate to approximately 1/s.
                 }
               });
             });
-            const result = Object.keys(heroes).map(k => heroes[k]).sort((a, b) => b.games - a.games);
+            const result = Object.keys(heroes)
+              .map(k => heroes[k])
+              .sort((a, b) => b.games - a.games);
             return sendDataWithCache(req, res, result, 'heroes');
           });
         },
