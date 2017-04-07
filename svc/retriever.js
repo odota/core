@@ -127,7 +127,7 @@ function init() {
     client.steamUser = new Steam.SteamUser(client);
     client.steamFriends = new Steam.SteamFriends(client);
     client.logOnDetails = logOnDetails;
-    client.Dota2 = new Dota2.Dota2Client(client, false, false);
+    client.Dota2 = new Dota2.Dota2Client(client, false);
     client.Dota2.on('ready', () => {
       console.log('acct %s ready', i);
       cb();

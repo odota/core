@@ -341,3 +341,18 @@ CREATE TABLE public_player_matches (
   hero_id integer
 );
 CREATE INDEX on public_player_matches(hero_id);
+
+GRANT SELECT ON matches TO readonly;
+GRANT SELECT ON player_matches TO readonly;
+GRANT SELECT ON public_matches TO readonly;
+GRANT SELECT ON public_player_matches TO readonly;
+GRANT SELECT ON heroes TO readonly;
+GRANT SELECT ON players TO readonly;
+GRANT SELECT ON leagues TO readonly;
+GRANT SELECT ON items TO readonly;
+GRANT SELECT ON teams TO readonly;
+GRANT SELECT ON team_match TO readonly;
+GRANT SELECT ON match_patch TO readonly;
+GRANT SELECT ON picks_bans TO readonly;
+GRANT SELECT ON match_logs TO readonly;
+GRANT SELECT ON notable_players TO readonly;
