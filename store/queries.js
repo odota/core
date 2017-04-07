@@ -1035,7 +1035,8 @@ function insertMatch(match, options, cb) {
   }
 
   function decideReplayParse(cb) {
-    if (options.skipParse || (!utility.isSignificant(match) && !options.forceParse)) {
+    // (!utility.isSignificant(match) && !options.forceParse)
+    if (options.skipParse) {
       // not parsing this match
       return cb();
     }
