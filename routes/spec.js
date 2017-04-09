@@ -17,6 +17,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const packageJson = require('../package.json');
+const cacheFunctions = require('../store/cacheFunctions');
 
 const pQueue = queue.getQueue('parse');
 const subkeys = playerFields.subkeys;
@@ -227,6 +228,16 @@ const playerParams = [
   params.significantParam,
   params.sortParam,
 ];
+
+function sendDataWithCache(req, res, data, key) {
+  if (req.originalQuery && !Object.keys(req.originalQuery).length) {
+    cacheFunctions.write({
+      key,
+      account_id: req.params.account_id,
+    }, JSON.stringify(data), () => {});
+  }
+  return res.json(data);
+}
 
 const spec = {
   swagger: '2.0',
@@ -1100,7 +1111,7 @@ Please keep request rate to approximately 1/s.
                 result.lose += 1;
               }
             });
-            return res.json(result);
+            return sendDataWithCache(req, res, result, 'wl');
           });
         },
       },
@@ -1411,8 +1422,10 @@ Please keep request rate to approximately 1/s.
                 }
               });
             });
-            return res.json(Object.keys(heroes).map(k =>
-              heroes[k]).sort((a, b) => b.games - a.games));
+            const result = Object.keys(heroes)
+              .map(k => heroes[k])
+              .sort((a, b) => b.games - a.games);
+            return sendDataWithCache(req, res, result, 'heroes');
           });
         },
       },
@@ -1504,7 +1517,7 @@ Please keep request rate to approximately 1/s.
               if (err) {
                 return cb(err);
               }
-              return res.json(result);
+              return sendDataWithCache(req, res, result, 'peers');
             });
           });
         },

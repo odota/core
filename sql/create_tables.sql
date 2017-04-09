@@ -242,6 +242,7 @@ CREATE INDEX ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS N
 CREATE INDEX ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
 CREATE INDEX ON match_logs(match_id, valuename) WHERE valuename IS NOT NULL;
 CREATE INDEX ON match_logs(match_id, type);
+CREATE INDEX ON match_logs(valuename) WHERE valuename IS NOT NULL;
 CREATE INDEX on match_logs(type);
 
 CREATE TABLE picks_bans(
