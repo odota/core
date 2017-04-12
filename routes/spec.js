@@ -1235,30 +1235,6 @@ Please keep request rate to approximately 1/s.
                     description: 'radiant_win',
                     type: 'boolean',
                   },
-                  heroes: {
-                    description: 'heroes',
-                    type: 'object',
-                    properties: {
-                      player_slot: {
-                        description: 'player_slot',
-                        type: 'object',
-                        properties: {
-                          account_id: {
-                            description: 'account_id',
-                            type: 'number',
-                          },
-                          hero_id: {
-                            description: 'hero_id',
-                            type: 'number',
-                          },
-                          player_slot: {
-                            description: 'player_slot',
-                            type: 'number',
-                          },
-                        },
-                      },
-                    },
-                  },
                   duration: {
                     description: 'duration',
                     type: 'number',
@@ -1298,6 +1274,30 @@ Please keep request rate to approximately 1/s.
                   skill: {
                     description: 'skill',
                     type: 'number',
+                  },
+                  heroes: {
+                    description: 'heroes (requires ?project=heroes)',
+                    type: 'object',
+                    properties: {
+                      player_slot: {
+                        description: 'player_slot',
+                        type: 'object',
+                        properties: {
+                          account_id: {
+                            description: 'account_id',
+                            type: 'number',
+                          },
+                          hero_id: {
+                            description: 'hero_id',
+                            type: 'number',
+                          },
+                          player_slot: {
+                            description: 'player_slot',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
                   },
                 },
               },
