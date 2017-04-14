@@ -3470,6 +3470,64 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    '/records/{field}': {
+      get: {
+        summary: 'GET /records/{field}',
+        description: 'Get top performances in a stat',
+        tags: ['records'],
+        parameters: [{
+          name: 'field',
+          in: 'path',
+          description: 'Field name to query',
+          required: true,
+          type: 'string',
+        }],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number',
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/records/:field',
+        func: (req, res, cb) => {
+          redis.zrevrange(`records:${req.params.field}`, 0, 99, 'WITHSCORES', (err, rows) => {
+            if (err) {
+              return cb(err);
+            }
+            const entries = rows.map((r, i) =>
+            ({
+              match_id: r.split(':')[0],
+              start_time: r.split(':')[1],
+              hero_id: r.split(':')[2],
+              score: rows[i + 1],
+            })
+            ).filter((r, i) =>
+              i % 2 === 0
+            );
+            return res.json(entries);
+          });
+        },
+      },
+    },
     '/schema': {
       get: {
         summary: 'GET /schema',
