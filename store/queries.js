@@ -590,19 +590,21 @@ function updateRecord(field, match, player) {
 }
 
 function updateRecords(match, cb) {
-  updateRecord('duration', match, {});
-  match.players.forEach((player) => {
-    updateRecord('kills', match, player);
-    updateRecord('deaths', match, player);
-    updateRecord('assists', match, player);
-    updateRecord('last_hits', match, player);
-    updateRecord('denies', match, player);
-    updateRecord('gold_per_min', match, player);
-    updateRecord('xp_per_min', match, player);
-    updateRecord('hero_damage', match, player);
-    updateRecord('tower_damage', match, player);
-    updateRecord('hero_healing', match, player);
-  });
+  if (match.lobby_type === 7) {
+    updateRecord('duration', match, {});
+    match.players.forEach((player) => {
+      updateRecord('kills', match, player);
+      updateRecord('deaths', match, player);
+      updateRecord('assists', match, player);
+      updateRecord('last_hits', match, player);
+      updateRecord('denies', match, player);
+      updateRecord('gold_per_min', match, player);
+      updateRecord('xp_per_min', match, player);
+      updateRecord('hero_damage', match, player);
+      updateRecord('tower_damage', match, player);
+      updateRecord('hero_healing', match, player);
+    });
+  }
   cb();
 }
 

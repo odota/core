@@ -3502,6 +3502,10 @@ Please keep request rate to approximately 1/s.
                     description: 'hero_id',
                     type: 'number',
                   },
+                  score: {
+                    description: 'score',
+                    type: 'number',
+                  },
                 },
               },
             },
