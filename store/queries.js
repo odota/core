@@ -582,6 +582,33 @@ function upsertMatchSample(match, cb) {
   });
 }
 
+function updateRecord(field, match, player) {
+  redis.zadd(`records:${field}`, match[field] || player[field], [match.match_id, match.start_time, player.hero_id].join(':'));
+  // Keep only 100 top scores
+  redis.zremrangebyrank(`records:${field}`, '0', '-101');
+  const expire = moment().add(1, 'week').startOf('week').format('X');
+  redis.expireat(`records:${field}`, expire);
+}
+
+function updateRecords(match, cb) {
+  if (match.lobby_type === 7 && utility.isSignificant(match)) {
+    updateRecord('duration', match, {});
+    match.players.forEach((player) => {
+      updateRecord('kills', match, player);
+      updateRecord('deaths', match, player);
+      updateRecord('assists', match, player);
+      updateRecord('last_hits', match, player);
+      updateRecord('denies', match, player);
+      updateRecord('gold_per_min', match, player);
+      updateRecord('xp_per_min', match, player);
+      updateRecord('hero_damage', match, player);
+      updateRecord('tower_damage', match, player);
+      updateRecord('hero_healing', match, player);
+    });
+  }
+  cb();
+}
+
 function insertPlayer(db, player, cb) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
@@ -938,6 +965,12 @@ function insertMatch(match, options, cb) {
       upsertMatchSample(cb) {
         if (options.origin === 'scanner') {
           return upsertMatchSample(match, cb);
+        }
+        return cb();
+      },
+      updateRecords(cb) {
+        if (options.origin === 'scanner') {
+          return updateRecords(match, cb);
         }
         return cb();
       },

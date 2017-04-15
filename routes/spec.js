@@ -1680,10 +1680,72 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    '/players/{account_id}/totals': {
+      get: {
+        summary: 'GET /players/{account_id}/totals',
+        description: 'Totals in stats',
+        tags: [
+          'players',
+        ],
+        parameters: playerParams,
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  field: {
+                    description: 'field',
+                    type: 'string',
+                  },
+                  n: {
+                    description: 'number',
+                    type: 'number',
+                  },
+                  sum: {
+                    description: 'sum',
+                    type: 'number',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/players/:account_id/totals',
+        func: (req, res, cb) => {
+          const result = {};
+          Object.keys(subkeys).forEach((key) => {
+            result[key] = {
+              field: key,
+              n: 0,
+              sum: 0,
+            };
+          });
+          req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys));
+          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
+            if (err) {
+              return cb(err);
+            }
+            cache.forEach((m) => {
+              console.log(m);
+              Object.keys(subkeys).forEach((key) => {
+                if (m[key] !== null && m[key] !== undefined) {
+                  result[key].n += 1;
+                  result[key].sum += Number(m[key]);
+                }
+              });
+            });
+            return res.json(Object.keys(result).map(key => result[key]));
+          });
+        },
+      },
+    },
     '/players/{account_id}/counts': {
       get: {
         summary: 'GET /players/{account_id}/counts',
-        description: 'Categorical counts',
+        description: 'Counts in categories',
         tags: [
           'players',
         ],
@@ -3467,6 +3529,68 @@ Please keep request rate to approximately 1/s.
               }
               return res.json(result.filter(Boolean));
             });
+        },
+      },
+    },
+    '/records/{field}': {
+      get: {
+        summary: 'GET /records/{field}',
+        description: 'Get top performances in a stat',
+        tags: ['records'],
+        parameters: [{
+          name: 'field',
+          in: 'path',
+          description: 'Field name to query',
+          required: true,
+          type: 'string',
+        }],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number',
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number',
+                  },
+                  score: {
+                    description: 'score',
+                    type: 'number',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/records/:field',
+        func: (req, res, cb) => {
+          redis.zrevrange(`records:${req.params.field}`, 0, 99, 'WITHSCORES', (err, rows) => {
+            if (err) {
+              return cb(err);
+            }
+            const entries = rows.map((r, i) =>
+            ({
+              match_id: r.split(':')[0],
+              start_time: r.split(':')[1],
+              hero_id: r.split(':')[2],
+              score: rows[i + 1],
+            })
+            ).filter((r, i) =>
+              i % 2 === 0
+            );
+            return res.json(entries);
+          });
         },
       },
     },
