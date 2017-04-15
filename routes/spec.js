@@ -1680,10 +1680,72 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
+    '/players/{account_id}/totals': {
+      get: {
+        summary: 'GET /players/{account_id}/totals',
+        description: 'Totals in stats',
+        tags: [
+          'players',
+        ],
+        parameters: playerParams,
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  field: {
+                    description: 'field',
+                    type: 'string',
+                  },
+                  n: {
+                    description: 'number',
+                    type: 'number',
+                  },
+                  sum: {
+                    description: 'sum',
+                    type: 'number',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/players/:account_id/totals',
+        func: (req, res, cb) => {
+          const result = {};
+          Object.keys(subkeys).forEach((key) => {
+            result[key] = {
+              field: key,
+              n: 0,
+              sum: 0,
+            };
+          });
+          req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys));
+          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
+            if (err) {
+              return cb(err);
+            }
+            cache.forEach((m) => {
+              console.log(m);
+              Object.keys(subkeys).forEach((key) => {
+                if (m[key] !== null && m[key] !== undefined) {
+                  result[key].n += 1;
+                  result[key].sum += Number(m[key]);
+                }
+              });
+            });
+            return res.json(Object.keys(result).map(key => result[key]));
+          });
+        },
+      },
+    },
     '/players/{account_id}/counts': {
       get: {
         summary: 'GET /players/{account_id}/counts',
-        description: 'Categorical counts',
+        description: 'Counts in categories',
         tags: [
           'players',
         ],
