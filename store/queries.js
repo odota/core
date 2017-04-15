@@ -590,7 +590,7 @@ function updateRecord(field, match, player) {
 }
 
 function updateRecords(match, cb) {
-  if (match.lobby_type === 7) {
+  if (match.lobby_type === 7 && utility.isSignificant(match)) {
     updateRecord('duration', match, {});
     match.players.forEach((player) => {
       updateRecord('kills', match, player);
