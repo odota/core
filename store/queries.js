@@ -586,7 +586,7 @@ function updateRecord(field, match, player) {
   redis.zadd(`records:${field}`, match[field] || player[field], [match.match_id, match.start_time, player.hero_id].join(':'));
   // Keep only 100 top scores
   redis.zremrangebyrank(`records:${field}`, '0', '-101');
-  const expire = moment().add(1, 'week').startOf('week').format('X');
+  const expire = moment().add(1, 'month').startOf('month').format('X');
   redis.expireat(`records:${field}`, expire);
 }
 
