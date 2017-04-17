@@ -94,6 +94,8 @@ function processTeamfights(entries, meta) {
             populate(r, tf);
             // increment death count for this hero
             tf.players[r.slot].deaths += 1;
+            if (e.tracked_death)
+              tf.players[r.slot].tracked_death = e.tracked_death;
           }
         } else if (e.type === 'buyback_log') {
           // bought back

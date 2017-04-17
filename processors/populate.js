@@ -1,4 +1,60 @@
-function populate(e, container) {
+function getSkillLevel(meta, ability, time) {
+  return meta.abilities.filter(au => au.ability === ability && au.time < time).reduce((x,y) => x.time > y.time ? x : y); 
+}
+
+function greevilsGreed(e, container, meta) {
+  if (e.type === 'killed' && 'greevils_greed_stack' in e) {
+    let alch_slot = meta.hero_to_slot['npc_dota_hero_alchemist'];
+    let alch_player = container.players[alch_slot];
+    
+    let greevils_greed_id = 5368;
+    let gg_lvl = getSkillLevel(meta, greevils_greed_id, e.time);
+    
+    let gold_base = 6;
+    let gold_stack = e.greevils_greed_stack * 3;
+    
+    switch(gg_lvl.level) {
+      case 1: gold_stack = Math.min(gold_stack, 12); break;
+      case 2: gold_stack = Math.min(gold_stack, 20); break;
+      case 3: gold_stack = Math.min(gold_stack, 28); break;
+      case 4: gold_stack = Math.min(gold_stack, 36); break;
+    }
+
+    alch_player.performance_others = Object.assign({}, { greevils_greed_gold: 0 }, alch_player.performance_others)
+    alch_player.performance_others.greevils_greed_gold += gold_base + gold_stack;
+  }
+}
+
+function track(e, container, meta) {
+  if (e.tracked_death) {
+    let tracker_slot = meta.hero_to_slot[e.tracked_sourcename];
+    let tracker_player = container.players[tracker_slot];
+
+    let track_id = 5288
+    let track_lvl = meta.abilities.filter(au => au.ability === track_id  && au.time < e.time).reduce((x,y) => x.time > y.time ? x : y);
+    
+    let gold = 0;
+    switch(track_lvl.level) {
+      case 1: gold = 150; break;
+      case 2: gold = 250; break;
+      case 3: gold = 350; break;
+    }
+
+    tracker_player.performance_others = Object.assign({}, { tracked_deaths: 0, track_gold: 0 }, tracker_player.performance_others)
+    tracker_player.performance_others.tracked_deaths += 1;
+    tracker_player.performance_others.track_gold += gold;
+  }
+}
+
+function performanceOthers(e, container, meta) {
+  if (!meta)
+    return;
+
+  greevilsGreed(e, container, meta);
+  track(e, container, meta);
+}
+
+function populate(e, container, meta) {
   let t;
   switch (e.type) {
     case 'interval':
@@ -60,6 +116,8 @@ function populate(e, container) {
           arrEntry = {
             time: e.time,
             key: e.key,
+            tracked_death: e.tracked_death,
+            tracked_sourcename: e.tracked_sourcename,
           };
         } else {
           arrEntry = JSON.parse(JSON.stringify(e));
@@ -73,6 +131,9 @@ function populate(e, container) {
         } else {
           t[e.key] = e.value;
         }
+        
+        performanceOthers(e, container, meta);
+        
       } else if (typeof t === 'string') {
       // string, used for steam id
         container.players[e.slot][e.type] = e.key;
@@ -84,3 +145,4 @@ function populate(e, container) {
   }
 }
 module.exports = populate;
+

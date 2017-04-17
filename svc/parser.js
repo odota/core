@@ -146,12 +146,15 @@ function createParsedDataBlob(entries, match) {
   const adjustedEntries = entries.map(e => Object.assign({}, e, {
     time: e.time - meta.game_zero,
   }));
+  meta.abilities = match.ability_upgrades.map(e => Object.assign({}, e, {
+    time: e.time - meta.game_zero,
+  }));
   console.timeEnd('adjustTime');
   console.time('processExpand');
   const expanded = processExpand(adjustedEntries, meta);
   console.timeEnd('processExpand');
   console.time('processParsedData');
-  const parsedData = processParsedData(expanded, getParseSchema());
+  const parsedData = processParsedData(expanded, getParseSchema(), meta);
   console.timeEnd('processParsedData');
   console.time('processTeamfights');
   parsedData.teamfights = processTeamfights(expanded, meta);

@@ -120,12 +120,14 @@ function processExpand(entries, meta) {
     DOTA_COMBATLOG_DEATH(e) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
-      // Don't count denies
-      if (e.attackername !== key) {
+      
+      if (e.sourcename !== key) {
         expand(Object.assign({}, e, {
           unit,
           key,
           type: 'killed',
+          tracked_death: e.tracked_death,
+          tracked_sourcename: e.tracked_sourcename,
         }));
       }
       if (e.targethero && !e.targetillusion) {
@@ -133,6 +135,8 @@ function processExpand(entries, meta) {
           time: e.time,
           unit,
           key,
+          tracked_death: e.tracked_death,
+          tracked_sourcename: e.tracked_sourcename,
           type: 'kills_log',
         });
         // reverse
