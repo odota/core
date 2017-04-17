@@ -609,6 +609,13 @@ function updateRecords(match, cb) {
   cb();
 }
 
+function updateLastPlayed(match, cb) {
+  const filteredPlayers = (match.players || []).filter(player => player.account_id && player.account_id !== utility.getAnonymousAccountId());
+  async.each(filteredPlayers, (player, cb) => {
+    insertPlayer(db, { account_id: player.account_id, last_match_time: new Date(match.start_time * 1000) }, cb);
+  }, cb);
+}
+
 function insertPlayer(db, player, cb) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
@@ -973,6 +980,11 @@ function insertMatch(match, options, cb) {
           return updateRecords(match, cb);
         }
         return cb();
+      },
+      updateLastPlayed(cb) {
+        if (options.origin === 'scanner') {
+          return updateLastPlayed(match, cb);
+        }
       },
       /*
       updateMatchups(cb) {

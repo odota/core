@@ -10,3 +10,5 @@ ALTER TABLE player_matches ADD runes_log json[];
 ALTER TABLE heroes ADD primary_attr text;
 ALTER TABLE heroes ADD attack_type text;
 ALTER TABLE heroes ADD roles text[];
+
+ALTER TABLE players ADD last_match_time timestamp with time zone;
