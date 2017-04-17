@@ -26,7 +26,7 @@ function search(options, cb) {
     personaname(callback) {
       db.raw(`
         SELECT * FROM 
-        (SELECT account_id, avatarfull, personaname, similarity(personaname, ?) AS similarity
+        (SELECT account_id, avatarfull, personaname, last_match_time, similarity(personaname, ?) AS similarity
         FROM players 
         WHERE personaname % ? 
         AND similarity(personaname, ?) >= ?

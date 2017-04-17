@@ -446,6 +446,98 @@ function upsert(db, table, row, conflict, cb) {
     )).asCallback(cb);
   });
 }
+
+function insertPlayer(db, player, cb) {
+  if (player.steamid) {
+    // this is a login, compute the account_id from steamid
+    player.account_id = Number(convert64to32(player.steamid));
+  }
+  if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
+    return cb();
+  }
+  return upsert(db, 'players', player, {
+    account_id: player.account_id,
+  }, cb);
+}
+
+function insertPlayerRating(db, row, cb) {
+  db('player_ratings').insert(row).asCallback(cb);
+}
+
+function insertMatchSkillCassandra(row, cb) {
+  cassandra.execute('INSERT INTO matches (match_id, skill) VALUES (?, ?)',
+  [row.match_id, row.skill],
+  { prepare: true },
+  (err) => {
+    if (err) {
+      return cb(err);
+    }
+    if (row.players) {
+      const filteredPlayers = row.players.filter(player => player.account_id
+        && player.account_id !== utility.getAnonymousAccountId());
+      return async.eachSeries(filteredPlayers, (player, cb) => {
+        cassandra.execute('INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)',
+          [String(player.account_id), String(row.match_id), String(row.skill)],
+          { prepare: true },
+          cb);
+      }, cb);
+    }
+    return cb();
+  });
+}
+
+function writeCache(accountId, cache, cb) {
+  return async.each(cache.raw, (match, cb) => {
+    cleanRowCassandra(cassandra, 'player_caches', match, (err, cleanedMatch) => {
+      if (err) {
+        return cb(err);
+      }
+      const serializedMatch = serialize(cleanedMatch);
+      const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)',
+        Object.keys(serializedMatch).join(','),
+        Object.keys(serializedMatch).map(() => '?').join(',')
+      );
+      const arr = Object.keys(serializedMatch).map(k =>
+        serializedMatch[k]
+      );
+      return cassandra.execute(query, arr, {
+        prepare: true,
+      }, cb);
+    });
+  }, cb);
+}
+
+function insertPlayerCache(match, cb) {
+  if (!cassandra) {
+    return cb();
+  }
+  const players = match.players;
+  if (match.pgroup && players) {
+    players.forEach((p) => {
+      if (match.pgroup[p.player_slot]) {
+        // add account id to each player so we know what caches to update
+        p.account_id = match.pgroup[p.player_slot].account_id;
+        // add hero_id to each player so we update records with hero played
+        p.hero_id = match.pgroup[p.player_slot].hero_id;
+      }
+    });
+  }
+  return async.eachSeries(players, (playerMatch, cb) => {
+    if (playerMatch.account_id && playerMatch.account_id !== utility.getAnonymousAccountId()) {
+      // join player with match to form player_match
+      Object.keys(match).forEach((key) => {
+        if (key !== 'players') {
+          playerMatch[key] = match[key];
+        }
+      });
+      computeMatchData(playerMatch);
+      return writeCache(playerMatch.account_id, {
+        raw: [playerMatch],
+      }, cb);
+    }
+    return cb();
+  }, cb);
+}
 /*
 function updateMatchups(match, cb) {
   async.each(utility.generateMatchups(match, 1), (key, cb) => {
@@ -609,95 +701,14 @@ function updateRecords(match, cb) {
   cb();
 }
 
-function insertPlayer(db, player, cb) {
-  if (player.steamid) {
-    // this is a login, compute the account_id from steamid
-    player.account_id = Number(convert64to32(player.steamid));
-  }
-  if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
-    return cb();
-  }
-  return upsert(db, 'players', player, {
-    account_id: player.account_id,
-  }, cb);
-}
-
-function insertPlayerRating(db, row, cb) {
-  db('player_ratings').insert(row).asCallback(cb);
-}
-
-function insertMatchSkillCassandra(row, cb) {
-  cassandra.execute('INSERT INTO matches (match_id, skill) VALUES (?, ?)',
-  [row.match_id, row.skill],
-  { prepare: true },
-  (err) => {
-    if (err) {
-      return cb(err);
-    }
-    if (row.players) {
-      const filteredPlayers = row.players.filter(player => player.account_id
-        && player.account_id !== utility.getAnonymousAccountId());
-      return async.eachSeries(filteredPlayers, (player, cb) => {
-        cassandra.execute('INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)',
-          [String(player.account_id), String(row.match_id), String(row.skill)],
-          { prepare: true },
-          cb);
-      }, cb);
-    }
-    return cb();
-  });
-}
-
-function writeCache(accountId, cache, cb) {
-  return async.each(cache.raw, (match, cb) => {
-    cleanRowCassandra(cassandra, 'player_caches', match, (err, cleanedMatch) => {
-      if (err) {
-        return cb(err);
-      }
-      const serializedMatch = serialize(cleanedMatch);
-      const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)',
-        Object.keys(serializedMatch).join(','),
-        Object.keys(serializedMatch).map(() => '?').join(',')
-      );
-      const arr = Object.keys(serializedMatch).map(k =>
-        serializedMatch[k]
-      );
-      return cassandra.execute(query, arr, {
-        prepare: true,
-      }, cb);
-    });
-  }, cb);
-}
-
-function insertPlayerCache(match, cb) {
-  if (!cassandra) {
-    return cb();
-  }
-  const players = match.players;
-  if (match.pgroup && players) {
-    players.forEach((p) => {
-      if (match.pgroup[p.player_slot]) {
-        // add account id to each player so we know what caches to update
-        p.account_id = match.pgroup[p.player_slot].account_id;
-        // add hero_id to each player so we update records with hero played
-        p.hero_id = match.pgroup[p.player_slot].hero_id;
-      }
-    });
-  }
-  return async.eachSeries(players, (playerMatch, cb) => {
-    if (playerMatch.account_id && playerMatch.account_id !== utility.getAnonymousAccountId()) {
-      // join player with match to form player_match
-      Object.keys(match).forEach((key) => {
-        if (key !== 'players') {
-          playerMatch[key] = match[key];
-        }
-      });
-      computeMatchData(playerMatch);
-      return writeCache(playerMatch.account_id, {
-        raw: [playerMatch],
-      }, cb);
-    }
-    return cb();
+function updateLastPlayed(match, cb) {
+  const filteredPlayers = (match.players || []).filter(player =>
+    player.account_id && player.account_id !== utility.getAnonymousAccountId());
+  async.each(filteredPlayers, (player, cb) => {
+    insertPlayer(db, {
+      account_id: player.account_id,
+      last_match_time: new Date(match.start_time * 1000),
+    }, cb);
   }, cb);
 }
 
@@ -971,6 +982,12 @@ function insertMatch(match, options, cb) {
       updateRecords(cb) {
         if (options.origin === 'scanner') {
           return updateRecords(match, cb);
+        }
+        return cb();
+      },
+      updateLastPlayed(cb) {
+        if (options.origin === 'scanner') {
+          return updateLastPlayed(match, cb);
         }
         return cb();
       },
