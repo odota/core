@@ -133,7 +133,8 @@ CREATE TABLE players (
   full_history_time timestamp with time zone,
   cheese integer DEFAULT 0,
   fh_unavailable boolean,
-  loccountrycode varchar(2)
+  loccountrycode varchar(2),
+  last_match_time timestamp with time zone
   /*
     "communityvisibilitystate" : 3,
     "lastlogoff" : 1426020853,
