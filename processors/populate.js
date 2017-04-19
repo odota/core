@@ -1,54 +1,64 @@
 function getSkillLevel(meta, ability, time) {
-  return meta.abilities.filter(au => au.ability === ability && au.time < time).reduce((x,y) => x.time > y.time ? x : y); 
+  const upgrades = meta.abilities.filter(au => au.ability === ability && au.time < time);
+  const lastUpgrade = upgrades.reduce((x,y) => x.time > y.time ? x : y); 
+  return lastUpgrade;
 }
 
 function greevilsGreed(e, container, meta) {
   if (e.type === 'killed' && 'greevils_greed_stack' in e) {
-    let alch_slot = meta.hero_to_slot['npc_dota_hero_alchemist'];
-    let alch_player = container.players[alch_slot];
+    const alchSlot = meta.hero_to_slot['npc_dota_hero_alchemist'];
+    const alchPlayer = container.players[alchSlot];
     
-    let greevils_greed_id = 5368;
-    let gg_lvl = getSkillLevel(meta, greevils_greed_id, e.time);
+    const greevilsGreedId = 5368;
+    const ggLvl = getSkillLevel(meta, greevilsGreedId, e.time);
     
-    let gold_base = 6;
-    let gold_stack = e.greevils_greed_stack * 3;
+    const goldBase = 6;
+    let goldStack = e.greevils_greed_stack * 3;
     
-    switch(gg_lvl.level) {
-      case 1: gold_stack = Math.min(gold_stack, 12); break;
-      case 2: gold_stack = Math.min(gold_stack, 20); break;
-      case 3: gold_stack = Math.min(gold_stack, 28); break;
-      case 4: gold_stack = Math.min(gold_stack, 36); break;
+    switch (ggLvl.level) {
+      case 1: goldStack = Math.min(goldStack, 12); break;
+      case 2: goldStack = Math.min(goldStack, 20); break;
+      case 3: goldStack = Math.min(goldStack, 28); break;
+      case 4: goldStack = Math.min(goldStack, 36); break;
     }
 
-    alch_player.performance_others = Object.assign({}, { greevils_greed_gold: 0 }, alch_player.performance_others)
-    alch_player.performance_others.greevils_greed_gold += gold_base + gold_stack;
+    alchPlayer.performance_others = Object.assign({}, { 
+      greevils_greed_gold: 0 
+    }, alchPlayer.performance_others);
+    
+    alchPlayer.performance_others.greevils_greed_gold += goldBase + goldStack;
   }
 }
 
 function track(e, container, meta) {
   if (e.tracked_death) {
-    let tracker_slot = meta.hero_to_slot[e.tracked_sourcename];
-    let tracker_player = container.players[tracker_slot];
+    const trackerSlot = meta.hero_to_slot[e.tracked_sourcename];
+    const trackerPlayer = container.players[trackerSlot];
 
-    let track_id = 5288
-    let track_lvl = meta.abilities.filter(au => au.ability === track_id  && au.time < e.time).reduce((x,y) => x.time > y.time ? x : y);
+    const trackerId = 5288;
+    const trackLvl = getSkillLevel(meta, trackerId, e.time);
     
     let gold = 0;
-    switch(track_lvl.level) {
+    switch (trackLvl.level) {
       case 1: gold = 150; break;
       case 2: gold = 250; break;
       case 3: gold = 350; break;
     }
 
-    tracker_player.performance_others = Object.assign({}, { tracked_deaths: 0, track_gold: 0 }, tracker_player.performance_others)
-    tracker_player.performance_others.tracked_deaths += 1;
-    tracker_player.performance_others.track_gold += gold;
+    trackerPlayer.performance_others = Object.assign({}, { 
+      tracked_deaths: 0, 
+      track_gold: 0 
+    }, trackerPlayer.performance_others);
+
+    trackerPlayer.performance_others.tracked_deaths += 1;
+    trackerPlayer.performance_others.track_gold += gold;
   }
 }
 
 function performanceOthers(e, container, meta) {
-  if (!meta)
+  if (!meta) {
     return;
+  }
 
   greevilsGreed(e, container, meta);
   track(e, container, meta);

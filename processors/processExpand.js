@@ -126,10 +126,9 @@ function processExpand(entries, meta) {
           unit,
           key,
           type: 'killed',
-          tracked_death: e.tracked_death,
-          tracked_sourcename: e.tracked_sourcename,
         }));
       }
+
       if (e.targethero && !e.targetillusion) {
         expand({
           time: e.time,
