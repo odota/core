@@ -6,7 +6,8 @@ function getSkillLevel(meta, ability, time) {
 
 function greevilsGreed(e, container, meta) {
   if (e.type === 'killed' && 'greevils_greed_stack' in e) {
-    const alchSlot = meta.hero_to_slot['npc_dota_hero_alchemist'];
+    const alchName = 'npc_dota_hero_alchemist';
+    const alchSlot = meta.hero_to_slot[alchName];
     const alchPlayer = container.players[alchSlot];
 
     const greevilsGreedId = 5368;
@@ -48,7 +49,7 @@ function track(e, container, meta) {
     }
 
     trackerPlayer.performance_others = Object.assign({}, {
-      tracked_deaths: 0, 
+      tracked_deaths: 0,
       track_gold: 0,
     }, trackerPlayer.performance_others);
 
@@ -145,7 +146,6 @@ function populate(e, container, meta) {
         }
 
         performanceOthers(e, container, meta);
-
       } else if (typeof t === 'string') {
       // string, used for steam id
         container.players[e.slot][e.type] = e.key;
