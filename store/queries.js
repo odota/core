@@ -721,7 +721,7 @@ function createMatchCopy(match, players) {
 function insertMatch(match, options, cb) {
   const players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
   const abilityUpgrades = [];
-  const savedAbilityLvls = [5288 /*track*/ , 5368 /*greevils greed*/ ]
+  const savedAbilityLvls = [5288 /* track */, 5368 /* greevils greed */];
 
   function preprocess(cb) {
     // don't insert anonymous account id
@@ -758,14 +758,12 @@ function insertMatch(match, options, cb) {
           p.ability_upgrades_arr = p.ability_upgrades.map(au =>
             au.ability
           );
-          let ability_lvl = {};
-          p.ability_upgrades.map((au) => {
-            const track = 5288;
-            const greevils_greed = 5368;
+          let abilityLvls = {};
+          p.ability_upgrades.forEach((au) => {
             if (savedAbilityLvls.indexOf(au.ability) >= 0) {
-              abilityUpgrades[au.ability] = (abilityUpgrades[au.ability] || 0) + 1;
-              au.level = abilityUpgrades[au.ability];
-              ability_upgrades.push(au);
+              abilityLvls[au.ability] = (abilityLvls[au.ability] || 0) + 1;
+              au.level = abilityLvls[au.ability];
+              abilityUpgrades.push(au);
             }
           });
         }

@@ -120,7 +120,7 @@ function processExpand(entries, meta) {
     DOTA_COMBATLOG_DEATH(e) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
-      
+
       if (e.sourcename !== key) {
         expand(Object.assign({}, e, {
           unit,
