@@ -2,7 +2,7 @@
  * Strips off "item_" from strings, and nullifies dota_unknown.
  * Does not mutate the original string.
  **/
-const item_ids = require('dotaconstants').item_ids;
+const itemIds = require('dotaconstants').item_ids;
 
 function translate(input) {
   if (input === 'dota_unknown') {
@@ -192,7 +192,7 @@ function processExpand(entries, meta) {
         type: 'xp_reasons',
       });
     },
-    DOTA_COMBATLOG_PURCHASE(e) {
+    DOTA_COMBATLOG_PURCHASE() {
       // Moved to actions due to purchases before start of the game (during picks)
 
       // purchase
@@ -214,7 +214,7 @@ function processExpand(entries, meta) {
           unit,
           key,
           type: 'purchase_log',
-        }); 
+        });
       } */
     },
     DOTA_COMBATLOG_BUYBACK(e) {
@@ -294,7 +294,7 @@ function processExpand(entries, meta) {
     actions(e) {
       // purchase
       if (e.key === "16") {
-        const key = translate(item_ids[e.value.toString()]);  // "item_stout_shield" by id
+        const key = translate(itemIds[e.value.toString()]);  // "item_stout_shield" by id
         expand({
           time: e.time,
           value: 1,
@@ -558,7 +558,7 @@ function processExpand(entries, meta) {
     if (types[e.type]) {
       types[e.type](e);
     } else {
-      //console.log('parser emitted unhandled type: %s', e.type);
+      // console.log('parser emitted unhandled type: %s', e.type);
     }
   }
   return output;
