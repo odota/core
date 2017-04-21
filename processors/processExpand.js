@@ -2,6 +2,8 @@
  * Strips off "item_" from strings, and nullifies dota_unknown.
  * Does not mutate the original string.
  **/
+const item_ids = require('dotaconstants').item_ids;
+
 function translate(input) {
   if (input === 'dota_unknown') {
     return null;
@@ -191,7 +193,10 @@ function processExpand(entries, meta) {
       });
     },
     DOTA_COMBATLOG_PURCHASE(e) {
+      // Moved to actions due to purchases before start of the game (during picks)
+
       // purchase
+      /*
       const unit = e.targetname;
       const key = translate(e.valuename);
       expand({
@@ -209,8 +214,8 @@ function processExpand(entries, meta) {
           unit,
           key,
           type: 'purchase_log',
-        });
-      }
+        }); 
+      } */
     },
     DOTA_COMBATLOG_BUYBACK(e) {
       // buyback
@@ -287,6 +292,27 @@ function processExpand(entries, meta) {
       });
     },
     actions(e) {
+      // purchase
+      if (e.key === "16") {
+        const key = translate(item_ids[e.value.toString()]);  // "item_stout_shield" by id
+        expand({
+          time: e.time,
+          value: 1,
+          slot: e.slot,
+          key,
+          type: 'purchase',
+        });
+        // don't include recipes in purchase logs
+        if (key.indexOf('recipe_') !== 0) {
+          expand({
+            time: e.time,
+            value: 1,
+            slot: e.slot,
+            key,
+            type: 'purchase_log',
+          });
+        }
+      }
       expand(e);
     },
     CHAT_MESSAGE_RUNE_PICKUP(e) {
@@ -532,7 +558,7 @@ function processExpand(entries, meta) {
     if (types[e.type]) {
       types[e.type](e);
     } else {
-      // console.log('parser emitted unhandled type: %s', e.type);
+      //console.log('parser emitted unhandled type: %s', e.type);
     }
   }
   return output;
