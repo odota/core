@@ -722,8 +722,8 @@ function insertMatch(match, options, cb) {
   const players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
   const abilityUpgrades = [];
   const savedAbilityLvls = {
-    track: 5288,
-    greevils_greed: 5368,
+    5288: 'track',
+    5368: 'greevils_greed',
   };
 
   function preprocess(cb) {
@@ -763,7 +763,7 @@ function insertMatch(match, options, cb) {
           );
           const abilityLvls = {};
           p.ability_upgrades.forEach((au) => {
-            if (Object.values(savedAbilityLvls).indexOf(au.ability) >= 0) {
+            if (au.ability in savedAbilityLvls) {
               abilityLvls[au.ability] = (abilityLvls[au.ability] || 0) + 1;
               const abilityUpgrade = Object.assign({}, au, {
                 level: abilityLvls[au.ability],
