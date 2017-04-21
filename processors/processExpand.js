@@ -293,7 +293,7 @@ function processExpand(entries, meta) {
     },
     actions(e) {
       // purchase
-      if (e.key === "16") {
+      if (e.key === '16') {
         const key = translate(itemIds[e.value.toString()]);  // "item_stout_shield" by id
         expand({
           time: e.time,
