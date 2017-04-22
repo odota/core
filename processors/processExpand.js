@@ -287,7 +287,7 @@ function processExpand(entries, meta) {
       });
     },
     actions(e) {
-      expand(e);
+      expand(Object.assign({}, e, { value: 1 });
     },
     CHAT_MESSAGE_RUNE_PICKUP(e) {
       expand({
