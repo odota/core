@@ -84,7 +84,7 @@ def start():
   # Get the available zones
   zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
   zoneList = zones.strip().split('\n')
-  # createGroups(zoneList)
+  createGroups(zoneList)
   # sort by zone (alphabetical)
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
