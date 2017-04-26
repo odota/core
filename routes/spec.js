@@ -206,6 +206,13 @@ const params = {
     required: false,
     type: 'integer',
   },
+  lessThanMatchIdParam: {
+    name: 'less_than_match_id',
+    in: 'query',
+    description: 'Get matches with a match ID lower than this value',
+    required: false,
+    type: 'integer',
+  },
 };
 
 const playerParams = [
@@ -2287,9 +2294,10 @@ Please keep request rate to approximately 1/s.
           ON dire.team_id = matches.dire_team_id
           LEFT JOIN leagues USING(leagueid)
           LEFT JOIN match_gcdata USING(match_id)
+          WHERE match_id < ?
           ORDER BY match_id DESC
           LIMIT 100
-          `)
+          `, [req.query.less_than_match_id || Number.MAX_SAFE_INTEGER])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -2306,6 +2314,7 @@ Please keep request rate to approximately 1/s.
         tags: ['public matches'],
         parameters: [
           params.mmrAscendingParam,
+          params.lessThanMatchIdParam,
         ],
         responses: {
           200: {
