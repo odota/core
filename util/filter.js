@@ -38,7 +38,7 @@ function filter(matches, filters) {
     included_account_id(m, key, arr) {
       return arr.every((k) => {
         let passed = false;
-        Object.keys(m.heroes).forEach((key) => {
+        Object.keys(m.heroes || {}).forEach((key) => {
           if (m.heroes[key].account_id === k) {
             passed = true;
           }
@@ -49,7 +49,7 @@ function filter(matches, filters) {
     excluded_account_id(m, key, arr) {
       return arr.every((k) => {
         let passed = true;
-        Object.keys(m.heroes).forEach((key) => {
+        Object.keys(m.heroes || {}).forEach((key) => {
           if (m.heroes[key].account_id === k) {
             passed = false;
           }
@@ -60,7 +60,7 @@ function filter(matches, filters) {
     with_hero_id(m, key, arr) {
       return arr.every((k) => {
         let passed = false;
-        Object.keys(m.heroes).forEach((key) => {
+        Object.keys(m.heroes || {}).forEach((key) => {
           if (m.heroes[key].hero_id === k && isRadiant(m.heroes[key]) === isRadiant(m)) {
             passed = true;
           }
@@ -71,7 +71,7 @@ function filter(matches, filters) {
     against_hero_id(m, key, arr) {
       return arr.every((k) => {
         let passed = false;
-        Object.keys(m.heroes).forEach((key) => {
+        Object.keys(m.heroes || {}).forEach((key) => {
           if (m.heroes[key].hero_id === k && isRadiant(m.heroes[key]) !== isRadiant(m)) {
             passed = true;
           }
