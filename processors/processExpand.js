@@ -37,6 +37,7 @@ function processExpand(entries, meta) {
     }));
   }
 
+  var gameStarted = false
   const types = {
     DOTA_COMBATLOG_DAMAGE(e) {
       // damage
@@ -178,9 +179,13 @@ function processExpand(entries, meta) {
         type: 'gold_reasons',
       });
     },
-    DOTA_COMBATLOG_GAME_STATE() {
+    DOTA_COMBATLOG_GAME_STATE(e) {
       // state
-      // we don't use this here--we already used it during preprocessing to detect game_zero
+      // check if game started
+      // not sure if this value means start of the game
+      if (e.value === 4) {
+        gameStarted = true
+      }
     },
     DOTA_COMBATLOG_XP(e) {
       // xp gain
@@ -192,11 +197,8 @@ function processExpand(entries, meta) {
         type: 'xp_reasons',
       });
     },
-    DOTA_COMBATLOG_PURCHASE() {
-      // Moved to actions due to purchases before start of the game (during picks)
-
+    DOTA_COMBATLOG_PURCHASE(e) {
       // purchase
-      /*
       const unit = e.targetname;
       const key = translate(e.valuename);
       expand({
@@ -215,7 +217,7 @@ function processExpand(entries, meta) {
           key,
           type: 'purchase_log',
         });
-      } */
+      }
     },
     DOTA_COMBATLOG_BUYBACK(e) {
       // buyback
@@ -293,8 +295,17 @@ function processExpand(entries, meta) {
     },
     actions(e) {
       // purchase
-      if (e.key === '16') {
+
+      // we should only do this for events where we don't have a PURCHASE entry
+      // since this will not work immediately for new items (we have to manually update dotaconstants).
+      // We check if this is a pregame
+      if (e.key === '16' && !gameStarted) {
         const key = translate(itemIds[e.value.toString()]);  // "item_stout_shield" by id
+        // i.e. dotaconstants doesn't have this item
+        if (typeof(key) == "undefined") {
+          expand(Object.assign({}, e, { value: 1 }));
+          return
+        }
         expand({
           time: e.time,
           value: 1,
@@ -313,7 +324,7 @@ function processExpand(entries, meta) {
           });
         }
       }
-      expand(e);
+      expand(Object.assign({}, e, { value: 1 }));
     },
     CHAT_MESSAGE_RUNE_PICKUP(e) {
       expand({
