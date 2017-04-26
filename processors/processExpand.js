@@ -182,7 +182,6 @@ function processExpand(entries, meta) {
     DOTA_COMBATLOG_GAME_STATE(e) {
       // state
       // check if game started
-      // not sure if this value means start of the game
       if (e.value === 4) {
         gameStarted = true;
       }
