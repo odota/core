@@ -37,7 +37,7 @@ function processExpand(entries, meta) {
     }));
   }
 
-  var gameStarted = false
+  let gameStarted = false;
   const types = {
     DOTA_COMBATLOG_DAMAGE(e) {
       // damage
@@ -184,7 +184,7 @@ function processExpand(entries, meta) {
       // check if game started
       // not sure if this value means start of the game
       if (e.value === 4) {
-        gameStarted = true
+        gameStarted = true;
       }
     },
     DOTA_COMBATLOG_XP(e) {
@@ -296,15 +296,15 @@ function processExpand(entries, meta) {
     actions(e) {
       // purchase
 
-      // we should only do this for events where we don't have a PURCHASE entry
-      // since this will not work immediately for new items (we have to manually update dotaconstants).
+      // we should only do this for events where we don't have a PURCHASE entry since
+      // this will not work immediately for new items (we have to manually update dotaconstants).
       // We check if this is a pregame
       if (e.key === '16' && !gameStarted) {
         const key = translate(itemIds[e.value.toString()]);  // "item_stout_shield" by id
         // i.e. dotaconstants doesn't have this item
-        if (typeof(key) == "undefined") {
+        if (typeof key === 'undefined') {
           expand(Object.assign({}, e, { value: 1 }));
-          return
+          return;
         }
         expand({
           time: e.time,
