@@ -1,22 +1,21 @@
-/** 
+/**
  * websocket server that recieves match data as it arrives and checks if
  * any connected clients are subscribed to match properties.
  **/
-const config = require('../config')
+const config = require('../config');
 const redis = require('redis');
 const WebSocket = require('ws');
 const uuidV1 = require('uuid/v1');
 const db = require('../store/db');
 const queries = require('../store/queries');
-const getPlayer = queries.getPlayer;
 const buildMatch = require('../store/buildMatch');
 const async = require('async');
 
-const anonymousID = require('../util/utility').getAnonymousAccountId();
+const getPlayer = queries.getPlayer;
 const subTypes = ['player', 'team', 'league'];
 
 const wss = new WebSocket.Server({
-  port: 5000
+  port: 5000,
 });
 const subclients = new Map();
 
@@ -37,7 +36,7 @@ class Subclient {
     this._subscriptions = {
       player: [],
       team: [],
-      league: []
+      league: [],
     };
   }
 
@@ -59,31 +58,30 @@ class Subclient {
     });
   }
 
-  // given a match or partial match, 
+  // given a match or partial match,
   // check if this websocket is subscribed to any of the paramaters.
   checkMatch(match, origin) {
-    let found = {
+    const found = {
       matches: 0,
       player: [],
       team: [],
-      league: []
+      league: [],
     };
-    match.players.forEach(player => {
-      // how 2 even hecking do this
-      if (~this._subscriptions.player.indexOf(player.account_id) && player.account_id != anonymousID) {
+    match.players.forEach((player) => {
+      if (this._subscriptions.player.indexOf(player.account_id) !== -1) {
         found.matches += 1;
         found.player.push(player.account_id);
       }
     });
-    if (~this._subscriptions.team.indexOf(match.radiant_team_id)) {
+    if (this._subscriptions.team.indexOf(match.radiant_team_id) !== -1) {
       found.matches += 1;
       found.team.push(match.radiant_team_id);
     }
-    if (~this._subscriptions.team.indexOf(match.dire_team_id)) {
+    if (this._subscriptions.team.indexOf(match.dire_team_id) !== -1) {
       found.matches += 1;
       found.team.push(match.dire_team_id);
     }
-    if (~this._subscriptions.league.indexOf(match.leagueid)) {
+    if (this._subscriptions.league.indexOf(match.leagueid) !== -1) {
       found.matches += 1;
       found.league.push(match.leagueid);
     }
@@ -98,9 +96,9 @@ class Subclient {
             message: {
               found,
               origin,
-              match: matchData
-            }
-          }).catch(err => {
+              match: matchData,
+            },
+          }).catch((err) => {
             console.error(`[SOCKET] couldn't send match ${match.match_id} to ${this._uuid}`);
             console.error(err);
           });
@@ -111,31 +109,31 @@ class Subclient {
 }
 
 const handlers = {
-  PING: function(ctx, data) {
+  PING(ctx, data) {
     return ctx.send({
       type: 'PONG',
-      message: { date: Date.now() }
+      message: { date: Date.now() },
     }, data.nonce);
   },
-  SUBSCRIBE: function(ctx, data) {
+  SUBSCRIBE(ctx, data) {
     // check if we can subscribe to this type of id
-    if (!~subTypes.indexOf(data.message.type)) {
+    if (subTypes.indexOf(data.message.type) === -1) {
       return ctx.send({
         type: 'SUBSCRIBE_NAK',
-        message: { err: `Incorrect subscribe type provided. No IDs subscribed to. Available types: ${subTypes.join(', ')}` }
+        message: { err: `Incorrect subscribe type provided. No IDs subscribed to. Available types: ${subTypes.join(', ')}` },
       }, data.nonce);
     }
     // check if there are ids
     if (data.message.ids === undefined) {
-      return ctx.send({  
+      return ctx.send({
         type: 'SUBSCRIBE_NAK',
-        message: { err: 'No IDs provided. Nothing to subscribe to.' }
+        message: { err: 'No IDs provided. Nothing to subscribe to.' },
       }, data.nonce);
     }
     // check if the ids are an array, otherwise create one
     if (!Array.isArray(data.message.ids)) {
       if (typeof data.message.ids === 'string' || typeof data.message.ids === 'number') {
-        data.message.ids = [ data.message.ids ];
+        data.message.ids = [data.message.ids];
       }
     }
     // if its a player, verify the player has an opendota account
@@ -148,86 +146,86 @@ const handlers = {
             type: 'SUBSCRIBE_NAK',
             message: {
               err: 'Error checking status of players.',
-              dberror: err
-            }
+              dberror: err,
+            },
           }, data.nonce);
-        } else {
-          // then sub to it
-          if (results.every(result => result && result.account_id)) {
-            ctx._subscriptions.player.push(...data.message.ids);
-            ctx._subscriptions.player = ctx._subscriptions.player.filter((ele, index, array) => array.indexOf(ele) === index);
-            return ctx.send({
-              type: 'SUBSCRIBE_ACK',
-              message: {
-                type: 'player',
-                ids: ctx._subscriptions.player
-              }
-            }, data.nonce);
-          // or don't
-          } else {
-            return ctx.send({
-              type: 'SUBSCRIBE_NAK',
-              message: {
-                err: 'One or more player IDs provided are not registered with OpenDota.'
-              }
-            }, data.nonce);
-          }
         }
+          // then sub to it
+        if (results.every(result => result && result.account_id)) {
+          ctx._subscriptions.player.push(...data.message.ids);
+          ctx._subscriptions.player = ctx._subscriptions.player
+            .filter((ele, index, array) => array.indexOf(ele) === index);
+          return ctx.send({
+            type: 'SUBSCRIBE_ACK',
+            message: {
+              type: 'player',
+              ids: ctx._subscriptions.player,
+            },
+          }, data.nonce);
+          // or don't
+        }
+        return ctx.send({
+          type: 'SUBSCRIBE_NAK',
+          message: {
+            err: 'One or more player IDs provided are not registered with OpenDota.',
+          },
+        }, data.nonce);
       });
     // if not, just sub to it
-    } else {
-      ctx._subscriptions[data.message.type].push(...data.message.ids);
-      ctx._subscriptions[data.message.type] = ctx._subscriptions[data.message.type].filter((ele, index, array) => array.indexOf(ele) === index);
-      return ctx.send({
-        type: 'SUBSCRIBE_ACK',
-        message: {
-          type: data.message.type,
-          ids: ctx._subscriptions[data.message.type]
-        }
-      }, data.nonce);
     }
+    ctx._subscriptions[data.message.type].push(...data.message.ids);
+    ctx._subscriptions[data.message.type] = ctx._subscriptions[data.message.type]
+      .filter((ele, index, array) => array.indexOf(ele) === index);
+    return ctx.send({
+      type: 'SUBSCRIBE_ACK',
+      message: {
+        type: data.message.type,
+        ids: ctx._subscriptions[data.message.type],
+      },
+    }, data.nonce);
   },
-  UNSUBSCRIBE: function(ctx, data) {
+  UNSUBSCRIBE(ctx, data) {
     // check if we can unsubcribe from this type of id
-    if (!~subTypes.indexOf(data.message.type)) {
+    if (subTypes.indexOf(data.message.type) === -1) {
       return ctx.send({
         type: 'UNSUBSCRIBE_NAK',
-        message: { err: `Incorrect subscribe type provided. No IDs unsubscribed from. Available types: ${subTypes.join(', ')}` }
+        message: { err: `Incorrect subscribe type provided. No IDs unsubscribed from. Available types: ${subTypes.join(', ')}` },
       }, data.nonce);
     }
     // check if there are ids to unsubscribe from
     if (data.message.ids === undefined) {
-      return ctx.send({  
+      return ctx.send({
         type: 'UNSUBSCRIBE_NAK',
-        message: { err: 'No IDs provided. Nothing to unsubscribe from.' }
+        message: { err: 'No IDs provided. Nothing to unsubscribe from.' },
       }, data.nonce);
     }
     // check if the ids are an array, otherwise create one
     if (!Array.isArray(data.message.ids)) {
       if (typeof data.message.ids === 'string' || typeof data.message.ids === 'number') {
-        data.message.ids = [ data.message.ids ];
+        data.message.ids = [data.message.ids];
       }
     }
     // unsubscribe from each id
-    let removed = [];
-    for (id in data.message.ids) {
-      removed.push(...ctx._subscriptions[data.message.type].splice(ctx._subscriptions[data.message.type].indexOf(id), 1));
-    }
+    const removed = [];
+    data.message.ids.forEach((id) => {
+      removed.push(...ctx._subscriptions[data.message.type]
+        .splice(ctx._subscriptions[data.message.type].indexOf(id), 1));
+    });
     return ctx.send({
       type: 'UNSUBSCRIBE_ACK',
       message: {
         type: data.message.type,
-        ids: removed
-      }
+        ids: removed,
+      },
     });
   },
-  GET_SUBS: function(ctx, data) {
+  GET_SUBS(ctx, data) {
     // just return every sub we have
     return ctx.send({
       type: 'GET_SUBS_ACK',
-      message: ctx._subscriptions
+      message: ctx._subscriptions,
     }, data.nonce);
-  }
+  },
 };
 
 wss.on('connection', (ws) => {
@@ -242,7 +240,7 @@ wss.on('connection', (ws) => {
     }
   });
   ws.on('message', (data) => {
-    if (typeof data === "string") {
+    if (typeof data === 'string') {
       try {
         data = JSON.parse(data);
       } catch (err) {
@@ -252,37 +250,38 @@ wss.on('connection', (ws) => {
     }
 
     if (!data.type) {
-      return ws.send({
+      ws.send(JSON.stringify({
         type: 'NAK',
         message: {
-          err: 'BAD REQUEST: No message type provided'
-        }
-      }, (err) => {
+          err: 'BAD REQUEST: No message type provided',
+        },
+      }), (err) => {
         if (err) {
           console.log('[SOCKET] error sending to ws');
           console.log(err);
         }
       });
+      return;
     }
 
     if (data.type === 'IDENTIFY') {
-      let uuid = uuidV1();
+      const uuid = uuidV1();
       ws.uuid = uuid;
       subclients.set(uuid, new Subclient(ws, uuid));
-      let subc = subclients.get(uuid);
+      const subc = subclients.get(uuid);
       subc.send({
         type: 'IDENTIFY',
         message: {
-          uuid
-        }
+          uuid,
+        },
       }).then(() => {
         setTimeout(() => {
-          if (!subc) return false;
           let subscribed = false;
-          let subs = subc.subscriptions;
-          for (sub in subs) {
-            if (subs[sub].length) subscribed = true;
-          }
+
+          if (subc.player.length) subscribed = true;
+          if (subc.team.length) subscribed = true;
+          if (subc.league.length) subscribed = true;
+
           if (!subscribed) subc.ws.close(1013, 'Not enough feeds subscribed to in the alotted time.');
         }, 15000);
       }).catch((err) => {
@@ -291,34 +290,36 @@ wss.on('connection', (ws) => {
       });
     } else {
       if (!data.uuid) {
-        return ws.send({
+        ws.send(JSON.stringify({
           type: 'NAK',
           message: {
-            err: 'No UUID provided.'
+            err: 'No UUID provided.',
           },
-          nonce: data.nonce || null
-        }, (err) => {
+          nonce: data.nonce || null,
+        }), (err) => {
           if (err) {
             console.log('[SOCKET] error sending to ws');
             console.log(err);
           }
         });
+        return;
       }
-      if (handlers.hasOwnProperty(data.type)) {
-        let subc = subclients.get(data.uuid);
+      if (data.type in handlers) {
+        const subc = subclients.get(data.uuid);
         handlers[data.type](subc, data);
       } else {
-        return ws.send({
+        ws.send(JSON.stringify({
           type: 'NAK',
           message: {
-            err: 'Invalid request type specified.'
-          }
-        }, (err) => {
+            err: 'Invalid request type specified.',
+          },
+        }), (err) => {
           if (err) {
             console.log('[SOCKET] error sending to ws');
             console.log(err);
           }
         });
+        return;
       }
     }
   });
