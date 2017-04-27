@@ -169,7 +169,7 @@ function createParsedDataBlob(entries, match, cb) {
     },
     (cb) => {
       console.time('processParsedData');
-      parsedData = processParsedData(expanded, getParseSchema());
+      parsedData = processParsedData(expanded, getParseSchema(), meta);
       console.timeEnd('processParsedData');
       cb();
     },
