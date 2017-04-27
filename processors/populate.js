@@ -129,9 +129,13 @@ function populate(e, container, meta) {
           arrEntry = {
             time: e.time,
             key: e.key,
-            tracked_death: e.tracked_death,
-            tracked_sourcename: e.tracked_sourcename,
           };
+          if (e.type === 'kills_log' && e.tracked_death) {
+            arrEntry = Object.assign({}, {
+              tracked_death: e.tracked_death,
+              tracked_sourcename: e.tracked_sourcename,
+            }, arrEntry);
+          }
         } else {
           arrEntry = JSON.parse(JSON.stringify(e));
         }
