@@ -155,6 +155,9 @@ function createParsedDataBlob(entries, match, cb) {
       adjustedEntries = entries.map(e => Object.assign({}, e, {
         time: e.time - meta.game_zero,
       }));
+      meta.abilities = match.ability_upgrades.map(e => Object.assign({}, e, {
+        time: e.time - meta.game_zero,
+      }));
       console.timeEnd('adjustTime');
       cb();
     },
