@@ -73,7 +73,6 @@ function scanApi(seqNum) {
         delayNextRequest = true;
       }
       console.log('[API] match_seq_num:%s, matches:%s', matchSeqNum, resp.length);
-      resp.forEach(match => redis.publish('socket:matches:scanner', JSON.stringify(match)));
       return async.each(resp, processMatch, cb);
     });
   }

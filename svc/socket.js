@@ -6,16 +6,11 @@ const config = require('../config');
 const redis = require('redis');
 const WebSocket = require('ws');
 const uuidV1 = require('uuid/v1');
-const db = require('../store/db');
-const queries = require('../store/queries');
-const buildMatch = require('../store/buildMatch');
-const async = require('async');
 
-const getPlayer = queries.getPlayer;
 const subTypes = ['player', 'team', 'league'];
 
 const wss = new WebSocket.Server({
-  port: 5000,
+  port: config.WEBSOCKET_PORT,
 });
 const subclients = new Map();
 
@@ -86,23 +81,16 @@ class Subclient {
       found.league.push(match.leagueid);
     }
     if (found.matches) {
-      buildMatch(match.match_id, (err, matchData) => {
-        if (err) {
-          console.error(`[SCANNER] couldn't get matchData for matchid ${match.match_id}`);
-          console.error(err);
-        } else {
-          this.send({
-            type: 'MATCH',
-            message: {
-              found,
-              origin,
-              match: matchData,
-            },
-          }).catch((err) => {
-            console.error(`[SOCKET] couldn't send match ${match.match_id} to ${this._uuid}`);
-            console.error(err);
-          });
-        }
+      this.send({
+        type: 'MATCH',
+        message: {
+          found,
+          origin,
+          match,
+        },
+      }).catch((err) => {
+        console.error(`[SOCKET] couldn't send match ${match.match_id} to ${this._uuid}`);
+        console.error(err);
       });
     }
   }
@@ -135,43 +123,6 @@ const handlers = {
       if (typeof data.message.ids === 'string' || typeof data.message.ids === 'number') {
         data.message.ids = [data.message.ids];
       }
-    }
-    // if its a player, verify the player has an opendota account
-    if (data.message.type === 'player') {
-      return async.map(data.message.ids, (id, cb) => {
-        getPlayer(db, id, cb);
-      }, (err, results) => {
-        if (err) {
-          return ctx.send({
-            type: 'SUBSCRIBE_NAK',
-            message: {
-              err: 'Error checking status of players.',
-              dberror: err,
-            },
-          }, data.nonce);
-        }
-          // then sub to it
-        if (results.every(result => result && result.account_id)) {
-          ctx._subscriptions.player.push(...data.message.ids);
-          ctx._subscriptions.player = ctx._subscriptions.player
-            .filter((ele, index, array) => array.indexOf(ele) === index);
-          return ctx.send({
-            type: 'SUBSCRIBE_ACK',
-            message: {
-              type: 'player',
-              ids: ctx._subscriptions.player,
-            },
-          }, data.nonce);
-          // or don't
-        }
-        return ctx.send({
-          type: 'SUBSCRIBE_NAK',
-          message: {
-            err: 'One or more player IDs provided are not registered with OpenDota.',
-          },
-        }, data.nonce);
-      });
-    // if not, just sub to it
     }
     ctx._subscriptions[data.message.type].push(...data.message.ids);
     ctx._subscriptions[data.message.type] = ctx._subscriptions[data.message.type]
