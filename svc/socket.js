@@ -98,7 +98,7 @@ const handlers = {
     return ctx.send({
       type: 'PONG',
       message: { date: Date.now() },
-    }, data.nonce).catch((err) => console.log(`err sending to websocket ${ctx.uuid}`));
+    }, data.nonce);
   },
   SUBSCRIBE(ctx, data) {
     // check if we can subscribe to this type of id
@@ -203,7 +203,7 @@ wss.on('connection', (ws) => {
         message: {
           err: 'BAD REQUEST: No message type provided',
         },
-        uuid: data.uuid || null,
+        nonce: data.nonce || null,
       }), (err) => {
         if (err) {
           console.error('[SOCKET] error sending to ws');
@@ -223,6 +223,7 @@ wss.on('connection', (ws) => {
         message: {
           uuid,
         },
+        nonce: data.nonce || null,
       }).then(() => {
         setTimeout(() => {
           let subscribed = false;
@@ -262,6 +263,7 @@ wss.on('connection', (ws) => {
           message: {
             err: 'Invalid request type specified.',
           },
+          nonce: data.nonce || null,
         }), (err) => {
           if (err) {
             console.error('[SOCKET] error sending to ws');
