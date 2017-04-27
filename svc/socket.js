@@ -44,12 +44,12 @@ class Subclient {
 
   // send data to this websocket
   send(data, nonce) {
-    return new Promise((resolve, reject) => {
-      data.nonce = nonce || null;
-      this._ws.send(JSON.stringify(data), (err) => {
-        if (err) reject(err);
-        resolve();
-      });
+    data.nonce = nonce || null;
+    this._ws.send(JSON.stringify(data), (err) => {
+      if (err) {
+        console.error(`[SOCKET] err sending to ws ${this._uuid}`);
+        console.error(err);
+      }
     });
   }
 
@@ -88,9 +88,6 @@ class Subclient {
           origin,
           match,
         },
-      }).catch((err) => {
-        console.error(`[SOCKET] couldn't send match ${match.match_id} to ${this._uuid}`);
-        console.error(err);
       });
     }
   }
@@ -101,7 +98,7 @@ const handlers = {
     return ctx.send({
       type: 'PONG',
       message: { date: Date.now() },
-    }, data.nonce);
+    }, data.nonce).catch((err) => console.log(`err sending to websocket ${ctx.uuid}`));
   },
   SUBSCRIBE(ctx, data) {
     // check if we can subscribe to this type of id
@@ -168,7 +165,7 @@ const handlers = {
         type: data.message.type,
         ids: removed,
       },
-    });
+    }, data.nonce);
   },
   GET_SUBS(ctx, data) {
     // just return every sub we have
@@ -182,7 +179,6 @@ const handlers = {
 wss.on('connection', (ws) => {
   ws.on('close', (code, reason) => {
     console.log('[SOCKET] connection closed');
-    if (ws.uuid) console.log(`[SOCKET] uuid: ${ws.uuid}`);
     console.log(`[SOCKET] code: ${code}, reason: ${reason}`);
 
     if (subclients.get(ws.uuid)) {
@@ -195,7 +191,8 @@ wss.on('connection', (ws) => {
       try {
         data = JSON.parse(data);
       } catch (err) {
-        console.log('[SOCKET] error parsing something');
+        console.error('[SOCKET] error parsing something');
+        console.error(data);
         return;
       }
     }
@@ -206,10 +203,11 @@ wss.on('connection', (ws) => {
         message: {
           err: 'BAD REQUEST: No message type provided',
         },
+        uuid: data.uuid || null,
       }), (err) => {
         if (err) {
-          console.log('[SOCKET] error sending to ws');
-          console.log(err);
+          console.error('[SOCKET] error sending to ws');
+          console.error(err);
         }
       });
       return;
@@ -236,8 +234,8 @@ wss.on('connection', (ws) => {
           if (!subscribed) subc.ws.close(1013, 'Not enough feeds subscribed to in the alotted time.');
         }, 15000);
       }).catch((err) => {
-        console.log('[SOCKET] error sending to ws');
-        console.log(err);
+        console.error('[SOCKET] error sending to ws');
+        console.error(err);
       });
     } else {
       if (!data.uuid) {
@@ -249,8 +247,8 @@ wss.on('connection', (ws) => {
           nonce: data.nonce || null,
         }), (err) => {
           if (err) {
-            console.log('[SOCKET] error sending to ws');
-            console.log(err);
+            console.error('[SOCKET] error sending to ws');
+            console.error(err);
           }
         });
         return;
@@ -266,8 +264,8 @@ wss.on('connection', (ws) => {
           },
         }), (err) => {
           if (err) {
-            console.log('[SOCKET] error sending to ws');
-            console.log(err);
+            console.error('[SOCKET] error sending to ws');
+            console.error(err);
           }
         });
         return;
