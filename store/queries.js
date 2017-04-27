@@ -786,7 +786,7 @@ function insertMatch(match, options, cb) {
       // Skip this if not a pro match (doLogParse true)
       return cb();
     }
-    console.log('[INSERTMATCH] upserting into Postgres');
+    // console.log('[INSERTMATCH] upserting into Postgres');
     return db.transaction((trx) => {
       function upsertMatch(cb) {
         upsert(trx, 'matches', match, {
@@ -894,7 +894,7 @@ function insertMatch(match, options, cb) {
   }
 
   function upsertMatchCassandra(cb) {
-    console.log('[INSERTMATCH] upserting into Cassandra');
+    // console.log('[INSERTMATCH] upserting into Cassandra');
     return cleanRowCassandra(cassandra, 'matches', match, (err, match) => {
       if (err) {
         return cb(err);
@@ -945,7 +945,7 @@ function insertMatch(match, options, cb) {
   }
 
   function updatePlayerCaches(cb) {
-    console.log('[INSERTMATCH] upserting into Cassandra player_caches');
+    // console.log('[INSERTMATCH] upserting into Cassandra player_caches');
     const copy = createMatchCopy(match, players);
     return insertPlayerCache(copy, cb);
   }
@@ -1003,7 +1003,7 @@ function insertMatch(match, options, cb) {
   }
 
   function telemetry(cb) {
-    console.log('[INSERTMATCH] updating telemetry');
+    // console.log('[INSERTMATCH] updating telemetry');
     const types = {
       api: 'matches_last_added',
       parsed: 'matches_last_parsed',

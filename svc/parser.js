@@ -136,37 +136,65 @@ function getParseSchema() {
   };
 }
 
-function createParsedDataBlob(entries, match) {
-  console.time('processMetadata');
-  const meta = processMetadata(entries);
-  meta.match_id = match.match_id;
-  console.timeEnd('processMetadata');
-  console.time('adjustTime');
-  // adjust time by zero value to get actual game time
-  const adjustedEntries = entries.map(e => Object.assign({}, e, {
-    time: e.time - meta.game_zero,
-  }));
-  console.timeEnd('adjustTime');
-  console.time('processExpand');
-  const expanded = processExpand(adjustedEntries, meta);
-  console.timeEnd('processExpand');
-  console.time('processParsedData');
-  const parsedData = processParsedData(expanded, getParseSchema());
-  console.timeEnd('processParsedData');
-  console.time('processTeamfights');
-  parsedData.teamfights = processTeamfights(expanded, meta);
-  console.timeEnd('processTeamfights');
-  console.time('processAllPlayers');
-  const ap = processAllPlayers(adjustedEntries, meta);
-  parsedData.radiant_gold_adv = ap.radiant_gold_adv;
-  parsedData.radiant_xp_adv = ap.radiant_xp_adv;
-  console.timeEnd('processAllPlayers');
-  if (match.doLogParse) {
-    console.time('processLogParse');
-    parsedData.logs = processLogParse(adjustedEntries, meta);
-    console.timeEnd('processLogParse');
-  }
-  return Object.assign({}, parsedData, match);
+function createParsedDataBlob(entries, match, cb) {
+  let meta;
+  let adjustedEntries;
+  let expanded;
+  let parsedData;
+  async.series([
+    (cb) => {
+      console.time('processMetadata');
+      meta = processMetadata(entries);
+      meta.match_id = match.match_id;
+      console.timeEnd('processMetadata');
+      cb();
+    },
+    (cb) => {
+      console.time('adjustTime');
+      // adjust time by zero value to get actual game time
+      adjustedEntries = entries.map(e => Object.assign({}, e, {
+        time: e.time - meta.game_zero,
+      }));
+      console.timeEnd('adjustTime');
+      cb();
+    },
+    (cb) => {
+      console.time('processExpand');
+      expanded = processExpand(adjustedEntries, meta);
+      console.timeEnd('processExpand');
+      cb();
+    },
+    (cb) => {
+      console.time('processParsedData');
+      parsedData = processParsedData(expanded, getParseSchema());
+      console.timeEnd('processParsedData');
+      cb();
+    },
+    (cb) => {
+      console.time('processTeamfights');
+      parsedData.teamfights = processTeamfights(expanded, meta);
+      console.timeEnd('processTeamfights');
+      cb();
+    },
+    (cb) => {
+      console.time('processAllPlayers');
+      const ap = processAllPlayers(adjustedEntries, meta);
+      parsedData.radiant_gold_adv = ap.radiant_gold_adv;
+      parsedData.radiant_xp_adv = ap.radiant_xp_adv;
+      console.timeEnd('processAllPlayers');
+      cb();
+    },
+    (cb) => {
+      if (match.doLogParse) {
+        console.time('processLogParse');
+        parsedData.logs = processLogParse(adjustedEntries, meta);
+        console.timeEnd('processLogParse');
+      }
+      cb();
+    },
+  ], (err) => {
+    cb(err, Object.assign({}, parsedData, match));
+  });
 }
 
 function runParse(match, job, cb) {
@@ -200,8 +228,12 @@ function runParse(match, job, cb) {
     if (err) {
       return cb(err);
     }
-    const parsedData = createParsedDataBlob(entries, match);
-    return insertStandardParse(parsedData, cb);
+    return createParsedDataBlob(entries, match, (err, parsedData) => {
+      if (err) {
+        return cb(err);
+      }
+      return insertStandardParse(parsedData, cb);
+    });
   }
 
   // Streams
