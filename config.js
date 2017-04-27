@@ -53,7 +53,7 @@ const defaults = {
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
-  WEBSOCKET_PORT: 5000,
+  WEBSOCKET_PORT: 5000, // port for live match subscription websocket service
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

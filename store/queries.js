@@ -766,6 +766,9 @@ function insertMatch(match, options, cb) {
     if (match.origin === 'scanner') {
       redis.publish('socket:matches:scanner', JSON.stringify(match));
     }
+    if (match.origin === 'parsed') {
+      redis.publish('socket:matches:parser', JSON.stringify(match));
+    }
     cb();
   }
 
