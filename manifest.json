@@ -103,6 +103,14 @@
       "group": "parser",
       "exec_mode": "cluster",
       "instances": 1
+    },
+    {
+      "script": "svc/socket.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "group": "socket",
+      "exec_mode": "cluster",
+      "instances": 1
     }
   ]
 }

@@ -201,6 +201,7 @@ function runParse(match, job, cb) {
       return cb(err);
     }
     const parsedData = createParsedDataBlob(entries, match);
+    redis.publish('socket:matches:parser', JSON.stringify(parsedData));
     return insertStandardParse(parsedData, cb);
   }
 

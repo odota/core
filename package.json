@@ -52,7 +52,8 @@
     "simple-vdf": "^1.1.0",
     "steam": "^1.4.0",
     "supertest": "^3.0.0",
-    "uuid": "^3.0.1"
+    "uuid": "^3.0.1",
+    "ws": "^2.3.1"
   },
   "devDependencies": {
     "eslint": "^3.16.1",
