@@ -74,3 +74,9 @@ gcloud compute instance-groups managed delete --quiet cycler-group-1
 gcloud compute instance-templates delete --quiet cycler-1
 gcloud compute instance-templates create cycler-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/cycler.py
 gcloud compute instance-groups managed create "cycler-group-1" --base-instance-name "cycler-group-1" --template "cycler-1" --size "1"
+
+#socket
+gcloud compute instance-groups managed delete --quiet socket-group-1 --zone=us-central1-b
+gcloud compute instance-templates delete --quiet socket-1
+gcloud compute instance-templates create socket-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata-from-file startup-script=./scripts/socket.sh
+gcloud compute instance-groups managed create "socket-group-1" --base-instance-name "socket-group-1" --template "socket-1" --size "1" --zone=us-central1-b
