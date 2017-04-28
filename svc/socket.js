@@ -223,8 +223,7 @@ wss.on('connection', (ws) => {
         message: {
           uuid,
         },
-        nonce: data.nonce || null,
-      });
+      }, data.nonce);
       setTimeout(() => {
         let subscribed = false;
 
