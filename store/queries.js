@@ -777,6 +777,15 @@ function insertMatch(match, options, cb) {
     cb();
   }
 
+  function tellSocket(cb) {
+    if (match.origin === 'scanner') {
+      redis.publish('socket:matches:scanner', JSON.stringify(match));
+    } else if (match.origin === 'parsed') {
+      redis.publish('socket:matches:parser', JSON.stringify(match));
+    }
+    cb();
+  }
+
   function decideLogParse(cb) {
     if (match.leagueid) {
       db.select('leagueid')
@@ -1154,6 +1163,7 @@ function insertMatch(match, options, cb) {
   }
   async.series({
     preprocess,
+    tellSocket,
     decideLogParse,
     upsertMatch,
     upsertMatchCassandra,
