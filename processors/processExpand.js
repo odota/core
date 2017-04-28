@@ -178,7 +178,7 @@ function processExpand(entries, meta) {
         type: 'gold_reasons',
       });
     },
-    DOTA_COMBATLOG_GAME_STATE(e) {
+    DOTA_COMBATLOG_GAME_STATE() {
       // state
     },
     DOTA_COMBATLOG_XP(e) {
