@@ -224,20 +224,16 @@ wss.on('connection', (ws) => {
           uuid,
         },
         nonce: data.nonce || null,
-      }).then(() => {
-        setTimeout(() => {
-          let subscribed = false;
-
-          if (subc.player.length) subscribed = true;
-          if (subc.team.length) subscribed = true;
-          if (subc.league.length) subscribed = true;
-
-          if (!subscribed) subc.ws.close(1013, 'Not enough feeds subscribed to in the alotted time.');
-        }, 15000);
-      }).catch((err) => {
-        console.error('[SOCKET] error sending to ws');
-        console.error(err);
       });
+      setTimeout(() => {
+        let subscribed = false;
+
+        if (subc.player.length) subscribed = true;
+        if (subc.team.length) subscribed = true;
+        if (subc.league.length) subscribed = true;
+
+        if (!subscribed) subc.ws.close(1013, 'Not enough feeds subscribed to in the alotted time.');
+      }, 15000);
     } else {
       if (!data.uuid) {
         ws.send(JSON.stringify({
@@ -256,7 +252,36 @@ wss.on('connection', (ws) => {
       }
       if (data.type in handlers) {
         const subc = subclients.get(data.uuid);
-        handlers[data.type](subc, data);
+        if (subc) {
+          handlers[data.type](subc, data);
+        } else if (data.type === 'PING') {
+          ws.send(JSON.stringify({
+            type: 'PONG',
+            message: {
+              date: Date.now(),
+              err: 'Invalid UUID provided.',
+            },
+            nonce: data.nonce || null,
+          }), (err) => {
+            if (err) {
+              console.error('[SOCKET] error sending to ws');
+              console.error(err);
+            }
+          });
+        } else {
+          ws.send(JSON.stringify({
+            type: 'NAK',
+            message: {
+              err: 'Invalid UUID provided.',
+            },
+            nonce: data.nonce || null,
+          }), (err) => {
+            if (err) {
+              console.error('[SOCKET] error sending to ws');
+              console.error(err);
+            }
+          });
+        }
       } else {
         ws.send(JSON.stringify({
           type: 'NAK',
