@@ -5,7 +5,7 @@
 const config = require('../config');
 const redis = require('redis');
 const WebSocket = require('ws');
-const uuidV1 = require('uuid/v1');
+const uuidV1 = require('uuid/v4');
 
 const subTypes = ['player', 'team', 'league'];
 
