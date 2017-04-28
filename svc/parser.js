@@ -146,6 +146,9 @@ function createParsedDataBlob(entries, match, cb) {
       console.time('processMetadata');
       meta = processMetadata(entries);
       meta.match_id = match.match_id;
+      meta.abilities = match.ability_upgrades.map(e => Object.assign({}, e, {
+        time: e.time - meta.game_zero,
+      }));
       console.timeEnd('processMetadata');
       cb();
     },
@@ -153,9 +156,6 @@ function createParsedDataBlob(entries, match, cb) {
       console.time('adjustTime');
       // adjust time by zero value to get actual game time
       adjustedEntries = entries.map(e => Object.assign({}, e, {
-        time: e.time - meta.game_zero,
-      }));
-      meta.abilities = match.ability_upgrades.map(e => Object.assign({}, e, {
         time: e.time - meta.game_zero,
       }));
       console.timeEnd('adjustTime');
