@@ -293,15 +293,16 @@ function processExpand(entries, meta) {
       // we should only do this for events where we don't have a PURCHASE entry since
       // this will not work immediately for new items (we have to manually update dotaconstants).
       // We check if this is a pregame
-      if (e.key === '16' && e.time < meta.game_zero) {
+      if (e.key === '16' && e.time < meta.pre_game) {
         const key = translate(itemIds[e.value.toString()]);  // "item_stout_shield" by id
         // i.e. dotaconstants doesn't have this item
         if (typeof key === 'undefined') {
           expand(Object.assign({}, e, { value: 1 }));
           return;
         }
+        // we don't want to show time of purchases which was done even before pre-game
         expand({
-          time: e.time,
+          time: meta.pre_game,
           value: 1,
           slot: e.slot,
           key,
@@ -310,15 +311,16 @@ function processExpand(entries, meta) {
         // don't include recipes in purchase logs
         if (key.indexOf('recipe_') !== 0) {
           expand({
-            time: e.time,
+            time: meta.pre_game,
             value: 1,
             slot: e.slot,
             key,
             type: 'purchase_log',
           });
         }
+      } else {
+        expand(Object.assign({}, e, { value: 1 }));
       }
-      expand(Object.assign({}, e, { value: 1 }));
     },
     CHAT_MESSAGE_RUNE_PICKUP(e) {
       expand({
