@@ -65,7 +65,7 @@ Recieve:
 ```
 
 ### SUBSCRIBE
-To subscribe to a set of IDs, a type of ID must be provided. This can be either `player`, `team`, or `league`. Every successful subscription will reply with all the IDs you have subscribed to.
+To subscribe to a set of IDs, a type of ID must be provided. This can be either `player`, `team`, or `league`. The ID must be an integer, or must be able to be cast into an interger. Every successful subscription will reply with all the IDs you have subscribed to.
 
 Send:
 ```json
@@ -92,7 +92,7 @@ Recieve:
 ```
 
 ### UNSUBSCRIBE
-Unsubscribing is similar to subscribing, in that you must provide `player`, `team`, or `league` as a type. The only difference is that the reply will be each ID you have unsubscribed from.
+Unsubscribing is similar to subscribing, in that you must provide `player`, `team`, or `league` as a type. The ID must be an integer, or must be able to be cast into an interger. The only difference is that the reply will be each ID you have unsubscribed from.
 
 Send:
 ```json
