@@ -63,20 +63,20 @@ class Subclient {
       league: [],
     };
     match.players.forEach((player) => {
-      if (this._subscriptions.player.indexOf(player.account_id) !== -1) {
+      if (this._subscriptions.player.indexOf(Number(player.account_id)) !== -1) {
         found.matches += 1;
         found.player.push(player.account_id);
       }
     });
-    if (this._subscriptions.team.indexOf(match.radiant_team_id) !== -1) {
+    if (this._subscriptions.team.indexOf(Number(match.radiant_team_id)) !== -1) {
       found.matches += 1;
       found.team.push(match.radiant_team_id);
     }
-    if (this._subscriptions.team.indexOf(match.dire_team_id) !== -1) {
+    if (this._subscriptions.team.indexOf(Number(match.dire_team_id)) !== -1) {
       found.matches += 1;
       found.team.push(match.dire_team_id);
     }
-    if (this._subscriptions.league.indexOf(match.leagueid) !== -1) {
+    if (this._subscriptions.league.indexOf(Number(match.leagueid)) !== -1) {
       found.matches += 1;
       found.league.push(match.leagueid);
     }
@@ -117,9 +117,7 @@ const handlers = {
     }
     // check if the ids are an array, otherwise create one
     if (!Array.isArray(data.message.ids)) {
-      if (typeof data.message.ids === 'string' || typeof data.message.ids === 'number') {
-        data.message.ids = [data.message.ids];
-      }
+      data.message.ids = [data.message.ids];
     }
     ctx._subscriptions[data.message.type].push(...data.message.ids);
     ctx._subscriptions[data.message.type] = ctx._subscriptions[data.message.type]
@@ -149,9 +147,7 @@ const handlers = {
     }
     // check if the ids are an array, otherwise create one
     if (!Array.isArray(data.message.ids)) {
-      if (typeof data.message.ids === 'string' || typeof data.message.ids === 'number') {
-        data.message.ids = [data.message.ids];
-      }
+      data.message.ids = [data.message.ids];
     }
     // unsubscribe from each id
     const removed = [];
