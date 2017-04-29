@@ -107,6 +107,7 @@ CREATE TABLE player_matches (
   repicked boolean,
   randomed boolean,
   pred_vict boolean,
+  performance_others text,
 );
 
 CREATE TABLE player_caches (

@@ -146,6 +146,9 @@ function createParsedDataBlob(entries, match, cb) {
       console.time('processMetadata');
       meta = processMetadata(entries);
       meta.match_id = match.match_id;
+      meta.abilities = match.ability_upgrades.map(e => Object.assign({}, e, {
+        time: e.time - meta.game_zero,
+      }));
       console.timeEnd('processMetadata');
       cb();
     },
@@ -166,7 +169,7 @@ function createParsedDataBlob(entries, match, cb) {
     },
     (cb) => {
       console.time('processParsedData');
-      parsedData = processParsedData(expanded, getParseSchema());
+      parsedData = processParsedData(expanded, getParseSchema(), meta);
       console.timeEnd('processParsedData');
       cb();
     },

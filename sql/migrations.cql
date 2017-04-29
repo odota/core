@@ -12,3 +12,5 @@ ALTER TABLE player_matches ADD randomed boolean;
 ALTER TABLE player_matches ADD pred_vict boolean;
 
 ALTER TABLE matches ADD skill int;
+
+ALTER TABLE player_matches ADD performance_others text;
