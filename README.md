@@ -1,6 +1,8 @@
 core
 ====
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/odota/core.svg)](https://greenkeeper.io/)
+
 Overview
 ----
 * This project provides the [OpenDota API](https://docs.opendota.com/) for consumption.
