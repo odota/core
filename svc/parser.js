@@ -203,8 +203,12 @@ function runParse(match, job, cb) {
     if (err) {
       return cb(err);
     }
-    const parsedData = createParsedDataBlob(entries, match);
-    return insertStandardParse(parsedData, cb);
+    try {
+      const parsedData = createParsedDataBlob(entries, match);
+      return insertStandardParse(parsedData, cb);
+    } catch (e) {
+      return cb(e);
+    }
   }
 
   // Streams
