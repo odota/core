@@ -1,9 +1,8 @@
+const itemIds = require('dotaconstants').item_ids;
 /**
  * Strips off "item_" from strings, and nullifies dota_unknown.
  * Does not mutate the original string.
  **/
-const itemIds = require('dotaconstants').item_ids;
-
 function translate(input) {
   if (input === 'dota_unknown') {
     return null;
@@ -293,7 +292,7 @@ function processExpand(entries, meta) {
       // we should only do this for events where we don't have a PURCHASE entry since
       // this will not work immediately for new items (we have to manually update dotaconstants).
       // We check if this is a pregame
-      if (e.key === '16' && e.time < meta.pre_game) {
+      if (e.key === '16' && e.time < meta.game_start) {
         const key = translate(itemIds[e.value.toString()]);  // "item_stout_shield" by id
         // i.e. dotaconstants doesn't have this item
         if (typeof key === 'undefined') {
@@ -302,7 +301,7 @@ function processExpand(entries, meta) {
         }
         // we don't want to show time of purchases which was done even before pre-game
         expand({
-          time: meta.pre_game,
+          time: meta.game_start,
           value: 1,
           slot: e.slot,
           key,
@@ -311,7 +310,7 @@ function processExpand(entries, meta) {
         // don't include recipes in purchase logs
         if (key.indexOf('recipe_') !== 0) {
           expand({
-            time: meta.pre_game,
+            time: meta.game_start,
             value: 1,
             slot: e.slot,
             key,
