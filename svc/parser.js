@@ -140,7 +140,7 @@ function createParsedDataBlob(entries, match) {
   console.time('processMetadata');
   const meta = processMetadata(entries);
   meta.match_id = match.match_id;
-  meta.abilities = match.ability_upgrades.map(e => Object.assign({}, e, {
+  meta.abilities = (match.ability_upgrades || []).map(e => Object.assign({}, e, {
     time: e.time - meta.game_zero,
   }));
   console.timeEnd('processMetadata');
