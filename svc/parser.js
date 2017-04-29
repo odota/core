@@ -136,7 +136,7 @@ function getParseSchema() {
   };
 }
 
-function createParsedDataBlob(entries, match, cb) {
+function createParsedDataBlob(entries, match) {
   console.time('processMetadata');
   const meta = processMetadata(entries);
   meta.match_id = match.match_id;
@@ -169,7 +169,7 @@ function createParsedDataBlob(entries, match, cb) {
     parsedData.logs = processLogParse(adjustedEntries, meta);
     console.timeEnd('processLogParse');
   }
-  cb(null, Object.assign({}, parsedData, match));
+  return Object.assign({}, parsedData, match);
 }
 
 function runParse(match, job, cb) {
@@ -203,12 +203,8 @@ function runParse(match, job, cb) {
     if (err) {
       return cb(err);
     }
-    return createParsedDataBlob(entries, match, (err, parsedData) => {
-      if (err) {
-        return cb(err);
-      }
-      return insertStandardParse(parsedData, cb);
-    });
+    const parsedData = createParsedDataBlob(entries, match);
+    return insertStandardParse(parsedData, cb);
   }
 
   // Streams
