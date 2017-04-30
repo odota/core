@@ -2,7 +2,7 @@
 
 Feed is a websocket service that allows users to connect and subscibe to live matches with various filters. These filters include account_id, team_id and leagueid. 
 
-Connect to the service with the url `ws://feed.opendota.com:80/`.
+Connect to the service with the url `wss://feed.opendota.com/`.
 
 ## Message Format
 
