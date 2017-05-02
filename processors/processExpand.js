@@ -294,12 +294,13 @@ function processExpand(entries, meta) {
       // we should only do this for events where we don't have a PURCHASE entry since
       // this will not work immediately for new items (we have to manually update dotaconstants).
       // We check if this is a pregame
-      if (e.key === '16' && e.value && e.time < meta.game_start) {
+      const adjustedGameStartTime = meta.game_start - meta.game_zero;
+      if (e.key === '16' && e.value && e.time < adjustedGameStartTime) {
         const key = translate(itemIds[e.value]);  // "item_stout_shield" by id
         if (key) {
           // we don't want to show time of purchases which was done even before pre-game
           expand({
-            time: meta.game_start,
+            time: adjustedGameStartTime,
             value: 1,
             slot: e.slot,
             key,
@@ -308,7 +309,7 @@ function processExpand(entries, meta) {
           // don't include recipes in purchase logs
           if (key.indexOf('recipe_') !== 0) {
             expand({
-              time: meta.game_start,
+              time: adjustedGameStartTime,
               value: 1,
               slot: e.slot,
               key,
