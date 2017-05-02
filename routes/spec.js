@@ -2217,6 +2217,9 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /proMatches',
         description: 'Get list of pro matches',
         tags: ['pro matches'],
+        parameters: [
+          params.lessThanMatchIdParam,
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -2314,7 +2317,6 @@ Please keep request rate to approximately 1/s.
         tags: ['public matches'],
         parameters: [
           params.mmrAscendingParam,
-          params.lessThanMatchIdParam,
         ],
         responses: {
           200: {
