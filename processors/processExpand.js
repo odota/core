@@ -122,7 +122,7 @@ function processExpand(entries, meta) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
 
-      if (e.sourcename !== key) {
+      if (e.attackername !== key) {
         expand(Object.assign({}, e, {
           unit,
           key,
