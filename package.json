@@ -27,7 +27,6 @@
   "dependencies": {
     "JSONStream": "^1.2.1",
     "async": "^2.1.4",
-    "big-number": "^0.4.0",
     "bull": "^2.0.0",
     "cassandra-driver": "^3.1.6",
     "compression": "^1.6.2",
@@ -39,6 +38,7 @@
     "express": "^4.14.0",
     "http-proxy": "^1.15.2",
     "knex": "^0.13.0",
+    "long": "^3.2.0",
     "moment": "^2.17.0",
     "nock": "^9.0.9",
     "passport": "^0.3.2",

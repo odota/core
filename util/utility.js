@@ -5,7 +5,7 @@
 const config = require('../config');
 const constants = require('dotaconstants');
 const request = require('request');
-const BigNumber = require('big-number');
+const Long = require('long');
 const urllib = require('url');
 const laneMappings = require('./laneMappings');
 
@@ -26,7 +26,7 @@ function tokenize(input) {
  * Takes and returns a string
  */
 function convert64to32(id) {
-  return new BigNumber(id).minus('76561197960265728').toString();
+  return Long.fromString(id).subtract('76561197960265728').toString();
 }
 
 /*
@@ -35,7 +35,7 @@ function convert64to32(id) {
  * Takes and returns a string
  */
 function convert32to64(id) {
-  return new BigNumber('76561197960265728').plus(id).toString();
+  return Long.fromString(id).add('76561197960265728').toString();
 }
 
 /**
