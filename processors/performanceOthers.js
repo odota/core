@@ -13,14 +13,14 @@ function greevilsGreed(e, container, meta) {
     const greevilsGreedId = 5368;
     const ggLvl = getSkillLevel(meta, greevilsGreedId, e.time);
 
-    const goldBase = 6;
-    let goldStack = e.greevils_greed_stack * 3;
+    const goldBase = 4;
+    let goldStack = e.greevils_greed_stack * 4;
 
     switch (ggLvl.level) {
-      case 1: goldStack = Math.min(goldStack, 12); break;
+      case 1: goldStack = Math.min(goldStack, 16); break;
       case 2: goldStack = Math.min(goldStack, 20); break;
-      case 3: goldStack = Math.min(goldStack, 28); break;
-      case 4: goldStack = Math.min(goldStack, 36); break;
+      case 3: goldStack = Math.min(goldStack, 24); break;
+      case 4: goldStack = Math.min(goldStack, 28); break;
       default: return;
     }
 
