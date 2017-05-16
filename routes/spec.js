@@ -1216,7 +1216,7 @@ Please keep request rate to approximately 1/s.
             if (err) {
               return cb(err);
             }
-            return res.json(cache);
+            return res.json(cache.filter(match => match.duration));
           });
         },
       },
