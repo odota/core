@@ -1192,6 +1192,14 @@ Please keep request rate to approximately 1/s.
                     description: 'skill',
                     type: 'number',
                   },
+                  lane: {
+                    description: 'lane',
+                    type: 'number',
+                  },
+                  lane_role: {
+                    description: 'lane_role',
+                    type: 'number',
+                  },
                 },
               },
             },
@@ -1201,7 +1209,7 @@ Please keep request rate to approximately 1/s.
         func: (req, res, cb) => {
           queries.getPlayerMatches(req.params.account_id, {
             project: req.queryObj.project.concat(
-              ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'xp_per_min', 'gold_per_min', 'hero_damage', 'tower_damage', 'hero_healing', 'last_hits']
+              ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'xp_per_min', 'gold_per_min', 'hero_damage', 'tower_damage', 'hero_healing', 'last_hits', 'lane', 'lane_role']
             ),
             dbLimit: 20,
           }, (err, cache) => {
