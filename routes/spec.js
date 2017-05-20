@@ -18,203 +18,12 @@ const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
+const params = require('./params');
 
 const pQueue = queue.getQueue('parse');
 const subkeys = playerFields.subkeys;
 const countCats = playerFields.countCats;
 const countPeers = utility.countPeers;
-
-const params = {
-  matchIdParam: {
-    name: 'match_id',
-    in: 'path',
-    required: true,
-    type: 'integer',
-  },
-  accountIdParam: {
-    name: 'account_id',
-    in: 'path',
-    description: 'Steam32 account ID',
-    required: true,
-    type: 'integer',
-  },
-  fieldParam: {
-    name: 'field',
-    in: 'path',
-    description: 'Field to aggregate on',
-    required: true,
-    type: 'string',
-  },
-  limitParam: {
-    name: 'limit',
-    in: 'query',
-    description: 'Number of matches to limit to',
-    required: false,
-    type: 'integer',
-  },
-  offsetParam: {
-    name: 'offset',
-    in: 'query',
-    description: 'Number of matches to offset start by',
-    required: false,
-    type: 'integer',
-  },
-  projectParam: {
-    name: 'project',
-    in: 'query',
-    description: 'Fields to project (array)',
-    required: false,
-    type: 'string',
-  },
-  winParam: {
-    name: 'win',
-    in: 'query',
-    description: 'Whether the player won',
-    required: false,
-    type: 'integer',
-  },
-  patchParam: {
-    name: 'patch',
-    in: 'query',
-    description: 'Patch ID',
-    required: false,
-    type: 'integer',
-  },
-  gameModeParam: {
-    name: 'game_mode',
-    in: 'query',
-    description: 'Game Mode ID',
-    required: false,
-    type: 'integer',
-  },
-  lobbyTypeParam: {
-    name: 'lobby_type',
-    in: 'query',
-    description: 'Lobby type ID',
-    required: false,
-    type: 'integer',
-  },
-  regionParam: {
-    name: 'region',
-    in: 'query',
-    description: 'Region ID',
-    required: false,
-    type: 'integer',
-  },
-  dateParam: {
-    name: 'date',
-    in: 'query',
-    description: 'Days previous',
-    required: false,
-    type: 'integer',
-  },
-  laneRoleParam: {
-    name: 'lane_role',
-    in: 'query',
-    description: 'Lane Role ID',
-    required: false,
-    type: 'integer',
-  },
-  heroIdParam: {
-    name: 'hero_id',
-    in: 'query',
-    description: 'Hero ID',
-    required: false,
-    type: 'integer',
-  },
-  isRadiantParam: {
-    name: 'is_radiant',
-    in: 'query',
-    description: 'Whether the player was radiant',
-    required: false,
-    type: 'integer',
-  },
-  withHeroIdParam: {
-    name: 'with_hero_id',
-    in: 'query',
-    description: "Hero IDs on the player's team (array)",
-    required: false,
-    type: 'integer',
-  },
-  againstHeroIdParam: {
-    name: 'against_hero_id',
-    in: 'query',
-    description: "Hero IDs against the player's team (array)",
-    required: false,
-    type: 'integer',
-  },
-  includedAccountIdParam: {
-    name: 'included_account_id',
-    in: 'query',
-    description: 'Account IDs in the match (array)',
-    required: false,
-    type: 'integer',
-  },
-  excludedAccountIdParam: {
-    name: 'excluded_account_id',
-    in: 'query',
-    description: 'Account IDs not in the match (array)',
-    required: false,
-    type: 'integer',
-  },
-  significantParam: {
-    name: 'significant',
-    in: 'query',
-    description: 'Whether the match was significant for aggregation purposes',
-    required: false,
-    type: 'integer',
-  },
-  sortParam: {
-    name: 'sort',
-    in: 'query',
-    description: 'The field to return matches sorted by in descending order',
-    required: false,
-    type: 'string',
-  },
-  minMmrParam: {
-    name: 'min_mmr',
-    in: 'query',
-    description: 'Minimum average MMR',
-    required: false,
-    type: 'integer',
-  },
-  maxMmrParam: {
-    name: 'max_mmr',
-    in: 'query',
-    description: 'Maximum average MMR',
-    required: false,
-    type: 'integer',
-  },
-  minTimeParam: {
-    name: 'min_time',
-    in: 'query',
-    description: 'Minimum start time (Unix time)',
-    required: false,
-    type: 'integer',
-  },
-  maxTimeParam: {
-    name: 'max_time',
-    in: 'query',
-    description: 'Maximum start time (Unix time)',
-    required: false,
-    type: 'integer',
-  },
-  mmrAscendingParam: {
-    name: 'mmr_ascending',
-    in: 'query',
-    description: 'Order by MMR ascending',
-    required: false,
-    type: 'integer',
-  },
-  lessThanMatchIdParam: {
-    name: 'less_than_match_id',
-    in: 'query',
-    description: 'Get matches with a match ID lower than this value',
-    required: false,
-    type: 'integer',
-  },
-};
-
 const playerParams = [
   params.accountIdParam,
   params.limitParam,
@@ -2325,6 +2134,8 @@ Please keep request rate to approximately 1/s.
         tags: ['public matches'],
         parameters: [
           params.mmrAscendingParam,
+          params.mmrDescendingParam,
+          params.lessThanMatchIdParam,
         ],
         responses: {
           200: {
@@ -2378,11 +2189,18 @@ Please keep request rate to approximately 1/s.
         route: () => '/publicMatches',
         func: (req, res, cb) => {
           const minTime = moment().subtract(3, 'day').format('X');
-          const order = req.query.mmr_ascending ? 'ASC' : 'DESC';
+          const lessThan = Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
+          let order = '';
+          if (req.query.mmr_ascending) {
+            order = 'ORDER BY avg_mmr ASC';
+          } else if (req.query.mmr_descending) {
+            order = 'ORDER BY avg_mmr DESC';
+          }
           db.raw(`
           WITH match_ids AS (SELECT match_id FROM public_matches
           WHERE start_time > ?
-          ORDER BY avg_mmr ${order}
+          AND match_id < ?
+          ${order}
           LIMIT 100)
           SELECT * FROM
           (SELECT * FROM public_matches
@@ -2393,8 +2211,8 @@ Please keep request rate to approximately 1/s.
           JOIN
           (SELECT match_id, string_agg(hero_id::text, ',') dire_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot > 127 GROUP BY match_id) dire_team
           USING(match_id)
-          ORDER BY avg_mmr ${order}
-          `, [minTime])
+          ${order}
+          `, [minTime, lessThan])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
