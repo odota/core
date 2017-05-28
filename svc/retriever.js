@@ -8,6 +8,8 @@ const Dota2 = require('dota2');
 const async = require('async');
 const express = require('express');
 const cp = require('child_process');
+const redis = require('../store/redis');
+const crypto = require('crypto');
 
 const app = express();
 const steamObj = {};
@@ -19,6 +21,9 @@ const timeoutThreshold = 20;
 const accountsToUse = 6;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 500;
+const pendingTwoFactorAuth = {};
+const pendingSteamGuardAuth = {};
+
 let matchRequestDelayIncr = 0;
 let lastRequestTime;
 let matchRequests = 0;
@@ -46,6 +51,16 @@ function genStats() {
     totalAccounts: users.length,
   };
   return data;
+}
+
+function shaHash(buffer) {
+  const h = crypto.createHash('sha1');
+  h.update(buffer);
+  return h.digest();
+}
+
+function getSentryHashKey(user) {
+  return Buffer.from(`retriever:sentry:${user}`);
 }
 
 function getMMStats(idx, cb) {
@@ -124,6 +139,7 @@ function init() {
       account_name: user,
       password: pass,
     };
+
     client.steamUser = new Steam.SteamUser(client);
     client.steamFriends = new Steam.SteamFriends(client);
     client.logOnDetails = logOnDetails;
@@ -132,18 +148,38 @@ function init() {
       console.log('acct %s ready', i);
       cb();
     });
-    client.connect();
     client.on('connected', () => {
       console.log('[STEAM] Trying to log on with %s,%s', user, pass);
       client.steamUser.logOn(logOnDetails);
     });
     client.on('logOnResponse', (logOnResp) => {
+      delete client.logOnDetails.two_factor_code;
+      delete client.logOnDetails.auth_code;
+      delete pendingTwoFactorAuth[user];
+      delete pendingSteamGuardAuth[user];
+
+      const isTwoFactorAuth = logOnResp.eresult === Steam.EResult.AccountLoginDeniedNeedTwoFactor;
+      const isSteamGuard = logOnResp.eresult === Steam.EResult.AccountLogonDenied;
+      if (isTwoFactorAuth || isSteamGuard) {
+        console.log('[STEAM] Account %s is protected', user);
+        if (isTwoFactorAuth) {
+          console.log('[STEAM] Two Factor Authentication required.');
+          pendingTwoFactorAuth[user] = client;
+        } else {
+          console.log('[STEAM] SteamGuard Authentication required.');
+          pendingSteamGuardAuth[user] = client;
+        }
+
+        return;
+      }
+
       if (logOnResp.eresult !== Steam.EResult.OK) {
         // try logging on again
         console.error(logOnResp);
         client.steamUser.logOn(logOnDetails);
         return;
       }
+
       if (client && client.steamID) {
         console.log('[STEAM] Logged on %s', client.steamID);
         client.steamFriends.setPersonaName(client.steamID.toString());
@@ -151,12 +187,76 @@ function init() {
         client.Dota2.launch();
       }
     });
-    /*
+    client.steamUser.on('updateMachineAuth', (machineAuth, callback) => {
+      console.log('[STEAM] Got UpdateMachineAuth for %s', user);
+
+      const key = getSentryHashKey(user);
+      redis.hgetall(key, (err, sentries) => {
+        const size = machineAuth.offset + machineAuth.cubtowrite;
+        let newSentry;
+        if (sentries && machineAuth.filename in sentries) {
+          newSentry = sentries[machineAuth.filename];
+          if (size > newSentry.size) {
+            const temp = Buffer.alloc(size);
+            newSentry.copy(temp);
+            newSentry = temp;
+          }
+        } else {
+          newSentry = Buffer.alloc(size);
+        }
+        machineAuth.bytes.copy(newSentry, machineAuth.offset, 0, machineAuth.cubtowrite);
+
+        redis.multi()
+          .del(key)
+          .hset(key, machineAuth.filename, newSentry)
+          .exec();
+
+        const sha = shaHash(newSentry);
+        client.logOnDetails.sha_sentryfile = sha;
+
+        callback({
+          filename: machineAuth.filename,
+          eresult: Steam.EResult.OK,
+          filesize: newSentry.length,
+          sha_file: sha,
+          getlasterror: 0,
+          offset: machineAuth.offset,
+          cubwrote: machineAuth.cubtowrite,
+          otp_type: machineAuth.otp_type,
+          otp_identifier: machineAuth.otp_identifier,
+        });
+      });
+    });
     client.on('error', (err) => {
       console.error(err);
-      console.log('reconnecting');
+      if (user in pendingTwoFactorAuth || user in pendingSteamGuardAuth) {
+        console.log('not reconnecting %s, waiting for auth...', user);
+        client.pendingLogOn = true;
+      } else {
+        console.log('reconnecting %s', user);
+        client.connect();
+      }
+    });
+
+    redis.hgetall(getSentryHashKey(user), (err, sentries) => {
+      if (sentries) {
+        Object.keys(sentries).some((k) => {
+          if (sentries[k] && sentries[k].length > 0) {
+            const sha = shaHash(sentries[k]);
+            console.log('Retrieved sentry for %s: %s', user, sha.toString('hex'));
+
+            logOnDetails.sha_sentryfile = sha;
+            return true;
+          }
+
+          return false;
+        });
+      }
+
       client.connect();
     });
+
+    /*
     client.on('loggedOff', () => {
       console.log('relogging');
       setTimeout(()=> {
@@ -198,6 +298,59 @@ app.use((req, res, cb) => {
     // reject request if it doesn't have key
     return cb('invalid key');
   }
+  return cb();
+});
+app.get('/auth', (req, res) => {
+  if (req.query.account) {
+    if (req.query.two_factor) {
+      const client = pendingTwoFactorAuth[req.query.account];
+      if (client && client.pendingLogOn) {
+        client.logOnDetails.two_factor_code = req.query.two_factor;
+        delete client.logOnDetails.sha_sentryfile;
+
+        client.connect();
+        delete client.pendingLogOn;
+
+        return res.json({
+          result: 'success',
+        });
+      }
+
+      return res.status(400).json({
+        error: 'account not pending a two-factor authentication',
+      });
+    }
+
+    if (req.query.steam_guard) {
+      const client = pendingSteamGuardAuth[req.query.account];
+      if (client && client.pendingLogOn) {
+        client.logOnDetails.auth_code = req.query.steam_guard;
+        delete client.logOnDetails.sha_sentryfile;
+
+        client.connect();
+        delete client.pendingLogOn;
+
+        return res.json({
+          result: 'success',
+        });
+      }
+
+      return res.status(400).json({
+        error: 'account not pending a SteamGuard authentication',
+      });
+    }
+
+    return res.status(400).json({
+      error: 'missing two_factor or steam_guard parameter',
+    });
+  }
+
+  return res.json({
+    twoFactorAuth: Object.keys(pendingTwoFactorAuth),
+    steamGuardAuth: Object.keys(pendingSteamGuardAuth),
+  });
+});
+app.use((req, res, cb) => {
   if (!allReady) {
     return cb('not ready');
   }
