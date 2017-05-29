@@ -15,12 +15,12 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
-const isRadiant = utility.isRadiant;
 
 const pQueue = queue.getQueue('parse');
 const convert64to32 = utility.convert64to32;
 const serialize = utility.serialize;
 const deserialize = utility.deserialize;
+const isRadiant = utility.isRadiant;
 const computeMatchData = compute.computeMatchData;
 const columnInfo = {};
 const cassandraColumnInfo = {};
