@@ -15,6 +15,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
+const isRadiant = utility.isRadiant;
 
 const pQueue = queue.getQueue('parse');
 const convert64to32 = utility.convert64to32;
@@ -821,6 +822,13 @@ function insertMatch(match, options, cb) {
       function upsertPlayerMatches(cb) {
         async.each(players || [], (pm, cb) => {
           pm.match_id = match.match_id;
+          // Add lane data
+          if (pm.lane_pos) {
+            const laneData = utility.getLaneFromPosData(pm.lane_pos, isRadiant(pm));
+            pm.lane = laneData.lane;
+            pm.lane_role = laneData.lane_role;
+            pm.is_roaming = laneData.is_roaming;
+          }
           upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,

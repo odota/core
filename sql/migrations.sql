@@ -12,3 +12,8 @@ ALTER TABLE heroes ADD attack_type text;
 ALTER TABLE heroes ADD roles text[];
 
 ALTER TABLE players ADD last_match_time timestamp with time zone;
+
+ALTER TABLE player_matches ADD lane int;
+ALTER TABLE player_matches ADD lane_role int;
+ALTER TABLE player_matches ADD is_roaming boolean;
+ALTER TABLE heroes ADD legs int;
