@@ -54,6 +54,7 @@ const defaults = {
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   WEBSOCKET_PORT: 80, // port for live match subscription websocket service
+  ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
