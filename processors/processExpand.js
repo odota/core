@@ -1,4 +1,3 @@
-const itemIds = require('dotaconstants').item_ids;
 /**
  * Strips off "item_" from strings, and nullifies dota_unknown.
  * Does not mutate the original string.
@@ -290,34 +289,6 @@ function processExpand(entries, meta) {
       });
     },
     actions(e) {
-      // purchase
-      // we should only do this for events where we don't have a PURCHASE entry since
-      // this will not work immediately for new items (we have to manually update dotaconstants).
-      // We check if this is a pregame
-      const adjustedGameStartTime = meta.game_start - meta.game_zero;
-      if (e.key === '16' && e.value && e.time < adjustedGameStartTime) {
-        const key = translate(itemIds[e.value]);  // "item_stout_shield" by id
-        if (key) {
-          // we don't want to show time of purchases which was done even before pre-game
-          expand({
-            time: adjustedGameStartTime,
-            value: 1,
-            slot: e.slot,
-            key,
-            type: 'purchase',
-          });
-          // don't include recipes in purchase logs
-          if (key.indexOf('recipe_') !== 0) {
-            expand({
-              time: adjustedGameStartTime,
-              value: 1,
-              slot: e.slot,
-              key,
-              type: 'purchase_log',
-            });
-          }
-        }
-      }
       // expand the actions
       expand(Object.assign({}, e, { value: 1 }));
     },
