@@ -2,9 +2,9 @@
  * Issues a request to the retriever to get GC (Game Coordinator) data for a match
  * Calls back with an object containing the GC data
  **/
+const moment = require('moment');
 const utility = require('../util/utility');
 const config = require('../config');
-const moment = require('moment');
 const queries = require('../store/queries');
 
 const secret = config.RETRIEVER_SECRET;
@@ -27,7 +27,7 @@ module.exports = function getGcData(db, redis, match, cb) {
     const urls = retrieverArr.map(r =>
       `http://${r}?key=${secret}&match_id=${match.match_id}`
     );
-    return getData(urls, (err, body, metadata) => {
+    return getData({ url: urls, noRetry: match.noRetry }, (err, body, metadata) => {
       if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
         // non-retryable error
         return cb('invalid body or error');

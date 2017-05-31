@@ -14,12 +14,13 @@ const compute = require('../util/compute');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
+const cacheFunctions = require('./cacheFunctions');
 
 const pQueue = queue.getQueue('parse');
 const convert64to32 = utility.convert64to32;
 const serialize = utility.serialize;
 const deserialize = utility.deserialize;
-const reduceAggregable = utility.reduceAggregable;
+const isRadiant = utility.isRadiant;
 const computeMatchData = compute.computeMatchData;
 const columnInfo = {};
 const cassandraColumnInfo = {};
@@ -37,7 +38,7 @@ function doCleanRow(err, schema, row, cb) {
   return cb(err, obj);
 }
 
-function cleanRow(db, table, row, cb) {
+function cleanRowPostgres(db, table, row, cb) {
   if (columnInfo[table]) {
     return doCleanRow(null, columnInfo[table], row, cb);
   }
@@ -54,7 +55,9 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   if (cassandraColumnInfo[table]) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   }
-  return cassandra.execute('SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?', [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table], (err, result) => {
+  return cassandra.execute('SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
+  [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
+  (err, result) => {
     if (err) {
       return cb(err);
     }
@@ -242,36 +245,6 @@ function getMmrEstimate(db, redis, accountId, cb) {
   });
 }
 
-function getMatchesSkill(db, matches, options, cb) {
-  // fill in skill data from table
-  // only necessary if reading from cache since adding skill data doesn't update cache
-  // get skill data for matches within cache expiry (might not have skill data)
-  /*
-  var recents = matches.filter(function(m)
-  {
-      return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
-  });
-  */
-  // just get skill for last N matches to speed up DB query
-  const recents = matches.slice(0, 50);
-  const skillMap = {};
-  db.select(['match_id', 'skill']).from('match_skill').whereIn('match_id', recents.map(m =>
-    m.match_id
-  )).asCallback((err, rows) => {
-    if (err) {
-      return cb(err);
-    }
-    console.log('fillSkill recents: %s, results: %s', recents.length, rows.length);
-    rows.forEach((match) => {
-      skillMap[match.match_id] = match.skill;
-    });
-    matches.forEach((m) => {
-      m.skill = m.skill || skillMap[m.match_id];
-    });
-    return cb(err, matches);
-  });
-}
-
 function getPlayerMatches(accountId, queryObj, cb) {
   if (cassandra) {
     // call clean method to ensure we have column info cached
@@ -280,9 +253,14 @@ function getPlayerMatches(accountId, queryObj, cb) {
         return cb(err);
       }
       // console.log(queryObj.project, cassandraColumnInfo.player_caches);
-      const query = util.format('SELECT %s FROM player_caches WHERE account_id = ? ORDER BY match_id DESC',
+      const query = util.format(`
+        SELECT %s FROM player_caches 
+        WHERE account_id = ?
+        ORDER BY match_id DESC
+        ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
+      `,
         queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','));
-      let matches = [];
+      const matches = [];
       return cassandra.stream(query, [accountId], {
         prepare: true,
         fetchSize: 1000,
@@ -306,12 +284,12 @@ function getPlayerMatches(accountId, queryObj, cb) {
             b[queryObj.sort] - a[queryObj.sort]
           );
         }
-        matches = matches.slice(queryObj.offset, queryObj.limit || matches.length);
-        return cb(err, matches);
+        const offset = matches.slice(queryObj.offset);
+        const result = offset.slice(0, queryObj.limit || offset.length);
+        return cb(err, result);
       }).on('error', cb);
     });
   }
-  // TODO support reading from postgres
   return cb(null, []);
 }
 
@@ -446,7 +424,7 @@ function getMatchRating(redis, match, cb) {
 }
 
 function upsert(db, table, row, conflict, cb) {
-  cleanRow(db, table, row, (err, row) => {
+  cleanRowPostgres(db, table, row, (err, row) => {
     if (err) {
       return cb(err);
     }
@@ -469,6 +447,98 @@ function upsert(db, table, row, conflict, cb) {
     )).asCallback(cb);
   });
 }
+
+function insertPlayer(db, player, cb) {
+  if (player.steamid) {
+    // this is a login, compute the account_id from steamid
+    player.account_id = Number(convert64to32(player.steamid));
+  }
+  if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
+    return cb();
+  }
+  return upsert(db, 'players', player, {
+    account_id: player.account_id,
+  }, cb);
+}
+
+function insertPlayerRating(db, row, cb) {
+  db('player_ratings').insert(row).asCallback(cb);
+}
+
+function insertMatchSkillCassandra(row, cb) {
+  cassandra.execute('INSERT INTO matches (match_id, skill) VALUES (?, ?)',
+  [row.match_id, row.skill],
+  { prepare: true },
+  (err) => {
+    if (err) {
+      return cb(err);
+    }
+    if (row.players) {
+      const filteredPlayers = row.players.filter(player => player.account_id
+        && player.account_id !== utility.getAnonymousAccountId());
+      return async.eachSeries(filteredPlayers, (player, cb) => {
+        cassandra.execute('INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)',
+          [String(player.account_id), String(row.match_id), String(row.skill)],
+          { prepare: true },
+          cb);
+      }, cb);
+    }
+    return cb();
+  });
+}
+
+function writeCache(accountId, cache, cb) {
+  return async.each(cache.raw, (match, cb) => {
+    cleanRowCassandra(cassandra, 'player_caches', match, (err, cleanedMatch) => {
+      if (err) {
+        return cb(err);
+      }
+      const serializedMatch = serialize(cleanedMatch);
+      const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)',
+        Object.keys(serializedMatch).join(','),
+        Object.keys(serializedMatch).map(() => '?').join(',')
+      );
+      const arr = Object.keys(serializedMatch).map(k =>
+        serializedMatch[k]
+      );
+      return cassandra.execute(query, arr, {
+        prepare: true,
+      }, cb);
+    });
+  }, cb);
+}
+
+function insertPlayerCache(match, cb) {
+  if (!cassandra) {
+    return cb();
+  }
+  const players = match.players;
+  if (match.pgroup && players) {
+    players.forEach((p) => {
+      if (match.pgroup[p.player_slot]) {
+        // add account id to each player so we know what caches to update
+        p.account_id = match.pgroup[p.player_slot].account_id;
+        // add hero_id to each player so we update records with hero played
+        p.hero_id = match.pgroup[p.player_slot].hero_id;
+      }
+    });
+  }
+  return async.eachSeries(players, (playerMatch, cb) => {
+    if (playerMatch.account_id && playerMatch.account_id !== utility.getAnonymousAccountId()) {
+      // join player with match to form player_match
+      Object.keys(match).forEach((key) => {
+        if (key !== 'players') {
+          playerMatch[key] = match[key];
+        }
+      });
+      computeMatchData(playerMatch);
+      return writeCache(playerMatch.account_id, {
+        raw: [playerMatch],
+      }, cb);
+    }
+    return cb();
+  }, cb);
+}
 /*
 function updateMatchups(match, cb) {
   async.each(utility.generateMatchups(match, 1), (key, cb) => {
@@ -490,8 +560,9 @@ function updateRankings(match, cb) {
     if (err) {
       return cb(err);
     }
-    const matchScore = (avg && !isNaN(Number(avg))) ?
-      Math.pow(Math.max(avg / 1000, 1), 7) :
+    const ratingMin = 2000;
+    const matchScore = (avg && !isNaN(Number(avg)) && avg >= ratingMin) ?
+      Math.pow(avg / ratingMin, 7) :
       undefined;
     return async.each(match.players, (player, cb) => {
       if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
@@ -604,81 +675,41 @@ function upsertMatchSample(match, cb) {
   });
 }
 
-function insertPlayer(db, player, cb) {
-  if (player.steamid) {
-    // this is a login, compute the account_id from steamid
-    player.account_id = Number(convert64to32(player.steamid));
-  }
-  if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
-    return cb();
-  }
-  return upsert(db, 'players', player, {
-    account_id: player.account_id,
-  }, cb);
+function updateRecord(field, match, player) {
+  redis.zadd(`records:${field}`, match[field] || player[field], [match.match_id, match.start_time, player.hero_id].join(':'));
+  // Keep only 100 top scores
+  redis.zremrangebyrank(`records:${field}`, '0', '-101');
+  const expire = moment().add(1, 'month').startOf('month').format('X');
+  redis.expireat(`records:${field}`, expire);
 }
 
-function insertPlayerRating(db, row, cb) {
-  db('player_ratings').insert(row).asCallback(cb);
-}
-
-function insertMatchSkill(db, row, cb) {
-  upsert(db, 'match_skill', row, {
-    match_id: row.match_id,
-  }, cb);
-}
-
-function writeCache(accountId, cache, cb) {
-  if (!cassandra) {
-    return cb();
-  }
-  return async.each(cache.raw, (m, cb) => {
-    m = serialize(reduceAggregable(m));
-    const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)',
-      Object.keys(m).join(','),
-      Object.keys(m).map(() => '?').join(',')
-    );
-    cassandra.execute(query, Object.keys(m).map(k =>
-      m[k]
-    ), {
-      prepare: true,
-    }, cb);
-  }, (err) => {
-    if (err) {
-      console.error(err.stack);
-    }
-    return cb(err);
-  });
-}
-
-function insertPlayerCache(match, cb) {
-  if (!cassandra) {
-    return cb();
-  }
-  const players = match.players;
-  if (match.pgroup && players) {
-    players.forEach((p) => {
-      if (match.pgroup[p.player_slot]) {
-        // add account id to each player so we know what caches to update
-        p.account_id = match.pgroup[p.player_slot].account_id;
-        // add hero_id to each player so we update records with hero played
-        p.hero_id = match.pgroup[p.player_slot].hero_id;
-      }
+function updateRecords(match, cb) {
+  if (match.lobby_type === 7 && utility.isSignificant(match)) {
+    updateRecord('duration', match, {});
+    match.players.forEach((player) => {
+      updateRecord('kills', match, player);
+      updateRecord('deaths', match, player);
+      updateRecord('assists', match, player);
+      updateRecord('last_hits', match, player);
+      updateRecord('denies', match, player);
+      updateRecord('gold_per_min', match, player);
+      updateRecord('xp_per_min', match, player);
+      updateRecord('hero_damage', match, player);
+      updateRecord('tower_damage', match, player);
+      updateRecord('hero_healing', match, player);
     });
   }
-  return async.eachSeries(players, (playerMatch, cb) => {
-    if (playerMatch.account_id && playerMatch.account_id !== utility.getAnonymousAccountId()) {
-      // join player with match to form player_match
-      Object.keys(match).forEach((key) => {
-        if (key !== 'players') {
-          playerMatch[key] = match[key];
-        }
-      });
-      computeMatchData(playerMatch);
-      return writeCache(playerMatch.account_id, {
-        raw: [playerMatch],
-      }, cb);
-    }
-    return cb();
+  cb();
+}
+
+function updateLastPlayed(match, cb) {
+  const filteredPlayers = (match.players || []).filter(player =>
+    player.account_id && player.account_id !== utility.getAnonymousAccountId());
+  async.each(filteredPlayers, (player, cb) => {
+    insertPlayer(db, {
+      account_id: player.account_id,
+      last_match_time: new Date(match.start_time * 1000),
+    }, cb);
   }, cb);
 }
 
@@ -690,6 +721,11 @@ function createMatchCopy(match, players) {
 
 function insertMatch(match, options, cb) {
   const players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
+  const abilityUpgrades = [];
+  const savedAbilityLvls = {
+    5288: 'track',
+    5368: 'greevils_greed',
+  };
 
   function preprocess(cb) {
     // don't insert anonymous account id
@@ -726,23 +762,56 @@ function insertMatch(match, options, cb) {
           p.ability_upgrades_arr = p.ability_upgrades.map(au =>
             au.ability
           );
+          const abilityLvls = {};
+          p.ability_upgrades.forEach((au) => {
+            if (au.ability in savedAbilityLvls) {
+              abilityLvls[au.ability] = (abilityLvls[au.ability] || 0) + 1;
+              const abilityUpgrade = Object.assign({}, au, {
+                level: abilityLvls[au.ability],
+              });
+              abilityUpgrades.push(abilityUpgrade);
+            }
+          });
         }
       });
     }
     cb();
   }
 
+  function tellSocket(cb) {
+    if (options.origin === 'scanner') {
+      redis.publish('socket:matches:scanner', JSON.stringify(match));
+    } else if (options.origin === 'parsed') {
+      redis.publish('socket:matches:parser', JSON.stringify(match));
+    }
+    cb();
+  }
+
   function decideLogParse(cb) {
-    utility.isProMatch(match, redis, (err, result) => {
-      options.doLogParse = options.doLogParse || Boolean(Number(result));
-      cb(err);
-    });
+    if (match.leagueid) {
+      db.select('leagueid')
+      .from('leagues')
+      .where('tier', 'premium')
+      .orWhere('tier', 'professional')
+      .asCallback((err, leagueids) => {
+        if (err) {
+          return cb(err);
+        }
+        options.doLogParse = options.doLogParse ||
+          utility.isProMatch(match, leagueids.map(l => l.leagueid));
+        return cb(err);
+      });
+    } else {
+      cb();
+    }
   }
 
   function upsertMatch(cb) {
     if (!options.doLogParse) {
+      // Skip this if not a pro match (doLogParse true)
       return cb();
     }
+    // console.log('[INSERTMATCH] upserting into Postgres');
     return db.transaction((trx) => {
       function upsertMatch(cb) {
         upsert(trx, 'matches', match, {
@@ -753,6 +822,13 @@ function insertMatch(match, options, cb) {
       function upsertPlayerMatches(cb) {
         async.each(players || [], (pm, cb) => {
           pm.match_id = match.match_id;
+          // Add lane data
+          if (pm.lane_pos) {
+            const laneData = utility.getLaneFromPosData(pm.lane_pos, isRadiant(pm));
+            pm.lane = laneData.lane;
+            pm.lane_role = laneData.lane_role;
+            pm.is_roaming = laneData.is_roaming;
+          }
           upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
@@ -817,8 +893,13 @@ function insertMatch(match, options, cb) {
             if (err) {
               return cb(err);
             }
-            return async.eachLimit(match.logs, 10000, (e, cb) => {
-              trx('match_logs').insert(e).asCallback(cb);
+            return async.eachLimit(match.logs, 10, (e, cb) => {
+              cleanRowPostgres(db, 'match_logs', e, (err, cleanedRow) => {
+                if (err) {
+                  return cb(err);
+                }
+                return trx('match_logs').insert(cleanedRow).asCallback(cb);
+              });
             }, cb);
           });
       }
@@ -845,9 +926,6 @@ function insertMatch(match, options, cb) {
   }
 
   function upsertMatchCassandra(cb) {
-    if (!cassandra) {
-      return cb();
-    }
     // console.log('[INSERTMATCH] upserting into Cassandra');
     return cleanRowCassandra(cassandra, 'matches', match, (err, match) => {
       if (err) {
@@ -887,7 +965,7 @@ function insertMatch(match, options, cb) {
               Object.keys(obj2).map(() => '?').join(',')
             );
             const arr2 = Object.keys(obj2).map(k =>
-              obj2[k]
+              ((obj2[k] === 'true' || obj2[k] === 'false') ? JSON.parse(obj2[k]) : obj2[k])
             );
             return cassandra.execute(query2, arr2, {
               prepare: true,
@@ -899,9 +977,7 @@ function insertMatch(match, options, cb) {
   }
 
   function updatePlayerCaches(cb) {
-    if (!cassandra) {
-      return cb();
-    }
+    // console.log('[INSERTMATCH] upserting into Cassandra player_caches');
     const copy = createMatchCopy(match, players);
     return insertPlayerCache(copy, cb);
   }
@@ -932,6 +1008,18 @@ function insertMatch(match, options, cb) {
       upsertMatchSample(cb) {
         if (options.origin === 'scanner') {
           return upsertMatchSample(match, cb);
+        }
+        return cb();
+      },
+      updateRecords(cb) {
+        if (options.origin === 'scanner') {
+          return updateRecords(match, cb);
+        }
+        return cb();
+      },
+      updateLastPlayed(cb) {
+        if (options.origin === 'scanner') {
+          return updateLastPlayed(match, cb);
         }
         return cb();
       },
@@ -982,6 +1070,14 @@ function insertMatch(match, options, cb) {
     redis.del(`match:${match.match_id}`, cb);
   }
 
+  function clearPlayerCaches(cb) {
+    async.each((match.players || []).filter(player => Boolean(player.account_id)), (player, cb) => {
+      async.each(cacheFunctions.getKeys(), (key, cb) => {
+        cacheFunctions.update({ key, account_id: player.account_id }, cb);
+      }, cb);
+    }, cb);
+  }
+
   function decideMmr(cb) {
     async.each(match.players, (p, cb) => {
       if (options.origin === 'scanner' &&
@@ -1030,7 +1126,8 @@ function insertMatch(match, options, cb) {
   }
 
   function decideReplayParse(cb) {
-    if (options.skipParse || (!utility.isSignificant(match) && !options.forceParse)) {
+    // (!utility.isSignificant(match) && !options.forceParse)
+    if (options.skipParse) {
       // not parsing this match
       return cb();
     }
@@ -1056,6 +1153,7 @@ function insertMatch(match, options, cb) {
             replay_blob_key: match.replay_blob_key,
             pgroup: match.pgroup,
             doLogParse,
+            ability_upgrades: abilityUpgrades,
           },
         }, {
           lifo: options.lifo,
@@ -1073,20 +1171,23 @@ function insertMatch(match, options, cb) {
   }
   async.series({
     preprocess,
+    tellSocket,
     decideLogParse,
     upsertMatch,
     upsertMatchCassandra,
     updatePlayerCaches,
     updateCounts,
     clearMatchCache,
+    clearPlayerCaches,
     telemetry,
     decideMmr,
     decideProfile,
     decideGcData,
     decideMetaParse,
     decideReplayParse,
-  }, (err, results) =>
-    cb(err, results.decideReplayParse)
+  }, (err, results) => {
+    cb(err, results.decideReplayParse);
+  }
   );
 }
 
@@ -1095,7 +1196,7 @@ module.exports = {
   insertPlayer,
   insertMatch,
   insertPlayerRating,
-  insertMatchSkill,
+  insertMatchSkillCassandra,
   getDistributions,
   getProPlayers,
   getHeroRankings,
@@ -1108,7 +1209,6 @@ module.exports = {
   getPlayerRankings,
   getPlayer,
   getMmrEstimate,
-  getMatchesSkill,
   getPeers,
   getProPeers,
 };

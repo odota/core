@@ -1,7 +1,7 @@
 {
   "name": "opendota-core",
   "description": "Open source Dota data platform",
-  "version": "13.1.0",
+  "version": "15.0.0",
   "license": "GPL-3.0",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
     "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
     "resetrankings": "redis-cli keys 'hero_rankings*' | xargs redis-cli del",
+    "resetrecords": "redis-cli keys 'records*' | xargs redis-cli del",
     "dockerbuild": "sudo docker build -t odota/core .",
     "reparse": "cat matches.csv | xargs -n1 node dev/getMatch.js"
   },
@@ -26,20 +27,20 @@
   "dependencies": {
     "JSONStream": "^1.2.1",
     "async": "^2.1.4",
-    "big-number": "^0.4.0",
     "bull": "^2.0.0",
     "cassandra-driver": "^3.1.6",
     "compression": "^1.6.2",
-    "cookie-session": "2.0.0-alpha.2",
+    "cookie-session": "2.0.0-beta.2",
     "cors": "^2.8.1",
-    "dota2": "^4.1.0",
-    "dotaconstants": "^4.4.0",
+    "dota2": "^5.0.1",
+    "dotaconstants": "^5.0.0",
     "dotenv": "^4.0.0",
     "express": "^4.14.0",
     "http-proxy": "^1.15.2",
-    "knex": "^0.12.6",
+    "knex": "^0.13.0",
+    "long": "^3.2.0",
     "moment": "^2.17.0",
-    "nock": "^9.0.2",
+    "nock": "^9.0.9",
     "passport": "^0.3.2",
     "passport-steam": "^1.0.7",
     "pg": "^6.1.0",
@@ -50,7 +51,9 @@
     "request-progress": "^3.0.0",
     "simple-vdf": "^1.1.0",
     "steam": "^1.4.0",
-    "supertest": "^3.0.0"
+    "supertest": "^3.0.0",
+    "uuid": "^3.0.1",
+    "ws": "^3.0.0"
   },
   "devDependencies": {
     "eslint": "^3.16.1",

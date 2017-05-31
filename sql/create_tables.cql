@@ -27,6 +27,7 @@ CREATE TABLE matches (
   teamfights text,
   version int,
   cosmetics text,
+  skill int,
 );
 
 CREATE TABLE player_matches (
@@ -103,6 +104,10 @@ CREATE TABLE player_matches (
   ability_upgrades_arr text,
   party_id int,
   permanent_buffs text,
+  repicked boolean,
+  randomed boolean,
+  pred_vict boolean,
+  performance_others text,
 );
 
 CREATE TABLE player_caches (

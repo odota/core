@@ -22,8 +22,6 @@ const defaults = {
   RETRIEVER_PORT: '5100',
   PARSER_PORT: '5200',
   PROXY_PORT: '5300',
-  WORK_PORT: '5400',
-  SCANNER_PORT: '5500',
   ROOT_URL: 'http://localhost:5000', // base url to redirect to after steam oauth login
   RETRIEVER_HOST: 'localhost:5100', // Comma separated list of retriever hosts (access to Dota 2 GC data)
   PARSER_HOST: 'http://localhost:5600', // host of the parse server
@@ -42,23 +40,20 @@ const defaults = {
   RETRIEVER_SECRET: '', // string to use as shared secret with retriever/parser
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
   COOKIE_DOMAIN: '', // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
-  UNTRACK_DAYS: 14, // The number of days a user is tracked for after every visit
+  UNTRACK_DAYS: 30, // The number of days a user is tracked for after every visit
   GOAL: 5, // The cheese goal
   MMSTATS_DATA_INTERVAL: 3, // minutes between requests for MMStats data
   DEFAULT_DELAY: 1000, // delay between API requests
   SCANNER_DELAY: 2000, // delay for scanner API requests (stricter rate limit)
   MMR_PARALLELISM: 10, // Number of simulataneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
-  PLAYER_MATCH_LIMIT: 50000, // max results to return from player matches
   BENCHMARK_RETENTION_MINUTES: 30, // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: 0, // percent of inserted matches to queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
-  ENABLE_MATCH_CACHE: '', // set to enable caching matches (Redis)
-  ENABLE_RANDOM_MMR_UPDATE: '', // set to update MMRs after ranked matches
-  ENABLE_RECAPTCHA: '', // set to enable the recaptcha on the Request page
-  RECAPTCHA_PUBLIC_KEY: '', // for preventing automated requests, in web
-  RECAPTCHA_SECRET_KEY: '',
+  ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
+  ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
+  WEBSOCKET_PORT: 80, // port for live match subscription websocket service
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

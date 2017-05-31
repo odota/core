@@ -10,7 +10,7 @@ function getMMStats(redis, cb) {
   const urls = retrieverArr.map(r =>
     `http://${r}?key=${secret}&mmstats=1`
   );
-  getData(urls, (err, body) => {
+  getData({ url: urls }, (err, body) => {
     if (err) {
       return cb(err);
     }

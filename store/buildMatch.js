@@ -95,11 +95,6 @@ function getMatch(matchId, cb) {
           match_id: matchId,
         }).asCallback(cb);
       },
-      skill(cb) {
-        db.first().from('match_skill').where({
-          match_id: matchId,
-        }).asCallback(cb);
-      },
       cosmetics(cb) {
         async.map(Object.keys(match.cosmetics || {}), (itemId, cb) => {
           db.first().from('cosmetics').where({
@@ -141,7 +136,7 @@ function getMatch(matchId, cb) {
       if (err) {
         return cb(err);
       }
-      match = Object.assign({}, match, result.gcdata, result.skill, result.prodata, {
+      match = Object.assign({}, match, result.gcdata, result.prodata, {
         players: result.players,
       });
       // Assign cosmetics to each player
@@ -182,7 +177,12 @@ function buildMatch(matchId, cb) {
         return cb();
       }
       if (match.version && config.ENABLE_MATCH_CACHE) {
-        redis.setex(key, 1800, JSON.stringify(match));
+        return redis.setex(key, 600, JSON.stringify(match), (err) => {
+          if (err) {
+            console.error(err);
+          }
+          return cb(null, match);
+        });
       }
       return cb(err, match);
     });

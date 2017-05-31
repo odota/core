@@ -116,7 +116,10 @@ CREATE TABLE player_matches (
   rune_pickups int,
   ability_upgrades_arr integer[],
   party_id int,
-  permanent_buffs json[]
+  permanent_buffs json[],
+  lane int,
+  lane_role int,
+  is_roaming boolean
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX on player_matches(hero_id);
@@ -133,7 +136,8 @@ CREATE TABLE players (
   full_history_time timestamp with time zone,
   cheese integer DEFAULT 0,
   fh_unavailable boolean,
-  loccountrycode varchar(2)
+  loccountrycode varchar(2),
+  last_match_time timestamp with time zone
   /*
     "communityvisibilitystate" : 3,
     "lastlogoff" : 1426020853,
@@ -147,9 +151,7 @@ CREATE TABLE players (
     "timecreated" : 1332289262,
   */
 );
-CREATE INDEX on players(full_history_time);
-CREATE INDEX on players(last_login);
-CREATE INDEX on players(cheese);
+CREATE INDEX on players(cheese) WHERE cheese IS NOT NULL;
 CREATE INDEX on players USING GIN(personaname gin_trgm_ops);
 
 CREATE TABLE player_ratings (
@@ -170,11 +172,6 @@ CREATE TABLE subscriptions (
 );
 CREATE INDEX on subscriptions(account_id);
 CREATE INDEX on subscriptions(customer_id);
-
-CREATE TABLE match_skill (
-  match_id bigint PRIMARY KEY,
-  skill integer
-);
 
 CREATE TABLE notable_players (
   account_id bigint PRIMARY KEY,
@@ -247,6 +244,9 @@ CREATE INDEX ON match_logs(match_id, attackername_slot) WHERE attackername_slot 
 CREATE INDEX ON match_logs(match_id, targetname_slot) WHERE targetname_slot IS NOT NULL;
 CREATE INDEX ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS NOT NULL;
 CREATE INDEX ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, valuename) WHERE valuename IS NOT NULL;
+CREATE INDEX ON match_logs(match_id, type);
+CREATE INDEX ON match_logs(valuename) WHERE valuename IS NOT NULL;
 CREATE INDEX on match_logs(type);
 
 CREATE TABLE picks_bans(
@@ -275,7 +275,10 @@ CREATE TABLE teams(
 CREATE TABLE heroes(
   id int PRIMARY KEY,
   name text,
-  localized_name text
+  localized_name text,
+  primary_attr text,
+  attack_type text,
+  roles text[]
 );
 
 CREATE TABLE match_patch(
@@ -341,3 +344,24 @@ CREATE TABLE public_player_matches (
   hero_id integer
 );
 CREATE INDEX on public_player_matches(hero_id);
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
+        GRANT SELECT ON matches TO readonly;
+        GRANT SELECT ON player_matches TO readonly;
+        GRANT SELECT ON public_matches TO readonly;
+        GRANT SELECT ON public_player_matches TO readonly;
+        GRANT SELECT ON heroes TO readonly;
+        GRANT SELECT ON players TO readonly;
+        GRANT SELECT ON leagues TO readonly;
+        GRANT SELECT ON items TO readonly;
+        GRANT SELECT ON teams TO readonly;
+        GRANT SELECT ON team_match TO readonly;
+        GRANT SELECT ON match_patch TO readonly;
+        GRANT SELECT ON picks_bans TO readonly;
+        GRANT SELECT ON match_logs TO readonly;
+        GRANT SELECT ON notable_players TO readonly;
+    END IF;
+END
+$$;

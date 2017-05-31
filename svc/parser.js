@@ -72,7 +72,7 @@ function insertStandardParse(match, cb) {
 
 function getParseSchema() {
   return {
-    version: 17,
+    version: 18,
     match_id: 0,
     teamfights: [],
     objectives: [],
@@ -128,6 +128,9 @@ function getParseSchema() {
         life_state: {},
         healing: {},
         damage_inflictor_received: {},
+        randomed: false,
+        repicked: false,
+        pred_vict: false,
       })
     ),
   };
@@ -137,6 +140,9 @@ function createParsedDataBlob(entries, match) {
   console.time('processMetadata');
   const meta = processMetadata(entries);
   meta.match_id = match.match_id;
+  meta.abilities = (match.ability_upgrades || []).map(e => Object.assign({}, e, {
+    time: e.time - meta.game_zero,
+  }));
   console.timeEnd('processMetadata');
   console.time('adjustTime');
   // adjust time by zero value to get actual game time
@@ -148,7 +154,7 @@ function createParsedDataBlob(entries, match) {
   const expanded = processExpand(adjustedEntries, meta);
   console.timeEnd('processExpand');
   console.time('processParsedData');
-  const parsedData = processParsedData(expanded, getParseSchema());
+  const parsedData = processParsedData(expanded, getParseSchema(), meta);
   console.timeEnd('processParsedData');
   console.time('processTeamfights');
   parsedData.teamfights = processTeamfights(expanded, meta);
@@ -197,8 +203,12 @@ function runParse(match, job, cb) {
     if (err) {
       return cb(err);
     }
-    const parsedData = createParsedDataBlob(entries, match);
-    return insertStandardParse(parsedData, cb);
+    try {
+      const parsedData = createParsedDataBlob(entries, match);
+      return insertStandardParse(parsedData, cb);
+    } catch (e) {
+      return cb(e);
+    }
   }
 
   // Streams
@@ -270,6 +280,8 @@ pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
   }, (err) => {
     if (err) {
       console.error(err.stack || err);
+    } else {
+      console.log('completed parse of match %s', match.match_id);
     }
     return cb(err, match.match_id);
   });

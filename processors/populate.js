@@ -1,4 +1,6 @@
-function populate(e, container) {
+const performanceOthers = require('./performanceOthers');
+
+function populate(e, container, meta) {
   let t;
   switch (e.type) {
     case 'interval':
@@ -61,6 +63,12 @@ function populate(e, container) {
             time: e.time,
             key: e.key,
           };
+          if (e.type === 'kills_log' && e.tracked_death) {
+            arrEntry = Object.assign({}, {
+              tracked_death: e.tracked_death,
+              tracked_sourcename: e.tracked_sourcename,
+            }, arrEntry);
+          }
         } else {
           arrEntry = JSON.parse(JSON.stringify(e));
         }
@@ -73,6 +81,8 @@ function populate(e, container) {
         } else {
           t[e.key] = e.value;
         }
+
+        performanceOthers(e, container, meta);
       } else if (typeof t === 'string') {
       // string, used for steam id
         container.players[e.slot][e.type] = e.key;
@@ -84,3 +94,4 @@ function populate(e, container) {
   }
 }
 module.exports = populate;
+

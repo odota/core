@@ -3,6 +3,7 @@ const constants = require('dotaconstants');
 const config = require('../config');
 // const crypto = require('crypto');
 const moment = require('moment');
+const uuidV4 = require('uuid/v4');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 const search = require('../store/search');
@@ -10,201 +11,19 @@ const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
 const playerFields = require('./playerFields');
+const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const packageJson = require('../package.json');
+const cacheFunctions = require('../store/cacheFunctions');
+const params = require('./params');
 
 const pQueue = queue.getQueue('parse');
 const subkeys = playerFields.subkeys;
 const countCats = playerFields.countCats;
 const countPeers = utility.countPeers;
-
-const params = {
-  matchIdParam: {
-    name: 'match_id',
-    in: 'path',
-    required: true,
-    type: 'integer',
-  },
-  accountIdParam: {
-    name: 'account_id',
-    in: 'path',
-    description: 'Steam32 account ID',
-    required: true,
-    type: 'integer',
-  },
-  fieldParam: {
-    name: 'field',
-    in: 'path',
-    description: 'Field to aggregate on',
-    required: true,
-    type: 'string',
-  },
-  limitParam: {
-    name: 'limit',
-    in: 'query',
-    description: 'Number of matches to limit to',
-    required: false,
-    type: 'integer',
-  },
-  offsetParam: {
-    name: 'offset',
-    in: 'query',
-    description: 'Number of matches to offset start by',
-    required: false,
-    type: 'integer',
-  },
-  projectParam: {
-    name: 'project',
-    in: 'query',
-    description: 'Fields to project (array)',
-    required: false,
-    type: 'string',
-  },
-  winParam: {
-    name: 'win',
-    in: 'query',
-    description: 'Whether the player won',
-    required: false,
-    type: 'integer',
-  },
-  patchParam: {
-    name: 'patch',
-    in: 'query',
-    description: 'Patch ID',
-    required: false,
-    type: 'integer',
-  },
-  gameModeParam: {
-    name: 'game_mode',
-    in: 'query',
-    description: 'Game Mode ID',
-    required: false,
-    type: 'integer',
-  },
-  lobbyTypeParam: {
-    name: 'lobby_type',
-    in: 'query',
-    description: 'Lobby type ID',
-    required: false,
-    type: 'integer',
-  },
-  regionParam: {
-    name: 'region',
-    in: 'query',
-    description: 'Region ID',
-    required: false,
-    type: 'integer',
-  },
-  dateParam: {
-    name: 'date',
-    in: 'query',
-    description: 'Days previous',
-    required: false,
-    type: 'integer',
-  },
-  laneRoleParam: {
-    name: 'lane_role',
-    in: 'query',
-    description: 'Lane Role ID',
-    required: false,
-    type: 'integer',
-  },
-  heroIdParam: {
-    name: 'hero_id',
-    in: 'query',
-    description: 'Hero ID',
-    required: false,
-    type: 'integer',
-  },
-  isRadiantParam: {
-    name: 'is_radiant',
-    in: 'query',
-    description: 'Whether the player was radiant',
-    required: false,
-    type: 'integer',
-  },
-  withHeroIdParam: {
-    name: 'with_hero_id',
-    in: 'query',
-    description: "Hero IDs on the player's team (array)",
-    required: false,
-    type: 'integer',
-  },
-  againstHeroIdParam: {
-    name: 'against_hero_id',
-    in: 'query',
-    description: "Hero IDs against the player's team (array)",
-    required: false,
-    type: 'integer',
-  },
-  includedAccountIdParam: {
-    name: 'included_account_id',
-    in: 'query',
-    description: 'Account IDs in the match (array)',
-    required: false,
-    type: 'integer',
-  },
-  excludedAccountIdParam: {
-    name: 'excluded_account_id',
-    in: 'query',
-    description: 'Account IDs not in the match (array)',
-    required: false,
-    type: 'integer',
-  },
-  significantParam: {
-    name: 'significant',
-    in: 'query',
-    description: 'Whether the match was significant for aggregation purposes',
-    required: false,
-    type: 'integer',
-  },
-  sortParam: {
-    name: 'sort',
-    in: 'query',
-    description: 'The field to return matches sorted by in descending order',
-    required: false,
-    type: 'string',
-  },
-  minMmrParam: {
-    name: 'min_mmr',
-    in: 'query',
-    description: 'Minimum average MMR',
-    required: false,
-    type: 'integer',
-  },
-  maxMmrParam: {
-    name: 'max_mmr',
-    in: 'query',
-    description: 'Maximum average MMR',
-    required: false,
-    type: 'integer',
-  },
-  minTimeParam: {
-    name: 'min_time',
-    in: 'query',
-    description: 'Minimum start time (Unix time)',
-    required: false,
-    type: 'integer',
-  },
-  maxTimeParam: {
-    name: 'max_time',
-    in: 'query',
-    description: 'Maximum start time (Unix time)',
-    required: false,
-    type: 'integer',
-  },
-  mmrAscendingParam: {
-    name: 'mmr_ascending',
-    in: 'query',
-    description: 'Order by MMR ascending',
-    required: false,
-    type: 'integer',
-  },
-};
-
 const playerParams = [
   params.accountIdParam,
   params.limitParam,
@@ -225,6 +44,16 @@ const playerParams = [
   params.significantParam,
   params.sortParam,
 ];
+
+function sendDataWithCache(req, res, data, key) {
+  if (req.originalQuery && !Object.keys(req.originalQuery).length) {
+    cacheFunctions.write({
+      key,
+      account_id: req.params.account_id,
+    }, JSON.stringify(data), () => {});
+  }
+  return res.json(data);
+}
 
 const spec = {
   swagger: '2.0',
@@ -260,34 +89,6 @@ Please keep request rate to approximately 1/s.
                   description: 'match_id',
                   type: 'number',
                 },
-                cluster: {
-                  description: 'cluster',
-                  type: 'number',
-                },
-                replay_salt: {
-                  description: 'replay_salt',
-                  type: 'number',
-                },
-                series_id: {
-                  description: 'series_id',
-                  type: 'number',
-                },
-                series_type: {
-                  description: 'series_type',
-                  type: 'number',
-                },
-                parties: {
-                  description: 'parties',
-                  type: 'object',
-                },
-                skill: {
-                  description: 'skill',
-                  type: 'number',
-                },
-                players: {
-                  description: 'players',
-                  type: 'object',
-                },
                 barracks_status_dire: {
                   description: 'barracks_status_dire',
                   type: 'number',
@@ -299,6 +100,18 @@ Please keep request rate to approximately 1/s.
                 chat: {
                   description: 'chat',
                   type: 'object',
+                },
+                cluster: {
+                  description: 'cluster',
+                  type: 'number',
+                },
+                cosmetics: {
+                  description: 'cosmetics',
+                  type: 'object',
+                },
+                dire_score: {
+                  description: 'dire_score',
+                  type: 'number',
                 },
                 duration: {
                   description: 'duration',
@@ -352,6 +165,10 @@ Please keep request rate to approximately 1/s.
                   description: 'radiant_gold_adv',
                   type: 'object',
                 },
+                radiant_score: {
+                  description: 'radiant_score',
+                  type: 'number',
+                },
                 radiant_win: {
                   description: 'radiant_win',
                   type: 'boolean',
@@ -379,6 +196,520 @@ Please keep request rate to approximately 1/s.
                 version: {
                   description: 'version',
                   type: 'number',
+                },
+                replay_salt: {
+                  description: 'replay_salt',
+                  type: 'number',
+                },
+                series_id: {
+                  description: 'series_id',
+                  type: 'number',
+                },
+                series_type: {
+                  description: 'series_type',
+                  type: 'number',
+                },
+                radiant_team: {
+                  description: 'radiant_team',
+                  type: 'object',
+                },
+                dire_team: {
+                  description: 'dire_team',
+                  type: 'object',
+                },
+                league: {
+                  description: 'league',
+                  type: 'object',
+                },
+                skill: {
+                  description: 'skill',
+                  type: 'number',
+                },
+                players: {
+                  description: 'players',
+                  type: 'array',
+                  items: {
+                    description: 'player',
+                    type: 'object',
+                    properties: {
+                      match_id: {
+                        description: 'match_id',
+                        type: 'number',
+                      },
+                      player_slot: {
+                        description: 'player_slot',
+                        type: 'number',
+                      },
+                      ability_upgrades_arr: {
+                        description: 'ability_upgrades_arr',
+                        type: 'array',
+                      },
+                      ability_uses: {
+                        description: 'ability_uses',
+                        type: 'object',
+                      },
+                      account_id: {
+                        description: 'account_id',
+                        type: 'number',
+                      },
+                      actions: {
+                        description: 'actions',
+                        type: 'object',
+                      },
+                      additional_units: {
+                        description: 'additional_units',
+                        type: 'object',
+                      },
+                      assists: {
+                        description: 'assists',
+                        type: 'number',
+                      },
+                      backpack_0: {
+                        description: 'backpack_0',
+                        type: 'number',
+                      },
+                      backpack_1: {
+                        description: 'backpack_1',
+                        type: 'number',
+                      },
+                      backpack_2: {
+                        description: 'backpack_2',
+                        type: 'number',
+                      },
+                      buyback_log: {
+                        description: 'buyback_log',
+                        type: 'array',
+                      },
+                      camps_stacked: {
+                        description: 'camps_stacked',
+                        type: 'number',
+                      },
+                      creeps_stacked: {
+                        description: 'creeps_stacked',
+                        type: 'number',
+                      },
+                      damage: {
+                        description: 'damage',
+                        type: 'object',
+                      },
+                      damage_inflictor: {
+                        description: 'damage_inflictor',
+                        type: 'object',
+                      },
+                      damage_inflictor_received: {
+                        description: 'damage_inflictor_received',
+                        type: 'object',
+                      },
+                      damage_taken: {
+                        description: 'damage_taken',
+                        type: 'object',
+                      },
+                      deaths: {
+                        description: 'deaths',
+                        type: 'number',
+                      },
+                      denies: {
+                        description: 'denies',
+                        type: 'number',
+                      },
+                      dn_t: {
+                        description: 'dn_t',
+                        type: 'array',
+                      },
+                      gold: {
+                        description: 'gold',
+                        type: 'number',
+                      },
+                      gold_per_min: {
+                        description: 'gold_per_min',
+                        type: 'number',
+                      },
+                      gold_reasons: {
+                        description: 'gold_reasons',
+                        type: 'object',
+                      },
+                      gold_spent: {
+                        description: 'gold_spent',
+                        type: 'number',
+                      },
+                      gold_t: {
+                        description: 'gold_t',
+                        type: 'array',
+                      },
+                      hero_damage: {
+                        description: 'hero_damage',
+                        type: 'number',
+                      },
+                      hero_healing: {
+                        description: 'hero_healing',
+                        type: 'number',
+                      },
+                      hero_hits: {
+                        description: 'hero_hits',
+                        type: 'object',
+                      },
+                      hero_id: {
+                        description: 'hero_id',
+                        type: 'number',
+                      },
+                      item_0: {
+                        description: 'item_0',
+                        type: 'number',
+                      },
+                      item_1: {
+                        description: 'item_1',
+                        type: 'number',
+                      },
+                      item_2: {
+                        description: 'item_2',
+                        type: 'number',
+                      },
+                      item_3: {
+                        description: 'item_3',
+                        type: 'number',
+                      },
+                      item_4: {
+                        description: 'item_4',
+                        type: 'number',
+                      },
+                      item_5: {
+                        description: 'item_5',
+                        type: 'number',
+                      },
+                      item_uses: {
+                        description: 'item_uses',
+                        type: 'object',
+                      },
+                      kill_streaks: {
+                        description: 'kill_streaks',
+                        type: 'object',
+                      },
+                      killed: {
+                        description: 'killed',
+                        type: 'object',
+                      },
+                      killed_by: {
+                        description: 'killed_by',
+                        type: 'object',
+                      },
+                      kills: {
+                        description: 'kills',
+                        type: 'number',
+                      },
+                      kills_log: {
+                        description: 'kills_log',
+                        type: 'array',
+                      },
+                      lane_pos: {
+                        description: 'lane_pos',
+                        type: 'object',
+                      },
+                      last_hits: {
+                        description: 'last_hits',
+                        type: 'number',
+                      },
+                      leaver_status: {
+                        description: 'leaver_status',
+                        type: 'number',
+                      },
+                      level: {
+                        description: 'level',
+                        type: 'number',
+                      },
+                      lh_t: {
+                        description: 'lh_t',
+                        type: 'array',
+                      },
+                      life_state: {
+                        description: 'life_state',
+                        type: 'object',
+                      },
+                      max_hero_hit: {
+                        description: 'max_hero_hit',
+                        type: 'object',
+                      },
+                      multi_kills: {
+                        description: 'multi_kills',
+                        type: 'object',
+                      },
+                      obs: {
+                        description: 'obs',
+                        type: 'object',
+                      },
+                      obs_left_log: {
+                        description: 'obs_left_log',
+                        type: 'array',
+                      },
+                      obs_log: {
+                        description: 'obs_log',
+                        type: 'array',
+                      },
+                      obs_placed: {
+                        description: 'obs_placed',
+                        type: 'number',
+                      },
+                      party_id: {
+                        description: 'party_id',
+                        type: 'number',
+                      },
+                      permanent_buffs: {
+                        description: 'permanent_buffs',
+                        type: 'array',
+                      },
+                      pings: {
+                        description: 'pings',
+                        type: 'number',
+                      },
+                      purchase: {
+                        description: 'purchase',
+                        type: 'object',
+                      },
+                      purchase_log: {
+                        description: 'purchase_log',
+                        type: 'array',
+                      },
+                      rune_pickups: {
+                        description: 'rune_pickups',
+                        type: 'number',
+                      },
+                      runes: {
+                        description: 'runes',
+                        type: 'object',
+                      },
+                      runes_log: {
+                        description: 'runes_log',
+                        type: 'array',
+                      },
+                      sen: {
+                        description: 'sen',
+                        type: 'object',
+                      },
+                      sen_left_log: {
+                        description: 'sen_left_log',
+                        type: 'array',
+                      },
+                      sen_log: {
+                        description: 'sen_log',
+                        type: 'array',
+                      },
+                      sen_placed: {
+                        description: 'sen_placed',
+                        type: 'number',
+                      },
+                      stuns: {
+                        description: 'stuns',
+                        type: 'number',
+                      },
+                      times: {
+                        description: 'times',
+                        type: 'array',
+                      },
+                      tower_damage: {
+                        description: 'tower_damage',
+                        type: 'number',
+                      },
+                      xp_per_min: {
+                        description: 'xp_per_min',
+                        type: 'number',
+                      },
+                      xp_reasons: {
+                        description: 'xp_reasons',
+                        type: 'object',
+                      },
+                      xp_t: {
+                        description: 'xp_t',
+                        type: 'array',
+                      },
+                      personaname: {
+                        description: 'personaname',
+                        type: 'string',
+                      },
+                      name: {
+                        description: 'name',
+                        type: 'string',
+                      },
+                      last_login: {
+                        description: 'last_login',
+                        type: 'dateTime',
+                      },
+                      radiant_win: {
+                        description: 'radiant_win',
+                        type: 'boolean',
+                      },
+                      start_time: {
+                        description: 'start_time',
+                        type: 'number',
+                      },
+                      duration: {
+                        description: 'duration',
+                        type: 'number',
+                      },
+                      cluster: {
+                        description: 'cluster',
+                        type: 'number',
+                      },
+                      lobby_type: {
+                        description: 'lobby_type',
+                        type: 'number',
+                      },
+                      game_mode: {
+                        description: 'game_mode',
+                        type: 'number',
+                      },
+                      patch: {
+                        description: 'patch',
+                        type: 'number',
+                      },
+                      region: {
+                        description: 'region',
+                        type: 'number',
+                      },
+                      isRadiant: {
+                        description: 'isRadiant',
+                        type: 'boolean',
+                      },
+                      win: {
+                        description: 'win',
+                        type: 'number',
+                      },
+                      lose: {
+                        description: 'win',
+                        type: 'number',
+                      },
+                      total_gold: {
+                        description: 'total_gold',
+                        type: 'number',
+                      },
+                      total_xp: {
+                        description: 'total_xp',
+                        type: 'number',
+                      },
+                      kills_per_min: {
+                        description: 'kills_per_min',
+                        type: 'number',
+                      },
+                      kda: {
+                        description: 'kda',
+                        type: 'number',
+                      },
+                      abandons: {
+                        description: 'abandons',
+                        type: 'number',
+                      },
+                      neutral_kills: {
+                        description: 'neutral_kills',
+                        type: 'number',
+                      },
+                      tower_kills: {
+                        description: 'tower_kills',
+                        type: 'number',
+                      },
+                      courier_kills: {
+                        description: 'courier_kills',
+                        type: 'number',
+                      },
+                      lane_kills: {
+                        description: 'lane_kills',
+                        type: 'number',
+                      },
+                      hero_kills: {
+                        description: 'hero_kills',
+                        type: 'number',
+                      },
+                      observer_kills: {
+                        description: 'observer_kills',
+                        type: 'number',
+                      },
+                      sentry_kills: {
+                        description: 'sentry_kills',
+                        type: 'number',
+                      },
+                      roshan_kills: {
+                        description: 'roshan_kills',
+                        type: 'number',
+                      },
+                      necronomicon_kills: {
+                        description: 'necronomicon_kills',
+                        type: 'number',
+                      },
+                      ancient_kills: {
+                        description: 'ancient_kills',
+                        type: 'number',
+                      },
+                      buyback_count: {
+                        description: 'buyback_count',
+                        type: 'number',
+                      },
+                      observer_uses: {
+                        description: 'observer_uses',
+                        type: 'number',
+                      },
+                      sentry_uses: {
+                        description: 'sentry_uses',
+                        type: 'number',
+                      },
+                      lane_efficiency: {
+                        description: 'lane_efficiency',
+                        type: 'number',
+                      },
+                      lane_efficiency_pct: {
+                        description: 'lane_efficiency_pct',
+                        type: 'number',
+                      },
+                      lane: {
+                        description: 'lane',
+                        type: 'number',
+                      },
+                      lane_role: {
+                        description: 'lane_role',
+                        type: 'number',
+                      },
+                      is_roaming: {
+                        description: 'is_roaming',
+                        type: 'boolean',
+                      },
+                      purchase_time: {
+                        description: 'purchase_time',
+                        type: 'object',
+                      },
+                      first_purchase_time: {
+                        description: 'first_purchase_time',
+                        type: 'object',
+                      },
+                      item_win: {
+                        description: 'item_win',
+                        type: 'object',
+                      },
+                      item_usage: {
+                        description: 'item_usage',
+                        type: 'object',
+                      },
+                      purchase_tpscroll: {
+                        description: 'purchase_tpscroll',
+                        type: 'object',
+                      },
+                      actions_per_min: {
+                        description: 'actions_per_min',
+                        type: 'number',
+                      },
+                      life_state_dead: {
+                        description: 'life_state_dead',
+                        type: 'number',
+                      },
+                      solo_competitive_rank: {
+                        description: 'solo_competitive_rank',
+                        type: 'string',
+                      },
+                      cosmetics: {
+                        description: 'cosmetics',
+                        type: 'array',
+                      },
+                      benchmarks: {
+                        description: 'benchmarks',
+                        type: 'object',
+                      },
+                    },
+                  },
                 },
                 patch: {
                   description: 'patch',
@@ -455,10 +786,70 @@ Please keep request rate to approximately 1/s.
                 mmr_estimate: {
                   description: 'mmr_estimate',
                   type: 'object',
+                  properties: {
+                    estimate: {
+                      description: 'estimate',
+                      type: 'number',
+                    },
+                    stdDev: {
+                      description: 'stdDev',
+                      type: 'number',
+                    },
+                    n: {
+                      description: 'n',
+                      type: 'number',
+                    },
+                  },
                 },
                 profile: {
                   description: 'profile',
                   type: 'object',
+                  properties: {
+                    account_id: {
+                      description: 'account_id',
+                      type: 'number',
+                    },
+                    personaname: {
+                      description: 'personaname',
+                      type: 'string',
+                    },
+                    name: {
+                      description: 'name',
+                      type: 'string',
+                    },
+                    cheese: {
+                      description: 'cheese',
+                      type: 'number',
+                    },
+                    steamid: {
+                      description: 'steamid',
+                      type: 'string',
+                    },
+                    avatar: {
+                      description: 'avatar',
+                      type: 'string',
+                    },
+                    avatarmedium: {
+                      description: 'avatarmedium',
+                      type: 'string',
+                    },
+                    avatarfull: {
+                      description: 'avatarfull',
+                      type: 'string',
+                    },
+                    profileurl: {
+                      description: 'profileurl',
+                      type: 'string',
+                    },
+                    last_login: {
+                      description: 'last_login',
+                      type: 'string',
+                    },
+                    loccountrycode: {
+                      description: 'loccountrycode',
+                      type: 'string',
+                    },
+                  },
                 },
               },
             },
@@ -536,7 +927,109 @@ Please keep request rate to approximately 1/s.
                 result.lose += 1;
               }
             });
-            return res.json(result);
+            return sendDataWithCache(req, res, result, 'wl');
+          });
+        },
+      },
+    },
+    '/players/{account_id}/recentMatches': {
+      get: {
+        summary: 'GET /players/{account_id}/recentMatches',
+        description: 'Recent matches played',
+        tags: [
+          'players',
+        ],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                description: 'match',
+                type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  player_slot: {
+                    description: 'player_slot',
+                    type: 'number',
+                  },
+                  radiant_win: {
+                    description: 'radiant_win',
+                    type: 'boolean',
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'number',
+                  },
+                  game_mode: {
+                    description: 'game_mode',
+                    type: 'number',
+                  },
+                  lobby_type: {
+                    description: 'lobby_type',
+                    type: 'number',
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number',
+                  },
+                  version: {
+                    description: 'version',
+                    type: 'number',
+                  },
+                  kills: {
+                    description: 'kills',
+                    type: 'number',
+                  },
+                  deaths: {
+                    description: 'deaths',
+                    type: 'number',
+                  },
+                  assists: {
+                    description: 'assists',
+                    type: 'number',
+                  },
+                  skill: {
+                    description: 'skill',
+                    type: 'number',
+                  },
+                  lane: {
+                    description: 'lane',
+                    type: 'number',
+                  },
+                  lane_role: {
+                    description: 'lane_role',
+                    type: 'number',
+                  },
+                  is_roaming: {
+                    description: 'is_roaming',
+                    type: 'boolean',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/players/:account_id/recentMatches',
+        func: (req, res, cb) => {
+          queries.getPlayerMatches(req.params.account_id, {
+            project: req.queryObj.project.concat(
+              ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'xp_per_min', 'gold_per_min', 'hero_damage', 'tower_damage', 'hero_healing', 'last_hits', 'lane', 'lane_role', 'is_roaming']
+            ),
+            dbLimit: 20,
+          }, (err, cache) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(cache.filter(match => match.duration));
           });
         },
       },
@@ -555,7 +1048,86 @@ Please keep request rate to approximately 1/s.
             schema: {
               type: 'array',
               items: {
+                description: 'match',
                 type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  player_slot: {
+                    description: 'player_slot',
+                    type: 'number',
+                  },
+                  radiant_win: {
+                    description: 'radiant_win',
+                    type: 'boolean',
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'number',
+                  },
+                  game_mode: {
+                    description: 'game_mode',
+                    type: 'number',
+                  },
+                  lobby_type: {
+                    description: 'lobby_type',
+                    type: 'number',
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number',
+                  },
+                  version: {
+                    description: 'version',
+                    type: 'number',
+                  },
+                  kills: {
+                    description: 'kills',
+                    type: 'number',
+                  },
+                  deaths: {
+                    description: 'deaths',
+                    type: 'number',
+                  },
+                  assists: {
+                    description: 'assists',
+                    type: 'number',
+                  },
+                  skill: {
+                    description: 'skill',
+                    type: 'number',
+                  },
+                  heroes: {
+                    description: 'heroes (requires ?project=heroes)',
+                    type: 'object',
+                    properties: {
+                      player_slot: {
+                        description: 'player_slot',
+                        type: 'object',
+                        properties: {
+                          account_id: {
+                            description: 'account_id',
+                            type: 'number',
+                          },
+                          hero_id: {
+                            description: 'hero_id',
+                            type: 'number',
+                          },
+                          player_slot: {
+                            description: 'player_slot',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -563,22 +1135,13 @@ Please keep request rate to approximately 1/s.
         route: () => '/players/:account_id/matches',
         func: (req, res, cb) => {
           // Use passed fields as additional fields, if available
-          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'version', 'kills', 'deaths', 'assists'];
+          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill'];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            function render(err) {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(cache);
-            }
             if (err) {
               return cb(err);
             }
-            if (req.queryObj.project.indexOf('skill') !== -1) {
-              return queries.getMatchesSkill(db, cache, {}, render);
-            }
-            return render();
+            return res.json(cache);
           });
         },
       },
@@ -589,6 +1152,52 @@ Please keep request rate to approximately 1/s.
         description: 'Heroes played',
         tags: ['players'],
         parameters: playerParams,
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                description: 'hero',
+                type: 'object',
+                properties: {
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'string',
+                  },
+                  last_played: {
+                    description: 'last_played',
+                    type: 'number',
+                  },
+                  games: {
+                    description: 'games',
+                    type: 'number',
+                  },
+                  win: {
+                    description: 'win',
+                    type: 'number',
+                  },
+                  with_games: {
+                    description: 'with_games',
+                    type: 'number',
+                  },
+                  with_win: {
+                    description: 'with_win',
+                    type: 'number',
+                  },
+                  against_games: {
+                    description: 'against_games',
+                    type: 'number',
+                  },
+                  against_win: {
+                    description: 'against_win',
+                    type: 'number',
+                  },
+                },
+              },
+            },
+          },
+        },
         route: () => '/players/:account_id/heroes',
         func: (req, res, cb) => {
           const heroes = {};
@@ -641,8 +1250,10 @@ Please keep request rate to approximately 1/s.
                 }
               });
             });
-            return res.json(Object.keys(heroes).map(k =>
-              heroes[k]).sort((a, b) => b.games - a.games));
+            const result = Object.keys(heroes)
+              .map(k => heroes[k])
+              .sort((a, b) => b.games - a.games);
+            return sendDataWithCache(req, res, result, 'heroes');
           });
         },
       },
@@ -662,13 +1273,67 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number',
+                  },
+                  last_played: {
+                    description: 'last_played',
+                    type: 'number',
+                  },
+                  win: {
+                    description: 'win',
+                    type: 'number',
+                  },
+                  games: {
+                    description: 'games',
+                    type: 'number',
+                  },
+                  with_win: {
+                    description: 'with_win',
+                    type: 'number',
+                  },
+                  with_games: {
+                    description: 'with_games',
+                    type: 'number',
+                  },
+                  against_win: {
+                    description: 'against_win',
+                    type: 'number',
+                  },
+                  against_games: {
+                    description: 'against_games',
+                    type: 'number',
+                  },
+                  with_gpm_sum: {
+                    description: 'with_gpm_sum',
+                    type: 'number',
+                  },
+                  with_xpm_sum: {
+                    description: 'with_xpm_sum',
+                    type: 'number',
+                  },
+                  personaname: {
+                    description: 'personaname',
+                    type: 'string',
+                  },
+                  last_login: {
+                    description: 'last_login',
+                    type: 'string',
+                  },
+                  avatar: {
+                    description: 'avatar',
+                    type: 'string',
+                  },
+                },
               },
             },
           },
         },
         route: () => '/players/:account_id/peers',
         func: (req, res, cb) => {
-          req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
+          req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win', 'gold_per_min', 'xp_per_min');
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
               return cb(err);
@@ -680,7 +1345,7 @@ Please keep request rate to approximately 1/s.
               if (err) {
                 return cb(err);
               }
-              return res.json(result);
+              return sendDataWithCache(req, res, result, 'peers');
             });
           });
         },
@@ -701,6 +1366,124 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number',
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string',
+                  },
+                  country_code: {
+                    description: 'country_code',
+                    type: 'string',
+                  },
+                  fantasy_role: {
+                    description: 'fantasy_role',
+                    type: 'number',
+                  },
+                  team_id: {
+                    description: 'team_id',
+                    type: 'number',
+                  },
+                  team_name: {
+                    description: 'team_name',
+                    type: 'string',
+                  },
+                  team_tag: {
+                    description: 'team_tag',
+                    type: 'string',
+                  },
+                  is_locked: {
+                    description: 'is_locked',
+                    type: 'boolean',
+                  },
+                  is_pro: {
+                    description: 'is_pro',
+                    type: 'boolean',
+                  },
+                  locked_until: {
+                    description: 'locked_until',
+                    type: 'number',
+                  },
+                  steamid: {
+                    description: 'steamid',
+                    type: 'string',
+                  },
+                  avatar: {
+                    description: 'avatar',
+                    type: 'string',
+                  },
+                  avatarmedium: {
+                    description: 'avatarmedium',
+                    type: 'string',
+                  },
+                  avatarfull: {
+                    description: 'avatarfull',
+                    type: 'string',
+                  },
+                  profileurl: {
+                    description: 'profileurl',
+                    type: 'string',
+                  },
+                  last_login: {
+                    description: 'last_login',
+                    type: 'dateTime',
+                  },
+                  full_history_time: {
+                    description: 'full_history_time',
+                    type: 'dateTime',
+                  },
+                  cheese: {
+                    description: 'cheese',
+                    type: 'number',
+                  },
+                  fh_unavailable: {
+                    description: 'fh_unavailable',
+                    type: 'boolean',
+                  },
+                  loccountrycode: {
+                    description: 'loccountrycode',
+                    type: 'string',
+                  },
+                  last_played: {
+                    description: 'last_played',
+                    type: 'number',
+                  },
+                  win: {
+                    description: 'win',
+                    type: 'number',
+                  },
+                  games: {
+                    description: 'games',
+                    type: 'number',
+                  },
+                  with_win: {
+                    description: 'with_win',
+                    type: 'number',
+                  },
+                  with_games: {
+                    description: 'with_games',
+                    type: 'number',
+                  },
+                  against_win: {
+                    description: 'against_win',
+                    type: 'number',
+                  },
+                  against_games: {
+                    description: 'against_games',
+                    type: 'number',
+                  },
+                  with_gpm_sum: {
+                    description: 'with_gpm_sum',
+                    type: 'number',
+                  },
+                  with_xpm_sum: {
+                    description: 'with_xpm_sum',
+                    type: 'number',
+                  },
+                },
               },
             },
           },
@@ -725,10 +1508,10 @@ Please keep request rate to approximately 1/s.
         },
       },
     },
-    '/players/{account_id}/records': {
+    '/players/{account_id}/totals': {
       get: {
-        summary: 'GET /players/{account_id}/records',
-        description: 'Extremes in matches played',
+        summary: 'GET /players/{account_id}/totals',
+        description: 'Totals in stats',
         tags: [
           'players',
         ],
@@ -737,144 +1520,52 @@ Please keep request rate to approximately 1/s.
           200: {
             description: 'Success',
             schema: {
-              type: 'object',
-              properties: {
-                kills: {
-                  description: 'kills',
-                  type: 'object',
-                },
-                deaths: {
-                  description: 'deaths',
-                  type: 'object',
-                },
-                assists: {
-                  description: 'assists',
-                  type: 'object',
-                },
-                kda: {
-                  description: 'kda',
-                  type: 'object',
-                },
-                gold_per_min: {
-                  description: 'gold_per_min',
-                  type: 'object',
-                },
-                xp_per_min: {
-                  description: 'xp_per_min',
-                  type: 'object',
-                },
-                last_hits: {
-                  description: 'last_hits',
-                  type: 'object',
-                },
-                denies: {
-                  description: 'denies',
-                  type: 'object',
-                },
-                lane_efficiency_pct: {
-                  description: 'lane_efficiency_pct',
-                  type: 'object',
-                },
-                duration: {
-                  description: 'duration',
-                  type: 'object',
-                },
-                level: {
-                  description: 'level',
-                  type: 'object',
-                },
-                hero_damage: {
-                  description: 'hero_damage',
-                  type: 'object',
-                },
-                tower_damage: {
-                  description: 'tower_damage',
-                  type: 'object',
-                },
-                hero_healing: {
-                  description: 'hero_healing',
-                  type: 'object',
-                },
-                stuns: {
-                  description: 'stuns',
-                  type: 'object',
-                },
-                tower_kills: {
-                  description: 'tower_kills',
-                  type: 'object',
-                },
-                neutral_kills: {
-                  description: 'neutral_kills',
-                  type: 'object',
-                },
-                courier_kills: {
-                  description: 'courier_kills',
-                  type: 'object',
-                },
-                purchase_tpscroll: {
-                  description: 'purchase_tpscroll',
-                  type: 'object',
-                },
-                purchase_ward_observer: {
-                  description: 'purchase_ward_observer',
-                  type: 'object',
-                },
-                purchase_ward_sentry: {
-                  description: 'purchase_ward_sentry',
-                  type: 'object',
-                },
-                purchase_gem: {
-                  description: 'purchase_gem',
-                  type: 'object',
-                },
-                purchase_rapier: {
-                  description: 'purchase_rapier',
-                  type: 'object',
-                },
-                pings: {
-                  description: 'pings',
-                  type: 'object',
-                },
-                throw: {
-                  description: 'throw',
-                  type: 'object',
-                },
-                comeback: {
-                  description: 'comeback',
-                  type: 'object',
-                },
-                stomp: {
-                  description: 'stomp',
-                  type: 'object',
-                },
-                loss: {
-                  description: 'loss',
-                  type: 'object',
-                },
-                actions_per_min: {
-                  description: 'actions_per_min',
-                  type: 'object',
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  field: {
+                    description: 'field',
+                    type: 'string',
+                  },
+                  n: {
+                    description: 'number',
+                    type: 'number',
+                  },
+                  sum: {
+                    description: 'sum',
+                    type: 'number',
+                  },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/records',
+        route: () => '/players/:account_id/totals',
         func: (req, res, cb) => {
           const result = {};
-          req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys)).concat('hero_id', 'start_time');
+          Object.keys(subkeys).forEach((key) => {
+            result[key] = {
+              field: key,
+              n: 0,
+              sum: 0,
+            };
+          });
+          req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys));
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
               return cb(err);
             }
             cache.forEach((m) => {
+              console.log(m);
               Object.keys(subkeys).forEach((key) => {
-                if (!result[key] || (m[key] > result[key][key])) {
-                  result[key] = m;
+                if (m[key] !== null && m[key] !== undefined) {
+                  result[key].n += 1;
+                  result[key].sum += Number(m[key]);
                 }
               });
             });
-            return res.json(result);
+            return res.json(Object.keys(result).map(key => result[key]));
           });
         },
       },
@@ -882,7 +1573,7 @@ Please keep request rate to approximately 1/s.
     '/players/{account_id}/counts': {
       get: {
         summary: 'GET /players/{account_id}/counts',
-        description: 'Categorical counts',
+        description: 'Counts in categories',
         tags: [
           'players',
         ],
@@ -933,6 +1624,7 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
+              m.is_radiant = utility.isRadiant(m);
               Object.keys(countCats).forEach((key) => {
                 if (!result[key][Math.floor(m[key])]) {
                   result[key][Math.floor(m[key])] = {
@@ -1112,6 +1804,28 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number',
+                  },
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  solo_competitive_rank: {
+                    description: 'solo_competitive_rank',
+                    type: 'number',
+                  },
+                  competitive_rank: {
+                    description: 'competitive_rank',
+                    type: 'number',
+                  },
+                  time: {
+                    description: 'time',
+                    type: 'dateTime',
+                  },
+                },
               },
             },
           },
@@ -1142,6 +1856,20 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properies: {
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'string',
+                  },
+                  rank: {
+                    description: 'rank',
+                    type: 'number',
+                  },
+                  card: {
+                    description: 'card',
+                    type: 'number',
+                  },
+                },
               },
             },
           },
@@ -1200,6 +1928,92 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number',
+                  },
+                  steamid: {
+                    description: 'steamid',
+                    type: 'string',
+                  },
+                  avatar: {
+                    description: 'avatar',
+                    type: 'string',
+                  },
+                  avatarmedium: {
+                    description: 'avatarmedium',
+                    type: 'string',
+                  },
+                  avatarfull: {
+                    description: 'avatarfull',
+                    type: 'string',
+                  },
+                  profileurl: {
+                    description: 'profileurl',
+                    type: 'string',
+                  },
+                  personaname: {
+                    description: 'personaname',
+                    type: 'string',
+                  },
+                  last_login: {
+                    description: 'last_login',
+                    type: 'dateTime',
+                  },
+                  full_history_time: {
+                    description: 'full_history_time',
+                    type: 'dateTime',
+                  },
+                  cheese: {
+                    description: 'cheese',
+                    type: 'number',
+                  },
+                  fh_unavailable: {
+                    description: 'fh_unavailable',
+                    type: 'boolean',
+                  },
+                  loccountrycode: {
+                    description: 'loccountrycode',
+                    type: 'string',
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string',
+                  },
+                  country_code: {
+                    description: 'country_code',
+                    type: 'string',
+                  },
+                  fantasy_role: {
+                    description: 'fantasy_role',
+                    type: 'number',
+                  },
+                  team_id: {
+                    description: 'team_id',
+                    type: 'number',
+                  },
+                  team_name: {
+                    description: 'team_name',
+                    type: 'string',
+                  },
+                  team_tag: {
+                    description: 'team_tag',
+                    type: 'string',
+                  },
+                  is_locked: {
+                    description: 'is_locked',
+                    type: 'boolean',
+                  },
+                  is_pro: {
+                    description: 'is_pro',
+                    type: 'boolean',
+                  },
+                  locked_until: {
+                    description: 'locked_until',
+                    type: 'number',
+                  },
+                },
               },
             },
           },
@@ -1224,6 +2038,9 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /proMatches',
         description: 'Get list of pro matches',
         tags: ['pro matches'],
+        parameters: [
+          params.lessThanMatchIdParam,
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -1231,6 +2048,56 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'number',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number',
+                  },
+                  radiant_team_id: {
+                    description: 'radiant_team_id',
+                    type: 'number',
+                  },
+                  radiant_name: {
+                    description: 'radiant_name',
+                    type: 'string',
+                  },
+                  dire_team_id: {
+                    description: 'dire_team_id',
+                    type: 'number',
+                  },
+                  dire_name: {
+                    description: 'dire_name',
+                    type: 'string',
+                  },
+                  leagueid: {
+                    description: 'leagueid',
+                    type: 'number',
+                  },
+                  league_name: {
+                    description: 'league_name',
+                    type: 'string',
+                  },
+                  series_id: {
+                    description: 'series_id',
+                    type: 'number',
+                  },
+                  series_type: {
+                    description: 'series_type',
+                    type: 'number',
+                  },
+                  radiant_win: {
+                    description: 'radiant_win',
+                    type: 'boolean',
+                  },
+                },
               },
             },
           },
@@ -1251,9 +2118,10 @@ Please keep request rate to approximately 1/s.
           ON dire.team_id = matches.dire_team_id
           LEFT JOIN leagues USING(leagueid)
           LEFT JOIN match_gcdata USING(match_id)
+          WHERE match_id < ?
           ORDER BY match_id DESC
           LIMIT 100
-          `)
+          `, [req.query.less_than_match_id || Number.MAX_SAFE_INTEGER])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -1270,6 +2138,8 @@ Please keep request rate to approximately 1/s.
         tags: ['public matches'],
         parameters: [
           params.mmrAscendingParam,
+          params.mmrDescendingParam,
+          params.lessThanMatchIdParam,
         ],
         responses: {
           200: {
@@ -1278,18 +2148,63 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  match_seq_num: {
+                    description: 'match_seq_num',
+                    type: 'number',
+                  },
+                  radiant_win: {
+                    description: 'radiant_win',
+                    type: 'number',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number',
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'number',
+                  },
+                  avg_mmr: {
+                    description: 'avg_mmr',
+                    type: 'number',
+                  },
+                  num_mmr: {
+                    description: 'num_mmr',
+                    type: 'number',
+                  },
+                  radiant_team: {
+                    description: 'radiant_team',
+                    type: 'string',
+                  },
+                  dire_team: {
+                    description: 'dire_team',
+                    type: 'string',
+                  },
+                },
               },
             },
           },
         },
         route: () => '/publicMatches',
         func: (req, res, cb) => {
-          const minTime = moment().subtract(7, 'day').format('X');
-          const order = req.query.mmr_ascending ? 'ASC' : 'DESC';
+          const minTime = moment().subtract(3, 'day').format('X');
+          const lessThan = Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
+          let order = '';
+          if (req.query.mmr_ascending) {
+            order = 'ORDER BY avg_mmr ASC';
+          } else if (req.query.mmr_descending) {
+            order = 'ORDER BY avg_mmr DESC';
+          }
           db.raw(`
           WITH match_ids AS (SELECT match_id FROM public_matches
           WHERE start_time > ?
-          ORDER BY avg_mmr ${order}
+          AND match_id < ?
+          ${order}
           LIMIT 100)
           SELECT * FROM
           (SELECT * FROM public_matches
@@ -1300,8 +2215,8 @@ Please keep request rate to approximately 1/s.
           JOIN
           (SELECT match_id, string_agg(hero_id::text, ',') dire_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot > 127 GROUP BY match_id) dire_team
           USING(match_id)
-          ORDER BY avg_mmr ${order}
-          `, [minTime])
+          ${order}
+          `, [minTime, lessThan])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -1316,8 +2231,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /heroStats',
         description: 'Get stats about hero performance in recent matches',
         tags: ['hero stats'],
-        parameters: [
-        ],
+        parameters: [],
         responses: {
           200: {
             description: 'Success',
@@ -1325,6 +2239,84 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  id: {
+                    description: 'id',
+                    type: 'number',
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string',
+                  },
+                  localized_name: {
+                    description: 'localized_name',
+                    type: 'string',
+                  },
+                  img: {
+                    description: 'img',
+                    type: 'string',
+                  },
+                  icon: {
+                    description: 'icon',
+                    type: 'string',
+                  },
+                  pro_win: {
+                    description: 'pro_win',
+                    type: 'number',
+                  },
+                  pro_pick: {
+                    description: 'pro_pick',
+                    type: 'number',
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number',
+                  },
+                  pro_ban: {
+                    description: 'pro_ban',
+                    type: 'number',
+                  },
+                  '1000_pick': {
+                    description: '1000_pick',
+                    type: 'number',
+                  },
+                  '1000_win': {
+                    description: '1000_win',
+                    type: 'number',
+                  },
+                  '2000_pick': {
+                    description: '2000_pick',
+                    type: 'number',
+                  },
+                  '2000_win': {
+                    description: '2000_win',
+                    type: 'number',
+                  },
+                  '3000_pick': {
+                    description: '3000_pick',
+                    type: 'number',
+                  },
+                  '3000_win': {
+                    description: '3000_win',
+                    type: 'number',
+                  },
+                  '4000_pick': {
+                    description: '4000_pick',
+                    type: 'number',
+                  },
+                  '4000_win': {
+                    description: '4000_win',
+                    type: 'number',
+                  },
+                  '5000_pick': {
+                    description: '5000_pick',
+                    type: 'number',
+                  },
+                  '5000_win': {
+                    description: '5000_win',
+                    type: 'number',
+                  },
+                },
               },
             },
           },
@@ -1398,6 +2390,16 @@ Please keep request rate to approximately 1/s.
                 cheese: {
                   description: 'cheese',
                   type: 'object',
+                  properties: {
+                    cheese: {
+                      description: 'cheese',
+                      type: 'string',
+                    },
+                    goal: {
+                      description: 'goal',
+                      type: 'string',
+                    },
+                  },
                 },
               },
             },
@@ -1430,7 +2432,7 @@ Please keep request rate to approximately 1/s.
     '/distributions': {
       get: {
         summary: 'GET /distributions',
-        description: 'Distributions of MMR data',
+        description: 'Distributions of MMR data by bracket and country',
         tags: [
           'distributions',
         ],
@@ -1443,10 +2445,172 @@ Please keep request rate to approximately 1/s.
                 mmr: {
                   description: 'mmr',
                   type: 'object',
+                  properties: {
+                    commmand: {
+                      description: 'command',
+                      type: 'string',
+                    },
+                    rowCount: {
+                      description: 'rowCount',
+                      type: 'number',
+                    },
+                    rows: {
+                      description: 'rows',
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          bin: {
+                            description: 'bin',
+                            type: 'number',
+                          },
+                          bin_name: {
+                            description: 'bin_name',
+                            type: 'number',
+                          },
+                          count: {
+                            description: 'count',
+                            type: 'number',
+                          },
+                          cumulative_sum: {
+                            description: 'cumulative_sum',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                    fields: {
+                      description: 'fields',
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          name: {
+                            description: 'name',
+                            type: 'string',
+                          },
+                          tableID: {
+                            description: 'tableID',
+                            type: 'number',
+                          },
+                          columnID: {
+                            description: 'columnID',
+                            type: 'number',
+                          },
+                          dataTypeID: {
+                            description: 'dataTypeID',
+                            type: 'number',
+                          },
+                          dataTypeSize: {
+                            description: 'dataTypeSize',
+                            type: 'number',
+                          },
+                          dataTypeModifier: {
+                            description: 'dataTypeModifier',
+                            type: 'number',
+                          },
+                          format: {
+                            description: 'format',
+                            type: 'string',
+                          },
+                        },
+                      },
+                    },
+                    rowAsArray: {
+                      description: 'rowAsArray',
+                      type: 'boolean',
+                    },
+                    sum: {
+                      description: 'sum',
+                      type: 'object',
+                      properties: {
+                        count: {
+                          description: 'count',
+                          type: 'number',
+                        },
+                      },
+                    },
+                  },
                 },
                 country_mmr: {
                   description: 'country_mmr',
                   type: 'object',
+                  properties: {
+                    commmand: {
+                      description: 'command',
+                      type: 'string',
+                    },
+                    rowCount: {
+                      description: 'rowCount',
+                      type: 'number',
+                    },
+                    rows: {
+                      description: 'rows',
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          loccountrycode: {
+                            description: 'loccountrycode',
+                            type: 'string',
+                          },
+                          count: {
+                            description: 'count',
+                            type: 'number',
+                          },
+                          avg: {
+                            description: 'avg',
+                            type: 'string',
+                          },
+                          common: {
+                            description: 'common',
+                            type: 'string',
+                          },
+                        },
+                      },
+                    },
+                    fields: {
+                      description: 'fields',
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          name: {
+                            description: 'name',
+                            type: 'string',
+                          },
+                          tableID: {
+                            description: 'tableID',
+                            type: 'number',
+                          },
+                          columnID: {
+                            description: 'columnID',
+                            type: 'number',
+                          },
+                          dataTypeID: {
+                            description: 'dataTypeID',
+                            type: 'number',
+                          },
+                          dataTypeSize: {
+                            description: 'dataTypeSize',
+                            type: 'number',
+                          },
+                          dataTypeModifier: {
+                            description: 'dataTypeModifier',
+                            type: 'number',
+                          },
+                          format: {
+                            description: 'format',
+                            type: 'string',
+                          },
+                        },
+                      },
+                    },
+                    rowAsArray: {
+                      description: 'rowAsArray',
+                      type: 'boolean',
+                    },
+                  },
                 },
               },
             },
@@ -1466,7 +2630,7 @@ Please keep request rate to approximately 1/s.
     '/search': {
       get: {
         summary: 'GET /search',
-        description: 'Search players by personaname',
+        description: 'Search players by personaname. Default similarity is 0.51',
         tags: [
           'search',
         ],
@@ -1490,6 +2654,24 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'number',
+                  },
+                  avatarfull: {
+                    description: 'avatarfull',
+                    type: 'string',
+                  },
+                  personaname: {
+                    description: 'personaname',
+                    type: 'string',
+                  },
+                  similarity: {
+                    description: 'similarity',
+                    type: 'number',
+                  },
+                },
               },
             },
           },
@@ -1535,6 +2717,64 @@ Please keep request rate to approximately 1/s.
                 rankings: {
                   description: 'rankings',
                   type: 'object',
+                  properties: {
+                    account_id: {
+                      description: 'account_id',
+                      type: 'string',
+                    },
+                    score: {
+                      description: 'score',
+                      type: 'string',
+                    },
+                    steamid: {
+                      description: 'steamid',
+                      type: 'string',
+                    },
+                    avatar: {
+                      description: 'avatar',
+                      type: 'string',
+                    },
+                    avatarmedium: {
+                      description: 'avatarmedium',
+                      type: 'string',
+                    },
+                    avatarfull: {
+                      description: 'avatarfull',
+                      type: 'string',
+                    },
+                    profileurl: {
+                      description: 'profileurl',
+                      type: 'string',
+                    },
+                    personaname: {
+                      description: 'personaname',
+                      type: 'string',
+                    },
+                    last_login: {
+                      description: 'last_login',
+                      type: 'dateTime',
+                    },
+                    full_history_time: {
+                      description: 'full_history_time',
+                      type: 'dateTime',
+                    },
+                    cheese: {
+                      description: 'cheese',
+                      type: 'number',
+                    },
+                    fh_unavailable: {
+                      description: 'fh_unavailable',
+                      type: 'boolean',
+                    },
+                    loccountrycode: {
+                      description: 'loccountrycode',
+                      type: 'string',
+                    },
+                    solo_competitive_rank: {
+                      description: 'solo_competitive_rank',
+                      type: 'string',
+                    },
+                  },
                 },
               },
             },
@@ -1578,6 +2818,120 @@ Please keep request rate to approximately 1/s.
                 result: {
                   description: 'result',
                   type: 'object',
+                  properties: {
+                    gold_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number',
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                    xp_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number',
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                    kills_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number',
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                    last_hits_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number',
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                    hero_damage_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number',
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                    hero_healing_per_min: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number',
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                    tower_damage: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          percentile: {
+                            description: 'percentile',
+                            type: 'number',
+                          },
+                          value: {
+                            description: 'value',
+                            type: 'number',
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -1720,6 +3074,9 @@ Please keep request rate to approximately 1/s.
           */
 
           function exitWithJob(err, parseJob) {
+            if (err) {
+              console.error(err);
+            }
             res.status(err ? 400 : 200).json({
               err,
               job: {
@@ -1737,7 +3094,7 @@ Please keep request rate to approximately 1/s.
               }
               // match details response
               const match = body.result;
-              redis.zadd('requests', moment().format('X'), `${moment().format('X')}_${match.match_id}`);
+              redis.zadd('requests', moment().format('X'), `${uuidV4()}:${match.match_id}`);
               return queries.insertMatch(match, {
                 type: 'api',
                 attempts: 1,
@@ -1838,6 +3195,20 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  id: {
+                    description: 'id',
+                    type: 'number',
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string',
+                  },
+                  localized_name: {
+                    description: 'localized_name',
+                    type: 'string',
+                  },
+                },
               },
             },
           },
@@ -1868,6 +3239,28 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  leagueid: {
+                    description: 'leagueid',
+                    type: 'number',
+                  },
+                  ticket: {
+                    description: 'ticket',
+                    type: 'string',
+                  },
+                  banner: {
+                    description: 'banner',
+                    type: 'string',
+                  },
+                  tier: {
+                    description: 'tier',
+                    type: 'string',
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string',
+                  },
+                },
               },
             },
           },
@@ -1917,7 +3310,7 @@ Please keep request rate to approximately 1/s.
     '/replays': {
       get: {
         summary: 'GET /replays',
-        description: 'Get replay data',
+        description: 'Get data to construct a replay URL with',
         tags: ['replays'],
         parameters: [{
           name: 'match_id',
@@ -1933,21 +3326,157 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  cluster: {
+                    description: 'cluster',
+                    type: 'number',
+                  },
+                  replay_salt: {
+                    description: 'replay_salt',
+                    type: 'number',
+                  },
+                },
               },
             },
           },
         },
         route: () => '/replays',
         func: (req, res, cb) => {
+          /*
           db.select(['match_id', 'cluster', 'replay_salt'])
-            .from('match_gcdata')
-            .whereIn('match_id', (req.query.match_id || []).slice(0, 1000))
-            .asCallback((err, result) => {
+           .from('match_gcdata')
+           .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 20))
+           .asCallback((err, result) => {
+          */
+          async.map([].concat(req.query.match_id || []).slice(0, 50),
+            (matchId, cb) =>
+              getGcData(db, redis, {
+                match_id: matchId,
+                noRetry: true,
+              }, (err, result) => {
+                if (err) {
+                  console.error(err);
+                }
+                return cb(null, result);
+              }
+            ),
+            (err, result) => {
               if (err) {
                 return cb(err);
               }
-              return res.json(result);
+              return res.json(result.filter(Boolean));
             });
+        },
+      },
+    },
+    '/records/{field}': {
+      get: {
+        summary: 'GET /records/{field}',
+        description: 'Get top performances in a stat',
+        tags: ['records'],
+        parameters: [{
+          name: 'field',
+          in: 'path',
+          description: 'Field name to query',
+          required: true,
+          type: 'string',
+        }],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'number',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'number',
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'number',
+                  },
+                  score: {
+                    description: 'score',
+                    type: 'number',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/records/:field',
+        func: (req, res, cb) => {
+          redis.zrevrange(`records:${req.params.field}`, 0, 99, 'WITHSCORES', (err, rows) => {
+            if (err) {
+              return cb(err);
+            }
+            const entries = rows.map((r, i) =>
+            ({
+              match_id: r.split(':')[0],
+              start_time: r.split(':')[1],
+              hero_id: r.split(':')[2],
+              score: rows[i + 1],
+            })
+            ).filter((r, i) =>
+              i % 2 === 0
+            );
+            return res.json(entries);
+          });
+        },
+      },
+    },
+    '/schema': {
+      get: {
+        summary: 'GET /schema',
+        description: 'Get database schema',
+        tags: ['schema'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  table_name: {
+                    description: 'table_name',
+                    type: 'string',
+                  },
+                  column_name: {
+                    description: 'column_name',
+                    type: 'string',
+                  },
+                  data_type: {
+                    description: 'data_type',
+                    type: 'string',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/schema',
+        func: (req, res, cb) => {
+          db.select(['table_name', 'column_name', 'data_type'])
+          .from('information_schema.columns')
+          .where({ table_schema: 'public' })
+          .asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result);
+          });
         },
       },
     },

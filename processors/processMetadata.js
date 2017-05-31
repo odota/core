@@ -6,12 +6,16 @@ function processMetadata(entries) {
   const slotToPlayerslot = {};
   let gameZero = 0;
   let gameEnd = 0;
+  let gameStart = 0;
   const metaTypes = {
     DOTA_COMBATLOG_GAME_STATE(e) {
       // capture the replay time at which the game clock was 0:00
+      // 4 is pre game
       // 5 is playing
       // https://github.com/skadistats/clarity/blob/master/src/main/java/skadistats/clarity/model/s1/GameRulesStateType.java
-      if (e.value === 5) {
+      if (e.value === 4) {
+        gameStart = e.time;
+      } else if (e.value === 5) {
         gameZero = e.time;
       } else if (e.value === 6) {
         gameEnd = e.time;
@@ -55,6 +59,7 @@ function processMetadata(entries) {
     hero_to_slot: heroToSlot,
     slot_to_playerslot: slotToPlayerslot,
     game_end: gameEnd,
+    game_start: gameStart,
   };
 }
 module.exports = processMetadata;

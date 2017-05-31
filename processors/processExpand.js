@@ -1,3 +1,4 @@
+const itemIds = require('dotaconstants').item_ids;
 /**
  * Strips off "item_" from strings, and nullifies dota_unknown.
  * Does not mutate the original string.
@@ -120,7 +121,7 @@ function processExpand(entries, meta) {
     DOTA_COMBATLOG_DEATH(e) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
-      // Don't count denies
+
       if (e.attackername !== key) {
         expand(Object.assign({}, e, {
           unit,
@@ -128,11 +129,14 @@ function processExpand(entries, meta) {
           type: 'killed',
         }));
       }
+
       if (e.targethero && !e.targetillusion) {
         expand({
           time: e.time,
           unit,
           key,
+          tracked_death: e.tracked_death,
+          tracked_sourcename: e.tracked_sourcename,
           type: 'kills_log',
         });
         // reverse
@@ -178,7 +182,6 @@ function processExpand(entries, meta) {
     },
     DOTA_COMBATLOG_GAME_STATE() {
       // state
-      // we don't use this here--we already used it during preprocessing to detect game_zero
     },
     DOTA_COMBATLOG_XP(e) {
       // xp gain
@@ -287,7 +290,36 @@ function processExpand(entries, meta) {
       });
     },
     actions(e) {
-      expand(e);
+      // purchase
+      // we should only do this for events where we don't have a PURCHASE entry since
+      // this will not work immediately for new items (we have to manually update dotaconstants).
+      // We check if this is a pregame
+      const adjustedGameStartTime = meta.game_start - meta.game_zero;
+      if (e.key === '16' && e.value && e.time < adjustedGameStartTime) {
+        const key = translate(itemIds[e.value]);  // "item_stout_shield" by id
+        if (key) {
+          // we don't want to show time of purchases which was done even before pre-game
+          expand({
+            time: adjustedGameStartTime,
+            value: 1,
+            slot: e.slot,
+            key,
+            type: 'purchase',
+          });
+          // don't include recipes in purchase logs
+          if (key.indexOf('recipe_') !== 0) {
+            expand({
+              time: adjustedGameStartTime,
+              value: 1,
+              slot: e.slot,
+              key,
+              type: 'purchase_log',
+            });
+          }
+        }
+      }
+      // expand the actions
+      expand(Object.assign({}, e, { value: 1 }));
     },
     CHAT_MESSAGE_RUNE_PICKUP(e) {
       expand({
@@ -363,6 +395,7 @@ function processExpand(entries, meta) {
         time: e.time,
         type: e.type,
         slot: e.player1,
+        key: e.player2,
       });
     },
     CHAT_MESSAGE_AEGIS(e) {
@@ -410,20 +443,30 @@ function processExpand(entries, meta) {
     interval(e) {
       if (e.time >= 0) {
         expand(e);
-        ['stuns', 'life_state', 'obs_placed', 'sen_placed', 'creeps_stacked', 'camps_stacked', 'rune_pickups'].forEach((t) => {
+        ['stuns',
+          'life_state',
+          'obs_placed',
+          'sen_placed',
+          'creeps_stacked',
+          'camps_stacked',
+          'rune_pickups',
+          'randomed',
+          'repicked',
+          'pred_vict']
+        .forEach((field) => {
           let key;
           let value;
-          if (t === 'life_state') {
-            key = e[t];
+          if (field === 'life_state') {
+            key = e[field];
             value = 1;
           } else {
-            key = t;
-            value = e[t];
+            key = field;
+            value = e[field];
           }
           expand({
             time: e.time,
             slot: e.slot,
-            type: t,
+            type: field,
             key,
             value,
           });
