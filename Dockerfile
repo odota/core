@@ -1,6 +1,6 @@
 FROM node:8.0.0-alpine
 
-RUN apk update && apk add bash
+RUN apk update && apk add bash && apk add curl
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
