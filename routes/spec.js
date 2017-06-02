@@ -1022,7 +1022,7 @@ Please keep request rate to approximately 1/s.
         func: (req, res, cb) => {
           queries.getPlayerMatches(req.params.account_id, {
             project: req.queryObj.project.concat(
-              ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'xp_per_min', 'gold_per_min', 'hero_damage', 'tower_damage', 'hero_healing', 'last_hits', 'lane', 'lane_role', 'is_roaming']
+              ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'xp_per_min', 'gold_per_min', 'hero_damage', 'tower_damage', 'hero_healing', 'last_hits', 'lane', 'lane_role', 'is_roaming'],
             ),
             dbLimit: 20,
           }, (err, cache) => {
@@ -3362,7 +3362,7 @@ Please keep request rate to approximately 1/s.
                   console.error(err);
                 }
                 return cb(null, result);
-              }
+              },
             ),
             (err, result) => {
               if (err) {
@@ -3426,9 +3426,9 @@ Please keep request rate to approximately 1/s.
               start_time: r.split(':')[1],
               hero_id: r.split(':')[2],
               score: rows[i + 1],
-            })
+            }),
             ).filter((r, i) =>
-              i % 2 === 0
+              i % 2 === 0,
             );
             return res.json(entries);
           });

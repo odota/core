@@ -418,7 +418,7 @@ app.use((req, res) => {
 app.use((err, req, res) =>
   res.status(500).json({
     error: err,
-  })
+  }),
 );
 const server = app.listen(port, () => {
   const host = server.address().address;

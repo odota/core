@@ -115,7 +115,7 @@ function getDistributions(redis, cb) {
       return cb(err);
     });
   }, err =>
-    cb(err, result)
+    cb(err, result),
   );
 }
 
@@ -139,12 +139,12 @@ function getLeaderboard(db, redis, key, n, cb) {
       ({
         account_id: r,
         score: rows[i + 1],
-      })
+      }),
     ).filter((r, i) =>
-      i % 2 === 0
+      i % 2 === 0,
     );
     const accountIds = entries.map(r =>
-      r.account_id
+      r.account_id,
     );
     // get player data from DB
     return db.select().from('players').whereIn('account_id', accountIds).asCallback((err, names) => {
@@ -186,7 +186,7 @@ function getHeroRankings(db, redis, heroId, options, cb) {
       cb(err, {
         hero_id: Number(heroId),
         rankings: entries,
-      })
+      }),
     );
   });
 }
@@ -221,7 +221,7 @@ function getHeroBenchmarks(db, redis, options, cb) {
     cb(err, {
       hero_id: Number(heroId),
       result: ret,
-    })
+    }),
   );
 }
 
@@ -232,10 +232,10 @@ function getMmrEstimate(db, redis, accountId, cb) {
     }
     const data = result.filter(d =>
       // remove invalid values
-      d
+      d,
     ).map(d =>
       // convert to numerical values
-      Number(d)
+      Number(d),
     );
     return cb(err, {
       estimate: utility.average(data),
@@ -281,7 +281,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
         // stream ended, there aren't any more rows
         if (queryObj.sort) {
           matches.sort((a, b) =>
-            b[queryObj.sort] - a[queryObj.sort]
+            b[queryObj.sort] - a[queryObj.sort],
           );
         }
         const offset = matches.slice(queryObj.offset);
@@ -356,7 +356,7 @@ function getPeers(db, input, player, cb) {
     }
   });
   teammatesArr.sort((a, b) =>
-    b.games - a.games
+    b.games - a.games,
   );
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
@@ -391,11 +391,11 @@ function getProPeers(db, input, player, cb) {
               return cb(err);
             }
             const arr = result.rows.map(r =>
-      Object.assign({}, r, teammates[r.account_id])
+      Object.assign({}, r, teammates[r.account_id]),
     ).filter(r =>
-      r.games
+      r.games,
     ).sort((a, b) =>
-      b.games - a.games
+      b.games - a.games,
     );
             return cb(err, arr);
           });
@@ -413,10 +413,10 @@ function getMatchRating(redis, match, cb) {
     }
     // Remove undefined/null values
     const filt = result.filter(r =>
-      r
+      r,
     );
     const avg = Math.floor(filt.map(r =>
-      Number(r)
+      Number(r),
     ).reduce((a, b) =>
       a + b, 0) / filt.length);
     return cb(err, avg, filt.length);
@@ -429,21 +429,21 @@ function upsert(db, table, row, conflict, cb) {
       return cb(err);
     }
     const values = Object.keys(row).map(() =>
-      '?'
+      '?',
     );
     const update = Object.keys(row).map(key =>
-      util.format('%s=%s', key, `EXCLUDED.${key}`)
+      util.format('%s=%s', key, `EXCLUDED.${key}`),
     );
     const query = util.format('INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
       table,
       Object.keys(row).join(','),
       values,
       Object.keys(conflict).join(','),
-      update.join(',')
+      update.join(','),
     );
     // if (table==='cosmetics') console.log(query.toString(), row);
     return db.raw(query, Object.keys(row).map(key =>
-      row[key]
+      row[key],
     )).asCallback(cb);
   });
 }
@@ -496,10 +496,10 @@ function writeCache(accountId, cache, cb) {
       const serializedMatch = serialize(cleanedMatch);
       const query = util.format('INSERT INTO player_caches (%s) VALUES (%s)',
         Object.keys(serializedMatch).join(','),
-        Object.keys(serializedMatch).map(() => '?').join(',')
+        Object.keys(serializedMatch).map(() => '?').join(','),
       );
       const arr = Object.keys(serializedMatch).map(k =>
-        serializedMatch[k]
+        serializedMatch[k],
       );
       return cassandra.execute(query, arr, {
         prepare: true,
@@ -562,7 +562,7 @@ function updateRankings(match, cb) {
     }
     const ratingMin = 2000;
     const matchScore = (avg && !isNaN(Number(avg)) && avg >= ratingMin) ?
-      Math.pow(avg / ratingMin, 7) :
+      (avg / ratingMin) ** 7 :
       undefined;
     return async.each(match.players, (player, cb) => {
       if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
@@ -760,7 +760,7 @@ function insertMatch(match, options, cb) {
       players.forEach((p) => {
         if (p.ability_upgrades) {
           p.ability_upgrades_arr = p.ability_upgrades.map(au =>
-            au.ability
+            au.ability,
           );
           const abilityLvls = {};
           p.ability_upgrades.forEach((au) => {
@@ -937,12 +937,12 @@ function insertMatch(match, options, cb) {
       }
       const query = util.format('INSERT INTO matches (%s) VALUES (%s)',
         Object.keys(obj).join(','),
-        Object.keys(obj).map(() => '?').join(',')
+        Object.keys(obj).map(() => '?').join(','),
       );
       const arr = Object.keys(obj).map(k =>
         // boolean types need to be expressed as booleans
         // if strings the cassandra driver will always convert it to true, e.g. 'false'
-        ((obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k])
+        ((obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k]),
       );
       return cassandra.execute(query, arr, {
         prepare: true,
@@ -962,10 +962,10 @@ function insertMatch(match, options, cb) {
             }
             const query2 = util.format('INSERT INTO player_matches (%s) VALUES (%s)',
               Object.keys(obj2).join(','),
-              Object.keys(obj2).map(() => '?').join(',')
+              Object.keys(obj2).map(() => '?').join(','),
             );
             const arr2 = Object.keys(obj2).map(k =>
-              ((obj2[k] === 'true' || obj2[k] === 'false') ? JSON.parse(obj2[k]) : obj2[k])
+              ((obj2[k] === 'true' || obj2[k] === 'false') ? JSON.parse(obj2[k]) : obj2[k]),
             );
             return cassandra.execute(query2, arr2, {
               prepare: true,
@@ -1056,7 +1056,7 @@ function insertMatch(match, options, cb) {
     }
     async.some(match.players, (p, cb) => {
       redis.zscore('visitors', String(p.account_id), (err, score) =>
-        cb(err, Boolean(score))
+        cb(err, Boolean(score)),
       );
     }, (err, result) => {
       if (result) {
@@ -1134,7 +1134,7 @@ function insertMatch(match, options, cb) {
     // determine if any player in the match is tracked
     return async.some(match.players, (p, cb) => {
       redis.zscore('tracked', String(p.account_id), (err, score) =>
-        cb(err, Boolean(score))
+        cb(err, Boolean(score)),
       );
     }, (err, hasTrackedPlayer) => {
       if (err) {
@@ -1187,7 +1187,7 @@ function insertMatch(match, options, cb) {
     decideReplayParse,
   }, (err, results) => {
     cb(err, results.decideReplayParse);
-  }
+  },
   );
 }
 

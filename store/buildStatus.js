@@ -65,15 +65,15 @@ module.exports = function buildStatus(db, redis, cb) {
     last_added(cb) {
       redis.lrange('matches_last_added', 0, -1, (err, result) =>
         cb(err, result.map(r =>
-          JSON.parse(r)
-        ))
+          JSON.parse(r),
+        )),
       );
     },
     last_parsed(cb) {
       redis.lrange('matches_last_parsed', 0, -1, (err, result) =>
         cb(err, result.map(r =>
-          JSON.parse(r)
-        ))
+          JSON.parse(r),
+        )),
       );
     },
     retriever(cb) {

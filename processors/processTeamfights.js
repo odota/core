@@ -30,7 +30,7 @@ function processTeamfights(entries, meta) {
             healing: 0,
             gold_delta: 0,
             xp_delta: 0,
-          })
+          }),
         ),
       };
       // update the last_death time of the current fight
@@ -56,7 +56,7 @@ function processTeamfights(entries, meta) {
   // fights that didnt end wont be pushed to teamfights array (endgame case)
   // filter only fights where 3+ heroes died
   teamfights = teamfights.filter(tf =>
-    tf.deaths >= 3
+    tf.deaths >= 3,
   );
   teamfights.forEach((tf) => {
     tf.players.forEach((p, ind) => {

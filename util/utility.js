@@ -64,7 +64,7 @@ function generateJob(type, payload) {
     api_summaries() {
       return {
         url: `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players.map(p =>
-           convert32to64(p.account_id)
+           convert32to64(p.account_id),
         ).join()}`,
         title: [type, payload.summaries_id].join(),
         type: 'api',
@@ -413,7 +413,7 @@ function stdDev(data) {
  **/
 function median(data) {
   data.sort((a, b) =>
-     a - b
+     a - b,
   );
   const half = Math.floor(data.length / 2);
   if (data.length % 2) {
@@ -456,7 +456,7 @@ function expectedWin(rates) {
   // advanced implementation, asymptotic
   // return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
   const adjustedRates = rates.reduce((prev, curr) => (100 - (curr * 100)) * prev, 1);
-  const denominator = Math.pow(50, rates.length - 1);
+  const denominator = 50 ** (rates.length - 1);
   return 1 - ((adjustedRates / denominator) * 100);
 }
 
@@ -465,7 +465,7 @@ function expectedWin(rates) {
  **/
 function groupToString(g) {
   return g.sort((a, b) =>
-     a - b
+     a - b,
   ).join(',');
 }
 

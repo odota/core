@@ -25,7 +25,7 @@ module.exports = function getGcData(db, redis, match, cb) {
     }
     // make array of retriever urls and use a random one on each retry
     const urls = retrieverArr.map(r =>
-      `http://${r}?key=${secret}&match_id=${match.match_id}`
+      `http://${r}?key=${secret}&match_id=${match.match_id}`,
     );
     return getData({ url: urls, noRetry: match.noRetry }, (err, body, metadata) => {
       if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {

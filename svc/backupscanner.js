@@ -70,11 +70,9 @@ function processPlayer(accountId, cb) {
         return cb(err);
       }
       // Get matches with recent seqnums
-      const matches = body.result.matches.filter(m =>
-        m.match_seq_num > Number(res)
-      ).map(m =>
-        m.match_id
-      );
+      const matches = body.result.matches
+        .filter(m => m.match_seq_num > Number(res))
+        .map(m => m.match_id);
       return async.eachLimit(matches, 1, processMatch, cb);
     });
   });

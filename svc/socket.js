@@ -290,7 +290,6 @@ wss.on('connection', (ws) => {
             console.error(err);
           }
         });
-        return;
       }
     }
   });

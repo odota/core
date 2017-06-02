@@ -86,7 +86,7 @@ function computeMatchData(pm) {
   if (pm.kills_log && selfHero) {
     // remove self kills
     pm.kills_log = pm.kills_log.filter(k =>
-      k.key !== selfHero.name
+      k.key !== selfHero.name,
     );
   }
   if (pm.killed) {
@@ -165,7 +165,7 @@ function computeMatchData(pm) {
   if (pm.purchase_log) {
     // remove ward dispenser and recipes
     pm.purchase_log = pm.purchase_log.filter(purchase =>
-      !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser')
+      !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser'),
     );
     pm.purchase_time = {};
     pm.first_purchase_time = {};

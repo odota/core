@@ -136,7 +136,7 @@ function getParseSchema() {
         towers_killed: 0,
         roshans_killed: 0,
         observers_placed: 0,
-      })
+      }),
     ),
   };
 }

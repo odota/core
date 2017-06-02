@@ -90,7 +90,7 @@ function postgresUsage(cb) {
     }
     return cb(err, {
       metric: result.rows[0].pg_database_size,
-      threshold: 2 * Math.pow(10, 11),
+      threshold: 2 * (10 ** 11),
     });
   });
 }
@@ -106,7 +106,7 @@ function cassandraUsage(cb) {
     });
     return cb(err, {
       metric: size,
-      threshold: 8 * Math.pow(10, 12),
+      threshold: 8 * (10 ** 12),
     });
   });
 }
@@ -119,7 +119,7 @@ function redisUsage(cb) {
     // console.log(info);
     return cb(err, {
       metric: redis.server_info.used_memory,
-      threshold: 13 * Math.pow(10, 9),
+      threshold: 13 * (10 ** 9),
     });
   });
 }
