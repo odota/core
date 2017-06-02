@@ -119,7 +119,9 @@ CREATE TABLE player_matches (
   permanent_buffs json[],
   lane int,
   lane_role int,
-  is_roaming boolean
+  is_roaming boolean,
+  firstblood_claimed int,
+  teamfight_participation real
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX on player_matches(hero_id);

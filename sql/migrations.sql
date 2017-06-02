@@ -17,3 +17,6 @@ ALTER TABLE player_matches ADD lane int;
 ALTER TABLE player_matches ADD lane_role int;
 ALTER TABLE player_matches ADD is_roaming boolean;
 ALTER TABLE heroes ADD legs int;
+
+ALTER TABLE player_matches ADD firstblood_claimed int;
+ALTER TABLE player_matches ADD teamfight_participation real;

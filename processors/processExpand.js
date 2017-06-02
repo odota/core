@@ -443,7 +443,8 @@ function processExpand(entries, meta) {
     interval(e) {
       if (e.time >= 0) {
         expand(e);
-        ['stuns',
+        [
+          'stuns',
           'life_state',
           'obs_placed',
           'sen_placed',
@@ -452,7 +453,10 @@ function processExpand(entries, meta) {
           'rune_pickups',
           'randomed',
           'repicked',
-          'pred_vict']
+          'pred_vict',
+          'firstblood_claimed',
+          'teamfight_participation',
+        ]
         .forEach((field) => {
           let key;
           let value;
