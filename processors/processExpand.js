@@ -456,6 +456,9 @@ function processExpand(entries, meta) {
           'pred_vict',
           'firstblood_claimed',
           'teamfight_participation',
+          'towers_killed',
+          'roshans_killed',
+          'observers_placed',
         ]
         .forEach((field) => {
           let key;

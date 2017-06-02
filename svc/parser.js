@@ -72,7 +72,7 @@ function insertStandardParse(match, cb) {
 
 function getParseSchema() {
   return {
-    version: 19,
+    version: 20,
     match_id: 0,
     teamfights: [],
     objectives: [],
@@ -133,6 +133,9 @@ function getParseSchema() {
         pred_vict: false,
         firstblood_claimed: 0,
         teamfight_participation: 0,
+        towers_killed: 0,
+        roshans_killed: 0,
+        observers_placed: 0,
       })
     ),
   };

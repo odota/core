@@ -20,3 +20,7 @@ ALTER TABLE heroes ADD legs int;
 
 ALTER TABLE player_matches ADD firstblood_claimed int;
 ALTER TABLE player_matches ADD teamfight_participation real;
+
+ALTER TABLE player_matches ADD towers_killed int;
+ALTER TABLE player_matches ADD roshans_killed int;
+ALTER TABLE player_matches ADD observers_placed int;

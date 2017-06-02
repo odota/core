@@ -121,7 +121,10 @@ CREATE TABLE player_matches (
   lane_role int,
   is_roaming boolean,
   firstblood_claimed int,
-  teamfight_participation real
+  teamfight_participation real,
+  towers_killed int,
+  roshans_killed int,
+  observers_placed int
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX on player_matches(hero_id);
