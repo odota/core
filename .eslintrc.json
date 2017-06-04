@@ -1,8 +1,5 @@
 {
   "extends": "airbnb/base",
-  "plugins": [
-    "import"
-  ],
   "rules": {
     "no-console": 0,
     "no-shadow": 0,
