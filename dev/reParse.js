@@ -11,13 +11,13 @@ const getData = utility.getData;
 const insertMatch = queries.insertMatch;
 const delay = 50;
 const args = process.argv.slice(2);
-const matchId = Number(args[0]);
+const matchId = Number(args[0]) || 0;
+const targetVersion = Number(args[1]) || 0;
 
 db.select('match_id')
 .from('matches')
 .where('match_id', '>', matchId)
-// Only parse unparsed matches
-// .where('version', null)
+.where('version', '!=', targetVersion)
 .orderBy('match_id')
 .asCallback((err, result) => {
   if (err) {
