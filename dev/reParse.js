@@ -18,6 +18,7 @@ db.select('match_id')
 .from('matches')
 .where('match_id', '>', matchId)
 .where('version', '!=', targetVersion)
+.orWhereNull('version')
 .orderBy('match_id')
 .asCallback((err, result) => {
   if (err) {
