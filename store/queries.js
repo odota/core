@@ -441,7 +441,6 @@ function upsert(db, table, row, conflict, cb) {
       Object.keys(conflict).join(','),
       update.join(','),
     );
-    // if (table==='cosmetics') console.log(query.toString(), row);
     return db.raw(query, Object.keys(row).map(key =>
       row[key],
     )).asCallback(cb);

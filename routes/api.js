@@ -10,7 +10,7 @@ const subkeys = playerFields.subkeys;
 // Player caches middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   // Check cache
-  if (!Object.keys(req.query).length) {
+  if (!Object.keys(req.query).length && req.params.info) {
     return cacheFunctions.read({
       key: req.params.info,
       account_id: req.params.account_id,
@@ -19,7 +19,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
         console.error(err);
       }
       if (result) {
-        console.log('[READCACHEHIT] %s', req.originalUrl);
+        // console.log('[READCACHEHIT] %s', req.originalUrl);
         try {
           return res.json(JSON.parse(result));
         } catch (e) {
@@ -27,7 +27,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
           return cb();
         }
       }
-      console.log('[READCACHEMISS] %s', req.originalUrl);
+      // console.log('[READCACHEMISS] %s', req.originalUrl);
       return cb();
     });
   }

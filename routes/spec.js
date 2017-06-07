@@ -1231,19 +1231,16 @@ Please keep request rate to approximately 1/s.
                 if (tmHero in heroes) {
                   if (isRadiant(tm) === isRadiant(m)) {
                     if (tm.account_id === m.account_id) {
-                      // console.log("self %s", tm_hero, tm.account_id, m.account_id);
                       heroes[tmHero].games += 1;
                       heroes[tmHero].win += playerWin ? 1 : 0;
                       if (m.start_time > heroes[tmHero].last_played) {
                         heroes[tmHero].last_played = m.start_time;
                       }
                     } else {
-                      // console.log("teammate %s", tm_hero);
                       heroes[tmHero].with_games += 1;
                       heroes[tmHero].with_win += playerWin ? 1 : 0;
                     }
                   } else {
-                    // console.log("opp %s", tm_hero);
                     heroes[tmHero].against_games += 1;
                     heroes[tmHero].against_win += playerWin ? 1 : 0;
                   }
@@ -1557,7 +1554,6 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
-              console.log(m);
               Object.keys(subkeys).forEach((key) => {
                 if (m[key] !== null && m[key] !== undefined) {
                   result[key].n += 1;
@@ -3062,7 +3058,6 @@ Please keep request rate to approximately 1/s.
           };
           /*
           if (req.file) {
-            console.log(req.file);
             const hash = crypto.createHash('md5');
             hash.update(req.file.buffer);
             const key = hash.digest('hex');

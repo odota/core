@@ -164,11 +164,11 @@ function buildMatch(matchId, cb) {
     if (err) {
       return cb(err);
     } else if (reply) {
-      console.log(`Cache hit for match ${matchId}`);
+      // console.log(`Cache hit for match ${matchId}`);
       const match = JSON.parse(reply);
       return cb(err, match);
     }
-    console.log(`Cache miss for match ${matchId}`);
+    // console.log(`Cache miss for match ${matchId}`);
     return getMatch(matchId, (err, match) => {
       if (err) {
         return cb(err);
