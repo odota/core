@@ -640,7 +640,9 @@ function getLaneFromPosData(lanePos, isRadiant) {
       const adjY = 128 - (Number(y) - 64);
       // Add it N times to the array
       for (let i = 0; i < val; i += 1) {
-        lanes.push(laneMappings[adjY][adjX]);
+        if (laneMappings[adjY] && laneMappings[adjY][adjX]) {
+          lanes.push(laneMappings[adjY][adjX]);
+        }
       }
     });
   });
