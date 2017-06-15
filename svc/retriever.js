@@ -115,12 +115,6 @@ function getPlayerProfile(idx, accountId, cb) {
 function getGcMatchData(idx, matchId, cb) {
   const Dota2 = steamObj[idx].Dota2;
   matchRequests += 1;
-  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
-    || getUptime() > maxUpTimeSeconds
-    || (timeouts > timeoutThreshold && getUptime() > minUpTimeSeconds);
-  if (shouldRestart && config.NODE_ENV !== 'development') {
-    return selfDestruct();
-  }
   const timeout = setTimeout(() => {
     timeouts += 1;
     matchRequestDelayIncr += 300;
@@ -384,6 +378,12 @@ app.get('/', (req, res, cb) => {
     profileRequests,
     getUptime(),
     matchRequestDelay + matchRequestDelayIncr);
+  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
+    || getUptime() > maxUpTimeSeconds
+    || (timeouts > timeoutThreshold && getUptime() > minUpTimeSeconds);
+  if (shouldRestart && config.NODE_ENV !== 'development') {
+    return selfDestruct();
+  }
   if (req.query.mmstats) {
     return getMMStats(rKey, (err, data) => {
       res.locals.data = data;
