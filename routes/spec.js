@@ -2130,7 +2130,7 @@ Please keep request rate to approximately 1/s.
     '/publicMatches': {
       get: {
         summary: 'GET /publicMatches',
-        description: 'Get list of randomly sampled public matches ordered by MMR',
+        description: 'Get list of randomly sampled public matches',
         tags: ['public matches'],
         parameters: [
           params.mmrAscendingParam,
