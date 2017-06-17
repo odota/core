@@ -134,7 +134,7 @@ before(function setup(done) {
     },
     function loadMatches(cb) {
       console.log('loading matches');
-      async.mapSeries([detailsApi.result, detailsApiPro.result], (m, cb) => {
+      async.mapSeries([detailsApi.result, detailsApiPro.result, detailsApiPro.result], (m, cb) => {
         queries.insertMatch(m, {
           type: 'api',
           origin: 'scanner',
@@ -212,12 +212,13 @@ describe('replay parse', function testReplayParse() {
 describe('teamRanking', () => {
   it('should have team rankings', (cb) => {
     db.select(['team_id', 'rating', 'wins', 'losses']).from('team_rating').asCallback((err, rows) => {
-      /*
-      [{ team_id: 4251435, rating: 984, wins: 0, losses: 1 },
-      { team_id: 1375614, rating: 1016, wins: 1, losses: 0 } ]
-      */
-      assert(rows.find(row => row.team_id === 4251435).losses === 1);
-      assert(rows.find(row => row.team_id === 1375614).wins === 1);
+      // We inserted the pro match twice so expect to update the ratings twice
+      const loser = rows.find(row => row.team_id === 4251435);
+      const winner = rows.find(row => row.team_id === 1375614);
+      console.log(loser.rating, winner.rating);
+      assert(loser.losses === 2);
+      assert(winner.wins === 2);
+      assert(loser.rating < winner.rating);
       return cb(err);
     });
   });

@@ -353,7 +353,7 @@ CREATE INDEX on public_player_matches(hero_id);
 CREATE TABLE team_rating (
   PRIMARY KEY(team_id),
   team_id bigint,
-  rating int,
+  rating real,
   wins int,
   losses int
 );

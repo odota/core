@@ -718,18 +718,20 @@ async function updateTeamRankings(match, options) {
     const team2 = match.dire_team_id;
     const team1Win = Number(match.radiant_win);
     const kFactor = 32;
-    const currRating1 = Number(await db.select('rating').from('team_rating').where({ team_id: team1 })) || 1000;
-    const currRating2 = Number(await db.select('rating').from('team_rating').where({ team_id: team2 })) || 1000;
+    const data1 = await db.select('rating').from('team_rating').where({ team_id: team1 });
+    const data2 = await db.select('rating').from('team_rating').where({ team_id: team2 });
+    const currRating1 = Number((data1[0] || {rating: 1000}).rating);
+    const currRating2 = Number((data2[0] || {rating: 1000}).rating);
     const r1 = 10 ** (currRating1 / 400);
     const r2 = 10 ** (currRating2 / 400);
     const e1 = r1 / (r1 + r2);
     const e2 = r2 / (r1 + r2);
     const win1 = team1Win;
     const win2 = Number(!team1Win);
-    const ratingDiff1 = Math.floor(kFactor * (win1 - e1));
-    const ratingDiff2 = Math.floor(kFactor * (win2 - e2));
+    const ratingDiff1 = kFactor * (win1 - e1);
+    const ratingDiff2 = kFactor * (win2 - e2);
     const query = `INSERT INTO team_rating(team_id, rating, wins, losses) VALUES(?, ?, ?, ?) 
-    ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating + ?, wins=EXCLUDED.wins + ?, losses=EXCLUDED.losses + ?`;
+    ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?`;
     await db.raw(query,
      [team1, currRating1 + ratingDiff1, win1, Number(!win1), ratingDiff1, win1, Number(!win1)]);
     await db.raw(query,
