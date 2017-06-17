@@ -3317,14 +3317,16 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/teams',
         func: (req, res, cb) => {
-          db.select(['team_rating.*', 'teams.*'])
-            .from('teams')
-            .leftJoin('team_rating', 'teams.team_id', 'team_rating.team_id')
+          db.raw(`SELECT team_rating.*, teams.*
+            FROM teams
+            LEFT JOIN team_rating using(team_id)
+            ORDER BY rating desc NULLS LAST
+            LIMIT 1000`)
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
               }
-              return res.json(result);
+              return res.json(result.rows);
             });
         },
       },

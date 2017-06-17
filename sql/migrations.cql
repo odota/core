@@ -14,3 +14,8 @@ ALTER TABLE player_matches ADD pred_vict boolean;
 ALTER TABLE matches ADD skill int;
 
 ALTER TABLE player_matches ADD performance_others text;
+
+ALTER TABLE player_matches ADD teamfight_participation decimal;
+ALTER TABLE player_matches ADD towers_killed int;
+ALTER TABLE player_matches ADD roshans_killed int;
+ALTER TABLE player_matches ADD firstblood_claimed int;

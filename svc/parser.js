@@ -88,6 +88,11 @@ function getParseSchema() {
         creeps_stacked: 0,
         camps_stacked: 0,
         rune_pickups: 0,
+        firstblood_claimed: 0,
+        teamfight_participation: 0,
+        towers_killed: 0,
+        roshans_killed: 0,
+        observers_placed: 0,
         stuns: 0,
         max_hero_hit: {
           value: 0,
@@ -131,11 +136,6 @@ function getParseSchema() {
         randomed: false,
         repicked: false,
         pred_vict: false,
-        firstblood_claimed: 0,
-        teamfight_participation: 0,
-        towers_killed: 0,
-        roshans_killed: 0,
-        observers_placed: 0,
       }),
     ),
   };

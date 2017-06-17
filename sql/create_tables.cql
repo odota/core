@@ -108,6 +108,10 @@ CREATE TABLE player_matches (
   randomed boolean,
   pred_vict boolean,
   performance_others text,
+  teamfight_participation decimal,
+  towers_killed int,
+  roshans_killed int,
+  firstblood_claimed int,
 );
 
 CREATE TABLE player_caches (
