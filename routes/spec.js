@@ -3285,14 +3285,41 @@ Please keep request rate to approximately 1/s.
               type: 'array',
               items: {
                 type: 'object',
+                properties: {
+                  team_id: {
+                    description: 'team_id',
+                    type: 'number',
+                  },
+                  rating: {
+                    description: 'The Elo rating of the team',
+                    type: 'number',
+                  },
+                  wins: {
+                    description: 'The number of games won by this team',
+                    type: 'number',
+                  },
+                  losses: {
+                    description: 'The number of losses by this team',
+                    type: 'number',
+                  },
+                  name: {
+                    description: 'name',
+                    type: 'string',
+                  },
+                  tag: {
+                    description: 'The team tag',
+                    type: 'string',
+                  },
+                },
               },
             },
           },
         },
         route: () => '/teams',
         func: (req, res, cb) => {
-          db.select()
+          db.select(['team_rating.*', 'teams.*'])
             .from('teams')
+            .leftJoin('team_rating', 'teams.team_id', 'team_rating.team_id')
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
