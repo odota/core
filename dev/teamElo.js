@@ -16,6 +16,7 @@ FROM team_match
 JOIN matches using(match_id)
 JOIN team_match tm2 on team_match.match_id = tm2.match_id AND team_match.team_id < tm2.team_id
 WHERE matches.radiant_team_id IS NOT NULL AND matches.dire_team_id IS NOT NULL
+ORDER BY match_id ASC
 `)
 .stream();
 stream.pipe(JSONStream.parse());
