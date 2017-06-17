@@ -712,6 +712,33 @@ function updateLastPlayed(match, cb) {
   }, cb);
 }
 
+async function updateTeamRankings(match, options) {
+  if (options.origin === 'scanner' && match.radiant_team_id && match.dire_team_id && match.radiant_win !== undefined) {
+    const team1 = match.radiant_team_id;
+    const team2 = match.dire_team_id;
+    const team1Win = Number(match.radiant_win);
+    const kFactor = 32;
+    const data1 = await db.select('rating').from('team_rating').where({ team_id: team1 });
+    const data2 = await db.select('rating').from('team_rating').where({ team_id: team2 });
+    const currRating1 = Number((data1[0] || { rating: 1000 }).rating);
+    const currRating2 = Number((data2[0] || { rating: 1000 }).rating);
+    const r1 = 10 ** (currRating1 / 400);
+    const r2 = 10 ** (currRating2 / 400);
+    const e1 = r1 / (r1 + r2);
+    const e2 = r2 / (r1 + r2);
+    const win1 = team1Win;
+    const win2 = Number(!team1Win);
+    const ratingDiff1 = kFactor * (win1 - e1);
+    const ratingDiff2 = kFactor * (win2 - e2);
+    const query = `INSERT INTO team_rating(team_id, rating, wins, losses) VALUES(?, ?, ?, ?) 
+    ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?`;
+    await db.raw(query,
+     [team1, currRating1 + ratingDiff1, win1, Number(!win1), ratingDiff1, win1, Number(!win1)]);
+    await db.raw(query,
+      [team2, currRating2 + ratingDiff2, win2, Number(!win2), ratingDiff2, win2, Number(!win2)]);
+  }
+}
+
 function createMatchCopy(match, players) {
   const copy = JSON.parse(JSON.stringify(match));
   copy.players = JSON.parse(JSON.stringify(players));
@@ -883,6 +910,10 @@ function insertMatch(match, options, cb) {
         }, cb);
       }
 
+      function upsertTeamRankings(cb) {
+        return updateTeamRankings(match, options).then(cb).catch(cb);
+      }
+
       function upsertMatchLogs(cb) {
         if (!match.logs) {
           return cb();
@@ -919,6 +950,7 @@ function insertMatch(match, options, cb) {
         upsertPicksBans,
         upsertMatchPatch,
         upsertTeamMatch,
+        upsertTeamRankings,
         upsertMatchLogs,
       }, exit);
     });

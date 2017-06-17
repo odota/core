@@ -22,6 +22,7 @@ const historyApi = require('./data/history_api.json');
 const heroesApi = require('./data/heroes_api.json');
 const leaguesApi = require('./data/leagues_api.json');
 const retrieverPlayer = require('./data/retriever_player.json');
+const detailsApiPro = require('./data/details_api_pro.json');
 
 const pQueue = queue.getQueue('parse');
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
@@ -86,6 +87,10 @@ before(function setup(done) {
             const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
             db.raw(query).asCallback(cb);
           },
+          function setup(cb) {
+            // populate the DB with this leagueid so we insert a pro match
+            db.raw('INSERT INTO leagues(leagueid, tier) VALUES(5399, \'professional\')').asCallback(cb);
+          },
         ], cb);
       });
     },
@@ -129,9 +134,10 @@ before(function setup(done) {
     },
     function loadMatches(cb) {
       console.log('loading matches');
-      async.mapSeries([detailsApi.result], (m, cb) => {
+      async.mapSeries([detailsApi.result, detailsApiPro.result, detailsApiPro.result], (m, cb) => {
         queries.insertMatch(m, {
           type: 'api',
+          origin: 'scanner',
           skipParse: true,
         }, cb);
       }, cb);
@@ -168,7 +174,7 @@ describe('replay parse', function testReplayParse() {
         cb(err, body),
       );
     });
-    it(`parse replay ${key}`, (done) => {
+    it(`should parse replay ${key}`, (done) => {
       queries.insertMatch(match, {
         cassandra,
         type: 'api',
@@ -200,6 +206,20 @@ describe('replay parse', function testReplayParse() {
           }).catch(done);
         }, 1000);
       });
+    });
+  });
+});
+describe('teamRanking', () => {
+  it('should have team rankings', (cb) => {
+    db.select(['team_id', 'rating', 'wins', 'losses']).from('team_rating').asCallback((err, rows) => {
+      // We inserted the pro match twice so expect to update the ratings twice
+      const loser = rows.find(row => row.team_id === 4251435);
+      const winner = rows.find(row => row.team_id === 1375614);
+      console.log(loser.rating, winner.rating);
+      assert(loser.losses === 2);
+      assert(winner.wins === 2);
+      assert(loser.rating < winner.rating);
+      return cb(err);
     });
   });
 });
