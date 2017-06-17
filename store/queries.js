@@ -720,8 +720,8 @@ async function updateTeamRankings(match, options) {
     const kFactor = 32;
     const data1 = await db.select('rating').from('team_rating').where({ team_id: team1 });
     const data2 = await db.select('rating').from('team_rating').where({ team_id: team2 });
-    const currRating1 = Number((data1[0] || {rating: 1000}).rating);
-    const currRating2 = Number((data2[0] || {rating: 1000}).rating);
+    const currRating1 = Number((data1[0] || { rating: 1000 }).rating);
+    const currRating2 = Number((data2[0] || { rating: 1000 }).rating);
     const r1 = 10 ** (currRating1 / 400);
     const r2 = 10 ** (currRating2 / 400);
     const e1 = r1 / (r1 + r2);
