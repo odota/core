@@ -380,6 +380,7 @@ app.get('/', (req, res, cb) => {
     matchRequestDelay + matchRequestDelayIncr);
   const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
     || getUptime() > maxUpTimeSeconds
+    || (!allReady && getUptime() > minUpTimeSeconds)
     || (timeouts > timeoutThreshold && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
