@@ -362,14 +362,6 @@ if (advancedAuth) {
   });
 }
 app.use((req, res, cb) => {
-  if (!allReady) {
-    return cb('not ready');
-  }
-  return cb();
-});
-app.get('/', (req, res, cb) => {
-  const keys = Object.keys(steamObj);
-  const rKey = keys[Math.floor((Math.random() * keys.length))];
   console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
     Object.keys(steamObj).length,
     matchSuccesses,
@@ -385,6 +377,14 @@ app.get('/', (req, res, cb) => {
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
+  if (!allReady) {
+    return cb('not ready');
+  }
+  return cb();
+});
+app.get('/', (req, res, cb) => {
+  const keys = Object.keys(steamObj);
+  const rKey = keys[Math.floor((Math.random() * keys.length))];
   if (req.query.mmstats) {
     return getMMStats(rKey, (err, data) => {
       res.locals.data = data;
