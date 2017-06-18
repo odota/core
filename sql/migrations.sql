@@ -24,3 +24,6 @@ ALTER TABLE player_matches ADD teamfight_participation real;
 ALTER TABLE player_matches ADD towers_killed int;
 ALTER TABLE player_matches ADD roshans_killed int;
 ALTER TABLE player_matches ADD observers_placed int;
+
+ALTER TABLE public_matches ADD lobby_type int;
+ALTER TABLE public_matches ADD game_mode int;

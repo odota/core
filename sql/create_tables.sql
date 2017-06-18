@@ -337,7 +337,9 @@ CREATE TABLE public_matches (
   start_time integer,
   duration integer,
   avg_mmr integer,
-  num_mmr integer
+  num_mmr integer,
+  lobby_type integer,
+  game_mode integer
 );
 CREATE INDEX on public_matches(start_time);
 CREATE INDEX on public_matches(avg_mmr);
