@@ -558,10 +558,10 @@ function generateMatchups(match, max, oneSided) {
     // Remove the first element
     rCombs.shift();
     dCombs.shift();
-    rCombs.forEach(team => {
+    rCombs.forEach((team) => {
       result.push(`${groupToString(team)}:${match.radiant_win ? '1' : '0'}`);
     });
-    dCombs.forEach(team => {
+    dCombs.forEach((team) => {
       result.push(`${groupToString(team)}:${match.radiant_win ? '0' : '1'}`);
     });
   } else {
