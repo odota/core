@@ -523,7 +523,7 @@ function kCombinations(arr, k) {
 /**
  * Generates an array of the hero matchups in a given match
  **/
-function generateMatchups(match, max) {
+function generateMatchups(match, max, oneSided) {
   max = max || 5;
   const radiant = [];
   const dire = [];
@@ -553,22 +553,35 @@ function generateMatchups(match, max) {
     rCombs = rCombs.concat(rc);
     dCombs = dCombs.concat(dc);
   }
-  // iterate over combinations, increment count for unique key
-  // include empty set for opposing team (current picks data)
-  // t0, t1 are ordered lexicographically
-  // format: t0:t1:winner
-  // ::0
-  // ::1
-  // 1::0
-  // 1::1
-  // 1:2:0
-  // when searching, take as input t0, t1 and retrieve data for both values of t0win
-  rCombs.forEach((t0) => {
-    dCombs.forEach((t1) => {
-      const key = matchupToString(t0, t1, match.radiant_win);
-      result.push(key);
+  if (oneSided) {
+    // For one-sided case, just return all of the team combinations and whether they won or lost
+    // Remove the first element
+    rCombs.shift();
+    dCombs.shift();
+    rCombs.forEach(team => {
+      result.push(`${groupToString(team)}:${match.radiant_win ? '1' : '0'}`);
     });
-  });
+    dCombs.forEach(team => {
+      result.push(`${groupToString(team)}:${match.radiant_win ? '0' : '1'}`);
+    });
+  } else {
+    // iterate over combinations, increment count for unique key
+    // include empty set for opposing team (current picks data)
+    // t0, t1 are ordered lexicographically
+    // format: t0:t1:winner
+    // ::0
+    // ::1
+    // 1::0
+    // 1::1
+    // 1:2:0
+    // when searching, take as input t0, t1 and retrieve data for both values of t0win
+    rCombs.forEach((t0) => {
+      dCombs.forEach((t1) => {
+        const key = matchupToString(t0, t1, match.radiant_win);
+        result.push(key);
+      });
+    });
+  }
   return result;
 }
 

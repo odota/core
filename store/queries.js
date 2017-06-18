@@ -539,6 +539,19 @@ function insertPlayerCache(match, cb) {
   }, cb);
 }
 /*
+function updateCompositions(match, cb) {
+  async.each(utility.generateMatchups(match, 5, true), (team, cb) => {
+    const key = team.split(':')[0];
+    const win = Number(team.split(':')[1]);
+    db.raw(`INSERT INTO compositions (composition, games, wins)
+    VALUES (?, 1, ?)
+    ON CONFLICT(composition)
+    DO UPDATE SET games = compositions.games + 1, wins = compositions.wins + ?
+    `, [key, win, win]).asCallback(cb);
+    redis.hincrby('compositions', team, 1, cb);
+  }, cb);
+}
+
 function updateMatchups(match, cb) {
   async.each(utility.generateMatchups(match, 1), (key, cb) => {
     db.raw(`INSERT INTO matchups (matchup, num)
@@ -554,6 +567,7 @@ function updateMatchups(match, cb) {
   }, cb);
 }
 */
+
 function updateRankings(match, cb) {
   getMatchRating(redis, match, (err, avg) => {
     if (err) {
@@ -1055,6 +1069,12 @@ function insertMatch(match, options, cb) {
         return cb();
       },
       /*
+      updateCompositions(cb) {
+        if (options.origin === 'scanner') {
+          return updateCompositions(match, cb);
+        }
+        return cb();
+      }
       updateMatchups(cb) {
         if (options.origin === 'scanner') {
           return updateMatchups(match, cb);
