@@ -3321,7 +3321,7 @@ Please keep request rate to approximately 1/s.
             FROM teams
             LEFT JOIN team_rating using(team_id)
             ORDER BY rating desc NULLS LAST
-            LIMIT 1000`)
+            LIMIT 2000`)
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
