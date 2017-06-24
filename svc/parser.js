@@ -266,8 +266,9 @@ function runParse(match, job, cb) {
   // request.debug = true;
 }
 
-pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
+pQueue.process(Number(config.PARSER_PARALLELISM), (job, cb) => {
   const match = job.data.payload;
+  console.log(match.match_id);
   async.series({
     getDataSource(cb) {
       getGcData(db, redis, match, (err, result) => {

@@ -3075,7 +3075,7 @@ Please keep request rate to approximately 1/s.
             res.status(err ? 400 : 200).json({
               err,
               job: {
-                jobId: parseJob && parseJob.jobId,
+                jobId: parseJob && parseJob.id,
               },
             });
           }
