@@ -3019,7 +3019,7 @@ Please keep request rate to approximately 1/s.
         func: (req, res, cb) => pQueue.getJob(req.params.jobId).then((job) => {
           if (job) {
             return job.getState().then(state => res.json({
-              jobId: job.jobId,
+              jobId: job.id,
               data: job.data,
               state,
               progress: job.progress(),

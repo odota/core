@@ -17,6 +17,7 @@
     "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
     "resetrankings": "redis-cli keys 'hero_rankings*' | xargs redis-cli del",
     "resetrecords": "redis-cli keys 'records*' | xargs redis-cli del",
+    "resetqueue": "redis-cli keys 'bull*' | xargs redis-cli del",
     "dockerbuild": "sudo docker build -t odota/core .",
     "reparse": "cat matches.csv | xargs -n1 node dev/getMatch.js"
   },
@@ -27,7 +28,7 @@
   "dependencies": {
     "JSONStream": "^1.2.1",
     "async": "^2.1.4",
-    "bull": "^2.0.0",
+    "bull": "^3.0.0-rc.3",
     "cassandra-driver": "^3.1.6",
     "compression": "^1.6.2",
     "cookie-session": "2.0.0-beta.2",

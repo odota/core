@@ -267,7 +267,6 @@ function runParse(match, job, cb) {
 }
 
 pQueue.process(config.PARSER_PARALLELISM, (job, cb) => {
-  console.log('parse job: %s', job.jobId);
   const match = job.data.payload;
   async.series({
     getDataSource(cb) {

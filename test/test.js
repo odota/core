@@ -183,7 +183,7 @@ describe('replay parse', function testReplayParse() {
       }, (err, job) => {
         assert(job && !err);
         const poll = setInterval(() => {
-          pQueue.getJob(job.jobId).then((job) => {
+          pQueue.getJob(job.id).then((job) => {
             job.getState().then((state) => {
               if (state === 'completed') {
                 clearInterval(poll);
@@ -200,7 +200,7 @@ describe('replay parse', function testReplayParse() {
                   return done();
                 });
               } else {
-                console.log(job.jobId, state, job.stacktrace);
+                console.log(job.id, state, job.stacktrace);
               }
             });
           }).catch(done);
