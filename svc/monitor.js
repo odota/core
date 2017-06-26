@@ -77,7 +77,7 @@ function parseDelay(cb) {
       return cb(err);
     }
     return cb(err, {
-      metric: counts.parse.wait,
+      metric: counts.parse.waiting,
       threshold: 1000,
     });
   });
