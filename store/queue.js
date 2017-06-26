@@ -19,10 +19,6 @@ const redisOptions = {
   DB: connInfo.path ? connInfo.path.substring(1) : 0,
 };
 
-function generateKey(type, state) {
-  return ['bull', type, state].join(':');
-}
-
 function getQueue(type) {
   return bull(type, {
     redis: redisOptions,
@@ -30,29 +26,12 @@ function getQueue(type) {
 }
 
 function getCounts(redis, cb) {
-  function getQueueCounts(type, cb) {
-    async.series({
-      wait(cb) {
-        redis.llen(generateKey(type, 'wait'), cb);
-      },
-      act(cb) {
-        redis.llen(generateKey(type, 'active'), cb);
-      },
-      del(cb) {
-        redis.zcard(generateKey(type, 'delayed'), cb);
-      },
-      comp(cb) {
-        redis.scard(generateKey(type, 'completed'), cb);
-      },
-      fail(cb) {
-        redis.scard(generateKey(type, 'failed'), cb);
-      },
-    }, cb);
-  }
-  async.map(types, getQueueCounts, (err, result) => {
+  async.map(types,
+  (type, cb) => getQueue(type).getJobCounts().then(result => cb(null, result)).catch(cb),
+  (err, result) => {
     const obj = {};
-    result.forEach((r, i) => {
-      obj[types[i]] = r;
+    result.forEach((res, i) => {
+      obj[types[i]] = res;
     });
     cb(err, obj);
   });
