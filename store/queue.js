@@ -7,7 +7,6 @@ const url = require('url');
 const async = require('async');
 const redis = require('./redis');
 
-const types = ['parse'];
 // parse the url
 const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
 if (connInfo.protocol !== 'redis:') {
@@ -25,9 +24,12 @@ function getQueue(type) {
   });
 }
 
+const types = ['parse'];
+const queues = types.map(type => getQueue(type));
+
 function getCounts(redis, cb) {
-  async.map(types,
-  (type, cb) => getQueue(type).getJobCounts().then(result => cb(null, result)).catch(cb),
+  async.map(queues,
+  (queue, cb) => queue.getJobCounts().then(result => cb(null, result)).catch(cb),
   (err, result) => {
     const obj = {};
     result.forEach((res, i) => {
@@ -38,14 +40,9 @@ function getCounts(redis, cb) {
 }
 
 function cleanup(redis, cb) {
-  async.each(types, (key, cb) => {
-    const queue = getQueue(key);
+  async.each(queues, (queue, cb) => {
     async.each(['active', 'completed', 'failed', 'delayed'], (type, cb) => {
-      queue.clean(24 * 60 * 60 * 1000, type);
-      queue.once('cleaned', (job, type) => {
-        console.log('cleaned %s %s jobs from queue %s', job.length, type, key);
-        cb();
-      });
+      queue.clean(24 * 60 * 60 * 1000, type).then(result => cb(null, result)).catch(cb);
     }, cb);
   }, cb);
 }
