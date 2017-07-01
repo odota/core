@@ -411,6 +411,9 @@ function processExpand(entries, meta) {
       // push a copy to chat
       expand(e);
     },
+    chatwheel(e) {
+      expand(e);
+    },
     interval(e) {
       if (e.time >= 0) {
         expand(e);

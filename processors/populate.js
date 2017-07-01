@@ -9,6 +9,7 @@ function populate(e, container, meta) {
       container.players[e.key].player_slot = e.value;
       break;
     case 'chat':
+    case 'chatwheel':
       container.chat.push(JSON.parse(JSON.stringify(e)));
       break;
     case 'cosmetics':
