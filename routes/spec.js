@@ -2188,8 +2188,8 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/publicMatches',
         func: (req, res, cb) => {
-          const minTime = moment().subtract(3, 'day').format('X');
           const lessThan = Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
+          let minTime = moment().subtract(3, 'day').format('X');
           let order = '';
           if (req.query.mmr_ascending) {
             order = 'ORDER BY avg_mmr ASC';
@@ -2197,10 +2197,12 @@ Please keep request rate to approximately 1/s.
             order = 'ORDER BY avg_mmr DESC';
           } else {
             order = 'ORDER BY match_id DESC';
+            minTime = 0;
           }
           db.raw(`
           WITH match_ids AS (SELECT match_id FROM public_matches
-          WHERE start_time > ?
+          WHERE TRUE
+          AND start_time > ?
           AND match_id < ?
           ${order}
           LIMIT 100)
