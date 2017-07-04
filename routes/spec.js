@@ -2195,6 +2195,8 @@ Please keep request rate to approximately 1/s.
             order = 'ORDER BY avg_mmr ASC';
           } else if (req.query.mmr_descending) {
             order = 'ORDER BY avg_mmr DESC';
+          } else {
+            order = 'ORDER BY match_id DESC';
           }
           db.raw(`
           WITH match_ids AS (SELECT match_id FROM public_matches
