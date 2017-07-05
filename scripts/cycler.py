@@ -8,7 +8,7 @@ import time
 # For completeness this should also create the backend, HTTP load balancer, template, and network
 targetsize = 10
 backendname = "retriever"
-templatename = "retriever-1"
+templatename = "retriever-2"
 
 # Rotating single group
 def run1(zoneList):

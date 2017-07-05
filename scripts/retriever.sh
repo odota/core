@@ -10,4 +10,5 @@ sudo docker run -d --name=retriever --net=host --log-opt max-size=1g -e RETRIEVE
 
 # If already initialized
 sudo docker start retriever
-sudo docker logs -f retriever && gcloud compute instances delete $VMNAME --zone $ZONE --quiet
+sudo docker logs -f retriever
+#gcloud compute instances delete $VMNAME --zone $ZONE --quiet
