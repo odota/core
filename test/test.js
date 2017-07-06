@@ -102,19 +102,19 @@ before(function setup(done) {
         console.log('drop cassandra test keyspace');
         client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
       },
-        function create(cb) {
-          console.log('create cassandra test keyspace');
-          client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
-        },
-        function tables(cb) {
-          cassandra = require('../store/cassandra');
-          console.log('create cassandra test tables');
-          async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter(cql =>
-            cql.length > 1,
-          ), (cql, cb) => {
-            cassandra.execute(cql, cb);
-          }, cb);
-        },
+      function create(cb) {
+        console.log('create cassandra test keyspace');
+        client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
+      },
+      function tables(cb) {
+        cassandra = require('../store/cassandra');
+        console.log('create cassandra test tables');
+        async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter(cql =>
+          cql.length > 1,
+        ), (cql, cb) => {
+          cassandra.execute(cql, cb);
+        }, cb);
+      },
       ], cb);
     },
     function wipeRedis(cb) {

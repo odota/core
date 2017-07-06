@@ -16,8 +16,8 @@ function done(err) {
 }
 
 const stream = db.select().from('match_skill').where('match_id', '>=', startId)
-.orderBy('match_id', 'asc')
-.stream();
+  .orderBy('match_id', 'asc')
+  .stream();
 stream.on('end', done);
 stream.pipe(JSONStream.parse());
 stream.on('data', (m) => {

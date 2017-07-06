@@ -3390,7 +3390,7 @@ Please keep request rate to approximately 1/s.
                 }
                 return cb(null, result);
               },
-            ),
+              ),
             (err, result) => {
               if (err) {
                 return cb(err);
@@ -3448,12 +3448,12 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             const entries = rows.map((r, i) =>
-            ({
-              match_id: r.split(':')[0],
-              start_time: r.split(':')[1],
-              hero_id: r.split(':')[2],
-              score: rows[i + 1],
-            }),
+              ({
+                match_id: r.split(':')[0],
+                start_time: r.split(':')[1],
+                hero_id: r.split(':')[2],
+                score: rows[i + 1],
+              }),
             ).filter((r, i) =>
               i % 2 === 0,
             );
@@ -3496,14 +3496,14 @@ Please keep request rate to approximately 1/s.
         route: () => '/schema',
         func: (req, res, cb) => {
           db.select(['table_name', 'column_name', 'data_type'])
-          .from('information_schema.columns')
-          .where({ table_schema: 'public' })
-          .asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+            .from('information_schema.columns')
+            .where({ table_schema: 'public' })
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
         },
       },
     },

@@ -18,7 +18,7 @@ JOIN team_match tm2 on team_match.match_id = tm2.match_id AND team_match.team_id
 WHERE matches.radiant_team_id IS NOT NULL AND matches.dire_team_id IS NOT NULL
 ORDER BY match_id ASC
 `)
-.stream();
+  .stream();
 stream.pipe(JSONStream.parse());
 stream.on('data', (match) => {
   // console.log(JSON.stringify(match));
@@ -63,7 +63,7 @@ stream.on('end', () => {
   async.each(Object.keys(teams), (teamId, cb) => {
     db.raw(`INSERT INTO team_rating(team_id, rating, wins, losses) VALUES(?, ?, ?, ?) 
   ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses`,
-  [teamId, teams[teamId], wins[teamId], losses[teamId]]).asCallback(cb);
+      [teamId, teams[teamId], wins[teamId], losses[teamId]]).asCallback(cb);
   }, (err) => {
     if (err) {
       console.error(err);

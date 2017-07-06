@@ -56,17 +56,17 @@ function cleanRowCassandra(cassandra, table, row, cb) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   }
   return cassandra.execute('SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
-  [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
-  (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    cassandraColumnInfo[table] = {};
-    result.rows.forEach((r) => {
-      cassandraColumnInfo[table][r.column_name] = 1;
+    [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
+    (err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      cassandraColumnInfo[table] = {};
+      result.rows.forEach((r) => {
+        cassandraColumnInfo[table][r.column_name] = 1;
+      });
+      return doCleanRow(err, cassandraColumnInfo[table], row, cb);
     });
-    return doCleanRow(err, cassandraColumnInfo[table], row, cb);
-  });
 }
 
 /**
@@ -123,11 +123,11 @@ function getProPlayers(db, redis, cb) {
   db.raw(`
     SELECT * from notable_players
     `).asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(err, result.rows);
-    });
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows);
+  });
 }
 
 function getLeaderboard(db, redis, key, n, cb) {
@@ -197,7 +197,7 @@ function getHeroBenchmarks(db, redis, options, cb) {
   async.each(Object.keys(benchmarks), (metric, cb) => {
     const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
     async.each(arr, (percentile, cb) => {
-        // Use data from previous epoch
+      // Use data from previous epoch
       const key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, heroId].join(':');
       redis.zcard(key, (err, card) => {
         if (err) {
@@ -259,7 +259,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
         ORDER BY match_id DESC
         ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
       `,
-        queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','));
+      queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','));
       const matches = [];
       return cassandra.stream(query, [accountId], {
         prepare: true,
@@ -387,18 +387,18 @@ function getProPeers(db, input, player, cb) {
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
           `).asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            const arr = result.rows.map(r =>
+    if (err) {
+      return cb(err);
+    }
+    const arr = result.rows.map(r =>
       Object.assign({}, r, teammates[r.account_id]),
     ).filter(r =>
       r.games,
     ).sort((a, b) =>
       b.games - a.games,
     );
-            return cb(err, arr);
-          });
+    return cb(err, arr);
+  });
 }
 
 function getMatchRating(redis, match, cb) {
@@ -466,24 +466,24 @@ function insertPlayerRating(db, row, cb) {
 
 function insertMatchSkillCassandra(row, cb) {
   cassandra.execute('INSERT INTO matches (match_id, skill) VALUES (?, ?)',
-  [row.match_id, row.skill],
-  { prepare: true },
-  (err) => {
-    if (err) {
-      return cb(err);
-    }
-    if (row.players) {
-      const filteredPlayers = row.players.filter(player => player.account_id
+    [row.match_id, row.skill],
+    { prepare: true },
+    (err) => {
+      if (err) {
+        return cb(err);
+      }
+      if (row.players) {
+        const filteredPlayers = row.players.filter(player => player.account_id
         && player.account_id !== utility.getAnonymousAccountId());
-      return async.eachSeries(filteredPlayers, (player, cb) => {
-        cassandra.execute('INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)',
-          [String(player.account_id), String(row.match_id), String(row.skill)],
-          { prepare: true },
-          cb);
-      }, cb);
-    }
-    return cb();
-  });
+        return async.eachSeries(filteredPlayers, (player, cb) => {
+          cassandra.execute('INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)',
+            [String(player.account_id), String(row.match_id), String(row.skill)],
+            { prepare: true },
+            cb);
+        }, cb);
+      }
+      return cb();
+    });
 }
 
 function writeCache(accountId, cache, cb) {
@@ -747,7 +747,7 @@ async function updateTeamRankings(match, options) {
     const query = `INSERT INTO team_rating(team_id, rating, wins, losses) VALUES(?, ?, ?, ?) 
     ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?`;
     await db.raw(query,
-     [team1, currRating1 + ratingDiff1, win1, Number(!win1), ratingDiff1, win1, Number(!win1)]);
+      [team1, currRating1 + ratingDiff1, win1, Number(!win1), ratingDiff1, win1, Number(!win1)]);
     await db.raw(query,
       [team2, currRating2 + ratingDiff2, win2, Number(!win2), ratingDiff2, win2, Number(!win2)]);
   }
@@ -830,17 +830,17 @@ function insertMatch(match, options, cb) {
   function decideLogParse(cb) {
     if (match.leagueid) {
       db.select('leagueid')
-      .from('leagues')
-      .where('tier', 'premium')
-      .orWhere('tier', 'professional')
-      .asCallback((err, leagueids) => {
-        if (err) {
-          return cb(err);
-        }
-        options.doLogParse = options.doLogParse ||
+        .from('leagues')
+        .where('tier', 'premium')
+        .orWhere('tier', 'professional')
+        .asCallback((err, leagueids) => {
+          if (err) {
+            return cb(err);
+          }
+          options.doLogParse = options.doLogParse ||
           utility.isProMatch(match, leagueids.map(l => l.leagueid));
-        return cb(err);
-      });
+          return cb(err);
+        });
     } else {
       cb();
     }

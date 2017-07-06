@@ -33,11 +33,11 @@ function search(options, cb) {
         LIMIT 500) search 
         ORDER BY similarity DESC, last_match_time DESC NULLS LAST;
         `, [query, query, query, options.similarity || 0.51]).asCallback((err, result) => {
-          if (err) {
-            return callback(err);
-          }
-          return callback(err, result.rows);
-        });
+        if (err) {
+          return callback(err);
+        }
+        return callback(err, result.rows);
+      });
     },
   }, (err, result) => {
     if (err) {

@@ -434,24 +434,24 @@ function processExpand(entries, meta) {
           'roshans_killed',
           'observers_placed',
         ]
-        .forEach((field) => {
-          let key;
-          let value;
-          if (field === 'life_state') {
-            key = e[field];
-            value = 1;
-          } else {
-            key = field;
-            value = e[field];
-          }
-          expand({
-            time: e.time,
-            slot: e.slot,
-            type: field,
-            key,
-            value,
+          .forEach((field) => {
+            let key;
+            let value;
+            if (field === 'life_state') {
+              key = e[field];
+              value = 1;
+            } else {
+              key = field;
+              value = e[field];
+            }
+            expand({
+              time: e.time,
+              slot: e.slot,
+              type: field,
+              key,
+              value,
+            });
           });
-        });
         // if on minute, add to interval arrays
         if (e.time % 60 === 0) {
           expand({

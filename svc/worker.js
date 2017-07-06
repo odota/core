@@ -84,15 +84,15 @@ function doDistributions(cb) {
           ({
             count: prev.count + current.count,
           }), {
-            count: 0,
-          });
+          count: 0,
+        });
         results.rows = results.rows.map((r, i) => {
           r.cumulative_sum = results.rows.slice(0, i + 1).reduce((prev, current) =>
             ({
               count: prev.count + current.count,
             }), {
-              count: 0,
-            }).count;
+            count: 0,
+          }).count;
           return r;
         });
         results.sum = sum;

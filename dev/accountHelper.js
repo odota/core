@@ -12,9 +12,9 @@ function permute(user, n) {
     return;
   }
   const diff = [user.substr(0, n), user.substr(n)].join('.');
-    // don't add a period
+  // don't add a period
   permute(user, n + 1);
-    // add a period
+  // add a period
   permute(diff, n + 2);
 }
 

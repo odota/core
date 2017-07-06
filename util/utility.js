@@ -64,7 +64,7 @@ function generateJob(type, payload) {
     api_summaries() {
       return {
         url: `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players.map(p =>
-           convert32to64(p.account_id),
+          convert32to64(p.account_id),
         ).join()}`,
         title: [type, payload.summaries_id].join(),
         type: 'api',
@@ -389,8 +389,8 @@ function getStartOfBlockMinutes(size, offset) {
  **/
 function average(data) {
   return Math.floor((data.reduce((a, b) =>
-     a + b
-  , 0) / data.length));
+    a + b
+    , 0) / data.length));
 }
 
 /**
@@ -413,7 +413,7 @@ function stdDev(data) {
  **/
 function median(data) {
   data.sort((a, b) =>
-     a - b,
+    a - b,
   );
   const half = Math.floor(data.length / 2);
   if (data.length % 2) {
@@ -465,7 +465,7 @@ function expectedWin(rates) {
  **/
 function groupToString(g) {
   return g.sort((a, b) =>
-     a - b,
+    a - b,
   ).join(',');
 }
 

@@ -15,44 +15,44 @@ const matchId = Number(args[0]) || 0;
 const targetVersion = Number(args[1]) || 0;
 
 db.select('match_id')
-.from('matches')
-.where('match_id', '>', matchId)
-.where('version', '!=', targetVersion)
-.orWhereNull('version')
-.orderBy('match_id')
-.asCallback((err, result) => {
-  if (err) {
-    throw err;
-  }
-  async.eachSeries(result, (row, cb) => {
-    const job = generateJob('api_details', {
-      match_id: row.match_id,
+  .from('matches')
+  .where('match_id', '>', matchId)
+  .where('version', '!=', targetVersion)
+  .orWhereNull('version')
+  .orderBy('match_id')
+  .asCallback((err, result) => {
+    if (err) {
+      throw err;
+    }
+    async.eachSeries(result, (row, cb) => {
+      const job = generateJob('api_details', {
+        match_id: row.match_id,
+      });
+      const url = job.url;
+      getData({
+        url,
+        delay,
+      }, (err, body) => {
+        if (err) {
+          throw err;
+        }
+        if (body.result) {
+          const match = body.result;
+          insertMatch(match, {
+            skipCounts: true,
+            forceParse: true,
+            attempts: 1,
+          }, (err) => {
+            if (err) {
+              throw err;
+            }
+            cb(err);
+          });
+        } else {
+          throw body;
+        }
+      });
+    }, (err) => {
+      process.exit(Number(err));
     });
-    const url = job.url;
-    getData({
-      url,
-      delay,
-    }, (err, body) => {
-      if (err) {
-        throw err;
-      }
-      if (body.result) {
-        const match = body.result;
-        insertMatch(match, {
-          skipCounts: true,
-          forceParse: true,
-          attempts: 1,
-        }, (err) => {
-          if (err) {
-            throw err;
-          }
-          cb(err);
-        });
-      } else {
-        throw body;
-      }
-    });
-  }, (err) => {
-    process.exit(Number(err));
   });
-});

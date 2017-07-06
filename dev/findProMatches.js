@@ -58,25 +58,25 @@ function getPage(url, leagueid, cb) {
 
 // From DB
 db
-.select('leagueid')
-.from('leagues')
-.where('tier', 'professional')
-.orWhere('tier', 'premium')
-.asCallback((err, data) => {
-  if (err) {
-    throw err;
-  }
-  const leagueIds = data.map(l => l.leagueid);
-  async.eachSeries(leagueIds, (leagueid, cb) => {
-    const url = generateJob('api_history',
-      {
-        leagueid,
-      }).url;
-    return getPage(url, leagueid, cb);
-  }, (err) => {
-    process.exit(Number(err));
+  .select('leagueid')
+  .from('leagues')
+  .where('tier', 'professional')
+  .orWhere('tier', 'premium')
+  .asCallback((err, data) => {
+    if (err) {
+      throw err;
+    }
+    const leagueIds = data.map(l => l.leagueid);
+    async.eachSeries(leagueIds, (leagueid, cb) => {
+      const url = generateJob('api_history',
+        {
+          leagueid,
+        }).url;
+      return getPage(url, leagueid, cb);
+    }, (err) => {
+      process.exit(Number(err));
+    });
   });
-});
 // From API
 /*
 getData(leagueUrl, (err, data) => {

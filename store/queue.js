@@ -29,14 +29,14 @@ const queues = types.map(type => getQueue(type));
 
 function getCounts(redis, cb) {
   async.map(queues,
-  (queue, cb) => queue.getJobCounts().then(result => cb(null, result)).catch(cb),
-  (err, result) => {
-    const obj = {};
-    result.forEach((res, i) => {
-      obj[types[i]] = res;
+    (queue, cb) => queue.getJobCounts().then(result => cb(null, result)).catch(cb),
+    (err, result) => {
+      const obj = {};
+      result.forEach((res, i) => {
+        obj[types[i]] = res;
+      });
+      cb(err, obj);
     });
-    cb(err, obj);
-  });
 }
 
 function cleanup(redis, cb) {
