@@ -1,6 +1,6 @@
-FROM node:8.1.3-alpine
+FROM node:8.1.3
 
-RUN apk update && apk add bash && apk add curl && apk add git
+# RUN apk update && apk add bash && apk add curl && apk add git
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
