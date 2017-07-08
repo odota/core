@@ -18,4 +18,3 @@ deploy:
   on:
     branch: master
   script: scripts/postbuild.sh
-group: deprecated-2017Q2
