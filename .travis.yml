@@ -9,7 +9,6 @@ notifications:
   - howardc93@gmail.com
   - aqc2109@columbia.edu
 before_install:
-  - npm i -g npm@5.1.0
 install: true
 script:
 - sudo bash scripts/build.sh
