@@ -29,11 +29,10 @@
     "JSONStream": "^1.2.1",
     "async": "^2.5.0",
     "bull": "^3.0.0-rc.4",
-    "bytebuffer": "^5.0.1",
     "cassandra-driver": "^3.2.2",
-    "compression": "^1.6.2",
+    "compression": "^1.7.0",
     "cookie-session": "2.0.0-beta.2",
-    "cors": "^2.8.1",
+    "cors": "^2.8.4",
     "dota2": "^5.0.1",
     "dotaconstants": "^5.8.2",
     "dotenv": "^4.0.0",
@@ -45,7 +44,7 @@
     "nock": "^9.0.9",
     "passport": "^0.3.2",
     "passport-steam": "^1.0.7",
-    "pg": "^6.4.0",
+    "pg": "^6.4.1",
     "pg-query-stream": "^1.0.0",
     "pm2": "^2.5.0",
     "redis": "^2.6.3",
@@ -58,7 +57,7 @@
     "ws": "^3.0.0"
   },
   "devDependencies": {
-    "eslint": "^4.1.0",
+    "eslint": "^4.2.0",
     "eslint-config-airbnb": "^15.0.1",
     "eslint-plugin-import": "^2.6.0",
     "mocha": "^3.2.0"
