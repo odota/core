@@ -82,12 +82,15 @@ function start(err) {
   if (err) {
     throw err;
   }
-  redis.zrange('tracked', 0, -1, (err, ids) => {
-    if (err) {
-      throw err;
-    }
-    async.eachLimit(ids, parallelism, processPlayer, start);
-  });
+  console.log('starting backupscanner loop');
+  setTimeout(() => {
+    redis.zrange('tracked', 0, -1, (err, ids) => {
+      if (err) {
+        throw err;
+      }
+      async.eachLimit(ids, parallelism, processPlayer, start);
+    });
+  }, 1000);
 }
 
 start();

@@ -75,7 +75,7 @@ app.use((req, res, cb) => {
     if (config.NODE_ENV === 'development') {
       console.log(resp);
     }
-    if (resp[0] > 90 && config.NODE_ENV !== 'test') {
+    if (resp[0] > 180 && config.NODE_ENV !== 'test') {
       return res.status(429).json({
         error: 'rate limit exceeded',
       });

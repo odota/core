@@ -61,7 +61,7 @@ const spec = {
     title: 'OpenDota API',
     description: `# Introduction
 This API provides Dota 2 related data.
-Please keep request rate to approximately 1/s.
+Please keep request rate to approximately 3/s.
 `,
     version: packageJson.version,
   },
