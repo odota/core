@@ -15,14 +15,12 @@ function populate(e, container, meta) {
     case 'cosmetics':
       container.cosmetics = JSON.parse(e.key);
       break;
-    case 'CHAT_MESSAGE_TOWER_KILL':
-    case 'CHAT_MESSAGE_TOWER_DENY':
-    case 'CHAT_MESSAGE_BARRACKS_KILL':
     case 'CHAT_MESSAGE_FIRSTBLOOD':
     case 'CHAT_MESSAGE_AEGIS':
     case 'CHAT_MESSAGE_AEGIS_STOLEN':
     case 'CHAT_MESSAGE_DENIED_AEGIS':
     case 'CHAT_MESSAGE_ROSHAN_KILL':
+    case 'building_kill':
       container.objectives.push(JSON.parse(JSON.stringify(e)));
       break;
     default:
