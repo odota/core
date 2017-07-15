@@ -10,7 +10,7 @@
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "ncu": "npm-check-updates -a",
     "mocha": "NODE_ENV=test mocha",
-    "build": "npm install && npm run lintnofix",
+    "build": "npm install --no-package-lock && npm run lintnofix",
     "lint": "eslint . --ext .js,.jsx --fix",
     "lintnofix": "eslint . --ext .js,.jsx",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
