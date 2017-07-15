@@ -16,7 +16,7 @@ services:
     image: odota/cassandra
     container_name: odota-cassandra
   redis:
-    image: redis:3
+    image: redis:4
     container_name: odota-redis
   parser:
     image: odota/parser
