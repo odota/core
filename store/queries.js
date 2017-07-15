@@ -747,9 +747,15 @@ async function updateTeamRankings(match, options) {
     const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?) 
     ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, ?`;
     await db.raw(query,
-      [team1, currRating1 + ratingDiff1, win1, Number(!win1), match.start_time, ratingDiff1, win1, Number(!win1), match.start_time]);
+      [
+        team1, currRating1 + ratingDiff1, win1, Number(!win1), match.start_time,
+        ratingDiff1, win1, Number(!win1), match.start_time,
+      ]);
     await db.raw(query,
-      [team2, currRating2 + ratingDiff2, win2, Number(!win2), match.start_time, ratingDiff2, win2, Number(!win2), match.start_time]);
+      [
+        team2, currRating2 + ratingDiff2, win2, Number(!win2), match.start_time,
+        ratingDiff2, win2, Number(!win2), match.start_time,
+      ]);
   }
 }
 
