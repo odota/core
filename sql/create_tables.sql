@@ -357,7 +357,8 @@ CREATE TABLE team_rating (
   team_id bigint,
   rating real,
   wins int,
-  losses int
+  losses int,
+  last_match_time bigint
 );
 CREATE INDEX ON team_rating(rating);
 

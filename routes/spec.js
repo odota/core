@@ -3306,6 +3306,10 @@ Please keep request rate to approximately 3/s.
                     description: 'The number of losses by this team',
                     type: 'number',
                   },
+                  last_match_time: {
+                    description: 'The Unix timestamp of the last match played by this team',
+                    type: 'number',
+                  },
                   name: {
                     description: 'name',
                     type: 'string',

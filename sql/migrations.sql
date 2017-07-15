@@ -27,3 +27,5 @@ ALTER TABLE player_matches ADD observers_placed int;
 
 ALTER TABLE public_matches ADD lobby_type int;
 ALTER TABLE public_matches ADD game_mode int;
+
+ALTER TABLE team_rating ADD last_match_time bigint;
