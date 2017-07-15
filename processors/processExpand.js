@@ -125,7 +125,6 @@ function processExpand(entries, meta) {
       if (e.targetname.indexOf('_tower') > -1 ||
           e.targetname.indexOf('_rax_') > -1 ||
           e.targetname.indexOf('_healers') > -1 ||
-          e.targetname.indexOf('_fillers') > -1 ||
           e.targetname.indexOf('_fort') > -1) {
         expand({
           time: e.time,
