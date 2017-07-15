@@ -211,7 +211,7 @@ describe('replay parse', function testReplayParse() {
 });
 describe('teamRanking', () => {
   it('should have team rankings', (cb) => {
-    db.select(['team_id', 'rating', 'wins', 'losses']).from('team_rating').asCallback((err, rows) => {
+    db.select(['team_id', 'rating', 'wins', 'losses', 'start_time']).from('team_rating').asCallback((err, rows) => {
       // We inserted the pro match twice so expect to update the ratings twice
       const loser = rows.find(row => row.team_id === 4251435);
       const winner = rows.find(row => row.team_id === 1375614);
