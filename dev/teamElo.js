@@ -8,10 +8,11 @@ const db = require('../store/db');
 const teams = {};
 const wins = {};
 const losses = {};
+const startTimes = {};
 const kFactor = 32;
 // Read a stream from the database
 const stream = db.raw(`
-SELECT team_match.team_id team_id1, tm2.team_id team_id2, matches.match_id, team_match.radiant = radiant_win team1_win
+SELECT team_match.team_id team_id1, tm2.team_id team_id2, matches.match_id, team_match.radiant = radiant_win team1_win, start_time
 FROM team_match
 JOIN matches using(match_id)
 JOIN team_match tm2 on team_match.match_id = tm2.match_id AND team_match.team_id < tm2.team_id
@@ -40,6 +41,8 @@ stream.on('data', (match) => {
   if (!losses[match.team_id2]) {
     losses[match.team_id2] = 0;
   }
+  startTimes[match.team_id1] = match.start_time;
+  startTimes[match.team_id2] = match.start_time;
   const currRating1 = teams[match.team_id1];
   const currRating2 = teams[match.team_id2];
   const r1 = 10 ** (currRating1 / 400);
@@ -58,12 +61,13 @@ stream.on('data', (match) => {
   losses[match.team_id2] += Number(!win2);
 });
 stream.on('end', () => {
-  console.log(teams, wins, losses);
+  console.log(teams, wins, losses, startTimes);
   // Write the results to table
-  async.each(Object.keys(teams), (teamId, cb) => {
-    db.raw(`INSERT INTO team_rating(team_id, rating, wins, losses) VALUES(?, ?, ?, ?) 
-  ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses`,
-      [teamId, teams[teamId], wins[teamId], losses[teamId]]).asCallback(cb);
+  async.eachSeries(Object.keys(teams), (teamId, cb) => {
+    console.log([teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]]);
+    db.raw(`INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
+  ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses, last_match_time=EXCLUDED.last_match_time`,
+      [teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]]).asCallback(cb);
   }, (err) => {
     if (err) {
       console.error(err);
