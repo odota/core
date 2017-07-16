@@ -51,7 +51,7 @@
     "request": "^2.79.0",
     "request-progress": "^3.0.0",
     "simple-vdf": "^1.1.0",
-    "steam": "^1.4.0",
+    "steam": "https://github.com/odota/node-steam",
     "supertest": "^3.0.0",
     "uuid": "^3.1.0",
     "ws": "^3.0.0"
