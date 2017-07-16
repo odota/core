@@ -9,4 +9,4 @@ sudo docker run -d --privileged --name cassandra --net=host -e "CASSANDRA_LISTEN
 sudo docker run -d --privileged --name postgres --net=host postgres:9.5
 sudo docker run -d --privileged --name redis --net=host redis:4
 sudo docker run -d --name parser --net=host odota/parser
-sudo docker build -t "odota/core" . && sudo docker run --net=host -i odota/core sh -c 'ls node_modules/steam/node_modules/steam-resources/node_modules/bytebuffer/dist/ && npm run test'
+sudo docker build -t "odota/core" . && sudo docker run --net=host -i odota/core sh -c 'npm run test'
