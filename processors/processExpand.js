@@ -121,6 +121,21 @@ function processExpand(entries, meta) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
 
+      // If it is a building kill
+      if (e.targetname.indexOf('_tower') > -1 ||
+          e.targetname.indexOf('_rax_') > -1 ||
+          e.targetname.indexOf('_healers') > -1 ||
+          e.targetname.indexOf('_fort') > -1) {
+        expand({
+          time: e.time,
+          type: 'building_kill',
+          unit,
+          key,
+        });
+        return;
+      }
+
+      // If it is not a suicide
       if (e.attackername !== key) {
         expand(Object.assign({}, e, {
           unit,
@@ -129,6 +144,7 @@ function processExpand(entries, meta) {
         }));
       }
 
+      // If a hero was killed
       if (e.targethero && !e.targetillusion) {
         expand({
           time: e.time,
@@ -329,37 +345,20 @@ function processExpand(entries, meta) {
       // e.slot = e.player1;
       // player1 paused
     },
-    CHAT_MESSAGE_TOWER_KILL(e) {
-      expand({
-        time: e.time,
-        type: e.type,
-        team: e.value,
-        slot: e.player1,
-      });
+    CHAT_MESSAGE_TOWER_KILL() {
     },
-    CHAT_MESSAGE_TOWER_DENY(e) {
+    CHAT_MESSAGE_TOWER_DENY() {
       // tower (player/team)
       // player1 = slot of player who killed tower (-1 if nonplayer)
       // value (2/3 radiant/dire killed tower, recently 0/1?)
-      expand({
-        time: e.time,
-        type: e.type,
-        team: e.value,
-        slot: e.player1,
-      });
     },
-    CHAT_MESSAGE_BARRACKS_KILL(e) {
+    CHAT_MESSAGE_BARRACKS_KILL() {
       // barracks (player)
       // value id of barracks based on power of 2?
       // Barracks can always be deduced
       // They go in incremental powers of 2
       // starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
       // so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
-      expand({
-        time: e.time,
-        type: e.type,
-        key: String(e.value),
-      });
     },
     CHAT_MESSAGE_FIRSTBLOOD(e) {
       expand({
