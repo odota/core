@@ -3383,7 +3383,7 @@ Please keep request rate to approximately 3/s.
            .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 20))
            .asCallback((err, result) => {
           */
-          async.map([].concat(req.query.match_id || []).slice(0, 50),
+          async.map([].concat(req.query.match_id || []).slice(0, 25),
             (matchId, cb) =>
               getGcData(db, redis, {
                 match_id: matchId,
