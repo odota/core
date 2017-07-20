@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 15
+targetsize = 120
 backendname = "retriever"
 templatename = "retriever-2"
 
@@ -39,7 +39,7 @@ def run1(zoneList):
       #     time.sleep(900 / targetsize)
       #     # Use ephemeral IP
       #     subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
-    time.sleep(600)
+    time.sleep(300)
 
 # Rolling group
 def run2(zoneList):
@@ -62,7 +62,7 @@ def run3(zoneList):
       instancegroupname = "retriever-group-" + zone
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
       subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 1, targetsize), shell=True)
-    time.sleep(3600)
+    time.sleep(2400)
     
 def createGroups(zoneList):
   for i, zone in enumerate(zoneList):
@@ -100,6 +100,6 @@ def start():
       raise
     except Exception as e:
       print(e)
-      time.sleep(600)
+      time.sleep(300)
 
 start();
