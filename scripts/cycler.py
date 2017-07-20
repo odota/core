@@ -6,9 +6,9 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 120
+targetsize = 100
 backendname = "retriever"
-templatename = "retriever-2"
+templatename = "retriever-3"
 
 # Rotating single group
 def run1(zoneList):

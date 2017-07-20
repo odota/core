@@ -62,8 +62,8 @@ gcloud compute instance-groups managed set-autoscaling "parser-group-1" --cool-d
 #retriever
 # --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud
 # --image-family cos-stable --image-project cos-cloud
-gcloud compute instance-templates delete --quiet retriever-2
-gcloud compute instance-templates create retriever-2 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-standard --tags "http-server" --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/retriever.sh
+gcloud compute instance-templates delete --quiet retriever-3
+gcloud compute instance-templates create retriever-3 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-standard --tags "http-server" --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/retriever.sh
 
 #retriever-loadbalancer
 gcloud compute forwarding-rules delete --quiet retriever-lb-forwarding-rule
@@ -78,5 +78,5 @@ gcloud compute instance-groups managed create "cycler-group-1" --base-instance-n
 #socket
 gcloud compute instance-groups managed delete --quiet socket-group-1 --zone=us-central1-b
 gcloud compute instance-templates delete --quiet socket-1
-gcloud compute instance-templates create socket-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --metadata-from-file startup-script=./scripts/socket.sh
+gcloud compute instance-templates create socket-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "https-server" --metadata-from-file startup-script=./scripts/socket.sh
 gcloud compute instance-groups managed create "socket-group-1" --base-instance-name "socket-group-1" --template "socket-1" --size "1" --zone=us-central1-b
