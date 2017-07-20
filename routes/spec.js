@@ -1013,6 +1013,10 @@ Please keep request rate to approximately 3/s.
                     description: 'is_roaming',
                     type: 'boolean',
                   },
+                  cluster: {
+                    description: 'cluster',
+                    type: 'number',
+                  },
                 },
               },
             },
@@ -1022,7 +1026,7 @@ Please keep request rate to approximately 3/s.
         func: (req, res, cb) => {
           queries.getPlayerMatches(req.params.account_id, {
             project: req.queryObj.project.concat(
-              ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'xp_per_min', 'gold_per_min', 'hero_damage', 'tower_damage', 'hero_healing', 'last_hits', 'lane', 'lane_role', 'is_roaming'],
+              ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'xp_per_min', 'gold_per_min', 'hero_damage', 'tower_damage', 'hero_healing', 'last_hits', 'lane', 'lane_role', 'is_roaming', 'cluster'],
             ),
             dbLimit: 20,
           }, (err, cache) => {
