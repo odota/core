@@ -132,7 +132,6 @@ function processExpand(entries, meta) {
           unit,
           key,
         });
-        return;
       }
 
       // If it is not a suicide
