@@ -560,7 +560,13 @@ Please keep request rate to approximately 3/s.
                       },
                       runes: {
                         description: 'runes',
-                        type: 'object',
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          additionalProperties: {
+                            type: 'string'
+                          }
+                        }
                       },
                       runes_log: {
                         description: 'runes_log',
