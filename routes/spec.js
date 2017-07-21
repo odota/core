@@ -99,7 +99,32 @@ Please keep request rate to approximately 3/s.
                 },
                 chat: {
                   description: 'chat',
-                  type: 'object',
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      time: {
+                        description: 'time',
+                        type: 'integer'
+                      },
+                      unit: {
+                        description: 'player name',
+                        type: 'string'
+                      },
+                      key: {
+                        description: 'words',
+                        type: 'string'
+                      }
+                      slot: {
+                        description: 'slot',
+                        type: 'integer'
+                      }
+                      player_slot: {
+                        description: 'player_slot',
+                        type: 'integer'
+                      }
+                    }
+                  }
                 },
                 cluster: {
                   description: 'cluster',
@@ -243,6 +268,9 @@ Please keep request rate to approximately 3/s.
                       ability_upgrades_arr: {
                         description: 'ability_upgrades_arr',
                         type: 'array',
+                        items: {
+                          type: 'integer'
+                        }
                       },
                       ability_uses: {
                         description: 'ability_uses',
@@ -279,6 +307,23 @@ Please keep request rate to approximately 3/s.
                       buyback_log: {
                         description: 'buyback_log',
                         type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            time: {
+                              description: 'time',
+                              type: 'integer'
+                            },
+                            slot: {
+                              description: 'slot',
+                              type: 'integer'
+                            }
+                            player_slot: {
+                              description: 'player_slot',
+                              type: 'integer'
+                            }
+                          }
+                        }
                       },
                       camps_stacked: {
                         description: 'camps_stacked',
@@ -315,6 +360,9 @@ Please keep request rate to approximately 3/s.
                       dn_t: {
                         description: 'dn_t',
                         type: 'array',
+                        items: {
+                          type: 'integer'
+                        }
                       },
                       gold: {
                         description: 'gold',
@@ -335,6 +383,9 @@ Please keep request rate to approximately 3/s.
                       gold_t: {
                         description: 'gold_t',
                         type: 'array',
+                        items: {
+                          type: 'integer'
+                        }
                       },
                       hero_damage: {
                         description: 'hero_damage',
@@ -399,6 +450,19 @@ Please keep request rate to approximately 3/s.
                       kills_log: {
                         description: 'kills_log',
                         type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            time: {
+                              description: 'time',
+                              type: 'integer'
+                            },
+                            key: {
+                              description: 'key',
+                              type: 'string'
+                            }
+                          }
+                        }
                       },
                       lane_pos: {
                         description: 'lane_pos',
@@ -419,6 +483,9 @@ Please keep request rate to approximately 3/s.
                       lh_t: {
                         description: 'lh_t',
                         type: 'array',
+                        items: {
+                          type: 'integer'
+                        }
                       },
                       life_state: {
                         description: 'life_state',
@@ -439,10 +506,16 @@ Please keep request rate to approximately 3/s.
                       obs_left_log: {
                         description: 'obs_left_log',
                         type: 'array',
+                        items: {
+                          type: 'object'
+                        }
                       },
                       obs_log: {
                         description: 'obs_log',
                         type: 'array',
+                        items: {
+                          type: 'object'
+                        }
                       },
                       obs_placed: {
                         description: 'obs_placed',
@@ -454,7 +527,7 @@ Please keep request rate to approximately 3/s.
                       },
                       permanent_buffs: {
                         description: 'permanent_buffs',
-                        type: 'array',
+                        type: 'object',
                       },
                       pings: {
                         description: 'pings',
@@ -467,6 +540,19 @@ Please keep request rate to approximately 3/s.
                       purchase_log: {
                         description: 'purchase_log',
                         type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            time: {
+                              description: 'time',
+                              type: 'integer'
+                            },
+                            key: {
+                              description: 'key',
+                              type: 'string'
+                            }
+                          }
+                        }
                       },
                       rune_pickups: {
                         description: 'rune_pickups',
@@ -479,6 +565,19 @@ Please keep request rate to approximately 3/s.
                       runes_log: {
                         description: 'runes_log',
                         type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            time: {
+                              description: 'time',
+                              type: 'integer'
+                            },
+                            key: {
+                              description: 'key',
+                              type: 'integer'
+                            }
+                          }
+                        }
                       },
                       sen: {
                         description: 'sen',
@@ -487,10 +586,16 @@ Please keep request rate to approximately 3/s.
                       sen_left_log: {
                         description: 'sen_left_log',
                         type: 'array',
+                        items: {
+                          type: 'object'
+                        }
                       },
                       sen_log: {
                         description: 'sen_log',
                         type: 'array',
+                        items: {
+                          type: 'object'
+                        }
                       },
                       sen_placed: {
                         description: 'sen_placed',
@@ -503,6 +608,9 @@ Please keep request rate to approximately 3/s.
                       times: {
                         description: 'times',
                         type: 'array',
+                        items: {
+                          type: 'integer'
+                        }
                       },
                       tower_damage: {
                         description: 'tower_damage',
@@ -519,6 +627,9 @@ Please keep request rate to approximately 3/s.
                       xp_t: {
                         description: 'xp_t',
                         type: 'array',
+                        items: {
+                          type: 'integer'
+                        }
                       },
                       personaname: {
                         description: 'personaname',
@@ -703,6 +814,9 @@ Please keep request rate to approximately 3/s.
                       cosmetics: {
                         description: 'cosmetics',
                         type: 'array',
+                        items: {
+                          type: 'integer'
+                        }
                       },
                       benchmarks: {
                         description: 'benchmarks',
@@ -3385,16 +3499,15 @@ Please keep request rate to approximately 3/s.
           */
           async.map([].concat(req.query.match_id || []).slice(0, 10),
             (matchId, cb) =>
-              getGcData(db, redis, {
-                match_id: matchId,
-                noRetry: true,
-              }, (err, result) => {
-                if (err) {
-                  console.error(err);
-                }
-                return cb(null, result);
-              },
-              ),
+            getGcData(db, redis, {
+              match_id: matchId,
+              noRetry: true,
+            }, (err, result) => {
+              if (err) {
+                console.error(err);
+              }
+              return cb(null, result);
+            }, ),
             (err, result) => {
               if (err) {
                 return cb(err);
@@ -3501,7 +3614,9 @@ Please keep request rate to approximately 3/s.
         func: (req, res, cb) => {
           db.select(['table_name', 'column_name', 'data_type'])
             .from('information_schema.columns')
-            .where({ table_schema: 'public' })
+            .where({
+              table_schema: 'public'
+            })
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
