@@ -1015,7 +1015,7 @@ Please keep request rate to approximately 3/s.
                   },
                   cluster: {
                     description: 'cluster',
-                    type: 'number',
+                    type: 'integer',
                   },
                 },
               },
