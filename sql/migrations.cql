@@ -19,3 +19,6 @@ ALTER TABLE player_matches ADD teamfight_participation decimal;
 ALTER TABLE player_matches ADD towers_killed int;
 ALTER TABLE player_matches ADD roshans_killed int;
 ALTER TABLE player_matches ADD firstblood_claimed int;
+
+ALTER TABLE player_matches ADD party_size int;
+ALTER TABLE player_caches ADD party_size text;
