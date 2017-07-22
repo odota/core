@@ -87,15 +87,15 @@ Please keep request rate to approximately 3/s.
               properties: {
                 match_id: {
                   description: 'match_id',
-                  type: 'number',
+                  type: 'integer',
                 },
                 barracks_status_dire: {
                   description: 'barracks_status_dire',
-                  type: 'number',
+                  type: 'integer',
                 },
                 barracks_status_radiant: {
                   description: 'barracks_status_radiant',
-                  type: 'number',
+                  type: 'integer',
                 },
                 chat: {
                   description: 'chat',
@@ -128,7 +128,7 @@ Please keep request rate to approximately 3/s.
                 },
                 cluster: {
                   description: 'cluster',
-                  type: 'number',
+                  type: 'integer',
                 },
                 cosmetics: {
                   description: 'cosmetics',
@@ -136,43 +136,43 @@ Please keep request rate to approximately 3/s.
                 },
                 dire_score: {
                   description: 'dire_score',
-                  type: 'number',
+                  type: 'integer',
                 },
                 duration: {
                   description: 'duration',
-                  type: 'number',
+                  type: 'integer',
                 },
                 engine: {
                   description: 'engine',
-                  type: 'number',
+                  type: 'integer',
                 },
                 first_blood_time: {
                   description: 'first_blood_time',
-                  type: 'number',
+                  type: 'integer',
                 },
                 game_mode: {
                   description: 'game_mode',
-                  type: 'number',
+                  type: 'integer',
                 },
                 human_players: {
                   description: 'human_players',
-                  type: 'number',
+                  type: 'integer',
                 },
                 leagueid: {
                   description: 'leagueid',
-                  type: 'number',
+                  type: 'integer',
                 },
                 lobby_type: {
                   description: 'lobby_type',
-                  type: 'number',
+                  type: 'integer',
                 },
                 match_seq_num: {
                   description: 'match_seq_num',
-                  type: 'number',
+                  type: 'integer',
                 },
                 negative_votes: {
                   description: 'negative_votes',
-                  type: 'number',
+                  type: 'integer',
                 },
                 objectives: {
                   description: 'objectives',
@@ -184,7 +184,7 @@ Please keep request rate to approximately 3/s.
                 },
                 positive_votes: {
                   description: 'positive_votes',
-                  type: 'number',
+                  type: 'integer',
                 },
                 radiant_gold_adv: {
                   description: 'radiant_gold_adv',
@@ -192,7 +192,7 @@ Please keep request rate to approximately 3/s.
                 },
                 radiant_score: {
                   description: 'radiant_score',
-                  type: 'number',
+                  type: 'integer',
                 },
                 radiant_win: {
                   description: 'radiant_win',
@@ -204,7 +204,7 @@ Please keep request rate to approximately 3/s.
                 },
                 start_time: {
                   description: 'start_time',
-                  type: 'number',
+                  type: 'integer',
                 },
                 teamfights: {
                   description: 'teamfights',
@@ -212,11 +212,11 @@ Please keep request rate to approximately 3/s.
                 },
                 tower_status_dire: {
                   description: 'tower_status_dire',
-                  type: 'number',
+                  type: 'integer',
                 },
                 tower_status_radiant: {
                   description: 'tower_status_radiant',
-                  type: 'number',
+                  type: 'integer',
                 },
                 version: {
                   description: 'version',
@@ -224,15 +224,15 @@ Please keep request rate to approximately 3/s.
                 },
                 replay_salt: {
                   description: 'replay_salt',
-                  type: 'number',
+                  type: 'integer',
                 },
                 series_id: {
                   description: 'series_id',
-                  type: 'number',
+                  type: 'integer',
                 },
                 series_type: {
                   description: 'series_type',
-                  type: 'number',
+                  type: 'integer',
                 },
                 radiant_team: {
                   description: 'radiant_team',
@@ -259,7 +259,7 @@ Please keep request rate to approximately 3/s.
                     properties: {
                       match_id: {
                         description: 'match_id',
-                        type: 'number',
+                        type: 'integer',
                       },
                       player_slot: {
                         description: 'player_slot',
@@ -278,7 +278,7 @@ Please keep request rate to approximately 3/s.
                       },
                       account_id: {
                         description: 'account_id',
-                        type: 'number',
+                        type: 'integer',
                       },
                       actions: {
                         description: 'actions',
@@ -290,19 +290,19 @@ Please keep request rate to approximately 3/s.
                       },
                       assists: {
                         description: 'assists',
-                        type: 'number',
+                        type: 'integer',
                       },
                       backpack_0: {
                         description: 'backpack_0',
-                        type: 'number',
+                        type: 'integer',
                       },
                       backpack_1: {
                         description: 'backpack_1',
-                        type: 'number',
+                        type: 'integer',
                       },
                       backpack_2: {
                         description: 'backpack_2',
-                        type: 'number',
+                        type: 'integer',
                       },
                       buyback_log: {
                         description: 'buyback_log',
@@ -351,11 +351,11 @@ Please keep request rate to approximately 3/s.
                       },
                       deaths: {
                         description: 'deaths',
-                        type: 'number',
+                        type: 'integer',
                       },
                       denies: {
                         description: 'denies',
-                        type: 'number',
+                        type: 'integer',
                       },
                       dn_t: {
                         description: 'dn_t',
@@ -366,7 +366,7 @@ Please keep request rate to approximately 3/s.
                       },
                       gold: {
                         description: 'gold',
-                        type: 'number',
+                        type: 'integer',
                       },
                       gold_per_min: {
                         description: 'gold_per_min',
@@ -378,7 +378,7 @@ Please keep request rate to approximately 3/s.
                       },
                       gold_spent: {
                         description: 'gold_spent',
-                        type: 'number',
+                        type: 'integer',
                       },
                       gold_t: {
                         description: 'gold_t',
@@ -401,31 +401,31 @@ Please keep request rate to approximately 3/s.
                       },
                       hero_id: {
                         description: 'hero_id',
-                        type: 'number',
+                        type: 'integer',
                       },
                       item_0: {
                         description: 'item_0',
-                        type: 'number',
+                        type: 'integer',
                       },
                       item_1: {
                         description: 'item_1',
-                        type: 'number',
+                        type: 'integer',
                       },
                       item_2: {
                         description: 'item_2',
-                        type: 'number',
+                        type: 'integer',
                       },
                       item_3: {
                         description: 'item_3',
-                        type: 'number',
+                        type: 'integer',
                       },
                       item_4: {
                         description: 'item_4',
-                        type: 'number',
+                        type: 'integer',
                       },
                       item_5: {
                         description: 'item_5',
-                        type: 'number',
+                        type: 'integer',
                       },
                       item_uses: {
                         description: 'item_uses',
@@ -445,7 +445,7 @@ Please keep request rate to approximately 3/s.
                       },
                       kills: {
                         description: 'kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       kills_log: {
                         description: 'kills_log',
@@ -470,7 +470,7 @@ Please keep request rate to approximately 3/s.
                       },
                       last_hits: {
                         description: 'last_hits',
-                        type: 'number',
+                        type: 'integer',
                       },
                       leaver_status: {
                         description: 'leaver_status',
@@ -478,7 +478,7 @@ Please keep request rate to approximately 3/s.
                       },
                       level: {
                         description: 'level',
-                        type: 'number',
+                        type: 'integer',
                       },
                       lh_t: {
                         description: 'lh_t',
@@ -559,16 +559,13 @@ Please keep request rate to approximately 3/s.
                       },
                       rune_pickups: {
                         description: 'rune_pickups',
-                        type: 'number',
+                        type: 'integer',
                       },
                       runes: {
                         description: 'runes',
-                        type: 'array',
-                        items: {
-                          type: 'object',
-                          additionalProperties: {
-                            type: 'string',
-                          },
+                        type: 'object',
+                        additionalProperties: {
+                          type: 'integer',
                         },
                       },
                       runes_log: {
@@ -623,7 +620,7 @@ Please keep request rate to approximately 3/s.
                       },
                       tower_damage: {
                         description: 'tower_damage',
-                        type: 'number',
+                        type: 'integer',
                       },
                       xp_per_min: {
                         description: 'xp_per_min',
@@ -658,7 +655,7 @@ Please keep request rate to approximately 3/s.
                       },
                       start_time: {
                         description: 'start_time',
-                        type: 'number',
+                        type: 'integer',
                       },
                       duration: {
                         description: 'duration',
@@ -690,15 +687,15 @@ Please keep request rate to approximately 3/s.
                       },
                       win: {
                         description: 'win',
-                        type: 'number',
+                        type: 'integer',
                       },
                       lose: {
                         description: 'win',
-                        type: 'number',
+                        type: 'integer',
                       },
                       total_gold: {
                         description: 'total_gold',
-                        type: 'number',
+                        type: 'integer',
                       },
                       total_xp: {
                         description: 'total_xp',
@@ -718,55 +715,55 @@ Please keep request rate to approximately 3/s.
                       },
                       neutral_kills: {
                         description: 'neutral_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       tower_kills: {
                         description: 'tower_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       courier_kills: {
                         description: 'courier_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       lane_kills: {
                         description: 'lane_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       hero_kills: {
                         description: 'hero_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       observer_kills: {
                         description: 'observer_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       sentry_kills: {
                         description: 'sentry_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       roshan_kills: {
                         description: 'roshan_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       necronomicon_kills: {
                         description: 'necronomicon_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       ancient_kills: {
                         description: 'ancient_kills',
-                        type: 'number',
+                        type: 'integer',
                       },
                       buyback_count: {
                         description: 'buyback_count',
-                        type: 'number',
+                        type: 'integer',
                       },
                       observer_uses: {
                         description: 'observer_uses',
-                        type: 'number',
+                        type: 'integer',
                       },
                       sentry_uses: {
                         description: 'sentry_uses',
-                        type: 'number',
+                        type: 'integer',
                       },
                       lane_efficiency: {
                         description: 'lane_efficiency',
@@ -852,11 +849,11 @@ Please keep request rate to approximately 3/s.
                 },
                 throw: {
                   description: 'throw',
-                  type: 'number',
+                  type: 'integer',
                 },
                 loss: {
                   description: 'loss',
-                  type: 'number',
+                  type: 'integer',
                 },
                 replay_url: {
                   description: 'replay_url',
@@ -930,7 +927,7 @@ Please keep request rate to approximately 3/s.
                   properties: {
                     account_id: {
                       description: 'account_id',
-                      type: 'number',
+                      type: 'integer',
                     },
                     personaname: {
                       description: 'personaname',
@@ -1022,11 +1019,11 @@ Please keep request rate to approximately 3/s.
               properties: {
                 win: {
                   description: 'win',
-                  type: 'number',
+                  type: 'integer',
                 },
                 lose: {
                   description: 'lose',
-                  type: 'number',
+                  type: 'integer',
                 },
               },
             },
@@ -1074,7 +1071,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   match_id: {
                     description: 'match_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   player_slot: {
                     description: 'player_slot',
@@ -1090,19 +1087,19 @@ Please keep request rate to approximately 3/s.
                   },
                   game_mode: {
                     description: 'game_mode',
-                    type: 'number',
+                    type: 'integer',
                   },
                   lobby_type: {
                     description: 'lobby_type',
-                    type: 'number',
+                    type: 'integer',
                   },
                   hero_id: {
                     description: 'hero_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   start_time: {
                     description: 'start_time',
-                    type: 'number',
+                    type: 'integer',
                   },
                   version: {
                     description: 'version',
@@ -1110,15 +1107,15 @@ Please keep request rate to approximately 3/s.
                   },
                   kills: {
                     description: 'kills',
-                    type: 'number',
+                    type: 'integer',
                   },
                   deaths: {
                     description: 'deaths',
-                    type: 'number',
+                    type: 'integer',
                   },
                   assists: {
                     description: 'assists',
-                    type: 'number',
+                    type: 'integer',
                   },
                   skill: {
                     description: 'skill',
@@ -1180,7 +1177,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   match_id: {
                     description: 'match_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   player_slot: {
                     description: 'player_slot',
@@ -1204,11 +1201,11 @@ Please keep request rate to approximately 3/s.
                   },
                   hero_id: {
                     description: 'hero_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   start_time: {
                     description: 'start_time',
-                    type: 'number',
+                    type: 'integer',
                   },
                   version: {
                     description: 'version',
@@ -1216,15 +1213,15 @@ Please keep request rate to approximately 3/s.
                   },
                   kills: {
                     description: 'kills',
-                    type: 'number',
+                    type: 'integer',
                   },
                   deaths: {
                     description: 'deaths',
-                    type: 'number',
+                    type: 'integer',
                   },
                   assists: {
                     description: 'assists',
-                    type: 'number',
+                    type: 'integer',
                   },
                   skill: {
                     description: 'skill',
@@ -1240,15 +1237,15 @@ Please keep request rate to approximately 3/s.
                         properties: {
                           account_id: {
                             description: 'account_id',
-                            type: 'number',
+                            type: 'integer',
                           },
                           hero_id: {
                             description: 'hero_id',
-                            type: 'number',
+                            type: 'integer',
                           },
                           player_slot: {
                             description: 'player_slot',
-                            type: 'number',
+                            type: 'integer',
                           },
                         },
                       },
@@ -1290,35 +1287,35 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   hero_id: {
                     description: 'hero_id',
-                    type: 'string',
+                    type: 'integer',
                   },
                   last_played: {
                     description: 'last_played',
-                    type: 'number',
+                    type: 'integer',
                   },
                   games: {
                     description: 'games',
-                    type: 'number',
+                    type: 'integer',
                   },
                   win: {
                     description: 'win',
-                    type: 'number',
+                    type: 'integer',
                   },
                   with_games: {
                     description: 'with_games',
-                    type: 'number',
+                    type: 'integer',
                   },
                   with_win: {
                     description: 'with_win',
-                    type: 'number',
+                    type: 'integer',
                   },
                   against_games: {
                     description: 'against_games',
-                    type: 'number',
+                    type: 'integer',
                   },
                   against_win: {
                     description: 'against_win',
-                    type: 'number',
+                    type: 'integer',
                   },
                 },
               },
@@ -1400,35 +1397,35 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   account_id: {
                     description: 'account_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   last_played: {
                     description: 'last_played',
-                    type: 'number',
+                    type: 'integer',
                   },
                   win: {
                     description: 'win',
-                    type: 'number',
+                    type: 'integer',
                   },
                   games: {
                     description: 'games',
-                    type: 'number',
+                    type: 'integer',
                   },
                   with_win: {
                     description: 'with_win',
-                    type: 'number',
+                    type: 'integer',
                   },
                   with_games: {
                     description: 'with_games',
-                    type: 'number',
+                    type: 'integer',
                   },
                   against_win: {
                     description: 'against_win',
-                    type: 'number',
+                    type: 'integer',
                   },
                   against_games: {
                     description: 'against_games',
-                    type: 'number',
+                    type: 'integer',
                   },
                   with_gpm_sum: {
                     description: 'with_gpm_sum',
@@ -1493,7 +1490,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   account_id: {
                     description: 'account_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   name: {
                     description: 'name',
@@ -1930,11 +1927,11 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   account_id: {
                     description: 'account_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   match_id: {
                     description: 'match_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   solo_competitive_rank: {
                     description: 'solo_competitive_rank',
@@ -2054,7 +2051,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   account_id: {
                     description: 'account_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   steamid: {
                     description: 'steamid',
@@ -2174,7 +2171,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   match_id: {
                     description: 'match_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   duration: {
                     description: 'duration',
@@ -2274,7 +2271,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   match_id: {
                     description: 'match_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   match_seq_num: {
                     description: 'match_seq_num',
@@ -2784,7 +2781,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   account_id: {
                     description: 'account_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   avatarfull: {
                     description: 'avatarfull',
@@ -2847,7 +2844,7 @@ Please keep request rate to approximately 3/s.
                   properties: {
                     account_id: {
                       description: 'account_id',
-                      type: 'string',
+                      type: 'integer',
                     },
                     score: {
                       description: 'score',
@@ -3427,11 +3424,11 @@ Please keep request rate to approximately 3/s.
                   },
                   wins: {
                     description: 'The number of games won by this team',
-                    type: 'number',
+                    type: 'integer',
                   },
                   losses: {
                     description: 'The number of losses by this team',
-                    type: 'number',
+                    type: 'integer',
                   },
                   last_match_time: {
                     description: 'The Unix timestamp of the last match played by this team',
@@ -3487,7 +3484,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   match_id: {
                     description: 'match_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   cluster: {
                     description: 'cluster',
@@ -3552,7 +3549,7 @@ Please keep request rate to approximately 3/s.
                 properties: {
                   match_id: {
                     description: 'match_id',
-                    type: 'number',
+                    type: 'integer',
                   },
                   start_time: {
                     description: 'start_time',
