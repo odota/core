@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 100
+targetsize = 240
 backendname = "retriever"
 templatename = "retriever-3"
 
@@ -23,7 +23,7 @@ def run1(zoneList):
       size = targetsize if i == (len(zoneList) - bucket - 1) else 0
       minsize = 1 if i == (len(zoneList) - bucket - 1) else 0
       print bucket, size, minsize
-      subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
+      #subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
       #subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, minsize, size), shell=True)
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
       # if size > 0:
