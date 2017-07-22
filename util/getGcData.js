@@ -24,9 +24,7 @@ module.exports = function getGcData(db, redis, match, cb) {
       return cb(err, gcdata);
     }
     // make array of retriever urls and use a random one on each retry
-    const urls = retrieverArr.map(r =>
-      `http://${r}?key=${secret}&match_id=${match.match_id}`,
-    );
+    const urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
     return getData({ url: urls, noRetry: match.noRetry }, (err, body, metadata) => {
       if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
         // non-retryable error
@@ -39,6 +37,9 @@ module.exports = function getGcData(db, redis, match, cb) {
         player_slot: p.player_slot,
         party_id: Number(p.party_id),
         permanent_buffs: p.permanent_buffs,
+        party_size: body.match.players.filter(
+          matchPlayer => matchPlayer.party_id === p.party_id,
+        ).length,
       }));
       const matchToInsert = {
         match_id: match.match_id,
