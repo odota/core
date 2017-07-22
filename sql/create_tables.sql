@@ -124,7 +124,8 @@ CREATE TABLE player_matches (
   teamfight_participation real,
   towers_killed int,
   roshans_killed int,
-  observers_placed int
+  observers_placed int,
+  party_size int
 );
 CREATE INDEX on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX on player_matches(hero_id);
@@ -367,8 +368,6 @@ BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
         GRANT SELECT ON matches TO readonly;
         GRANT SELECT ON player_matches TO readonly;
-        GRANT SELECT ON public_matches TO readonly;
-        GRANT SELECT ON public_player_matches TO readonly;
         GRANT SELECT ON heroes TO readonly;
         GRANT SELECT ON players TO readonly;
         GRANT SELECT ON leagues TO readonly;
@@ -379,6 +378,8 @@ BEGIN
         GRANT SELECT ON picks_bans TO readonly;
         GRANT SELECT ON match_logs TO readonly;
         GRANT SELECT ON notable_players TO readonly;
+        GRANT SELECT ON public_matches TO readonly;
+        GRANT SELECT ON public_player_matches TO readonly;
     END IF;
 END
 $$;

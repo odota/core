@@ -112,6 +112,7 @@ CREATE TABLE player_matches (
   towers_killed int,
   roshans_killed int,
   firstblood_claimed int,
+  party_size int,
 );
 
 CREATE TABLE player_caches (
@@ -174,6 +175,7 @@ CREATE TABLE player_caches (
   stuns text,
   lane_efficiency_pct text,
   skill text,
+  party_size text,
 );
 
 ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
