@@ -63,7 +63,7 @@ module.exports = function getGcData(db, redis, match, cb) {
           match_id: body.match.match_id,
         }, (err) => {
           cb(err, {
-            match_id: match.match_id,
+            match_id: Number(match.match_id),
             cluster: body.match.cluster,
             replay_salt: body.match.replay_salt,
           });
