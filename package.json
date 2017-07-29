@@ -19,7 +19,8 @@
     "resetrecords": "redis-cli keys 'records*' | xargs redis-cli del",
     "resetqueue": "redis-cli keys 'bull*' | xargs redis-cli del",
     "dockerbuild": "sudo docker build -t odota/core .",
-    "reparse": "cat matches.csv | xargs -n1 node dev/getMatch.js"
+    "reparse": "cat matches.csv | xargs -n1 node dev/getMatch.js",
+    "createAccounts": "node dev/createAccounts.js > accounts.log"
   },
   "repository": {
     "type": "git",
