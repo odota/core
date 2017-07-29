@@ -35,6 +35,12 @@ function processExpand(entries, meta) {
     }));
   }
 
+  // Tracks current aegis holder so we can ignore kills that pop aegis
+  let aegisHolder = null;
+
+  // Used to ignore meepo clones killing themselves
+  let aegisDeathTime = null;
+
   const types = {
     DOTA_COMBATLOG_DAMAGE(e) {
       // damage
@@ -104,11 +110,16 @@ function processExpand(entries, meta) {
         type: 'healing',
       }));
     },
-    DOTA_COMBATLOG_MODIFIER_ADD() {
+    DOTA_COMBATLOG_MODIFIER_ADD(e) {
       // gain buff/debuff
       // e.attackername // unit that buffed (use source to get the hero? chen/enchantress)
       // e.inflictor // the buff
       // e.targetname // target of buff (possibly illusion)
+
+      // Aegis expired
+      if (e.inflictor === 'modifier_aegis_regen') {
+        aegisHolder = null;
+      }
     },
     DOTA_COMBATLOG_MODIFIER_REMOVE() {
       // modifier_lost
@@ -134,16 +145,29 @@ function processExpand(entries, meta) {
         });
       }
 
-      // If it is not a suicide
-      if (e.attackername !== key) {
-        expand(Object.assign({}, e, {
-          unit,
-          key,
-          type: 'killed',
-        }));
+      if (meta.hero_to_slot[key] === aegisHolder) {
+        // The aegis holder was killed
+        if (aegisDeathTime === null) {
+          // It is the first time they have been killed this tick
+          // If the hero is meepo than the clones will also get killed
+          aegisDeathTime = e.time;
+          return;
+        } else if (aegisDeathTime !== e.time) {
+          // We are after the aegis death tick, so clear everything
+          aegisDeathTime = null;
+          aegisHolder = null;
+        } else {
+          // We are on the same tick, so it is a clone dying
+          return;
+        }
       }
 
-      // If a hero was killed
+      // Ignore suicides
+      if (e.attackername === key) {
+        return;
+      }
+
+      // If a hero was killed log extra information
       if (e.targethero && !e.targetillusion) {
         expand({
           time: e.time,
@@ -161,6 +185,12 @@ function processExpand(entries, meta) {
           type: 'killed_by',
         });
       }
+
+      expand(Object.assign({}, e, {
+        unit,
+        key,
+        type: 'killed',
+      }));
     },
     DOTA_COMBATLOG_ABILITY(e) {
       // Value field is 1 or 2 for toggles
@@ -368,6 +398,8 @@ function processExpand(entries, meta) {
       });
     },
     CHAT_MESSAGE_AEGIS(e) {
+      aegisHolder = e.player1;
+
       expand({
         time: e.time,
         type: e.type,
@@ -375,6 +407,8 @@ function processExpand(entries, meta) {
       });
     },
     CHAT_MESSAGE_AEGIS_STOLEN(e) {
+      aegisHolder = e.player1;
+
       expand({
         time: e.time,
         type: e.type,
