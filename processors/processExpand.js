@@ -163,7 +163,7 @@ function processExpand(entries, meta) {
 
       if (key === aegisHolder) {
         // The aegis holder was killed
-        if (aegisDeathTime == null) {
+        if (aegisDeathTime === null) {
           // It is the first time they have been killed this tick
           // If the hero is meepo than the clones will also get killed
           aegisDeathTime = e.time;
