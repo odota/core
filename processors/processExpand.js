@@ -41,22 +41,6 @@ function processExpand(entries, meta) {
   // Used to ignore meepo clones killing themselves
   let aegisDeathTime = null;
 
-  function getAegisHolder(heroSlot) {
-    // There are two names for each hero stored in meta.hero_to_slot,
-    // so we need to get the one with the most underscores
-    const aegisHolderPossibilities = [];
-    Object.keys(meta.hero_to_slot).forEach((hero) => {
-      const slot = meta.hero_to_slot[hero];
-      if (slot === heroSlot) {
-        aegisHolderPossibilities.push(hero);
-      }
-    });
-    const ndx = aegisHolderPossibilities
-      .map(hero => hero.match(/_/g || []).length) // Get number of _'s
-      .reduce((iMax, x, i, arr) => (x > arr[iMax] ? i : iMax), 0); // Get index of most _'s
-    return aegisHolderPossibilities[ndx];
-  }
-
   const types = {
     DOTA_COMBATLOG_DAMAGE(e) {
       // damage
@@ -161,7 +145,7 @@ function processExpand(entries, meta) {
         });
       }
 
-      if (key === aegisHolder) {
+      if (meta.hero_to_slot[key] === aegisHolder) {
         // The aegis holder was killed
         if (aegisDeathTime === null) {
           // It is the first time they have been killed this tick
@@ -414,7 +398,7 @@ function processExpand(entries, meta) {
       });
     },
     CHAT_MESSAGE_AEGIS(e) {
-      aegisHolder = getAegisHolder(e.player1);
+      aegisHolder = e.player1;
 
       expand({
         time: e.time,
@@ -423,7 +407,7 @@ function processExpand(entries, meta) {
       });
     },
     CHAT_MESSAGE_AEGIS_STOLEN(e) {
-      aegisHolder = getAegisHolder(e.player1);
+      aegisHolder = e.player1;
 
       expand({
         time: e.time,
