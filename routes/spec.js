@@ -1996,7 +1996,7 @@ Please keep request rate to approximately 3/s.
         },
         route: () => '/players/:account_id/rankings',
         func: (req, res, cb) => {
-          queries.getPlayerRankings(redis, req.params.account_id, (err, result) => {
+          queries.getPlayerHeroRankings(req.params.account_id, (err, result) => {
             if (err) {
               return cb(err);
             }

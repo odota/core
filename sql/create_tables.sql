@@ -363,6 +363,14 @@ CREATE TABLE team_rating (
 );
 CREATE INDEX ON team_rating(rating);
 
+CREATE TABLE hero_ranking (
+  PRIMARY KEY (account_id, hero_id),
+  account_id bigint,
+  hero_id int,
+  score real
+);
+CREATE INDEX ON hero_ranking(hero_id, score);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
