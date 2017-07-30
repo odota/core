@@ -168,7 +168,7 @@ function getLeaderboard(db, redis, key, n, cb) {
 
 function getHeroRankings(db, redis, heroId, options, cb) {
   db.raw(`
-  SELECT account_id, score, personaname, name
+  SELECT account_id, score, personaname, name, avatar, last_login
   from hero_ranking
   join players using(account_id)
   left join notable_players using(account_id)
