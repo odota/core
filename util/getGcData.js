@@ -42,12 +42,13 @@ module.exports = function getGcData(db, redis, match, cb) {
         player_slot: p.player_slot,
         party_id: Number(p.party_id),
         permanent_buffs: p.permanent_buffs,
-        party_size: body.match.players.filter(
-          matchPlayer => matchPlayer.party_id === p.party_id,
-        ).length,
+        party_size: body.match.players
+          .filter(matchPlayer => matchPlayer.party_id === p.party_id)
+          .length,
       }));
       const matchToInsert = {
         match_id: match.match_id,
+        pgroup: match.pgroup,
         players,
       };
       return insertMatch(matchToInsert, {

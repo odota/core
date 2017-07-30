@@ -521,9 +521,6 @@ function writeCache(accountId, cache, cb) {
 }
 
 function insertPlayerCache(match, cb) {
-  if (!cassandra) {
-    return cb();
-  }
   const players = match.players;
   if (match.pgroup && players) {
     players.forEach((p) => {
