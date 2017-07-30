@@ -326,6 +326,7 @@ function getPlayerHeroRankings(accountId, cb) {
   FROM hero_ranking
   JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = ?) playerscore using (hero_id)
   GROUP BY hero_id
+  ORDER BY numeric_rank asc
   `,
     [accountId]).asCallback((err, result) => {
     if (err) {
