@@ -174,7 +174,7 @@ function getHeroRankings(db, redis, heroId, options, cb) {
   WHERE hero_id = ? 
   ORDER BY score DESC 
   LIMIT 100
-  `, [heroId]).asCallback((err, result) => {
+  `, [heroId || 0]).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
