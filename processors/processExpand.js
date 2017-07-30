@@ -444,7 +444,9 @@ function processExpand(entries, meta) {
       expand(e);
     },
     chatwheel(e) {
-      expand(e);
+      if (Number(e.key) >= 86) {
+        expand(e);
+      }
     },
     interval(e) {
       if (e.time >= 0) {
