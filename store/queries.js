@@ -319,15 +319,13 @@ function getPlayerRatings(db, accountId, cb) {
 
 function getPlayerHeroRankings(accountId, cb) {
   db.raw(`
-  SELECT * FROM
-  (SELECT
-  account_id,
+  SELECT
   hero_id,
-  percent_rank() over (partition by hero_id order by score asc) as percent_rank,
-  rank() over (partition by hero_id order by score desc) as numeric_rank,
-  score
-  FROM hero_ranking) rankings
-  WHERE account_id = ?
+  count(1) filter (where hero_ranking.score >= playerscore.score) as numeric_rank,
+  count(1) filter (where hero_ranking.score <= playerscore.score)::float/count(1) as percent_rank
+  FROM hero_ranking
+  JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = ?) playerscore using (hero_id)
+  GROUP BY hero_id
   `,
     [accountId]).asCallback((err, result) => {
     if (err) {
