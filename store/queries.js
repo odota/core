@@ -166,10 +166,19 @@ function getLeaderboard(db, redis, key, n, cb) {
 }
 
 function getHeroRankings(db, redis, heroId, options, cb) {
-  getLeaderboard(db, redis, [options.beta ? 'hero_rankings2' : 'hero_rankings', moment().startOf('quarter').format('X'), heroId].join(':'), 100, (err, entries) => {
+  db.raw(`
+  SELECT account_id, score, personaname, name
+  from hero_ranking
+  join players using(account_id)
+  left join notable_players using(account_id)
+  WHERE hero_id = ? 
+  ORDER BY score DESC 
+  LIMIT 100
+  `, [heroId || 0]).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
+    const entries = result.rows;
     return async.each(entries, (player, cb) => {
       async.parallel({
         solo_competitive_rank(cb) {
@@ -307,21 +316,24 @@ function getPlayerRatings(db, accountId, cb) {
   }
 }
 
-function getPlayerRankings(redis, accountId, cb) {
-  async.map(Object.keys(constants.heroes), (heroId, cb) => {
-    redis.zcard(['hero_rankings', moment().startOf('quarter').format('X'), heroId].join(':'), (err, card) => {
-      if (err) {
-        return cb(err);
-      }
-      return redis.zrank(['hero_rankings', moment().startOf('quarter').format('X'), heroId].join(':'), accountId, (err, rank) => {
-        cb(err, {
-          hero_id: heroId,
-          rank,
-          card,
-        });
-      });
-    });
-  }, cb);
+function getPlayerHeroRankings(accountId, cb) {
+  db.raw(`
+  SELECT * FROM
+  (SELECT
+  account_id,
+  hero_id,
+  percent_rank() over (partition by hero_id order by score asc) as percent_rank,
+  rank() over (partition by hero_id order by score desc) as numeric_rank,
+  score
+  FROM hero_ranking) rankings
+  WHERE account_id = ?
+  `,
+    [accountId]).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows);
+  });
 }
 
 function getPlayer(db, accountId, cb) {
@@ -568,28 +580,26 @@ function updateMatchups(match, cb) {
 }
 */
 
-function updateRankings(match, cb) {
+function updateHeroRankings(match, cb) {
   getMatchRating(redis, match, (err, avg) => {
     if (err) {
       return cb(err);
     }
     const ratingMin = 2000;
     const matchScore = (avg && !isNaN(Number(avg)) && avg >= ratingMin) ?
-      (avg / ratingMin) ** 7 :
+      ((avg / ratingMin) ** 8) / ratingMin :
       undefined;
     return async.each(match.players, (player, cb) => {
       if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
         return cb();
       }
       player.radiant_win = match.radiant_win;
-      const start = moment().startOf('quarter').format('X');
-      const expire = moment().add(1, 'quarter').startOf('quarter').format('X');
       const win = Number(utility.isRadiant(player) === player.radiant_win);
       const playerScore = win ? matchScore : 0;
       if (playerScore && utility.isSignificant(match)) {
-        const rankingKey = ['hero_rankings', start, player.hero_id].join(':');
-        redis.zincrby(rankingKey, playerScore, player.account_id);
-        redis.expireat(rankingKey, expire);
+        return db.raw('INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = hero_ranking.score + EXCLUDED.score',
+          [player.account_id, player.hero_id, playerScore],
+        ).asCallback(cb);
       }
       return cb();
     }, cb);
@@ -1040,7 +1050,7 @@ function insertMatch(match, options, cb) {
     return async.parallel({
       updateRankings(cb) {
         if (options.origin === 'scanner') {
-          return updateRankings(match, cb);
+          return updateHeroRankings(match, cb);
         }
         return cb();
       },
@@ -1263,7 +1273,7 @@ module.exports = {
   getLeaderboard,
   getPlayerMatches,
   getPlayerRatings,
-  getPlayerRankings,
+  getPlayerHeroRankings,
   getPlayer,
   getMmrEstimate,
   getPeers,
