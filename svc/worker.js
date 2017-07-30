@@ -381,17 +381,6 @@ function doCosmetics(cb) {
     });
 }
 
-function doTelemetryCleanup(cb) {
-  redis.zremrangebyscore('added_match', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('error_500', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('api_hits', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('parser', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('retriever', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('visitor_match', 0, moment().subtract(1, 'day').format('X'));
-  redis.zremrangebyscore('requests', 0, moment().subtract(1, 'day').format('X'));
-  cb();
-}
-
 function doHeroStats(cb) {
   const minTime = moment().subtract(30, 'day').format('X');
   const maxTime = moment().format('X');
@@ -477,5 +466,4 @@ invokeInterval(doTeams, 60 * 60 * 1000);
 invokeInterval(doHeroes, 60 * 60 * 1000);
 invokeInterval(doItems, 60 * 60 * 1000);
 invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);
-invokeInterval(doTelemetryCleanup, 3 * 60 * 1000);
 invokeInterval(doHeroStats, 60 * 60 * 1000);

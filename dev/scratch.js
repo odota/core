@@ -25,20 +25,6 @@ message.metadata.teams.forEach((team) => {
 });
 delete message.private_metadata;
 console.log(JSON.stringify(message, null, 2));
-
-/*
-const redis = require('../store/redis');
-const moment = require('moment');
-for (let i = 0; i < 100000; i += 1) {
-  const metadata = {
-    hostname: 'test3',
-  };
-  const match = {
-    match_id: i,
-  };
-  redis.zadd('retriever', moment().format('X'), `${metadata.hostname}_${match.match_id}`);
-}
-*/
 /*
 const entries = [];
 for (let i = 0; i < 1000000; i += 1) {

@@ -16,7 +16,6 @@ const express = require('express');
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
-const async = require('async');
 const uuidV4 = require('uuid/v4');
 
 const app = express();
@@ -92,39 +91,19 @@ app.use((req, res, cb) => {
     if (elapsed > 1000 || config.NODE_ENV === 'development') {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
-    async.series({
-      api_hit: (cb) => {
-        if (req.originalUrl.indexOf('/api') === 0) {
-          redis.zadd('api_hits', moment().format('X'), `${uuidV4()}:${req.originalUrl}`, cb);
-        } else {
-          cb();
-        }
-      },
-      visitors: (cb) => {
-        if (req.user && req.user.account_id) {
-          redis.zadd('visitors', moment().format('X'), req.user.account_id, cb);
-        } else {
-          cb();
-        }
-      },
-      tracked: (cb) => {
-        if (req.user && req.user.account_id) {
-          redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id, cb);
-        } else {
-          cb();
-        }
-      },
-      load_add: (cb) => {
-        redis.lpush('load_times', elapsed, cb);
-      },
-      load_trim: (cb) => {
-        redis.ltrim('load_times', 0, 9999, cb);
-      },
-    }, (err) => {
-      if (err) {
-        console.error(err);
-      }
-    });
+    if (req.originalUrl.indexOf('/api') === 0) {
+      const key = `api_hits:${moment().startOf('day').format('X')}`;
+      redis.pfadd(key, uuidV4());
+      redis.expireat(key, moment().startOf('day').add(1, 'day').format('X'));
+    }
+    if (req.user && req.user.account_id) {
+      redis.zadd('visitors', moment().format('X'), req.user.account_id);
+    }
+    if (req.user && req.user.account_id) {
+      redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id);
+    }
+    redis.lpush('load_times', elapsed);
+    redis.ltrim('load_times', 0, 9999);
   });
   cb();
 });
@@ -164,7 +143,6 @@ app.use((req, res) =>
 );
 // 500 route
 app.use((err, req, res, cb) => {
-  redis.zadd('error_500', moment().format('X'), `${uuidV4()}:${req.originalUrl}`);
   if (config.NODE_ENV === 'development') {
     // default express handler
     return cb(err);

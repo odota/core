@@ -6,6 +6,7 @@ const moment = require('moment');
 const utility = require('../util/utility');
 const config = require('../config');
 const queries = require('../store/queries');
+const uuidV4 = require('uuid/v4');
 
 const secret = config.RETRIEVER_SECRET;
 const retrieverArr = utility.getRetrieverArr();
@@ -31,7 +32,11 @@ module.exports = function getGcData(db, redis, match, cb) {
         return cb('invalid body or error');
       }
       // count retriever calls
-      redis.zadd('retriever', moment().format('X'), `${metadata.hostname}_${match.match_id}`);
+      const key = `retriever:${moment().startOf('day').format('X')}`;
+      redis.pfadd(key, 1, uuidV4());
+      redis.expireat(key, moment().startOf('day').add(1, 'day').format('X'));
+      redis.zincrby('retrieverCounts', 1, metadata.hostname);
+      redis.expireat('retrieverCounts', moment().startOf('hour').add(1, 'hour').format('X'));
       // Persist parties and permanent buffs
       const players = body.match.players.map(p => ({
         player_slot: p.player_slot,

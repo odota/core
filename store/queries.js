@@ -9,6 +9,7 @@ const queue = require('./queue');
 const async = require('async');
 const moment = require('moment');
 const util = require('util');
+const uuidV4 = require('uuid/v4');
 const filter = require('../util/filter');
 const compute = require('../util/compute');
 const db = require('../store/db');
@@ -1116,21 +1117,16 @@ function insertMatch(match, options, cb) {
       redis.ltrim(types[options.type], 0, 9);
     }
     if (options.type === 'parsed') {
-      redis.zadd('parser', moment().format('X'), match.match_id);
+      const key = `parser:${moment().startOf('day').format('X')}`;
+      redis.pfadd(key, uuidV4());
+      redis.expireat(key, moment().startOf('day').add(1, 'day').format('X'));
     }
     if (options.origin === 'scanner') {
-      redis.zadd('added_match', moment().format('X'), match.match_id);
+      const key = `added_match:${moment().startOf('day').format('X')}`;
+      redis.pfadd(key, uuidV4());
+      redis.expireat(key, moment().startOf('day').add(1, 'day').format('X'));
     }
-    async.some(match.players, (p, cb) => {
-      redis.zscore('visitors', String(p.account_id), (err, score) =>
-        cb(err, Boolean(score)),
-      );
-    }, (err, result) => {
-      if (result) {
-        redis.zadd('visitor_match', moment().format('X'), match.match_id);
-      }
-      return cb(err);
-    });
+    return cb();
   }
 
   function clearMatchCache(cb) {

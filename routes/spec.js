@@ -3,7 +3,7 @@ const constants = require('dotaconstants');
 const config = require('../config');
 // const crypto = require('crypto');
 const moment = require('moment');
-const uuidV4 = require('uuid/v4');
+// const uuidV4 = require('uuid/v4');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 const search = require('../store/search');
@@ -3217,7 +3217,6 @@ Please keep request rate to approximately 3/s.
               }
               // match details response
               const match = body.result;
-              redis.zadd('requests', moment().format('X'), `${uuidV4()}:${match.match_id}`);
               return queries.insertMatch(match, {
                 type: 'api',
                 attempts: 1,

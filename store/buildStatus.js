@@ -29,26 +29,17 @@ module.exports = function buildStatus(db, redis, cb) {
     tracked_players(cb) {
       redis.zcard('tracked', cb);
     },
-    error_500(cb) {
-      redis.zcard('error_500', cb);
-    },
     matches_last_day(cb) {
-      redis.zcard('added_match', cb);
-    },
-    matches_last_hour(cb) {
-      redis.zcount('added_match', moment().subtract(1, 'hour').format('X'), moment().format('X'), cb);
-    },
-    user_matches_last_day(cb) {
-      redis.zcard('visitor_match', cb);
+      redis.pfcount(`added_match:${moment().startOf('day').format('X')}`, cb);
     },
     retriever_matches_last_day(cb) {
-      redis.zcard('retriever', cb);
+      redis.pfcount(`retriever:${moment().startOf('day').format('X')}`, cb);
     },
     parsed_matches_last_day(cb) {
-      redis.zcard('parser', cb);
+      redis.pfcount(`parser:${moment().startOf('day').format('X')}`, cb);
     },
-    requests_last_day(cb) {
-      redis.zcard('requests', cb);
+    api_hits_last_day(cb) {
+      redis.pfcount(`api_hits:${moment().startOf('day').format('X')}`, cb);
     },
     fhQueue(cb) {
       redis.llen('fhQueue', cb);
@@ -59,8 +50,22 @@ module.exports = function buildStatus(db, redis, cb) {
     mmrQueue(cb) {
       redis.llen('mmrQueue', cb);
     },
-    api_hits(cb) {
-      redis.zcard('api_hits', cb);
+    retriever(cb) {
+      redis.zrangebyscore('retrieverCounts', '-inf', 'inf', 'WITHSCORES', (err, results) => {
+        if (err) {
+          return cb(err);
+        }
+        const response = [];
+        results.forEach((result, i) => {
+          if (i % 2 === 0) {
+            response.push({
+              hostname: result.split('.')[0],
+              count: results[i + 1],
+            });
+          }
+        });
+        return cb(err, response);
+      });
     },
     last_added(cb) {
       redis.lrange('matches_last_added', 0, -1, (err, result) =>
@@ -75,23 +80,6 @@ module.exports = function buildStatus(db, redis, cb) {
           JSON.parse(r),
         )),
       );
-    },
-    retriever(cb) {
-      redis.zrangebyscore('retriever', moment().subtract(1, 'hour').format('X'), moment().format('X'), (err, results) => {
-        if (err) {
-          return cb(err);
-        }
-        const counts = {};
-        results.forEach((e) => {
-          const key = e.split('_')[0];
-          counts[key] = counts[key] ? counts[key] + 1 : 1;
-        });
-        const result = Object.keys(counts).map(retriever => ({
-          hostname: retriever.split('.')[0],
-          count: counts[retriever],
-        })).sort((a, b) => a.hostname.localeCompare(b.hostname));
-        return cb(err, result);
-      });
     },
     queue(cb) {
       // generate object with properties as queue types
