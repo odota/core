@@ -1982,12 +1982,12 @@ Please keep request rate to approximately 3/s.
                     type: 'string',
                   },
                   rank: {
-                    description: 'rank',
+                    description: 'percent_rank',
                     type: 'number',
                   },
                   card: {
-                    description: 'card',
-                    type: 'number',
+                    description: 'numeric_rank',
+                    type: 'integer',
                   },
                 },
               },
