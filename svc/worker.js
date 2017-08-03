@@ -121,6 +121,9 @@ function doProPlayers(cb) {
       return cb(err);
     }
     return async.each(body.player_infos, (p, cb) => {
+      if (p.account_id === 180012313 && p.locked_until < 1502694000) {
+        p.locked_until = 1502694000;
+      }
       queries.upsert(db, 'notable_players', p, {
         account_id: p.account_id,
       }, cb);
