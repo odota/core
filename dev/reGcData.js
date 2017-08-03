@@ -2,7 +2,6 @@
  * Call getGcData for all matches in match table
  **/
 const db = require('../store/db');
-const redis = require('../store/redis');
 const async = require('async');
 const getGcData = require('../util/getGcData');
 
@@ -12,7 +11,7 @@ db.select(['match_id']).from('matches').asCallback((err, matches) => {
   }
   async.eachSeries(matches, (match, cb) => {
     console.log(match.match_id);
-    getGcData(db, redis, match, (err) => {
+    getGcData(match, (err) => {
       if (err) {
         console.error(err);
       }

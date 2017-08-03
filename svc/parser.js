@@ -8,8 +8,6 @@
 const utility = require('../util/utility');
 const getGcData = require('../util/getGcData');
 const config = require('../config');
-const db = require('../store/db');
-const redis = require('../store/redis');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 // const compute = require('../util/compute');
@@ -271,7 +269,7 @@ pQueue.process(Number(config.PARSER_PARALLELISM), (job, cb) => {
   console.log(match.match_id);
   async.series({
     getDataSource(cb) {
-      getGcData(db, redis, match, (err, result) => {
+      getGcData(match, (err, result) => {
         if (err) {
           return cb(err);
         }

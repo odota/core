@@ -3,14 +3,12 @@
  **/
 const getGcData = require('../util/getGcData');
 const queue = require('../store/queue');
-const db = require('../store/db');
-const redis = require('../store/redis');
 // const utility = require('../util/utility');
 
 // const retrieverArr = utility.getRetrieverArr();
 
 function processGcData(job, cb) {
-  getGcData(db, redis, job, cb);
+  getGcData(job, cb);
 }
 
 queue.runQueue('gcQueue', 40, processGcData);
