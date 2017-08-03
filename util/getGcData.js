@@ -24,6 +24,16 @@ module.exports = function getGcData(db, redis, match, cb) {
       console.log('found cached replay url for %s', match.match_id);
       return cb(err, gcdata);
     }
+    if (Math.random() > 0.5) {
+      // Use STRATZ API as backup data source
+      return getData({ url: `https://api.stratz.com/api/v1/match?matchId=${match.match_id}`}, (err, body) => {
+        cb(err, {
+          match_id: Number(match.match_id),
+          cluster: body.results && body.results[0] && body.results[0].clusterId,
+          replay_salt: body.results && body.results[0] && body.results[0].replaySalt,
+        });
+      });
+    }
     // make array of retriever urls and use a random one on each retry
     const urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
     return getData({ url: urls, noRetry: match.noRetry }, (err, body, metadata) => {
