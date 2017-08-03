@@ -26,7 +26,7 @@ module.exports = function getGcData(db, redis, match, cb) {
     }
     if (Math.random() > 0.5) {
       // Use STRATZ API as backup data source
-      return getData({ url: `https://api.stratz.com/api/v1/match?matchId=${match.match_id}`}, (err, body) => {
+      return getData({ url: `https://api.stratz.com/api/v1/match?matchId=${match.match_id}` }, (err, body) => {
         cb(err, {
           match_id: Number(match.match_id),
           cluster: body.results && body.results[0] && body.results[0].clusterId,
