@@ -3538,7 +3538,7 @@ Please keep request rate to approximately 3/s.
           */
           async.map([].concat(req.query.match_id || []).slice(0, 10),
             (matchId, cb) =>
-              getGcData(db, redis, {
+              getGcData({
                 match_id: matchId,
                 noRetry: true,
               }, (err, result) => {
