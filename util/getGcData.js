@@ -81,7 +81,7 @@ module.exports = function getGcData(match, cb) {
       console.log('found cached replay url for %s', match.match_id);
       return cb(err, gcdata);
     }
-    if (process.env.NODE_ENV !== 'test' && Math.random() < 0.75) {
+    if (process.env.NODE_ENV !== 'test' && Math.random() < 0.9) {
       // Use STRATZ API as backup data source
       return getData({ url: `https://api.stratz.com/api/v1/match?matchId=${match.match_id}` }, (err, body) => {
         if (body.results && body.results[0]) {
