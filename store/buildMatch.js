@@ -1,6 +1,6 @@
 /**
  * Functions to build/cache match object
- **/
+ * */
 const config = require('../config');
 const async = require('async');
 const queries = require('./queries');

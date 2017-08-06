@@ -1,6 +1,6 @@
 /**
  * Worker running tasks on timed intervals
- **/
+ * */
 const config = require('../config');
 const constants = require('dotaconstants');
 const redis = require('../store/redis');

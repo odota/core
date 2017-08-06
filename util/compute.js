@@ -10,7 +10,7 @@ const ancients = constants.ancients;
  * Count the words that occur in a set of messages
  * - messages: the messages to create the counts over
  * - player_filter: if non-null, only count that player's messages
- **/
+ * */
 function countWords(playerMatch, playerFilter) {
   const messages = playerMatch.chat;
   // extract the message strings from the message objects
@@ -43,7 +43,7 @@ function countWords(playerMatch, playerFilter) {
 
 /**
  * Computes additional properties from a match/player_match
- **/
+ * */
 function computeMatchData(pm) {
   const selfHero = constants.heroes[pm.hero_id];
   // Compute patch based on start_time

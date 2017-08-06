@@ -1,6 +1,6 @@
 /**
  * Worker to fetch updated player profiles
- **/
+ * */
 const async = require('async');
 const queries = require('../store/queries');
 const db = require('../store/db');

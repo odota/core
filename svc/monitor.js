@@ -1,13 +1,12 @@
 /**
  * Worker that monitors health metrics and saves results
- **/
+ * */
 const config = require('../config');
 const redis = require('../store/redis');
 const db = require('../store/db');
 const cassandra = require('../store/cassandra');
 const utility = require('../util/utility');
 const request = require('request');
-const queue = require('../store/queue');
 
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
@@ -79,7 +78,7 @@ function parseDelay(cb) {
     return cb(err, {
       metric: result.rows[0].count,
       threshold: 1000,
-    });  
+    });
   });
 }
 

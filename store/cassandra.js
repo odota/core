@@ -1,6 +1,6 @@
 /**
  * Interface to Cassandra client
- **/
+ * */
 const cassandraDriver = require('cassandra-driver');
 const config = require('../config');
 const url = require('url');

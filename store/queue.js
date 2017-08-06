@@ -1,6 +1,6 @@
 /**
  * Provides methods for working with the job queue
- **/
+ * */
 const redis = require('./redis');
 const db = require('./db');
 
@@ -31,8 +31,8 @@ function runQueue(queueName, parallelism, processor) {
 
 function runReliableQueue(queueName, parallelism, processor) {
   function processOneJob() {
-    db.transaction(async (trx) => {
-      const result = await db.raw(`
+    return db.transaction((trx) => {
+      trx.raw(`
       UPDATE queue SET attempts = attempts - 1
       WHERE id = (
       SELECT id
@@ -43,23 +43,37 @@ function runReliableQueue(queueName, parallelism, processor) {
       LIMIT 1
       )
       RETURNING *
-      `, [queueName]);
-      const job = result && result.rows && result.rows[0];
-      if (job) {
-        processor(job.data, async (err) => {
+      `, [queueName]).asCallback((err, result) => {
+        const job = result && result.rows && result.rows[0];
+        if (err) {
+          return trx.rollback(err);
+        }
+        if (!job) {
+          return trx.rollback(new Error('no job available'));
+        }
+        return processor(job.data, (err) => {
           if (err) {
+            // processor encountered an error, just log it and commit the transaction
             console.error(err);
           }
           if (!err || job.attempts <= 0) {
-            await db.raw('DELETE FROM queue WHERE id = ?', [job.id]);
+            // remove the job from the queue if successful or out of attempts
+            return trx.raw('DELETE FROM queue WHERE id = ?', [job.id]).asCallback((err) => {
+              if (err) {
+                return trx.rollback(err);
+              }
+              return trx.commit();
+            });
           }
-          trx.commit();
-          processOneJob();
+          return trx.commit();
         });
-      } else {
+      });
+    })
+      .then(processOneJob)
+      .catch((err) => {
+        console.error(err);
         setTimeout(processOneJob, 3000);
-      }
-    });
+      });
   }
   for (let i = 0; i < parallelism; i += 1) {
     processOneJob();

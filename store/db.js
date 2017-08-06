@@ -1,6 +1,6 @@
 /**
  * Interface to PostgreSQL client
- **/
+ * */
 const config = require('../config');
 const pg = require('pg');
 const knex = require('knex');

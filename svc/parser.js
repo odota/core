@@ -4,7 +4,7 @@
  * This produces an event stream (newline-delimited JSON)
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
- **/
+ * */
 const utility = require('../util/utility');
 const getGcData = require('../util/getGcData');
 const config = require('../config');

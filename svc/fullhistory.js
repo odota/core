@@ -1,6 +1,6 @@
 /**
  * Worker to fetch full match histories for players
- **/
+ * */
 const async = require('async');
 const urllib = require('url');
 const config = require('../config');

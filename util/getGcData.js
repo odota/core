@@ -1,7 +1,7 @@
 /**
  * Issues a request to the retriever to get GC (Game Coordinator) data for a match
  * Calls back with an object containing the GC data
- **/
+ * */
 const moment = require('moment');
 const utility = require('../util/utility');
 const config = require('../config');

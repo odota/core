@@ -1,6 +1,6 @@
 /**
  * Worker to fetch MMR data for players
- **/
+ * */
 const utility = require('../util/utility');
 const queue = require('../store/queue');
 const db = require('../store/db');

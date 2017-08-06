@@ -2,7 +2,7 @@
 /* eslint-disable global-require */
 /**
  * Main test script to run tests
- **/
+ * */
 process.env.NODE_ENV = 'test';
 const async = require('async');
 const nock = require('nock');

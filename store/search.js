@@ -1,6 +1,6 @@
 /**
  * Methods for search functionality
- **/
+ * */
 const async = require('async');
 const db = require('./db');
 /**

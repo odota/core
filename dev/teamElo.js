@@ -1,6 +1,6 @@
 /**
  * Computes team Elo ratings by game
- **/
+ * */
 const JSONStream = require('JSONStream');
 const async = require('async');
 const db = require('../store/db');

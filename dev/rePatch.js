@@ -1,6 +1,6 @@
 /**
  * Recalculate patch ID for matches in match table
- **/
+ * */
 const db = require('../store/db');
 const queries = require('../store/queries');
 const async = require('async');

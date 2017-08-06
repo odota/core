@@ -1,7 +1,7 @@
 /**
  * websocket server that recieves match data as it arrives and checks if
  * any connected clients are subscribed to match properties.
- **/
+ * */
 const config = require('../config');
 const redis = require('redis');
 const WebSocket = require('ws');

@@ -1,7 +1,7 @@
 /**
  * Provides utility functions.
  * All functions should have external dependencies (DB, etc.) passed as parameters
- **/
+ * */
 const config = require('../config');
 const constants = require('dotaconstants');
 const request = require('request');
@@ -40,7 +40,7 @@ function convert32to64(id) {
 
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
- **/
+ * */
 function generateJob(type, payload) {
   const apiUrl = 'http://api.steampowered.com';
   let apiKey;
@@ -161,7 +161,7 @@ function generateJob(type, payload) {
  * retries/retry delay
  * Injecting API key for Steam API
  * Errors from Steam API
- **/
+ * */
 function getData(url, cb) {
   let u;
   let delay = Number(config.DEFAULT_DELAY);
@@ -245,7 +245,7 @@ function getData(url, cb) {
 }
 /**
  * Determines if a player is radiant
- **/
+ * */
 function isRadiant(player) {
   return player.player_slot < 128;
 }
@@ -256,7 +256,7 @@ function isRadiant(player) {
  * Arrays get concatenated
  * Strings get concatenated
  * Objects get recursively merged
- **/
+ * */
 function mergeObjects(merge, val) {
   Object.keys(val || {}).forEach((attr) => {
     // check if prop is NaN
@@ -278,7 +278,7 @@ function mergeObjects(merge, val) {
 
 /**
  * Finds the mode and its occurrence count in the input array
- **/
+ * */
 function modeWithCount(array) {
   if (!array.length) {
     return {};
@@ -304,7 +304,7 @@ function mode(array) {
 
 /**
  * Determines if a match is significant for aggregation purposes
- **/
+ * */
 function isSignificant(match) {
   return Boolean(constants.game_mode[match.game_mode]
   && constants.game_mode[match.game_mode].balanced
@@ -317,7 +317,7 @@ function isSignificant(match) {
 
 /**
  * Determines if a match is a pro match
- **/
+ * */
 function isProMatch(match, leagueids) {
   return Boolean(isSignificant(match)
   && match.leagueid
@@ -332,21 +332,21 @@ function isProMatch(match, leagueids) {
 
 /**
  * Finds the max of the input array
- **/
+ * */
 function max(array) {
   return Math.max.apply(null, array);
 }
 
 /**
  * Finds the min of the input array
- **/
+ * */
 function min(array) {
   return Math.min.apply(null, array);
 }
 
 /**
  * Serializes a JSON object to row for storage in Cassandra
- **/
+ * */
 function serialize(row) {
   const obj = {};
   Object.keys(row).forEach((key) => {
@@ -359,7 +359,7 @@ function serialize(row) {
 
 /**
  * Deserializes a row to JSON object read from Cassandra
- **/
+ * */
 function deserialize(row) {
   const obj = {};
   row.keys().forEach((key) => {
@@ -375,7 +375,7 @@ function deserialize(row) {
 /**
  * Returns the unix timestamp at the beginning of a block of n minutes
  * Offset controls the number of blocks to look ahead
- **/
+ * */
 function getStartOfBlockMinutes(size, offset) {
   offset = offset || 0;
   const blockS = size * 60;
@@ -386,7 +386,7 @@ function getStartOfBlockMinutes(size, offset) {
 
 /**
  * Finds the arithmetic mean of the input array
- **/
+ * */
 function average(data) {
   return Math.floor((data.reduce((a, b) =>
     a + b
@@ -395,7 +395,7 @@ function average(data) {
 
 /**
  * Finds the standard deviation of the input array
- **/
+ * */
 function stdDev(data) {
   const avg = average(data);
   const squareDiffs = data.map((value) => {
@@ -410,7 +410,7 @@ function stdDev(data) {
 
 /**
  * Finds the median of the input array
- **/
+ * */
 function median(data) {
   data.sort((a, b) =>
     a - b,
@@ -424,7 +424,7 @@ function median(data) {
 
 /**
  * Gets the patch ID given a unix start time
- **/
+ * */
 function getPatchIndex(startTime) {
   const date = new Date(startTime * 1000);
   let i;
@@ -441,7 +441,7 @@ function getPatchIndex(startTime) {
 
 /**
  * Constructs a replay url
- **/
+ * */
 function buildReplayUrl(matchId, cluster, replaySalt) {
   const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
   return `http://replay${cluster}.valve.net/570/${matchId}_${replaySalt}${suffix}`;
@@ -449,7 +449,7 @@ function buildReplayUrl(matchId, cluster, replaySalt) {
 
 /**
  * Computes the expected winrate given an input array of winrates
- **/
+ * */
 function expectedWin(rates) {
   // simple implementation, average
   // return rates.reduce((prev, curr) => prev + curr)) / hids.length;
@@ -462,7 +462,7 @@ function expectedWin(rates) {
 
 /**
  * Converts a group of heroes to string
- **/
+ * */
 function groupToString(g) {
   return g.sort((a, b) =>
     a - b,
@@ -471,7 +471,7 @@ function groupToString(g) {
 
 /**
  * Serialize a matchup/result of heroes to a string
- **/
+ * */
 function matchupToString(t0, t1, t0win) {
   // create sorted strings of each team
   const rcg = groupToString(t0);
@@ -487,7 +487,7 @@ function matchupToString(t0, t1, t0win) {
 
 /**
  * Enumerates the k-combinations of the input array
- **/
+ * */
 function kCombinations(arr, k) {
   let i;
   let j;
@@ -522,7 +522,7 @@ function kCombinations(arr, k) {
 
 /**
  * Generates an array of the hero matchups in a given match
- **/
+ * */
 function generateMatchups(match, max, oneSided) {
   max = max || 5;
   const radiant = [];
@@ -587,7 +587,7 @@ function generateMatchups(match, max, oneSided) {
 
 /**
  * Counts the peer account_ids in the input match array
- **/
+ * */
 function countPeers(matches) {
   const teammates = {};
   matches.forEach((m) => {
@@ -634,14 +634,14 @@ function countPeers(matches) {
 
 /**
  * The anonymous account ID used as a placeholder for player with match privacy settings on
- **/
+ * */
 function getAnonymousAccountId() {
   return 4294967295;
 }
 
 /**
  * Computes the lane a hero is in based on an input hash of positions
- **/
+ * */
 function getLaneFromPosData(lanePos, isRadiant) {
   // compute lanes
   const lanes = [];
@@ -664,7 +664,7 @@ function getLaneFromPosData(lanePos, isRadiant) {
   * Player presence on lane. Calculated by the count of the prominant
   * lane (`count` of mode) divided by the presence on all lanes (`lanes.length`).
   * Having low presence (<45%) probably means the player is roaming.
-  **/
+  * */
   const isRoaming = (count / lanes.length) < 0.45;
 
   // Roles, currently doesn't distinguish between carry/support in safelane
@@ -693,7 +693,7 @@ function getLaneFromPosData(lanePos, isRadiant) {
 
 /**
  * Get array of retriever endpoints from config
- **/
+ * */
 function getRetrieverArr() {
   const input = config.RETRIEVER_HOST;
   const output = [];

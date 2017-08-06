@@ -1,6 +1,6 @@
 /**
  * Provides functions to get/insert data into data stores.
- **/
+ * */
 const utility = require('../util/utility');
 const benchmarks = require('../util/benchmarks');
 const config = require('../config');
@@ -71,7 +71,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 
 /**
  * Benchmarks a match against stored data in Redis.
- **/
+ * */
 function getMatchBenchmarks(redis, m, cb) {
   async.map(m.players, (p, cb) => {
     p.benchmarks = {};
