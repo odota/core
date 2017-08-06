@@ -20,7 +20,6 @@ const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
 
-const pQueue = queue.getQueue('parse');
 const subkeys = playerFields.subkeys;
 const countCats = playerFields.countCats;
 const countPeers = utility.countPeers;
@@ -3174,19 +3173,20 @@ Please keep request rate to approximately 3/s.
           type: 'string',
         }],
         route: () => '/request/:jobId',
-        func: (req, res, cb) => pQueue.getJob(req.params.jobId).then((job) => {
-          if (job) {
-            return job.getState().then(state => res.json({
-              jobId: job.id,
-              data: job.data,
-              state,
-              progress: job.progress(),
-            })).catch(cb);
-          }
-          return res.json({
-            state: 'failed',
+        func: (req, res, cb) => {
+          queue.getJob(req.params.jobId, (err, job) => {
+            if (err) {
+              return cb(err);
+            }
+            if (job) {
+              return res.json({
+                jobId: job.id,
+                data: job.data,
+              });
+            }
+            return res.json(null);
           });
-        }).catch(cb),
+        },
         responses: {
           200: {
             description: 'Success',
@@ -3214,24 +3214,11 @@ Please keep request rate to approximately 3/s.
           const match = {
             match_id: Number(matchId),
           };
-          /*
-          if (req.file) {
-            const hash = crypto.createHash('md5');
-            hash.update(req.file.buffer);
-            const key = hash.digest('hex');
-            redis.setex(new Buffer(`upload_blob:${key}`), 60 * 60, req.file.buffer);
-            match = {
-              replay_blob_key: key,
-            }
-          }
-          */
-
           function exitWithJob(err, parseJob) {
             if (err) {
               console.error(err);
             }
             res.status(err ? 400 : 200).json({
-              err,
               job: {
                 jobId: parseJob && parseJob.id,
               },
@@ -3257,20 +3244,6 @@ Please keep request rate to approximately 3/s.
             });
           }
           return exitWithJob('invalid input');
-          /*
-          else {
-            // file upload request
-            return pQueue.add({
-                id: `${moment().format('X')}_${match.match_id}`,
-                payload: match,
-              }, {
-                lifo: true,
-                attempts: 1,
-              })
-              .then(parseJob => exitWithJob(null, parseJob))
-              .catch(exitWithJob);
-          }
-          */
         },
         responses: {
           200: {

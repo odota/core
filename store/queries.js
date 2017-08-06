@@ -17,7 +17,6 @@ const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
 
-const pQueue = queue.getQueue('parse');
 const convert64to32 = utility.convert64to32;
 const serialize = utility.serialize;
 const deserialize = utility.deserialize;
@@ -1202,9 +1201,8 @@ function insertMatch(match, options, cb) {
       const doLogParse = options.doLogParse;
       const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
       if (doParse) {
-        return pQueue.add({
-          id: `${moment().format('X')}_${match.match_id}`,
-          payload: {
+        return queue.addJob('parse', {
+          data: {
             match_id: match.match_id,
             radiant_win: match.radiant_win,
             start_time: match.start_time,
@@ -1221,9 +1219,7 @@ function insertMatch(match, options, cb) {
             delay: 60 * 1000,
             type: 'exponential',
           },
-        })
-          .then(parseJob => cb(null, parseJob))
-          .catch(cb);
+        }, cb);
       }
       return cb();
     });

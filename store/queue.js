@@ -6,6 +6,7 @@ const bull = require('bull');
 const url = require('url');
 const async = require('async');
 const redis = require('./redis');
+const db = require('./db');
 
 // parse the url
 const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
@@ -54,58 +55,76 @@ function runQueue(queueName, parallelism, processor) {
       if (err) {
         console.error(err);
       }
-      // const jobData = JSON.parse(job);
       const jobData = JSON.parse(job[1]);
       processor(jobData, (err) => {
         if (err) {
           console.error(err);
         }
-        /*
-        if (jobData && jobData.id) {
-          // Lock the job so we don't requeue it
-          redis.setex(lockKeyName(jobData), 300, 1);
-        }
-        redis.lrem(processingQueueName, 0, job);
-        */
         processOneJob();
       });
     });
   }
-  // const lockKeyName = (job) => `${queueName}:lock:${job.id}`;
   for (let i = 0; i < parallelism; i += 1) {
     processOneJob();
   }
-  /*
-  handleStalledJobs();
+}
 
-  function handleStalledJobs() {
-    redis.brpoplpush(processingQueueName, processingQueueName, '0', (err, job) => {
-      if (err) {
-        console.error(err);
-      }
-      const jobData = JSON.parse(job);
-      if (jobData && jobData.id) {
-        // If a job isn't locked and has an ID, return it to queue
-        redis.get(lockKeyName(jobData), (err, result) => {
+function runReliableQueue(queueName, parallelism, processor) {
+  function processOneJob() {
+    db.transaction(async (trx) => {
+      const result = await db.raw(`
+      UPDATE queue SET attempts = attempts - 1
+      WHERE id = (
+      SELECT id
+      FROM queue
+      WHERE type = ?
+      ORDER BY id
+      FOR UPDATE SKIP LOCKED
+      LIMIT 1
+      )
+      RETURNING *
+      `, [queueName]);
+      const job = result && result.rows && result.rows[0];
+      if (job) {
+        processor(job.data, async (err) => {
           if (err) {
             console.error(err);
           }
-          if (!result) {
-            redis.lpush(queueName, job);
+          if (!err || job.attempts <= 0) {
+            await db.raw('DELETE FROM queue WHERE id = ?', [job.id]);
           }
-          exit();
+          trx.commit();
+          processOneJob();
         });
       } else {
-        exit();
-      }
-
-      function exit() {
-        redis.lrem(processingQueueName, 0, job);
-        setTimeout(handleStalledJobs, 10000);
+        setTimeout(processOneJob, 3000);
       }
     });
   }
-  */
+  for (let i = 0; i < parallelism; i += 1) {
+    processOneJob();
+  }
+}
+
+function addJob(queueName, job, options, cb) {
+  // TODO handle lifo/backoff
+  db.raw('INSERT INTO queue(type, timestamp, attempts, data) VALUES (?, ?, ?, ?) RETURNING *',
+    [queueName, new Date(), options.attempts || 1, JSON.stringify(job.data)])
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return cb(err, result.rows[0]);
+    });
+}
+
+function getJob(jobId, cb) {
+  db.raw('SELECT * FROM queue WHERE id = ?', [jobId]).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows[0]);
+  });
 }
 
 module.exports = {
@@ -113,4 +132,7 @@ module.exports = {
   getCounts,
   cleanup,
   runQueue,
+  runReliableQueue,
+  addJob,
+  getJob,
 };
