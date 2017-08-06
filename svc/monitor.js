@@ -72,14 +72,14 @@ function seqNumDelay(cb) {
 }
 
 function parseDelay(cb) {
-  queue.getCounts(redis, (err, counts) => {
+  db.raw('select count(*) from queue where type = \'parse\'').asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
     return cb(err, {
-      metric: counts.parse.waiting,
+      metric: result.rows[0].count,
       threshold: 1000,
-    });
+    });  
   });
 }
 

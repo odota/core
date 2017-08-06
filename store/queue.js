@@ -1,51 +1,11 @@
 /**
  * Provides methods for working with the job queue
  **/
-const config = require('../config');
-const bull = require('bull');
-const url = require('url');
-const async = require('async');
 const redis = require('./redis');
 const db = require('./db');
 
-// parse the url
-const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
-if (connInfo.protocol !== 'redis:') {
-  throw new Error('connection string must use the redis: protocol');
-}
-const redisOptions = {
-  port: connInfo.port || 6379,
-  host: connInfo.hostname,
-  DB: connInfo.path ? connInfo.path.substring(1) : 0,
-};
-
-function getQueue(type) {
-  return bull(type, {
-    redis: redisOptions,
-  });
-}
-
-const types = ['parse'];
-const queues = types.map(type => getQueue(type));
-
 function getCounts(redis, cb) {
-  async.map(queues,
-    (queue, cb) => queue.getJobCounts().then(result => cb(null, result)).catch(cb),
-    (err, result) => {
-      const obj = {};
-      result.forEach((res, i) => {
-        obj[types[i]] = res;
-      });
-      cb(err, obj);
-    });
-}
-
-function cleanup(redis, cb) {
-  async.each(queues, (queue, cb) => {
-    async.each(['active', 'completed', 'failed', 'delayed'], (type, cb) => {
-      queue.clean(24 * 60 * 60 * 1000, type).then(result => cb(null, result)).catch(cb);
-    }, cb);
-  }, cb);
+  cb(null, []);
 }
 
 function runQueue(queueName, parallelism, processor) {
@@ -128,9 +88,7 @@ function getJob(jobId, cb) {
 }
 
 module.exports = {
-  getQueue,
   getCounts,
-  cleanup,
   runQueue,
   runReliableQueue,
   addJob,

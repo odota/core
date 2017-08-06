@@ -4,7 +4,6 @@
 const config = require('../config');
 const constants = require('dotaconstants');
 const redis = require('../store/redis');
-const queue = require('../store/queue');
 const db = require('../store/db');
 const queries = require('../store/queries');
 const buildSets = require('../store/buildSets');
@@ -108,10 +107,6 @@ function doDistributions(cb) {
     });
     return cb(err);
   });
-}
-
-function doQueueCleanup(cb) {
-  queue.cleanup(redis, cb);
 }
 
 function doProPlayers(cb) {
@@ -463,7 +458,6 @@ function doHeroStats(cb) {
 invokeInterval(doBuildSets, 60 * 1000);
 // invokeInterval(doMMStats, config.MMSTATS_DATA_INTERVAL * 60 * 1000); // Sample every 3 minutes
 invokeInterval(doDistributions, 6 * 60 * 60 * 1000);
-invokeInterval(doQueueCleanup, 60 * 60 * 1000);
 invokeInterval(doProPlayers, 30 * 60 * 1000);
 invokeInterval(doLeagues, 30 * 60 * 1000);
 invokeInterval(doTeams, 60 * 60 * 1000);
