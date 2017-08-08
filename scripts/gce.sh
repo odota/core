@@ -48,7 +48,7 @@ gcloud compute instance-groups managed set-autoscaling "proxy-group-1" --cool-do
 #backend
 gcloud compute instance-groups managed delete --quiet backend-group-1
 gcloud compute instance-templates delete --quiet backend-1
-gcloud compute instance-templates create backend-1 --machine-type n1-highcpu-4 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata-from-file startup-script=./scripts/backend.sh
+gcloud compute instance-templates create backend-1 --machine-type n1-standard-2 --preemptible --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "http-server" --metadata-from-file startup-script=./scripts/backend.sh
 gcloud compute instance-groups managed create "backend-group-1" --base-instance-name "backend-group-1" --template "backend-1" --size "1"
 gcloud compute instance-groups managed set-autoscaling "backend-group-1" --cool-down-period "60" --max-num-replicas "1" --min-num-replicas "1" --target-cpu-utilization "0.6"
 
