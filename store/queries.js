@@ -234,24 +234,8 @@ function getHeroBenchmarks(db, redis, options, cb) {
   );
 }
 
-function getMmrEstimate(db, redis, accountId, cb) {
-  redis.lrange(`mmr_estimates:${accountId}`, 0, -1, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    const data = result.filter(d =>
-      // remove invalid values
-      d,
-    ).map(d =>
-      // convert to numerical values
-      Number(d),
-    );
-    return cb(err, {
-      estimate: utility.average(data),
-      stdDev: utility.stdDev(data),
-      n: data.length,
-    });
-  });
+function getMmrEstimate(accountId, cb) {
+  db.first('estimate').from('mmr_estimates').where({ account_id: accountId }).asCallback(cb);
 }
 
 function getPlayerMatches(accountId, queryObj, cb) {
@@ -630,14 +614,16 @@ function updateBenchmarks(match, cb) {
 function updateMmrEstimate(match, cb) {
   getMatchRating(redis, match, (err, avg) => {
     if (avg && !isNaN(Number(avg))) {
-      // For each player, update mmr estimation list
-      match.players.forEach((player) => {
+      return async.each(match.players, (player, cb) => {
         if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
-          // push into list, limit elements
-          redis.lpush(`mmr_estimates:${player.account_id}`, avg);
-          redis.ltrim(`mmr_estimates:${player.account_id}`, 0, 19);
+          return db.raw(`
+          INSERT INTO mmr_estimates VALUES(?, ?)
+          ON CONFLICT(account_id)
+          DO UPDATE SET estimate = mmr_estimates.estimate - (mmr_estimates.estimate / 20) + (? / 20)`,
+            [player.account_id, avg, avg]).asCallback(cb);
         }
-      });
+        return cb();
+      }, cb);
     }
     return cb(err);
   });
