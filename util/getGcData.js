@@ -1,7 +1,7 @@
 /**
  * Issues a request to the retriever to get GC (Game Coordinator) data for a match
  * Calls back with an object containing the GC data
- **/
+ * */
 const moment = require('moment');
 const utility = require('../util/utility');
 const config = require('../config');
@@ -18,7 +18,19 @@ const insertMatch = queries.insertMatch;
 function getGcDataFromRetriever(match, cb) {
   // make array of retriever urls and use a random one on each retry
   const urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
+  const retrieverCount = retrieverArr.length;
+  for (let i = 0; i < retrieverCount; i += 1) {
+    urls.push(`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`);
+  }
   return getData({ url: urls, noRetry: match.noRetry }, (err, body, metadata) => {
+    if (metadata && metadata.hostname === 'api.stratz.com') {
+      // handle backup urls (don't save to DB since no party/buffs data)
+      return cb(err, {
+        match_id: Number(match.match_id),
+        cluster: body.results[0].clusterId,
+        replay_salt: body.results[0].replaySalt,
+      });
+    }
     if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
       // non-retryable error
       return cb('invalid body or error');
@@ -80,20 +92,6 @@ module.exports = function getGcData(match, cb) {
     if (gcdata && gcdata.replay_salt) {
       console.log('found cached replay url for %s', match.match_id);
       return cb(err, gcdata);
-    }
-    if (process.env.NODE_ENV !== 'test' && Math.random() < 0.8) {
-      // Use STRATZ API as backup data source
-      return getData({ url: `https://api.stratz.com/api/v1/match?matchId=${match.match_id}` }, (err, body) => {
-        if (body.results && body.results[0]) {
-          cb(err, {
-            match_id: Number(match.match_id),
-            cluster: body.results[0].clusterId,
-            replay_salt: body.results[0].replaySalt,
-          });
-        } else {
-          getGcDataFromRetriever(match, cb);
-        }
-      });
     }
     return getGcDataFromRetriever(match, cb);
   });
