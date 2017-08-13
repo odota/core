@@ -370,6 +370,7 @@ CREATE TABLE hero_ranking (
   score double precision
 );
 CREATE INDEX ON hero_ranking(hero_id, score);
+CREATE INDEX ON hero_ranking(score);
 
 CREATE TABLE queue (
   PRIMARY KEY (id),
