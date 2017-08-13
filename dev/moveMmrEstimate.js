@@ -13,7 +13,11 @@ db.transaction((trx) => {
           .filter(d => d)
           .map(d => Number(d));
         const estimate = utility.average(data);
-        db.raw('INSERT INTO mmr_estimates VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET estimate = ?', [accountId, estimate, estimate]).asCallback(cb);
+        if (accountId && estimate) {
+          db.raw('INSERT INTO mmr_estimates VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET estimate = ?', [accountId, estimate, estimate]).asCallback(cb);
+        } else {
+          cb();
+        }
       });
     }, (err) => {
       if (err) {
