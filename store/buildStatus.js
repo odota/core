@@ -42,7 +42,7 @@ module.exports = function buildStatus(db, redis, cb) {
       utility.getRedisCountDay(redis, 'parser', cb);
     },
     requests_last_day(cb) {
-      utility.getRedisCountDay(redis, 'requests', cb);
+      utility.getRedisCountDay(redis, 'request', cb);
     },
     api_hits_last_day(cb) {
       utility.getRedisCountDay(redis, 'api_hits', cb);
