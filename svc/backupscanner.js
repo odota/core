@@ -42,7 +42,9 @@ function processMatch(matchId, cb) {
         skipCounts: false,
       }, (err) => {
         if (!err) {
-          redis.set(`scanner_insert:${match.match_id}`, 1);
+          // Set with long expiration (1 month) to avoid picking up the same matches again on later scans
+          // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
+          redis.setex(`scanner_insert:${match.match_id}`, 3600 * 24 * 30, 1);
         }
         cb(err);
       });

@@ -72,7 +72,7 @@ function runReliableQueue(queueName, parallelism, processor) {
       .then(processOneJob)
       .catch((err) => {
         console.error(err);
-        setTimeout(processOneJob, 3000);
+        setTimeout(processOneJob, 5000);
       });
   }
   for (let i = 0; i < parallelism; i += 1) {
@@ -81,7 +81,6 @@ function runReliableQueue(queueName, parallelism, processor) {
 }
 
 function addJob(queueName, job, options, cb) {
-  // TODO handle lifo/backoff
   db.raw('INSERT INTO queue(type, timestamp, attempts, data) VALUES (?, ?, ?, ?) RETURNING *',
     [queueName, new Date(), options.attempts || 1, JSON.stringify(job.data)])
     .asCallback((err, result) => {
