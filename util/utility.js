@@ -713,7 +713,7 @@ function redisCount(redis, prefix) {
 }
 
 function getRedisCountDay(redis, prefix, cb) {
-  // Get couns for last 24 hour keys (including current partial hour)
+  // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(`${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`);
