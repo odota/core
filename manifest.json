@@ -60,7 +60,7 @@
       "script": "svc/backupscanner.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "backend",
+      "group": "disabled",
       "exec_mode": "cluster",
       "instances": 1
     },
