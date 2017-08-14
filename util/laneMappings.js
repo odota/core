@@ -1,6 +1,6 @@
 /**
  * Creates a 2D array of lane mappings (x,y) to lane constant IDs
- **/
+ * */
 const laneMappings = [];
 for (let i = 0; i < 128; i += 1) {
   laneMappings.push([]);

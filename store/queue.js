@@ -1,50 +1,11 @@
 /**
  * Provides methods for working with the job queue
- **/
-const config = require('../config');
-const bull = require('bull');
-const url = require('url');
-const async = require('async');
+ * */
 const redis = require('./redis');
-
-// parse the url
-const connInfo = url.parse(config.REDIS_URL, true /* parse query string */);
-if (connInfo.protocol !== 'redis:') {
-  throw new Error('connection string must use the redis: protocol');
-}
-const redisOptions = {
-  port: connInfo.port || 6379,
-  host: connInfo.hostname,
-  DB: connInfo.path ? connInfo.path.substring(1) : 0,
-};
-
-function getQueue(type) {
-  return bull(type, {
-    redis: redisOptions,
-  });
-}
-
-const types = ['parse'];
-const queues = types.map(type => getQueue(type));
+const db = require('./db');
 
 function getCounts(redis, cb) {
-  async.map(queues,
-    (queue, cb) => queue.getJobCounts().then(result => cb(null, result)).catch(cb),
-    (err, result) => {
-      const obj = {};
-      result.forEach((res, i) => {
-        obj[types[i]] = res;
-      });
-      cb(err, obj);
-    });
-}
-
-function cleanup(redis, cb) {
-  async.each(queues, (queue, cb) => {
-    async.each(['active', 'completed', 'failed', 'delayed'], (type, cb) => {
-      queue.clean(24 * 60 * 60 * 1000, type).then(result => cb(null, result)).catch(cb);
-    }, cb);
-  }, cb);
+  cb(null, []);
 }
 
 function runQueue(queueName, parallelism, processor) {
@@ -54,63 +15,96 @@ function runQueue(queueName, parallelism, processor) {
       if (err) {
         console.error(err);
       }
-      // const jobData = JSON.parse(job);
       const jobData = JSON.parse(job[1]);
       processor(jobData, (err) => {
         if (err) {
           console.error(err);
         }
-        /*
-        if (jobData && jobData.id) {
-          // Lock the job so we don't requeue it
-          redis.setex(lockKeyName(jobData), 300, 1);
-        }
-        redis.lrem(processingQueueName, 0, job);
-        */
         processOneJob();
       });
     });
   }
-  // const lockKeyName = (job) => `${queueName}:lock:${job.id}`;
   for (let i = 0; i < parallelism; i += 1) {
     processOneJob();
   }
-  /*
-  handleStalledJobs();
+}
 
-  function handleStalledJobs() {
-    redis.brpoplpush(processingQueueName, processingQueueName, '0', (err, job) => {
-      if (err) {
-        console.error(err);
-      }
-      const jobData = JSON.parse(job);
-      if (jobData && jobData.id) {
-        // If a job isn't locked and has an ID, return it to queue
-        redis.get(lockKeyName(jobData), (err, result) => {
+function runReliableQueue(queueName, parallelism, processor) {
+  function processOneJob() {
+    return db.transaction((trx) => {
+      trx.raw(`
+      UPDATE queue SET attempts = attempts - 1
+      WHERE id = (
+      SELECT id
+      FROM queue
+      WHERE type = ?
+      ORDER BY id
+      FOR UPDATE SKIP LOCKED
+      LIMIT 1
+      )
+      RETURNING *
+      `, [queueName]).asCallback((err, result) => {
+        const job = result && result.rows && result.rows[0];
+        if (err) {
+          return trx.rollback(err);
+        }
+        if (!job) {
+          return trx.rollback(new Error('no job available'));
+        }
+        return processor(job.data, (err) => {
           if (err) {
+            // processor encountered an error, just log it and commit the transaction
             console.error(err);
           }
-          if (!result) {
-            redis.lpush(queueName, job);
+          if (!err || job.attempts <= 0) {
+            // remove the job from the queue if successful or out of attempts
+            return trx.raw('DELETE FROM queue WHERE id = ?', [job.id]).asCallback((err) => {
+              if (err) {
+                return trx.rollback(err);
+              }
+              return trx.commit();
+            });
           }
-          exit();
+          return trx.commit();
         });
-      } else {
-        exit();
-      }
-
-      function exit() {
-        redis.lrem(processingQueueName, 0, job);
-        setTimeout(handleStalledJobs, 10000);
-      }
-    });
+      });
+    })
+      .then(processOneJob)
+      .catch((err) => {
+        console.error(err);
+        setTimeout(processOneJob, 3000);
+      });
   }
-  */
+  for (let i = 0; i < parallelism; i += 1) {
+    processOneJob();
+  }
+}
+
+function addJob(queueName, job, options, cb) {
+  // TODO handle lifo/backoff
+  db.raw('INSERT INTO queue(type, timestamp, attempts, data) VALUES (?, ?, ?, ?) RETURNING *',
+    [queueName, new Date(), options.attempts || 1, JSON.stringify(job.data)])
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return cb(err, result.rows[0]);
+    });
+}
+
+function getJob(jobId, cb) {
+  db.raw('SELECT * FROM queue WHERE id = ?', [jobId]).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows[0]);
+  });
 }
 
 module.exports = {
-  getQueue,
   getCounts,
-  cleanup,
   runQueue,
+  runReliableQueue,
+  addJob,
+  getJob,
 };

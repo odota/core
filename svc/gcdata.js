@@ -1,6 +1,6 @@
 /**
  * Worker to fetch GC (Game Coordinator) data for matches
- **/
+ * */
 const getGcData = require('../util/getGcData');
 const queue = require('../store/queue');
 // const utility = require('../util/utility');

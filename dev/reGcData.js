@@ -1,6 +1,6 @@
 /**
  * Call getGcData for all matches in match table
- **/
+ * */
 const db = require('../store/db');
 const async = require('async');
 const getGcData = require('../util/getGcData');

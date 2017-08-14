@@ -1,7 +1,7 @@
 /**
  * Strips off "item_" from strings, and nullifies dota_unknown.
  * Does not mutate the original string.
- **/
+ * */
 function translate(input) {
   if (input === 'dota_unknown') {
     return null;
@@ -13,19 +13,19 @@ function translate(input) {
 }
 /**
  * Prepends illusion_ to string if illusion
- **/
+ * */
 function computeIllusionString(input, isIllusion) {
   return (isIllusion ? 'illusion_' : '') + input;
 }
 
 /**
  * Produces a new output array with expanded entries from the original input array
- **/
+ * */
 function processExpand(entries, meta) {
   const output = [];
   /**
    * Place a copy of the entry in the output
-   **/
+   * */
   function expand(e) {
     // set slot and player_slot
     const slot = ('slot' in e) ? e.slot : meta.hero_to_slot[e.unit];

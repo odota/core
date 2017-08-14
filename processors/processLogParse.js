@@ -15,7 +15,7 @@ function translate(s) {
 
 /**
  * A processor to reduce the event stream to only logs we want to persist
- **/
+ * */
 function processReduce(entries, meta) {
   const result = entries.filter((e) => {
     if (e.type === 'DOTA_COMBATLOG_PURCHASE' ||

@@ -2,7 +2,7 @@ const utility = require('../util/utility');
 
 /**
  * Compute data requiring all players in a match for storage in match table
- **/
+ * */
 function processAllPlayers(entries, meta) {
   const goldAdvTime = {};
   const xpAdvTime = {};

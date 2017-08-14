@@ -2,7 +2,7 @@ const populate = require('./populate');
 
 /**
  * A processor to compute teamfights that occurred given an event stream
- **/
+ * */
 function processTeamfights(entries, meta) {
   let currTeamfight;
   let teamfights = [];

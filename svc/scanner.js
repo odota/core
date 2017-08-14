@@ -3,7 +3,7 @@
  * Note that the limit for this endpoint seems to be around 5 calls/IP/minute
  * The endpoint usually takes around 2 seconds to return data
  * Therefore each IP should generally avoid requesting more than once every 10 seconds
- **/
+ * */
 const utility = require('../util/utility');
 const config = require('../config');
 const redis = require('../store/redis');

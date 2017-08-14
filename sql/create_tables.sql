@@ -372,6 +372,21 @@ CREATE TABLE hero_ranking (
 CREATE INDEX ON hero_ranking(hero_id, score);
 CREATE INDEX ON hero_ranking(score);
 
+CREATE TABLE queue (
+  PRIMARY KEY (id),
+  id bigserial,
+  type text,
+  timestamp timestamp with time zone,
+  attempts int,
+  data json
+);
+
+CREATE TABLE mmr_estimates (
+  PRIMARY KEY (account_id),
+  account_id bigint,
+  estimate int
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

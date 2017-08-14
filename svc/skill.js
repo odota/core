@@ -1,6 +1,6 @@
 /**
  * Worker checking the GetMatchHistory endpoint to get skill data for matches
- **/
+ * */
 const constants = require('dotaconstants');
 const config = require('../config.js');
 const utility = require('../util/utility');

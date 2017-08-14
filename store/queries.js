@@ -1,6 +1,6 @@
 /**
  * Provides functions to get/insert data into data stores.
- **/
+ * */
 const utility = require('../util/utility');
 const benchmarks = require('../util/benchmarks');
 const config = require('../config');
@@ -17,7 +17,6 @@ const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
 
-const pQueue = queue.getQueue('parse');
 const convert64to32 = utility.convert64to32;
 const serialize = utility.serialize;
 const deserialize = utility.deserialize;
@@ -72,7 +71,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 
 /**
  * Benchmarks a match against stored data in Redis.
- **/
+ * */
 function getMatchBenchmarks(redis, m, cb) {
   async.map(m.players, (p, cb) => {
     p.benchmarks = {};
@@ -235,24 +234,8 @@ function getHeroBenchmarks(db, redis, options, cb) {
   );
 }
 
-function getMmrEstimate(db, redis, accountId, cb) {
-  redis.lrange(`mmr_estimates:${accountId}`, 0, -1, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    const data = result.filter(d =>
-      // remove invalid values
-      d,
-    ).map(d =>
-      // convert to numerical values
-      Number(d),
-    );
-    return cb(err, {
-      estimate: utility.average(data),
-      stdDev: utility.stdDev(data),
-      n: data.length,
-    });
-  });
+function getMmrEstimate(accountId, cb) {
+  db.first('estimate').from('mmr_estimates').where({ account_id: accountId }).asCallback(cb);
 }
 
 function getPlayerMatches(accountId, queryObj, cb) {
@@ -633,14 +616,16 @@ function updateBenchmarks(match, cb) {
 function updateMmrEstimate(match, cb) {
   getMatchRating(redis, match, (err, avg) => {
     if (avg && !isNaN(Number(avg))) {
-      // For each player, update mmr estimation list
-      match.players.forEach((player) => {
+      return async.each(match.players, (player, cb) => {
         if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
-          // push into list, limit elements
-          redis.lpush(`mmr_estimates:${player.account_id}`, avg);
-          redis.ltrim(`mmr_estimates:${player.account_id}`, 0, 19);
+          return db.raw(`
+          INSERT INTO mmr_estimates VALUES(?, ?)
+          ON CONFLICT(account_id)
+          DO UPDATE SET estimate = mmr_estimates.estimate - (mmr_estimates.estimate / 20) + (? / 20)`,
+            [player.account_id, avg, avg]).asCallback(cb);
         }
-      });
+        return cb();
+      }, cb);
     }
     return cb(err);
   });
@@ -1204,9 +1189,8 @@ function insertMatch(match, options, cb) {
       const doLogParse = options.doLogParse;
       const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
       if (doParse) {
-        return pQueue.add({
-          id: `${moment().format('X')}_${match.match_id}`,
-          payload: {
+        return queue.addJob('parse', {
+          data: {
             match_id: match.match_id,
             radiant_win: match.radiant_win,
             start_time: match.start_time,
@@ -1223,9 +1207,7 @@ function insertMatch(match, options, cb) {
             delay: 60 * 1000,
             type: 'exponential',
           },
-        })
-          .then(parseJob => cb(null, parseJob))
-          .catch(cb);
+        }, cb);
       }
       return cb();
     });

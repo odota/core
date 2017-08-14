@@ -1,7 +1,7 @@
 /**
  * Worker serving as main web application
  * Serves web/API requests
- **/
+ * */
 const config = require('../config');
 const utility = require('../util/utility');
 const redis = require('../store/redis');
@@ -157,7 +157,7 @@ const server = app.listen(port, () => {
 });
 /**
  * Wait for connections to end, then shut down
- **/
+ * */
 function gracefulShutdown() {
   console.log('Received kill signal, shutting down gracefully.');
   server.close(() => {

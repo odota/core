@@ -1,6 +1,6 @@
 /**
  * Function to build status data
- **/
+ * */
 // const config = require('../config');
 const queue = require('./queue');
 const async = require('async');

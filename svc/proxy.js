@@ -1,6 +1,6 @@
 /**
  * Worker proxying requests to the Steam API.
- **/
+ * */
 const config = require('../config');
 const httpProxy = require('http-proxy');
 const http = require('http');

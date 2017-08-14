@@ -1,6 +1,6 @@
 /**
  * Interface to Redis client
- **/
+ * */
 const config = require('../config');
 const redis = require('redis');
 

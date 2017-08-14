@@ -1,6 +1,6 @@
 /**
  * Load match IDs from database, then issue re-insert and re-parse on all of them
- **/
+ * */
 const utility = require('../util/utility');
 const queries = require('../store/queries');
 const db = require('../store/db');

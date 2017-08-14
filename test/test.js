@@ -2,7 +2,7 @@
 /* eslint-disable global-require */
 /**
  * Main test script to run tests
- **/
+ * */
 process.env.NODE_ENV = 'test';
 const async = require('async');
 const nock = require('nock');
@@ -14,7 +14,6 @@ const cassandraDriver = require('cassandra-driver');
 const request = require('request');
 const config = require('../config');
 const redis = require('../store/redis');
-const queue = require('../store/queue');
 // const utility = require('../util/utility');
 const detailsApi = require('./data/details_api.json');
 const summariesApi = require('./data/summaries_api.json');
@@ -24,7 +23,6 @@ const leaguesApi = require('./data/leagues_api.json');
 const retrieverPlayer = require('./data/retriever_player.json');
 const detailsApiPro = require('./data/details_api_pro.json');
 
-const pQueue = queue.getQueue('parse');
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = config.INIT_CASSANDRA_HOST;
 // these are loaded later, as the database needs to be created when these are required
@@ -182,29 +180,20 @@ describe('replay parse', function testReplayParse() {
         attempts: 1,
       }, (err, job) => {
         assert(job && !err);
-        const poll = setInterval(() => {
-          pQueue.getJob(job.id).then((job) => {
-            job.getState().then((state) => {
-              if (state === 'completed') {
-                clearInterval(poll);
-                // ensure parse data got inserted
-                buildMatch(tests[key].match_id, (err, match) => {
-                  if (err) {
-                    return done(err);
-                  }
-                  assert(match.players);
-                  assert(match.players[0]);
-                  assert(match.players[0].lh_t);
-                  assert(match.teamfights);
-                  assert(match.radiant_gold_adv);
-                  return done();
-                });
-              } else {
-                console.log(job.id, state, job.stacktrace);
-              }
-            });
-          }).catch(done);
-        }, 1000);
+        setTimeout(() => {
+          // ensure parse data got inserted
+          buildMatch(tests[key].match_id, (err, match) => {
+            if (err) {
+              return done(err);
+            }
+            assert(match.players);
+            assert(match.players[0]);
+            assert(match.players[0].lh_t);
+            assert(match.teamfights);
+            assert(match.radiant_gold_adv);
+            return done();
+          });
+        }, 30000);
       });
     });
   });

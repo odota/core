@@ -4,7 +4,7 @@
  * This produces an event stream (newline-delimited JSON)
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
- **/
+ * */
 const utility = require('../util/utility');
 const getGcData = require('../util/getGcData');
 const config = require('../config');
@@ -25,7 +25,6 @@ const stream = require('stream');
 const async = require('async');
 const readline = require('readline');
 
-const pQueue = queue.getQueue('parse');
 const spawn = cp.spawn;
 const insertMatch = queries.insertMatch;
 const buildReplayUrl = utility.buildReplayUrl;
@@ -221,9 +220,11 @@ function runParse(match, job, cb) {
       url,
       state,
     }));
-    if (job) {
+    /*
+    if (job && job.progress) {
       job.progress(state.percent * 100);
     }
+    */
   }).on('response', (response) => {
     if (response.statusCode !== 200) {
       exit(String(response.statusCode));
@@ -264,8 +265,8 @@ function runParse(match, job, cb) {
   // request.debug = true;
 }
 
-pQueue.process(Number(config.PARSER_PARALLELISM), (job, cb) => {
-  const match = job.data.payload;
+queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM), (job, cb) => {
+  const match = job;
   console.log(match.match_id);
   async.series({
     getDataSource(cb) {
@@ -288,11 +289,4 @@ pQueue.process(Number(config.PARSER_PARALLELISM), (job, cb) => {
     }
     return cb(err, match.match_id);
   });
-});
-pQueue.on('completed', (job) => {
-  // Delay the removal so that the request polling has a chance to check for completion.
-  // If interrupted, the regular cleanup process in worker will take care of orphaned jobs.
-  setTimeout(() => {
-    job.remove();
-  }, 60 * 1000);
 });

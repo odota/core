@@ -1,7 +1,7 @@
 /**
  * Worker interfacing with the Steam GC.
  * Provides HTTP endpoints for other workers.
- **/
+ * */
 const config = require('../config');
 const Steam = require('steam');
 const Dota2 = require('dota2');

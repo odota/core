@@ -1,7 +1,7 @@
 /* eslint-disable global-require,import/no-dynamic-require */
 /**
  * Entry point for the application.
- **/
+ * */
 const cp = require('child_process');
 const pm2 = require('pm2');
 const async = require('async');

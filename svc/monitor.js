@@ -1,13 +1,12 @@
 /**
  * Worker that monitors health metrics and saves results
- **/
+ * */
 const config = require('../config');
 const redis = require('../store/redis');
 const db = require('../store/db');
 const cassandra = require('../store/cassandra');
 const utility = require('../util/utility');
 const request = require('request');
-const queue = require('../store/queue');
 
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
@@ -72,12 +71,12 @@ function seqNumDelay(cb) {
 }
 
 function parseDelay(cb) {
-  queue.getCounts(redis, (err, counts) => {
+  db.raw('select count(*) from queue where type = \'parse\'').asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
     return cb(err, {
-      metric: counts.parse.waiting,
+      metric: result.rows[0].count,
       threshold: 1000,
     });
   });

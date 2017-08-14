@@ -1,6 +1,6 @@
 /**
  * Object listing dependent columns for each filter
- **/
+ * */
 module.exports = {
   win: ['player_slot', 'radiant_win'],
   patch: ['patch'],

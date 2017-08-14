@@ -1,6 +1,6 @@
 /**
  * Load a single match by ID from the steam API, insert, and request a parse
- **/
+ * */
 const utility = require('../util/utility');
 const queries = require('../store/queries');
 

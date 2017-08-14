@@ -1,6 +1,6 @@
 /**
  * Function to build/cache sets of players
- **/
+ * */
 const async = require('async');
 const moment = require('moment');
 
