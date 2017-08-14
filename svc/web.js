@@ -16,7 +16,8 @@ const express = require('express');
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
-const uuidV4 = require('uuid/v4');
+
+const redisCount = utility.redisCount;
 
 const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
@@ -92,9 +93,7 @@ app.use((req, res, cb) => {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
     if (req.originalUrl.indexOf('/api') === 0) {
-      const key = `api_hits:${moment().startOf('day').format('X')}`;
-      redis.pfadd(key, uuidV4());
-      redis.expireat(key, moment().startOf('day').add(1, 'day').format('X'));
+      redisCount(redis, 'api_hits');
     }
     if (req.user && req.user.account_id) {
       redis.zadd('visitors', moment().format('X'), req.user.account_id);

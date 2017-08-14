@@ -9,7 +9,6 @@ const queue = require('./queue');
 const async = require('async');
 const moment = require('moment');
 const util = require('util');
-const uuidV4 = require('uuid/v4');
 const filter = require('../util/filter');
 const compute = require('../util/compute');
 const db = require('../store/db');
@@ -17,6 +16,7 @@ const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
 
+const redisCount = utility.redisCount;
 const convert64to32 = utility.convert64to32;
 const serialize = utility.serialize;
 const deserialize = utility.deserialize;
@@ -114,9 +114,7 @@ function getDistributions(redis, cb) {
       result[r.split(':')[1]] = JSON.parse(blob);
       return cb(err);
     });
-  }, err =>
-    cb(err, result),
-  );
+  }, err => cb(err, result));
 }
 
 function getProPlayers(db, redis, cb) {
@@ -1100,14 +1098,10 @@ function insertMatch(match, options, cb) {
       redis.ltrim(types[options.type], 0, 9);
     }
     if (options.type === 'parsed') {
-      const key = `parser:${moment().startOf('day').format('X')}`;
-      redis.pfadd(key, uuidV4());
-      redis.expireat(key, moment().startOf('day').add(1, 'day').format('X'));
+      redisCount(redis, 'parser');
     }
     if (options.origin === 'scanner') {
-      const key = `added_match:${moment().startOf('day').format('X')}`;
-      redis.pfadd(key, uuidV4());
-      redis.expireat(key, moment().startOf('day').add(1, 'day').format('X'));
+      redisCount(redis, 'added_match');
     }
     return cb();
   }

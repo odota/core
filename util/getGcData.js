@@ -8,11 +8,11 @@ const config = require('../config');
 const queries = require('../store/queries');
 const db = require('../store/db');
 const redis = require('../store/redis');
-const uuidV4 = require('uuid/v4');
 
 const secret = config.RETRIEVER_SECRET;
 const retrieverArr = utility.getRetrieverArr();
 const getData = utility.getData;
+const redisCount = utility.redisCount;
 const insertMatch = queries.insertMatch;
 
 function getGcDataFromRetriever(match, cb) {
@@ -37,10 +37,8 @@ function getGcDataFromRetriever(match, cb) {
       // non-retryable error
       return cb('invalid body or error');
     }
-    // count retriever calls
-    const key = `retriever:${moment().startOf('day').format('X')}`;
-    redis.pfadd(key, 1, uuidV4());
-    redis.expireat(key, moment().startOf('day').add(1, 'day').format('X'));
+    // Count retriever calls
+    redisCount(redis, 'retriever');
     redis.zincrby('retrieverCounts', 1, metadata.hostname);
     redis.expireat('retrieverCounts', moment().startOf('hour').add(1, 'hour').format('X'));
     // Persist parties and permanent buffs

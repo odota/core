@@ -7,6 +7,8 @@ const constants = require('dotaconstants');
 const request = require('request');
 const Long = require('long');
 const urllib = require('url');
+const uuidV4 = require('uuid/v4');
+const moment = require('moment');
 const laneMappings = require('./laneMappings');
 
 /**
@@ -704,6 +706,30 @@ function getRetrieverArr() {
   return output;
 }
 
+function redisCount(redis, prefix) {
+  const key = `${prefix}:${moment().startOf('hour').format('X')}`;
+  redis.pfadd(key, uuidV4());
+  redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
+}
+
+function getRedisCountDay(redis, prefix, cb) {
+  // Get couns for last 24 hour keys (including current partial hour)
+  const keyArr = [];
+  for (let i = 0; i < 24; i += 1) {
+    keyArr.push(`${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`);
+  }
+  redis.pfcount(...keyArr, cb);
+}
+
+function getRedisCountHour(redis, prefix, cb) {
+  // Get counts for previous full hour
+  const keyArr = [];
+  for (let i = 1; i < 2; i += 1) {
+    keyArr.push(`${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`);
+  }
+  redis.pfcount(...keyArr, cb);
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -735,4 +761,7 @@ module.exports = {
   getLaneFromPosData,
   getRetrieverArr,
   isProMatch,
+  redisCount,
+  getRedisCountDay,
+  getRedisCountHour,
 };

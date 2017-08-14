@@ -4,7 +4,7 @@
 // const config = require('../config');
 const queue = require('./queue');
 const async = require('async');
-const moment = require('moment');
+const utility = require('../util/utility');
 
 module.exports = function buildStatus(db, redis, cb) {
   function generatePercentiles(arr) {
@@ -30,16 +30,22 @@ module.exports = function buildStatus(db, redis, cb) {
       redis.zcard('tracked', cb);
     },
     matches_last_day(cb) {
-      redis.pfcount(`added_match:${moment().startOf('day').format('X')}`, cb);
+      utility.getRedisCountDay(redis, 'added_match', cb);
+    },
+    matches_last_hour(cb) {
+      utility.getRedisCountHour(redis, 'added_match', cb);
     },
     retriever_matches_last_day(cb) {
-      redis.pfcount(`retriever:${moment().startOf('day').format('X')}`, cb);
+      utility.getRedisCountDay(redis, 'retriever', cb);
     },
     parsed_matches_last_day(cb) {
-      redis.pfcount(`parser:${moment().startOf('day').format('X')}`, cb);
+      utility.getRedisCountDay(redis, 'parser', cb);
+    },
+    requests_last_day(cb) {
+      utility.getRedisCountDay(redis, 'requests', cb);
     },
     api_hits_last_day(cb) {
-      redis.pfcount(`api_hits:${moment().startOf('day').format('X')}`, cb);
+      utility.getRedisCountDay(redis, 'api_hits', cb);
     },
     fhQueue(cb) {
       redis.llen('fhQueue', cb);

@@ -20,6 +20,7 @@ const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
 
+const redisCount = utility.redisCount;
 const subkeys = playerFields.subkeys;
 const countCats = playerFields.countCats;
 const countPeers = utility.countPeers;
@@ -3232,6 +3233,8 @@ Please keep request rate to approximately 3/s.
                 // couldn't get data from api, non-retryable
                 return exitWithJob(JSON.stringify(err));
               }
+              // Count this request
+              redisCount(redis, 'request');
               // match details response
               const match = body.result;
               return queries.insertMatch(match, {
