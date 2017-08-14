@@ -1,6 +1,7 @@
 /**
  * Provides methods for working with the job queue
  * */
+const moment = require('moment');
 const redis = require('./redis');
 const db = require('./db');
 
@@ -33,17 +34,18 @@ function runReliableQueue(queueName, parallelism, processor) {
   function processOneJob() {
     return db.transaction((trx) => {
       trx.raw(`
-      UPDATE queue SET attempts = attempts - 1
+      UPDATE queue SET attempts = attempts - 1, next_attempt_time = ?
       WHERE id = (
       SELECT id
       FROM queue
       WHERE type = ?
+      AND (next_attempt_time IS NULL OR next_attempt_time < now())
       ORDER BY id
       FOR UPDATE SKIP LOCKED
       LIMIT 1
       )
       RETURNING *
-      `, [queueName]).asCallback((err, result) => {
+      `, [moment().add(1, 'minute'), queueName]).asCallback((err, result) => {
         const job = result && result.rows && result.rows[0];
         if (err) {
           return trx.rollback(err);
@@ -81,8 +83,8 @@ function runReliableQueue(queueName, parallelism, processor) {
 }
 
 function addJob(queueName, job, options, cb) {
-  db.raw('INSERT INTO queue(type, timestamp, attempts, data) VALUES (?, ?, ?, ?) RETURNING *',
-    [queueName, new Date(), options.attempts || 1, JSON.stringify(job.data)])
+  db.raw('INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time) VALUES (?, ?, ?, ?, ?) RETURNING *',
+    [queueName, new Date(), options.attempts || 1, JSON.stringify(job.data), new Date()])
     .asCallback((err, result) => {
       if (err) {
         return cb(err);
