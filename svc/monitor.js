@@ -77,7 +77,7 @@ function parseDelay(cb) {
     }
     return cb(err, {
       metric: result.rows[0].count,
-      threshold: 1000,
+      threshold: 2000,
     });
   });
 }
@@ -118,7 +118,7 @@ function redisUsage(cb) {
     // console.log(info);
     return cb(err, {
       metric: redis.server_info.used_memory,
-      threshold: 13 * (10 ** 9),
+      threshold: 2.5 * (10 ** 9),
     });
   });
 }
