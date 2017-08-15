@@ -45,7 +45,7 @@ function scanApi(seqNum) {
         }, (err) => {
           if (!err) {
             // Save match_id in Redis to avoid duplicate inserts (persist even if process restarts)
-            redis.setex(`scanner_insert:${match.match_id}`, 3600 * 8, 1);
+            redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
           }
           finishMatch(err, cb);
         });

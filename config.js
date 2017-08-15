@@ -47,7 +47,7 @@ const defaults = {
   SCANNER_DELAY: 2000, // delay for scanner API requests (stricter rate limit)
   MMR_PARALLELISM: 10, // Number of simulataneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
-  BENCHMARK_RETENTION_MINUTES: 10, // minutes in block to retain benchmark data for percentile
+  BENCHMARK_RETENTION_MINUTES: 5, // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: 0, // percent of inserted matches to queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
