@@ -394,7 +394,6 @@ BEGIN
         GRANT SELECT ON matches TO readonly;
         GRANT SELECT ON player_matches TO readonly;
         GRANT SELECT ON heroes TO readonly;
-        GRANT SELECT ON players TO readonly;
         GRANT SELECT ON leagues TO readonly;
         GRANT SELECT ON items TO readonly;
         GRANT SELECT ON teams TO readonly;
