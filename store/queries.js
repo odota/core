@@ -307,6 +307,7 @@ function getPlayerHeroRankings(accountId, cb) {
   count(1) card
   FROM hero_ranking
   JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = ? AND score > 0.5) playerscore using (hero_id)
+  WHERE hero_ranking.score > 0.5
   GROUP BY hero_id
   ORDER BY numeric_rank asc
   `,
