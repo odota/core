@@ -72,7 +72,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 /**
  * Benchmarks a match against stored data in Redis.
  * */
-function getMatchBenchmarks(redis, m, cb) {
+function getMatchBenchmarks(m, cb) {
   async.map(m.players, (p, cb) => {
     p.benchmarks = {};
     async.eachSeries(Object.keys(benchmarks), (metric, cb) => {
@@ -398,7 +398,7 @@ function getProPeers(db, input, player, cb) {
   });
 }
 
-function getMatchRating(redis, match, cb) {
+function getMatchRating(match, cb) {
   async.map(match.players, (player, cb) => {
     if (!player.account_id) {
       return cb();
@@ -570,7 +570,7 @@ function updateMatchups(match, cb) {
 */
 
 function updateHeroRankings(match, cb) {
-  getMatchRating(redis, match, (err, avg) => {
+  getMatchRating(match, (err, avg) => {
     if (err) {
       return cb(err);
     }
@@ -621,7 +621,7 @@ function updateBenchmarks(match, cb) {
 }
 
 function updateMmrEstimate(match, cb) {
-  getMatchRating(redis, match, (err, avg) => {
+  getMatchRating(match, (err, avg) => {
     if (avg && !isNaN(Number(avg))) {
       return async.each(match.players, (player, cb) => {
         if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
@@ -642,7 +642,7 @@ function upsertMatchSample(match, cb) {
   if (match.match_id % 100 >= config.PUBLIC_SAMPLE_PERCENT || !utility.isSignificant(match)) {
     return cb();
   }
-  return getMatchRating(redis, match, (err, avg, num) => {
+  return getMatchRating(match, (err, avg, num) => {
     if (err) {
       return cb(err);
     }

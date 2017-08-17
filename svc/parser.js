@@ -28,35 +28,6 @@ const readline = require('readline');
 const spawn = cp.spawn;
 const insertMatch = queries.insertMatch;
 const buildReplayUrl = utility.buildReplayUrl;
-// const getMatchBenchmarks = queries.getMatchBenchmarks;
-// const computeMatchData = compute.computeMatchData;
-
-/*
-function insertUploadedParse(match, cb) {
-  console.log('saving uploaded parse');
-  // save uploaded replay parse in redis as a cached match
-  match.match_id = match.upload.match_id;
-  match.game_mode = match.upload.game_mode;
-  match.radiant_win = match.upload.radiant_win;
-  match.duration = match.upload.duration;
-  match.players.forEach((p) => {
-    utility.mergeObjects(p, match.upload.player_map[p.player_slot]);
-    p.gold_per_min = Math.floor(p.gold / match.duration * 60);
-    p.xp_per_min = Math.floor(p.xp / match.duration * 60);
-    p.duration = match.duration;
-    computeMatchData(p);
-  });
-  computeMatchData(match);
-  getMatchBenchmarks(redis, match, (err) => {
-    if (err) {
-      return cb(err);
-    }
-    // Expire in a week
-    const expire = 60 * 60 * 24 * 7;
-    return redis.setex(`match:${match.replay_blob_key}`, expire, JSON.stringify(match), cb);
-  });
-}
-*/
 
 function insertStandardParse(match, cb) {
   // fs.writeFileSync('output.json', JSON.stringify(match));
