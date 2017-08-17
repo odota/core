@@ -1195,12 +1195,8 @@ function insertMatch(match, options, cb) {
             ability_upgrades: abilityUpgrades,
           },
         }, {
-          lifo: options.lifo,
+          priority: options.priority,
           attempts: options.attempts || 15,
-          backoff: options.backoff || {
-            delay: 60 * 1000,
-            type: 'exponential',
-          },
         }, cb);
       }
       return cb();

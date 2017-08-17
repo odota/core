@@ -379,7 +379,8 @@ CREATE TABLE queue (
   timestamp timestamp with time zone,
   attempts int,
   data json,
-  next_attempt_time timestamp with time zone
+  next_attempt_time timestamp with time zone,
+  priority int
 );
 
 CREATE TABLE mmr_estimates (

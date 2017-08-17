@@ -40,7 +40,7 @@ function runReliableQueue(queueName, parallelism, processor) {
       FROM queue
       WHERE type = ?
       AND (next_attempt_time IS NULL OR next_attempt_time < now())
-      ORDER BY id
+      ORDER BY priority ASC NULLS LAST, id ASC
       FOR UPDATE SKIP LOCKED
       LIMIT 1
       )
@@ -83,8 +83,8 @@ function runReliableQueue(queueName, parallelism, processor) {
 }
 
 function addJob(queueName, job, options, cb) {
-  db.raw('INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time) VALUES (?, ?, ?, ?, ?) RETURNING *',
-    [queueName, new Date(), options.attempts || 1, JSON.stringify(job.data), new Date()])
+  db.raw('INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority) VALUES (?, ?, ?, ?, ?, ?) RETURNING *',
+    [queueName, new Date(), options.attempts || 1, JSON.stringify(job.data), new Date(), options.priority || 10])
     .asCallback((err, result) => {
       if (err) {
         return cb(err);
