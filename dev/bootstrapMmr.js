@@ -1,13 +1,12 @@
 const JSONStream = require('JSONStream');
 const db = require('../store/db');
-const redis = require('../store/redis');
 
 const args = process.argv.slice(2);
 const startId = Number(args[0]) || 0;
 let conc = 0;
 const stream = db.raw(`
 SELECT pr.account_id, solo_competitive_rank from player_ratings pr
-JOIN 
+JOIN
 (select account_id, max(time) as maxtime from player_ratings GROUP by account_id) grouped
 ON pr.account_id = grouped.account_id
 AND pr.time = grouped.maxtime
@@ -31,7 +30,6 @@ stream.on('data', (player) => {
   if (conc > 10) {
     stream.pause();
   }
-  redis.zadd('solo_competitive_rank', player.solo_competitive_rank, player.account_id);
   console.log(player.account_id);
   conc -= 1;
   stream.resume();

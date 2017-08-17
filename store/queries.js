@@ -180,7 +180,9 @@ function getHeroRankings(db, redis, heroId, options, cb) {
     return async.each(entries, (player, cb) => {
       async.parallel({
         solo_competitive_rank(cb) {
-          redis.zscore('solo_competitive_rank', player.account_id, cb);
+          db.first().from('solo_competitive_rank').where({ account_id: player.account_id }).asCallback((err, row) => {
+            cb(err, row ? row.rating : null);
+          });
         },
       }, (err, result) => {
         if (err) {
@@ -401,19 +403,16 @@ function getMatchRating(redis, match, cb) {
     if (!player.account_id) {
       return cb();
     }
-    return redis.zscore('solo_competitive_rank', player.account_id, cb);
+    return db.first().from('solo_competitive_rank').where({ account_id: player.account_id }).asCallback((err, row) => {
+      cb(err, row ? row.rating : null);
+    });
   }, (err, result) => {
     if (err) {
       return cb(err);
     }
     // Remove undefined/null values
-    const filt = result.filter(r =>
-      r,
-    );
-    const avg = Math.floor(filt.map(r =>
-      Number(r),
-    ).reduce((a, b) =>
-      a + b, 0) / filt.length);
+    const filt = result.filter(r => r);
+    const avg = Math.floor(filt.map(r => Number(r)).reduce((a, b) => a + b, 0) / filt.length);
     return cb(err, avg, filt.length);
   });
 }
@@ -456,7 +455,17 @@ function insertPlayer(db, player, cb) {
 }
 
 function insertPlayerRating(db, row, cb) {
-  db('player_ratings').insert(row).asCallback(cb);
+  async.parallel({
+    scr(cb) {
+      upsert(db, 'solo_competitive_rank', { account_id: row.account_id, rating: row.solo_competitive_rank }, { account_id: row.account_id }, cb);
+    },
+    cr(cb) {
+      upsert(db, 'competitive_rank', { account_id: row.account_id, rating: row.competitive_rank }, { account_id: row.account_id }, cb);
+    },
+    pr(cb) {
+      db('player_ratings').insert(row).asCallback(cb);
+    },
+  }, cb);
 }
 
 function insertMatchSkillCassandra(row, cb) {

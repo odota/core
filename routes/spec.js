@@ -986,10 +986,14 @@ Please keep request rate to approximately 3/s.
               redis.zscore('tracked', accountId, cb);
             },
             solo_competitive_rank(cb) {
-              redis.zscore('solo_competitive_rank', accountId, cb);
+              db.first().from('solo_competitive_rank').where({ account_id: accountId }).asCallback((err, row) => {
+                cb(err, row ? row.rating : null);
+              });
             },
             competitive_rank(cb) {
-              redis.zscore('competitive_rank', accountId, cb);
+              db.first().from('competitive_rank').where({ account_id: accountId }).asCallback((err, row) => {
+                cb(err, row ? row.rating : null);
+              });
             },
             mmr_estimate(cb) {
               queries.getMmrEstimate(accountId, cb);
