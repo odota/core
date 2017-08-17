@@ -2243,6 +2243,14 @@ Please keep request rate to approximately 3/s.
                     description: 'series_type',
                     type: 'integer',
                   },
+                  radiant_score: {
+                    description: 'radiant_score',
+                    type: 'integer',
+                  },
+                  dire_score: {
+                    description: 'dire_score',
+                    type: 'integer',
+                  },
                   radiant_win: {
                     description: 'radiant_win',
                     type: 'boolean',
@@ -2260,6 +2268,7 @@ Please keep request rate to approximately 3/s.
           dire_team_id, dire.name as dire_name, 
           leagueid, leagues.name as league_name,
           series_id, series_type,
+          radiant_score, dire_score,
           radiant_win
           FROM matches
           LEFT JOIN teams radiant
