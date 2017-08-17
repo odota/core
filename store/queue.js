@@ -83,8 +83,16 @@ function runReliableQueue(queueName, parallelism, processor) {
 }
 
 function addJob(queueName, job, options, cb) {
-  db.raw('INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority) VALUES (?, ?, ?, ?, ?, ?) RETURNING *',
-    [queueName, new Date(), options.attempts || 1, JSON.stringify(job.data), new Date(), options.priority || 10])
+  db.raw(`INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority)
+  VALUES (?, ?, ?, ?, ?, ?) 
+  RETURNING *`,
+    [queueName,
+      new Date(),
+      options.attempts || 1,
+      JSON.stringify(job.data),
+      new Date(),
+      options.priority || 10,
+    ])
     .asCallback((err, result) => {
       if (err) {
         return cb(err);
