@@ -992,7 +992,7 @@ Please keep request rate to approximately 3/s.
               redis.zscore('competitive_rank', accountId, cb);
             },
             mmr_estimate(cb) {
-              queries.getMmrEstimate(accountId, cb);
+              queries.getMmrEstimate(accountId, (err, est) => cb(err, est || {}));
             },
           }, (err, result) => {
             if (err) {
