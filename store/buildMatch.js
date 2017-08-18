@@ -79,9 +79,9 @@ function getMatch(matchId, cb) {
             p.lobby_type = match.lobby_type;
             p.game_mode = match.game_mode;
             computeMatchData(p);
-            redis.zscore('solo_competitive_rank', p.account_id || '', (err, rating) => {
-              p.solo_competitive_rank = rating;
-              return cb(err, p);
+            db.first().from('solo_competitive_rank').where({ account_id: p.account_id || null }).asCallback((err, row) => {
+              p.solo_competitive_rank = row ? row.rating : null;
+              cb(err, p);
             });
           }, cb);
         });
