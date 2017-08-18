@@ -25,9 +25,7 @@ function getMatch(matchId, cb) {
       if (err) {
         return cb(err);
       }
-      result = result.rows.map(m =>
-        deserialize(m),
-      );
+      result = result.rows.map(m => deserialize(m));
       return cb(err, result[0]);
     });
   }
@@ -41,9 +39,7 @@ function getMatch(matchId, cb) {
       if (err) {
         return cb(err);
       }
-      result = result.rows.map(m =>
-        deserialize(m),
-      );
+      result = result.rows.map(m => deserialize(m));
       // get personanames
       return async.map(result, (r, cb) => {
         db.raw(`
@@ -151,9 +147,7 @@ function getMatch(matchId, cb) {
       if (match.replay_salt) {
         match.replay_url = buildReplayUrl(match.match_id, match.cluster, match.replay_salt);
       }
-      return queries.getMatchBenchmarks(redis, match, err =>
-        cb(err, match),
-      );
+      return queries.getMatchBenchmarks(match, err => cb(err, match));
     });
   });
 }

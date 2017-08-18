@@ -389,6 +389,18 @@ CREATE TABLE mmr_estimates (
   estimate int
 );
 
+CREATE TABLE solo_competitive_rank (
+  PRIMARY KEY (account_id),
+  account_id bigint,
+  rating int
+);
+
+CREATE TABLE competitive_rank (
+  PRIMARY KEY (account_id),
+  account_id bigint,
+  rating int
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
