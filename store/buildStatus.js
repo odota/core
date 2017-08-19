@@ -46,6 +46,9 @@ module.exports = function buildStatus(db, redis, cb) {
     api_hits_last_day(cb) {
       utility.getRedisCountDay(redis, 'api_hits', cb);
     },
+    api_hits_ui_last_day(cb) {
+      utility.getRedisCountDay(redis, 'api_hits_ui', cb);
+    },
     fhQueue(cb) {
       redis.llen('fhQueue', cb);
     },
@@ -57,6 +60,23 @@ module.exports = function buildStatus(db, redis, cb) {
     },
     retriever(cb) {
       redis.zrangebyscore('retrieverCounts', '-inf', 'inf', 'WITHSCORES', (err, results) => {
+        if (err) {
+          return cb(err);
+        }
+        const response = [];
+        results.forEach((result, i) => {
+          if (i % 2 === 0) {
+            response.push({
+              hostname: result.split('.')[0],
+              count: results[i + 1],
+            });
+          }
+        });
+        return cb(err, response);
+      });
+    },
+    api_paths(cb) {
+      redis.zrangebyscore('api_paths', '-inf', 'inf', 'WITHSCORES', (err, results) => {
         if (err) {
           return cb(err);
         }
