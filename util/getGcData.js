@@ -18,7 +18,7 @@ const insertMatch = queries.insertMatch;
 function getGcDataFromRetriever(match, cb) {
   // make array of retriever urls and use a random one on each retry
   const urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
-  const retrieverCount = retrieverArr.length * 0.5;
+  const retrieverCount = retrieverArr.length * 0.25;
   if (config.NODE_ENV !== 'test') {
     for (let i = 0; i < retrieverCount; i += 1) {
       urls.push(`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`);
