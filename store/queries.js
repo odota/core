@@ -1176,7 +1176,8 @@ function insertMatch(match, options, cb) {
 
   function decideReplayParse(cb) {
     // (!utility.isSignificant(match) && !options.forceParse)
-    if (options.skipParse) {
+    if (options.skipParse || match.game_mode === 19) {
+      // skipped or event games
       // not parsing this match
       return cb();
     }
