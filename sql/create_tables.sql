@@ -382,6 +382,7 @@ CREATE TABLE queue (
   next_attempt_time timestamp with time zone,
   priority int
 );
+CREATE INDEX on queue(priority, id);
 
 CREATE TABLE mmr_estimates (
   PRIMARY KEY (account_id),
