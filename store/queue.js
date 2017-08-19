@@ -32,7 +32,7 @@ function runQueue(queueName, parallelism, processor) {
 
 function runReliableQueue(queueName, parallelism, processor) {
   function processOneJob() {
-    return db.transaction((trx) => {
+    db.transaction((trx) => {
       trx.raw(`
       UPDATE queue SET attempts = attempts - 1, next_attempt_time = ?
       WHERE id = (
@@ -48,10 +48,11 @@ function runReliableQueue(queueName, parallelism, processor) {
       `, [moment().add(1, 'minute'), queueName]).asCallback((err, result) => {
         const job = result && result.rows && result.rows[0];
         if (err) {
-          return trx.rollback(err);
+          throw err;
         }
         if (!job) {
-          return trx.rollback(new Error('no job available'));
+          trx.commit();
+          return setTimeout(processOneJob, 5000);
         }
         return processor(job.data, (err) => {
           if (err) {
@@ -62,20 +63,17 @@ function runReliableQueue(queueName, parallelism, processor) {
             // remove the job from the queue if successful or out of attempts
             return trx.raw('DELETE FROM queue WHERE id = ?', [job.id]).asCallback((err) => {
               if (err) {
-                return trx.rollback(err);
+                throw err;
               }
-              return trx.commit();
+              trx.commit();
+              return processOneJob();
             });
           }
-          return trx.commit();
+          trx.commit();
+          return processOneJob();
         });
       });
-    })
-      .then(processOneJob)
-      .catch((err) => {
-        console.error(err);
-        setTimeout(processOneJob, 5000);
-      });
+    });
   }
   for (let i = 0; i < parallelism; i += 1) {
     processOneJob();
