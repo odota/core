@@ -61,16 +61,17 @@ function runReliableQueue(queueName, parallelism, processor) {
           }
           if (!err || job.attempts <= 0) {
             // remove the job from the queue if successful or out of attempts
-            return trx.raw('DELETE FROM queue WHERE id = ?', [job.id]).asCallback((err) => {
+            trx.raw('DELETE FROM queue WHERE id = ?', [job.id]).asCallback((err) => {
               if (err) {
                 throw err;
               }
               trx.commit();
-              return processOneJob();
+              processOneJob();
             });
+          } else {
+            trx.commit();
+            processOneJob();
           }
-          trx.commit();
-          return processOneJob();
         });
       });
     }).catch((err) => {
