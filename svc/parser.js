@@ -24,6 +24,7 @@ const progress = require('request-progress');
 const stream = require('stream');
 const async = require('async');
 const readline = require('readline');
+const numCPUs = require('os').cpus().length;
 
 const spawn = cp.spawn;
 const insertMatch = queries.insertMatch;
@@ -236,7 +237,7 @@ function runParse(match, job, cb) {
   // request.debug = true;
 }
 
-queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM), (job, cb) => {
+queue.runReliableQueue('parse', numCPUs || Number(config.PARSER_PARALLELISM), (job, cb) => {
   const match = job;
   console.log(match.match_id);
   async.series({
