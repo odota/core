@@ -73,6 +73,8 @@ function runReliableQueue(queueName, parallelism, processor) {
           return processOneJob();
         });
       });
+    }).catch((err) => {
+      throw err;
     });
   }
   for (let i = 0; i < parallelism; i += 1) {
