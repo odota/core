@@ -237,7 +237,7 @@ function runParse(match, job, cb) {
   // request.debug = true;
 }
 
-queue.runReliableQueue('parse', numCPUs || Number(config.PARSER_PARALLELISM), (job, cb) => {
+queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, (job, cb) => {
   const match = job;
   console.log(match.match_id);
   async.series({
