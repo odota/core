@@ -18,7 +18,7 @@ const insertMatch = queries.insertMatch;
 function getGcDataFromRetriever(match, cb) {
   // make array of retriever urls and use a random one on each retry
   const urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
-  const retrieverCount = retrieverArr.length * 0.25;
+  const retrieverCount = retrieverArr.length * 0.1;
   if (config.NODE_ENV !== 'test') {
     for (let i = 0; i < retrieverCount; i += 1) {
       urls.push(`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`);
@@ -55,6 +55,13 @@ function getGcDataFromRetriever(match, cb) {
       pgroup: match.pgroup,
       players,
     };
+    const gcdata = {
+      match_id: Number(match.match_id),
+      cluster: body.match.cluster,
+      replay_salt: body.match.replay_salt,
+      series_id: body.match.series_id,
+      series_type: body.match.series_type,
+    };
     return insertMatch(matchToInsert, {
       type: 'gcdata',
       skipParse: true,
@@ -63,20 +70,10 @@ function getGcDataFromRetriever(match, cb) {
         return cb(err);
       }
       // Persist GC data to database
-      return queries.upsert(db, 'match_gcdata', {
-        match_id: match.match_id,
-        cluster: body.match.cluster,
-        replay_salt: body.match.replay_salt,
-        series_id: body.match.series_id,
-        series_type: body.match.series_type,
-      }, {
+      return queries.upsert(db, 'match_gcdata', gcdata, {
         match_id: body.match.match_id,
       }, (err) => {
-        cb(err, {
-          match_id: Number(match.match_id),
-          cluster: body.match.cluster,
-          replay_salt: body.match.replay_salt,
-        });
+        cb(err, gcdata);
       });
     });
   });
