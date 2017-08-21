@@ -42,7 +42,7 @@ Notes
   * `pm2 logs web` Inspect the output of a service
 * `docker system prune` Cleans your system of any stopped containers, images, and volumes
 * `docker-compose build` Rebuilds your containers (e.g. for database schema updates)
-* `docker pull odota-parser` You may need to do this if the parser has updated. Remove and recreate the parser container to run the latest code.
+* `docker pull odota/parser` You may need to do this if the parser has updated. Remove and recreate the parser container to run the latest code.
 * Tests are written using the `mocha` framework.
   * `npm test` runs the full test suite.
   * Use `mocha` CLI for more fine-grained control over the tests you want to run.
