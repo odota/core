@@ -120,12 +120,12 @@ function createParsedDataBlob(entries, match) {
   console.timeEnd('processMetadata');
   console.time('adjustTime');
   // adjust time by zero value to get actual game time
-  const adjustedEntries = entries.map(e => Object.assign({}, e, {
-    time: e.time - meta.game_zero,
-  }));
+  entries.forEach((e) => {
+    e.time -= meta.game_zero;
+  });
   console.timeEnd('adjustTime');
   console.time('processExpand');
-  const expanded = processExpand(adjustedEntries, meta);
+  const expanded = processExpand(entries, meta);
   console.timeEnd('processExpand');
   console.time('processParsedData');
   const parsedData = processParsedData(expanded, getParseSchema(), meta);
@@ -134,13 +134,13 @@ function createParsedDataBlob(entries, match) {
   parsedData.teamfights = processTeamfights(expanded, meta);
   console.timeEnd('processTeamfights');
   console.time('processAllPlayers');
-  const ap = processAllPlayers(adjustedEntries, meta);
+  const ap = processAllPlayers(entries, meta);
   parsedData.radiant_gold_adv = ap.radiant_gold_adv;
   parsedData.radiant_xp_adv = ap.radiant_xp_adv;
   console.timeEnd('processAllPlayers');
   if (match.doLogParse) {
     console.time('processLogParse');
-    parsedData.logs = processLogParse(adjustedEntries, meta);
+    parsedData.logs = processLogParse(entries, meta);
     console.timeEnd('processLogParse');
   }
   return Object.assign({}, parsedData, match);
@@ -177,12 +177,8 @@ function runParse(match, job, cb) {
     if (err) {
       return cb(err);
     }
-    try {
-      const parsedData = createParsedDataBlob(entries, match);
-      return insertStandardParse(parsedData, cb);
-    } catch (e) {
-      return cb(e);
-    }
+    const parsedData = createParsedDataBlob(entries, match);
+    return insertStandardParse(parsedData, cb);
   }
 
   // Streams
@@ -224,9 +220,7 @@ function runParse(match, job, cb) {
     try {
       e = JSON.parse(e);
       if (e.type === 'epilogue') {
-        console.log('received epilogue');
         incomplete = false;
-        parseStream.close();
         exit();
       }
       entries.push(e);
@@ -234,7 +228,6 @@ function runParse(match, job, cb) {
       exit(err);
     }
   });
-  // request.debug = true;
 }
 
 queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, (job, cb) => {
