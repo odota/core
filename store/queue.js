@@ -2,36 +2,33 @@
  * Provides methods for working with the job queue
  * */
 const moment = require('moment');
+const async = require('async');
 const redis = require('./redis');
 const db = require('./db');
 
-function getCounts(redis, cb) {
-  cb(null, []);
-}
-
 function runQueue(queueName, parallelism, processor) {
   const processingQueueName = `${queueName}:active`;
-  function processOneJob() {
+  function processOneJob(cb) {
     redis.blpop(queueName, processingQueueName, '0', (err, job) => {
       if (err) {
-        console.error(err);
+        throw err;
       }
       const jobData = JSON.parse(job[1]);
       processor(jobData, (err) => {
         if (err) {
           console.error(err);
         }
-        processOneJob();
+        cb();
       });
     });
   }
   for (let i = 0; i < parallelism; i += 1) {
-    processOneJob();
+    async.whilst(() => true, processOneJob);
   }
 }
 
 function runReliableQueue(queueName, parallelism, processor) {
-  function processOneJob() {
+  function processOneJob(cb) {
     db.transaction((trx) => {
       trx.raw(`
       UPDATE queue SET attempts = attempts - 1, next_attempt_time = ?
@@ -52,7 +49,7 @@ function runReliableQueue(queueName, parallelism, processor) {
         }
         if (!job) {
           trx.commit();
-          return setTimeout(processOneJob, 5000);
+          return setTimeout(cb, 5000);
         }
         return processor(job.data, (err) => {
           if (err) {
@@ -66,11 +63,11 @@ function runReliableQueue(queueName, parallelism, processor) {
                 throw err;
               }
               trx.commit();
-              processOneJob();
+              cb();
             });
           } else {
             trx.commit();
-            processOneJob();
+            cb();
           }
         });
       });
@@ -79,7 +76,7 @@ function runReliableQueue(queueName, parallelism, processor) {
     });
   }
   for (let i = 0; i < parallelism; i += 1) {
-    processOneJob();
+    async.whilst(() => true, processOneJob);
   }
 }
 
@@ -112,7 +109,6 @@ function getJob(jobId, cb) {
 }
 
 module.exports = {
-  getCounts,
   runQueue,
   runReliableQueue,
   addJob,

@@ -239,7 +239,6 @@ function runParse(match, job, cb) {
 
 queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, (job, cb) => {
   const match = job;
-  console.log(match.match_id);
   async.series({
     getDataSource(cb) {
       getGcData(match, (err, result) => {

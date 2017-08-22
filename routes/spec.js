@@ -3193,10 +3193,9 @@ Please keep request rate to approximately 3/s.
               return cb(err);
             }
             if (job) {
-              return res.json({
+              return res.json(Object.assign({}, job, {
                 jobId: job.id,
-                data: job.data,
-              });
+              }));
             }
             return res.json(null);
           });
