@@ -52,6 +52,7 @@ const defaults = {
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
+  ENABLE_PLAYER_CACHE: 1, // enable/disable player aggregation caching
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   WEBSOCKET_PORT: 80, // port for live match subscription websocket service
   ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication

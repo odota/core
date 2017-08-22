@@ -46,7 +46,7 @@ const playerParams = [
 ];
 
 function sendDataWithCache(req, res, data, key) {
-  if (req.originalQuery && !Object.keys(req.originalQuery).length) {
+  if (config.ENABLE_PLAYER_CACHE && req.originalQuery && !Object.keys(req.originalQuery).length) {
     cacheFunctions.write({
       key,
       account_id: req.params.account_id,
