@@ -3252,7 +3252,7 @@ Please keep request rate to approximately 3/s.
               return queries.insertMatch(match, {
                 type: 'api',
                 attempts: 1,
-                priority: 0,
+                priority: 1,
                 cassandra,
                 forceParse: true,
               }, exitWithJob);
