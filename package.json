@@ -5,7 +5,7 @@
   "license": "GPL-3.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
+    "start": "node --expose-gc index",
     "test": "NODE_ENV=test test/run.sh",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "ncu": "npm-check-updates -a",
