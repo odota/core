@@ -166,7 +166,7 @@ function runParse(match, job, cb) {
     }
     exited = true;
     err = err || incomplete;
-    // clearTimeout(timeout);
+    clearTimeout(timeout);
     if (err) {
       return cb(err);
     }
