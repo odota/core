@@ -153,11 +153,11 @@ function runParse(match, job, cb) {
   const url = match.url;
   let incomplete = 'incomplete';
   let exited = false;
-  let download = request({
+  const download = request({
     url,
     encoding: null,
   });
-  let inStream = progress(download);
+  const inStream = progress(download);
   let bz;
   if (url && url.slice(-3) === 'bz2') {
     bz = spawn('bunzip2');
@@ -168,7 +168,7 @@ function runParse(match, job, cb) {
       stdout: str,
     };
   }
-  let parser = request.post(config.PARSER_HOST);
+  const parser = request.post(config.PARSER_HOST);
   const parseStream = readline.createInterface({
     input: parser,
   });
@@ -208,9 +208,9 @@ function runParse(match, job, cb) {
       state,
     }));
   });
-  inStream.on('response', (response) => {		
-    if (response.statusCode !== 200) {		
-      exit(String(response.statusCode));		
+  inStream.on('response', (response) => {
+    if (response.statusCode !== 200) {
+      exit(String(response.statusCode));
     }
   });
   inStream.pipe(bz.stdin);
