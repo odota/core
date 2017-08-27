@@ -44,7 +44,7 @@ function runReliableQueue(queueName, parallelism, processor) {
       LIMIT 1
       )
       RETURNING *
-      `, [moment().add(1, 'minute'), queueName]).asCallback((err, result) => {
+      `, [moment().add(2, 'minute'), queueName]).asCallback((err, result) => {
         const job = result && result.rows && result.rows[0];
         if (err) {
           throw err;

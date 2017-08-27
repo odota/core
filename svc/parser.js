@@ -230,7 +230,7 @@ function runParse(match, job, cb) {
   });
 }
 
-queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, (job, cb) => {
+function parseProcessor(job, cb) {
   const match = job;
   async.series({
     getDataSource(cb) {
@@ -254,6 +254,16 @@ queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, (j
     if (global.gc) {
       global.gc();
     }
+    console.log(process.memoryUsage());
     return cb(err, match.match_id);
   });
+}
+
+/*
+async.forever((cb) => {
+  const job = require('../test/data/job.json');
+  parseProcessor(job, cb);
 });
+*/
+
+queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, parseProcessor);
