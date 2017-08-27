@@ -153,19 +153,14 @@ function runParse(match, job, cb) {
   const url = match.url;
   let incomplete = 'incomplete';
   let exited = false;
-  const download = request({
-    url,
-    encoding: null,
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
-    },
-  });
+  /* eslint-disable no-use-before-define */
+  /*
   const timeout = setTimeout(() => {
     download.abort();
-    /* eslint-disable no-use-before-define */
     exit('timeout');
-    /* eslint-enable no-use-before-define */
   }, 120000);
+  */
+  /* eslint-enable no-use-before-define */
 
   function exit(err) {
     if (exited) {
@@ -173,30 +168,24 @@ function runParse(match, job, cb) {
     }
     exited = true;
     err = err || incomplete;
-    clearTimeout(timeout);
+    // clearTimeout(timeout);
     if (err) {
       return cb(err);
     }
     const parsedData = createParsedDataBlob(entries, match);
     return insertStandardParse(parsedData, cb);
   }
-
-  // Streams
+  
+  const download = request({
+    url,
+    encoding: null,
+  });
   const inStream = progress(download);
   inStream.on('progress', (state) => {
     console.log(JSON.stringify({
       url,
       state,
     }));
-    /*
-    if (job && job.progress) {
-      job.progress(state.percent * 100);
-    }
-    */
-  }).on('response', (response) => {
-    if (response.statusCode !== 200) {
-      exit(String(response.statusCode));
-    }
   }).on('error', exit);
   let bz;
   if (url && url.slice(-3) === 'bz2') {
@@ -208,14 +197,14 @@ function runParse(match, job, cb) {
       stdout: str,
     };
   }
-  bz.stdin.on('error', exit);
-  bz.stdout.on('error', exit);
-  inStream.pipe(bz.stdin);
   const parser = request.post(config.PARSER_HOST).on('error', exit);
-  bz.stdout.pipe(parser);
   const parseStream = readline.createInterface({
     input: parser,
   });
+  bz.stdin.on('error', exit);
+  bz.stdout.on('error', exit);
+  inStream.pipe(bz.stdin);
+  bz.stdout.pipe(parser);
   parseStream.on('line', (e) => {
     try {
       e = JSON.parse(e);
