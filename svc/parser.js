@@ -154,12 +154,10 @@ function runParse(match, job, cb) {
   let incomplete = 'incomplete';
   let exited = false;
   /* eslint-disable no-use-before-define */
-  /*
   const timeout = setTimeout(() => {
     download.abort();
     exit('timeout');
   }, 120000);
-  */
   /* eslint-enable no-use-before-define */
 
   function exit(err) {
@@ -186,7 +184,7 @@ function runParse(match, job, cb) {
       url,
       state,
     }));
-  }).on('error', exit);
+  });
   let bz;
   if (url && url.slice(-3) === 'bz2') {
     bz = spawn('bunzip2');
@@ -197,12 +195,10 @@ function runParse(match, job, cb) {
       stdout: str,
     };
   }
-  const parser = request.post(config.PARSER_HOST).on('error', exit);
+  const parser = request.post(config.PARSER_HOST);
   const parseStream = readline.createInterface({
     input: parser,
   });
-  bz.stdin.on('error', exit);
-  bz.stdout.on('error', exit);
   inStream.pipe(bz.stdin);
   bz.stdout.pipe(parser);
   parseStream.on('line', (e) => {
