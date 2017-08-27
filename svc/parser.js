@@ -174,7 +174,6 @@ function runParse(match, job, cb) {
   });
   /* eslint-disable no-use-before-define */
   const timeout = setTimeout(() => {
-    download.abort();
     exit('timeout');
   }, 120000);
   /* eslint-enable no-use-before-define */
@@ -186,10 +185,11 @@ function runParse(match, job, cb) {
     exited = true;
     err = err || incomplete;
     clearTimeout(timeout);
-    download = null;
-    inStream = null;
-    bz = null;
-    parser = null;
+    download.destroy();
+    inStream.destroy();
+    bz.stdin.destroy();
+    bz.stdout.destroy();
+    parser.destroy();
     parseStream.close();
     if (err) {
       return cb(err);
@@ -207,6 +207,11 @@ function runParse(match, job, cb) {
       url,
       state,
     }));
+  });
+  inStream.on('response', (response) => {		
+    if (response.statusCode !== 200) {		
+      exit(String(response.statusCode));		
+    }
   });
   inStream.pipe(bz.stdin);
   bz.stdout.pipe(parser);
