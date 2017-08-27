@@ -31,7 +31,6 @@ const insertMatch = queries.insertMatch;
 const buildReplayUrl = utility.buildReplayUrl;
 
 function insertStandardParse(match, cb) {
-  // fs.writeFileSync('output.json', JSON.stringify(match));
   insertMatch(match, {
     type: 'parsed',
     skipParse: true,
@@ -125,7 +124,7 @@ function createParsedDataBlob(entries, match) {
   });
   console.timeEnd('adjustTime');
   console.time('processExpand');
-  const expanded = processExpand(entries, meta);
+  let expanded = processExpand(entries, meta);
   console.timeEnd('processExpand');
   console.time('processParsedData');
   const parsedData = processParsedData(expanded, getParseSchema(), meta);
@@ -143,7 +142,11 @@ function createParsedDataBlob(entries, match) {
     parsedData.logs = processLogParse(entries, meta);
     console.timeEnd('processLogParse');
   }
-  return Object.assign({}, parsedData, match);
+  // Set values to null to help with GC
+  expanded = null;
+  entries = null;
+  const result = Object.assign({}, parsedData, match);
+  return result;
 }
 
 function runParse(match, job, cb) {
