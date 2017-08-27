@@ -23,7 +23,7 @@ function runQueue(queueName, parallelism, processor) {
     });
   }
   for (let i = 0; i < parallelism; i += 1) {
-    async.forever(processOneJob, err => {
+    async.forever(processOneJob, (err) => {
       throw err;
     });
   }
@@ -79,7 +79,7 @@ function runReliableQueue(queueName, parallelism, processor) {
     });
   }
   for (let i = 0; i < parallelism; i += 1) {
-    async.forever(processOneJob, err => {
+    async.forever(processOneJob, (err) => {
       throw err;
     });
   }

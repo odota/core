@@ -124,7 +124,7 @@ function createParsedDataBlob(entries, match) {
   });
   console.timeEnd('adjustTime');
   console.time('processExpand');
-  let expanded = processExpand(entries, meta);
+  const expanded = processExpand(entries, meta);
   console.timeEnd('processExpand');
   console.time('processParsedData');
   const parsedData = processParsedData(expanded, getParseSchema(), meta);
