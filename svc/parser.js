@@ -153,6 +153,25 @@ function runParse(match, job, cb) {
   const url = match.url;
   let incomplete = 'incomplete';
   let exited = false;
+  let download = request({
+    url,
+    encoding: null,
+  });
+  let inStream = progress(download);
+  let bz;
+  if (url && url.slice(-3) === 'bz2') {
+    bz = spawn('bunzip2');
+  } else {
+    const str = new stream.PassThrough();
+    bz = {
+      stdin: str,
+      stdout: str,
+    };
+  }
+  let parser = request.post(config.PARSER_HOST);
+  let parseStream = readline.createInterface({
+    input: parser,
+  });
   /* eslint-disable no-use-before-define */
   const timeout = setTimeout(() => {
     download.abort();
@@ -167,6 +186,11 @@ function runParse(match, job, cb) {
     exited = true;
     err = err || incomplete;
     clearTimeout(timeout);
+    download = null;
+    inStream = null;
+    bz = null;
+    parser = null;
+    parseStream = null;
     if (err) {
       return cb(err);
     }
@@ -174,30 +198,11 @@ function runParse(match, job, cb) {
     return insertStandardParse(parsedData, cb);
   }
 
-  const download = request({
-    url,
-    encoding: null,
-  });
-  const inStream = progress(download);
   inStream.on('progress', (state) => {
     console.log(JSON.stringify({
       url,
       state,
     }));
-  });
-  let bz;
-  if (url && url.slice(-3) === 'bz2') {
-    bz = spawn('bunzip2');
-  } else {
-    const str = new stream.PassThrough();
-    bz = {
-      stdin: str,
-      stdout: str,
-    };
-  }
-  const parser = request.post(config.PARSER_HOST);
-  const parseStream = readline.createInterface({
-    input: parser,
   });
   inStream.pipe(bz.stdin);
   bz.stdout.pipe(parser);
