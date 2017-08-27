@@ -169,7 +169,7 @@ function runParse(match, job, cb) {
     };
   }
   let parser = request.post(config.PARSER_HOST);
-  let parseStream = readline.createInterface({
+  const parseStream = readline.createInterface({
     input: parser,
   });
   /* eslint-disable no-use-before-define */
