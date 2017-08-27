@@ -190,7 +190,7 @@ function runParse(match, job, cb) {
     inStream = null;
     bz = null;
     parser = null;
-    parseStream = null;
+    parseStream.close();
     if (err) {
       return cb(err);
     }
@@ -198,6 +198,10 @@ function runParse(match, job, cb) {
     return insertStandardParse(parsedData, cb);
   }
 
+  inStream.on('error', exit);
+  bz.stdin.on('error', exit);
+  bz.stdout.on('error', exit);
+  parser.on('error', exit);
   inStream.on('progress', (state) => {
     console.log(JSON.stringify({
       url,
