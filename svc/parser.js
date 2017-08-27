@@ -175,7 +175,7 @@ function runParse(match, job, cb) {
     const parsedData = createParsedDataBlob(entries, match);
     return insertStandardParse(parsedData, cb);
   }
-  
+
   const download = request({
     url,
     encoding: null,
