@@ -251,6 +251,9 @@ queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, (j
     } else {
       console.log('completed parse of match %s', match.match_id);
     }
+    if (global.gc) {
+      global.gc();
+    }
     return cb(err, match.match_id);
   });
 });
