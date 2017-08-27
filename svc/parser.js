@@ -142,9 +142,6 @@ function createParsedDataBlob(entries, match) {
     parsedData.logs = processLogParse(entries, meta);
     console.timeEnd('processLogParse');
   }
-  // Set values to null to help with GC
-  expanded = null;
-  entries = null;
   const result = Object.assign({}, parsedData, match);
   return result;
 }
