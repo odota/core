@@ -18,7 +18,7 @@ function runQueue(queueName, parallelism, processor) {
         if (err) {
           console.error(err);
         }
-        cb();
+        process.nextTick(cb);
       });
     });
   }
@@ -66,11 +66,11 @@ function runReliableQueue(queueName, parallelism, processor) {
                 throw err;
               }
               trx.commit();
-              cb();
+              process.nextTick(cb);
             });
           } else {
             trx.commit();
-            cb();
+            process.nextTick(cb);
           }
         });
       });
