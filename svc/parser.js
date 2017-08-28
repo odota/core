@@ -18,14 +18,6 @@ const numCPUs = require('os').cpus().length;
 const insertMatch = queries.insertMatch;
 const buildReplayUrl = utility.buildReplayUrl;
 
-function insertStandardParse(match, cb) {
-  insertMatch(match, {
-    type: 'parsed',
-    skipParse: true,
-    doLogParse: match.doLogParse,
-  }, cb);
-}
-
 function runParse(match, job, cb) {
   let url = match.url;
   if (config.NODE_ENV === 'test') {
@@ -39,7 +31,11 @@ function runParse(match, job, cb) {
         return cb(err);
       }
       const result = Object.assign({}, JSON.parse(stdout), match);
-      return insertStandardParse(result, cb);
+      return insertMatch(result, {
+        type: 'parsed',
+        skipParse: true,
+        doLogParse: match.doLogParse,
+      }, cb);
     });
 }
 
@@ -71,12 +67,5 @@ function parseProcessor(job, cb) {
     return cb(err, match.match_id);
   });
 }
-
-/*
-async.forever((cb) => {
-  const job = require('../test/data/job.json');
-  parseProcessor(job, cb);
-});
-*/
 
 queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, parseProcessor);
