@@ -1,5 +1,5 @@
 function getSkillLevel(meta, ability, time) {
-  const upgrades = meta.abilities.filter(au => au.ability === ability && au.time < time);
+  const upgrades = (meta.abilities || []).filter(au => au.ability === ability && au.time < time);
   const lastUpgrade = upgrades.reduce((x, y) => (x.time > y.time ? x : y), {});
   return lastUpgrade;
 }
@@ -63,8 +63,8 @@ function performanceOthers(e, container, meta) {
     return;
   }
 
-  greevilsGreed(e, container, meta);
-  track(e, container, meta);
+  // greevilsGreed(e, container, meta);
+  // track(e, container, meta);
 }
 
 module.exports = performanceOthers;

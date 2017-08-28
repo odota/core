@@ -11,7 +11,6 @@ const supertest = require('supertest');
 const pg = require('pg');
 const fs = require('fs');
 const cassandraDriver = require('cassandra-driver');
-const request = require('request');
 const config = require('../config');
 const redis = require('../store/redis');
 // const utility = require('../util/utility');
@@ -165,13 +164,6 @@ describe('replay parse', function testReplayParse() {
         players: [],
       },
     });
-    nock(`http://replay${match.cluster}.valve.net`).get(`/570/${key}`).reply(200, (uri, requestBody, cb) => {
-      request(`https://cdn.rawgit.com/odota/testfiles/master/${key}`, {
-        encoding: null,
-      }, (err, resp, body) =>
-        cb(err, body),
-      );
-    });
     it(`should parse replay ${key}`, (done) => {
       queries.insertMatch(match, {
         cassandra,
@@ -186,11 +178,13 @@ describe('replay parse', function testReplayParse() {
             if (err) {
               return done(err);
             }
+            console.log(match.players[0]);
             assert(match.players);
             assert(match.players[0]);
-            assert(match.players[0].lh_t);
-            assert(match.teamfights);
-            assert(match.radiant_gold_adv);
+            assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
+            assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
+            assert(match.teamfights && match.teamfights.length > 0);
+            assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
             return done();
           });
         }, 30000);

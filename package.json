@@ -48,7 +48,6 @@
     "pm2": "^2.5.0",
     "redis": "^2.6.3",
     "request": "^2.79.0",
-    "request-progress": "^3.0.0",
     "simple-vdf": "^1.1.0",
     "steam": "^1.4.0",
     "supertest": "^3.0.0",
