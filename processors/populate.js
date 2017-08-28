@@ -1,6 +1,6 @@
 // const performanceOthers = require('./performanceOthers');
 
-function populate(e, container, meta) {
+function populate(e, container) {
   let t;
   switch (e.type) {
     case 'interval':
