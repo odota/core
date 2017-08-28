@@ -102,8 +102,7 @@
       "ignore_watch": [".git", "node_modules", "public", "views"],
       "group": "parser",
       "exec_mode": "cluster",
-      "instances": 1,
-      "node_args": "--expose-gc"
+      "instances": 1
     },
     {
       "script": "svc/socket.js",

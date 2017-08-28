@@ -60,10 +60,6 @@ function parseProcessor(job, cb) {
     } else {
       console.log('completed parse of match %s', match.match_id);
     }
-    if (global.gc) {
-      global.gc();
-    }
-    console.log(process.memoryUsage());
     return cb(err, match.match_id);
   });
 }
