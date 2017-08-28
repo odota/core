@@ -1,4 +1,4 @@
-const performanceOthers = require('./performanceOthers');
+// const performanceOthers = require('./performanceOthers');
 
 function populate(e, container, meta) {
   let t;
@@ -81,7 +81,7 @@ function populate(e, container, meta) {
           t[e.key] = e.value;
         }
 
-        performanceOthers(e, container, meta);
+        // performanceOthers(e, container, meta);
       } else if (typeof t === 'string') {
       // string, used for steam id
         container.players[e.slot][e.type] = e.key;
