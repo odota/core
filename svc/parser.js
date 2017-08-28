@@ -39,7 +39,6 @@ function runParse(match, job, cb) {
         return cb(err);
       }
       const result = Object.assign({}, JSON.parse(stdout), match);
-      console.log(result.players[0]);
       return insertStandardParse(result, cb);
     });
 }
