@@ -24,7 +24,7 @@ function runParse(match, job, cb) {
     url = `https://cdn.rawgit.com/odota/testfiles/master/${match.match_id}_1.dem`;
   }
   console.log(new Date(), url);
-  cp.exec(`curl --max-time 180 ${url} | ${url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'} | curl -X POST -T - ${config.PARSER_HOST} | node processors/createParsedDataBlob.js ${match.match_id} ${Boolean(match.doLogParse)}`,
+  cp.exec(`curl --max-time 180 --fail ${url} | ${url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'} | curl -X POST -T - ${config.PARSER_HOST} | node processors/createParsedDataBlob.js ${match.match_id} ${Boolean(match.doLogParse)}`,
     { shell: true, maxBuffer: 10 * 1024 * 1024 },
     (err, stdout) => {
       if (err) {
