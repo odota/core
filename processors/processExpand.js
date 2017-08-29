@@ -90,7 +90,7 @@ function processExpand(entries, meta) {
             key,
             value: e.value,
           });
-          if (e.attackerhero) {
+          if (e.sourcename.includes('npc_dota_hero_')) {
             expand({
               time: e.time,
               value: e.value,
