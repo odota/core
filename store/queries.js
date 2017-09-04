@@ -586,7 +586,11 @@ function updateHeroRankings(match, cb) {
       const win = Number(utility.isRadiant(player) === player.radiant_win);
       const playerScore = win ? matchScore : 0;
       if (playerScore && utility.isSignificant(match)) {
-        return db.raw('INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = hero_ranking.score + EXCLUDED.score',
+        return db.raw(`
+          INSERT INTO hero_ranking VALUES(?, ?, ?, 1) 
+          ON CONFLICT(account_id, hero_id) 
+          DO UPDATE SET score = hero_ranking.score + EXCLUDED.score, games_played = games_played + 1
+          `,
           [player.account_id, player.hero_id, playerScore],
         ).asCallback(cb);
       }

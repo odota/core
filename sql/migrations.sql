@@ -35,3 +35,5 @@ ALTER TABLE player_matches ADD party_size int;
 ALTER TABLE queue ADD next_attempt_time timestamp with time zone;
 
 ALTER TABLE queue ADD priority int;
+
+ALTER TABLE hero_ranking ADD games_played int;

@@ -367,7 +367,8 @@ CREATE TABLE hero_ranking (
   PRIMARY KEY (account_id, hero_id),
   account_id bigint,
   hero_id int,
-  score double precision
+  score double precision,
+  games_played int
 );
 CREATE INDEX ON hero_ranking(hero_id, score);
 CREATE INDEX ON hero_ranking(score);
