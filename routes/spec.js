@@ -15,7 +15,6 @@ const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const db = require('../store/db');
 const redis = require('../store/redis');
-const cassandra = require('../store/cassandra');
 const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
@@ -3253,8 +3252,8 @@ Please keep request rate to approximately 3/s.
                 type: 'api',
                 attempts: 1,
                 priority: 1,
-                cassandra,
                 forceParse: true,
+                allowBackup: true,
               }, exitWithJob);
             });
           }
@@ -3529,6 +3528,7 @@ Please keep request rate to approximately 3/s.
               getGcData({
                 match_id: matchId,
                 noRetry: true,
+                allowBackup: true,
               }, (err, result) => {
                 if (err) {
                   console.error(err);
