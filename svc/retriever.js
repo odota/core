@@ -24,7 +24,7 @@ const launch = new Date();
 const minUpTimeSeconds = 700;
 const maxUpTimeSeconds = 3600;
 const timeoutMs = 10000;
-const timeoutThreshold = 40;
+const timeoutThreshold = 50;
 const accountsToUse = 6;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 500;
@@ -117,7 +117,7 @@ function getGcMatchData(idx, matchId, cb) {
   matchRequests += 1;
   const timeout = setTimeout(() => {
     timeouts += 1;
-    matchRequestDelayIncr += 300;
+    matchRequestDelayIncr += 100;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     matchSuccesses += 1;
