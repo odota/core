@@ -25,9 +25,10 @@ const minUpTimeSeconds = 700;
 const maxUpTimeSeconds = 3600;
 const timeoutMs = 10000;
 const timeoutThreshold = 50;
-const accountsToUse = 6;
+const accountsToUse = 3;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 500;
+const matchRequestLimit = 250;
 
 let matchRequestDelayIncr = 0;
 let lastRequestTime;
@@ -370,7 +371,7 @@ app.use((req, res, cb) => {
     profileRequests,
     getUptime(),
     matchRequestDelay + matchRequestDelayIncr);
-  const shouldRestart = (matchRequests > 500 && getUptime() > minUpTimeSeconds)
+  const shouldRestart = (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds)
     || getUptime() > maxUpTimeSeconds
     || (!allReady && getUptime() > minUpTimeSeconds)
     || (timeouts > timeoutThreshold && getUptime() > minUpTimeSeconds);
