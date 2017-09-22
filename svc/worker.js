@@ -394,11 +394,10 @@ function doHeroStats(cb) {
               FROM public_player_matches 
               JOIN 
               (SELECT * FROM public_matches
-              TABLESAMPLE SYSTEM_ROWS(3000000)
+              TABLESAMPLE SYSTEM_ROWS(5000000)
               WHERE start_time > ?
               AND start_time < ?)
               matches_list USING(match_id)
-              WHERE hero_id > 0
               GROUP BY avg_mmr_bucket, hero_id
               ORDER BY hero_id
           `, [minTime, maxTime])
@@ -408,31 +407,26 @@ function doHeroStats(cb) {
       db.raw(`
               SELECT 
               sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
-              count(*) as pro_pick,
-              hero_id
-              FROM player_matches
-              JOIN matches USING(match_id)
-              WHERE hero_id > 0
-              AND start_time > ?
-              AND start_time < ?
-              GROUP BY hero_id
-              ORDER BY hero_id
+              count(hero_id) as pro_pick,
+              heroes.id as hero_id
+              FROM heroes
+              LEFT JOIN player_matches ON heroes.id = player_matches.hero_id
+              LEFT JOIN matches on player_matches.match_id = matches.match_id AND start_time > ? AND start_time < ?
+              GROUP BY heroes.id
+              ORDER BY heroes.id
           `, [minTime, maxTime])
         .asCallback(cb);
     },
     proBans(cb) {
       db.raw(`
               SELECT 
-              count(*) as pro_ban,
-              hero_id
-              FROM picks_bans
-              JOIN matches USING(match_id)
-              WHERE hero_id > 0
-              AND start_time > ?
-              AND start_time < ?
-              AND is_pick IS FALSE
-              GROUP BY hero_id
-              ORDER BY hero_id
+              count(hero_id) as pro_ban,
+              heroes.id as hero_id
+              FROM heroes
+              LEFT JOIN picks_bans ON heroes.id = picks_bans.hero_id AND is_pick IS FALSE
+              LEFT JOIN matches on picks_bans.match_id = matches.match_id AND start_time > ? AND start_time < ?
+              GROUP BY heroes.id
+              ORDER BY heroes.id
           `, [minTime, maxTime])
         .asCallback(cb);
     },
