@@ -21,13 +21,14 @@ const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
 const app = express();
 const steamObj = {};
 const launch = new Date();
-const minUpTimeSeconds = 630;
+const minUpTimeSeconds = 660;
 const maxUpTimeSeconds = 3600;
 const timeoutMs = 10000;
 const timeoutThreshold = 50;
 const accountsToUse = 3;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 500;
+const matchRequestDelay = 700;
+const matchRequestDelayStep = 100;
 const matchRequestLimit = 250;
 
 let matchRequestDelayIncr = 0;
@@ -118,7 +119,7 @@ function getGcMatchData(idx, matchId, cb) {
   matchRequests += 1;
   const timeout = setTimeout(() => {
     timeouts += 1;
-    matchRequestDelayIncr += 100;
+    matchRequestDelayIncr += matchRequestDelayStep;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
     matchSuccesses += 1;
