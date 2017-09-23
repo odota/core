@@ -3253,7 +3253,6 @@ Please keep request rate to approximately 3/s.
                 attempts: 1,
                 priority: 1,
                 forceParse: true,
-                allowBackup: true,
               }, exitWithJob);
             });
           }
