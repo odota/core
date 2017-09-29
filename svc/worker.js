@@ -411,7 +411,9 @@ function doHeroStats(cb) {
               heroes.id as hero_id
               FROM heroes
               LEFT JOIN player_matches ON heroes.id = player_matches.hero_id
-              LEFT JOIN matches on player_matches.match_id = matches.match_id AND start_time > ? AND start_time < ?
+              LEFT JOIN matches on player_matches.match_id = matches.match_id
+              WHERE start_time > ?
+              AND start_time < ?
               GROUP BY heroes.id
               ORDER BY heroes.id
           `, [minTime, maxTime])
@@ -424,7 +426,9 @@ function doHeroStats(cb) {
               heroes.id as hero_id
               FROM heroes
               LEFT JOIN picks_bans ON heroes.id = picks_bans.hero_id AND is_pick IS FALSE
-              LEFT JOIN matches on picks_bans.match_id = matches.match_id AND start_time > ? AND start_time < ?
+              LEFT JOIN matches on picks_bans.match_id = matches.match_id
+              WHERE start_time > ?
+              AND start_time < ?
               GROUP BY heroes.id
               ORDER BY heroes.id
           `, [minTime, maxTime])
