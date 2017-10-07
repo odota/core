@@ -43,11 +43,13 @@ function getPage(url, leagueid, cb) {
         throw err;
       }
       if (data.result.results_remaining) {
-        const url2 = generateJob('api_history',
+        const url2 = generateJob(
+          'api_history',
           {
             leagueid,
             start_at_match_id: data.result.matches[data.result.matches.length - 1].match_id - 1,
-          }).url;
+          },
+        ).url;
         getPage(url2, leagueid, cb);
       } else {
         cb(err);
@@ -68,10 +70,12 @@ db
     }
     const leagueIds = data.map(l => l.leagueid);
     async.eachSeries(leagueIds, (leagueid, cb) => {
-      const url = generateJob('api_history',
+      const url = generateJob(
+        'api_history',
         {
           leagueid,
-        }).url;
+        },
+      ).url;
       return getPage(url, leagueid, cb);
     }, (err) => {
       process.exit(Number(err));

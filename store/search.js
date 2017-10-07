@@ -16,7 +16,7 @@ function search(options, cb) {
   const query = options.q;
   async.parallel({
     account_id(callback) {
-      if (isNaN(Number(query))) {
+      if (Number.isNaN(Number(query))) {
         return callback();
       }
       return findPlayer({

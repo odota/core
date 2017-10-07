@@ -19,8 +19,7 @@ function getSummaries(cb) {
     const mappedResults = results.map(accountId =>
       ({
         account_id: accountId,
-      }),
-    );
+      }));
     const container = utility.generateJob('api_summaries', {
       players: mappedResults,
     });

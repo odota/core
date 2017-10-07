@@ -253,7 +253,8 @@ function doLeagues(cb) {
             leagueid: l.league_id,
           }, cb);
         }, cb);
-      });
+      },
+    );
   });
 }
 
@@ -377,7 +378,8 @@ function doCosmetics(cb) {
         }
         return insert(cb);
       }, cb);
-    });
+    },
+  );
 }
 
 function doHeroStats(cb) {
@@ -442,11 +444,13 @@ function doHeroStats(cb) {
     const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
     Object.keys(result).forEach((key) => {
       result[key].rows.forEach((row) => {
-        objectResponse[row.hero_id] = Object.assign({}, objectResponse[row.hero_id],
+        objectResponse[row.hero_id] = Object.assign(
+          {}, objectResponse[row.hero_id],
           key === 'publicHeroes' ? {
             [`${row.avg_mmr_bucket}_pick`]: row.pick,
             [`${row.avg_mmr_bucket}_win`]: row.win,
-          } : row);
+          } : row,
+        );
       });
     });
     return redis.set('heroStats', JSON.stringify(Object.keys(objectResponse).map(key => objectResponse[key])), cb);

@@ -13,14 +13,16 @@ db.select(['match_id', 'start_time']).from('matches').asCallback((err, matchIds)
   }
   async.eachSeries(matchIds, (match, cb) => {
     console.log(match.match_id);
-    queries.upsert(db, 'match_patch',
+    queries.upsert(
+      db, 'match_patch',
       {
         match_id: match.match_id,
         patch: constants.patch[utility.getPatchIndex(match.start_time)].name,
       },
       {
         match_id: match.match_id,
-      }, cb);
+      }, cb,
+    );
   }, (err) => {
     process.exit(Number(err));
   });

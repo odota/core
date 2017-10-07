@@ -65,9 +65,11 @@ stream.on('end', () => {
   // Write the results to table
   async.eachSeries(Object.keys(teams), (teamId, cb) => {
     console.log([teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]]);
-    db.raw(`INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
+    db.raw(
+      `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
   ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses, last_match_time=EXCLUDED.last_match_time`,
-      [teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]]).asCallback(cb);
+      [teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]],
+    ).asCallback(cb);
   }, (err) => {
     if (err) {
       console.error(err);

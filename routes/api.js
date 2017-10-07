@@ -36,7 +36,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
 
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
-  if (isNaN(Number(req.params.account_id))) {
+  if (Number.isNaN(Number(req.params.account_id))) {
     return cb('invalid account_id');
   }
   req.originalQuery = JSON.parse(JSON.stringify(req.query));
@@ -50,8 +50,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   Object.keys(req.query).forEach((key) => {
     // numberify and arrayify everything in query
     req.query[key] = [].concat(req.query[key]).map(e =>
-      (isNaN(Number(e)) ? e : Number(e)),
-    );
+      (Number.isNaN(Number(e)) ? e : Number(e)));
     // build array of required projections due to filters
     filterCols = filterCols.concat(filterDeps[key] || []);
   });

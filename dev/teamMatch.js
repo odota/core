@@ -10,27 +10,27 @@ db.select(['radiant_team_id', 'dire_team_id', 'match_id']).from('matches').asCal
     console.log(match.match_id);
     const arr = [];
     if (match.radiant_team_id) {
-      arr.push(
-        {
-          team_id: match.radiant_team_id,
-          match_id: match.match_id,
-          radiant: true,
-        });
+      arr.push({
+        team_id: match.radiant_team_id,
+        match_id: match.match_id,
+        radiant: true,
+      });
     }
     if (match.dire_team_id) {
-      arr.push(
-        {
-          team_id: match.dire_team_id,
-          match_id: match.match_id,
-          radiant: false,
-        });
+      arr.push({
+        team_id: match.dire_team_id,
+        match_id: match.match_id,
+        radiant: false,
+      });
     }
     async.each(arr, (tm, cb) => {
-      queries.upsert(db, 'team_match', tm,
+      queries.upsert(
+        db, 'team_match', tm,
         {
           team_id: tm.team_id,
           match_id: tm.match_id,
-        }, cb);
+        }, cb,
+      );
     }, cb);
   }, (err) => {
     process.exit(Number(err));

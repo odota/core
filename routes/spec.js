@@ -1156,31 +1156,30 @@ Please keep request rate to approximately 3/s.
         route: () => '/players/:account_id/recentMatches',
         func: (req, res, cb) => {
           queries.getPlayerMatches(req.params.account_id, {
-            project: req.queryObj.project.concat(
-              ['hero_id',
-                'start_time',
-                'duration',
-                'player_slot',
-                'radiant_win',
-                'game_mode',
-                'lobby_type',
-                'version',
-                'kills',
-                'deaths',
-                'assists',
-                'skill',
-                'xp_per_min',
-                'gold_per_min',
-                'hero_damage',
-                'tower_damage',
-                'hero_healing',
-                'last_hits',
-                'lane',
-                'lane_role',
-                'is_roaming',
-                'cluster',
-                'leaver_status',
-                'party_size']),
+            project: req.queryObj.project.concat(['hero_id',
+              'start_time',
+              'duration',
+              'player_slot',
+              'radiant_win',
+              'game_mode',
+              'lobby_type',
+              'version',
+              'kills',
+              'deaths',
+              'assists',
+              'skill',
+              'xp_per_min',
+              'gold_per_min',
+              'hero_damage',
+              'tower_damage',
+              'hero_healing',
+              'last_hits',
+              'lane',
+              'lane_role',
+              'is_roaming',
+              'cluster',
+              'leaver_status',
+              'party_size']),
             dbLimit: 20,
           }, (err, cache) => {
             if (err) {
@@ -3522,7 +3521,8 @@ Please keep request rate to approximately 3/s.
            .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 20))
            .asCallback((err, result) => {
           */
-          async.map([].concat(req.query.match_id || []).slice(0, 5),
+          async.map(
+            [].concat(req.query.match_id || []).slice(0, 5),
             (matchId, cb) =>
               getGcData({
                 match_id: matchId,
@@ -3539,7 +3539,8 @@ Please keep request rate to approximately 3/s.
                 return cb(err);
               }
               return res.json(result.filter(Boolean));
-            });
+            },
+          );
         },
       },
     },
@@ -3596,10 +3597,8 @@ Please keep request rate to approximately 3/s.
                 start_time: r.split(':')[1],
                 hero_id: r.split(':')[2],
                 score: rows[i + 1],
-              }),
-            ).filter((r, i) =>
-              i % 2 === 0,
-            );
+              })).filter((r, i) =>
+              i % 2 === 0);
             return res.json(entries);
           });
         },

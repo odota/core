@@ -23,8 +23,7 @@ db.select('account_id')
         data: generateJob('mmr', {
           account_id: p.account_id,
           url: retrieverArr.map(r =>
-            `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${p.account_id}`,
-          )[p.account_id % retrieverArr.length],
+            `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${p.account_id}`)[p.account_id % retrieverArr.length],
         }),
       };
       getData({

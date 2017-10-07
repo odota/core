@@ -142,8 +142,7 @@ app.use('/api', api);
 app.use((req, res) =>
   res.status(404).json({
     error: 'Not Found',
-  }),
-);
+  }));
 // 500 route
 app.use((err, req, res, cb) => {
   if (config.NODE_ENV === 'development') {

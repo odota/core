@@ -24,8 +24,7 @@ function processAllPlayers(entries, meta) {
     }
   }
   const order = Object.keys(goldAdvTime).sort((a, b) =>
-    Number(a) - Number(b),
-  );
+    Number(a) - Number(b));
   order.forEach((k) => {
     res.radiant_gold_adv.push(goldAdvTime[k]);
     res.radiant_xp_adv.push(xpAdvTime[k]);

@@ -8,8 +8,7 @@ const DATA_POINTS = (60 / (config.MMSTATS_DATA_INTERVAL || 1)) * 24; // Store 24
 
 function getMMStats(redis, cb) {
   const urls = retrieverArr.map(r =>
-    `http://${r}?key=${secret}&mmstats=1`,
-  );
+    `http://${r}?key=${secret}&mmstats=1`);
   getData({ url: urls }, (err, body) => {
     if (err) {
       return cb(err);

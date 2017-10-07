@@ -74,8 +74,7 @@ function getParseSchema() {
         randomed: false,
         repicked: false,
         pred_vict: false,
-      }),
-    ),
+      })),
   };
 }
 

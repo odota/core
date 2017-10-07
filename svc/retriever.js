@@ -364,14 +364,16 @@ if (advancedAuth) {
   });
 }
 app.use((req, res, cb) => {
-  console.log('numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
+  console.log(
+    'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
     Object.keys(steamObj).length,
     matchSuccesses,
     matchRequests,
     profileSuccesses,
     profileRequests,
     getUptime(),
-    matchRequestDelay + matchRequestDelayIncr);
+    matchRequestDelay + matchRequestDelayIncr,
+  );
   const shouldRestart = (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds)
     || getUptime() > maxUpTimeSeconds
     || (!allReady && getUptime() > minUpTimeSeconds)
@@ -421,8 +423,7 @@ app.use((req, res) => {
 app.use((err, req, res) =>
   res.status(500).json({
     error: err,
-  }),
-);
+  }));
 const server = app.listen(port, () => {
   const host = server.address().address;
   console.log('[RETRIEVER] listening at http://%s:%s', host, port);
