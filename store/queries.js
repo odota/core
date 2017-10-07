@@ -364,7 +364,7 @@ function getPeers(db, input, player, cb) {
       }
       t.personaname = row.personaname;
       t.last_login = row.last_login;
-      t.avatar = row.avatar;
+      t.avatar = row.avatar.replace('.jpg', '_full.jpg');
       return cb(err);
     });
   }, (err) => {
