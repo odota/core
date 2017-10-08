@@ -1479,6 +1479,10 @@ Please keep request rate to approximately 3/s.
                     description: 'avatar',
                     type: 'string',
                   },
+                  avatarfull: {
+                    description: 'avatarfull',
+                    type: 'string',
+                  },
                 },
               },
             },
