@@ -3482,9 +3482,9 @@ Please keep request rate to approximately 3/s.
         },
       },
     },
-    '/teams/{teamId}': {
+    '/teams/{team_id}': {
       get: {
-        summary: 'GET /teams/{teamId}',
+        summary: 'GET /teams/{team_id}',
         description: 'Get data for a team',
         tags: ['teams'],
         responses: {
@@ -3508,9 +3508,9 @@ Please keep request rate to approximately 3/s.
         },
       },
     },
-    '/teams/{teamId}/matches': {
+    '/teams/{team_id}/matches': {
       get: {
-        summary: 'GET /teams/{teamId}/matches',
+        summary: 'GET /teams/{team_id}/matches',
         description: 'Get matches for a team',
         tags: ['teams'],
         responses: {
@@ -3535,9 +3535,9 @@ Please keep request rate to approximately 3/s.
         },
       },
     },
-    '/teams/{teamId}/players': {
+    '/teams/{team_id}/players': {
       get: {
-        summary: 'GET /teams/{teamId}/players',
+        summary: 'GET /teams/{team_id}/players',
         description: 'Get players who have played for a team',
         tags: ['teams'],
         responses: {
@@ -3585,9 +3585,9 @@ Please keep request rate to approximately 3/s.
         },
       },
     },
-    '/teams/{teamId}/heroes': {
+    '/teams/{team_id}/heroes': {
       get: {
-        summary: 'GET /teams/{teamId}/heroes',
+        summary: 'GET /teams/{team_id}/heroes',
         description: 'Get heroes for a team',
         tags: ['teams'],
         responses: {
