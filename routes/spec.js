@@ -3409,14 +3409,18 @@ Please keep request rate to approximately 3/s.
         route: () => '/heroes/:hero_id/matches',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.select('match_id', 'duration', 'start_time', 'win', 'player_matches.account_id')
-            .from('matches')
-            .join('heroes', 'heroes.id', 'player_matches.hero_id')
-            .leftJoin('notable_players', 'player_matches.account_id', 'player_matches.account_id')
-            .where({
-              'player_matches.hero_id': Number(heroId),
-            })
-            .limit(100)
+          db.raw(`SELECT
+            matches.match_id,
+            matches.start_time,
+            matches.duration,
+            ((player_matches.player_slot < 128) = matches.radiant_win) win,
+            player_matches.account_id
+            FROM matches
+            JOIN player_matches using(match_id)
+            JOIN heroes on heroes.id = player_matches.hero_id
+            WHERE player_matches.hero_id = ?
+            ORDER BY matches.match_id DESC
+            LIMIT 100`, [heroId])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
