@@ -217,6 +217,7 @@ describe('api', () => {
         const replacedPath = path
           .replace(/{match_id}/, 1781962623)
           .replace(/{account_id}/, 120269134)
+          .replace(/{hero_id}/, 1)
           .replace(/{field}/, 'kills');
         async.eachSeries(Object.keys(spec.paths[path]), (verb, cb) => {
           if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0) {
