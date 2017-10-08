@@ -43,6 +43,100 @@ const playerParams = [
   params.significantParam,
   params.sortParam,
 ];
+const teamObject = {
+  type: 'object',
+  properties: {
+    team_id: {
+      description: 'team_id',
+      type: 'integer',
+    },
+    rating: {
+      description: 'The Elo rating of the team',
+      type: 'number',
+    },
+    wins: {
+      description: 'The number of games won by this team',
+      type: 'integer',
+    },
+    losses: {
+      description: 'The number of losses by this team',
+      type: 'integer',
+    },
+    last_match_time: {
+      description: 'The Unix timestamp of the last match played by this team',
+      type: 'integer',
+    },
+    name: {
+      description: 'name',
+      type: 'string',
+    },
+    tag: {
+      description: 'The team tag',
+      type: 'string',
+    },
+  },
+};
+const matchObject = {
+  type: 'object',
+  properties: {
+    match_id: {
+      description: 'match_id',
+      type: 'integer',
+    },
+    duration: {
+      description: 'duration',
+      type: 'integer',
+    },
+    start_time: {
+      description: 'start_time',
+      type: 'integer',
+    },
+    radiant_team_id: {
+      description: 'radiant_team_id',
+      type: 'integer',
+    },
+    radiant_name: {
+      description: 'radiant_name',
+      type: 'string',
+    },
+    dire_team_id: {
+      description: 'dire_team_id',
+      type: 'integer',
+    },
+    dire_name: {
+      description: 'dire_name',
+      type: 'string',
+    },
+    leagueid: {
+      description: 'leagueid',
+      type: 'integer',
+    },
+    league_name: {
+      description: 'league_name',
+      type: 'string',
+    },
+    series_id: {
+      description: 'series_id',
+      type: 'integer',
+    },
+    series_type: {
+      description: 'series_type',
+      type: 'integer',
+    },
+    radiant_score: {
+      description: 'radiant_score',
+      type: 'integer',
+    },
+    dire_score: {
+      description: 'dire_score',
+      type: 'integer',
+    },
+    radiant_win: {
+      description: 'radiant_win',
+      type: 'boolean',
+    },
+  },
+};
 
 function sendDataWithCache(req, res, data, key) {
   if (config.ENABLE_PLAYER_CACHE && req.originalQuery && !Object.keys(req.originalQuery).length) {
@@ -2202,67 +2296,7 @@ Please keep request rate to approximately 3/s.
             description: 'Success',
             schema: {
               type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  match_id: {
-                    description: 'match_id',
-                    type: 'integer',
-                  },
-                  duration: {
-                    description: 'duration',
-                    type: 'integer',
-                  },
-                  start_time: {
-                    description: 'start_time',
-                    type: 'integer',
-                  },
-                  radiant_team_id: {
-                    description: 'radiant_team_id',
-                    type: 'integer',
-                  },
-                  radiant_name: {
-                    description: 'radiant_name',
-                    type: 'string',
-                  },
-                  dire_team_id: {
-                    description: 'dire_team_id',
-                    type: 'integer',
-                  },
-                  dire_name: {
-                    description: 'dire_name',
-                    type: 'string',
-                  },
-                  leagueid: {
-                    description: 'leagueid',
-                    type: 'integer',
-                  },
-                  league_name: {
-                    description: 'league_name',
-                    type: 'string',
-                  },
-                  series_id: {
-                    description: 'series_id',
-                    type: 'integer',
-                  },
-                  series_type: {
-                    description: 'series_type',
-                    type: 'integer',
-                  },
-                  radiant_score: {
-                    description: 'radiant_score',
-                    type: 'integer',
-                  },
-                  dire_score: {
-                    description: 'dire_score',
-                    type: 'integer',
-                  },
-                  radiant_win: {
-                    description: 'radiant_win',
-                    type: 'boolean',
-                  },
-                },
-              },
+              items: matchObject,
             },
           },
         },
@@ -3429,39 +3463,7 @@ Please keep request rate to approximately 3/s.
             description: 'Success',
             schema: {
               type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  team_id: {
-                    description: 'team_id',
-                    type: 'integer',
-                  },
-                  rating: {
-                    description: 'The Elo rating of the team',
-                    type: 'number',
-                  },
-                  wins: {
-                    description: 'The number of games won by this team',
-                    type: 'integer',
-                  },
-                  losses: {
-                    description: 'The number of losses by this team',
-                    type: 'integer',
-                  },
-                  last_match_time: {
-                    description: 'The Unix timestamp of the last match played by this team',
-                    type: 'integer',
-                  },
-                  name: {
-                    description: 'name',
-                    type: 'string',
-                  },
-                  tag: {
-                    description: 'The team tag',
-                    type: 'string',
-                  },
-                },
-              },
+              items: teamObject,
             },
           },
         },
@@ -3471,6 +3473,159 @@ Please keep request rate to approximately 3/s.
             FROM teams
             LEFT JOIN team_rating using(team_id)
             ORDER BY rating desc NULLS LAST`)
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/teams/{teamId}': {
+      get: {
+        summary: 'GET /teams/{teamId}',
+        description: 'Get data for a team',
+        tags: ['teams'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: teamObject,
+          },
+        },
+        route: () => '/teams/:team_id',
+        func: (req, res, cb) => {
+          db.raw(`SELECT team_rating.*, teams.*
+            FROM teams
+            LEFT JOIN team_rating using(team_id)
+            WHERE teams.team_id = ?`, [req.params.team_id])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows[0]);
+            });
+        },
+      },
+    },
+    '/teams/{teamId}/matches': {
+      get: {
+        summary: 'GET /teams/{teamId}/matches',
+        description: 'Get matches for a team',
+        tags: ['teams'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: matchObject,
+          },
+        },
+        route: () => '/teams/:team_id/matches',
+        func: (req, res, cb) => {
+          db.raw(`SELECT match_id, radiant_win, radiant, duration, start_time, leagueid, leagues.name as league_name, cluster
+            FROM team_match
+            JOIN matches USING(match_id)
+            JOIN leagues USING(leagueid)
+            WHERE team_match.team_id = ?`, [req.params.team_id])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/teams/{teamId}/players': {
+      get: {
+        summary: 'GET /teams/{teamId}/players',
+        description: 'Get players who have played for a team',
+        tags: ['teams'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                account_id: {
+                  description: 'The player account ID',
+                  type: 'string',
+                },
+                name: {
+                  description: 'The player name',
+                  type: 'string',
+                },
+                games_played: {
+                  description: 'Number of games played',
+                  type: 'integer',
+                },
+                wins: {
+                  description: 'Number of wins',
+                  type: 'integer',
+                },
+              },
+            },
+          },
+        },
+        route: () => '/teams/:team_id/players',
+        func: (req, res, cb) => {
+          db.raw(`SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+            FROM matches
+            JOIN team_match USING(match_id)
+            JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
+            JOIN teams USING (team_id)
+            LEFT JOIN notable_players USING(account_id)
+            WHERE teams.team_id = ?
+            GROUP BY account_id, notable_players.name`, [req.params.team_id])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/teams/{teamId}/heroes': {
+      get: {
+        summary: 'GET /teams/{teamId}/heroes',
+        description: 'Get heroes for a team',
+        tags: ['teams'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                hero_id: {
+                  description: 'The hero ID',
+                  type: 'integer',
+                },
+                name: {
+                  description: 'The hero name',
+                  type: 'string',
+                },
+                games_played: {
+                  description: 'Number of games played',
+                  type: 'integer',
+                },
+                wins: {
+                  description: 'Number of wins',
+                  type: 'integer',
+                },
+              },
+            },
+          },
+        },
+        route: () => '/teams/:team_id/heroes',
+        func: (req, res, cb) => {
+          db.raw(`SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+            FROM matches
+            JOIN team_match USING(match_id)
+            JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
+            JOIN teams USING(team_id)
+            LEFT JOIN heroes ON player_matches.hero_id = heroes.id
+            WHERE teams.team_id = ?
+            GROUP BY hero_id, localized_name`, [req.params.team_id])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
