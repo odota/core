@@ -3410,7 +3410,7 @@ Please keep request rate to approximately 3/s.
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
           db.select('match_id', 'duration', 'start_time', 'win', 'player_matches.account_id')
-            .from('mathes')
+            .from('matches')
             .join('heroes', 'heroes.id', 'player_matches.hero_id')
             .leftJoin('notable_players', 'player_matches.account_id', 'player_matches.account_id')
             .where({
