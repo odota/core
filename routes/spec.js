@@ -2269,9 +2269,9 @@ Please keep request rate to approximately 3/s.
         route: () => '/proMatches',
         func: (req, res, cb) => {
           db.raw(`
-          SELECT match_id, duration, start_time, 
-          radiant_team_id, radiant.name as radiant_name, 
-          dire_team_id, dire.name as dire_name, 
+          SELECT match_id, duration, start_time,
+          radiant_team_id, radiant.name as radiant_name,
+          dire_team_id, dire.name as dire_name,
           leagueid, leagues.name as league_name,
           series_id, series_type,
           radiant_score, dire_score,
@@ -2378,7 +2378,7 @@ Please keep request rate to approximately 3/s.
           SELECT * FROM
           (SELECT * FROM public_matches
           WHERE match_id IN (SELECT match_id FROM match_ids)) matches
-          JOIN 
+          JOIN
           (SELECT match_id, string_agg(hero_id::text, ',') radiant_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot <= 127 GROUP BY match_id) radiant_team
           USING(match_id)
           JOIN
@@ -3364,6 +3364,68 @@ Please keep request rate to approximately 3/s.
                 return cb(err);
               }
               return res.json(result);
+            });
+        },
+      },
+    },
+    '/heroes/{hero_id}/matches': {
+      post: {
+        summary: 'POST /heroes/{hero_id}/matches',
+        description: 'Most recent games played with this hero',
+        tags: ['request'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'integer',
+                  },
+                  duration: {
+                    description: 'duration',
+                    type: 'integer',
+                  },
+                  start_time: {
+                    description: 'start_time',
+                    type: 'integer',
+                  },
+                  win: {
+                    description: 'win',
+                    type: 'string',
+                  },
+                  account_id: {
+                    description: 'account_id',
+                    type: 'integer',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/heroes/:hero_id/matches',
+        func: (req, res, cb) => {
+          const heroId = req.params.hero_id;
+          db.raw(`SELECT
+            matches.match_id,
+            matches.start_time,
+            matches.duration,
+            ((player_matches.player_slot < 128) = matches.radiant_win) win,
+            player_matches.account_id
+            FROM matches
+            JOIN player_matches using(match_id)
+            JOIN heroes on heroes.id = player_matches.hero_id
+            WHERE player_matches.hero_id = ?
+            ORDER BY matches.match_id DESC
+            LIMIT 100`, [heroId])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
             });
         },
       },
