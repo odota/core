@@ -285,12 +285,10 @@ function getPlayerMatches(accountId, queryObj, cb) {
 }
 
 function getPlayerRatings(db, accountId, cb) {
-  console.time(`[PLAYER] getPlayerRatings ${accountId}`);
   if (!Number.isNaN(Number(accountId))) {
     db.from('player_ratings').where({
       account_id: Number(accountId),
     }).orderBy('time', 'asc').asCallback((err, result) => {
-      console.timeEnd(`[PLAYER] getPlayerRatings ${accountId}`);
       cb(err, result);
     });
   } else {
