@@ -3766,6 +3766,37 @@ Please keep request rate to approximately 3/s.
         },
       },
     },
+    '/live': {
+      get: {
+        summary: 'GET /live',
+        description: 'Get top currently ongoing live games',
+        tags: ['live'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                },
+              },
+            },
+          },
+        },
+        route: () => '/live',
+        func: (req, res, cb) => {
+          redis.zrangebyscore('liveGames', '-inf', 'inf', (err, rows) => {
+            if (err) {
+              return cb(err);
+            }
+            const entries = rows.map(r => JSON.parse(r));
+            return res.json(entries);
+          });
+        },
+      },
+    },
     '/schema': {
       get: {
         summary: 'GET /schema',

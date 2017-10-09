@@ -457,6 +457,40 @@ function doHeroStats(cb) {
   });
 }
 
+function doLiveGames(cb) {
+  // Get the list of pro players
+  db.select().from('notable_players').asCallback((err, proPlayers) => {
+    const liveGamesUrl = utility.generateJob('api_top_live_game').url;
+    // Get the list of live games
+    utility.getData(liveGamesUrl, (err, json) => {
+      if (err) {
+        return cb(err);
+      }
+      // If a match contains a pro player
+      // add their name to the match object, save it to redis zset, keyed by server_steam_id
+      return async.eachSeries(json.game_list, (match, cb) => {
+        // let addToRedis = false;
+        match.players.forEach((player) => {
+          const proPlayer = proPlayers.find(proPlayer =>
+            proPlayer.account_id.toString() === player.account_id.toString());
+          if (proPlayer) {
+            player = Object.assign({}, player, proPlayer);
+            // addToRedis = true;
+          }
+        });
+        redis.zadd('liveGames', match.server_steam_id, JSON.stringify(match));
+        // Keep only the 100 highest values
+        redis.zremrangebyrank('liveGames', '0', '-101');
+        cb();
+        // Get detailed stats for each live game
+        // const { url } = utility.generateJob('api_realtime_stats', {
+        //   server_steam_id: match.server_steam_id
+        // }).url;
+      }, cb);
+    });
+  });
+}
+
 invokeInterval(doBuildSets, 60 * 1000);
 // invokeInterval(doMMStats, config.MMSTATS_DATA_INTERVAL * 60 * 1000); // Sample every 3 minutes
 invokeInterval(doDistributions, 6 * 60 * 60 * 1000);
@@ -467,3 +501,4 @@ invokeInterval(doHeroes, 60 * 60 * 1000);
 invokeInterval(doItems, 60 * 60 * 1000);
 invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);
 invokeInterval(doHeroStats, 60 * 60 * 1000);
+invokeInterval(doLiveGames, 60 * 1000);
