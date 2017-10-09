@@ -3525,7 +3525,8 @@ Please keep request rate to approximately 3/s.
             FROM team_match
             JOIN matches USING(match_id)
             JOIN leagues USING(leagueid)
-            WHERE team_match.team_id = ?`, [req.params.team_id])
+            WHERE team_match.team_id = ?
+            ORDER BY match_id DESC`, [req.params.team_id])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -3575,7 +3576,8 @@ Please keep request rate to approximately 3/s.
             JOIN teams USING (team_id)
             LEFT JOIN notable_players USING(account_id)
             WHERE teams.team_id = ?
-            GROUP BY account_id, notable_players.name`, [req.params.team_id])
+            GROUP BY account_id, notable_players.name
+            ORDER BY games_played DESC`, [req.params.team_id])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -3625,7 +3627,8 @@ Please keep request rate to approximately 3/s.
             JOIN teams USING(team_id)
             LEFT JOIN heroes ON player_matches.hero_id = heroes.id
             WHERE teams.team_id = ?
-            GROUP BY hero_id, localized_name`, [req.params.team_id])
+            GROUP BY hero_id, localized_name
+            ORDER BY games_played DESC`, [req.params.team_id])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
