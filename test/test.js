@@ -24,6 +24,9 @@ const detailsApiPro = require('./data/details_api_pro.json');
 
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = config.INIT_CASSANDRA_HOST;
+const pool = new pg.Pool({
+  connectionString: initPostgresHost,
+});
 // these are loaded later, as the database needs to be created when these are required
 let db;
 let cassandra;
@@ -65,7 +68,7 @@ before(function setup(done) {
   this.timeout(30000);
   async.series([
     function initPostgres(cb) {
-      pg.connect(initPostgresHost, (err, client) => {
+      pool.connect((err, client) => {
         if (err) {
           return cb(err);
         }
