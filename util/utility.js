@@ -145,6 +145,18 @@ function generateJob(type, payload) {
         type: 'api',
       };
     },
+    api_top_live_game() {
+      return {
+        url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=0`,
+        type: 'api',
+      };
+    },
+    api_realtime_stats() {
+      return {
+        url: `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
+        type: 'api',
+      };
+    },
     parse() {
       return {
         title: [type, payload.match_id].join(),
@@ -204,7 +216,13 @@ function getData(url, cb) {
         || !res
         || res.statusCode !== 200
         || !body
-        || (steamApi && !body.result && !body.response && !body.player_infos && !body.teams)
+        || (steamApi
+          && !body.result
+          && !body.response
+          && !body.player_infos
+          && !body.teams
+          && !body.game_list
+          && !body.match)
         || (stratzApi && (!body.results || !body.results[0]))
       ) {
         // invalid response
