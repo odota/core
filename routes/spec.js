@@ -18,6 +18,9 @@ const redis = require('../store/redis');
 const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
+const {
+  teamObject, matchObject, heroObject, playerObject,
+} = require('./objects');
 
 const redisCount = utility.redisCount;
 const subkeys = playerFields.subkeys;
@@ -43,100 +46,7 @@ const playerParams = [
   params.significantParam,
   params.sortParam,
 ];
-const teamObject = {
-  type: 'object',
-  properties: {
-    team_id: {
-      description: 'team_id',
-      type: 'integer',
-    },
-    rating: {
-      description: 'The Elo rating of the team',
-      type: 'number',
-    },
-    wins: {
-      description: 'The number of games won by this team',
-      type: 'integer',
-    },
-    losses: {
-      description: 'The number of losses by this team',
-      type: 'integer',
-    },
-    last_match_time: {
-      description: 'The Unix timestamp of the last match played by this team',
-      type: 'integer',
-    },
-    name: {
-      description: 'name',
-      type: 'string',
-    },
-    tag: {
-      description: 'The team tag',
-      type: 'string',
-    },
-  },
-};
-const matchObject = {
-  type: 'object',
-  properties: {
-    match_id: {
-      description: 'match_id',
-      type: 'integer',
-    },
-    duration: {
-      description: 'duration',
-      type: 'integer',
-    },
-    start_time: {
-      description: 'start_time',
-      type: 'integer',
-    },
-    radiant_team_id: {
-      description: 'radiant_team_id',
-      type: 'integer',
-    },
-    radiant_name: {
-      description: 'radiant_name',
-      type: 'string',
-    },
-    dire_team_id: {
-      description: 'dire_team_id',
-      type: 'integer',
-    },
-    dire_name: {
-      description: 'dire_name',
-      type: 'string',
-    },
-    leagueid: {
-      description: 'leagueid',
-      type: 'integer',
-    },
-    league_name: {
-      description: 'league_name',
-      type: 'string',
-    },
-    series_id: {
-      description: 'series_id',
-      type: 'integer',
-    },
-    series_type: {
-      description: 'series_type',
-      type: 'integer',
-    },
-    radiant_score: {
-      description: 'radiant_score',
-      type: 'integer',
-    },
-    dire_score: {
-      description: 'dire_score',
-      type: 'integer',
-    },
-    radiant_win: {
-      description: 'radiant_win',
-      type: 'boolean',
-    },
-  },
-};
+
 
 function sendDataWithCache(req, res, data, key) {
   if (config.ENABLE_PLAYER_CACHE && req.originalQuery && !Object.keys(req.originalQuery).length) {
@@ -2174,98 +2084,7 @@ Please keep request rate to approximately 3/s.
         responses: {
           200: {
             description: 'Success',
-            schema: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  account_id: {
-                    description: 'account_id',
-                    type: 'integer',
-                  },
-                  steamid: {
-                    description: 'steamid',
-                    type: 'string',
-                  },
-                  avatar: {
-                    description: 'avatar',
-                    type: 'string',
-                  },
-                  avatarmedium: {
-                    description: 'avatarmedium',
-                    type: 'string',
-                  },
-                  avatarfull: {
-                    description: 'avatarfull',
-                    type: 'string',
-                  },
-                  profileurl: {
-                    description: 'profileurl',
-                    type: 'string',
-                  },
-                  personaname: {
-                    description: 'personaname',
-                    type: 'string',
-                  },
-                  last_login: {
-                    description: 'last_login',
-                    type: 'dateTime',
-                  },
-                  full_history_time: {
-                    description: 'full_history_time',
-                    type: 'dateTime',
-                  },
-                  cheese: {
-                    description: 'cheese',
-                    type: 'integer',
-                  },
-                  fh_unavailable: {
-                    description: 'fh_unavailable',
-                    type: 'boolean',
-                  },
-                  loccountrycode: {
-                    description: 'loccountrycode',
-                    type: 'string',
-                  },
-                  name: {
-                    description: 'name',
-                    type: 'string',
-                  },
-                  country_code: {
-                    description: 'country_code',
-                    type: 'string',
-                  },
-                  fantasy_role: {
-                    description: 'fantasy_role',
-                    type: 'integer',
-                  },
-                  team_id: {
-                    description: 'team_id',
-                    type: 'integer',
-                  },
-                  team_name: {
-                    description: 'team_name',
-                    type: 'string',
-                  },
-                  team_tag: {
-                    description: 'team_tag',
-                    type: 'string',
-                  },
-                  is_locked: {
-                    description: 'is_locked',
-                    type: 'boolean',
-                  },
-                  is_pro: {
-                    description: 'is_pro',
-                    type: 'boolean',
-                  },
-                  locked_until: {
-                    description: 'locked_until',
-                    type: 'integer',
-                  },
-                },
-              },
-            },
+            schema: playerObject,
           },
         },
         route: () => '/proPlayers',
@@ -2426,113 +2245,6 @@ Please keep request rate to approximately 3/s.
               }
               return res.json(result.rows);
             });
-        },
-      },
-    },
-    '/heroStats': {
-      get: {
-        summary: 'GET /heroStats',
-        description: 'Get stats about hero performance in recent matches',
-        tags: ['hero stats'],
-        parameters: [],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: {
-                    description: 'id',
-                    type: 'integer',
-                  },
-                  name: {
-                    description: 'name',
-                    type: 'string',
-                  },
-                  localized_name: {
-                    description: 'localized_name',
-                    type: 'string',
-                  },
-                  img: {
-                    description: 'img',
-                    type: 'string',
-                  },
-                  icon: {
-                    description: 'icon',
-                    type: 'string',
-                  },
-                  pro_win: {
-                    description: 'pro_win',
-                    type: 'integer',
-                  },
-                  pro_pick: {
-                    description: 'pro_pick',
-                    type: 'integer',
-                  },
-                  hero_id: {
-                    description: 'hero_id',
-                    type: 'integer',
-                  },
-                  pro_ban: {
-                    description: 'pro_ban',
-                    type: 'integer',
-                  },
-                  '1000_pick': {
-                    description: '1000_pick',
-                    type: 'integer',
-                  },
-                  '1000_win': {
-                    description: '1000_win',
-                    type: 'integer',
-                  },
-                  '2000_pick': {
-                    description: '2000_pick',
-                    type: 'integer',
-                  },
-                  '2000_win': {
-                    description: '2000_win',
-                    type: 'integer',
-                  },
-                  '3000_pick': {
-                    description: '3000_pick',
-                    type: 'integer',
-                  },
-                  '3000_win': {
-                    description: '3000_win',
-                    type: 'integer',
-                  },
-                  '4000_pick': {
-                    description: '4000_pick',
-                    type: 'integer',
-                  },
-                  '4000_win': {
-                    description: '4000_win',
-                    type: 'integer',
-                  },
-                  '5000_pick': {
-                    description: '5000_pick',
-                    type: 'integer',
-                  },
-                  '5000_win': {
-                    description: '5000_win',
-                    type: 'integer',
-                  },
-                },
-              },
-            },
-          },
-        },
-        route: () => '/heroStats',
-        func: (req, res, cb) => {
-          // fetch from cached redis value
-          redis.get('heroStats', (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(JSON.parse(result));
-          });
         },
       },
     },
@@ -3368,6 +3080,35 @@ Please keep request rate to approximately 3/s.
             description: 'Success',
             schema: {
               type: 'array',
+              items: heroObject,
+            },
+          },
+        },
+        route: () => '/heroes',
+        func: (req, res, cb) => {
+          db.select()
+            .from('heroes')
+            .orderBy('id', 'asc')
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
+        },
+      },
+    },
+    '/heroStats': {
+      get: {
+        summary: 'GET /heroStats',
+        description: 'Get stats about hero performance in recent matches',
+        tags: ['hero stats'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
               items: {
                 type: 'object',
                 properties: {
@@ -3383,21 +3124,245 @@ Please keep request rate to approximately 3/s.
                     description: 'localized_name',
                     type: 'string',
                   },
+                  img: {
+                    description: 'img',
+                    type: 'string',
+                  },
+                  icon: {
+                    description: 'icon',
+                    type: 'string',
+                  },
+                  pro_win: {
+                    description: 'pro_win',
+                    type: 'integer',
+                  },
+                  pro_pick: {
+                    description: 'pro_pick',
+                    type: 'integer',
+                  },
+                  hero_id: {
+                    description: 'hero_id',
+                    type: 'integer',
+                  },
+                  pro_ban: {
+                    description: 'pro_ban',
+                    type: 'integer',
+                  },
+                  '1000_pick': {
+                    description: '1000_pick',
+                    type: 'integer',
+                  },
+                  '1000_win': {
+                    description: '1000_win',
+                    type: 'integer',
+                  },
+                  '2000_pick': {
+                    description: '2000_pick',
+                    type: 'integer',
+                  },
+                  '2000_win': {
+                    description: '2000_win',
+                    type: 'integer',
+                  },
+                  '3000_pick': {
+                    description: '3000_pick',
+                    type: 'integer',
+                  },
+                  '3000_win': {
+                    description: '3000_win',
+                    type: 'integer',
+                  },
+                  '4000_pick': {
+                    description: '4000_pick',
+                    type: 'integer',
+                  },
+                  '4000_win': {
+                    description: '4000_win',
+                    type: 'integer',
+                  },
+                  '5000_pick': {
+                    description: '5000_pick',
+                    type: 'integer',
+                  },
+                  '5000_win': {
+                    description: '5000_win',
+                    type: 'integer',
+                  },
                 },
               },
             },
           },
         },
-        route: () => '/heroes',
+        route: () => '/heroStats',
         func: (req, res, cb) => {
-          db.select()
-            .from('heroes')
-            .orderBy('id', 'asc')
+          // fetch from cached redis value
+          redis.get('heroStats', (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(JSON.parse(result));
+          });
+        },
+      },
+    },
+    '/heroes/{hero_id}/matches': {
+      get: {
+        summary: 'GET /heroes/{hero_id}/matches',
+        description: 'Get recent matches with a hero',
+        tags: ['heroes'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: matchObject,
+            },
+          },
+        },
+        route: () => '/heroes/:hero_id/matches',
+        func: (req, res, cb) => {
+          const heroId = req.params.hero_id;
+          db.raw(`SELECT
+            matches.match_id,
+            matches.start_time,
+            matches.duration,
+            matches.radiant_win,
+            matches.leagueid,
+            leagues.name as league_name,
+            ((player_matches.player_slot < 128) = matches.radiant_win) radiant,
+            player_matches.account_id
+            FROM matches
+            JOIN player_matches using(match_id)
+            JOIN leagues using(leagueid)
+            LEFT JOIN heroes on heroes.id = player_matches.hero_id
+            WHERE player_matches.hero_id = ?
+            ORDER BY matches.match_id DESC
+            LIMIT 100`, [heroId])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
               }
-              return res.json(result);
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/heroes/{hero_id}/matchups': {
+      get: {
+        summary: 'GET /heroes/{hero_id}/matchups',
+        description: 'Get results against other heroes for a hero',
+        tags: ['heroes'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: heroObject,
+            },
+          },
+        },
+        route: () => '/heroes/:hero_id/matchups',
+        func: (req, res, cb) => {
+          const heroId = req.params.hero_id;
+          db.raw(`SELECT
+            pm2.hero_id,
+            count(player_matches.match_id) games_played,
+            sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+            FROM matches
+            JOIN player_matches using(match_id)
+            JOIN player_matches pm2 on player_matches.match_id = pm2.match_id AND (player_matches.player_slot < 128) != (pm2.player_slot < 128)
+            WHERE player_matches.hero_id = ?
+            AND matches.start_time > ?
+            GROUP BY pm2.hero_id`, [heroId, moment().subtract(1, 'year').format('X')])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/heroes/{hero_id}/durations': {
+      get: {
+        summary: 'GET /heroes/{hero_id}/durations',
+        description: 'Get hero performance over a range of match durations',
+        tags: ['heroes'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  duration_bin: {
+                    description: 'Lower bound of number of seconds the match lasted',
+                    type: 'string',
+                  },
+                  games_played: {
+                    description: 'Number of games played',
+                    type: 'integer',
+                  },
+                  wins: {
+                    description: 'Number of wins',
+                    type: 'integer',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/heroes/:hero_id/durations',
+        func: (req, res, cb) => {
+          const heroId = req.params.hero_id;
+          db.raw(`SELECT
+            (matches.duration / 300 * 300) duration_bin,
+            count(match_id) games_played,
+            sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+            FROM matches
+            JOIN player_matches using(match_id)
+            WHERE player_matches.hero_id = ?
+            GROUP BY (matches.duration / 300 * 300)`, [heroId])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/heroes/{hero_id}/players': {
+      get: {
+        summary: 'GET /heroes/{hero_id}/players',
+        description: 'Get players who have played this hero',
+        tags: ['heroes'],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: playerObject,
+            },
+          },
+        },
+        route: () => '/heroes/:hero_id/players',
+        func: (req, res, cb) => {
+          const heroId = req.params.hero_id;
+          db.raw(`SELECT
+            account_id,
+            count(match_id) games_played,
+            sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+            FROM matches
+            JOIN player_matches using(match_id)
+            WHERE player_matches.hero_id = ?
+            GROUP BY account_id`, [heroId])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
             });
         },
       },
@@ -3685,17 +3650,16 @@ Please keep request rate to approximately 3/s.
           */
           async.map(
             [].concat(req.query.match_id || []).slice(0, 5),
-            (matchId, cb) =>
-              getGcData({
-                match_id: matchId,
-                noRetry: true,
-                allowBackup: true,
-              }, (err, result) => {
-                if (err) {
-                  console.error(err);
-                }
-                return cb(null, result);
-              }),
+            (matchId, cb) => getGcData({
+              match_id: matchId,
+              noRetry: true,
+              allowBackup: true,
+            }, (err, result) => {
+              if (err) {
+                console.error(err);
+              }
+              return cb(null, result);
+            }),
             (err, result) => {
               if (err) {
                 return cb(err);
