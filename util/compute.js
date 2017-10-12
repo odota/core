@@ -148,7 +148,7 @@ function computeMatchData(pm) {
     const melee = (40 * 60);
     const ranged = (45 * 20);
     const siege = (74 * 2);
-    const passive = (600 / 0.6);
+    const passive = (600 * 1.5);
     const starting = 625;
     const tenMinute = melee + ranged + siege + passive + starting;
     pm.lane_efficiency = pm.gold_t[10] / tenMinute;
