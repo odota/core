@@ -1,5 +1,4 @@
 // const performanceOthers = require('./performanceOthers');
-
 function populate(e, container) {
   let t;
   switch (e.type) {
@@ -16,6 +15,7 @@ function populate(e, container) {
       container.cosmetics = JSON.parse(e.key);
       break;
     case 'CHAT_MESSAGE_FIRSTBLOOD':
+    case 'CHAT_MESSAGE_COURIER_LOST':
     case 'CHAT_MESSAGE_AEGIS':
     case 'CHAT_MESSAGE_AEGIS_STOLEN':
     case 'CHAT_MESSAGE_DENIED_AEGIS':
@@ -93,4 +93,3 @@ function populate(e, container) {
   }
 }
 module.exports = populate;
-
