@@ -432,6 +432,14 @@ function processExpand(entries, meta) {
         team: e.player1,
       });
     },
+    CHAT_MESSAGE_COURIER_LOST(e) {
+      // player1 = team that lost courier? (2/3)
+      expand({
+        time: e.time,
+        type: e.type,
+        team: e.player1,
+      });
+    },
     CHAT_MESSAGE_HERO_NOMINATED_BAN() {
       // TODO
     },
