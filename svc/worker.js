@@ -478,7 +478,7 @@ function doLiveGames(cb) {
             // addToRedis = true;
           }
         });
-        redis.zadd('liveGames', match.server_steam_id, JSON.stringify(match));
+        redis.zadd('liveGames', match.activate_time, JSON.stringify(match));
         // Keep only the 100 highest values
         redis.zremrangebyrank('liveGames', '0', '-101');
         cb();
