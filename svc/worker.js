@@ -470,15 +470,15 @@ function doLiveGames(cb) {
       // add their name to the match object, save it to redis zset, keyed by server_steam_id
       return async.eachSeries(json.game_list, (match, cb) => {
         // let addToRedis = false;
-        match.players.forEach((player) => {
+        match.players.forEach((player, i) => {
           const proPlayer = proPlayers.find(proPlayer =>
             proPlayer.account_id.toString() === player.account_id.toString());
           if (proPlayer) {
-            player = Object.assign({}, player, proPlayer);
+            match.players[i] = Object.assign({}, player, proPlayer);
             // addToRedis = true;
           }
         });
-        redis.zadd('liveGames', match.activate_time, JSON.stringify(match));
+        redis.zadd('liveGames', match.lobby_id, JSON.stringify(match));
         // Keep only the 100 highest values
         redis.zremrangebyrank('liveGames', '0', '-101');
         cb();
