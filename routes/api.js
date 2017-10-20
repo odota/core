@@ -1,3 +1,7 @@
+const { graphiqlConnect, graphqlExpress } = require('apollo-server-express');
+const bodyParser = require('body-parser');
+const schema = require('./graphql/schema');
+
 const express = require('express');
 const playerFields = require('./playerFields');
 const filterDeps = require('../util/filterDeps');
@@ -79,5 +83,12 @@ Object.keys(spec.paths).forEach((path) => {
     api[verb](route(), func);
   });
 });
+api.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
+api.use(
+  '/graphiql',
+  graphiqlConnect({
+    endpointURL: '/api/graphql',
+  }),
+);
 
 module.exports = api;
