@@ -160,7 +160,7 @@ function generateJob(type, payload) {
     api_team_info_by_team_id() {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
-        type: 'api',        
+        type: 'api',
       };
     },
     api_get_ugc_file_details() {

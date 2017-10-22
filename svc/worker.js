@@ -135,10 +135,11 @@ function doLeagues(cb) {
     if (err) {
       return cb(err);
     }
-    return utility.getData({
-      url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
-      raw: true,
-    },
+    return utility.getData(
+      {
+        url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
+        raw: true,
+      },
       (err, body) => {
         if (err) {
           return cb(err);
@@ -279,7 +280,7 @@ function doTeams(cb) {
       const container = utility.generateJob('api_team_info_by_team_id', {
         start_at_team_id: m.team_id,
       });
-      utility.getData({ url: container.url, raw: true }, (err, body) => {
+      return utility.getData({ url: container.url, raw: true }, (err, body) => {
         if (err) {
           return cb(err);
         }
@@ -290,14 +291,15 @@ function doTeams(cb) {
         }
         const t = body.result.teams[0];
         // The logo value is a 64 bit integer which is too large to represent in JSON
-        // so need to read the raw response value, JSON.parse will return an incorrect value in the logo field
+        // so need to read the raw response value
+        // JSON.parse will return an incorrect value in the logo field
         const logoRegex = /^"logo":(.*),$/m;
         const match = logoRegex.exec(raw);
         const logoUgc = match[1];
         const ugcJob = utility.generateJob('api_get_ugc_file_details', {
           ugcid: logoUgc,
         });
-        utility.getData(ugcJob.url, (err, body) => {
+        return utility.getData(ugcJob.url, (err, body) => {
           if (err) {
             return cb(err);
           }
@@ -362,8 +364,11 @@ function doItems(cb) {
 }
 
 function doCosmetics(cb) {
-    utility.getData({ url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
-    raw: true },
+  utility.getData(
+    {
+      url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
+      raw: true,
+    },
     (err, body) => {
       if (err) {
         return cb(err);
@@ -376,7 +381,7 @@ function doCosmetics(cb) {
         const hero = item.used_by_heroes && typeof (item.used_by_heroes) === 'object' && Object.keys(item.used_by_heroes)[0];
 
         function insert(cb) {
-          // console.log(item);
+        // console.log(item);
           return queries.upsert(db, 'cosmetics', item, {
             item_id: item.item_id,
           }, cb);
@@ -527,6 +532,6 @@ invokeInterval(doLeagues, 30 * 60 * 1000);
 invokeInterval(doTeams, 60 * 60 * 1000);
 invokeInterval(doHeroes, 60 * 60 * 1000);
 invokeInterval(doItems, 60 * 60 * 1000);
-// invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);
+invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);
 invokeInterval(doHeroStats, 60 * 60 * 1000);
 invokeInterval(doLiveGames, 60 * 1000);
