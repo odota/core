@@ -275,7 +275,8 @@ CREATE TABLE leagues(
 CREATE TABLE teams(
   team_id bigint PRIMARY KEY,
   name varchar(255),
-  tag varchar(255)
+  tag varchar(255),
+  logo_url text
 );
 
 CREATE TABLE heroes(

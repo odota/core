@@ -157,6 +157,18 @@ function generateJob(type, payload) {
         type: 'api',
       };
     },
+    api_team_info_by_team_id() {
+      return {
+        url: `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
+        type: 'api',        
+      };
+    },
+    api_get_ugc_file_details() {
+      return {
+        url: `${apiUrl}/ISteamRemoteStorage/GetUGCFileDetails/v1/?key=${apiKey}&appid=570&ugcid=${payload.ugcid}`,
+        type: 'api',
+      };
+    },
     parse() {
       return {
         title: [type, payload.match_id].join(),
@@ -209,7 +221,7 @@ function getData(url, cb) {
   return setTimeout(() => {
     request({
       url: target,
-      json: true,
+      json: !(url.raw),
       timeout,
     }, (err, res, body) => {
       if (err
@@ -217,12 +229,14 @@ function getData(url, cb) {
         || res.statusCode !== 200
         || !body
         || (steamApi
+          && !url.raw
           && !body.result
           && !body.response
           && !body.player_infos
           && !body.teams
           && !body.game_list
-          && !body.match)
+          && !body.match
+          && !body.data)
         || (stratzApi && (!body.results || !body.results[0]))
       ) {
         // invalid response

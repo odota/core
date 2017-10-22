@@ -135,8 +135,10 @@ function doLeagues(cb) {
     if (err) {
       return cb(err);
     }
-    return utility.getData(
-      'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
+    return utility.getData({
+      url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
+      raw: true,
+    },
       (err, body) => {
         if (err) {
           return cb(err);
@@ -264,21 +266,47 @@ function doTeams(cb) {
       return cb(err);
     }
     return async.eachSeries(result.rows, (m, cb) => {
+      if (!m.team_id) {
+        return cb();
+      }
+      // GetTeamInfo disabled as of october 2017
+      /*
       const container = utility.generateJob('api_teams', {
         // 2 is the smallest team id, use as default
         team_id: m.team_id || 2,
       });
-      utility.getData(container.url, (err, body) => {
+      */
+      const container = utility.generateJob('api_team_info_by_team_id', {
+        start_at_team_id: m.team_id,
+      });
+      utility.getData({ url: container.url, raw: true }, (err, body) => {
         if (err) {
           return cb(err);
         }
-        if (!body.teams) {
+        const raw = body;
+        body = JSON.parse(body);
+        if (!body.result || !body.result.teams) {
           return cb();
         }
-        const t = body.teams[0];
-        return queries.upsert(db, 'teams', t, {
-          team_id: t.team_id,
-        }, cb);
+        const t = body.result.teams[0];
+        // The logo value is a 64 bit integer which is too large to represent in JSON
+        // so need to read the raw response value, JSON.parse will return an incorrect value in the logo field
+        const logoRegex = /^"logo":(.*),$/m;
+        const match = logoRegex.exec(raw);
+        const logoUgc = match[1];
+        const ugcJob = utility.generateJob('api_get_ugc_file_details', {
+          ugcid: logoUgc,
+        });
+        utility.getData(ugcJob.url, (err, body) => {
+          if (err) {
+            return cb(err);
+          }
+          t.team_id = m.team_id;
+          t.logo_url = body.data && body.data.url;
+          return queries.upsert(db, 'teams', t, {
+            team_id: m.team_id,
+          }, cb);
+        });
       });
     }, cb);
   });
@@ -334,8 +362,8 @@ function doItems(cb) {
 }
 
 function doCosmetics(cb) {
-  utility.getData(
-    'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
+    utility.getData({ url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
+    raw: true },
     (err, body) => {
       if (err) {
         return cb(err);
@@ -499,6 +527,6 @@ invokeInterval(doLeagues, 30 * 60 * 1000);
 invokeInterval(doTeams, 60 * 60 * 1000);
 invokeInterval(doHeroes, 60 * 60 * 1000);
 invokeInterval(doItems, 60 * 60 * 1000);
-invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);
+// invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);
 invokeInterval(doHeroStats, 60 * 60 * 1000);
 invokeInterval(doLiveGames, 60 * 1000);
