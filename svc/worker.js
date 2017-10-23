@@ -299,9 +299,10 @@ function doTeams(cb) {
         const ugcJob = utility.generateJob('api_get_ugc_file_details', {
           ugcid: logoUgc,
         });
-        return utility.getData(ugcJob.url, (err, body) => {
+        return utility.getData({ url: ugcJob.url, noRetry: true }, (err, body) => {
           if (err) {
-            return cb(err);
+            // Continue even if we can't get a logo
+            console.error(err);
           }
           t.team_id = m.team_id;
           t.logo_url = body.data && body.data.url;
