@@ -2122,9 +2122,9 @@ Please keep request rate to approximately 3/s.
         route: () => '/proMatches',
         func: (req, res, cb) => {
           db.raw(`
-          SELECT match_id, duration, start_time, 
-          radiant_team_id, radiant.name as radiant_name, 
-          dire_team_id, dire.name as dire_name, 
+          SELECT match_id, duration, start_time,
+          radiant_team_id, radiant.name as radiant_name,
+          dire_team_id, dire.name as dire_name,
           leagueid, leagues.name as league_name,
           series_id, series_type,
           radiant_score, dire_score,
@@ -2231,7 +2231,7 @@ Please keep request rate to approximately 3/s.
           SELECT * FROM
           (SELECT * FROM public_matches
           WHERE match_id IN (SELECT match_id FROM match_ids)) matches
-          JOIN 
+          JOIN
           (SELECT match_id, string_agg(hero_id::text, ',') radiant_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot <= 127 GROUP BY match_id) radiant_team
           USING(match_id)
           JOIN
@@ -3230,7 +3230,10 @@ Please keep request rate to approximately 3/s.
             matches.leagueid,
             leagues.name as league_name,
             ((player_matches.player_slot < 128) = matches.radiant_win) radiant,
-            player_matches.account_id
+            player_matches.account_id,
+            player_matches.kills,
+            player_matches.deaths,
+            player_matches.assists
             FROM matches
             JOIN player_matches using(match_id)
             JOIN leagues using(leagueid)
