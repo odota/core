@@ -305,7 +305,9 @@ function doTeams(cb) {
             console.error(err);
           }
           t.team_id = m.team_id;
-          t.logo_url = body.data && body.data.url;
+          if (body && body.data) {
+            t.logo_url = body.data.url;
+          }
           return queries.upsert(db, 'teams', t, {
             team_id: m.team_id,
           }, cb);
