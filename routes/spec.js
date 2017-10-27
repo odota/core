@@ -3533,20 +3533,24 @@ Please keep request rate to approximately 3/s.
                   description: 'Number of wins',
                   type: 'integer',
                 },
+                is_current_team_member: {
+                  description: 'Is this player on the current roster',
+                  type: 'boolean',
+                },
               },
             },
           },
         },
         route: () => '/teams/:team_id/players',
         func: (req, res, cb) => {
-          db.raw(`SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+          db.raw(`SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
             FROM matches
             JOIN team_match USING(match_id)
             JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
             JOIN teams USING (team_id)
             LEFT JOIN notable_players USING(account_id)
             WHERE teams.team_id = ?
-            GROUP BY account_id, notable_players.name
+            GROUP BY account_id, notable_players.name, notable_players.team_id, teams.team_id
             ORDER BY games_played DESC`, [req.params.team_id])
             .asCallback((err, result) => {
               if (err) {
