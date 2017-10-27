@@ -3276,7 +3276,8 @@ Please keep request rate to approximately 3/s.
             JOIN player_matches pm2 on player_matches.match_id = pm2.match_id AND (player_matches.player_slot < 128) != (pm2.player_slot < 128)
             WHERE player_matches.hero_id = ?
             AND matches.start_time > ?
-            GROUP BY pm2.hero_id`, [heroId, moment().subtract(1, 'year').format('X')])
+            GROUP BY pm2.hero_id
+            ORDER BY games_played DESC`, [heroId, moment().subtract(1, 'year').format('X')])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -3360,7 +3361,8 @@ Please keep request rate to approximately 3/s.
             FROM matches
             JOIN player_matches using(match_id)
             WHERE player_matches.hero_id = ?
-            GROUP BY account_id`, [heroId])
+            GROUP BY account_id
+            ORDER BY games_played DESC`, [heroId])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
