@@ -14,6 +14,8 @@ function findPlayer(search, cb) {
 
 function search(options, cb) {
   const query = options.q;
+  const offset = options.page ? options.page * options.pageSize : 0;
+  const pageSize = options.pageSize || 500;
   async.parallel({
     account_id(callback) {
       if (Number.isNaN(Number(query))) {
@@ -30,9 +32,11 @@ function search(options, cb) {
         FROM players 
         WHERE personaname % ? 
         AND similarity(personaname, ?) >= ?
-        LIMIT 500) search 
+        LIMIT ?
+        OFFSET ?
+        ) search 
         ORDER BY similarity DESC, last_match_time DESC NULLS LAST;
-        `, [query, query, query, options.similarity || 0.51]).asCallback((err, result) => {
+        `, [query, query, query, options.similarity || 0.51, pageSize, offset]).asCallback((err, result) => {
         if (err) {
           return callback(err);
         }

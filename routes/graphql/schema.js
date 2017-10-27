@@ -6,7 +6,8 @@ const { PlayerResolver, PlayerSchema } = require('./models/Player');
 
 const RootQuery = `
  type RootQuery {
-    search(query:String):[Player]
+    search(query:String, pageSize:Int!, page:Int!, similarity:Float):PagedPlayer 
+
  }
 `;
 const RootMutation = `
