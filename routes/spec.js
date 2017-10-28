@@ -3534,7 +3534,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 is_current_team_member: {
-                  description: 'Is this player on the current roster',
+                  description: 'If this player is on the current roster',
                   type: 'boolean',
                 },
               },
