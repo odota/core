@@ -30,7 +30,8 @@ function search(options, cb) {
         FROM players 
         WHERE personaname % ? 
         AND similarity(personaname, ?) >= ?
-        LIMIT 500) search 
+        ORDER BY last_match_time DESC
+        LIMIT 250) search 
         ORDER BY similarity DESC, last_match_time DESC NULLS LAST;
         `, [query, query, query, options.similarity || 0.51]).asCallback((err, result) => {
         if (err) {
