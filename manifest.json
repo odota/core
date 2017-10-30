@@ -3,7 +3,7 @@
     {
       "script": "svc/skill.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
@@ -11,7 +11,7 @@
     {
       "script": "svc/mmr.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
@@ -19,7 +19,7 @@
     {
       "script": "svc/profiler.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
@@ -27,15 +27,7 @@
     {
       "script": "svc/scanner.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
-      "group": "backend",
-      "exec_mode": "cluster",
-      "instances": 1
-    },
-    {
-      "script": "svc/worker.js",
-      "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
@@ -43,7 +35,7 @@
     {
       "script": "svc/fullhistory.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
@@ -51,7 +43,7 @@
     {
       "script": "svc/monitor.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
@@ -59,7 +51,7 @@
     {
       "script": "svc/backupscanner.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "disabled",
       "exec_mode": "cluster",
       "instances": 1
@@ -67,7 +59,79 @@
     {
       "script": "svc/gcdata.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/buildsets.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/cosmetics.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/distributions.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/heroes.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/items.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/leagues.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/livegames.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/proplayers.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "backend",
+      "exec_mode": "cluster",
+      "instances": 1
+    },
+    {
+      "script": "svc/teams.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
@@ -75,7 +139,7 @@
     {
       "script": "svc/web.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "web",
       "exec_mode": "cluster",
       "instances": 1
@@ -83,7 +147,7 @@
     {
       "script": "svc/retriever.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "retriever",
       "exec_mode": "cluster",
       "instances": 1
@@ -91,7 +155,7 @@
     {
       "script": "svc/proxy.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "proxy",
       "exec_mode": "cluster",
       "instances": 1
@@ -99,7 +163,7 @@
     {
       "script": "svc/parser.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "parser",
       "exec_mode": "cluster",
       "instances": 1
@@ -107,7 +171,7 @@
     {
       "script": "svc/socket.js",
       "watch": true,
-      "ignore_watch": [".git", "node_modules", "public", "views"],
+      "ignore_watch": [".git", "node_modules"],
       "group": "socket",
       "exec_mode": "cluster",
       "instances": 1
