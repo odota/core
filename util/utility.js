@@ -764,16 +764,16 @@ function getRedisCountHour(redis, prefix, cb) {
 function invokeInterval(func, delay) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
-      console.log('running %s', func.name);
-      console.time(func.name);
-      return func((err) => {
-        if (err) {
-          // log the error, but wait until next interval to retry
-          console.error(err);
-        }
-        console.timeEnd(func.name);
-        setTimeout(invoker, delay);
-      });
+    console.log('running %s', func.name);
+    console.time(func.name);
+    return func((err) => {
+      if (err) {
+        // log the error, but wait until next interval to retry
+        console.error(err);
+      }
+      console.timeEnd(func.name);
+      setTimeout(invoker, delay);
+    });
   }());
 }
 

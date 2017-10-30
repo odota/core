@@ -2,6 +2,7 @@ const vdf = require('simple-vdf');
 const async = require('async');
 const db = require('../store/db');
 const utility = require('../util/utility');
+
 const invokeInterval = utility.invokeInterval;
 const queries = require('../store/queries');
 
@@ -53,7 +54,7 @@ function doCosmetics(cb) {
         }
         return insert(cb);
       }, cb);
-    }
+    },
   );
 }
 invokeInterval(doCosmetics, 12 * 60 * 60 * 1000);

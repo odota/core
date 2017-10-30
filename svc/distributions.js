@@ -4,6 +4,7 @@ const constants = require('dotaconstants');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const utility = require('../util/utility');
+
 const invokeInterval = utility.invokeInterval;
 
 const sql = {};

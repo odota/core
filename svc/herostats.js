@@ -4,6 +4,7 @@ const async = require('async');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const utility = require('../util/utility');
+
 const invokeInterval = utility.invokeInterval;
 
 function doHeroStats(cb) {
@@ -73,7 +74,7 @@ function doHeroStats(cb) {
           key === 'publicHeroes' ? {
             [`${row.avg_mmr_bucket}_pick`]: row.pick,
             [`${row.avg_mmr_bucket}_win`]: row.win,
-          } : row
+          } : row,
         );
       });
     });

@@ -2,6 +2,7 @@ const async = require('async');
 const redis = require('../store/redis');
 const db = require('../store/db');
 const utility = require('../util/utility');
+
 const invokeInterval = utility.invokeInterval;
 
 function doLiveGames(cb) {

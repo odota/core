@@ -2,6 +2,7 @@ const async = require('async');
 const db = require('../store/db');
 const queries = require('../store/queries');
 const utility = require('../util/utility');
+
 const invokeInterval = utility.invokeInterval;
 
 function doProPlayers(cb) {

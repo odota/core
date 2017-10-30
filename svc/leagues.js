@@ -1,6 +1,7 @@
 const vdf = require('simple-vdf');
 const async = require('async');
 const utility = require('../util/utility');
+
 const invokeInterval = utility.invokeInterval;
 const db = require('../store/db');
 const queries = require('../store/queries');
@@ -134,7 +135,7 @@ function doLeagues(cb) {
             leagueid: l.league_id,
           }, cb);
         }, cb);
-      }
+      },
     );
   });
 }
