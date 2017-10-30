@@ -448,14 +448,22 @@ function insertPlayer(db, player, cb) {
 
 function insertPlayerRating(db, row, cb) {
   async.parallel({
-    scr(cb) {
-      upsert(db, 'solo_competitive_rank', { account_id: row.account_id, rating: row.solo_competitive_rank }, { account_id: row.account_id }, cb);
-    },
-    cr(cb) {
-      upsert(db, 'competitive_rank', { account_id: row.account_id, rating: row.competitive_rank }, { account_id: row.account_id }, cb);
-    },
     pr(cb) {
       db('player_ratings').insert(row).asCallback(cb);
+    },
+    scr(cb) {
+      if (row.solo_competitive_rank) {
+        upsert(db, 'solo_competitive_rank', { account_id: row.account_id, rating: row.solo_competitive_rank }, { account_id: row.account_id }, cb);
+      } else {
+        cb();
+      }
+    },
+    cr(cb) {
+      if (row.competitive_rank) {
+        upsert(db, 'competitive_rank', { account_id: row.account_id, rating: row.competitive_rank }, { account_id: row.account_id }, cb);
+      } else {
+        cb();
+      }
     },
   }, cb);
 }
