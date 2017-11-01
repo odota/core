@@ -1,4 +1,4 @@
-FROM node:8.9.0-alpine
+FROM node:8.8.1-alpine
 
 RUN apk update && apk add bash && apk add curl && apk add git
 
