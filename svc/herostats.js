@@ -25,6 +25,7 @@ function doHeroStats(cb) {
               WHERE start_time > ?
               AND start_time < ?)
               matches_list USING(match_id)
+              WHERE hero_id > 0
               GROUP BY avg_mmr_bucket, hero_id
               ORDER BY hero_id
           `, [minTime, maxTime])
