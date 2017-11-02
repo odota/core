@@ -1,5 +1,4 @@
 const readline = require('readline');
-const fs = require('fs');
 const processAllPlayers = require('../processors/processAllPlayers');
 const processTeamfights = require('../processors/processTeamfights');
 const processLogParse = require('../processors/processLogParse');
@@ -114,8 +113,10 @@ parseStream.on('line', (e) => {
 parseStream.on('close', () => {
   if (complete) {
     const parsedData = createParsedDataBlob(entries, matchId, doLogParse);
-    fs.writeSync(1, JSON.stringify(parsedData));
-    process.exit(0);
+    process.stdout.write(JSON.stringify(parsedData), null, (err) => {
+      process.exit(Number(err));
+    });
+  } else {
+    process.exit(1);
   }
-  throw new Error('failed to createParsedDataBlob');
 });
