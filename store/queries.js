@@ -589,7 +589,7 @@ function updateHeroRankings(match, cb) {
       player.radiant_win = match.radiant_win;
       const win = Number(utility.isRadiant(player) === player.radiant_win);
       const playerScore = win ? matchScore : 0;
-      if (playerScore && utility.isSignificant(match)) {
+      if (playerScore) {
         return db.raw(
           'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = hero_ranking.score + EXCLUDED.score',
           [player.account_id, player.hero_id, playerScore],
@@ -646,9 +646,6 @@ function updateMmrEstimate(match, cb) {
 }
 
 function upsertMatchSample(match, cb) {
-  if (match.match_id % 100 >= config.PUBLIC_SAMPLE_PERCENT || !utility.isSignificant(match)) {
-    return cb();
-  }
   return getMatchRating(match, (err, avg, num) => {
     if (err) {
       return cb(err);
@@ -705,21 +702,19 @@ function updateRecord(field, match, player) {
 }
 
 function updateRecords(match, cb) {
-  if (match.lobby_type === 7 && utility.isSignificant(match)) {
-    updateRecord('duration', match, {});
-    match.players.forEach((player) => {
-      updateRecord('kills', match, player);
-      updateRecord('deaths', match, player);
-      updateRecord('assists', match, player);
-      updateRecord('last_hits', match, player);
-      updateRecord('denies', match, player);
-      updateRecord('gold_per_min', match, player);
-      updateRecord('xp_per_min', match, player);
-      updateRecord('hero_damage', match, player);
-      updateRecord('tower_damage', match, player);
-      updateRecord('hero_healing', match, player);
-    });
-  }
+  updateRecord('duration', match, {});
+  match.players.forEach((player) => {
+    updateRecord('kills', match, player);
+    updateRecord('deaths', match, player);
+    updateRecord('assists', match, player);
+    updateRecord('last_hits', match, player);
+    updateRecord('denies', match, player);
+    updateRecord('gold_per_min', match, player);
+    updateRecord('xp_per_min', match, player);
+    updateRecord('hero_damage', match, player);
+    updateRecord('tower_damage', match, player);
+    updateRecord('hero_healing', match, player);
+  });
   cb();
 }
 
@@ -1050,31 +1045,31 @@ function insertMatch(match, options, cb) {
     }
     return async.parallel({
       updateRankings(cb) {
-        if (options.origin === 'scanner') {
+        if (options.origin === 'scanner' && utility.isSignificant(match)) {
           return updateHeroRankings(match, cb);
         }
         return cb();
       },
       updateBenchmarks(cb) {
-        if (options.origin === 'scanner') {
+        if (options.origin === 'scanner' && utility.isSignificant(match)) {
           return updateBenchmarks(match, cb);
         }
         return cb();
       },
       updateMmrEstimate(cb) {
-        if (options.origin === 'scanner') {
+        if (options.origin === 'scanner' && utility.isSignificant(match)) {
           return updateMmrEstimate(match, cb);
         }
         return cb();
       },
       upsertMatchSample(cb) {
-        if (options.origin === 'scanner') {
+        if (options.origin === 'scanner' && utility.isSignificant(match) && match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT) {
           return upsertMatchSample(match, cb);
         }
         return cb();
       },
       updateRecords(cb) {
-        if (options.origin === 'scanner') {
+        if (options.origin === 'scanner' && utility.isSignificant(match) && match.lobby_type === 7) {
           return updateRecords(match, cb);
         }
         return cb();
