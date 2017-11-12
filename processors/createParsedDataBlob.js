@@ -6,6 +6,8 @@ const processLogParse = require('../processors/processLogParse');
 const processParsedData = require('../processors/processParsedData');
 const processMetadata = require('../processors/processMetadata');
 const processExpand = require('../processors/processExpand');
+const processDraftTimings = require('../processors/processDraftTimings');
+
 
 function getParseSchema() {
   return {
@@ -87,6 +89,7 @@ function createParsedDataBlob(entries, matchId, doLogParse) {
   const expanded = processExpand(entries, meta);
   const parsedData = processParsedData(expanded, getParseSchema(), meta);
   parsedData.teamfights = processTeamfights(expanded, meta);
+  parsedData.drafttimings = processDraftTimings(entries, meta);
   const ap = processAllPlayers(entries, meta);
   parsedData.radiant_gold_adv = ap.radiant_gold_adv;
   parsedData.radiant_xp_adv = ap.radiant_xp_adv;
