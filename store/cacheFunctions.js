@@ -12,7 +12,7 @@ module.exports = {
   },
   write: (req, data, cb) => {
     console.log(`[WRITECACHE] cache:${req.key}:${req.account_id}`);
-    redis.setex(`cache:${req.key}:${req.account_id}`, 3 * 24 * 60 * 60, data, cb);
+    redis.setex(`cache:${req.key}:${req.account_id}`, 1 * 24 * 60 * 60, data, cb);
   },
   getKeys,
 };
