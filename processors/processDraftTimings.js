@@ -36,13 +36,12 @@ function processDraftTimings(entries, meta) {
   }
   for (let j = 0; j < draftTimings.length; j += 1) {
     const pnb = draftTimings[j];
-    const { order } = pnb.order;
     const team = pnb.active_team;
     let previousorder = 0;
     // find previous pick or ban from that team
     for (let i = 0; i < draftTimings.length; i += 1) {
       const currpick = draftTimings[i];
-      if (currpick.order < order && currpick.order > previousorder &&
+      if (currpick.order < pnb.order && currpick.order > previousorder &&
           currpick.active_team === team) {
         previousorder = currpick.order;
       }
@@ -56,7 +55,7 @@ function processDraftTimings(entries, meta) {
       // find the time of the end of the previous order
       for (let i = 0; i < draftTimings.length; i += 1) {
         const currpick = draftTimings[i];
-        if (currpick.order === (order - 1)) {
+        if (currpick.order === (pnb.order - 1)) {
           ind2 = i;
         }
       }
@@ -77,7 +76,7 @@ function processDraftTimings(entries, meta) {
       // find the time of the end of the previous order
       for (let i = 0; i < draftTimings.length; i += 1) {
         const currpick = draftTimings[i];
-        if (currpick.order === (order - 1)) {
+        if (currpick.order === (pnb.order - 1)) {
           ind2 = i;
         }
       }
