@@ -141,6 +141,10 @@ Please keep request rate to approximately 3/s.
                   description: 'dire_score',
                   type: 'integer',
                 },
+                draft_timings: {
+                  description: 'draft_timings',
+                  type: 'object',
+                },
                 duration: {
                   description: 'duration',
                   type: 'integer',

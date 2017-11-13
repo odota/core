@@ -13,6 +13,7 @@ function getParseSchema() {
   return {
     version: 20,
     match_id: 0,
+    draft_timings: [],
     teamfights: [],
     objectives: [],
     chat: [],
@@ -89,7 +90,7 @@ function createParsedDataBlob(entries, matchId, doLogParse) {
   const expanded = processExpand(entries, meta);
   const parsedData = processParsedData(expanded, getParseSchema(), meta);
   parsedData.teamfights = processTeamfights(expanded, meta);
-  parsedData.drafttimings = processDraftTimings(entries, meta);
+  parsedData.draft_timings = processDraftTimings(entries, meta);
   const ap = processAllPlayers(entries, meta);
   parsedData.radiant_gold_adv = ap.radiant_gold_adv;
   parsedData.radiant_xp_adv = ap.radiant_xp_adv;
