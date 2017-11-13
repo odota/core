@@ -41,10 +41,8 @@ function processMetadata(entries) {
         // populate hero_to_id for multikills
         // hero_to_id[combatLogName] = e.hero_id;
         // hero_to_id[combatLogName2] = e.hero_id;
-
         // hero_id_to_slot
         heroIdToSlot[e.hero_id] = e.slot;
-
       }
     },
     player_slot(e) {
