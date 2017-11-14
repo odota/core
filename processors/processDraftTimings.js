@@ -28,13 +28,12 @@ function processDraftTimings(entries, meta) {
         player_slot: e.pick === true ? heroIdToSlot[heroId] : null,
         time: e.time,
         extra_time: e.draft_active_team === 2 ? e.draft_extime0 : e.draft_extime1,
-        total_time_taken: 0,
-        extra_time_taken: 0,
+        /*  total_time_taken: 0,
+        extra_time_taken: 0, */
       };
       draftTimings.push(JSON.parse(JSON.stringify(currpickban)));
     }
-  }
-  for (let j = 0; j < draftTimings.length; j += 1) {
+  }/*  for (let j = 0; j < draftTimings.length; j += 1) {
     const pnb = draftTimings[j];
     const team = pnb.active_team;
     let previousorder = 0;
@@ -86,7 +85,7 @@ function processDraftTimings(entries, meta) {
       draftTimings[j].total_time_taken = (pnb.time - thepastpick.time);
       draftTimings[j].extra_time_taken = (pastpicks.extra_time - pnb.extra_time);
     }
-  }
+  } */
   return draftTimings;
 }
 module.exports = processDraftTimings;

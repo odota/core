@@ -11,7 +11,7 @@ const processDraftTimings = require('../processors/processDraftTimings');
 
 function getParseSchema() {
   return {
-    version: 20,
+    version: 21,
     match_id: 0,
     draft_timings: [],
     teamfights: [],
