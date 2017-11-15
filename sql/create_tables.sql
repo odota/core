@@ -423,3 +423,5 @@ BEGIN
     END IF;
 END
 $$;
+
+ALTER TABLE matches ADD IF NOT EXISTS draft_timings json[];

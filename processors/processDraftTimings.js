@@ -9,8 +9,8 @@
  * player_slot: null for bans, the player_slot assoicated with the hero_id
  * time: when the pick or ban was COMPLETED
  * extra_time: how much of the extra time is left at the end of the draft stage
- * total_time_taken: the time taken for the draft stage
- * extra_time_taken: the amount of extra time used in the draft stage
+ * total_time_taken: the time taken for the draft stage - now done client side
+ * extra_time_taken: the amount of extra time used in the draft stage - Now done client side
  */
 
 function processDraftTimings(entries, meta) {

@@ -143,7 +143,41 @@ Please keep request rate to approximately 3/s.
                 },
                 draft_timings: {
                   description: 'draft_timings',
-                  type: 'object',
+                  type: 'array',
+                  items: {
+                    decription: 'draft_stage',
+                    type: 'object',
+                    properties: {
+                      order: {
+                        description: 'order',
+                        type: 'integer',
+                      },
+                      pick: {
+                        description: 'pick',
+                        type: 'boolean',
+                      },
+                      active_team: {
+                        description: 'active_team',
+                        type: 'integer',
+                      },
+                      hero_id: {
+                        decription: 'hero_id',
+                        type: 'integer',
+                      },
+                      player_slot: {
+                        description: 'player_slot',
+                        type: 'integer',
+                      },
+                      time: {
+                        description: 'time',
+                        type: 'integer',
+                      },
+                      extra_time: {
+                        description: 'extra_time',
+                        type: 'integer',
+                      },
+                    },
+                  },
                 },
                 duration: {
                   description: 'duration',
