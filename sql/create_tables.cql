@@ -1,4 +1,4 @@
-CREATE TABLE matches (
+CREATE TABLE IF NOT EXISTS matches (
   match_id bigint PRIMARY KEY,
   match_seq_num bigint,
   radiant_win boolean,
@@ -30,7 +30,7 @@ CREATE TABLE matches (
   skill int,
 );
 
-CREATE TABLE player_matches (
+CREATE TABLE IF NOT EXISTS player_matches (
   PRIMARY KEY(match_id, player_slot),
   match_id bigint,
   account_id bigint,
@@ -115,7 +115,7 @@ CREATE TABLE player_matches (
   party_size int,
 );
 
-CREATE TABLE player_caches (
+CREATE TABLE IF NOT EXISTS player_caches (
   PRIMARY KEY (account_id, match_id),
   account_id bigint,
   match_id bigint,
