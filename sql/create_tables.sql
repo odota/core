@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS matches (
   version integer,
   cosmetics json
 );
-CREATE INDEX IF NOT EXISTS on matches(leagueid) WHERE leagueid > 0;
+CREATE INDEX IF NOT EXISTS matches_leagueid_idx on matches(leagueid) WHERE leagueid > 0;
 
 CREATE TABLE IF NOT EXISTS player_matches (
   PRIMARY KEY(match_id, player_slot),
@@ -127,8 +127,8 @@ CREATE TABLE IF NOT EXISTS player_matches (
   observers_placed int,
   party_size int
 );
-CREATE INDEX IF NOT EXISTS on player_matches(account_id) WHERE account_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS on player_matches(hero_id);
+CREATE INDEX IF NOT EXISTS player_matches_account_id_idx on player_matches(account_id) WHERE account_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS player_matches_hero_id_idx on player_matches(hero_id);
 
 CREATE TABLE IF NOT EXISTS players (
   account_id bigint PRIMARY KEY,
@@ -157,8 +157,8 @@ CREATE TABLE IF NOT EXISTS players (
     "timecreated" : 1332289262,
   */
 );
-CREATE INDEX IF NOT EXISTS on players(cheese) WHERE cheese IS NOT NULL;
-CREATE INDEX IF NOT EXISTS on players USING GIN(personaname gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS NOT NULL;
+CREATE INDEX IF NOT EXISTS players_personaname_idx on players USING GIN(personaname gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS player_ratings (
   PRIMARY KEY(account_id, time),
@@ -176,8 +176,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   amount int,
   active_until date
 );
-CREATE INDEX IF NOT EXISTS on subscriptions(account_id);
-CREATE INDEX IF NOT EXISTS on subscriptions(customer_id);
+CREATE INDEX IF NOT EXISTS subscriptions_account_id_idx on subscriptions(account_id);
+CREATE INDEX IF NOT EXISTS subscriptions_customer_id_idx on subscriptions(customer_id);
 
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,
@@ -243,17 +243,17 @@ CREATE TABLE IF NOT EXISTS match_logs (
   camps_stacked int,
   rune_pickups int
 );
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id);
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id, player_slot) WHERE player_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id, player1_slot) WHERE player1_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id, attackername_slot) WHERE attackername_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id, targetname_slot) WHERE targetname_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id, valuename) WHERE valuename IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ON match_logs(match_id, type);
-CREATE INDEX IF NOT EXISTS ON match_logs(valuename) WHERE valuename IS NOT NULL;
-CREATE INDEX IF NOT EXISTS ON match_logs(type);
+CREATE INDEX IF NOT EXISTS match_logs_match_id_idx ON match_logs(match_id);
+CREATE INDEX IF NOT EXISTS match_logs_match_id_player_slot_idx ON match_logs(match_id, player_slot) WHERE player_slot IS NOT NULL;
+CREATE INDEX IF NOT EXISTS match_logs_match_id_player1_slot_idx ON match_logs(match_id, player1_slot) WHERE player1_slot IS NOT NULL;
+CREATE INDEX IF NOT EXISTS match_logs_match_id_attackername_slot_idx ON match_logs(match_id, attackername_slot) WHERE attackername_slot IS NOT NULL;
+CREATE INDEX IF NOT EXISTS match_logs_match_id_targetname_slot_idx ON match_logs(match_id, targetname_slot) WHERE targetname_slot IS NOT NULL;
+CREATE INDEX IF NOT EXISTS match_logs_match_id_sourcename_slot_idx ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS NOT NULL;
+CREATE INDEX IF NOT EXISTS match_logs_match_id_targetsourcename_slot_idx ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
+CREATE INDEX IF NOT EXISTS match_logs_match_id_valuename_idx ON match_logs(match_id, valuename) WHERE valuename IS NOT NULL;
+CREATE INDEX IF NOT EXISTS match_logs_match_id_type_idx ON match_logs(match_id, type);
+CREATE INDEX IF NOT EXISTS match_logs_valuename_idx ON match_logs(valuename) WHERE valuename IS NOT NULL;
+CREATE INDEX IF NOT EXISTS match_logs_type_idx ON match_logs(type);
 
 CREATE TABLE IF NOT EXISTS picks_bans(
   match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
@@ -343,8 +343,8 @@ CREATE TABLE IF NOT EXISTS public_matches (
   lobby_type integer,
   game_mode integer
 );
-CREATE INDEX IF NOT EXISTS on public_matches(start_time);
-CREATE INDEX IF NOT EXISTS on public_matches(avg_mmr);
+CREATE INDEX IF NOT EXISTS public_matches_start_time_idx on public_matches(start_time);
+CREATE INDEX IF NOT EXISTS public_matches_avg_mmr_idx on public_matches(avg_mmr);
 
 CREATE TABLE IF NOT EXISTS public_player_matches (
   PRIMARY KEY(match_id, player_slot),
@@ -352,7 +352,7 @@ CREATE TABLE IF NOT EXISTS public_player_matches (
   player_slot integer,
   hero_id integer
 );
-CREATE INDEX IF NOT EXISTS on public_player_matches(hero_id);
+CREATE INDEX IF NOT EXISTS public_player_matches_hero_id_idx on public_player_matches(hero_id);
 
 CREATE TABLE IF NOT EXISTS team_rating (
   PRIMARY KEY(team_id),
@@ -362,7 +362,7 @@ CREATE TABLE IF NOT EXISTS team_rating (
   losses int,
   last_match_time bigint
 );
-CREATE INDEX IF NOT EXISTS ON team_rating(rating);
+CREATE INDEX IF NOT EXISTS team_rating_rating_idx ON team_rating(rating);
 
 CREATE TABLE IF NOT EXISTS hero_ranking (
   PRIMARY KEY (account_id, hero_id),
@@ -370,8 +370,8 @@ CREATE TABLE IF NOT EXISTS hero_ranking (
   hero_id int,
   score double precision
 );
-CREATE INDEX IF NOT EXISTS ON hero_ranking(hero_id, score);
-CREATE INDEX IF NOT EXISTS ON hero_ranking(score);
+CREATE INDEX IF NOT EXISTS hero_ranking_hero_id_score_idx ON hero_ranking(hero_id, score);
+CREATE INDEX IF NOT EXISTS hero_ranking_score_idx ON hero_ranking(score);
 
 CREATE TABLE IF NOT EXISTS queue (
   PRIMARY KEY (id),
@@ -383,7 +383,7 @@ CREATE TABLE IF NOT EXISTS queue (
   next_attempt_time timestamp with time zone,
   priority int
 );
-CREATE INDEX IF NOT EXISTS on queue(priority, id);
+CREATE INDEX IF NOT EXISTS queue_priority_id_idx on queue(priority, id);
 
 CREATE TABLE IF NOT EXISTS mmr_estimates (
   PRIMARY KEY (account_id),
