@@ -64,8 +64,8 @@ function processDraftTimings(entries, meta) {
       draftTimings[j].total_time_taken = (pnb.time - thepastpick.time);
       // draftTimings[j].extra_time_taken = (130 - pnb.extra_time);
     } else {
-      let ind;
-      /* // find which row is the previous order
+      /* let ind;
+      // find which row is the previous order
       for (let i = 0; i < draftTimings.length; i += 1) {
         const currpick = draftTimings[i];
         if (currpick.order === previousorder) {
@@ -82,7 +82,7 @@ function processDraftTimings(entries, meta) {
       }
       // calculate the timings
       const thepastpick = draftTimings[ind2];
-      //const pastpicks = draftTimings[ind];
+      // const pastpicks = draftTimings[ind];
       draftTimings[j].total_time_taken = (pnb.time - thepastpick.time);
       // draftTimings[j].extra_time_taken = (pastpicks.extra_time - pnb.extra_time);
     }
