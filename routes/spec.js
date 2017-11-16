@@ -168,12 +168,12 @@ Please keep request rate to approximately 3/s.
                         description: 'player_slot',
                         type: 'integer',
                       },
-                      time: {
-                        description: 'time',
-                        type: 'integer',
-                      },
                       extra_time: {
                         description: 'extra_time',
+                        type: 'integer',
+                      },
+                      total_time_taken: {
+                        description: 'total_time_taken',
                         type: 'integer',
                       },
                     },

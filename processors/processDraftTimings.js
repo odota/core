@@ -7,9 +7,9 @@
  * active_team: the active team during the draft stage (2 or 3) if 0 then not captains mode
  * hero_id: the id of the hero banned or picked in the draft stage
  * player_slot: null for bans, the player_slot assoicated with the hero_id
- * time: when the pick or ban was COMPLETED
+ * time: removed for total time taken
  * extra_time: how much of the extra time is left at the end of the draft stage
- * total_time_taken: the time taken for the draft stage - now done client side
+ * total_time_taken: the time taken for the draft stage
  * extra_time_taken: the amount of extra time used in the draft stage - Now done client side
  */
 
@@ -28,12 +28,13 @@ function processDraftTimings(entries, meta) {
         player_slot: e.pick === true ? heroIdToSlot[heroId] : null,
         time: e.time,
         extra_time: e.draft_active_team === 2 ? e.draft_extime0 : e.draft_extime1,
-        /*  total_time_taken: 0,
-        extra_time_taken: 0, */
+        total_time_taken: 0,
+        /* extra_time_taken: 0, */
       };
       draftTimings.push(JSON.parse(JSON.stringify(currpickban)));
     }
-  }/*  for (let j = 0; j < draftTimings.length; j += 1) {
+  }
+  for (let j = 0; j < draftTimings.length; j += 1) {
     const pnb = draftTimings[j];
     const team = pnb.active_team;
     let previousorder = 0;
@@ -48,7 +49,7 @@ function processDraftTimings(entries, meta) {
     // for the first bans there are no previous draft stages, so use
     if (pnb.order === 1) {
       draftTimings[j].total_time_taken = (meta.game_zero + pnb.time);
-      draftTimings[j].extra_time_taken = (130 - pnb.extra_time);
+      // draftTimings[j].extra_time_taken = (130 - pnb.extra_time);
     } else if (pnb.order === 2) {
       let ind2;
       // find the time of the end of the previous order
@@ -61,16 +62,16 @@ function processDraftTimings(entries, meta) {
       // calculate the timings
       const thepastpick = draftTimings[ind2];
       draftTimings[j].total_time_taken = (pnb.time - thepastpick.time);
-      draftTimings[j].extra_time_taken = (130 - pnb.extra_time);
+      // draftTimings[j].extra_time_taken = (130 - pnb.extra_time);
     } else {
       let ind;
-      // find which row is the previous order
+      /* // find which row is the previous order
       for (let i = 0; i < draftTimings.length; i += 1) {
         const currpick = draftTimings[i];
         if (currpick.order === previousorder) {
           ind = i;
         }
-      }
+      } */
       let ind2;
       // find the time of the end of the previous order
       for (let i = 0; i < draftTimings.length; i += 1) {
@@ -81,11 +82,15 @@ function processDraftTimings(entries, meta) {
       }
       // calculate the timings
       const thepastpick = draftTimings[ind2];
-      const pastpicks = draftTimings[ind];
+      //const pastpicks = draftTimings[ind];
       draftTimings[j].total_time_taken = (pnb.time - thepastpick.time);
-      draftTimings[j].extra_time_taken = (pastpicks.extra_time - pnb.extra_time);
+      // draftTimings[j].extra_time_taken = (pastpicks.extra_time - pnb.extra_time);
     }
-  } */
+  }
+  // remove the time, no need for it
+  for (let i = 0; i < draftTimings.length; i += 1) {
+    delete draftTimings[i].time;
+  }
   return draftTimings;
 }
 module.exports = processDraftTimings;

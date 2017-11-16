@@ -37,5 +37,3 @@ ALTER TABLE queue ADD next_attempt_time timestamp with time zone;
 ALTER TABLE queue ADD priority int;
 
 ALTER TABLE teams ADD logo_url text;
-
-ALTER TABLE matches ADD draft_timings json[];

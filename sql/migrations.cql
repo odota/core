@@ -23,4 +23,3 @@ ALTER TABLE player_matches ADD firstblood_claimed int;
 ALTER TABLE player_matches ADD party_size int;
 ALTER TABLE player_caches ADD party_size text;
 
-ALTER TABLE yasp.matches ADD draft_timings text;
