@@ -424,4 +424,4 @@ BEGIN
 END
 $$;
 
-ALTER TABLE matches ADD IF NOT EXISTS draft_timings json[];
+-- ALTER TABLE matches ADD draft_timings json[];
