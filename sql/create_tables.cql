@@ -182,5 +182,3 @@ CREATE TABLE player_caches (
 ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
-
-// ALTER TABLE matches ADD draft_timings text;
