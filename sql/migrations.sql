@@ -38,4 +38,4 @@ ALTER TABLE queue ADD priority int;
 
 ALTER TABLE teams ADD logo_url text;
 
-ALTER TABLE matches ADD draft_timigs json[];
+ALTER TABLE matches ADD draft_timings json[];
