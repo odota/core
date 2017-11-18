@@ -4,6 +4,7 @@
 function processMetadata(entries) {
   const heroToSlot = {};
   const slotToPlayerslot = {};
+  const heroIdToSlot = {};
   let gameZero = 0;
   let gameEnd = 0;
   let gameStart = 0;
@@ -40,6 +41,8 @@ function processMetadata(entries) {
         // populate hero_to_id for multikills
         // hero_to_id[combatLogName] = e.hero_id;
         // hero_to_id[combatLogName2] = e.hero_id;
+        // hero_id_to_slot
+        heroIdToSlot[e.hero_id] = e.slot;
       }
     },
     player_slot(e) {
@@ -57,6 +60,7 @@ function processMetadata(entries) {
     game_zero: gameZero,
     hero_to_slot: heroToSlot,
     slot_to_playerslot: slotToPlayerslot,
+    hero_id_to_slot: heroIdToSlot,
     game_end: gameEnd,
     game_start: gameStart,
   };

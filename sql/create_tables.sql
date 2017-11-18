@@ -36,6 +36,7 @@ CREATE TABLE matches (
   radiant_gold_adv integer[],
   radiant_xp_adv integer[],
   teamfights json[],
+  draft_timings json[],
   version integer,
   cosmetics json
 );
@@ -422,3 +423,5 @@ BEGIN
     END IF;
 END
 $$;
+
+-- ALTER TABLE matches ADD draft_timings json[];
