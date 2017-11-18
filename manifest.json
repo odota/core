@@ -49,14 +49,6 @@
       "instances": 1
     },
     {
-      "script": "svc/migrater.js",
-      "watch": true,
-      "ignore_watch": [".git", "node_modules"],
-      "group": "backend",
-      "exec_mode": "cluster",
-      "instances": 1
-    },
-    {
       "script": "svc/backupscanner.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
