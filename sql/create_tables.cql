@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS matches (
   objectives text,
   radiant_gold_adv text,
   radiant_xp_adv text,
+  draft_timings text,
   teamfights text,
   version int,
   cosmetics text,

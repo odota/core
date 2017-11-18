@@ -141,6 +141,44 @@ Please keep request rate to approximately 3/s.
                   description: 'dire_score',
                   type: 'integer',
                 },
+                draft_timings: {
+                  description: 'draft_timings',
+                  type: 'array',
+                  items: {
+                    decription: 'draft_stage',
+                    type: 'object',
+                    properties: {
+                      order: {
+                        description: 'order',
+                        type: 'integer',
+                      },
+                      pick: {
+                        description: 'pick',
+                        type: 'boolean',
+                      },
+                      active_team: {
+                        description: 'active_team',
+                        type: 'integer',
+                      },
+                      hero_id: {
+                        decription: 'hero_id',
+                        type: 'integer',
+                      },
+                      player_slot: {
+                        description: 'player_slot',
+                        type: 'integer',
+                      },
+                      extra_time: {
+                        description: 'extra_time',
+                        type: 'integer',
+                      },
+                      total_time_taken: {
+                        description: 'total_time_taken',
+                        type: 'integer',
+                      },
+                    },
+                  },
+                },
                 duration: {
                   description: 'duration',
                   type: 'integer',
