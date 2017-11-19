@@ -145,6 +145,13 @@ module.exports = {
     required: false,
     type: 'string',
   },
+  minimumPlayedParam: {
+    name: 'games_played',
+    in: 'query',
+    description: 'The minimum number of games played, for filtering hero stats',
+    required: false,
+    type: 'integer',
+  },
   minMmrParam: {
     name: 'min_mmr',
     in: 'query',
