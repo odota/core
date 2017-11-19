@@ -1,6 +1,7 @@
 {
   "extends": "airbnb/base",
   "rules": {
+    "max-len": ["error", { "code": 180, "ignoreTemplateLiterals": true, "ignoreStrings": true }],
     "no-console": 0,
     "no-shadow": 0,
     "no-param-reassign": 1,
