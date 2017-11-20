@@ -44,6 +44,7 @@ const playerParams = [
   params.withHeroIdParam,
   params.againstHeroIdParam,
   params.significantParam,
+  params.havingParam,
   params.sortParam,
 ];
 
@@ -1447,6 +1448,7 @@ Please keep request rate to approximately 3/s.
             });
             const result = Object.keys(heroes)
               .map(k => heroes[k])
+              .filter(hero => !req.queryObj.having || hero.games >= Number(req.queryObj.having))
               .sort((a, b) => b.games - a.games);
             return sendDataWithCache(req, res, result, 'heroes');
           });
