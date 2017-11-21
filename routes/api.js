@@ -60,6 +60,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
     sort: req.query.sort,
     limit: Number(req.query.limit),
     offset: Number(req.query.offset),
+    having: Number(req.query.having),
   };
   return cb();
 });
