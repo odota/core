@@ -19,7 +19,7 @@ Tech Stack
 Quickstart (Docker)
 ----
 * Install Docker: `curl -sSL https://get.docker.com/ | sh`. If you are on Windows, make sure you shared the working drive with Docker.
-* Install Docker Compose: `curl -L "https://github.com/docker/compose/releases/download/1.11.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose`. If you are on Windows, docker-compose comes with the msi package.
+* Install Docker Compose: `curl -L "https://github.com/docker/compose/releases/download/1.17.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose`. If you are on Windows, docker-compose comes with the msi package.
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * `STEAM_API_KEY` You need this in order to access the Steam Web API, which is used to fetch basic match data, player profile data, and cosmetic item data. You can use your main account to obtain the API key; it does not have to match the account used for the `STEAM_USER` and `STEAM_PASS` options. You can request an API key here: https://steamcommunity.com/dev/apikey
   * `STEAM_USER, STEAM_PASS` A Steam account is required to fetch replay salts. It is recommended to use a new account for this purpose (you won't be able to use the account on two different hosts at the same time, and the account must not have Steam Guard enabled). This is not required if you don't need to download/parse replays.

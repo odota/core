@@ -3,14 +3,15 @@
  * */
 const utility = require('../util/utility');
 const queue = require('../store/queue');
-const db = require('../store/db');
-const queries = require('../store/queries');
+// const db = require('../store/db');
+// const queries = require('../store/queries');
 const config = require('../config');
 
-const getData = utility.getData;
+// const getData = utility.getData;
 const retrieverArr = utility.getRetrieverArr();
 
 function processMmr(job, cb) {
+  /*
   const accountId = job.account_id;
   const urls = retrieverArr
     .map(r => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`);
@@ -26,6 +27,8 @@ function processMmr(job, cb) {
     }
     return cb();
   });
+  */
+  return cb();
 }
 
 queue.runQueue('mmrQueue', config.MMR_PARALLELISM * retrieverArr.length, processMmr);
