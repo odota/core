@@ -100,7 +100,7 @@ function getPlayerProfile(idx, accountId, cb) {
     if (err) {
       return cb(err);
     }
-    const response = {};
+    const response = { ...profileData };
     profileSuccesses += 1;
     profileData.slots.forEach((s) => {
       if (s.stat && s.stat.stat_id === 1) {
