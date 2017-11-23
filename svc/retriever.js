@@ -7,6 +7,7 @@ const Steam = require('steam');
 const Dota2 = require('dota2');
 const async = require('async');
 const express = require('express');
+const compression = require('compression');
 const cp = require('child_process');
 
 const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
@@ -301,6 +302,7 @@ function chooseLoginInfo() {
 chooseLoginInfo();
 init();
 
+app.use(compression());
 app.get('/healthz', (req, res) => {
   res.end('ok');
 });
