@@ -12,7 +12,7 @@ const retrieverArr = utility.getRetrieverArr();
 
 function processMmr(job, cb) {
   // Don't always do the job
-  if (Math.random() < 0.9) {
+  if (Math.random() < 0.99) {
     return cb();
   }
   const accountId = job.account_id;
