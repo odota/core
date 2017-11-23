@@ -11,6 +11,10 @@ const getData = utility.getData;
 const retrieverArr = utility.getRetrieverArr();
 
 function processMmr(job, cb) {
+  // Don't always do the job
+  if (Math.random() < 0.9) {
+    return cb();
+  }
   const accountId = job.account_id;
   const urls = retrieverArr
     .map(r => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`);
