@@ -13,47 +13,54 @@ sqlq.forEach((f) => {
   sql[f.split('.')[0]] = fs.readFileSync(`./sql/${f}`, 'utf8');
 });
 
+function mapMmr(results) {
+  const sum = results.rows.reduce((prev, current) =>
+    ({
+      count: prev.count + current.count,
+    }), {
+    count: 0,
+  });
+  results.rows = results.rows.map((r, i) => {
+    r.cumulative_sum = results.rows.slice(0, i + 1).reduce((prev, current) =>
+      ({
+        count: prev.count + current.count,
+      }), {
+      count: 0,
+    }).count;
+    return r;
+  });
+  results.sum = sum;
+  return results;
+}
+
+function mapCountry(results) {
+  results.rows = results.rows.map((r) => {
+    const ref = constants.countries[r.loccountrycode];
+    r.common = ref ? ref.name.common : r.loccountrycode;
+    return r;
+  });
+  return results;
+}
+
+function loadData(key, mapFunc, cb) {
+  db.raw(sql[key]).asCallback((err, results) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, mapFunc(results));
+  });
+}
+
 function doDistributions(cb) {
-  function loadData(key, mapFunc, cb) {
-    db.raw(sql[key]).asCallback((err, results) => {
-      if (err) {
-        return cb(err);
-      }
-      mapFunc(results);
-      return cb(err, results);
-    });
-  }
   async.parallel({
     country_mmr(cb) {
-      const mapFunc = function mapCountryMmr(results) {
-        results.rows = results.rows.map((r) => {
-          const ref = constants.countries[r.loccountrycode];
-          r.common = ref ? ref.name.common : r.loccountrycode;
-          return r;
-        });
-      };
-      loadData('country_mmr', mapFunc, cb);
+      loadData('country_mmr', mapCountry, cb);
     },
     mmr(cb) {
-      const mapFunc = function mapMmr(results) {
-        const sum = results.rows.reduce((prev, current) =>
-          ({
-            count: prev.count + current.count,
-          }), {
-          count: 0,
-        });
-        results.rows = results.rows.map((r, i) => {
-          r.cumulative_sum = results.rows.slice(0, i + 1).reduce((prev, current) =>
-            ({
-              count: prev.count + current.count,
-            }), {
-            count: 0,
-          }).count;
-          return r;
-        });
-        results.sum = sum;
-      };
-      loadData('mmr', mapFunc, cb);
+      loadData('mmr', mapMmr, cb);
+    },
+    rank_tier(cb) {
+      loadData('rank_tier', mapMmr, cb);
     },
   }, (err, result) => {
     if (err) {

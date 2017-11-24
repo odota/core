@@ -12,7 +12,7 @@ const retrieverArr = utility.getRetrieverArr();
 
 function processMmr(job, cb) {
   // Don't always do the job
-  if (Math.random() < 0.99) {
+  if (Math.random() < 0) {
     return cb();
   }
   const accountId = job.account_id;
@@ -22,7 +22,7 @@ function processMmr(job, cb) {
     if (err) {
       return cb(err);
     }
-    if (data.solo_competitive_rank || data.competitive_rank) {
+    if (data.solo_competitive_rank || data.competitive_rank || data.rank_tier) {
       data.account_id = job.account_id;
       data.match_id = job.match_id;
       data.time = new Date();

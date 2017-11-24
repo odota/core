@@ -342,10 +342,13 @@ CREATE TABLE IF NOT EXISTS public_matches (
   avg_mmr integer,
   num_mmr integer,
   lobby_type integer,
-  game_mode integer
+  game_mode integer,
+  avg_rank_tier double precision,
+  num_rank_tier integer
 );
 CREATE INDEX IF NOT EXISTS public_matches_start_time_idx on public_matches(start_time);
 CREATE INDEX IF NOT EXISTS public_matches_avg_mmr_idx on public_matches(avg_mmr);
+CREATE INDEX IF NOT EXISTS public_matches_avg_rank_tier_idx on public_matches(avg_rank_tier) WHERE avg_rank_tier IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS public_player_matches (
   PRIMARY KEY(match_id, player_slot),
@@ -404,6 +407,12 @@ CREATE TABLE IF NOT EXISTS competitive_rank (
   rating int
 );
 
+CREATE TABLE IF NOT EXISTS rank_tier (
+  PRIMARY KEY (account_id),
+  account_id bigint,
+  rating int
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
@@ -423,5 +432,3 @@ BEGIN
     END IF;
 END
 $$;
-
--- ALTER TABLE matches ADD draft_timings json[];

@@ -56,8 +56,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   }
   return cassandra.execute(
-    'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
-    [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
+    'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?', [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
     (err, result) => {
       if (err) {
         return cb(err);
@@ -297,8 +296,7 @@ function getPlayerRatings(db, accountId, cb) {
 }
 
 function getPlayerHeroRankings(accountId, cb) {
-  db.raw(
-    `
+  db.raw(`
   SELECT
   hero_id,
   playerscore.score,
@@ -308,9 +306,7 @@ function getPlayerHeroRankings(accountId, cb) {
   JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = ?) playerscore using (hero_id)
   GROUP BY hero_id, playerscore.score
   ORDER BY percent_rank desc
-  `,
-    [accountId],
-  ).asCallback((err, result) => {
+  `, [accountId]).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
@@ -411,6 +407,25 @@ function getMatchRating(match, cb) {
   });
 }
 
+function getMatchRankTier(match, cb) {
+  async.map(match.players, (player, cb) => {
+    if (!player.account_id) {
+      return cb();
+    }
+    return db.first().from('rank_tier').where({ account_id: player.account_id }).asCallback((err, row) => {
+      cb(err, row ? row.rating : null);
+    });
+  }, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    // Remove undefined/null values
+    const filt = result.filter(r => r);
+    const avg = Math.floor(filt.map(r => Number(r)).reduce((a, b) => a + b, 0) / filt.length);
+    return cb(err, avg, filt.length);
+  });
+}
+
 function upsert(db, table, row, conflict, cb) {
   cleanRowPostgres(db, table, row, (err, row) => {
     if (err) {
@@ -449,7 +464,11 @@ function insertPlayer(db, player, cb) {
 function insertPlayerRating(db, row, cb) {
   async.parallel({
     pr(cb) {
-      db('player_ratings').insert(row).asCallback(cb);
+      if (row.solo_competitive_rank || row.competitive_rank) {
+        db('player_ratings').insert(row).asCallback(cb);
+      } else {
+        cb();
+      }
     },
     scr(cb) {
       if (row.solo_competitive_rank) {
@@ -465,26 +484,29 @@ function insertPlayerRating(db, row, cb) {
         cb();
       }
     },
+    rt(cb) {
+      if (row.rank_tier) {
+        upsert(db, 'rank_tier', { account_id: row.account_id, rating: row.rank_tier }, { account_id: row.account_id }, cb);
+      } else {
+        cb();
+      }
+    },
   }, cb);
 }
 
 function insertMatchSkillCassandra(row, cb) {
   cassandra.execute(
-    'INSERT INTO matches (match_id, skill) VALUES (?, ?)',
-    [row.match_id, row.skill],
-    { prepare: true },
+    'INSERT INTO matches (match_id, skill) VALUES (?, ?)', [row.match_id, row.skill], { prepare: true },
     (err) => {
       if (err) {
         return cb(err);
       }
       if (row.players) {
-        const filteredPlayers = row.players.filter(player => player.account_id
-        && player.account_id !== utility.getAnonymousAccountId());
+        const filteredPlayers = row.players.filter(player => player.account_id &&
+          player.account_id !== utility.getAnonymousAccountId());
         return async.eachSeries(filteredPlayers, (player, cb) => {
           cassandra.execute(
-            'INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)',
-            [String(player.account_id), String(row.match_id), String(row.skill)],
-            { prepare: true },
+            'INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)', [String(player.account_id), String(row.match_id), String(row.skill)], { prepare: true },
             cb,
           );
         }, cb);
@@ -590,10 +612,7 @@ function updateHeroRankings(match, cb) {
       const win = Number(utility.isRadiant(player) === player.radiant_win);
       const playerScore = win ? matchScore : 0;
       if (playerScore) {
-        return db.raw(
-          'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = hero_ranking.score + EXCLUDED.score',
-          [player.account_id, player.hero_id, playerScore],
-        ).asCallback(cb);
+        return db.raw('INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = hero_ranking.score + EXCLUDED.score', [player.account_id, player.hero_id, playerScore]).asCallback(cb);
       }
       return cb();
     }, cb);
@@ -630,13 +649,10 @@ function updateMmrEstimate(match, cb) {
     if (avg && !Number.isNaN(Number(avg))) {
       return async.each(match.players, (player, cb) => {
         if (player.account_id && player.account_id !== utility.getAnonymousAccountId()) {
-          return db.raw(
-            `
+          return db.raw(`
           INSERT INTO mmr_estimates VALUES(?, ?)
           ON CONFLICT(account_id)
-          DO UPDATE SET estimate = mmr_estimates.estimate - (mmr_estimates.estimate / 20) + (? / 20)`,
-            [player.account_id, avg, avg],
-          ).asCallback(cb);
+          DO UPDATE SET estimate = mmr_estimates.estimate - (mmr_estimates.estimate / 20) + (? / 20)`, [player.account_id, avg, avg]).asCallback(cb);
         }
         return cb();
       }, cb);
@@ -653,42 +669,49 @@ function upsertMatchSample(match, cb) {
     if (!avg || num < 2) {
       return cb();
     }
-    return db.transaction((trx) => {
-      function upsertMatchSample(cb) {
-        const matchMmrData = avg ? {
-          avg_mmr: avg,
-          num_mmr: num,
-        } : {};
-        const newMatch = Object.assign({}, match, matchMmrData);
-        return upsert(trx, 'public_matches', newMatch, {
-          match_id: newMatch.match_id,
-        }, cb);
+    return getMatchRankTier(match, (err, avgRankTier, numRankTier) => {
+      if (err) {
+        return cb(err);
       }
-
-      function upsertPlayerMatchesSample(cb) {
-        async.each(match.players || [], (pm, cb) => {
-          pm.match_id = match.match_id;
-          upsert(trx, 'public_player_matches', pm, {
-            match_id: pm.match_id,
-            player_slot: pm.player_slot,
+      return db.transaction((trx) => {
+        function upsertMatchSample(cb) {
+          const matchMmrData = avg ? {
+            avg_mmr: avg,
+            num_mmr: num,
+            avg_rank_tier: avgRankTier,
+            num_rank_tier: numRankTier,
+          } : {};
+          const newMatch = Object.assign({}, match, matchMmrData);
+          return upsert(trx, 'public_matches', newMatch, {
+            match_id: newMatch.match_id,
           }, cb);
-        }, cb);
-      }
-
-      function exit(err) {
-        if (err) {
-          console.error(err);
-          trx.rollback(err);
-        } else {
-          trx.commit();
         }
-        cb(err);
-      }
 
-      async.series({
-        upsertMatchSample,
-        upsertPlayerMatchesSample,
-      }, exit);
+        function upsertPlayerMatchesSample(cb) {
+          async.each(match.players || [], (pm, cb) => {
+            pm.match_id = match.match_id;
+            upsert(trx, 'public_player_matches', pm, {
+              match_id: pm.match_id,
+              player_slot: pm.player_slot,
+            }, cb);
+          }, cb);
+        }
+
+        function exit(err) {
+          if (err) {
+            console.error(err);
+            trx.rollback(err);
+          } else {
+            trx.commit();
+          }
+          cb(err);
+        }
+
+        async.series({
+          upsertMatchSample,
+          upsertPlayerMatchesSample,
+        }, exit);
+      });
     });
   });
 }
@@ -749,20 +772,14 @@ async function updateTeamRankings(match, options) {
     const ratingDiff2 = kFactor * (win2 - e2);
     const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?) 
     ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?`;
-    await db.raw(
-      query,
-      [
-        team1, currRating1 + ratingDiff1, win1, Number(!win1), match.start_time,
-        ratingDiff1, win1, Number(!win1), match.start_time,
-      ],
-    );
-    await db.raw(
-      query,
-      [
-        team2, currRating2 + ratingDiff2, win2, Number(!win2), match.start_time,
-        ratingDiff2, win2, Number(!win2), match.start_time,
-      ],
-    );
+    await db.raw(query, [
+      team1, currRating1 + ratingDiff1, win1, Number(!win1), match.start_time,
+      ratingDiff1, win1, Number(!win1), match.start_time,
+    ]);
+    await db.raw(query, [
+      team2, currRating2 + ratingDiff2, win2, Number(!win2), match.start_time,
+      ratingDiff2, win2, Number(!win2), match.start_time,
+    ]);
   }
 }
 
@@ -850,7 +867,7 @@ function insertMatch(match, options, cb) {
             return cb(err);
           }
           options.doLogParse = options.doLogParse ||
-          utility.isProMatch(match, leagueids.map(l => l.leagueid));
+            utility.isProMatch(match, leagueids.map(l => l.leagueid));
           return cb(err);
         });
     } else {
