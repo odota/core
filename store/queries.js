@@ -105,7 +105,7 @@ function getMatchBenchmarks(m, cb) {
 }
 
 function getDistributions(redis, cb) {
-  const keys = ['distribution:mmr', 'distribution:country_mmr'];
+  const keys = ['distribution:ranks', 'distribution:mmr', 'distribution:country_mmr'];
   const result = {};
   async.each(keys, (r, cb) => {
     redis.get(r, (err, blob) => {

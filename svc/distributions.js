@@ -59,7 +59,7 @@ function doDistributions(cb) {
     mmr(cb) {
       loadData('mmr', mapMmr, cb);
     },
-    rank_tier(cb) {
+    ranks(cb) {
       loadData('rank_tier', mapMmr, cb);
     },
   }, (err, result) => {
