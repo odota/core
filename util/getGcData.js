@@ -46,7 +46,7 @@ function getGcDataFromRetriever(match, cb) {
     body.match.players.forEach((p) => {
       redis.lpush('mmrQueue', JSON.stringify({
         account_id: p.account_id,
-      }), cb);
+      }));
     });
 
     // Persist parties and permanent buffs
