@@ -41,6 +41,14 @@ function getGcDataFromRetriever(match, cb) {
     redisCount(redis, 'retriever');
     redis.zincrby('retrieverCounts', 1, metadata.hostname);
     redis.expireat('retrieverCounts', moment().startOf('hour').add(1, 'hour').format('X'));
+    
+    // Make requests for rank medal updates
+    body.match.players.forEach(p => {
+      redis.lpush('mmrQueue', JSON.stringify({
+        account_id: p.account_id,
+      }), cb);
+    });
+    
     // Persist parties and permanent buffs
     const players = body.match.players.map(p => ({
       player_slot: p.player_slot,

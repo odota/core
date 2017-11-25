@@ -10,7 +10,6 @@ const getGcData = require('../util/getGcData');
 const config = require('../config');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
-// const createParsedDataBlob = require('../processors/createParsedDataBlob');
 const cp = require('child_process');
 const async = require('async');
 const numCPUs = require('os').cpus().length;

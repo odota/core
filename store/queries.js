@@ -1159,23 +1159,10 @@ function insertMatch(match, options, cb) {
         redis.lpush('mmrQueue', JSON.stringify({
           match_id: match.match_id,
           account_id: p.account_id,
-        }));
-        cb();
+        }), cb);
       } else {
         cb();
       }
-    }, cb);
-  }
-
-  function decideProfile(cb) {
-    async.each(match.players, (p, cb) => {
-      if (options.origin === 'scanner' &&
-        p.account_id &&
-        p.account_id !== utility.getAnonymousAccountId()) {
-        redis.lpush('profilerQueue', p.account_id);
-        redis.ltrim('profilerQueue', 0, 99);
-      }
-      cb();
     }, cb);
   }
 
@@ -1184,8 +1171,7 @@ function insertMatch(match, options, cb) {
     if (options.origin === 'scanner' && utility.isSignificant(match) && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
       redis.lpush('gcQueue', JSON.stringify({
         match_id: match.match_id,
-      }));
-      cb();
+      }), cb);
     } else {
       cb();
     }
@@ -1246,7 +1232,6 @@ function insertMatch(match, options, cb) {
     clearPlayerCaches,
     telemetry,
     decideMmr,
-    decideProfile,
     decideGcData,
     decideMetaParse,
     decideReplayParse,

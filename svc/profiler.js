@@ -4,24 +4,18 @@
 const async = require('async');
 const queries = require('../store/queries');
 const db = require('../store/db');
-const redis = require('../store/redis');
 const utility = require('../util/utility');
 
 const insertPlayer = queries.insertPlayer;
 const getData = utility.getData;
 
 function getSummaries(cb) {
-  redis.lrange('profilerQueue', 0, -1, (err, results) => {
+  db.raw(`SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)`).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
-    console.log('players sampled: %s', results.length);
-    const mappedResults = results.map(accountId =>
-      ({
-        account_id: accountId,
-      }));
     const container = utility.generateJob('api_summaries', {
-      players: mappedResults,
+      players: result.rows,
     });
     return getData(container.url, (err, body) => {
       if (err) {
