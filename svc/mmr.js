@@ -23,8 +23,8 @@ function processMmr(job, cb) {
       return cb(err);
     }
     if (data.solo_competitive_rank || data.competitive_rank || data.rank_tier) {
-      data.account_id = job.account_id;
-      data.match_id = job.match_id;
+      data.account_id = job.account_id || null;
+      data.match_id = job.match_id || null;
       data.time = new Date();
       return queries.insertPlayerRating(db, data, cb);
     }
