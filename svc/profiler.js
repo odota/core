@@ -10,7 +10,7 @@ const insertPlayer = queries.insertPlayer;
 const getData = utility.getData;
 
 function getSummaries(cb) {
-  db.raw(`SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)`).asCallback((err, result) => {
+  db.raw('SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)').asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
