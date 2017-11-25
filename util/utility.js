@@ -66,7 +66,7 @@ function generateJob(type, payload) {
     api_summaries() {
       return {
         url: `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players.map(p =>
-          convert32to64(p.account_id)).join()}`,
+          convert32to64(String(p.account_id))).join()}`,
         title: [type, payload.summaries_id].join(),
         type: 'api',
         payload,
