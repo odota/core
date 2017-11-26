@@ -1166,8 +1166,19 @@ function insertMatch(match, options, cb) {
     }, cb);
   }
 
+  function decideProfile(cb) {
+    async.each(match.players, (p, cb) => {
+      if (options.origin === 'scanner' &&
+        p.account_id &&
+        p.account_id !== utility.getAnonymousAccountId()) {
+        upsert(db, 'players', { account_id: p.account_id }, { account_id: p.account_id }, cb);
+      } else {
+        cb();
+      }
+    }, cb);
+  }
+
   function decideGcData(cb) {
-    // TODO use reliable queue
     if (options.origin === 'scanner' && utility.isSignificant(match) && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
       redis.lpush('gcQueue', JSON.stringify({
         match_id: match.match_id,
@@ -1232,6 +1243,7 @@ function insertMatch(match, options, cb) {
     clearPlayerCaches,
     telemetry,
     decideMmr,
+    decideProfile,
     decideGcData,
     decideMetaParse,
     decideReplayParse,
