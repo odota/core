@@ -75,8 +75,7 @@ Please keep request rate to approximately 3/s.
     'application/json',
   ],
   paths: {
-    '
-    /{match_id}': {
+    '/{match_id}': {
       get: {
         summary: 'GET /matches/{match_id}',
         description: 'Match data',
