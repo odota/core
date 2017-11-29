@@ -75,7 +75,8 @@ Please keep request rate to approximately 3/s.
     'application/json',
   ],
   paths: {
-    '/matches/{match_id}': {
+    '
+    /{match_id}': {
       get: {
         summary: 'GET /matches/{match_id}',
         description: 'Match data',
@@ -3364,6 +3365,7 @@ Please keep request rate to approximately 3/s.
             matches.radiant_win,
             matches.leagueid,
             leagues.name as league_name,
+            ((player_matches.player_slot < 128) = matches.radiant_win) radiant,
             player_matches.player_slot,
             player_matches.account_id,
             player_matches.kills,
