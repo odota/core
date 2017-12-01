@@ -22,7 +22,7 @@ function processMmr(job, cb) {
     if (err) {
       return cb(err);
     }
-    if (data.solo_competitive_rank || data.competitive_rank || data.rank_tier) {
+    if (data.solo_competitive_rank || data.competitive_rank || data.rank_tier || data.leaderboard_rank) {
       data.account_id = job.account_id || null;
       data.match_id = job.match_id || null;
       data.time = new Date();

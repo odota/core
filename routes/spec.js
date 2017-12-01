@@ -1042,6 +1042,11 @@ Please keep request rate to approximately 3/s.
                 cb(err, row ? row.rating : null);
               });
             },
+            leaderboard_rank(cb) {
+              db.first().from('leaderboard_rank').where({ account_id: accountId }).asCallback((err, row) => {
+                cb(err, row ? row.rating : null);
+              });
+            },
             mmr_estimate(cb) {
               queries.getMmrEstimate(accountId, (err, est) => cb(err, est || {}));
             },
