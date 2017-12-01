@@ -612,7 +612,7 @@ function updateHeroRankings(match, cb) {
       // Initial value is 3000, k is 50
       const win = Number(utility.isRadiant(player) === player.radiant_win);
       const kFactor = 50;
-      db.select('score').from('hero_ranking').where({ account_id: player.account_id, hero_id: player.hero_id }).asCallback((err, data1) => {
+      return db.select('score').from('hero_ranking').where({ account_id: player.account_id, hero_id: player.hero_id }).asCallback((err, data1) => {
         if (err) {
           return cb(err);
         }
@@ -671,6 +671,10 @@ function updateMmrEstimate(match, cb) {
 }
 
 function upsertMatchSample(match, cb) {
+  return getMatchRating(match, (err, avg, num) => {
+    if (err) {
+      return cb(err);
+    }
     return getMatchRankTier(match, (err, avgRankTier, numRankTier) => {
       if (err) {
         return cb(err);
@@ -717,6 +721,7 @@ function upsertMatchSample(match, cb) {
           upsertPlayerMatchesSample,
         }, exit);
       });
+    });
   });
 }
 
