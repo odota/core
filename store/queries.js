@@ -596,25 +596,34 @@ function updateMatchups(match, cb) {
 */
 
 function updateHeroRankings(match, cb) {
-  getMatchRating(match, (err, avg) => {
+  getMatchRankTier(match, (err, avg) => {
     if (err) {
       return cb(err);
     }
-    const ratingMin = 2000;
-    const matchScore = (avg && !Number.isNaN(Number(avg)) && avg >= ratingMin) ?
-      ((avg / ratingMin) ** 8) / ratingMin :
+    const matchScore = (avg && !Number.isNaN(Number(avg))) ?
+      avg * 100 :
       undefined;
     return async.each(match.players, (player, cb) => {
       if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
         return cb();
       }
       player.radiant_win = match.radiant_win;
+      // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
+      // Initial value is 3000, k is 50
       const win = Number(utility.isRadiant(player) === player.radiant_win);
-      const playerScore = win ? matchScore : 0;
-      if (playerScore) {
-        return db.raw('INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = hero_ranking.score + EXCLUDED.score', [player.account_id, player.hero_id, playerScore]).asCallback(cb);
-      }
-      return cb();
+      const kFactor = 50;
+      db.select('score').from('hero_ranking').where({ account_id: player.account_id, hero_id: player.hero_id }).asCallback((err, data1) => {
+        if (err) {
+          return cb(err);
+        }
+        const currRating1 = Number((data1[0] || { rating: 3000 }).rating);
+        const r1 = 10 ** (currRating1 / 1000);
+        const r2 = 10 ** (matchScore / 1000);
+        const e1 = r1 / (r1 + r2);
+        const ratingDiff1 = kFactor * (win - e1);
+        const newScore = currRating1 + ratingDiff1;
+        return db.raw('INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?', [player.account_id, player.hero_id, newScore, newScore]).asCallback(cb);
+      });
     }, cb);
   });
 }
@@ -662,16 +671,12 @@ function updateMmrEstimate(match, cb) {
 }
 
 function upsertMatchSample(match, cb) {
-  return getMatchRating(match, (err, avg, num) => {
-    if (err) {
-      return cb(err);
-    }
-    if (!avg || num < 2) {
-      return cb();
-    }
     return getMatchRankTier(match, (err, avgRankTier, numRankTier) => {
       if (err) {
         return cb(err);
+      }
+      if (!avgRankTier || numRankTier < 2) {
+        return cb();
       }
       return db.transaction((trx) => {
         function upsertMatchSample(cb) {
@@ -712,7 +717,6 @@ function upsertMatchSample(match, cb) {
           upsertPlayerMatchesSample,
         }, exit);
       });
-    });
   });
 }
 
