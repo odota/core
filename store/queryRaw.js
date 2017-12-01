@@ -11,7 +11,7 @@ module.exports = function queryRaw(input, cb) {
       max: 1,
     },
   });
-  const q = conn.raw(input).timeout(30000);
+  const q = conn.raw(input).timeout(10000);
   q.asCallback((err, result) => {
     conn.destroy(() => {
       cb(err, result);
