@@ -945,6 +945,14 @@ Please keep request rate to approximately 3/s.
                   description: 'competitive_rank',
                   type: 'string',
                 },
+                rank_tier: {
+                  description: 'rank_tier',
+                  type: 'number',
+                },
+                leaderboard_rank: {
+                  description: 'leaderboard_rank',
+                  type: 'number',
+                },
                 mmr_estimate: {
                   description: 'mmr_estimate',
                   type: 'object',
