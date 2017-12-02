@@ -14,7 +14,7 @@ function doHeroStats(cb) {
     publicHeroes(cb) {
       db.raw(`
               SELECT
-              LEAST(GREATEST(avg_mmr / 1000 * 1000, 1000), 5000) as avg_mmr_bucket,
+              avg_rank_tier / 10 * 10 as rank_tier,
               sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as win, 
               count(*) as pick,
               hero_id 
@@ -26,7 +26,7 @@ function doHeroStats(cb) {
               AND start_time < ?)
               matches_list USING(match_id)
               WHERE hero_id > 0
-              GROUP BY avg_mmr_bucket, hero_id
+              GROUP BY rank_tier, hero_id
               ORDER BY hero_id
           `, [minTime, maxTime])
         .asCallback(cb);
@@ -73,8 +73,8 @@ function doHeroStats(cb) {
         objectResponse[row.hero_id] = Object.assign(
           {}, objectResponse[row.hero_id],
           key === 'publicHeroes' ? {
-            [`${row.avg_mmr_bucket}_pick`]: row.pick,
-            [`${row.avg_mmr_bucket}_win`]: row.win,
+            [`${row.rank_tier}_pick`]: row.pick,
+            [`${row.rank_tier}_win`]: row.win,
           } : row,
         );
       });
