@@ -3296,44 +3296,60 @@ Please keep request rate to approximately 3/s.
                     description: 'pro_ban',
                     type: 'integer',
                   },
-                  '1000_pick': {
-                    description: '1000_pick',
+                  '1_pick': {
+                    description: 'Herald picks',
                     type: 'integer',
                   },
-                  '1000_win': {
-                    description: '1000_win',
+                  '1_win': {
+                    description: 'Herald wins,
                     type: 'integer',
                   },
-                  '2000_pick': {
-                    description: '2000_pick',
+                  '2_pick': {
+                    description: 'Guardian picks',
                     type: 'integer',
                   },
-                  '2000_win': {
-                    description: '2000_win',
+                  '2_win': {
+                    description: 'Guardian wins',
                     type: 'integer',
                   },
-                  '3000_pick': {
-                    description: '3000_pick',
+                  '3_pick': {
+                    description: 'Crusader picks',
                     type: 'integer',
                   },
-                  '3000_win': {
-                    description: '3000_win',
+                  '3_win': {
+                    description: 'Crusader wins',
                     type: 'integer',
                   },
-                  '4000_pick': {
-                    description: '4000_pick',
+                  '4_pick': {
+                    description: 'Archon picks',
                     type: 'integer',
                   },
-                  '4000_win': {
-                    description: '4000_win',
+                  '4_win': {
+                    description: 'Archon wins',
                     type: 'integer',
                   },
-                  '5000_pick': {
-                    description: '5000_pick',
+                  '5_pick': {
+                    description: 'Legend picks',
                     type: 'integer',
                   },
-                  '5000_win': {
-                    description: '5000_win',
+                  '5_win': {
+                    description: 'Legend wins',
+                    type: 'integer',
+                  },
+                  '6_pick': {
+                    description: 'Ancient picks',
+                    type: 'integer',
+                  },
+                  '6_win': {
+                    description: 'Ancient wins',
+                    type: 'integer',
+                  },
+                  '7_pick': {
+                    description: 'Divine picks,
+                    type: 'integer',
+                  },
+                  '7_win': {
+                    description: 'Divine wins',
                     type: 'integer',
                   },
                 },
