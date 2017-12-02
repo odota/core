@@ -413,6 +413,12 @@ CREATE TABLE IF NOT EXISTS rank_tier (
   rating int
 );
 
+CREATE TABLE IF NOT EXISTS leaderboard_rank (
+  PRIMARY KEY (account_id),
+  account_id bigint,
+  rating int
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

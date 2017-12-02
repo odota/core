@@ -945,6 +945,14 @@ Please keep request rate to approximately 3/s.
                   description: 'competitive_rank',
                   type: 'string',
                 },
+                rank_tier: {
+                  description: 'rank_tier',
+                  type: 'number',
+                },
+                leaderboard_rank: {
+                  description: 'leaderboard_rank',
+                  type: 'number',
+                },
                 mmr_estimate: {
                   description: 'mmr_estimate',
                   type: 'object',
@@ -1039,6 +1047,11 @@ Please keep request rate to approximately 3/s.
             },
             rank_tier(cb) {
               db.first().from('rank_tier').where({ account_id: accountId }).asCallback((err, row) => {
+                cb(err, row ? row.rating : null);
+              });
+            },
+            leaderboard_rank(cb) {
+              db.first().from('leaderboard_rank').where({ account_id: accountId }).asCallback((err, row) => {
                 cb(err, row ? row.rating : null);
               });
             },

@@ -491,6 +491,13 @@ function insertPlayerRating(db, row, cb) {
         cb();
       }
     },
+    lr(cb) {
+      if (row.leaderboard_rank) {
+        upsert(db, 'leaderboard_rank', { account_id: row.account_id, rating: row.leaderboard_rank }, { account_id: row.account_id }, cb);
+      } else {
+        cb();
+      }
+    },
   }, cb);
 }
 
