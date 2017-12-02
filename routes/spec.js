@@ -3301,7 +3301,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   '1_win': {
-                    description: 'Herald wins,
+                    description: 'Herald wins',
                     type: 'integer',
                   },
                   '2_pick': {
