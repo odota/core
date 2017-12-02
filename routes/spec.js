@@ -3345,7 +3345,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   '7_pick': {
-                    description: 'Divine picks,
+                    description: 'Divine picks',
                     type: 'integer',
                   },
                   '7_win': {
