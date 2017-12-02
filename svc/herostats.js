@@ -14,16 +14,17 @@ function doHeroStats(cb) {
     publicHeroes(cb) {
       db.raw(`
               SELECT
-              avg_rank_tier / 10 * 10 as rank_tier,
+              floor(avg_rank_tier / 10) as rank_tier,
               sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as win, 
               count(*) as pick,
               hero_id 
               FROM public_player_matches 
               JOIN 
               (SELECT * FROM public_matches
-              TABLESAMPLE SYSTEM_ROWS(5000000)
+              TABLESAMPLE SYSTEM_ROWS(1000000)
               WHERE start_time > ?
-              AND start_time < ?)
+              AND start_time < ?
+              AND avg_rank_tier IS NOT NULL)
               matches_list USING(match_id)
               WHERE hero_id > 0
               GROUP BY rank_tier, hero_id
