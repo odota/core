@@ -610,6 +610,9 @@ function updateHeroRankings(match, cb) {
     const matchScore = (avg && !Number.isNaN(Number(avg))) ?
       avg * 100 :
       undefined;
+    if (!matchScore) {
+      return cb();
+    }
     return async.each(match.players, (player, cb) => {
       if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
         return cb();
