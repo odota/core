@@ -626,7 +626,7 @@ function updateHeroRankings(match, cb) {
         if (err) {
           return cb(err);
         }
-        const currRating1 = Number((data1[0] || { rating: 3000 }).rating);
+        const currRating1 = Number((data1 && data1[0] && data1[0].score) || 3000);
         const r1 = 10 ** (currRating1 / 1000);
         const r2 = 10 ** (matchScore / 1000);
         const e1 = r1 / (r1 + r2);
@@ -779,8 +779,8 @@ async function updateTeamRankings(match, options) {
     const kFactor = 32;
     const data1 = await db.select('rating').from('team_rating').where({ team_id: team1 });
     const data2 = await db.select('rating').from('team_rating').where({ team_id: team2 });
-    const currRating1 = Number((data1[0] || { rating: 1000 }).rating);
-    const currRating2 = Number((data2[0] || { rating: 1000 }).rating);
+    const currRating1 = Number((data1 && data1[0] && data1[0].rating) || 1000);
+    const currRating2 = Number((data2 && data2[0] && data2[0].rating) || 1000);
     const r1 = 10 ** (currRating1 / 400);
     const r2 = 10 ** (currRating2 / 400);
     const e1 = r1 / (r1 + r2);
