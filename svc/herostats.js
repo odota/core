@@ -21,7 +21,7 @@ function doHeroStats(cb) {
               FROM public_player_matches 
               JOIN 
               (SELECT * FROM public_matches
-              TABLESAMPLE SYSTEM_ROWS(1000000)
+              TABLESAMPLE SYSTEM_ROWS(5000000)
               WHERE start_time > ?
               AND start_time < ?
               AND avg_rank_tier IS NOT NULL)
