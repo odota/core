@@ -621,7 +621,7 @@ function updateHeroRankings(match, cb) {
       // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
       // Initial value is 3000, k is 50
       const win = Number(utility.isRadiant(player) === player.radiant_win);
-      const kFactor = 50;
+      const kFactor = 100;
       return db.select('score').from('hero_ranking').where({ account_id: player.account_id, hero_id: player.hero_id }).asCallback((err, data1) => {
         if (err) {
           return cb(err);
