@@ -855,9 +855,9 @@ Please keep request rate to approximately 3/s.
                         description: 'life_state_dead',
                         type: 'integer',
                       },
-                      solo_competitive_rank: {
-                        description: 'solo_competitive_rank',
-                        type: 'string',
+                      rank_tier: {
+                        description: 'The rank tier of the player. Tens place indicates rank, ones place indicates stars.',
+                        type: 'integer',
                       },
                       cosmetics: {
                         description: 'cosmetics',
