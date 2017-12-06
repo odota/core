@@ -2264,9 +2264,9 @@ Please keep request rate to approximately 3/s.
           let minTime = moment().subtract(3, 'day').format('X');
           let order = '';
           if (req.query.mmr_ascending) {
-            order = 'ORDER BY avg_rank_tier ASC';
+            order = 'ORDER BY avg_rank_tier ASC NULLS LAST';
           } else if (req.query.mmr_descending) {
-            order = 'ORDER BY avg_rank_tier DESC';
+            order = 'ORDER BY avg_rank_tier DESC NULLS LAST';
           } else {
             order = 'ORDER BY match_id DESC';
             minTime = 0;
