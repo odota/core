@@ -2245,14 +2245,6 @@ Please keep request rate to approximately 3/s.
                     description: 'duration',
                     type: 'integer',
                   },
-                  avg_mmr: {
-                    description: 'avg_mmr',
-                    type: 'integer',
-                  },
-                  num_mmr: {
-                    description: 'num_mmr',
-                    type: 'integer',
-                  },
                   radiant_team: {
                     description: 'radiant_team',
                     type: 'string',
@@ -2272,9 +2264,9 @@ Please keep request rate to approximately 3/s.
           let minTime = moment().subtract(3, 'day').format('X');
           let order = '';
           if (req.query.mmr_ascending) {
-            order = 'ORDER BY avg_mmr ASC';
+            order = 'ORDER BY avg_rank_tier ASC';
           } else if (req.query.mmr_descending) {
-            order = 'ORDER BY avg_mmr DESC';
+            order = 'ORDER BY avg_rank_tier DESC';
           } else {
             order = 'ORDER BY match_id DESC';
             minTime = 0;
