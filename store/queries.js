@@ -694,12 +694,12 @@ function upsertMatchSample(match, cb) {
       }
       return db.transaction((trx) => {
         function upsertMatchSample(cb) {
-          const matchMmrData = avg ? {
-            avg_mmr: avg,
-            num_mmr: num,
-            avg_rank_tier: avgRankTier,
-            num_rank_tier: numRankTier,
-          } : {};
+          const matchMmrData = {
+            avg_mmr: avg || null,
+            num_mmr: num || null,
+            avg_rank_tier: avgRankTier || null,
+            num_rank_tier: numRankTier || null,
+          };
           const newMatch = Object.assign({}, match, matchMmrData);
           return upsert(trx, 'public_matches', newMatch, {
             match_id: newMatch.match_id,
