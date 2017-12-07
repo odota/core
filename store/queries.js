@@ -163,10 +163,11 @@ function getLeaderboard(db, redis, key, n, cb) {
 
 function getHeroRankings(db, redis, heroId, options, cb) {
   db.raw(`
-  SELECT account_id, score, personaname, name, avatar, last_login
+  SELECT players.account_id, score, personaname, name, avatar, last_login, rating as rank_tier
   from hero_ranking
   join players using(account_id)
   left join notable_players using(account_id)
+  left join rank_tier using(account_id)
   WHERE hero_id = ? 
   ORDER BY score DESC 
   LIMIT 100
@@ -175,25 +176,10 @@ function getHeroRankings(db, redis, heroId, options, cb) {
       return cb(err);
     }
     const entries = result.rows;
-    return async.each(entries, (player, cb) => {
-      async.parallel({
-        solo_competitive_rank(cb) {
-          db.first().from('solo_competitive_rank').where({ account_id: player.account_id }).asCallback((err, row) => {
-            cb(err, row ? row.rating : null);
-          });
-        },
-      }, (err, result) => {
-        if (err) {
-          return cb(err);
-        }
-        player.solo_competitive_rank = result.solo_competitive_rank;
-        return cb(err);
-      });
-    }, err =>
-      cb(err, {
-        hero_id: Number(heroId),
-        rankings: entries,
-      }));
+    return cb(err, {
+      hero_id: Number(heroId),
+      rankings: entries,
+    });
   });
 }
 

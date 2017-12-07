@@ -2825,9 +2825,9 @@ Please keep request rate to approximately 3/s.
                       description: 'loccountrycode',
                       type: 'string',
                     },
-                    solo_competitive_rank: {
-                      description: 'solo_competitive_rank',
-                      type: 'string',
+                    rank_tier: {
+                      description: 'rank_tier',
+                      type: 'integer',
                     },
                   },
                 },
