@@ -22,6 +22,7 @@ function processTeamfights(entries, meta) {
           ({
             deaths_pos: {},
             ability_uses: {},
+            ability_targeted: {},
             item_uses: {},
             killed: {},
             deaths: 0,

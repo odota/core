@@ -201,6 +201,12 @@ function processExpand(entries, meta) {
         key: translate(e.inflictor),
         type: 'ability_uses',
       });
+      expand({
+        time: e.time,
+        unit: e.targetname,
+        key: translate(e.inflictor),
+        type: 'ability_targeted',
+      });
     },
     DOTA_COMBATLOG_ITEM(e) {
       // item use

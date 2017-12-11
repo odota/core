@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   killed text,
   item_uses text,
   ability_uses text,
+  ability_targeted text,
   hero_hits text,
   damage text,
   damage_taken text,
