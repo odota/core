@@ -201,6 +201,7 @@ function processExpand(entries, meta) {
         key: translate(e.inflictor),
         type: 'ability_uses',
       });
+      // target of ability
       expand({
         time: e.time,
         unit: e.targetname,
