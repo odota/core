@@ -126,7 +126,7 @@ function processTeamfights(entries, meta) {
             };
             tf.players[e.slot][types[e.type]] += e.value;
           }
-        } else if (e.type === 'ability_uses'|| e.type === 'item_uses') {
+        } else if (e.type === 'ability_uses' || e.type === 'item_uses') {
           // count skills, items
           populate(e, tf);
         }

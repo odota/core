@@ -72,21 +72,19 @@ function populate(e, container) {
           arrEntry = JSON.parse(JSON.stringify(e));
         }
         t.push(arrEntry);
-
-      } else if (e.type === 'ability_targets') { 
+      } else if (e.type === 'ability_targets') {
         // e.g. { Telekinesis: { Antimage: 1, Bristleback: 2 }, Fade Bolt: { Lion: 4, Timber: 5 }, ... }
-        let ability = e.key[0];
-        let target = e.key[1]; 
+        const ability = e.key[0];
+        const target = e.key[1];
         if (t[ability] && t[ability][target]) {
-          t[ability][target] += 1
+          t[ability][target] += 1;
         } else if (t[ability]) {
-          t[ability][target] = 1
+          t[ability][target] = 1;
         } else {
-          t[ability] = {}
-        } 
-
+          t[ability] = {};
+        }
       } else if (typeof t === 'object') {
-      // add it to hash of counts
+      // add it to hash of count
         e.value = e.value || 1;
         if (t[e.key]) {
           t[e.key] += e.value;
