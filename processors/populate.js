@@ -82,6 +82,7 @@ function populate(e, container) {
           t[ability][target] = 1;
         } else {
           t[ability] = {};
+          t[ability][target] = 1;
         }
       } else if (typeof t === 'object') {
       // add it to hash of counts
