@@ -318,8 +318,8 @@ Please keep request rate to approximately 3/s.
                         description: 'ability_uses',
                         type: 'object',
                       },
-                      ability_targeted: {
-                        description: 'ability_targeted',
+                      ability_targets: {
+                        description: 'ability_targets',
                         type: 'object',
                       },
                       account_id: {

@@ -204,9 +204,9 @@ function processExpand(entries, meta) {
       // target of ability
       expand({
         time: e.time,
-        unit: e.targetname,
-        key: translate(e.inflictor),
-        type: 'ability_targeted',
+        unit: e.attackername,
+        key: [translate(e.inflictor), translate(e.targetname)],
+        type: 'ability_targets',
       });
     },
     DOTA_COMBATLOG_ITEM(e) {

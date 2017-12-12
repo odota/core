@@ -22,7 +22,7 @@ function processTeamfights(entries, meta) {
           ({
             deaths_pos: {},
             ability_uses: {},
-            ability_targeted: {},
+            ability_targets: {},
             item_uses: {},
             killed: {},
             deaths: 0,
@@ -126,7 +126,7 @@ function processTeamfights(entries, meta) {
             };
             tf.players[e.slot][types[e.type]] += e.value;
           }
-        } else if (e.type === 'ability_uses' || e.type === 'ability_targeted' || e.type === 'item_uses') {
+        } else if (e.type === 'ability_uses' || e.type === 'ability_targets' || e.type === 'item_uses') {
           // count skills, items
           populate(e, tf);
         }

@@ -62,7 +62,7 @@ function getParseSchema() {
         killed: {},
         item_uses: {},
         ability_uses: {},
-        ability_targeted: {},
+        ability_targets: {},
         hero_hits: {},
         damage: {},
         damage_taken: {},
