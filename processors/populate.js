@@ -76,7 +76,6 @@ function populate(e, container) {
         // e.g. { Telekinesis: { Antimage: 1, Bristleback: 2 }, Fade Bolt: { Lion: 4, Timber: 5 }, ... }
         const ability = e.key[0];
         const target = e.key[1];
-        if (target && target.indexOf('hero') !== -1) { // we only want hero targets for now
           if (t[ability] && t[ability][target]) {
             t[ability][target] += 1;
           } else if (t[ability]) {
@@ -85,7 +84,6 @@ function populate(e, container) {
             t[ability] = {};
             t[ability][target] = 1;
           }
-        }
       } else if (typeof t === 'object') {
       // add it to hash of counts
         e.value = e.value || 1;

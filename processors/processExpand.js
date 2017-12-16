@@ -202,12 +202,14 @@ function processExpand(entries, meta) {
         type: 'ability_uses',
       });
       // target of ability
-      expand({
-        time: e.time,
-        unit: e.attackername,
-        key: [translate(e.inflictor), translate(e.targetname)],
-        type: 'ability_targets',
-      });
+      if (e.targethero && !e.targetillusion) {
+        expand({
+          time: e.time,
+          unit: e.attackername,
+          key: [translate(e.inflictor), translate(e.targetname)],
+          type: 'ability_targets',
+        });
+      }
     },
     DOTA_COMBATLOG_ITEM(e) {
       // item use
