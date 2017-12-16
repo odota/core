@@ -345,7 +345,8 @@ CREATE TABLE IF NOT EXISTS public_matches (
   lobby_type integer,
   game_mode integer,
   avg_rank_tier double precision,
-  num_rank_tier integer
+  num_rank_tier integer,
+  cluster integer
 );
 CREATE INDEX IF NOT EXISTS public_matches_start_time_idx on public_matches(start_time);
 CREATE INDEX IF NOT EXISTS public_matches_avg_mmr_idx on public_matches(avg_mmr);
