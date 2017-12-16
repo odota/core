@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   killed json,
   item_uses json,
   ability_uses json,
+  ability_targets json,
   hero_hits json,
   damage json,
   damage_taken json,
