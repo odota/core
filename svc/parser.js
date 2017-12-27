@@ -10,6 +10,7 @@ const getGcData = require('../util/getGcData');
 const config = require('../config');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
+const redis = require('../store/redis');
 const cp = require('child_process');
 const async = require('async');
 const numCPUs = require('os').cpus().length;
@@ -60,6 +61,9 @@ function parseProcessor(job, cb) {
       console.error(err.stack || err);
     } else {
       console.log('completed parse of match %s', match.match_id);
+      if (Math.random() >= 0) {
+        redis.lpush('scenariosQueue', match.match_id);
+      }
     }
     return cb(err, match.match_id);
   });

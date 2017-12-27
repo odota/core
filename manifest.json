@@ -184,5 +184,14 @@
       "exec_mode": "cluster",
       "instances": 1
     }
+    ,
+    {
+      "script": "svc/scenarios.js",
+      "watch": true,
+      "ignore_watch": [".git", "node_modules"],
+      "group": "socket",
+      "exec_mode": "cluster",
+      "instances": 1
+    }
   ]
 }
