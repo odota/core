@@ -20,6 +20,24 @@ function test(match) {
 }
 
 
+/*
+scenarioChecks = [
+
+  function firstBlood(match, row) {
+    console.log(match.match_id);
+    let team;
+    let won;
+    const fb = match.find((x) => {
+      x.type === 'CHAT_MESSAGE_FIRSTBLOOD';
+    });
+    if (fb) {
+      team = fb.key === 2 ? 1 : 0;
+    }
+    won = match.radiant_win === team;
+  },
+
+];
+*/
 
 queue.runQueue('scenariosQueue', 1, processScenarios);
 
