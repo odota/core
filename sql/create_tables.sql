@@ -422,15 +422,10 @@ CREATE TABLE IF NOT EXISTS leaderboard_rank (
 );
 
 CREATE TABLE IF NOT EXISTS team_scenarios (
-  PRIMARY KEY (team)
-  team boolean, -- 0 radiant / 1 dire
-  courier_kill boolean, -- achieved a courier kill before the 3 min mark
-  courier_death boolean, -- lost their own courier before the 3 min mark
-  all_runes boolean, -- achieved to gather all four  minute 0:00 runes
-  first_blood boolean, -- achieved first blood
-  first_blood_revenge boolean, -- achieved first blood, but in return the opponent team got a kill within 15 seconds after it
-  dewarded boolean, -- achieved to deward both of the opponent's first set of observer wards
-  won boolean,
+  PRIMARY KEY (scenario),
+  scenario text,
+  wins bigint,
+  games bigint
 );
 
 DO $$
