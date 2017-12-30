@@ -90,15 +90,15 @@ Please keep request rate to approximately 3/s.
               type: 'object',
               properties: {
                 match_id: {
-                  description: 'match_id',
+                  description: 'The id number of the match assigned by Valve',
                   type: 'integer',
                 },
                 barracks_status_dire: {
-                  description: 'barracks_status_dire',
+                  description: 'Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.',
                   type: 'integer',
                 },
                 barracks_status_radiant: {
-                  description: 'barracks_status_radiant',
+                  description: 'Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.',
                   type: 'integer',
                 },
                 chat: {
@@ -108,15 +108,15 @@ Please keep request rate to approximately 3/s.
                     type: 'object',
                     properties: {
                       time: {
-                        description: 'time',
+                        description: 'Time at which the message was said',
                         type: 'integer',
                       },
                       unit: {
-                        description: 'player name',
+                        description: 'Name of the player who sent the message',
                         type: 'string',
                       },
                       key: {
-                        description: 'words',
+                        description: 'What they said',
                         type: 'string',
                       },
                       slot: {
@@ -162,7 +162,7 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       hero_id: {
-                        decription: 'hero_id',
+                        decription: 'Which hero go',
                         type: 'integer',
                       },
                       player_slot: {
@@ -189,15 +189,15 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 first_blood_time: {
-                  description: 'first_blood_time',
+                  description: 'Time at which firstblood occurred',
                   type: 'integer',
                 },
                 game_mode: {
-                  description: 'game_mode',
+                  description: 'Integer corresponding to game mode played',
                   type: 'integer',
                 },
                 human_players: {
-                  description: 'human_players',
+                  description: 'Number of human players in the game',
                   type: 'integer',
                 },
                 leagueid: {
@@ -205,7 +205,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 lobby_type: {
-                  description: 'lobby_type',
+                  description: 'What type of lobby the match was',
                   type: 'integer',
                 },
                 match_seq_num: {
@@ -213,7 +213,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 negative_votes: {
-                  description: 'negative_votes',
+                  description: 'Number of negative votes the replay recieve in the in-game client',
                   type: 'integer',
                 },
                 objectives: {
@@ -225,11 +225,11 @@ Please keep request rate to approximately 3/s.
                   type: 'object',
                 },
                 positive_votes: {
-                  description: 'positive_votes',
+                  description: 'Number of positive votes the replay recieve in the in-game client',
                   type: 'integer',
                 },
                 radiant_gold_adv: {
-                  description: 'radiant_gold_adv',
+                  description: 'Array of the Radiant gold advantage at different times in the game. A negative number means that Radiant is behind, and thus it is their gold disadvantage. ',
                   type: 'object',
                 },
                 radiant_score: {
@@ -237,15 +237,15 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 radiant_win: {
-                  description: 'radiant_win',
+                  description: 'Boolean corresponding to radiants victory or not',
                   type: 'boolean',
                 },
                 radiant_xp_adv: {
-                  description: 'radiant_xp_adv',
+                  description: 'Array of the Radiant experience advantage at different times in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ',
                   type: 'object',
                 },
                 start_time: {
-                  description: 'start_time',
+                  description: 'Time the game started',
                   type: 'integer',
                 },
                 teamfights: {
@@ -253,15 +253,15 @@ Please keep request rate to approximately 3/s.
                   type: 'object',
                 },
                 tower_status_dire: {
-                  description: 'tower_status_dire',
+                  description: 'Bitmask. An integer that represents a binary of which Dire towers are still standing.',
                   type: 'integer',
                 },
                 tower_status_radiant: {
-                  description: 'tower_status_radiant',
+                  description: 'Bitmask. An integer that represents a binary of which Radiant towers are still standing.',
                   type: 'integer',
                 },
                 version: {
-                  description: 'version',
+                  description: 'Parse version, used internally for OpenDota',
                   type: 'integer',
                 },
                 replay_salt: {
@@ -289,26 +289,26 @@ Please keep request rate to approximately 3/s.
                   type: 'object',
                 },
                 skill: {
-                  description: 'skill',
+                  description: 'Valves\' assigned skill level (Normal, High, Very High)',
                   type: 'integer',
                 },
                 players: {
-                  description: 'players',
+                  description: 'Array of information on individual players',
                   type: 'array',
                   items: {
                     description: 'player',
                     type: 'object',
                     properties: {
                       match_id: {
-                        description: 'match_id',
+                        description: 'Match Id',
                         type: 'integer',
                       },
                       player_slot: {
-                        description: 'player_slot',
+                        description: 'Which slot the player is in',
                         type: 'integer',
                       },
                       ability_upgrades_arr: {
-                        description: 'ability_upgrades_arr',
+                        description: 'An array describing how abilities were upgraded',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -335,29 +335,29 @@ Please keep request rate to approximately 3/s.
                         type: 'object',
                       },
                       assists: {
-                        description: 'assists',
+                        description: 'Number of assists the player had',
                         type: 'integer',
                       },
                       backpack_0: {
-                        description: 'backpack_0',
+                        description: 'Item in backpack slot 0',
                         type: 'integer',
                       },
                       backpack_1: {
-                        description: 'backpack_1',
+                        description: 'Item in backpack slot 1',
                         type: 'integer',
                       },
                       backpack_2: {
-                        description: 'backpack_2',
+                        description: 'Item in backpack slot 2',
                         type: 'integer',
                       },
                       buyback_log: {
-                        description: 'buyback_log',
+                        description: 'Array containing information about buybacks',
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'time',
+                              description: 'Time the buyback occurred',
                               type: 'integer',
                             },
                             slot: {
@@ -372,35 +372,35 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       camps_stacked: {
-                        description: 'camps_stacked',
+                        description: 'Number of camps stacked',
                         type: 'integer',
                       },
                       creeps_stacked: {
-                        description: 'creeps_stacked',
+                        description: 'Number of creeps stacked',
                         type: 'integer',
                       },
                       damage: {
-                        description: 'damage',
+                        description: 'Object containing information about damage dealt by the player ot different units',
                         type: 'object',
                       },
                       damage_inflictor: {
-                        description: 'damage_inflictor',
+                        description: 'Object containing information about how they dealt the damage',
                         type: 'object',
                       },
                       damage_inflictor_received: {
-                        description: 'damage_inflictor_received',
+                        description: 'Object containing information about how the player took damage',
                         type: 'object',
                       },
                       damage_taken: {
-                        description: 'damage_taken',
+                        description: 'Object containing information about from whom the player took damage',
                         type: 'object',
                       },
                       deaths: {
-                        description: 'deaths',
+                        description: 'Number of deaths',
                         type: 'integer',
                       },
                       denies: {
-                        description: 'denies',
+                        description: 'Number of denies',
                         type: 'integer',
                       },
                       dn_t: {
@@ -415,7 +415,7 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       gold_per_min: {
-                        description: 'gold_per_min',
+                        description: 'GPM',
                         type: 'integer',
                       },
                       gold_reasons: {
@@ -423,7 +423,7 @@ Please keep request rate to approximately 3/s.
                         type: 'object',
                       },
                       gold_spent: {
-                        description: 'gold_spent',
+                        description: 'How much gold the player spent',
                         type: 'integer',
                       },
                       gold_t: {
@@ -434,11 +434,11 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       hero_damage: {
-                        description: 'hero_damage',
+                        description: 'Hero Damage Dealt',
                         type: 'integer',
                       },
                       hero_healing: {
-                        description: 'hero_healing',
+                        description: 'Hero Healing Done',
                         type: 'integer',
                       },
                       hero_hits: {
@@ -446,31 +446,31 @@ Please keep request rate to approximately 3/s.
                         type: 'object',
                       },
                       hero_id: {
-                        description: 'hero_id',
+                        description: 'Hero ID of the player\'s hero',
                         type: 'integer',
                       },
                       item_0: {
-                        description: 'item_0',
+                        description: 'Item in the player\s first slot',
                         type: 'integer',
                       },
                       item_1: {
-                        description: 'item_1',
+                        description: 'Item in the player\s second slot',
                         type: 'integer',
                       },
                       item_2: {
-                        description: 'item_2',
+                        description: 'Item in the player\s third slot',
                         type: 'integer',
                       },
                       item_3: {
-                        description: 'item_3',
+                        description: 'Item in the player\s fourth slot',
                         type: 'integer',
                       },
                       item_4: {
-                        description: 'item_4',
+                        description: 'Item in the player\s fifth slot',
                         type: 'integer',
                       },
                       item_5: {
-                        description: 'item_5',
+                        description: 'Item in the player\s sixth slot',
                         type: 'integer',
                       },
                       item_uses: {
@@ -478,19 +478,19 @@ Please keep request rate to approximately 3/s.
                         type: 'object',
                       },
                       kill_streaks: {
-                        description: 'kill_streaks',
+                        description: 'Information about the player\' killstreaks',
                         type: 'object',
                       },
                       killed: {
-                        description: 'killed',
+                        description: 'Information about what units the player has killed',
                         type: 'object',
                       },
                       killed_by: {
-                        description: 'killed_by',
+                        description: 'Information about who killed the player how many times',
                         type: 'object',
                       },
                       kills: {
-                        description: 'kills',
+                        description: 'Number of Kills',
                         type: 'integer',
                       },
                       kills_log: {
@@ -515,19 +515,19 @@ Please keep request rate to approximately 3/s.
                         type: 'object',
                       },
                       last_hits: {
-                        description: 'last_hits',
+                        description: 'Number of last hits',
                         type: 'integer',
                       },
                       leaver_status: {
-                        description: 'leaver_status',
+                        description: 'Integer describing whether or not the player left the game',
                         type: 'integer',
                       },
                       level: {
-                        description: 'level',
+                        description: 'Level at the end of the game',
                         type: 'integer',
                       },
                       lh_t: {
-                        description: 'lh_t',
+                        description: 'Array describing last hits at different intervals in the game',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -538,15 +538,15 @@ Please keep request rate to approximately 3/s.
                         type: 'object',
                       },
                       max_hero_hit: {
-                        description: 'max_hero_hit',
+                        description: 'Object with information on the highest damage instance the player inflicted',
                         type: 'object',
                       },
                       multi_kills: {
-                        description: 'multi_kills',
+                        description: 'Object with information on the number of the number of multikills the player had',
                         type: 'object',
                       },
                       obs: {
-                        description: 'obs',
+                        description: 'Object with information on where the player placed observer wards. The location takes the form (outer number, inner number).',
                         type: 'object',
                       },
                       obs_left_log: {
@@ -557,7 +557,7 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       obs_log: {
-                        description: 'obs_log',
+                        description: 'Object containing information on when and where the player placed observer wards',
                         type: 'array',
                         items: {
                           type: 'object',
@@ -579,49 +579,49 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       pings: {
-                        description: 'pings',
+                        description: 'Total number of pings',
                         type: 'integer',
                       },
                       purchase: {
-                        description: 'purchase',
+                        description: 'Object containing information on items bought by the player, specifically how many for things such as consumables.',
                         type: 'object',
                       },
                       purchase_log: {
-                        description: 'purchase_log',
+                        description: 'Object containing information on when items were purchased',
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'time',
+                              description: 'Time the item is bought',
                               type: 'integer',
                             },
                             key: {
-                              description: 'key',
+                              description: 'Integer item ID',
                               type: 'string',
                             },
                           },
                         },
                       },
                       rune_pickups: {
-                        description: 'rune_pickups',
+                        description: 'Number of runes picked up',
                         type: 'integer',
                       },
                       runes: {
-                        description: 'runes',
+                        description: 'Object with information on type of rune and how many times it was picked up',
                         type: 'object',
                         additionalProperties: {
                           type: 'integer',
                         },
                       },
                       runes_log: {
-                        description: 'runes_log',
+                        description: 'Array with information about runes picked up at what time',
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'time',
+                              description: 'Time rune picked up',
                               type: 'integer',
                             },
                             key: {
@@ -632,7 +632,7 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       sen: {
-                        description: 'sen',
+                        description: 'Object with information on where sentries were placed. The location takes the form (outer number, inner number).',
                         type: 'object',
                       },
                       sen_left_log: {
@@ -643,41 +643,41 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       sen_log: {
-                        description: 'sen_log',
+                        description: 'Object with information on when and where sentris were placed by the player',
                         type: 'array',
                         items: {
                           type: 'object',
                         },
                       },
                       sen_placed: {
-                        description: 'sen_placed',
+                        description: 'How many sentries were placed by the player',
                         type: 'integer',
                       },
                       stuns: {
-                        description: 'stuns',
+                        description: 'Total stun duration of all stuns by the player',
                         type: 'number',
                       },
                       times: {
-                        description: 'times',
+                        description: 'Time in seconds corresponding to the time of entries of other arrays in the match.',
                         type: 'array',
                         items: {
                           type: 'integer',
                         },
                       },
                       tower_damage: {
-                        description: 'tower_damage',
+                        description: 'Total tower damage done by the player',
                         type: 'integer',
                       },
                       xp_per_min: {
-                        description: 'xp_per_min',
+                        description: 'Final XPM of the player',
                         type: 'integer',
                       },
                       xp_reasons: {
-                        description: 'xp_reasons',
+                        description: 'Object containing information on how the hero go t experience',
                         type: 'object',
                       },
                       xp_t: {
-                        description: 'xp_t',
+                        description: 'Experience at different times of the game',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -692,11 +692,11 @@ Please keep request rate to approximately 3/s.
                         type: 'string',
                       },
                       last_login: {
-                        description: 'last_login',
+                        description: 'Time of last login of the player',
                         type: 'dateTime',
                       },
                       radiant_win: {
-                        description: 'radiant_win',
+                        description: 'Boolean for Radiant\'s Victory',
                         type: 'boolean',
                       },
                       start_time: {
@@ -878,11 +878,11 @@ Please keep request rate to approximately 3/s.
                   },
                 },
                 patch: {
-                  description: 'patch',
+                  description: 'Information on the patch version the game is played on',
                   type: 'integer',
                 },
                 region: {
-                  description: 'region',
+                  description: 'Region that the game is played on',
                   type: 'integer',
                 },
                 all_word_counts: {
