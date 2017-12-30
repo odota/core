@@ -450,27 +450,27 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       item_0: {
-                        description: 'Item in the player\s first slot',
+                        description: 'Item in the player\'s first slot',
                         type: 'integer',
                       },
                       item_1: {
-                        description: 'Item in the player\s second slot',
+                        description: 'Item in the player\'s second slot',
                         type: 'integer',
                       },
                       item_2: {
-                        description: 'Item in the player\s third slot',
+                        description: 'Item in the player\'s third slot',
                         type: 'integer',
                       },
                       item_3: {
-                        description: 'Item in the player\s fourth slot',
+                        description: 'Item in the player\'s fourth slot',
                         type: 'integer',
                       },
                       item_4: {
-                        description: 'Item in the player\s fifth slot',
+                        description: 'Item in the player\'s fifth slot',
                         type: 'integer',
                       },
                       item_5: {
-                        description: 'Item in the player\s sixth slot',
+                        description: 'Item in the player\'s sixth slot',
                         type: 'integer',
                       },
                       item_uses: {
