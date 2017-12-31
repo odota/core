@@ -10,40 +10,51 @@ function processScenarios(matchID, cb) {
       cb(err);
     }
     console.log(match.match_id);
-    const rows = itemTimings(match);
+    
 
-    async.eachSeries(rows, (row, cb) => {
-      const values = Object.keys(row.columns).map(() =>
-        '?');
-      const query = util.format(
-        `INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (scenario) DO UPDATE SET wins = ${row.table}.wins + ${row.won ? 1 : 0}, games = ${row.table}.games + 1`,
-        row.table,
-        Object.keys(row.columns).join(','),
-        values,
-      );
-      console.log(Object.keys(row.columns).map(key =>
-        row.columns[key]))
-      db.raw(query, Object.keys(row.columns).map(key =>
-        row.columns[key])).asCallback(cb);
-    });
+    scenarioChecks.forEach( function(scenarioCheck) {
+      const rows = scenarioCheck(match);
+      async.eachSeries(rows, (row, cb) => {
+        const values = Object.keys(row.columns).map(() =>
+          '?');
+        const query = util.format(
+          `INSERT INTO %s (%s) VALUES (%s) ON CONFLICT ON CONSTRAINT ${row.table}_constraint DO UPDATE SET wins = ${row.table}.wins + ${row.won ? 1 : 0}, games = ${row.table}.games + 1`,
+          row.table,
+          Object.keys(row.columns).join(','),
+          values,
+        );
+        console.log(query)
+        console.log(Object.keys(row.columns).map(key =>
+          row.columns[key]))
+        db.raw(query, Object.keys(row.columns).map(key =>
+          row.columns[key])).asCallback(cb);
+      });
+    })
     /*
-    async.eachSeries(teamScenarioChecks, (func, cb) => {
+    async.eachSeries(isRadiantScenarioChecks, (func, cb) => {
       scenario = func(match)
       if (scenario.condition) {
         const {name, won} = scenario
-      db.raw(`INSERT INTO team_scenarios VALUES (?, ?, ?) ON CONFLICT(scenario) DO UPDATE SET wins = team_scenarios.wins + ${won ? 1 : 0}, games = team_scenarios.games + 1`, [name, 0, 0]).asCallback(cb);
+      db.raw(`INSERT INTO isRadiant_scenarios VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET wins = isRadiant_scenarios.wins + ${won ? 1 : 0}, games = isRadiant_scenarios.games + 1`, [name, 0, 0]).asCallback(cb);
     }}); */
     cb();
   });
 }
 
+const itemTimingConditions = [{ hero: 1, item: 'bfury', time: 10050 }, 
+{ hero: 1, item: 'power_treads', time: 10050 }, 
+{ hero: 88, item: 'arcane_boots', time: 10050 },
+{ hero: 88, item: 'tpscroll', time: 10050 }
+
+];
+
+const scenarioChecks = [
 
 function itemTimings(match) {
-  const hit = [{ hero: 1, item: 'bfury', time: 10000 }];
 
   const rows = [];
 
-  hit.forEach((c) => {
+  itemTimingConditions.forEach((c) => {
     const player = match.players.find(h => h.hero_id === c.hero);
     if (player) {
       const item = player.purchase_log.find(i => i.key === c.item);
@@ -52,10 +63,14 @@ function itemTimings(match) {
         rows.push({
           columns:
                 {
-                  scenario: JSON.stringify(c),
+                  scenario: "Item Timing",
                   hero: c.hero,
                   item: c.item,
                   time: c.time,
+                  patch: match.patch,
+                  game_mode: match.game_mode,
+                  region: match.region,
+                  lobby_type: match.lobby_type,
                 },
           won,
           table: 'scenarios',
@@ -64,18 +79,62 @@ function itemTimings(match) {
     }
   });
   return rows;
-}
-
-
-const teamScenarioChecks = [
+},
+function firstBlood(match) {
+  let isRadiant;
+  let won;
+  const condition = match.objectives.find(x => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
+  if (condition) {
+    isRadiant = condition.player_slot < 5;
+  }
+  won = match.radiant_win === isRadiant;
+  return [{
+    columns:
+          {
+            scenario: "First Blood",
+            is_radiant: isRadiant,
+            patch: match.patch,
+            game_mode: match.game_mode,
+            lobby_type: match.lobby_type,
+            region: match.region
+          },
+          won,
+          table: 'team_scenarios',
+  }]
+},
+function courierKill(match) {
+  let isRadiant;
+  let won;
+  const condition = match.objectives.find(x => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180000);
+  if (condition) {
+    isRadiant = condition.isRadiant === 3;
+  }
+  won = match.radiant_win === isRadiant;
+  return [{
+    columns:
+          {
+            scenario: "Courier Kill",
+            is_radiant: isRadiant,
+            patch: match.patch,
+            game_mode: match.game_mode,
+            lobby_type: match.lobby_type,
+            region: match.region
+          },
+          won,
+          table: 'team_scenarios',
+  }]
+},
+];
+/*
+const isRadiantScenarioChecks = [
   function firstBlood(match) {
-    let team;
+    let isRadiant;
     let won;
     const condition = match.objectives.find(x => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
     if (condition) {
-      team = condition.player_slot < 5;
+      isRadiant = condition.player_slot < 5;
     }
-    won = match.radiant_win === team;
+    won = match.radiant_win === isRadiant;
     return {
       name: 'First Blood',
       condition,
@@ -83,13 +142,13 @@ const teamScenarioChecks = [
     };
   },
   function courierKill(match) {
-    let team;
+    let isRadiant;
     let won;
     const condition = match.objectives.find(x => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180000);
     if (condition) {
-      team = condition.team === 3;
+      isRadiant = condition.isRadiant === 3;
     }
-    won = match.radiant_win === team;
+    won = match.radiant_win === isRadiant;
     return {
       name: 'Courier Kill',
       condition,
@@ -99,19 +158,19 @@ const teamScenarioChecks = [
 ];
 
 /*
-function teamScenarioChecks()  {
+function isRadiantScenarioChecks()  {
 
   return
   [
   function firstBlood(match, row) {
     console.log(match.match_id);
-    let team;
+    let isRadiant;
     let won;
     const fb = match.find((x) => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
     if (fb) {
-      team = fb.key === 2 ? 1 : 0;
+      isRadiant = fb.key === 2 ? 1 : 0;
     }
-    won = match.radiant_win === team;
+    won = match.radiant_win === isRadiant;
   },
 
 ];

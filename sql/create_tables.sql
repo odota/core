@@ -421,12 +421,33 @@ CREATE TABLE IF NOT EXISTS leaderboard_rank (
   rating int
 );
 
+CREATE TABLE IF NOT EXISTS scenarios (
+  scenario   TEXT,
+  hero       smallint,
+  item       TEXT,
+  time       smallint,
+  patch      smallint,
+  game_mode  smallint,
+  lobby_type smallint,
+  region     smallint,
+  games      BIGINT DEFAULT 0,
+  wins       BIGINT DEFAULT 0,
+  CONSTRAINT scenarios_constraint UNIQUE (hero, item, time, patch, game_mode, lobby_type, region)
+); 
+
 CREATE TABLE IF NOT EXISTS team_scenarios (
-  PRIMARY KEY (scenario),
-  scenario text,
-  wins bigint,
-  games bigint
-);
+  scenario   TEXT,
+  is_radiant BOOLEAN,
+  patch      smallint,
+  game_mode  smallint,
+  lobby_type smallint,
+  region     smallint,
+  games      BIGINT DEFAULT 0,
+  wins       BIGINT DEFAULT 0,
+  CONSTRAINT team_scenarios_constraint UNIQUE (is_radiant, patch, game_mode, lobby_type, region)
+);  
+ 
+
 
 DO $$
 BEGIN
