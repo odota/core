@@ -90,7 +90,7 @@ Please keep request rate to approximately 3/s.
               type: 'object',
               properties: {
                 match_id: {
-                  description: 'The id number of the match assigned by Valve',
+                  description: 'The ID number of the match assigned by Valve',
                   type: 'integer',
                 },
                 barracks_status_dire: {
@@ -102,13 +102,13 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 chat: {
-                  description: 'chat',
+                  description: 'Array containing information on the chat of the game',
                   type: 'array',
                   items: {
                     type: 'object',
                     properties: {
                       time: {
-                        description: 'Time at which the message was said',
+                        description: 'Time in seconds at which the message was said',
                         type: 'integer',
                       },
                       unit: {
@@ -116,7 +116,7 @@ Please keep request rate to approximately 3/s.
                         type: 'string',
                       },
                       key: {
-                        description: 'What they said',
+                        description: 'The message the player sent',
                         type: 'string',
                       },
                       slot: {
@@ -124,7 +124,7 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       player_slot: {
-                        description: 'player_slot',
+                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
                         type: 'integer',
                       },
                     },
@@ -139,7 +139,7 @@ Please keep request rate to approximately 3/s.
                   type: 'object',
                 },
                 dire_score: {
-                  description: 'dire_score',
+                  description: 'Final score for Dire (number of kills on Radiant)',
                   type: 'integer',
                 },
                 draft_timings: {
@@ -162,11 +162,11 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       hero_id: {
-                        decription: 'Which hero go',
+                        decription: 'The ID value of the hero played',
                         type: 'integer',
                       },
                       player_slot: {
-                        description: 'player_slot',
+                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
                         type: 'integer',
                       },
                       extra_time: {
@@ -181,7 +181,7 @@ Please keep request rate to approximately 3/s.
                   },
                 },
                 duration: {
-                  description: 'duration',
+                  description: 'Duration of the game in seconds',
                   type: 'integer',
                 },
                 engine: {
@@ -189,11 +189,11 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 first_blood_time: {
-                  description: 'Time at which firstblood occurred',
+                  description: 'Time in seconds at which first blood occurred',
                   type: 'integer',
                 },
                 game_mode: {
-                  description: 'Integer corresponding to game mode played',
+                  description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                   type: 'integer',
                 },
                 human_players: {
@@ -205,7 +205,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 lobby_type: {
-                  description: 'What type of lobby the match was',
+                  description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                   type: 'integer',
                 },
                 match_seq_num: {
@@ -213,7 +213,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 negative_votes: {
-                  description: 'Number of negative votes the replay recieve in the in-game client',
+                  description: 'Number of negative votes the replay recieved in the in-game client',
                   type: 'integer',
                 },
                 objectives: {
@@ -221,7 +221,7 @@ Please keep request rate to approximately 3/s.
                   type: 'object',
                 },
                 picks_bans: {
-                  description: 'picks_bans',
+                  description: 'Object containing information on the draft. Each pick/ban contains a boolean relating to whether the choice is a pick or a ban, the hero ID, the team the picked or banned it, and the order.',
                   type: 'object',
                 },
                 positive_votes: {
@@ -229,23 +229,23 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 radiant_gold_adv: {
-                  description: 'Array of the Radiant gold advantage at different times in the game. A negative number means that Radiant is behind, and thus it is their gold disadvantage. ',
+                  description: 'Array of the Radiant gold advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their gold disadvantage. ',
                   type: 'object',
                 },
                 radiant_score: {
-                  description: 'radiant_score',
+                  description: 'Final score for Radiant (number of kills on Radiant)',
                   type: 'integer',
                 },
                 radiant_win: {
-                  description: 'Boolean corresponding to radiants victory or not',
+                  description: 'Boolean indicating whether Radiant won the match',
                   type: 'boolean',
                 },
                 radiant_xp_adv: {
-                  description: 'Array of the Radiant experience advantage at different times in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ',
+                  description: 'Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ',
                   type: 'object',
                 },
                 start_time: {
-                  description: 'Time the game started',
+                  description: 'The Unix timestamp at which the game started',
                   type: 'integer',
                 },
                 teamfights: {
@@ -289,7 +289,7 @@ Please keep request rate to approximately 3/s.
                   type: 'object',
                 },
                 skill: {
-                  description: 'Valves\' assigned skill level (Normal, High, Very High)',
+                  description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
                   type: 'integer',
                 },
                 players: {
@@ -300,11 +300,11 @@ Please keep request rate to approximately 3/s.
                     type: 'object',
                     properties: {
                       match_id: {
-                        description: 'Match Id',
+                        description: 'Match ID',
                         type: 'integer',
                       },
                       player_slot: {
-                        description: 'Which slot the player is in',
+                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
                         type: 'integer',
                       },
                       ability_upgrades_arr: {
@@ -315,11 +315,11 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       ability_uses: {
-                        description: 'ability_uses',
+                        description: 'Object containing information on how many times the played used their abilities',
                         type: 'object',
                       },
                       ability_targets: {
-                        description: 'ability_targets',
+                        description: 'Object containing information on who the player used their abilities on',
                         type: 'object',
                       },
                       account_id: {
@@ -327,11 +327,11 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       actions: {
-                        description: 'actions',
+                        description: 'Object containing information on how many and what type of actions the player issued to their hero',
                         type: 'object',
                       },
                       additional_units: {
-                        description: 'additional_units',
+                        description: 'Object containing information on additional units the player had under their control',
                         type: 'object',
                       },
                       assists: {
@@ -357,7 +357,7 @@ Please keep request rate to approximately 3/s.
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Time the buyback occurred',
+                              description: 'Time in seconds the buyback occurred',
                               type: 'integer',
                             },
                             slot: {
@@ -365,7 +365,7 @@ Please keep request rate to approximately 3/s.
                               type: 'integer',
                             },
                             player_slot: {
-                              description: 'player_slot',
+                              description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
                               type: 'integer',
                             },
                           },
@@ -380,15 +380,15 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       damage: {
-                        description: 'Object containing information about damage dealt by the player ot different units',
+                        description: 'Object containing information about damage dealt by the player to different units',
                         type: 'object',
                       },
                       damage_inflictor: {
-                        description: 'Object containing information about how they dealt the damage',
+                        description: 'Object containing information about about the sources of this player\'s damage to heroes',
                         type: 'object',
                       },
                       damage_inflictor_received: {
-                        description: 'Object containing information about how the player took damage',
+                        description: 'Object containing information about the sources of damage received by this player from heroes',
                         type: 'object',
                       },
                       damage_taken: {
@@ -404,22 +404,22 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       dn_t: {
-                        description: 'dn_t',
+                        description: 'Array containing number of denies at different times of the match',
                         type: 'array',
                         items: {
                           type: 'integer',
                         },
                       },
                       gold: {
-                        description: 'gold',
+                        description: 'Gold at the end of the game',
                         type: 'integer',
                       },
                       gold_per_min: {
-                        description: 'GPM',
+                        description: 'Gold Per Minute obtained by this player',
                         type: 'integer',
                       },
                       gold_reasons: {
-                        description: 'gold_reasons',
+                        description: 'Object containing information on how the player gainined gold over the course of the match',
                         type: 'object',
                       },
                       gold_spent: {
@@ -427,7 +427,7 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       gold_t: {
-                        description: 'gold_t',
+                        description: 'Array containing total gold at different times of the match',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -442,11 +442,11 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       hero_hits: {
-                        description: 'hero_hits',
+                        description: 'Object containing information on how many ticks of damages the hero inflicted with different spells and damage inflictors',
                         type: 'object',
                       },
                       hero_id: {
-                        description: 'Hero ID of the player\'s hero',
+                        decription: 'The ID value of the hero played',
                         type: 'integer',
                       },
                       item_0: {
@@ -474,19 +474,19 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       item_uses: {
-                        description: 'item_uses',
+                        description: 'Object containing information about how many times a player used items',
                         type: 'object',
                       },
                       kill_streaks: {
-                        description: 'Information about the player\' killstreaks',
+                        description: 'Object containing information about the player\'s killstreaks',
                         type: 'object',
                       },
                       killed: {
-                        description: 'Information about what units the player has killed',
+                        description: 'Object containing information about what units the player killed',
                         type: 'object',
                       },
                       killed_by: {
-                        description: 'Information about who killed the player how many times',
+                        description: 'Object containing information about who killed the player',
                         type: 'object',
                       },
                       kills: {
@@ -494,24 +494,24 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       kills_log: {
-                        description: 'kills_log',
+                        description: 'Array containing information on which hero the player killed at what time',
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'time',
+                              description: 'Time in seconds the player killed the hero',
                               type: 'integer',
                             },
                             key: {
-                              description: 'key',
+                              description: 'Hero killed',
                               type: 'string',
                             },
                           },
                         },
                       },
                       lane_pos: {
-                        description: 'lane_pos',
+                        description: 'Object containing information on lane position',
                         type: 'object',
                       },
                       last_hits: {
@@ -519,7 +519,7 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       leaver_status: {
-                        description: 'Integer describing whether or not the player left the game',
+                        description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
                         type: 'integer',
                       },
                       level: {
@@ -527,7 +527,7 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       lh_t: {
-                        description: 'Array describing last hits at different intervals in the game',
+                        description: 'Array describing last hits at each minute in the game',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -546,7 +546,7 @@ Please keep request rate to approximately 3/s.
                         type: 'object',
                       },
                       obs: {
-                        description: 'Object with information on where the player placed observer wards. The location takes the form (outer number, inner number).',
+                        description: 'Object with information on where the player placed observer wards. The location takes the form (outer number, inner number) and are from ~64-192.',
                         type: 'object',
                       },
                       obs_left_log: {
@@ -564,7 +564,7 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       obs_placed: {
-                        description: 'obs_placed',
+                        description: 'Total number of observer wards placed',
                         type: 'integer',
                       },
                       party_id: {
@@ -572,7 +572,7 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       permanent_buffs: {
-                        description: 'permanent_buffs',
+                        description: 'Array describing permanent buffs the player had at the end of the game. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/permanent_buffs.json',
                         type: 'array',
                         items: {
                           type: 'object',
@@ -583,7 +583,7 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       purchase: {
-                        description: 'Object containing information on items bought by the player, specifically how many for things such as consumables.',
+                        description: 'Object containing information on the items the player purchased',
                         type: 'object',
                       },
                       purchase_log: {
@@ -593,7 +593,7 @@ Please keep request rate to approximately 3/s.
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Time the item is bought',
+                              description: 'Time in seconds the item was bought',
                               type: 'integer',
                             },
                             key: {
@@ -608,20 +608,20 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       runes: {
-                        description: 'Object with information on type of rune and how many times it was picked up',
+                        description: 'Object with information about which runes the player picked up',
                         type: 'object',
                         additionalProperties: {
                           type: 'integer',
                         },
                       },
                       runes_log: {
-                        description: 'Array with information about runes picked up at what time',
+                        description: 'Array with information on when runes were picked up',
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Time rune picked up',
+                              description: 'Time in seconds rune picked up',
                               type: 'integer',
                             },
                             key: {
@@ -632,18 +632,18 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       sen: {
-                        description: 'Object with information on where sentries were placed. The location takes the form (outer number, inner number).',
+                        description: 'Object with information on where sentries were placed. The location takes the form (outer number, inner number) and are from ~64-192.',
                         type: 'object',
                       },
                       sen_left_log: {
-                        description: 'sen_left_log',
+                        description: 'Array containing information on when and where the player placed sentries',
                         type: 'array',
                         items: {
                           type: 'object',
                         },
                       },
                       sen_log: {
-                        description: 'Object with information on when and where sentris were placed by the player',
+                        description: 'Array with information on when and where sentries were placed by the player',
                         type: 'array',
                         items: {
                           type: 'object',
@@ -669,15 +669,15 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       xp_per_min: {
-                        description: 'Final XPM of the player',
+                        description: 'Experience Per Minute obtained by the player',
                         type: 'integer',
                       },
                       xp_reasons: {
-                        description: 'Object containing information on how the hero go t experience',
+                        description: 'Object containing information on the sources of this player\'s experience',
                         type: 'object',
                       },
                       xp_t: {
-                        description: 'Experience at different times of the game',
+                        description: 'Experience at each minute of the game',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -692,19 +692,19 @@ Please keep request rate to approximately 3/s.
                         type: 'string',
                       },
                       last_login: {
-                        description: 'Time of last login of the player',
+                        description: 'Time in seconds of last login of the player',
                         type: 'dateTime',
                       },
                       radiant_win: {
-                        description: 'Boolean for Radiant\'s Victory',
+                        description: 'Boolean indicating whether Radiant won the match',
                         type: 'boolean',
                       },
                       start_time: {
-                        description: 'start_time',
+                        description: 'Start time of the match in seconds since 1970',
                         type: 'integer',
                       },
                       duration: {
-                        description: 'duration',
+                        description: 'Duration of the game in seconds',
                         type: 'integer',
                       },
                       cluster: {
@@ -712,43 +712,43 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       lobby_type: {
-                        description: 'lobby_type',
+                        description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                         type: 'integer',
                       },
                       game_mode: {
-                        description: 'game_mode',
+                        description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                         type: 'integer',
                       },
                       patch: {
-                        description: 'patch',
+                        description: 'Integer representing the patch the game was played on',
                         type: 'integer',
                       },
                       region: {
-                        description: 'region',
+                        description: 'Integer corresponding to the region the game was played on',
                         type: 'integer',
                       },
                       isRadiant: {
-                        description: 'isRadiant',
+                        description: 'Boolean for whether or not the player is on Radiant',
                         type: 'boolean',
                       },
                       win: {
-                        description: 'win',
+                        description: 'Binary integer representing whether or not the player won',
                         type: 'integer',
                       },
                       lose: {
-                        description: 'win',
+                        description: 'Binary integer representing whether or not the player lost',
                         type: 'integer',
                       },
                       total_gold: {
-                        description: 'total_gold',
+                        description: 'Total gold at the end of the game',
                         type: 'integer',
                       },
                       total_xp: {
-                        description: 'total_xp',
+                        description: 'Total experience at the end of the game',
                         type: 'integer',
                       },
                       kills_per_min: {
-                        description: 'kills_per_min',
+                        description: 'Number of kills per minute',
                         type: 'number',
                       },
                       kda: {
@@ -760,55 +760,55 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       neutral_kills: {
-                        description: 'neutral_kills',
+                        description: 'Total number of neutral creeps killed',
                         type: 'integer',
                       },
                       tower_kills: {
-                        description: 'tower_kills',
+                        description: 'Total number of tower kills the player had',
                         type: 'integer',
                       },
                       courier_kills: {
-                        description: 'courier_kills',
+                        description: 'Total number of courier kills the player had',
                         type: 'integer',
                       },
                       lane_kills: {
-                        description: 'lane_kills',
+                        description: 'Total number of lane creeps killed by the player',
                         type: 'integer',
                       },
                       hero_kills: {
-                        description: 'hero_kills',
+                        description: 'Total number of heroes killed by the player',
                         type: 'integer',
                       },
                       observer_kills: {
-                        description: 'observer_kills',
+                        description: 'Total number of observer wards killed by the player',
                         type: 'integer',
                       },
                       sentry_kills: {
-                        description: 'sentry_kills',
+                        description: 'Total number of sentry wards killed by the player',
                         type: 'integer',
                       },
                       roshan_kills: {
-                        description: 'roshan_kills',
+                        description: 'Total number of roshan kills (last hit on roshan) the player had',
                         type: 'integer',
                       },
                       necronomicon_kills: {
-                        description: 'necronomicon_kills',
+                        description: 'Total number of Necronomicon creeps killed by the player',
                         type: 'integer',
                       },
                       ancient_kills: {
-                        description: 'ancient_kills',
+                        description: 'Total number of Ancient creeps killed by the player',
                         type: 'integer',
                       },
                       buyback_count: {
-                        description: 'buyback_count',
+                        description: 'Total number of buyback the player used',
                         type: 'integer',
                       },
                       observer_uses: {
-                        description: 'observer_uses',
+                        description: 'Number of observer wards used',
                         type: 'integer',
                       },
                       sentry_uses: {
-                        description: 'sentry_uses',
+                        description: 'Number of sentry wards used',
                         type: 'integer',
                       },
                       lane_efficiency: {
@@ -820,7 +820,7 @@ Please keep request rate to approximately 3/s.
                         type: 'number',
                       },
                       lane: {
-                        description: 'lane',
+                        description: 'Integer referring to which lane the hero laned in',
                         type: 'integer',
                       },
                       lane_role: {
@@ -828,31 +828,31 @@ Please keep request rate to approximately 3/s.
                         type: 'integer',
                       },
                       is_roaming: {
-                        description: 'is_roaming',
+                        description: 'Boolean referring to whether or not the player roamed',
                         type: 'boolean',
                       },
                       purchase_time: {
-                        description: 'purchase_time',
+                        description: 'Object with information on when the player last purchased an item',
                         type: 'object',
                       },
                       first_purchase_time: {
-                        description: 'first_purchase_time',
+                        description: 'Object with information on when the player first puchased an item',
                         type: 'object',
                       },
                       item_win: {
-                        description: 'item_win',
+                        description: 'Object with information on whether or not the item won',
                         type: 'object',
                       },
                       item_usage: {
-                        description: 'item_usage',
+                        description: 'Object containing binary integers the tell whether the item was purchased by the player (note: this is always 1)',
                         type: 'object',
                       },
                       purchase_tpscroll: {
-                        description: 'purchase_tpscroll',
+                        description: 'Total number of TP scrolls purchased by the player',
                         type: 'object',
                       },
                       actions_per_min: {
-                        description: 'actions_per_min',
+                        description: 'Actions per minute',
                         type: 'integer',
                       },
                       life_state_dead: {
@@ -871,7 +871,7 @@ Please keep request rate to approximately 3/s.
                         },
                       },
                       benchmarks: {
-                        description: 'benchmarks',
+                        description: 'Object containing information on certain benchmarks like GPM, XPM, KDA, tower damage, etc',
                         type: 'object',
                       },
                     },
@@ -882,7 +882,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 region: {
-                  description: 'Region that the game is played on',
+                  description: 'Integer corresponding to the region the game was played on',
                   type: 'integer',
                 },
                 all_word_counts: {
@@ -1086,11 +1086,11 @@ Please keep request rate to approximately 3/s.
               type: 'object',
               properties: {
                 win: {
-                  description: 'win',
+                  description: 'Number of wins',
                   type: 'integer',
                 },
                 lose: {
-                  description: 'lose',
+                  description: 'Number of loses',
                   type: 'integer',
                 },
               },
@@ -1138,35 +1138,35 @@ Please keep request rate to approximately 3/s.
                 type: 'object',
                 properties: {
                   match_id: {
-                    description: 'match_id',
+                    description: 'Match ID',
                     type: 'integer',
                   },
                   player_slot: {
-                    description: 'player_slot',
+                    description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
                     type: 'integer',
                   },
                   radiant_win: {
-                    description: 'radiant_win',
+                    description: 'Boolean indicating whether Radiant won the match',
                     type: 'boolean',
                   },
                   duration: {
-                    description: 'duration',
+                    description: 'Duration of the match in seconds',
                     type: 'integer',
                   },
                   game_mode: {
-                    description: 'game_mode',
+                    description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                     type: 'integer',
                   },
                   lobby_type: {
-                    description: 'lobby_type',
+                    description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                     type: 'integer',
                   },
                   hero_id: {
-                    description: 'hero_id',
+                    decription: 'The ID value of the hero played',
                     type: 'integer',
                   },
                   start_time: {
-                    description: 'start_time',
+                    description: 'Start time of the match in seconds elapsed since 1970',
                     type: 'integer',
                   },
                   version: {
@@ -1174,23 +1174,23 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   kills: {
-                    description: 'kills',
+                    description: 'Total kills the player had at the end of the match',
                     type: 'integer',
                   },
                   deaths: {
-                    description: 'deaths',
+                    description: 'Total deaths the player had at the end of the match',
                     type: 'integer',
                   },
                   assists: {
-                    description: 'assists',
+                    description: 'Total assists the player had at the end of the match',
                     type: 'integer',
                   },
                   skill: {
-                    description: 'skill',
+                    description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
                     type: 'integer',
                   },
                   lane: {
-                    description: 'lane',
+                    description: 'Integer corresponding to which lane the player laned in for the match',
                     type: 'integer',
                   },
                   lane_role: {
@@ -1198,7 +1198,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   is_roaming: {
-                    description: 'is_roaming',
+                    description: 'Boolean describing whether or not the player roamed',
                     type: 'boolean',
                   },
                   cluster: {
@@ -1206,11 +1206,11 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   leaver_status: {
-                    description: 'leaver_status',
+                    description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
                     type: 'integer',
                   },
                   party_size: {
-                    description: 'party_size',
+                    description: 'Size of the players party. If not in a party, will return 1.',
                     type: 'integer',
                   },
                 },
@@ -1269,39 +1269,39 @@ Please keep request rate to approximately 3/s.
             schema: {
               type: 'array',
               items: {
-                description: 'match',
+                description: 'Object containing information on the match',
                 type: 'object',
                 properties: {
                   match_id: {
-                    description: 'match_id',
+                    description: 'Match ID',
                     type: 'integer',
                   },
                   player_slot: {
-                    description: 'player_slot',
+                    description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
                     type: 'integer',
                   },
                   radiant_win: {
-                    description: 'radiant_win',
+                    description: 'Boolean indicating whether Radiant won the match',
                     type: 'boolean',
                   },
                   duration: {
-                    description: 'duration',
+                    description: 'Duration of the game in seconds',
                     type: 'integer',
                   },
                   game_mode: {
-                    description: 'game_mode',
+                    description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                     type: 'integer',
                   },
                   lobby_type: {
-                    description: 'lobby_type',
+                    description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                     type: 'integer',
                   },
                   hero_id: {
-                    description: 'hero_id',
+                    decription: 'The ID value of the hero played',
                     type: 'integer',
                   },
                   start_time: {
-                    description: 'start_time',
+                    description: 'Time the game started in seconds since 1970',
                     type: 'integer',
                   },
                   version: {
@@ -1309,19 +1309,19 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   kills: {
-                    description: 'kills',
+                    description: 'Total kills the player had at the end of the game',
                     type: 'integer',
                   },
                   deaths: {
-                    description: 'deaths',
+                    description: 'Total deaths the player had at the end of the game',
                     type: 'integer',
                   },
                   assists: {
-                    description: 'assists',
+                    description: 'Total assists the player had at the end of the game',
                     type: 'integer',
                   },
                   skill: {
-                    description: 'skill',
+                    description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
                     type: 'integer',
                   },
                   heroes: {
@@ -1329,7 +1329,7 @@ Please keep request rate to approximately 3/s.
                     type: 'object',
                     properties: {
                       player_slot: {
-                        description: 'player_slot',
+                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
                         type: 'object',
                         properties: {
                           account_id: {
@@ -1337,11 +1337,11 @@ Please keep request rate to approximately 3/s.
                             type: 'integer',
                           },
                           hero_id: {
-                            description: 'hero_id',
+                            decription: 'The ID value of the hero played',
                             type: 'integer',
                           },
                           player_slot: {
-                            description: 'player_slot',
+                            description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
                             type: 'integer',
                           },
                         },
@@ -1383,7 +1383,7 @@ Please keep request rate to approximately 3/s.
                 type: 'object',
                 properties: {
                   hero_id: {
-                    description: 'hero_id',
+                    decription: 'The ID value of the hero played',
                     type: 'integer',
                   },
                   last_played: {
@@ -1807,15 +1807,15 @@ Please keep request rate to approximately 3/s.
               type: 'object',
               properties: {
                 leaver_status: {
-                  description: 'leaver_status',
+                  description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
                   type: 'object',
                 },
                 game_mode: {
-                  description: 'game_mode',
+                  description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                   type: 'object',
                 },
                 lobby_type: {
-                  description: 'lobby_type',
+                  description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                   type: 'object',
                 },
                 lane_role: {
@@ -1823,7 +1823,7 @@ Please keep request rate to approximately 3/s.
                   type: 'object',
                 },
                 region: {
-                  description: 'region',
+                  description: 'Integer corresponding to the region the game was played on',
                   type: 'object',
                 },
                 patch: {
@@ -2080,7 +2080,7 @@ Please keep request rate to approximately 3/s.
                 type: 'object',
                 properies: {
                   hero_id: {
-                    description: 'hero_id',
+                    decription: 'The ID value of the hero played',
                     type: 'string',
                   },
                   rank: {
@@ -2238,7 +2238,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   radiant_win: {
-                    description: 'radiant_win',
+                    description: 'Boolean indicating whether Radiant won the match',
                     type: 'boolean',
                   },
                   start_time: {
@@ -2770,7 +2770,7 @@ Please keep request rate to approximately 3/s.
               type: 'object',
               properties: {
                 hero_id: {
-                  description: 'hero_id',
+                  decription: 'The ID value of the hero played',
                   type: 'integer',
                 },
                 rankings: {
@@ -2871,7 +2871,7 @@ Please keep request rate to approximately 3/s.
               type: 'object',
               properties: {
                 hero_id: {
-                  description: 'hero_id',
+                  decription: 'The ID value of the hero played',
                   type: 'integer',
                 },
                 result: {
@@ -3285,7 +3285,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   hero_id: {
-                    description: 'hero_id',
+                    description: 'The ID value of the hero played',
                     type: 'integer',
                   },
                   pro_ban: {
@@ -3873,7 +3873,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   hero_id: {
-                    description: 'hero_id',
+                    description: 'The ID value of the hero played',
                     type: 'integer',
                   },
                   score: {
