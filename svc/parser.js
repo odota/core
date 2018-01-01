@@ -13,6 +13,7 @@ const queries = require('../store/queries');
 const cp = require('child_process');
 const async = require('async');
 const numCPUs = require('os').cpus().length;
+const redis = require('../store/redis');
 
 const insertMatch = queries.insertMatch;
 const buildReplayUrl = utility.buildReplayUrl;
@@ -33,6 +34,7 @@ function runParse(match, job, cb) {
       const result = Object.assign({}, JSON.parse(stdout), match);
       return insertMatch(result, {
         type: 'parsed',
+        origin: match.origin,
         skipParse: true,
         doLogParse: match.doLogParse,
       }, cb);
@@ -60,7 +62,11 @@ function parseProcessor(job, cb) {
       console.error(err.stack || err);
     } else {
       console.log('completed parse of match %s', match.match_id);
-    }
+      if (match.origin === 'scanner') {
+      if (Math.random() >= 0) {
+        redis.lpush('scenariosQueue', match.match_id);
+      }
+    }}
     return cb(err, match.match_id);
   });
 }

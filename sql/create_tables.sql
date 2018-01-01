@@ -422,29 +422,21 @@ CREATE TABLE IF NOT EXISTS leaderboard_rank (
 );
 
 CREATE TABLE IF NOT EXISTS scenarios (
-  scenario   text,
   hero       smallint,
   item       text,
   time       smallint,
-  patch      smallint,
-  game_mode  smallint,
-  lobby_type smallint,
-  region     smallint,
   games      bigint DEFAULT 0,
   wins       bigint DEFAULT 0,
-  CONSTRAINT scenarios_constraint UNIQUE (hero, item, time, patch, game_mode, lobby_type, region)
+  CONSTRAINT scenarios_constraint UNIQUE (hero, item, time)
 ); 
 
 CREATE TABLE IF NOT EXISTS team_scenarios (
   scenario   text,
   is_radiant BOOLEAN,
-  patch      smallint,
-  game_mode  smallint,
-  lobby_type smallint,
   region     smallint,
   games      bigint DEFAULT 0,
   wins       bigint DEFAULT 0,
-  CONSTRAINT team_scenarios_constraint UNIQUE (scenario, is_radiant, patch, game_mode, lobby_type, region)
+  CONSTRAINT team_scenarios_constraint UNIQUE (scenario, is_radiant, region)
 );  
  
 
