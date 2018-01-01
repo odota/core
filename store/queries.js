@@ -801,6 +801,12 @@ function insertMatch(match, options, cb) {
     5368: 'greevils_greed',
   };
 
+  if (true || match.type === 'parsed' && match.origin === 'scanner' && match.game_mode === 22) { // Ranked All Pick
+    if (Math.random() >= 0) {
+      redis.lpush('scenariosQueue', match.match_id);
+    }
+  }
+
   function preprocess(cb) {
     // don't insert anonymous account id
     if (players) {
@@ -1226,6 +1232,7 @@ function insertMatch(match, options, cb) {
             doLogParse,
             ability_upgrades: abilityUpgrades,
             allowBackup: options.allowBackup,
+            origin: options.origin,
           },
         }, {
           priority: options.priority,
