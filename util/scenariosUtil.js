@@ -1,36 +1,44 @@
 const constants = require('dotaconstants');
 
-// all items that cost 2000 or more
-const items = Object.keys(constants.items).map(function (k) {
-  if (constants.items[k].cost >= 2000) {
-    return k
-  }
-})
-const heroes = Object.keys(constants.heroes)
-const timings = [5 * 60, 10 * 60, 15 * 60, 20 * 60, 25 * 60, 30 * 60]
-
 
 function getCombinations(options, optionIndex, results, current) {
-  var allKeys = Object.keys(options);
-  var optionKey = allKeys[optionIndex];
-  var vals = options[optionKey];
-  for (var i = 0; i < vals.length; i++) {
+  const allKeys = Object.keys(options);
+  const optionKey = allKeys[optionIndex];
+  const vals = options[optionKey];
+  for (let i = 0; i < vals.length; i += 1) {
     current[optionKey] = vals[i];
     if (optionIndex + 1 < allKeys.length) {
       getCombinations(options, optionIndex + 1, results, current);
     } else {
-      var res = JSON.parse(JSON.stringify(current));
+      const res = JSON.parse(JSON.stringify(current));
       results.push(res);
     }
   }
   return results;
 }
 
-const itemTimingConditions = getCombinations({
-  hero: heroes,
-  item: items,
-  time: timings,
-}, 0, [], {});
+const itemTimingConditions = [{
+  hero: 1,
+  item: 'bfury',
+  time: 10050,
+},
+{
+  hero: 1,
+  item: 'power_treads',
+  time: 10050,
+},
+{
+  hero: 88,
+  item: 'arcane_boots',
+  time: 10050,
+},
+{
+  hero: 88,
+  item: 'tpscroll',
+  time: 10050,
+},
+];
+
 
 function buildTeamScenario(scenario, isRadiant, match) {
   const won = match.radiant_win === isRadiant;
@@ -50,6 +58,7 @@ function buildTeamScenario(scenario, isRadiant, match) {
 
 const scenarioChecks = [
   function itemTimings(match) {
+    console.log(itemTimingConditions)
     const rows = [];
     itemTimingConditions.forEach((c) => {
       const player = match.players.find(h => h.hero_id === c.hero);
