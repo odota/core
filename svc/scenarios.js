@@ -10,10 +10,7 @@ function processScenarios(matchID, cb) {
     if (err) {
       cb(err);
     }
-    console.log(match.match_id);
-
-
-    su.scenarioChecks.forEach(function (scenarioCheck) {
+    su.scenarioChecks.forEach((scenarioCheck) => {
       const rows = scenarioCheck(match);
       async.eachSeries(rows, (row, cb) => {
         const values = Object.keys(row.columns).map(() =>
@@ -24,13 +21,10 @@ function processScenarios(matchID, cb) {
           Object.keys(row.columns).join(','),
           values,
         );
-        console.log(query)
-        console.log(Object.keys(row.columns).map(key =>
-          row.columns[key]))
         db.raw(query, Object.keys(row.columns).map(key =>
           row.columns[key])).asCallback(cb);
       });
-    })
+    });
     cb();
   });
 }
