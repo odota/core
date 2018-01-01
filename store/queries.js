@@ -1214,7 +1214,7 @@ function insertMatch(match, options, cb) {
       }
       const doLogParse = options.doLogParse;
       const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
-      if (true) {
+      if (doParse) {
         return queue.addJob('parse', {
           data: {
             match_id: match.match_id,
