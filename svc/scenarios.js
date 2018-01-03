@@ -13,6 +13,7 @@ function processScenarios(matchID, cb) {
     }
     su.scenarioChecks.forEach((scenarioCheck) => {
       const rows = scenarioCheck(match);
+      console.log(rows)
       async.eachSeries(rows, (row, cb) => {
         const values = Object.keys(row.columns).map(() =>
           '?');

@@ -62,11 +62,12 @@ function parseProcessor(job, cb) {
       console.error(err.stack || err);
     } else {
       console.log('completed parse of match %s', match.match_id);
-      if (match.origin === 'scanner') {
-      if (Math.random() >= 0) {
-        redis.lpush('scenariosQueue', match.match_id);
+      if (true || match.origin === 'scanner') {
+        if (Math.random() >= 0) {
+          redis.lpush('scenariosQueue', match.match_id);
+        }
       }
-    }}
+    }
     return cb(err, match.match_id);
   });
 }
