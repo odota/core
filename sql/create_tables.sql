@@ -432,7 +432,7 @@ CREATE TABLE IF NOT EXISTS scenarios (
   wins       bigint DEFAULT 0,
   CONSTRAINT scenario UNIQUE (hero, item, time),
   CONSTRAINT scenario2 UNIQUE (pings, game_duration),
-  CONSTRAINT scenario3 UNIQUE (hero, lane, game_duration),
+  CONSTRAINT scenario3 UNIQUE (hero, lane, game_duration)
 ); 
 
 CREATE TABLE IF NOT EXISTS team_scenarios (
