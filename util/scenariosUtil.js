@@ -54,12 +54,12 @@ const scenarioChecks = [
     const rows = [];
     if (match.players) {
       match.players.forEach((player) => {
-        const pings = pingBucket.find(x => x >= player.pings) || -2
+        const pings = pingBucket.find(x => x >= player.pings) || -2;
         const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
         rows.push({
           columns: {
             pings,
-            game_duration: gameDurationBucket.find(x => x >= match.duration) || -2
+            game_duration: gameDurationBucket.find(x => x >= match.duration) || -2,
           },
           won,
           table: 'scenarios',
@@ -73,13 +73,12 @@ const scenarioChecks = [
     const rows = [];
     if (match.players) {
       match.players.forEach((player) => {
-        const lane = player.lane
         const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
         rows.push({
           columns: {
             hero: player.hero_id,
             lane: player.lane,
-            game_duration: gameDurationBucket.find(x => x >= match.duration) || -2
+            game_duration: gameDurationBucket.find(x => x >= match.duration) || -2,
           },
           won,
           table: 'scenarios',

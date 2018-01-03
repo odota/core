@@ -444,8 +444,6 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   CONSTRAINT team_scenarios_constraint UNIQUE (scenario, is_radiant, region)
 );  
  
-
-
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

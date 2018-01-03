@@ -21,9 +21,8 @@ function processScenarios(matchID, cb) {
           row.table,
           Object.keys(row.columns).join(','),
           values,
-          Object.keys(row.columns).join(',')
+          Object.keys(row.columns).join(','),
         );
-        console.log(query)
         db.raw(query, Object.keys(row.columns).map(key =>
           row.columns[key])).asCallback(cb);
       });
