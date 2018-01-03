@@ -13,16 +13,17 @@ function processScenarios(matchID, cb) {
     }
     su.scenarioChecks.forEach((scenarioCheck) => {
       const rows = scenarioCheck(match);
-      console.log(rows)
       async.eachSeries(rows, (row, cb) => {
         const values = Object.keys(row.columns).map(() =>
           '?');
         const query = util.format(
-          `INSERT INTO %s (%s) VALUES (%s) ON CONFLICT ON CONSTRAINT ${row.table}_constraint DO UPDATE SET wins = ${row.table}.wins + ${row.won ? 1 : 0}, games = ${row.table}.games + 1`,
+          `INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = ${row.table}.wins + ${row.won ? 1 : 0}, games = ${row.table}.games + 1`,
           row.table,
           Object.keys(row.columns).join(','),
           values,
+          Object.keys(row.columns).join(',')
         );
+        console.log(query)
         db.raw(query, Object.keys(row.columns).map(key =>
           row.columns[key])).asCallback(cb);
       });

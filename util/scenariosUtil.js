@@ -35,7 +35,6 @@ const scenarioChecks = [
               const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
               rows.push({
                 columns: {
-                  scenario: 'Item Timing',
                   hero: player.hero_id,
                   item: item.key,
                   time: timings.find(x => x >= item.time) || -2,
@@ -59,7 +58,6 @@ const scenarioChecks = [
         const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
         rows.push({
           columns: {
-            scenario: 'Pings',
             pings,
             game_duration: gameDurationBucket.find(x => x >= match.duration) || -2
           },
@@ -80,27 +78,8 @@ const scenarioChecks = [
         rows.push({
           columns: {
             hero: player.hero_id,
-            scenario: 'Lane',
             lane: player.lane,
             game_duration: gameDurationBucket.find(x => x >= match.duration) || -2
-          },
-          won,
-          table: 'scenarios',
-        });
-      });
-    }
-    return rows;
-  },
-
-  function baseScenario(match) { // always evaluate to true for a match that has the hero
-    const rows = [];
-    if (match.players) {
-      match.players.forEach((player) => {
-        const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
-        rows.push({
-          columns: {
-            scenario: 'Base Scenario',
-            hero: player.hero_id,
           },
           won,
           table: 'scenarios',
