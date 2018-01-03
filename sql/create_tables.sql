@@ -422,12 +422,12 @@ CREATE TABLE IF NOT EXISTS leaderboard_rank (
 );
 
 CREATE TABLE IF NOT EXISTS scenarios (
-  hero smallint ,
-  item text ,
-  time smallint ,
-  pings integer ,
-  game_duration smallint ,
-  lane smallint ,
+  hero smallint,
+  item text,
+  time smallint,
+  pings integer,
+  game_duration smallint,
+  lane smallint,
   games      bigint DEFAULT 0,
   wins       bigint DEFAULT 0,
   CONSTRAINT scenario UNIQUE (hero, item, time),
