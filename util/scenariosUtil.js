@@ -3,7 +3,12 @@ const constants = require('dotaconstants');
 
 // all items that cost at least 2000
 const dotaItems = Object.keys(constants.items).map(k => [constants.items[k], k]).filter(x => x[0].cost >= 2000).map(x => x[1]);
-const timings = [7.5, 10, 12, 15, 20, 25, 30].map(function(x) {return x*60})
+const timings = [7.5, 10, 12, 15, 20, 25, 30, 45, 60].map(x => x * 60);
+const pingBucket = [10, 25, 50, 100, 150, 200, 500, 1000, 5000, 10000];
+const gameDurationBucket = [15, 30, 45, 60, 90, 180, 360].map(x => x * 60);
+
+const negativeWords = ['ff', 'report', 'gg', 'end', 'noob'];
+
 
 function buildTeamScenario(scenario, isRadiant, match) {
   const won = match.radiant_win === isRadiant;
@@ -23,42 +28,85 @@ const scenarioChecks = [
   function itemTimings(match) {
     const rows = [];
     if (match.players) {
-    match.players.forEach((player) => {
-      if (player.purchase_log) {
-      player.purchase_log.forEach((item) => {
-        if (dotaItems.indexOf(item.key) !== -1 && item.time <= timings[timings.length -1]) {
-          const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
-          rows.push({
-            columns: {
-              hero: player.hero_id,
-              item: item.key,
-              time: timings.find(function(x) {return x>=item.time}),
-            },
-            won,
-            table: 'scenarios',
+      match.players.forEach((player) => {
+        if (player.purchase_log) {
+          player.purchase_log.forEach((item) => {
+            if (dotaItems.indexOf(item.key) !== -1) {
+              const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
+              rows.push({
+                columns: {
+                  scenario: 'Item Timing',
+                  hero: player.hero_id,
+                  item: item.key,
+                  time: timings.find(x => x >= item.time) || -2,
+                },
+                won,
+                table: 'scenarios',
+              });
+            }
           });
         }
-      });}
-    });}
+      });
+    }
     return rows;
   },
 
-  function baseScenario(match) { //always evaluate to true for a match that has the hero
+  function pings(match) { // how often a player "pings"
     const rows = [];
     if (match.players) {
-    match.players.forEach((player) => {
-      const won = (player.player_slot
-         < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
-      rows.push({
-        columns: {
-          hero: player.hero_id,
-          item: 'base_scenario',
-          time: 0,
-        },
-        won,
-        table: 'scenarios',
+      match.players.forEach((player) => {
+        const pings = pingBucket.find(x => x >= player.pings) || -2
+        const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
+        rows.push({
+          columns: {
+            scenario: 'Pings',
+            pings,
+            game_duration: gameDurationBucket.find(x => x >= match.duration) || -2
+          },
+          won,
+          table: 'scenarios',
+        });
       });
-    });}
+    }
+    return rows;
+  },
+
+  function lane(match) { // on which lane was the hero
+    const rows = [];
+    if (match.players) {
+      match.players.forEach((player) => {
+        const lane = player.lane
+        const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
+        rows.push({
+          columns: {
+            hero: player.hero_id,
+            scenario: 'Lane',
+            lane: player.lane,
+            game_duration: gameDurationBucket.find(x => x >= match.duration) || -2
+          },
+          won,
+          table: 'scenarios',
+        });
+      });
+    }
+    return rows;
+  },
+
+  function baseScenario(match) { // always evaluate to true for a match that has the hero
+    const rows = [];
+    if (match.players) {
+      match.players.forEach((player) => {
+        const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
+        rows.push({
+          columns: {
+            scenario: 'Base Scenario',
+            hero: player.hero_id,
+          },
+          won,
+          table: 'scenarios',
+        });
+      });
+    }
     return rows;
   },
 
@@ -78,6 +126,34 @@ const scenarioChecks = [
       return buildTeamScenario('Courier Kill before 3min', isRadiant, match);
     }
     return [];
+  },
+
+  function chatNegativity(match) { // negative words in chat before minute 10
+    const rows = [];
+    let radiantCondition = false;
+    let direCondition = false;
+    if (match.chat) {
+      for (let i = 0; i < match.chat.length; i += 1) {
+        const c = match.chat[i];
+        if (c.time >= 600) {
+          break;
+        }
+        if (negativeWords.some(word => c.key.toLowerCase().indexOf(word) !== -1)) {
+          if (c.slot < 5) {
+            radiantCondition = true;
+          } else {
+            direCondition = true;
+          }
+        }
+      }
+      if (radiantCondition) {
+        rows.push(buildTeamScenario('Negativity in chat before 10min', true, match)[0]);
+      }
+      if (direCondition) {
+        rows.push(buildTeamScenario('Negativity in chat before 10min', false, match)[0]);
+      }
+    }
+    return rows;
   },
 ];
 

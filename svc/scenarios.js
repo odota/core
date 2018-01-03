@@ -6,7 +6,7 @@ const util = require('util');
 const su = require('../util/scenariosUtil');
 
 function processScenarios(matchID, cb) {
-  console.log(matchID)
+  console.log(matchID);
   buildMatch(matchID, (err, match) => {
     if (err) {
       cb(err);
