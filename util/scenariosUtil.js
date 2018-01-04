@@ -67,7 +67,6 @@ const scenarioChecks = [
           });
         }
       });
-
     }
     return rows;
   },
