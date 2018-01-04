@@ -489,7 +489,7 @@ function insertPlayerRating(db, row, cb) {
 
 function insertMatchSkillCassandra(row, cb) {
   cassandra.execute(
-    'INSERT INTO matches (match_id, skill) VALUES (?, ?)', [row.match_id, row.skill], { prepare: true },
+    'UPDATE matches SET skill = ? WHERE match_id = ?', [row.skill, row.match_id], { prepare: true },
     (err) => {
       if (err) {
         return cb(err);
@@ -499,7 +499,7 @@ function insertMatchSkillCassandra(row, cb) {
           player.account_id !== utility.getAnonymousAccountId());
         return async.eachSeries(filteredPlayers, (player, cb) => {
           cassandra.execute(
-            'INSERT INTO player_caches (account_id, match_id, skill) VALUES (?, ?, ?)', [String(player.account_id), String(row.match_id), String(row.skill)], { prepare: true },
+            'UPDATE player_caches SET skill = ? WHERE account_id = ? AND match_id = ?', [String(row.skill), String(player.account_id), String(row.match_id)], { prepare: true },
             cb,
           );
         }, cb);
