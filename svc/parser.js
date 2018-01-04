@@ -34,7 +34,6 @@ function runParse(match, job, cb) {
       const result = Object.assign({}, JSON.parse(stdout), match);
       return insertMatch(result, {
         type: 'parsed',
-        origin: match.origin,
         skipParse: true,
         doLogParse: match.doLogParse,
       }, cb);

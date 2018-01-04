@@ -3,9 +3,9 @@ const constants = require('dotaconstants');
 
 // all items that cost at least 2000
 const dotaItems = Object.keys(constants.items).map(k => [constants.items[k], k]).filter(x => x[0].cost >= 2000).map(x => x[1]);
-const timings = [7.5, 10, 12, 15, 20, 25, 30, 45, 60].map(x => x * 60);
-const pingBucket = [10, 25, 50, 100, 150, 200, 500, 1000, 5000, 10000];
-const gameDurationBucket = [15, 30, 45, 60, 90, 180, 360].map(x => x * 60);
+const timings = [7.5, 10, 12, 15, 20, 25, 30].map(x => x * 60);
+const pingBucket = [10, 25, 50, 100, 150, 200, 500, 1000];
+const gameDurationBucket = [15, 30, 45, 60, 90].map(x => x * 60);
 
 const negativeWords = ['ff', 'report', 'gg', 'end', 'noob'];
 
@@ -31,13 +31,13 @@ const scenarioChecks = [
       match.players.forEach((player) => {
         if (player.purchase_log) {
           player.purchase_log.forEach((item) => {
-            if (dotaItems.indexOf(item.key) !== -1) {
+            if (dotaItems.indexOf(item.key) !== -1 && item.time <= timings[timings.length - 1]) {
               const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
               rows.push({
                 columns: {
                   hero: player.hero_id,
                   item: item.key,
-                  time: timings.find(x => x >= item.time) || -2,
+                  time: timings.find(x => x >= item.time),
                 },
                 won,
                 table: 'scenarios',
@@ -54,17 +54,20 @@ const scenarioChecks = [
     const rows = [];
     if (match.players) {
       match.players.forEach((player) => {
-        const pings = pingBucket.find(x => x >= player.pings) || -2;
-        const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
-        rows.push({
-          columns: {
-            pings,
-            game_duration: gameDurationBucket.find(x => x >= match.duration) || -2,
-          },
-          won,
-          table: 'scenarios',
-        });
+        if (player.pings <= pingBucket[pingBucket.length - 1]) {
+          const pings = pingBucket.find(x => x >= player.pings) || -2;
+          const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
+          rows.push({
+            columns: {
+              pings,
+              game_duration: gameDurationBucket.find(x => x >= match.duration),
+            },
+            won,
+            table: 'scenarios',
+          });
+        }
       });
+
     }
     return rows;
   },
@@ -73,16 +76,18 @@ const scenarioChecks = [
     const rows = [];
     if (match.players) {
       match.players.forEach((player) => {
-        const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
-        rows.push({
-          columns: {
-            hero: player.hero_id,
-            lane: player.lane,
-            game_duration: gameDurationBucket.find(x => x >= match.duration) || -2,
-          },
-          won,
-          table: 'scenarios',
-        });
+        if (match.duration <= gameDurationBucket[gameDurationBucket.length - 1]) {
+          const won = (player.player_slot < 5 && match.radiant_win) || (player.player_slot > 4 && !match.radiant_win);
+          rows.push({
+            columns: {
+              hero: player.hero_id,
+              lane: player.lane,
+              game_duration: gameDurationBucket.find(x => x >= match.duration),
+            },
+            won,
+            table: 'scenarios',
+          });
+        }
       });
     }
     return rows;
