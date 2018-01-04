@@ -56,6 +56,10 @@ app.use(compression());
 app.use('/apps', (req, res) => {
   request(`http://cdn.dota2.com/${req.originalUrl}`).pipe(res);
 });
+// Proxy to serve team logos over https
+app.use('/ugc', (req, res) => {
+  request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`).pipe(res);
+});
 // Session/Passport middleware
 app.use(session(sessOptions));
 app.use(passport.initialize());
