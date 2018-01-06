@@ -284,7 +284,7 @@ function isRadiant(player) {
  * Determines if a player won
  * */
 function playerWon(player, match) {
-  return (player.player_slot < 128 && match.radiant_win) || (player.player_slot > 127 && !match.radiant_win)
+  return (player.player_slot < 128 && match.radiant_win) || (player.player_slot > 127 && !match.radiant_win);
 }
 
 /**

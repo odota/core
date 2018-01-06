@@ -2,7 +2,6 @@ const constants = require('dotaconstants');
 const utility = require('./utility');
 
 const playerWon = utility.playerWon;
-const isRadiant = utility.isRadiant;
 
 
 // all items that cost at least 2000
@@ -21,7 +20,7 @@ function buildTeamScenario(scenario, isRadiant, match) {
       scenario,
       is_radiant: isRadiant,
       region: match.region,
-      wins: match.radiant_win === isRadiant ? '1' : '0'
+      wins: match.radiant_win === isRadiant ? '1' : '0',
     },
     table: 'team_scenarios',
   }];
@@ -41,7 +40,7 @@ const scenarioChecks = [
                   hero_id: player.hero_id,
                   item: item.key,
                   time: timings.find(x => x >= item.time),
-                  wins: playerWon(player, match) ? '1' : '0'
+                  wins: playerWon(player, match) ? '1' : '0',
                 },
                 table: 'scenarios',
               });
@@ -63,7 +62,7 @@ const scenarioChecks = [
             columns: {
               pings,
               time: gameDurationBucket.find(x => x >= match.duration),
-              wins: playerWon(player, match) ? '1' : '0'
+              wins: playerWon(player, match) ? '1' : '0',
             },
             table: 'scenarios',
           });
@@ -83,7 +82,7 @@ const scenarioChecks = [
               hero_id: player.hero_id,
               lane: player.lane,
               time: gameDurationBucket.find(x => x >= match.duration),
-              wins: playerWon(player, match) ? '1' : '0'
+              wins: playerWon(player, match) ? '1' : '0',
             },
             table: 'scenarios',
           });
@@ -123,14 +122,14 @@ const scenarioChecks = [
         if (c.time >= 60) {
           break;
         }
-        if (negativeWords.some(word => RegExp('\\b'+ word +'\\b', 'i').test(c.key))) {
+        if (negativeWords.some(word => RegExp(`\\b${word}\\b`, 'i').test(c.key))) {
           if (c.player_slot < 128) {
             radiantNegative = true;
           } else {
             direNegative = true;
           }
         }
-        if (positiveWords.some(word => RegExp('\\b'+ word +'\\b', 'i').test(c.key))) {
+        if (positiveWords.some(word => RegExp(`\\b${word}\\b`, 'i').test(c.key))) {
           if (c.player_slot < 128) {
             radiantPositive = true;
           } else {
