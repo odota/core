@@ -6,7 +6,6 @@ const util = require('util');
 const su = require('../util/scenariosUtil');
 
 function processScenarios(matchID, cb) {
-  console.log(matchID);
   buildMatch(matchID, (err, match) => {
     if (err) {
       cb(err);
@@ -17,11 +16,13 @@ function processScenarios(matchID, cb) {
         const values = Object.keys(row.columns).map(() =>
           '?');
         const query = util.format(
-          `INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = ${row.table}.wins + ${row.won ? 1 : 0}, games = ${row.table}.games + 1`,
+          `INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = (%s).wins + EXCLUDED.wins, games = (%s).games + 1`,
           row.table,
           Object.keys(row.columns).join(','),
           values,
-          Object.keys(row.columns).join(','),
+          Object.keys(row.columns).slice(0, -1).join(','),
+          row.table,
+          row.table
         );
         db.raw(query, Object.keys(row.columns).map(key =>
           row.columns[key])).asCallback(cb);

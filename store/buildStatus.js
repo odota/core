@@ -58,6 +58,9 @@ module.exports = function buildStatus(db, redis, cb) {
     mmrQueue(cb) {
       redis.llen('mmrQueue', cb);
     },
+    scenariosQueue(cb) {
+      redis.llen('scenariosQueue', cb);
+    },
     retriever(cb) {
       redis.zrangebyscore('retrieverCounts', '-inf', 'inf', 'WITHSCORES', (err, results) => {
         if (err) {

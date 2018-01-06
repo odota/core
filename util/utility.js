@@ -281,6 +281,13 @@ function isRadiant(player) {
 }
 
 /**
+ * Determines if a player won
+ * */
+function playerWon(player, match) {
+  return (player.player_slot < 128 && match.radiant_win) || (player.player_slot > 127 && !match.radiant_win)
+}
+
+/**
  * Recursively merges objects that share some keys
  * Numbers get summed
  * Arrays get concatenated
@@ -784,6 +791,7 @@ module.exports = {
   convert32to64,
   convert64to32,
   isRadiant,
+  playerWon,
   mergeObjects,
   modeWithCount,
   mode,
