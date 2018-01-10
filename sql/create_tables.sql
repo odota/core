@@ -359,6 +359,7 @@ CREATE TABLE IF NOT EXISTS public_player_matches (
   hero_id integer
 );
 CREATE INDEX IF NOT EXISTS public_player_matches_hero_id_idx on public_player_matches(hero_id);
+CREATE INDEX IF NOT EXISTS public_player_matches_match_id_idx on public_player_matches(match_id);
 
 CREATE TABLE IF NOT EXISTS team_rating (
   PRIMARY KEY(team_id),
