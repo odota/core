@@ -16,143 +16,127 @@ const positiveWords = ['gl', 'glhf', 'hf', 'good luck', 'have fun'];
 
 function buildTeamScenario(scenario, isRadiant, match) {
   return [{
-    columns: {
-      scenario,
-      is_radiant: isRadiant,
-      region: match.region,
-      wins: match.radiant_win === isRadiant ? '1' : '0',
-    },
-    table: 'team_scenarios',
+    scenario,
+    is_radiant: isRadiant,
+    region: match.region,
+    wins: match.radiant_win === isRadiant ? '1' : '0',
   }];
 }
 
-const scenarioChecks = [
+const scenarioChecks = {
+  scenarios: [
 
-  function itemTimings(match) {
-    const rows = [];
-    if (match.players) {
+    function itemTimings(match) {
+      const rows = [];
       match.players.forEach((player) => {
-        if (player.purchase_log) {
-          player.purchase_log.forEach((item) => {
-            if (dotaItems.indexOf(item.key) !== -1 && item.time <= timings[timings.length - 1]) {
-              rows.push({
-                columns: {
-                  hero_id: player.hero_id,
-                  item: item.key,
-                  time: timings.find(x => x >= item.time),
-                  wins: playerWon(player, match) ? '1' : '0',
-                },
-                table: 'scenarios',
-              });
-            }
-          });
-        }
+        player.purchase_log.forEach((item) => {
+          if (dotaItems.indexOf(item.key) !== -1 && item.time <= timings[timings.length - 1]) {
+            rows.push({
+              hero_id: player.hero_id,
+              item: item.key,
+              time: timings.find(x => x >= item.time),
+              wins: playerWon(player, match) ? '1' : '0',
+            });
+          }
+        });
       });
-    }
-    return rows;
-  },
+      return rows;
+    },
 
-  function pings(match) { // how often a player "pings"
-    const rows = [];
-    if (match.players) {
+    function pings(match) { // how often a player "pings"
+      const rows = [];
       match.players.forEach((player) => {
         if (player.pings <= pingBucket[pingBucket.length - 1]) {
           const pings = pingBucket.find(x => x >= player.pings);
           rows.push({
-            columns: {
-              pings,
-              time: gameDurationBucket.find(x => x >= match.duration),
-              wins: playerWon(player, match) ? '1' : '0',
-            },
-            table: 'scenarios',
+            pings,
+            time: gameDurationBucket.find(x => x >= match.duration),
+            wins: playerWon(player, match) ? '1' : '0',
           });
         }
       });
-    }
-    return rows;
-  },
+      return rows;
+    },
 
-  function lane(match) { // on which lane was the hero
-    const rows = [];
-    if (match.players) {
+    function lane(match) { // on which lane was the hero
+      const rows = [];
       match.players.forEach((player) => {
         if (match.duration <= gameDurationBucket[gameDurationBucket.length - 1]) {
           rows.push({
-            columns: {
-              hero_id: player.hero_id,
-              lane: player.lane,
-              time: gameDurationBucket.find(x => x >= match.duration),
-              wins: playerWon(player, match) ? '1' : '0',
-            },
-            table: 'scenarios',
+            hero_id: player.hero_id,
+            lane: player.lane,
+            time: gameDurationBucket.find(x => x >= match.duration),
+            wins: playerWon(player, match) ? '1' : '0',
           });
         }
       });
-    }
-    return rows;
-  },
+      return rows;
+    },
+  ],
+  team_scenarios: [
 
-  function firstBlood(match) {
-    const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
-    if (condition) {
-      const isRadiant = condition.player_slot < 5;
-      return buildTeamScenario('First Blood', isRadiant, match);
-    }
-    return [];
-  },
+    function firstBlood(match) {
+      const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
+      if (condition) {
+        const isRadiant = condition.player_slot < 5;
+        return buildTeamScenario('First Blood', isRadiant, match);
+      }
+      return [];
+    },
 
-  function courierKill(match) { // team killed enemy courier at least once before the 3 min mark
-    const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180);
-    if (condition) {
-      const isRadiant = condition.team === 3;
-      return buildTeamScenario('Courier Kill before 3min', isRadiant, match);
-    }
-    return [];
-  },
+    function courierKill(match) { // team killed enemy courier at least once before the 3 min mark
+      const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180);
+      if (condition) {
+        const isRadiant = condition.team === 3;
+        return buildTeamScenario('Courier Kill before 3min', isRadiant, match);
+      }
+      return [];
+    },
 
-  function chat(match) { // negative/positive words in chat before minute 1
-    const rows = [];
-    let radiantNegative = false;
-    let direNegative = false;
-    let radiantPositive = false;
-    let direPositive = false;
-    if (match.chat) {
-      for (let i = 0; i < match.chat.length; i += 1) {
-        const c = match.chat[i];
-        if (c.time >= 60) {
-          break;
-        }
-        if (negativeWords.some(word => RegExp(`\\b${word}\\b`, 'i').test(c.key))) {
-          if (c.player_slot < 128) {
-            radiantNegative = true;
-          } else {
-            direNegative = true;
+    function chat(match) { // negative/positive words in chat before minute 1
+      const rows = [];
+      let radiantNegative = false;
+      let direNegative = false;
+      let radiantPositive = false;
+      let direPositive = false;
+      if (match.chat) {
+        for (let i = 0; i < match.chat.length; i += 1) {
+          const c = match.chat[i];
+          if (c.time >= 60) {
+            break;
+          }
+          if (negativeWords.some(word => RegExp(`\\b${word}\\b`, 'i').test(c.key))) {
+            if (c.player_slot < 128) {
+              radiantNegative = true;
+            } else {
+              direNegative = true;
+            }
+          }
+          if (positiveWords.some(word => RegExp(`\\b${word}\\b`, 'i').test(c.key))) {
+            if (c.player_slot < 128) {
+              radiantPositive = true;
+            } else {
+              direPositive = true;
+            }
           }
         }
-        if (positiveWords.some(word => RegExp(`\\b${word}\\b`, 'i').test(c.key))) {
-          if (c.player_slot < 128) {
-            radiantPositive = true;
-          } else {
-            direPositive = true;
-          }
+        if (radiantNegative) {
+          rows.push(buildTeamScenario('Negativity in chat before 1min', true, match)[0]);
+        }
+        if (direNegative) {
+          rows.push(buildTeamScenario('Negativity in chat before 1min', false, match)[0]);
+        }
+        if (radiantPositive) {
+          rows.push(buildTeamScenario('Positivity in chat before 1min', true, match)[0]);
+        }
+        if (direPositive) {
+          rows.push(buildTeamScenario('Positivity in chat before 1min', false, match)[0]);
         }
       }
-      if (radiantNegative) {
-        rows.push(buildTeamScenario('Negativity in chat before 1min', true, match)[0]);
-      }
-      if (direNegative) {
-        rows.push(buildTeamScenario('Negativity in chat before 1min', false, match)[0]);
-      }
-      if (radiantPositive) {
-        rows.push(buildTeamScenario('Positivity in chat before 1min', true, match)[0]);
-      }
-      if (direPositive) {
-        rows.push(buildTeamScenario('Positivity in chat before 1min', false, match)[0]);
-      }
-    }
-    return rows;
-  },
-];
+      return rows;
+    },
+  ],
+};
 
 
 module.exports.scenarioChecks = scenarioChecks;
