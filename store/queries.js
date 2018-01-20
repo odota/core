@@ -448,10 +448,16 @@ function insertPlayer(db, player, cb) {
 }
 
 function insertPlayerRating(db, row, cb) {
-  async.parallel({
+  async.series({
     pr(cb) {
       if (row.solo_competitive_rank || row.competitive_rank) {
-        db('player_ratings').insert(row).asCallback(cb);
+        db('player_ratings').insert({
+          account_id: row.account_id,
+          match_id: row.match_id,
+          time: row.time,
+          solo_competitive_rank: row.solo_competitive_rank,
+          competitive_rank: row.competitive_rank,
+        }).asCallback(cb);
       } else {
         cb();
       }
