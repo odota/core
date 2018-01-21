@@ -58,6 +58,7 @@ app.use('/apps', (req, res) => {
 });
 // Proxy to serve team logos over https
 app.use('/ugc', (req, res) => {
+  res.set('Content-Type', 'image/png');
   request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`).pipe(res);
 });
 // Session/Passport middleware
