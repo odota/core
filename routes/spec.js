@@ -213,7 +213,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 negative_votes: {
-                  description: 'Number of negative votes the replay recieved in the in-game client',
+                  description: 'Number of negative votes the replay received in the in-game client',
                   type: 'integer',
                 },
                 objectives: {
@@ -225,7 +225,7 @@ Please keep request rate to approximately 3/s.
                   type: 'object',
                 },
                 positive_votes: {
-                  description: 'Number of positive votes the replay recieve in the in-game client',
+                  description: 'Number of positive votes the replay received in the in-game client',
                   type: 'integer',
                 },
                 radiant_gold_adv: {
@@ -261,7 +261,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 version: {
-                  description: 'Parse version, used internally for OpenDota',
+                  description: 'Parse version, used internally by OpenDota',
                   type: 'integer',
                 },
                 replay_salt: {
@@ -490,7 +490,7 @@ Please keep request rate to approximately 3/s.
                         type: 'object',
                       },
                       kills: {
-                        description: 'Number of Kills',
+                        description: 'Number of kills',
                         type: 'integer',
                       },
                       kills_log: {
