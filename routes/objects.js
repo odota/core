@@ -111,6 +111,21 @@ const heroObject = {
       description: 'localized_name',
       type: 'string',
     },
+    primary_attr: {
+      description: 'primary_attr',
+      type: 'string',
+    },
+    attack_type: {
+      description: 'attack_type',
+      type: 'string',
+    },
+    roles: {
+      type: 'array',
+      items: {
+        description: 'role',
+        type: 'string',
+      },
+    },
   },
 };
 const playerObject = {
