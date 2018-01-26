@@ -58,13 +58,13 @@ const scenarioChecks = {
       return rows;
     },
 
-    function lane(match) { // on which lane was the hero
+    function laneRole(match) { // hero's lane role
       const rows = [];
       match.players.forEach((player) => {
         if (match.duration <= gameDurationBucket[gameDurationBucket.length - 1]) {
           rows.push({
             hero_id: player.hero_id,
-            lane: player.lane,
+            lane_role: player.lane_role,
             time: gameDurationBucket.find(x => x >= match.duration),
             wins: playerWon(player, match) ? '1' : '0',
           });

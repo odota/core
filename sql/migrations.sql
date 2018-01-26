@@ -16,12 +16,12 @@ CREATE TABLE IF NOT EXISTS scenarios (
   item text,
   time integer,
   pings integer,
-  lane smallint,
+  lane_role smallint,
   games bigint DEFAULT 1,
   wins bigint,
   UNIQUE (hero_id, item, time),
   UNIQUE (pings, time),
-  UNIQUE (hero_id, lane, time)
+  UNIQUE (hero_id, lane_role, time)
 ); 
 
 CREATE TABLE IF NOT EXISTS team_scenarios (
