@@ -1232,6 +1232,7 @@ function insertMatch(match, options, cb) {
             doLogParse,
             ability_upgrades: abilityUpgrades,
             allowBackup: options.allowBackup,
+            origin: options.origin,
           },
         }, {
           priority: options.priority,

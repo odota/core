@@ -422,6 +422,28 @@ CREATE TABLE IF NOT EXISTS leaderboard_rank (
   rating int
 );
 
+CREATE TABLE IF NOT EXISTS scenarios (
+  hero_id smallint,
+  item text,
+  time integer,
+  pings integer,
+  lane_role smallint,
+  games bigint DEFAULT 1,
+  wins bigint,
+  UNIQUE (hero_id, item, time),
+  UNIQUE (pings, time),
+  UNIQUE (hero_id, lane_role, time)
+); 
+
+CREATE TABLE IF NOT EXISTS team_scenarios (
+  scenario text,
+  is_radiant boolean,
+  region smallint,
+  games bigint DEFAULT 1,
+  wins bigint,
+  UNIQUE (scenario, is_radiant, region)
+);  
+ 
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

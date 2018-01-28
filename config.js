@@ -51,6 +51,7 @@ const defaults = {
   GCDATA_PERCENT: 0, // percent of inserted matches to queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
+  SCENARIOS_SAMPLE_PERCENT: 100, // percent of parsed matches to sample for scenarios
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
   ENABLE_PLAYER_CACHE: 1, // enable/disable player aggregation caching
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
