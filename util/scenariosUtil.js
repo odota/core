@@ -138,5 +138,18 @@ const scenarioChecks = {
   ],
 };
 
+// list of match object properties that are required for scenario checks.
+const matchProperties = ['players', 'objectives', 'duration', 'chat', 'radiant_win'];
 
-module.exports.scenarioChecks = scenarioChecks;
+/**
+ * Make sure the match object has all required properties.
+ * */
+function validateMatchProperties(match) {
+  return matchProperties.every(property => match[property] !== undefined && match[property] !== null);
+}
+
+
+module.exports = {
+  scenarioChecks,
+  validateMatchProperties,
+};

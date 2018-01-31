@@ -10,6 +10,10 @@ function processScenarios(matchID, cb) {
     if (err) {
       cb(err);
     }
+    if (!su.validateMatchProperties) {
+      console.log(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
+      cb();
+    }
     Object.keys(su.scenarioChecks).forEach((table) => {
       su.scenarioChecks[table].forEach((scenarioCheck) => {
         const rows = scenarioCheck(match);
@@ -35,3 +39,4 @@ function processScenarios(matchID, cb) {
 }
 
 queue.runQueue('scenariosQueue', 1, processScenarios);
+
