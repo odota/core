@@ -39,4 +39,3 @@ function processScenarios(matchID, cb) {
 }
 
 queue.runQueue('scenariosQueue', 1, processScenarios);
-
