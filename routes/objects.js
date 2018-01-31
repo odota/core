@@ -2,7 +2,7 @@ const teamObject = {
   type: 'object',
   properties: {
     team_id: {
-      description: 'team_id',
+      description: 'Team\'s identifier',
       type: 'integer',
     },
     rating: {
@@ -22,11 +22,11 @@ const teamObject = {
       type: 'integer',
     },
     name: {
-      description: 'name',
+      description: 'Team name, eg. \'Newbee\'',
       type: 'string',
     },
     tag: {
-      description: 'The team tag',
+      description: 'The team tag/abreviation',
       type: 'string',
     },
   },
@@ -35,59 +35,59 @@ const matchObject = {
   type: 'object',
   properties: {
     match_id: {
-      description: 'match_id',
+      description: 'Used to idenfiy individual matches, eg. 3703866531',
       type: 'integer',
     },
     duration: {
-      description: 'duration',
+      description: 'Length of the match',
       type: 'integer',
     },
     start_time: {
-      description: 'start_time',
+      description: 'Unix timestamp of when the match began',
       type: 'integer',
     },
     radiant_team_id: {
-      description: 'radiant_team_id',
+      description: 'The Radiant\'s team_id',
       type: 'integer',
     },
     radiant_name: {
-      description: 'radiant_name',
+      description: 'The Radiant\'s team name',
       type: 'string',
     },
     dire_team_id: {
-      description: 'dire_team_id',
+      description: 'The Dire\'s team_id',
       type: 'integer',
     },
     dire_name: {
-      description: 'dire_name',
+      description: 'The Dire\'s team name',
       type: 'string',
     },
     leagueid: {
-      description: 'leagueid',
+      description: 'Identifier for the league the match took place in',
       type: 'integer',
     },
     league_name: {
-      description: 'league_name',
+      description: 'Name of league the match took place in',
       type: 'string',
     },
     series_id: {
-      description: 'series_id',
+      description: 'Identifier for the series of the match',
       type: 'integer',
     },
     series_type: {
-      description: 'series_type',
+      description: 'Type of series the match was',
       type: 'integer',
     },
     radiant_score: {
-      description: 'radiant_score',
+      description: 'Number of kills the radiant team had when the match ended',
       type: 'integer',
     },
     dire_score: {
-      description: 'dire_score',
+      description: 'Number of kills the dire team had when the match ended',
       type: 'integer',
     },
     radiant_win: {
-      description: 'radiant_win',
+      description: 'Whether or not the radiant won the match',
       type: 'boolean',
     },
     radiant: {
@@ -100,29 +100,29 @@ const heroObject = {
   type: 'object',
   properties: {
     id: {
-      description: 'id',
+      description: 'Numeric identifier for the hero object',
       type: 'integer',
     },
     name: {
-      description: 'name',
+      description: 'Dota hero command name, eg. \'npm_dota_hero_antimage\'',
       type: 'string',
     },
     localized_name: {
-      description: 'localized_name',
+      description: 'Hero name, eg. \'Anti-Mage\'',
       type: 'string',
     },
     primary_attr: {
-      description: 'primary_attr',
+      description: 'Hero primary shorthand attribute name, eg. \'agi\'',
       type: 'string',
     },
     attack_type: {
-      description: 'attack_type',
+      description: 'Hero attack type, either \'Melee\' or \'Ranged\'',
       type: 'string',
     },
     roles: {
       type: 'array',
       items: {
-        description: 'role',
+        description: 'A hero\'s role in the game',
         type: 'string',
       },
     },
@@ -134,35 +134,35 @@ const playerObject = {
     type: 'object',
     properties: {
       account_id: {
-        description: 'account_id',
+        description: 'Player\'s account identifier',
         type: 'integer',
       },
       steamid: {
-        description: 'steamid',
+        description: 'Player\'s steam identifier',
         type: 'string',
       },
       avatar: {
-        description: 'avatar',
+        description: 'Steam picture URL (small picture)',
         type: 'string',
       },
       avatarmedium: {
-        description: 'avatarmedium',
+        description: 'Steam picture URL (medium picture)',
         type: 'string',
       },
       avatarfull: {
-        description: 'avatarfull',
+        description: 'Steam picture URL (full picture)',
         type: 'string',
       },
       profileurl: {
-        description: 'profileurl',
+        description: 'Steam profile URL',
         type: 'string',
       },
       personaname: {
-        description: 'personaname',
+        description: 'Player\'s Steam name',
         type: 'string',
       },
       last_login: {
-        description: 'last_login',
+        description: 'Date and time of last login to OpenDota',
         type: 'dateTime',
       },
       full_history_time: {
@@ -178,15 +178,15 @@ const playerObject = {
         type: 'boolean',
       },
       loccountrycode: {
-        description: 'loccountrycode',
+        description: 'Player\'s country identifier, eg. US',
         type: 'string',
       },
       name: {
-        description: 'name',
+        description: 'Varified player name, eg. \'Miracle-\'',
         type: 'string',
       },
       country_code: {
-        description: 'country_code',
+        description: 'Player\'s country code',
         type: 'string',
       },
       fantasy_role: {
@@ -194,15 +194,15 @@ const playerObject = {
         type: 'integer',
       },
       team_id: {
-        description: 'team_id',
+        description: 'Player\'s team identifier',
         type: 'integer',
       },
       team_name: {
-        description: 'team_name',
+        description: 'Player\'s team name, eg. \'Evil Geniuses\'',
         type: 'string',
       },
       team_tag: {
-        description: 'team_tag',
+        description: 'Player\'s team shorthand tag, eg. \'EG\'',
         type: 'string',
       },
       is_locked: {
@@ -210,7 +210,7 @@ const playerObject = {
         type: 'boolean',
       },
       is_pro: {
-        description: 'is_pro',
+        description: 'Boolean for if player is professional',
         type: 'boolean',
       },
       locked_until: {
