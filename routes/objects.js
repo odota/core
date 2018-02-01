@@ -26,7 +26,7 @@ const teamObject = {
       type: 'string',
     },
     tag: {
-      description: 'The team tag/abreviation',
+      description: 'The team tag/abbreviation',
       type: 'string',
     },
   },
@@ -35,7 +35,7 @@ const matchObject = {
   type: 'object',
   properties: {
     match_id: {
-      description: 'Used to idenfiy individual matches, eg. 3703866531',
+      description: 'Used to identify individual matches, e.g. 3703866531',
       type: 'integer',
     },
     duration: {
@@ -79,15 +79,15 @@ const matchObject = {
       type: 'integer',
     },
     radiant_score: {
-      description: 'Number of kills the radiant team had when the match ended',
+      description: 'Number of kills the Radiant team had when the match ended',
       type: 'integer',
     },
     dire_score: {
-      description: 'Number of kills the dire team had when the match ended',
+      description: 'Number of kills the Dire team had when the match ended',
       type: 'integer',
     },
     radiant_win: {
-      description: 'Whether or not the radiant won the match',
+      description: 'Whether or not the Radiant won the match',
       type: 'boolean',
     },
     radiant: {
@@ -104,15 +104,15 @@ const heroObject = {
       type: 'integer',
     },
     name: {
-      description: 'Dota hero command name, eg. \'npm_dota_hero_antimage\'',
+      description: 'Dota hero command name, e.g. \'npc_dota_hero_antimage\'',
       type: 'string',
     },
     localized_name: {
-      description: 'Hero name, eg. \'Anti-Mage\'',
+      description: 'Hero name, e.g. \'Anti-Mage\'',
       type: 'string',
     },
     primary_attr: {
-      description: 'Hero primary shorthand attribute name, eg. \'agi\'',
+      description: 'Hero primary shorthand attribute name, e.g. \'agi\'',
       type: 'string',
     },
     attack_type: {
@@ -166,23 +166,23 @@ const playerObject = {
         type: 'dateTime',
       },
       full_history_time: {
-        description: 'full_history_time',
+        description: 'Date and time of last request to refresh player\'s match history',
         type: 'dateTime',
       },
       cheese: {
-        description: 'cheese',
+        description: 'Amount of dollars the player has donated to OpenDota',
         type: 'integer',
       },
       fh_unavailable: {
-        description: 'fh_unavailable',
+        description: 'Whether the refresh of player\' match history failed',
         type: 'boolean',
       },
       loccountrycode: {
-        description: 'Player\'s country identifier, eg. US',
+        description: 'Player\'s country identifier, e.g. US',
         type: 'string',
       },
       name: {
-        description: 'Varified player name, eg. \'Miracle-\'',
+        description: 'Verified player name, e.g. \'Miracle-\'',
         type: 'string',
       },
       country_code: {
@@ -190,7 +190,7 @@ const playerObject = {
         type: 'string',
       },
       fantasy_role: {
-        description: 'fantasy_role',
+        description: 'Player\'s ingame role (core: 1 or support: 2)',
         type: 'integer',
       },
       team_id: {
@@ -198,23 +198,23 @@ const playerObject = {
         type: 'integer',
       },
       team_name: {
-        description: 'Player\'s team name, eg. \'Evil Geniuses\'',
+        description: 'Player\'s team name, e.g. \'Evil Geniuses\'',
         type: 'string',
       },
       team_tag: {
-        description: 'Player\'s team shorthand tag, eg. \'EG\'',
+        description: 'Player\'s team shorthand tag, e.g. \'EG\'',
         type: 'string',
       },
       is_locked: {
-        description: 'is_locked',
+        description: 'Whether the roster lock is active',
         type: 'boolean',
       },
       is_pro: {
-        description: 'Boolean for if player is professional',
+        description: 'Whether the player is professional or not',
         type: 'boolean',
       },
       locked_until: {
-        description: 'locked_until',
+        description: 'When the roster lock will end',
         type: 'integer',
       },
     },
