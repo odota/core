@@ -10,7 +10,7 @@ function processScenarios(matchID, cb) {
     if (err) {
       cb(err);
     }
-    if (!su.validateMatchProperties) {
+    if (!su.validateMatchProperties(match)) {
       console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
       cb();
     }
