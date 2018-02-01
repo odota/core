@@ -11,7 +11,7 @@ function processScenarios(matchID, cb) {
       cb(err);
     }
     if (!su.validateMatchProperties) {
-      console.log(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
+      console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
       cb();
     }
     Object.keys(su.scenarioChecks).forEach((table) => {
