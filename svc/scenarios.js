@@ -34,7 +34,7 @@ function processScenarios(matchID, cb) {
         });
       });
     });
-    cb();
+    return cb();
   });
 }
 
