@@ -8,7 +8,11 @@ const su = require('../util/scenariosUtil');
 function processScenarios(matchID, cb) {
   buildMatch(matchID, (err, match) => {
     if (err) {
-      cb(err);
+      return cb(err);
+    }
+    if (!su.validateMatchProperties(match)) {
+      console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
+      return cb();
     }
     Object.keys(su.scenarioChecks).forEach((table) => {
       su.scenarioChecks[table].forEach((scenarioCheck) => {
@@ -30,7 +34,7 @@ function processScenarios(matchID, cb) {
         });
       });
     });
-    cb();
+    return cb();
   });
 }
 
