@@ -25,6 +25,8 @@ function processMmr(job, cb) {
     if (data.solo_competitive_rank || data.competitive_rank || data.rank_tier || data.leaderboard_rank) {
       data.account_id = job.account_id || null;
       data.match_id = job.match_id || null;
+      data.solo_competitive_rank = data.solo_competitive_rank || null; // 0 MMR is not a valid value
+      data.competitive_rank = data.competitive_rank || null;
       data.time = new Date();
       return queries.insertPlayerRating(db, data, cb);
     }
