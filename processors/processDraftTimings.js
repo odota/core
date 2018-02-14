@@ -16,12 +16,12 @@
 function processDraftTimings(entries, meta) {
   const draftTimings = [];
   const heroIdToSlot = meta.hero_id_to_slot;
-  const sumActiveTeam = 0;
+  let sumActiveTeam = 0;
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     const heroId = e.hero_id;
     if (e.type === 'draft_timings') {
-      sumActiveTeam = i < entreies.length - 1 ? sumActiveTeam + e.draft_active_team : sumActiveTeam;
+      sumActiveTeam = i < entries.length - 1 ? sumActiveTeam + e.draft_active_team : sumActiveTeam;
       const currpickban = {
         order: e.draft_order,
         pick: e.pick,
