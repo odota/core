@@ -37,7 +37,7 @@ function processDraftTimings(entries, meta) {
     }
   }
   // update the team that had the first pick/ban
-  draftTimings[0].active_team = sumActiveTeam % 2 + 2;
+  draftTimings[0].active_team = (sumActiveTeam % 2) + 2;
   for (let j = 0; j < draftTimings.length; j += 1) {
     const pnb = draftTimings[j];
     const team = pnb.active_team;
