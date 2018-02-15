@@ -4,7 +4,8 @@
  * The output is:
  * order: the order of the pick or ban (1-20) (10 bans and 10 picks)
  * pick: whether the draft stage was a pick or ban. pick == true, ban == false
- * active_team: the active team during the draft stage (2 or 3) if 0 then not captains mode
+ * active_team: the active team during the draft stage (2 or 3) if 0
+ * then not captains mode. Added check to ignore no CM games.
  * hero_id: the id of the hero banned or picked in the draft stage
  * player_slot: null for bans, the player_slot assoicated with the hero_id
  * time: removed for total time taken
@@ -16,14 +17,19 @@
 function processDraftTimings(entries, meta) {
   const draftTimings = [];
   const heroIdToSlot = meta.hero_id_to_slot;
+  let sumActiveTeam = 0;
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     const heroId = e.hero_id;
-    if (e.type === 'draft_timings') {
+    if (e.type === 'draft_timings' && e.draft_active_team !==0) {
+      // The active team needs to be downshifted by 1, so ignore the final observation.
+      if(i < (entries.length - 1)) {
+          sumActiveTeam = sumActiveTeam + e.draft_active_team;
+      }
       const currpickban = {
         order: e.draft_order,
         pick: e.pick,
-        active_team: e.draft_active_team,
+        active_team: i > 0 ? entries[i-1].draft_active_team : null,
         hero_id: e.hero_id,
         player_slot: e.pick === true ? heroIdToSlot[heroId] : null,
         time: e.time,
@@ -34,58 +40,23 @@ function processDraftTimings(entries, meta) {
       draftTimings.push(JSON.parse(JSON.stringify(currpickban)));
     }
   }
-  for (let j = 0; j < draftTimings.length; j += 1) {
-    const pnb = draftTimings[j];
-    const team = pnb.active_team;
-    let previousorder = 0;
-    // find previous pick or ban from that team
-    for (let i = 0; i < draftTimings.length; i += 1) {
-      const currpick = draftTimings[i];
-      if (currpick.order < pnb.order && currpick.order > previousorder &&
-          currpick.active_team === team) {
-        previousorder = currpick.order;
+  // update the team that had the first pick/ban
+  draftTimings[0].active_team = ((sumActiveTeam % 2) + 2);
+  for(let j = 0; j < draftTimings.length; j += 1) {
+      if (draftTimings[j].order === 1) {
+          draftTimings[j].total_time_taken = (meta.game_zero + draftTimings[j].time);
+      } else {
+          let index2;
+          // find the time of the end of the previous order
+          for (let i = 0; i < draftTimings.length; i += 1) {
+              const currpick = draftTimings[i];
+              if (currpick.order === (pnb.order - 1)) {
+                  index2 = i;
+              }
+          }
+          // calculate the timings
+          draftTimings[j].total_time_taken = (draftTimings[j].time - draftTimings[index2].time);
       }
-    }
-    // for the first bans there are no previous draft stages, so use
-    if (pnb.order === 1) {
-      draftTimings[j].total_time_taken = (meta.game_zero + pnb.time);
-      // draftTimings[j].extra_time_taken = (130 - pnb.extra_time);
-    } else if (pnb.order === 2) {
-      let ind2;
-      // find the time of the end of the previous order
-      for (let i = 0; i < draftTimings.length; i += 1) {
-        const currpick = draftTimings[i];
-        if (currpick.order === (pnb.order - 1)) {
-          ind2 = i;
-        }
-      }
-      // calculate the timings
-      const thepastpick = draftTimings[ind2];
-      draftTimings[j].total_time_taken = (pnb.time - thepastpick.time);
-      // draftTimings[j].extra_time_taken = (130 - pnb.extra_time);
-    } else {
-      /* let ind;
-      // find which row is the previous order
-      for (let i = 0; i < draftTimings.length; i += 1) {
-        const currpick = draftTimings[i];
-        if (currpick.order === previousorder) {
-          ind = i;
-        }
-      } */
-      let ind2;
-      // find the time of the end of the previous order
-      for (let i = 0; i < draftTimings.length; i += 1) {
-        const currpick = draftTimings[i];
-        if (currpick.order === (pnb.order - 1)) {
-          ind2 = i;
-        }
-      }
-      // calculate the timings
-      const thepastpick = draftTimings[ind2];
-      // const pastpicks = draftTimings[ind];
-      draftTimings[j].total_time_taken = (pnb.time - thepastpick.time);
-      // draftTimings[j].extra_time_taken = (pastpicks.extra_time - pnb.extra_time);
-    }
   }
   // remove the time, no need for it
   for (let i = 0; i < draftTimings.length; i += 1) {
