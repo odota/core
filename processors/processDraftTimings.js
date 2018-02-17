@@ -25,12 +25,12 @@ function processDraftTimings(entries, meta) {
     if (e.type === 'draft_timings' && e.draft_active_team !== 0) {
       // The active team needs to be downshifted by 1, so ignore the final observation.
       if (i < (entries.length - 1)) {
-          sumActiveTeam += e.draft_active_team;
+        sumActiveTeam += e.draft_active_team;
       }
       const currpickban = {
         order: e.draft_order,
         pick: e.pick,
-        active_team: i > 0 ? entries[i-1].draft_active_team : null,
+        active_team: i > 0 ? (entries[i-1].draft_active_team) : null,
         hero_id: e.hero_id,
         player_slot: e.pick === true ? heroIdToSlot[heroId] : null,
         time: e.time,
@@ -44,20 +44,20 @@ function processDraftTimings(entries, meta) {
   // update the team that had the first pick/ban
   draftTimings[0].active_team = ((sumActiveTeam % 2) + 2);
   for (let j = 0; j < draftTimings.length; j += 1) {
-      if (draftTimings[j].order === 1) {
-          draftTimings[j].total_time_taken = (meta.game_zero + draftTimings[j].time);
-      } else {
-          let index2;
-          // find the time of the end of the previous order
-          for (let i = 0; i < draftTimings.length; i += 1) {
-              const currpick = draftTimings[i];
-              if (currpick.order === (draftTimings[j].order - 1)) {
-                  index2 = i;
-              }
-          }
-          // calculate the timings
-          draftTimings[j].total_time_taken = (draftTimings[j].time - draftTimings[index2].time);
+    if (draftTimings[j].order === 1) {
+      draftTimings[j].total_time_taken = (meta.game_zero + draftTimings[j].time);
+    } else {
+      let index2;
+      // find the time of the end of the previous order
+      for (let i = 0; i < draftTimings.length; i += 1) {
+        const currpick = draftTimings[i];
+        if (currpick.order === (draftTimings[j].order - 1)) {
+          index2 = i;
+        }
       }
+      // calculate the timings
+      draftTimings[j].total_time_taken = (draftTimings[j].time - draftTimings[index2].time);
+    }
   }
   // remove the time, no need for it
   for (let i = 0; i < draftTimings.length; i += 1) {
