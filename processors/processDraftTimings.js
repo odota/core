@@ -22,10 +22,10 @@ function processDraftTimings(entries, meta) {
     const e = entries[i];
     const heroId = e.hero_id;
     // Ignore All Pick matches
-    if (e.type === 'draft_timings' && e.draft_active_team !==0) {
+    if (e.type === 'draft_timings' && e.draft_active_team !== 0) {
       // The active team needs to be downshifted by 1, so ignore the final observation.
-      if(i < (entries.length - 1)) {
-          sumActiveTeam = sumActiveTeam + e.draft_active_team;
+      if (i < (entries.length - 1)) {
+          sumActiveTeam += e.draft_active_team;
       }
       const currpickban = {
         order: e.draft_order,
@@ -43,7 +43,7 @@ function processDraftTimings(entries, meta) {
   }
   // update the team that had the first pick/ban
   draftTimings[0].active_team = ((sumActiveTeam % 2) + 2);
-  for(let j = 0; j < draftTimings.length; j += 1) {
+  for (let j = 0; j < draftTimings.length; j += 1) {
       if (draftTimings[j].order === 1) {
           draftTimings[j].total_time_taken = (meta.game_zero + draftTimings[j].time);
       } else {
@@ -51,7 +51,7 @@ function processDraftTimings(entries, meta) {
           // find the time of the end of the previous order
           for (let i = 0; i < draftTimings.length; i += 1) {
               const currpick = draftTimings[i];
-              if (currpick.order === (pnb.order - 1)) {
+              if (currpick.order === (draftTimings[j].order - 1)) {
                   index2 = i;
               }
           }
