@@ -21,6 +21,7 @@ function processDraftTimings(entries, meta) {
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     const heroId = e.hero_id;
+    // Ignore All Pick matches
     if (e.type === 'draft_timings' && e.draft_active_team !==0) {
       // The active team needs to be downshifted by 1, so ignore the final observation.
       if(i < (entries.length - 1)) {
