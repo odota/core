@@ -368,8 +368,7 @@ function getProPeers(db, input, player, cb) {
     }
     const arr = result.rows.map(r =>
       Object.assign({}, r, teammates[r.account_id]))
-      .filter(r => r.account_id !== player.account_id)
-      .filter(r => r.games)
+      .filter(r => (r.account_id !== player.account_id) && r.games)
       .sort((a, b) => b.games - a.games);
     return cb(err, arr);
   });
