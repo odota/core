@@ -57,6 +57,8 @@ const defaults = {
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   WEBSOCKET_PORT: 80, // port for live match subscription websocket service
   ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication
+  SCENARIOS_TABLES_RESET_PERIOD: 30, // reset period of scenarios tables in days
+  SCENARIOS_SERVICE_UPTIME: 5, // for how long the scenarios service should run after a reset in days
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
