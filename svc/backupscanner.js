@@ -67,7 +67,7 @@ function processPlayer(accountId, cb) {
       // Skip this player on this iteration
       return cb();
     }
-    return ('match_seq_num', (err, res) => {
+    return redis.get('match_seq_num', (err, res) => {
       if (err) {
         return cb(err);
       }
