@@ -31,7 +31,7 @@ function search(options, cb) {
         WHERE personaname % ? 
         AND similarity(personaname, ?) >= ?
         ORDER BY last_match_time DESC
-        LIMIT 250) search 
+        LIMIT 150) search 
         ORDER BY similarity DESC, last_match_time DESC NULLS LAST;
         `, [query, query, query, options.similarity || 0.51]).asCallback((err, result) => {
         if (err) {

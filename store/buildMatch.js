@@ -171,7 +171,7 @@ function buildMatch(matchId, cb) {
         return cb();
       }
       if (match.version && config.ENABLE_MATCH_CACHE) {
-        return redis.setex(key, 600, JSON.stringify(match), (err) => {
+        return redis.setex(key, 300, JSON.stringify(match), (err) => {
           if (err) {
             console.error(err);
           }
