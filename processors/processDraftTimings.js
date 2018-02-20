@@ -41,7 +41,6 @@ function processDraftTimings(entries, meta) {
     }
   }
   // ignore Source 1 games
-  console.log(draftTimings);
   if (typeof draftTimings[0] !== 'undefined') {
     // update the team that had the first pick/ban
     draftTimings[0].active_team = ((sumActiveTeam % 2) + 2);
