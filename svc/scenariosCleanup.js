@@ -54,7 +54,7 @@ const tasks = [
       }
     });
   },
-  // scenarios service should only for a certain amount of time after a reset
+  // collect new data before old data gets deleted
   function scheduleScenariosSvc(cb) {
     redis.get('scenarios_reset_date', (err, reply) => {
       if (err) {
