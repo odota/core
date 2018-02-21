@@ -1324,6 +1324,10 @@ Please keep request rate to approximately 3/s.
                     description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
                     type: 'integer',
                   },
+                  party_size: {
+                    description: "Size of the player's party",
+                    type: 'integer',
+                  },
                   heroes: {
                     description: 'heroes (requires ?project=heroes)',
                     type: 'object',
