@@ -8,11 +8,11 @@ const tasks = [
   // clear the scenarios tables after a certain time
   function resetScenariosTables(cb) {
     redis.get('scenarios_reset_date', (err, reply) => {
-      const today = new Date();
-      if (!reply) {
-        redis.set('scenarios_reset_date', today);
+      if (err) {
+        cb(err);
       }
-      const scenariosReset = reply || today;
+      const today = new Date();
+      const scenariosReset = reply;
       const dayDifference = Math.ceil(Math.abs(today.getTime() - new Date(scenariosReset).getTime()) / (1000 * 3600 * 24));
       if (dayDifference >= config.SCENARIOS_TABLES_RESET_PERIOD) {
         async.parallel([
@@ -57,6 +57,9 @@ const tasks = [
   // scenarios service should only for a certain amount of time after a reset
   function scheduleScenariosSvc(cb) {
     redis.get('scenarios_reset_date', (err, reply) => {
+      if (err) {
+        cb(err);
+      }
       const scenariosReset = reply;
       const today = new Date();
       const dayDifference = Math.ceil(Math.abs(today.getTime() - new Date(scenariosReset).getTime()) / (1000 * 3600 * 24));
