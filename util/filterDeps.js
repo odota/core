@@ -11,6 +11,7 @@ module.exports = {
   lane_role: ['lane_role'],
   hero_id: ['hero_id'],
   is_radiant: ['player_slot'],
+  party_size: ['party_size'],
   included_account_id: ['heroes'],
   excluded_account_id: ['heroes'],
   with_hero_id: ['player_slot', 'heroes'],

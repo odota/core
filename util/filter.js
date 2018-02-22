@@ -35,6 +35,9 @@ function filter(matches, filters) {
     is_radiant(m, key) {
       return Number(utility.isRadiant(m)) === key;
     },
+    party_size(m, key) {
+      return m.party_size === key;
+    },
     included_account_id(m, key, arr) {
       return arr.every((k) => {
         let passed = false;
