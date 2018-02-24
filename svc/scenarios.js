@@ -14,7 +14,7 @@ function processScenarios(matchID, cb) {
       console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
       return cb();
     }
-    const current_week = Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7))
+    const currentWeek = Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7));
     Object.keys(su.scenarioChecks).forEach((table) => {
       su.scenarioChecks[table].forEach((scenarioCheck) => {
         const rows = scenarioCheck(match);
@@ -26,7 +26,7 @@ function processScenarios(matchID, cb) {
             table,
             Object.keys(row).join(','),
             values,
-            current_week,
+            currentWeek,
             Object.keys(row).filter(column => column !== 'wins').join(','),
             table,
             table,

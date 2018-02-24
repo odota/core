@@ -1,15 +1,14 @@
 const db = require('../store/db');
 const async = require('async');
 const config = require('../config');
-const redis = require('../store/redis');
 
 
 const tasks = [
   function clearScenariosTables(cb) {
-    const current_week = Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7))
+    const currentWeek = Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7));
     async.parallel([
       (cb) => {
-        db('team_scenarios').where('epoch_week', '<=', current_week - config.MAXIMUM_AGE_SCENARIOS_ROWS).del()
+        db('team_scenarios').where('epoch_week', '<=', currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS).del()
           .asCallback((err) => {
             if (err) {
               cb(err);
@@ -19,7 +18,7 @@ const tasks = [
           });
       },
       (cb) => {
-        db('scenarios').where('epoch_week', '<=', current_week - config.MAXIMUM_AGE_SCENARIOS_ROWS).del()
+        db('scenarios').where('epoch_week', '<=', currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS).del()
           .asCallback((err) => {
             if (err) {
               cb(err);
@@ -34,7 +33,7 @@ const tasks = [
       }
       cb();
     });
-  }
+  },
 ];
 
 setInterval(() => {
