@@ -14,6 +14,7 @@ function processScenarios(matchID, cb) {
       console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
       return cb();
     }
+    const current_week = Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7))
     Object.keys(su.scenarioChecks).forEach((table) => {
       su.scenarioChecks[table].forEach((scenarioCheck) => {
         const rows = scenarioCheck(match);
@@ -21,10 +22,11 @@ function processScenarios(matchID, cb) {
           const values = Object.keys(row).map(() =>
             '?');
           const query = util.format(
-            'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s, current) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
+            'INSERT INTO %s (%s, epoch_week) VALUES (%s, %s) ON CONFLICT (%s, epoch_week) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
             table,
             Object.keys(row).join(','),
             values,
+            current_week,
             Object.keys(row).filter(column => column !== 'wins').join(','),
             table,
             table,

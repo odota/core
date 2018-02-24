@@ -33,13 +33,16 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   UNIQUE (scenario, is_radiant, region)
 );
 
-ALTER TABLE scenarios ADD current boolean DEFAULT true;
-ALTER TABLE team_scenarios ADD current boolean DEFAULT true;
+ALTER TABLE scenarios ADD epoch_week smallint;
+ALTER TABLE team_scenarios ADD epoch_week smallint;
 ALTER TABLE scenarios DROP CONSTRAINT "scenarios_hero_id_item_time_key";
 ALTER TABLE scenarios DROP CONSTRAINT "scenarios_hero_id_lane_role_time_key";
 ALTER TABLE scenarios DROP CONSTRAINT "scenarios_pings_time_key";
 ALTER TABLE team_scenarios DROP CONSTRAINT "team_scenarios_scenario_is_radiant_region_key";
-ALTER TABLE scenarios ADD UNIQUE (hero_id, item, time, current);
-ALTER TABLE scenarios ADD UNIQUE (pings, time, current);
-ALTER TABLE scenarios ADD UNIQUE (hero_id, lane_role, time, current);
-ALTER TABLE team_scenarios ADD UNIQUE (scenario, is_radiant, region, current);
+ALTER TABLE scenarios ADD UNIQUE (hero_id, item, time, epoch_week);
+ALTER TABLE scenarios ADD UNIQUE (pings, time, epoch_week);
+ALTER TABLE scenarios ADD UNIQUE (hero_id, lane_role, time, epoch_week);
+ALTER TABLE team_scenarios ADD UNIQUE (scenario, is_radiant, region, epoch_week);
+--- !!!
+DELETE FROM team_scenarios WHERE epoch_week IS NULL;
+DELETE FROM scenarios WHERE epoch_week IS NULL;
