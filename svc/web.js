@@ -22,6 +22,13 @@ const redisCount = utility.redisCount;
 const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
+
+let OD_API_KEYS = {};
+
+queries.getAPIKeys(db, (err, row) => {
+  console.log(rows);
+})
+
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
   maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
@@ -68,7 +75,8 @@ app.use('/ugc', (req, res) => {
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
-// Rate limiter middleware
+
+// Rate limiter and API key middleware
 app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   ip = ip.replace(/^.*:/, '').split(',')[0];

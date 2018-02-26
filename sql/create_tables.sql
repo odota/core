@@ -181,6 +181,12 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE INDEX IF NOT EXISTS subscriptions_account_id_idx on subscriptions(account_id);
 CREATE INDEX IF NOT EXISTS subscriptions_customer_id_idx on subscriptions(customer_id);
 
+CREATE TABLE IF NOT EXISTS api_keys (
+  PRIMARY KEY(api_key),
+  api_key uuid,
+  customer_id varchar(255)
+);
+
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,
   name varchar(255),
@@ -443,7 +449,7 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   wins bigint,
   UNIQUE (scenario, is_radiant, region)
 );  
- 
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

@@ -70,6 +70,17 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   );
 }
 
+function getAPIKeys(db, cb) {
+  db.raw(`
+    SELECT * from api_keys
+    `).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows);
+  });
+}
+
 /**
  * Benchmarks a match against stored data in Redis.
  * */
@@ -1283,4 +1294,5 @@ module.exports = {
   getMmrEstimate,
   getPeers,
   getProPeers,
+  getAPIKeys
 };
