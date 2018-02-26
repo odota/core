@@ -105,7 +105,7 @@ function cassandraUsage(cb) {
     });
     return cb(err, {
       metric: size,
-      threshold: 8 * (10 ** 12),
+      threshold: 10 * (10 ** 12),
     });
   });
 }
