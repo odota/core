@@ -32,7 +32,6 @@ function processScenarios(matchID, cb) {
             table,
             table,
           );
-          console.log(query);
           db.raw(query, Object.keys(row).map(key =>
             row[key])).asCallback(cb);
         });
