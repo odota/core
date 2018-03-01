@@ -18,5 +18,16 @@ function clearScenariosTables() {
 }
 
 setInterval(() => {
+<<<<<<< HEAD
   clearScenariosTables();
 }, 1000 * 60 * 60 * 1);
+=======
+  async.eachSeries(tasks, (task, cb) => {
+    task(cb);
+  }, (err) => {
+    if (err) {
+      console.error(err);
+    }
+  });
+}, 1000 * 60 * 60 * 8);
+>>>>>>> e9ffb66832622ecdf88900eb826d0a5026f44430
