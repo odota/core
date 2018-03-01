@@ -784,6 +784,13 @@ function invokeInterval(func, delay) {
   }());
 }
 
+/**
+ * Returns the current UNIX Epoch time in weeks
+ * */
+function epochWeek() {
+  return Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7));
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -820,4 +827,5 @@ module.exports = {
   getRedisCountDay,
   getRedisCountHour,
   invokeInterval,
+  epochWeek,
 };

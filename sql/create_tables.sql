@@ -430,7 +430,7 @@ CREATE TABLE IF NOT EXISTS scenarios (
   lane_role smallint,
   games bigint DEFAULT 1,
   wins bigint,
-  epoch_week smallint,
+  epoch_week integer,
   UNIQUE (hero_id, item, time, epoch_week),
   UNIQUE (pings, time, epoch_week),
   UNIQUE (hero_id, lane_role, time, epoch_week)
@@ -442,7 +442,7 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   region smallint,
   games bigint DEFAULT 1,
   wins bigint,
-  epoch_week smallint,
+  epoch_week integer,
   UNIQUE (scenario, is_radiant, region, epoch_week)
 );  
  
