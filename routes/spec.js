@@ -322,6 +322,10 @@ Please keep request rate to approximately 3/s.
                         description: 'Object containing information on who the player used their abilities on',
                         type: 'object',
                       },
+                      damage_targets: {
+                        description: 'Object containing information on how and how much damage the player dealt to other heroes',
+                        type: 'object',
+                      },
                       account_id: {
                         description: 'account_id',
                         type: 'integer',

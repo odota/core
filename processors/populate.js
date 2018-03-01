@@ -84,6 +84,18 @@ function populate(e, container) {
           t[ability] = {};
           t[ability][target] = 1;
         }
+      } else if (e.type === 'damage_targets') {
+        const ability = e.key[0] === null ? 'Autoattack' : e.key[0];
+        const target = e.key[1];
+        const damage = e.value;
+        if (t[ability] && t[ability][target]) {
+          t[ability][target] += damage;
+        } else if (t[ability]) {
+          t[ability][target] = damage;
+        } else {
+          t[ability] = {};
+          t[ability][target] = damage;
+        }
       } else if (typeof t === 'object') {
       // add it to hash of counts
         e.value = e.value || 1;

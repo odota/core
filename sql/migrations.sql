@@ -9,6 +9,8 @@ CREATE INDEX IF NOT EXISTS public_matches_avg_rank_tier_idx on public_matches(av
 
 ALTER TABLE player_matches ADD ability_targets json;
 
+ALTER TABLE player_matches ADD damage_targets json;
+
 ALTER TABLE public_matches ADD cluster integer;
 
 CREATE TABLE IF NOT EXISTS scenarios (
