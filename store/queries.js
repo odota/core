@@ -274,7 +274,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
         const offset = matches.slice(queryObj.offset);
         const result = offset.slice(0, queryObj.limit || offset.length);
         return cb(err, result);
-      }).on('error', cb);
+      }).on('error', err => console.error(err));
     });
   }
   return cb(null, []);
