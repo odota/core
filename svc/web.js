@@ -25,9 +25,9 @@ const host = config.ROOT_URL;
 
 let OD_API_KEYS = {};
 
-queries.getAPIKeys(db, (err, row) => {
-  console.log(rows);
-})
+// queries.getAPIKeys(db, (err, row) => {
+//   OD_API_KEYS = 
+// })
 
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
@@ -78,11 +78,29 @@ app.use(passport.session());
 
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
+    
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   ip = ip.replace(/^.*:/, '').split(',')[0];
-  const key = `rate_limit:${ip}`;
+  
+  const rate_key = "";
+  
+  `rate_limit:${ip}`;
+  const count_key = "";
+  
+  if (req.query.OPENDOTA_API_KEY) {
+    
+  } else {
+    //count
+  }
+  
   console.log('%s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
-  redis.multi().incr(key).expireat(key, utility.getStartOfBlockMinutes(1, 1)).exec((err, resp) => {
+ 
+  redis.multi()
+    .incr(rate_key)
+    .expireat(rate_key, utility.getStartOfBlockMinutes(1, 1))
+    .incr(count_key)
+    .expireat(count_key, utility.getEndOfWeek())
+    .exec((err, resp) => {
     if (err) {
       console.log(err);
       return cb();
@@ -90,9 +108,16 @@ app.use((req, res, cb) => {
     if (config.NODE_ENV === 'development') {
       console.log(resp);
     }
-    if (resp[0] > 180 && config.NODE_ENV !== 'test') {
+    
+    if (resp[0] > 60 && config.NODE_ENV !== 'test') {
       return res.status(429).json({
         error: 'rate limit exceeded',
+      });
+    }
+    
+    if (resp[2] > 12500 && config.NODE_ENV !== 'test') {
+      return res.status(429).json({
+        error: 'api limit weekly limit exeeded',
       });
     }
     return cb();

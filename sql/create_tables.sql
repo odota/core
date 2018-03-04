@@ -184,8 +184,12 @@ CREATE INDEX IF NOT EXISTS subscriptions_customer_id_idx on subscriptions(custom
 CREATE TABLE IF NOT EXISTS api_keys (
   PRIMARY KEY(api_key),
   api_key uuid,
+  account_id bigint UNIQUE,
   customer_id varchar(255)
 );
+CREATE INDEX IF NOT EXISTS api_keys_account_id_idx on api_keys(account_id);
+CREATE INDEX IF NOT EXISTS api_keys_customer_id_idx on api_keys(customer_id);
+CREATE INDEX IF NOT EXISTS api_keys_keys on api_keys(api_key);
 
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,
