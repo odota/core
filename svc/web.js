@@ -120,7 +120,8 @@ app.use((req, res, cb) => {
         console.log(resp);
       }
       
-      if (resp[0] > 60 && config.NODE_ENV !== 'test') {
+      if ((api_key && api_key in OD_API_KEYS && resp[0] > 180 || resp[0] > 60)
+          && config.NODE_ENV !== 'test') {
         return res.status(429).json({
           error: 'rate limit exceeded',
         });
