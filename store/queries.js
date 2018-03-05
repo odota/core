@@ -72,7 +72,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 
 function getAPIKeys(db, cb) {
   db.raw(`
-    SELECT * from api_keys
+    SELECT api_key from api_keys WHERE api_key is not null
     `).asCallback((err, result) => {
     if (err) {
       return cb(err);

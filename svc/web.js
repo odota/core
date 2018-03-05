@@ -25,9 +25,19 @@ const host = config.ROOT_URL;
 
 let OD_API_KEYS = {};
 
-// queries.getAPIKeys(db, (err, row) => {
-//   OD_API_KEYS = 
-// })
+setTimeout(() => {
+  queries.getAPIKeys(db, (err, row) => {
+    if (err) {
+      return;
+    }
+    
+    OD_API_KEYS = {};
+    
+    row.forEach((e) => {
+      OD_API_KEYS[e.api_key] = 0;
+    });
+  });
+}, 1000);
 
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
@@ -82,45 +92,46 @@ app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   ip = ip.replace(/^.*:/, '').split(',')[0];
   
-  const rate_key = "";
+  let rate_key = "";
+  let count_key = "";
   
-  `rate_limit:${ip}`;
-  const count_key = "";
-  
-  if (req.query.OPENDOTA_API_KEY) {
-    
+  let api_key = req.query.OPENDOTA_API_KEY;
+  if (api_key && api_key in OD_API_KEYS) {
+    rate_key = `rate_limit:${api_key}`;
+    count_key = `count_limit:${api_key}`;
+    console.log('[API KEY] %s visit %s, ip %s', api_key, req.originalUrl, ip)
   } else {
-    //count
+    rate_key = `rate_limit:${ip}`;
+    count_key = `count_limit:${ip}`;
+    console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
   
-  console.log('%s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
- 
   redis.multi()
     .incr(rate_key)
     .expireat(rate_key, utility.getStartOfBlockMinutes(1, 1))
     .incr(count_key)
-    .expireat(count_key, utility.getEndOfWeek())
+    .expireat(count_key, utility.getEndOfMonth())
     .exec((err, resp) => {
-    if (err) {
-      console.log(err);
+      if (err) {
+        console.log(err);
+        return cb();
+      }
+      if (config.NODE_ENV === 'development') {
+        console.log(resp);
+      }
+      
+      if (resp[0] > 60 && config.NODE_ENV !== 'test') {
+        return res.status(429).json({
+          error: 'rate limit exceeded',
+        });
+      }
+      
+      if (resp[2] > 25000 && config.NODE_ENV !== 'test') {
+        return res.status(429).json({
+          error: 'monthly api limit exeeded',
+        });
+      }
       return cb();
-    }
-    if (config.NODE_ENV === 'development') {
-      console.log(resp);
-    }
-    
-    if (resp[0] > 60 && config.NODE_ENV !== 'test') {
-      return res.status(429).json({
-        error: 'rate limit exceeded',
-      });
-    }
-    
-    if (resp[2] > 12500 && config.NODE_ENV !== 'test') {
-      return res.status(429).json({
-        error: 'api limit weekly limit exeeded',
-      });
-    }
-    return cb();
   });
 });
 // Telemetry middleware

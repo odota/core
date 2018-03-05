@@ -182,14 +182,26 @@ CREATE INDEX IF NOT EXISTS subscriptions_account_id_idx on subscriptions(account
 CREATE INDEX IF NOT EXISTS subscriptions_customer_id_idx on subscriptions(customer_id);
 
 CREATE TABLE IF NOT EXISTS api_keys (
-  PRIMARY KEY(api_key),
-  api_key uuid,
+  PRIMARY KEY(account_id),
   account_id bigint UNIQUE,
+  api_key uuid UNIQUE,
   customer_id varchar(255)
 );
 CREATE INDEX IF NOT EXISTS api_keys_account_id_idx on api_keys(account_id);
 CREATE INDEX IF NOT EXISTS api_keys_customer_id_idx on api_keys(customer_id);
 CREATE INDEX IF NOT EXISTS api_keys_keys on api_keys(api_key);
+
+CREATE TABLE IF NOT EXISTS api_key_usage (
+  PRIMARY KEY(account_id),
+  account_id bigint REFERENCES api_keys(account_id),
+  customer_id varchar(255) REFERENCES api_keys(customer_id),
+  api_key uuid REFERENCES api_keys(api_key),
+  usage_count int,
+  time timestamp
+);
+
+CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_keys(account_id);
+CREATE INDEX IF NOT EXISTS api_keys_usage_customer_id_idx on api_keys(customer_id);
 
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,

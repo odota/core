@@ -421,8 +421,8 @@ function getStartOfBlockMinutes(size, offset) {
   return (blockStart + (offset * blockS)).toFixed(0);
 }
 
-function getEndOfWeek() {
-  return moment().endOf("week").unix();  
+function getEndOfMonth() {
+  return moment().endOf("month").unix();  
 }
 
 /**
@@ -804,7 +804,7 @@ module.exports = {
   min,
   serialize,
   getStartOfBlockMinutes,
-  getEndOfWeek,
+  getEndOfMonth,
   average,
   stdDev,
   median,
