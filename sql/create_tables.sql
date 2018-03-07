@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS players (
     "timecreated" : 1332289262,
   */
 );
-CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS NOT NULL;
+CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS NOT NULL AND cheese > 0;
 CREATE INDEX IF NOT EXISTS players_personaname_idx on players USING GIN(personaname gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS player_ratings (
