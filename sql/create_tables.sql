@@ -462,6 +462,7 @@ BEGIN
         GRANT SELECT ON notable_players TO readonly;
         GRANT SELECT ON public_matches TO readonly;
         GRANT SELECT ON public_player_matches TO readonly;
+        GRANT SELECT ON players TO readonly;
     END IF;
 END
 $$;
