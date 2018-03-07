@@ -379,7 +379,6 @@ CREATE TABLE IF NOT EXISTS hero_ranking (
   score double precision
 );
 CREATE INDEX IF NOT EXISTS hero_ranking_hero_id_score_idx ON hero_ranking(hero_id, score);
-CREATE INDEX IF NOT EXISTS hero_ranking_score_idx ON hero_ranking(score);
 
 CREATE TABLE IF NOT EXISTS queue (
   PRIMARY KEY (id),
