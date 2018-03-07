@@ -62,6 +62,12 @@ function processExpand(entries, meta) {
           key: unit,
           type: 'damage_taken',
         });
+        expand({
+          value: e.value,
+          unit,
+          key: [inflictor, translate(e.targetname)],
+          type: 'damage_targets',
+        });
         // count a hit on a real hero with this inflictor
         expand({
           time: e.time,
