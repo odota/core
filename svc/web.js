@@ -104,7 +104,7 @@ app.use((req, res, cb) => {
       if (req.headers.origin === 'https://www.opendota.com') {
         redisCount(redis, 'api_hits_ui');
       }
-      redis.zincrby('api_paths', 1, req.path.split('/')[1]);
+      redis.zincrby('api_paths', 1, req.path.split('/api')[1] || '');
       redis.expireat('api_paths', moment().startOf('hour').add(1, 'hour').format('X'));
     }
     if (req.user && req.user.account_id) {
