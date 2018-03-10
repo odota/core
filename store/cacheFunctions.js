@@ -1,4 +1,5 @@
 const redis = require('./redis');
+const config = require('../config');
 
 const getKeys = () => ['wl', 'heroes', 'peers'];
 
@@ -12,7 +13,7 @@ module.exports = {
   },
   write: (req, data, cb) => {
     console.log(`[WRITECACHE] cache:${req.key}:${req.account_id}`);
-    redis.setex(`cache:${req.key}:${req.account_id}`, 1 * 60 * 60, data, cb);
+    redis.setex(`cache:${req.key}:${req.account_id}`, config.PLAYER_CACHE_SECONDS, data, cb);
   },
   getKeys,
 };

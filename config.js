@@ -58,6 +58,8 @@ const defaults = {
   WEBSOCKET_PORT: 80, // port for live match subscription websocket service
   ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication
   MAXIMUM_AGE_SCENARIOS_ROWS: 2, // maximum allowed age of scenarios rows in weeks
+  MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
+  PLAYER_CACHE_SECONDS: 3600, // number of seconds to cache player aggregations
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
