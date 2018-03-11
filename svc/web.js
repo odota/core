@@ -56,16 +56,9 @@ app.use(compression());
 app.use('/apps', (req, res) => {
   request(`http://cdn.dota2.com/${req.originalUrl}`).pipe(res);
 });
-// Proxies to serve team logos over https
+// Proxy to serve team logos over https
 app.use('/ugc', (req, res) => {
   request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
-    .on('response', (resp) => {
-      resp.headers['content-type'] = 'image/png';
-    })
-    .pipe(res);
-});
-app.use('/apps/dota2/images/team_logos', (req, res) => {
-  request(`http://steamcdn-a.akamaihd.net/${req.originalUrl}`)
     .on('response', (resp) => {
       resp.headers['content-type'] = 'image/png';
     })
