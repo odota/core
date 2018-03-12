@@ -192,12 +192,11 @@ CREATE INDEX IF NOT EXISTS api_keys_customer_id_idx on api_keys(customer_id);
 CREATE INDEX IF NOT EXISTS api_keys_keys on api_keys(api_key);
 
 CREATE TABLE IF NOT EXISTS api_key_usage (
-  PRIMARY KEY(account_id),
   account_id bigint REFERENCES api_keys(account_id),
-  customer_id varchar(255) REFERENCES api_keys(customer_id),
-  api_key uuid REFERENCES api_keys(api_key),
+  customer_id varchar(255),
+  api_key uuid,
   usage_count int,
-  time timestamp
+  timestamp timestamp default current_timestamp
 );
 
 CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_keys(account_id);

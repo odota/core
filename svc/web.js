@@ -98,7 +98,7 @@ app.use((req, res, cb) => {
   let api_key = req.query.OPENDOTA_API_KEY;
   if (api_key && api_key in OD_API_KEYS) {
     rate_key = `rate_limit:${api_key}`;
-    count_key = `count_limit:${api_key}`;
+    count_key = `api_count_limit:${api_key}`;
     console.log('[API KEY] %s visit %s, ip %s', api_key, req.originalUrl, ip)
   } else {
     rate_key = `rate_limit:${ip}`;
