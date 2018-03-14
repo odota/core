@@ -196,6 +196,8 @@ function processExpand(entries, meta) {
         unit,
         key,
         type: 'killed',
+        // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
+        value: 1,
       }));
     },
     DOTA_COMBATLOG_ABILITY(e) {
