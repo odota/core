@@ -3956,13 +3956,7 @@ Please keep request rate to approximately 3/s.
           required: false,
           type: 'string',
         },
-        {
-          name: 'hero_id',
-          in: 'path',
-          description: 'Hero ID',
-          required: true,
-          type: 'integer',
-        },
+        params.heroIdParamPath,
         ],
         responses: {
           200: {
