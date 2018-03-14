@@ -148,8 +148,15 @@ function validateMatchProperties(match) {
   return matchProperties.every(property => match[property] !== undefined && match[property] !== null);
 }
 
+const teamScenariosQueryParams = {
+  pos_chat_1min: 'Positivity in chat before 1min',
+  neg_chat_1min: 'Negativity in chat before 1min',
+  courier_kill: 'Courier Kill before 3min',
+  first_blood: 'First Blood',
+};
 
 module.exports = {
   scenarioChecks,
   validateMatchProperties,
+  teamScenariosQueryParams,
 };
