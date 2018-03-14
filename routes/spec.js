@@ -4110,7 +4110,7 @@ Please keep request rate to approximately 3/s.
         },
         route: () => '/scenarios/misc',
         func: (req, res, cb) => {
-          const scenario = su.teamScenariosQueryParams[req.query.scenario];
+          const scenario = su.teamScenariosQueryParams[req.query.scenario] || null;
 
           db.raw(`SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins 
           from team_scenarios WHERE scenario = ? GROUP BY scenario, is_radiant, region ORDER BY scenario`, [scenario])
