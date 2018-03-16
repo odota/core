@@ -4001,15 +4001,16 @@ Please keep request rate to approximately 3/s.
                 }
                 return res.json(result.rows);
               });
-          }
-          db.raw(`SELECT item, time, sum(games) games, sum(wins) wins 
+          } else {
+            db.raw(`SELECT item, time, sum(games) games, sum(wins) wins 
           FROM scenarios WHERE item IS NOT NULL AND hero_id = ? GROUP BY item, time ORDER BY time, item`, [heroId])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+              .asCallback((err, result) => {
+                if (err) {
+                  return cb(err);
+                }
+                return res.json(result.rows);
+              });
+          }
         },
       },
     },
