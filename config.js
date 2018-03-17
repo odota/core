@@ -48,7 +48,7 @@ const defaults = {
   MMR_PARALLELISM: 10, // Number of simulataneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
   BENCHMARK_RETENTION_MINUTES: 5, // minutes in block to retain benchmark data for percentile
-  GCDATA_PERCENT: 0, // percent of inserted matches to queue for GC data
+  GCDATA_PERCENT: 0, // percent of inserted matches to randomly queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
   SCENARIOS_SAMPLE_PERCENT: 50, // percent of parsed matches to sample for scenarios
@@ -60,6 +60,7 @@ const defaults = {
   MAXIMUM_AGE_SCENARIOS_ROWS: 2, // maximum allowed age of scenarios rows in weeks
   MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
   PLAYER_CACHE_SECONDS: 3600, // number of seconds to cache player aggregations
+  SCANNER_PLAYER_PERCENT: 10, // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

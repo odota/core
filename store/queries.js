@@ -1178,7 +1178,8 @@ function insertMatch(match, options, cb) {
 
   function decideProfile(cb) {
     async.each(match.players, (p, cb) => {
-      if (options.origin === 'scanner' &&
+      if ((match.match_id % 100) < Number(config.SCANNER_PLAYER_PERCENT) &&
+        options.origin === 'scanner' &&
         p.account_id &&
         p.account_id !== utility.getAnonymousAccountId()) {
         upsert(db, 'players', { account_id: p.account_id }, { account_id: p.account_id }, cb);
