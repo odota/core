@@ -5,7 +5,8 @@ const playerWon = utility.playerWon;
 
 
 // all items that cost at least 2000
-const dotaItems = Object.keys(constants.items).map(k => [constants.items[k], k]).filter(x => x[0].cost >= 2000).map(x => x[1]);
+const itemCost = 2000;
+const dotaItems = Object.keys(constants.items).map(k => [constants.items[k], k]).filter(x => x[0].cost >= itemCost).map(x => x[1]);
 const timings = [7.5, 10, 12, 15, 20, 25, 30].map(x => x * 60);
 const pingBucket = [10, 25, 50, 100, 150, 200, 500, 1000];
 const gameDurationBucket = [15, 30, 45, 60, 90].map(x => x * 60);
@@ -88,7 +89,7 @@ const scenarioChecks = {
       const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180);
       if (condition) {
         const isRadiant = condition.team === 3;
-        return buildTeamScenario('Courier Kill before 3min', isRadiant, match);
+        return buildTeamScenario('Courier Kill before 3 minutes', isRadiant, match);
       }
       return [];
     },
@@ -121,16 +122,16 @@ const scenarioChecks = {
           }
         }
         if (radiantNegative) {
-          rows.push(buildTeamScenario('Negativity in chat before 1min', true, match)[0]);
+          rows.push(buildTeamScenario('Negativity in chat before 1 minute', true, match)[0]);
         }
         if (direNegative) {
-          rows.push(buildTeamScenario('Negativity in chat before 1min', false, match)[0]);
+          rows.push(buildTeamScenario('Negativity in chat before 1 minute', false, match)[0]);
         }
         if (radiantPositive) {
-          rows.push(buildTeamScenario('Positivity in chat before 1min', true, match)[0]);
+          rows.push(buildTeamScenario('Positivity in chat before 1 minute', true, match)[0]);
         }
         if (direPositive) {
-          rows.push(buildTeamScenario('Positivity in chat before 1min', false, match)[0]);
+          rows.push(buildTeamScenario('Positivity in chat before 1 minute', false, match)[0]);
         }
       }
       return rows;
@@ -149,9 +150,9 @@ function validateMatchProperties(match) {
 }
 
 const teamScenariosQueryParams = {
-  pos_chat_1min: 'Positivity in chat before 1min',
-  neg_chat_1min: 'Negativity in chat before 1min',
-  courier_kill: 'Courier Kill before 3min',
+  pos_chat_1min: 'Positivity in chat before 1 minute',
+  neg_chat_1min: 'Negativity in chat before 1 minute',
+  courier_kill: 'Courier Kill before 3 minutes',
   first_blood: 'First Blood',
 };
 
@@ -159,4 +160,5 @@ module.exports = {
   scenarioChecks,
   validateMatchProperties,
   teamScenariosQueryParams,
+  itemCost,
 };
