@@ -56,7 +56,9 @@ const defaults = {
   ENABLE_PLAYER_CACHE: 1, // enable/disable player aggregation caching
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   WEBSOCKET_PORT: 80, // port for live match subscription websocket service
-  ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication
+  ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication,
+  API_FREE_LIMIT: 25000,
+  API_KEY_PER_MIN_LIMIT: 180
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

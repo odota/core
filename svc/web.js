@@ -120,14 +120,14 @@ app.use((req, res, cb) => {
         console.log(resp);
       }
       
-      if ((api_key && api_key in OD_API_KEYS && resp[0] > 180 || resp[0] > 60)
+      if ((api_key && api_key in OD_API_KEYS && resp[0] > config.API_KEY_PER_MIN_LIMIT || resp[0] > 60)
           && config.NODE_ENV !== 'test') {
         return res.status(429).json({
           error: 'rate limit exceeded',
         });
       }
       
-      if (resp[2] > 25000 && config.NODE_ENV !== 'test') {
+      if (resp[2] > config.API_FREE_LIMIT && config.NODE_ENV !== 'test') {
         return res.status(429).json({
           error: 'monthly api limit exeeded',
         });
