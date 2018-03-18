@@ -8,7 +8,7 @@
     "start": "node index",
     "test": "NODE_ENV=test mocha --exit",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "build": "npm install",
+    "build": "npm install && npm run lintnofix",
     "lint": "eslint . --ext .js,.jsx --fix",
     "lintnofix": "eslint . --ext .js,.jsx",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
