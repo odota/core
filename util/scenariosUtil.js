@@ -14,6 +14,12 @@ const gameDurationBucket = [15, 30, 45, 60, 90].map(x => x * 60);
 const negativeWords = ['ff', 'report', 'gg', 'end', 'noob'];
 const positiveWords = ['gl', 'glhf', 'hf', 'good luck', 'have fun'];
 
+const teamScenariosQueryParams = {
+  pos_chat_1min: 'Positivity in chat before 1 minute',
+  neg_chat_1min: 'Negativity in chat before 1 minute',
+  courier_kill: 'Courier Kill before 3 minutes',
+  first_blood: 'First Blood',
+};
 
 function buildTeamScenario(scenario, isRadiant, match) {
   return [{
@@ -80,7 +86,7 @@ const scenarioChecks = {
       const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
       if (condition) {
         const isRadiant = condition.player_slot < 5;
-        return buildTeamScenario(teamScenariosQueryParams[first_blood], isRadiant, match);
+        return buildTeamScenario(teamScenariosQueryParams.first_blood, isRadiant, match);
       }
       return [];
     },
@@ -89,7 +95,7 @@ const scenarioChecks = {
       const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180);
       if (condition) {
         const isRadiant = condition.team === 3;
-        return buildTeamScenario(teamScenariosQueryParams[courier_kill], isRadiant, match);
+        return buildTeamScenario(teamScenariosQueryParams.courier_kill, isRadiant, match);
       }
       return [];
     },
@@ -122,16 +128,16 @@ const scenarioChecks = {
           }
         }
         if (radiantNegative) {
-          rows.push(buildTeamScenario(teamScenariosQueryParams[neg_chat_1min], true, match)[0]);
+          rows.push(buildTeamScenario(teamScenariosQueryParams.neg_chat_1min, true, match)[0]);
         }
         if (direNegative) {
-          rows.push(buildTeamScenario(teamScenariosQueryParams[neg_chat_1min], false, match)[0]);
+          rows.push(buildTeamScenario(teamScenariosQueryParams.neg_chat_1min, false, match)[0]);
         }
         if (radiantPositive) {
-          rows.push(buildTeamScenario(teamScenariosQueryParams[pos_chat_1min], true, match)[0]);
+          rows.push(buildTeamScenario(teamScenariosQueryParams.pos_chat_1min, true, match)[0]);
         }
         if (direPositive) {
-          rows.push(buildTeamScenario(teamScenariosQueryParams[pos_chat_1min], false, match)[0]);
+          rows.push(buildTeamScenario(teamScenariosQueryParams.pos_chat_1min, false, match)[0]);
         }
       }
       return rows;
@@ -148,13 +154,6 @@ const matchProperties = ['players', 'objectives', 'duration', 'chat', 'radiant_w
 function validateMatchProperties(match) {
   return matchProperties.every(property => match[property] !== undefined && match[property] !== null);
 }
-
-const teamScenariosQueryParams = {
-  pos_chat_1min: 'Positivity in chat before 1 minute',
-  neg_chat_1min: 'Negativity in chat before 1 minute',
-  courier_kill: 'Courier Kill before 3 minutes',
-  first_blood: 'First Blood',
-};
 
 module.exports = {
   scenarioChecks,
