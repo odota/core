@@ -53,7 +53,7 @@ Notes
 
 Resources
 ----
-* Join us on Discord (https://discord.gg/0o5SQGbXuWCNDcaF)! We're always happy to help and answer questions.
+* Join us on Discord (https://discord.gg/opendota)! We're always happy to help and answer questions.
 * The following blog posts may help you understand the codebase/architecture:
   * General Learnings: https://odota.github.io/blog/2016/05/13/learnings/
   * Architecture: https://odota.github.io/blog/2016/05/15/architecture/
