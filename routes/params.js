@@ -201,11 +201,4 @@ module.exports = {
     required: false,
     type: 'integer',
   },
-  heroIdParamPath: {
-    name: 'hero_id',
-    in: 'path',
-    description: 'Hero ID',
-    required: true,
-    type: 'integer',
-  },
 };

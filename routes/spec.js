@@ -3979,11 +3979,11 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   games: {
-                    description: 'The number of games won where the hero bought this item before this time',
+                    description: 'The number of games where the hero bought this item before this time',
                     type: 'string',
                   },
                   wins: {
-                    description: 'How many games were won when this hero bought the item within that time',
+                    description: 'The number of games won where the hero bought this item before this time',
                     type: 'string',
                   },
                 },
@@ -4037,11 +4037,11 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   games: {
-                    description: 'The number of games won where the hero bought this item before this time',
+                    description: 'The number of games where the hero played in this lane role',
                     type: 'string',
                   },
                   wins: {
-                    description: 'How many games the hero won when he played in this lane role',
+                    description: 'The number of games won where the hero played in this lane role',
                     type: 'string',
                   },
                 },
