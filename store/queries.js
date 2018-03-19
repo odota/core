@@ -298,8 +298,8 @@ function getPlayerHeroRankings(accountId, cb) {
   hero_id,
   playerscore.score,
   count(1) filter (where hr.score <= playerscore.score)::float/count(1) as percent_rank,
-  count(1) * 20 card
-  FROM (select * from hero_ranking TABLESAMPLE SYSTEM(5)) hr
+  count(1) * 1000 card
+  FROM (select * from hero_ranking TABLESAMPLE SYSTEM(0.1)) hr
   JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = ?) playerscore using (hero_id)
   GROUP BY hero_id, playerscore.score
   ORDER BY percent_rank desc
@@ -1189,7 +1189,8 @@ function insertMatch(match, options, cb) {
 
   function decideProfile(cb) {
     async.each(match.players, (p, cb) => {
-      if (options.origin === 'scanner' &&
+      if ((match.match_id % 100) < Number(config.SCANNER_PLAYER_PERCENT) &&
+        options.origin === 'scanner' &&
         p.account_id &&
         p.account_id !== utility.getAnonymousAccountId()) {
         upsert(db, 'players', { account_id: p.account_id }, { account_id: p.account_id }, cb);

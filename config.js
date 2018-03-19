@@ -48,7 +48,7 @@ const defaults = {
   MMR_PARALLELISM: 10, // Number of simulataneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
   BENCHMARK_RETENTION_MINUTES: 5, // minutes in block to retain benchmark data for percentile
-  GCDATA_PERCENT: 0, // percent of inserted matches to queue for GC data
+  GCDATA_PERCENT: 0, // percent of inserted matches to randomly queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
   SCENARIOS_SAMPLE_PERCENT: 50, // percent of parsed matches to sample for scenarios
@@ -56,9 +56,13 @@ const defaults = {
   ENABLE_PLAYER_CACHE: 1, // enable/disable player aggregation caching
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   WEBSOCKET_PORT: 80, // port for live match subscription websocket service
+  MAXIMUM_AGE_SCENARIOS_ROWS: 2, // maximum allowed age of scenarios rows in weeks
+  MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
+  PLAYER_CACHE_SECONDS: 3600, // number of seconds to cache player aggregations
+  SCANNER_PLAYER_PERCENT: 10, // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
   ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication,
-  API_FREE_LIMIT: 25000,
-  API_KEY_PER_MIN_LIMIT: 180
+  API_FREE_LIMIT: 25000, // number of api requests per month before 429 is returned. If using an API key, calls over this are charged.
+  API_KEY_PER_MIN_LIMIT: 180 // Rate limit per minute if using an API key
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

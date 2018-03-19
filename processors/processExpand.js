@@ -62,6 +62,12 @@ function processExpand(entries, meta) {
           key: unit,
           type: 'damage_taken',
         });
+        expand({
+          value: e.value,
+          unit,
+          key: [inflictor, translate(e.targetname)],
+          type: 'damage_targets',
+        });
         // count a hit on a real hero with this inflictor
         expand({
           time: e.time,
@@ -190,6 +196,8 @@ function processExpand(entries, meta) {
         unit,
         key,
         type: 'killed',
+        // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
+        value: 1,
       }));
     },
     DOTA_COMBATLOG_ABILITY(e) {

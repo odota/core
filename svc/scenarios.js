@@ -3,6 +3,7 @@ const buildMatch = require('../store/buildMatch');
 const db = require('../store/db');
 const async = require('async');
 const util = require('util');
+const utility = require('../util/utility');
 const su = require('../util/scenariosUtil');
 
 function processScenarios(matchID, cb) {
@@ -14,10 +15,12 @@ function processScenarios(matchID, cb) {
       console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
       return cb();
     }
+    const currentWeek = utility.epochWeek();
     Object.keys(su.scenarioChecks).forEach((table) => {
       su.scenarioChecks[table].forEach((scenarioCheck) => {
         const rows = scenarioCheck(match);
         async.eachSeries(rows, (row, cb) => {
+          row = Object.assign(row, { epoch_week: currentWeek });
           const values = Object.keys(row).map(() =>
             '?');
           const query = util.format(
