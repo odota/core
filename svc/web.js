@@ -17,7 +17,7 @@ const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
 
-const redisCount = utility.redisCount;
+const { redisCount } = utility;
 
 const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
@@ -30,9 +30,9 @@ setTimeout(() => {
     if (err) {
       return;
     }
-    
+
     OD_API_KEYS = {};
-    
+
     row.forEach((e) => {
       OD_API_KEYS[e.api_key] = 0;
     });
@@ -88,29 +88,30 @@ app.use(passport.session());
 
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
-    
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
-  ip = ip.replace(/^.*:/, '').split(',')[0];
-  
-  let rate_key = "";
-  let count_key = "";
-  
-  let api_key = req.query.OPENDOTA_API_KEY;
-  if (api_key && api_key in OD_API_KEYS) {
-    rate_key = `rate_limit:${api_key}`;
-    count_key = `api_count_limit:${api_key}`;
-    console.log('[API KEY] %s visit %s, ip %s', api_key, req.originalUrl, ip)
+  [ip] = ip.replace(/^.*:/, '').split(',');
+
+  let rateKey = '';
+  let countKey = '';
+
+  const requestAPIKey = req.query.OPENDOTA_API_KEY;
+  const isAPIRequest = requestAPIKey && requestAPIKey in OD_API_KEYS;
+
+  if (isAPIRequest) {
+    rateKey = `rate_limit:${requestAPIKey}`;
+    countKey = `api_count_limit:${requestAPIKey}`;
+    console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
-    rate_key = `rate_limit:${ip}`;
-    count_key = `count_limit:${ip}`;
+    rateKey = `rate_limit:${ip}`;
+    countKey = `count_limit:${ip}`;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
-  
+
   redis.multi()
-    .incr(rate_key)
-    .expireat(rate_key, utility.getStartOfBlockMinutes(1, 1))
-    .incr(count_key)
-    .expireat(count_key, utility.getEndOfMonth())
+    .incr(rateKey)
+    .expireat(rateKey, utility.getStartOfBlockMinutes(1, 1))
+    .incr(countKey)
+    .expireat(countKey, utility.getEndOfMonth())
     .exec((err, resp) => {
       if (err) {
         console.log(err);
@@ -119,21 +120,21 @@ app.use((req, res, cb) => {
       if (config.NODE_ENV === 'development') {
         console.log(resp);
       }
-      
-      if ((api_key && api_key in OD_API_KEYS && resp[0] > config.API_KEY_PER_MIN_LIMIT || resp[0] > 60)
+
+      if (((isAPIRequest && resp[0] > config.API_KEY_PER_MIN_LIMIT) || resp[0] > 60)
           && config.NODE_ENV !== 'test') {
         return res.status(429).json({
           error: 'rate limit exceeded',
         });
       }
-      
-      if (resp[2] > config.API_FREE_LIMIT && config.NODE_ENV !== 'test') {
+
+      if (!isAPIRequest && resp[2] > config.API_FREE_LIMIT && config.NODE_ENV !== 'test') {
         return res.status(429).json({
           error: 'monthly api limit exeeded',
         });
       }
       return cb();
-  });
+    });
 });
 // Telemetry middleware
 app.use((req, res, cb) => {

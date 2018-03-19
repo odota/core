@@ -422,7 +422,7 @@ function getStartOfBlockMinutes(size, offset) {
 }
 
 function getEndOfMonth() {
-  return moment().endOf("month").unix();  
+  return moment().endOf('month').unix();
 }
 
 /**
