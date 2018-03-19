@@ -1295,5 +1295,5 @@ module.exports = {
   getMmrEstimate,
   getPeers,
   getProPeers,
-  getAPIKeys
+  getAPIKeys,
 };
