@@ -4093,11 +4093,11 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   games: {
-                    description: 'In how many games scenario occured',
+                    description: 'The number of games where this scenario occured',
                     type: 'string',
                   },
                   wins: {
-                    description: 'How many games won when scenario occured',
+                    description: 'The number of games won where this scenario occured',
                     type: 'string',
                   },
                 },
