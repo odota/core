@@ -101,7 +101,6 @@ CREATE TABLE IF NOT EXISTS player_matches (
   item_uses json,
   ability_uses json,
   ability_targets json,
-  damage_targets json,
   hero_hits json,
   damage json,
   damage_taken json,
@@ -160,7 +159,7 @@ CREATE TABLE IF NOT EXISTS players (
     "timecreated" : 1332289262,
   */
 );
-CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS NOT NULL AND cheese > 0;
+CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS NOT NULL;
 CREATE INDEX IF NOT EXISTS players_personaname_idx on players USING GIN(personaname gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS player_ratings (
@@ -190,13 +189,13 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 CREATE INDEX IF NOT EXISTS api_keys_account_id_idx on api_keys(account_id);
 CREATE INDEX IF NOT EXISTS api_keys_customer_id_idx on api_keys(customer_id);
-CREATE INDEX IF NOT EXISTS api_keys_keys on api_keys(api_key);
+CREATE INDEX IF NOT EXISTS api_keys_api_key_idx on api_keys(api_key);
 
 CREATE TABLE IF NOT EXISTS api_key_usage (
   account_id bigint REFERENCES api_keys(account_id),
   customer_id varchar(255),
   api_key uuid,
-  usage_count int,
+  usage_count bigint,
   timestamp timestamp default current_timestamp
 );
 
@@ -400,6 +399,7 @@ CREATE TABLE IF NOT EXISTS hero_ranking (
   score double precision
 );
 CREATE INDEX IF NOT EXISTS hero_ranking_hero_id_score_idx ON hero_ranking(hero_id, score);
+CREATE INDEX IF NOT EXISTS hero_ranking_score_idx ON hero_ranking(score);
 
 CREATE TABLE IF NOT EXISTS queue (
   PRIMARY KEY (id),
@@ -451,10 +451,9 @@ CREATE TABLE IF NOT EXISTS scenarios (
   lane_role smallint,
   games bigint DEFAULT 1,
   wins bigint,
-  epoch_week integer,
-  UNIQUE (hero_id, item, time, epoch_week),
-  UNIQUE (pings, time, epoch_week),
-  UNIQUE (hero_id, lane_role, time, epoch_week)
+  UNIQUE (hero_id, item, time),
+  UNIQUE (pings, time),
+  UNIQUE (hero_id, lane_role, time)
 ); 
 
 CREATE TABLE IF NOT EXISTS team_scenarios (
@@ -463,8 +462,7 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   region smallint,
   games bigint DEFAULT 1,
   wins bigint,
-  epoch_week integer,
-  UNIQUE (scenario, is_radiant, region, epoch_week)
+  UNIQUE (scenario, is_radiant, region)
 );  
 
 DO $$
@@ -483,7 +481,6 @@ BEGIN
         GRANT SELECT ON notable_players TO readonly;
         GRANT SELECT ON public_matches TO readonly;
         GRANT SELECT ON public_player_matches TO readonly;
-        GRANT SELECT ON players TO readonly;
     END IF;
 END
 $$;

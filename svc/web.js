@@ -25,19 +25,19 @@ const host = config.ROOT_URL;
 
 let OD_API_KEYS = {};
 
-setTimeout(() => {
-  queries.getAPIKeys(db, (err, row) => {
+setInterval(() => {
+  queries.getAPIKeys(db, (err, rows) => {
     if (err) {
       return;
     }
 
     OD_API_KEYS = {};
 
-    row.forEach((e) => {
-      OD_API_KEYS[e.api_key] = 0;
+    rows.forEach((e) => {
+      OD_API_KEYS[e.api_key] = 1;
     });
   });
-}, 1000);
+}, 60 * 10 * 1000); // Update every 10 min
 
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
@@ -93,6 +93,7 @@ app.use((req, res, cb) => {
 
   let rateKey = '';
   let countKey = '';
+  let rateLimit = '';
 
   const requestAPIKey = req.query.OPENDOTA_API_KEY;
   const isAPIRequest = requestAPIKey && requestAPIKey in OD_API_KEYS;
@@ -100,10 +101,12 @@ app.use((req, res, cb) => {
   if (isAPIRequest) {
     rateKey = `rate_limit:${requestAPIKey}`;
     countKey = `api_count_limit:${requestAPIKey}`;
+    rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
     rateKey = `rate_limit:${ip}`;
     countKey = `count_limit:${ip}`;
+    rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
 
@@ -120,15 +123,12 @@ app.use((req, res, cb) => {
       if (config.NODE_ENV === 'development') {
         console.log(resp);
       }
-
-      if (((isAPIRequest && resp[0] > config.API_KEY_PER_MIN_LIMIT) || resp[0] > 60)
-          && config.NODE_ENV !== 'test') {
+      if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
         return res.status(429).json({
           error: 'rate limit exceeded',
         });
       }
-
-      if (!isAPIRequest && resp[2] > config.API_FREE_LIMIT && config.NODE_ENV !== 'test') {
+      if (config.ENABLE_API_LIMIT && !isAPIRequest && resp[2] > config.API_FREE_LIMIT && config.NODE_ENV !== 'test') {
         return res.status(429).json({
           error: 'monthly api limit exeeded',
         });

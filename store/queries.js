@@ -77,6 +77,7 @@ function getAPIKeys(db, cb) {
     if (err) {
       return cb(err);
     }
+    console.log(result.rows);
     return cb(err, result.rows);
   });
 }
