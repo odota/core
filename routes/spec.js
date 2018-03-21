@@ -27,6 +27,7 @@ const redisCount = utility.redisCount;
 const subkeys = playerFields.subkeys;
 const countCats = playerFields.countCats;
 const countPeers = utility.countPeers;
+const radiantWinDescr = utility.radiantWinDescr;
 const playerParams = [
   params.accountIdParam,
   params.limitParam,
@@ -238,7 +239,7 @@ Please keep request rate to approximately 3/s.
                   type: 'integer',
                 },
                 radiant_win: {
-                  description: 'Boolean indicating whether Radiant won the match',
+                  description: radiantWinDescr,
                   type: 'boolean',
                 },
                 radiant_xp_adv: {
@@ -701,7 +702,7 @@ Please keep request rate to approximately 3/s.
                         type: 'dateTime',
                       },
                       radiant_win: {
-                        description: 'Boolean indicating whether Radiant won the match',
+                        description: radiantWinDescr,
                         type: 'boolean',
                       },
                       start_time: {
@@ -1151,7 +1152,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   radiant_win: {
-                    description: 'Boolean indicating whether Radiant won the match',
+                    description: radiantWinDescr,
                     type: 'boolean',
                   },
                   duration: {
@@ -1286,7 +1287,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   radiant_win: {
-                    description: 'Boolean indicating whether Radiant won the match',
+                    description: radiantWinDescr,
                     type: 'boolean',
                   },
                   duration: {
@@ -2247,7 +2248,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   radiant_win: {
-                    description: 'Boolean indicating whether Radiant won the match',
+                    description: radiantWinDescr,
                     type: 'boolean',
                   },
                   start_time: {
@@ -4085,7 +4086,7 @@ Please keep request rate to approximately 3/s.
                     type: 'string',
                   },
                   is_radiant: {
-                    description: 'Radiant or Dire',
+                    description: radiantWinDescr,
                     type: 'boolean',
                   },
                   region: {
@@ -4093,7 +4094,7 @@ Please keep request rate to approximately 3/s.
                     type: 'integer',
                   },
                   games: {
-                    description: 'The number of games where this scenario occured',
+                    description: 'The number of games where this scenario occurred',
                     type: 'string',
                   },
                   wins: {
