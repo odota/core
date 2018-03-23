@@ -202,6 +202,16 @@ CREATE TABLE IF NOT EXISTS api_key_usage (
 CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_keys(account_id);
 CREATE INDEX IF NOT EXISTS api_keys_usage_customer_id_idx on api_keys(customer_id);
 
+CREATE TABLE IF NOT EXISTS user_usage (
+  account_id bigint REFERENCES players(account_id),
+  ip cidr,
+  usage_count bigint,
+  timestamp timestamp default current_timestamp
+);
+
+CREATE INDEX IF NOT EXISTS user_usage_account_id_idx on user_usage(account_id);
+CREATE INDEX IF NOT EXISTS user_usage_ip_idx on user_usage(ip);
+
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,
   name varchar(255),

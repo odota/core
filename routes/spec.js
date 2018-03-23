@@ -3990,6 +3990,70 @@ Please keep request rate to approximately 3/s.
         },
       },
     },
+    '/admin/apiMetrics': {
+      get: {
+        summary: 'GET /schema',
+        description: 'Get database schema',
+        tags: ['schema'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  table_name: {
+                    description: 'table_name',
+                    type: 'string',
+                  },
+                  column_name: {
+                    description: 'column_name',
+                    type: 'string',
+                  },
+                  data_type: {
+                    description: 'data_type',
+                    type: 'string',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/admin/apiMetrics',
+        func: (req, res, cb) => {
+          async.parallel({
+            timeUsage: (cb) => {
+              cb();
+            },
+            topApi: (cb) => {
+               db.raw(`
+                 SELECT
+                    MAX(usage_count) as usage_count,
+                    account_id,
+                    customer_id,
+                    api_key
+                  FROM api_key_usage
+                  WHERE
+                    timestamp <= '${moment().endOf('month').format("YYYY-MM-DD")}'
+                    AND timestamp >= '${moment().startOf('month').format("YYYY-MM-DD")}'
+                  GROUP BY 2, 3, 4
+               `)
+              .asCallback((err, res) => cb(err, res.rows));
+            },
+            topUsers: (cb) => {
+              
+            }
+          }, (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result);            
+          })
+        },
+      },
+    }
   },
 };
 module.exports = spec;

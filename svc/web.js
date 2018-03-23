@@ -25,10 +25,10 @@ const host = config.ROOT_URL;
 
 let OD_API_KEYS = {};
 
-setInterval(() => {
+utility.invokeInterval((cb) => {
   queries.getAPIKeys(db, (err, rows) => {
     if (err) {
-      return;
+      cb();
     }
 
     OD_API_KEYS = {};
@@ -36,6 +36,8 @@ setInterval(() => {
     rows.forEach((e) => {
       OD_API_KEYS[e.api_key] = 1;
     });
+    
+    cb();
   });
 }, 60 * 10 * 1000); // Update every 10 min
 
@@ -91,30 +93,27 @@ app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   [ip] = ip.replace(/^.*:/, '').split(',');
 
-  let rateKey = '';
-  let countKey = '';
+  let identifier = ''
   let rateLimit = '';
 
   const requestAPIKey = req.query.OPENDOTA_API_KEY;
   const isAPIRequest = requestAPIKey && requestAPIKey in OD_API_KEYS;
 
   if (isAPIRequest) {
-    rateKey = `rate_limit:${requestAPIKey}`;
-    countKey = `api_count_limit:${requestAPIKey}`;
+    identifier = `API:${requestAPIKey}`;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
-    rateKey = `rate_limit:${ip}`;
-    countKey = `count_limit:${ip}`;
+    identifier = `USER:${ip}:${req.user ? req.user.account_id : 'anon'}`;
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
 
   redis.multi()
-    .incr(rateKey)
-    .expireat(rateKey, utility.getStartOfBlockMinutes(1, 1))
-    .incr(countKey)
-    .expireat(countKey, utility.getEndOfMonth())
+    .hincrby('rate_limit', identifier, 1)
+    .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1))
+    .hincrby('usage_count', identifier, 1)
+    .expireat('usage_count', utility.getEndOfMonth())
     .exec((err, resp) => {
       if (err) {
         console.log(err);
@@ -133,6 +132,7 @@ app.use((req, res, cb) => {
           error: 'monthly api limit exeeded',
         });
       }
+
       return cb();
     });
 });
