@@ -72,11 +72,11 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
 api.use('/admin*', (req, res, cb) => {
   if (req.user && admins.includes(req.user.account_id)) {
     return cb();
-  } else {
-    res.status(403).json({
-      error: 'Access Denied'
-    });
   }
+
+  return res.status(403).json({
+    error: 'Access Denied',
+  });
 });
 
 // API spec
