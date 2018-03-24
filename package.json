@@ -16,7 +16,8 @@
     "resetrecords": "redis-cli keys 'records*' | xargs redis-cli del",
     "dockerbuild": "sudo docker build -t odota/core .",
     "reparse": "cat matches.csv | xargs -n1 node dev/getMatch.js",
-    "createAccounts": "node dev/createAccounts.js > accounts.log"
+    "createAccounts": "node dev/createAccounts.js > accounts.log",
+    "psql": "docker exec -it odota-postgres psql -U postgres -d yasp"
   },
   "repository": {
     "type": "git",

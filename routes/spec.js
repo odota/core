@@ -4012,8 +4012,8 @@ Please keep request rate to approximately 3/s.
             timeAPIUsage: (cb) => {
               db.raw(`
                 SELECT
-                  date_part('day', timestamp),
-                  T1.api_key,
+                  date_part('day', timestamp) as day,
+                  T1.api_key as api_key,
                   MAX(api_key_usage.usage_count) as usage_count
                 FROM api_key_usage
                 JOIN ( 
@@ -4025,11 +4025,11 @@ Please keep request rate to approximately 3/s.
                     timestamp >= '${startTime}'
                     AND timestamp <= '${endTime}'
                   GROUP BY api_key
-                  ORDER BY 2 DESC
+                  ORDER BY usage_count DESC
                   LIMIT 50
                 ) as T1
                 on api_key_usage.api_key = T1.api_key
-                GROUP BY 1, 2
+                GROUP BY day, T1.api_key
               `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
@@ -4050,10 +4050,10 @@ Please keep request rate to approximately 3/s.
                   WHERE
                     timestamp >= '${startTime}'
                     AND timestamp <= '${endTime}'
-                  GROUP BY 1, 2, 3
+                  GROUP BY account_id, api_key, ip
                 ) as T1
-                GROUP BY 1
-                ORDER BY 2 DESC
+                GROUP BY account_id
+                ORDER BY usage_count DESC
                 LIMIT 100
               `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
@@ -4075,10 +4075,10 @@ Please keep request rate to approximately 3/s.
                   WHERE
                     timestamp >= '${startTime}'
                     AND timestamp <= '${endTime}'
-                  GROUP BY 1, 2, 3
+                  GROUP BY account_id, api_key, ip
                 ) as T1
-                GROUP BY 1
-                ORDER BY 2 DESC
+                GROUP BY ip
+                ORDER BY usage_count DESC
                 LIMIT 10
               `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
@@ -4110,10 +4110,10 @@ Please keep request rate to approximately 3/s.
                     timestamp >= '${startTime}'
                     AND timestamp <= '${endTime}'
                     AND account_id is not null
-                  GROUP BY 1, 2
+                  GROUP BY account_id, ip
                 ) as T1
-                GROUP BY 1
-                ORDER BY 2 DESC
+                GROUP BY account_id
+                ORDER BY usage_count DESC
                 LIMIT 100
               `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
@@ -4124,19 +4124,19 @@ Please keep request rate to approximately 3/s.
                   ip,
                   SUM(usage_count) as usage_count,
                   ARRAY_AGG(account_id) as account_ids
-                FROM (  
+                FROM (
                   SELECT
                     account_id,
                     ip,
                     MAX(usage_count) as usage_count
-                  FROM api_key_usage
+                  FROM user_usage
                   WHERE
                     timestamp >= '${startTime}'
                     AND timestamp <= '${endTime}'
-                  GROUP BY 1, 2
+                  GROUP BY account_id, ip
                 ) as T1
-                GROUP BY 1
-                ORDER BY 2 DESC
+                GROUP BY ip
+                ORDER BY usage_count DESC
                 LIMIT 10
               `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
@@ -4149,7 +4149,6 @@ Please keep request rate to approximately 3/s.
                 WHERE
                   timestamp >= '${startTime}'
                   AND timestamp <= '${endTime}'
-                  AND account_id is not null
               `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },

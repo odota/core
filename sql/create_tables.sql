@@ -189,10 +189,9 @@ CREATE TABLE IF NOT EXISTS api_keys (
   customer_id varchar(255)
 );
 CREATE INDEX IF NOT EXISTS api_keys_account_id_idx on api_keys(account_id);
-CREATE INDEX IF NOT EXISTS api_keys_customer_id_idx on api_keys(customer_id);
-CREATE INDEX IF NOT EXISTS api_keys_api_key_idx on api_keys(api_key);
 
 CREATE TABLE IF NOT EXISTS api_key_usage (
+  PRIMARY KEY(account_id, api_key, timestamp),
   account_id bigint REFERENCES api_keys(account_id),
   customer_id varchar(255),
   api_key uuid,
@@ -201,17 +200,14 @@ CREATE TABLE IF NOT EXISTS api_key_usage (
   timestamp timestamp default current_timestamp
 );
 CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_keys(account_id);
-CREATE INDEX IF NOT EXISTS api_keys_usage_customer_id_idx on api_keys(customer_id);
 
 CREATE TABLE IF NOT EXISTS user_usage (
-  account_id bigint REFERENCES players(account_id),
+  account_id bigint,
   ip cidr,
   usage_count bigint,
   timestamp timestamp default current_timestamp
 );
-
 CREATE INDEX IF NOT EXISTS user_usage_account_id_idx on user_usage(account_id);
-CREATE INDEX IF NOT EXISTS user_usage_ip_idx on user_usage(ip);
 
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,
