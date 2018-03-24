@@ -4005,10 +4005,8 @@ Please keep request rate to approximately 3/s.
         },
         route: () => '/admin/apiMetrics',
         func: (req, res, cb) => {
-          const startTime = moment().startOf('month').format("YYYY-MM-DD");
-          const endTime = moment().endOf('month').format("YYYY-MM-DD");
-
-
+          const startTime = moment().startOf('month').format('YYYY-MM-DD');
+          const endTime = moment().endOf('month').format('YYYY-MM-DD');
 
           async.parallel({
             timeAPIUsage: (cb) => {
@@ -4028,12 +4026,12 @@ Please keep request rate to approximately 3/s.
                     AND timestamp <= '${endTime}'
                   GROUP BY api_key
                   ORDER BY 2 DESC
-                  LIMIT 100
+                  LIMIT 50
                 ) as T1
                 on api_key_usage.api_key = T1.api_key
                 GROUP BY 1, 2
               `)
-              .asCallback((err, res) => cb(err, err ? null : res.rows));
+                .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topAPI: (cb) => {
               db.raw(`
@@ -4058,7 +4056,7 @@ Please keep request rate to approximately 3/s.
                 ORDER BY 2 DESC
                 LIMIT 100
               `)
-              .asCallback((err, res) => cb(err, err ? null : res.rows));
+                .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topAPIIP: (cb) => {
               db.raw(`
@@ -4083,7 +4081,7 @@ Please keep request rate to approximately 3/s.
                 ORDER BY 2 DESC
                 LIMIT 10
               `)
-              .asCallback((err, res) => cb(err, err ? null : res.rows));
+                .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             numAPIUsers: (cb) => {
               db.raw(`
@@ -4094,7 +4092,7 @@ Please keep request rate to approximately 3/s.
                   timestamp >= '${startTime}'
                   AND timestamp <= '${endTime}'
               `)
-              .asCallback((err, res) => cb(err, err ? null : res.rows));
+                .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topUsers: (cb) => {
               db.raw(`
@@ -4118,7 +4116,7 @@ Please keep request rate to approximately 3/s.
                 ORDER BY 2 DESC
                 LIMIT 100
               `)
-              .asCallback((err, res) => cb(err, err ? null : res.rows));
+                .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topUsersIP: (cb) => {
               db.raw(`
@@ -4141,7 +4139,7 @@ Please keep request rate to approximately 3/s.
                 ORDER BY 2 DESC
                 LIMIT 10
               `)
-              .asCallback((err, res) => cb(err, err ? null : res.rows));
+                .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             numUsers: (cb) => {
               db.raw(`
@@ -4153,17 +4151,17 @@ Please keep request rate to approximately 3/s.
                   AND timestamp <= '${endTime}'
                   AND account_id is not null
               `)
-              .asCallback((err, res) => cb(err, err ? null : res.rows));
-            }
+                .asCallback((err, res) => cb(err, err ? null : res.rows));
+            },
           }, (err, result) => {
             if (err) {
               return cb(err);
             }
-            return res.json(result);            
-          })
+            return res.json(result);
+          });
         },
       },
-    }
+    },
   },
 };
 module.exports = spec;

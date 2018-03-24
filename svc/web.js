@@ -23,24 +23,6 @@ const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
 
-let OD_API_KEYS = {};
-
-utility.invokeInterval((cb) => {
-  queries.getAPIKeys(db, (err, rows) => {
-    if (err) {
-      cb();
-    }
-
-    OD_API_KEYS = {};
-
-    rows.forEach((e) => {
-      OD_API_KEYS[e.api_key] = 1;
-    });
-    
-    cb();
-  });
-}, 60 * 10 * 1000); // Update every 10 min
-
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
   maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
@@ -90,16 +72,28 @@ app.use(passport.session());
 
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
+  if (req.query.OPENDOTA_API_KEY) {
+    redis.sismember('api_keys', req.query.OPENDOTA_API_KEY, (err, resp) => {
+      if (err) {
+        cb(err);
+      } else {
+        res.locals.isAPIRequest = resp === 1;
+        cb();
+      }
+    });
+  } else {
+    cb();
+  }
+});
+app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   [ip] = ip.replace(/^.*:/, '').split(',');
 
-  let identifier = ''
+  let identifier = '';
   let rateLimit = '';
 
-  const requestAPIKey = req.query.OPENDOTA_API_KEY;
-  const isAPIRequest = requestAPIKey && requestAPIKey in OD_API_KEYS;
-
-  if (isAPIRequest) {
+  if (res.locals.isAPIRequest) {
+    const requestAPIKey = req.query.OPENDOTA_API_KEY;
     identifier = `API:${ip}:${requestAPIKey}`;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
@@ -127,7 +121,7 @@ app.use((req, res, cb) => {
           error: 'rate limit exceeded',
         });
       }
-      if (config.ENABLE_API_LIMIT && !isAPIRequest && resp[2] > config.API_FREE_LIMIT && config.NODE_ENV !== 'test') {
+      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && resp[2] > config.API_FREE_LIMIT && config.NODE_ENV !== 'test') {
         return res.status(429).json({
           error: 'monthly api limit exeeded',
         });
