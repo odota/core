@@ -21,8 +21,10 @@ function storeUsageCounts(cursor, cb) {
       }
       
       if (e.startsWith('API')) {
+        let split = e.split(':');
+
         db.from('api_keys').where({
-          api_key: e.replace('API:', ''),
+          api_key: split[2]
         }).asCallback((err, results) => {
           if (err) {
             cb2(err);  
@@ -33,6 +35,7 @@ function storeUsageCounts(cursor, cb) {
               account_id: results[0].account_id,
               api_key: results[0].api_key,
               customer_id: results[0].customer_id,
+              ip: split[1],
               usage_count: values[i + 1]
             })
             .asCallback(cb2);

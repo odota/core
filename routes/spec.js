@@ -4008,29 +4008,91 @@ Please keep request rate to approximately 3/s.
           const startTime = moment().startOf('month').format("YYYY-MM-DD");
           const endTime = moment().endOf('month').format("YYYY-MM-DD");
 
+
+
           async.parallel({
-            timeUsage: (cb) => {
-              cb();
-            },
-            topApi: (cb) => {
+            timeAPIUsage: (cb) => {
               db.raw(`
                 SELECT
-                  account_id,
-                  SUM(usage_count) as usage_count,
-                  ARRAY_AGG(api_key) as api_keys
-                FROM (  
+                  date_part('day', timestamp),
+                  T1.api_key,
+                  MAX(api_key_usage.usage_count) as usage_count
+                FROM api_key_usage
+                JOIN ( 
                   SELECT
-                    account_id,
                     api_key,
                     MAX(usage_count) as usage_count
                   FROM api_key_usage
                   WHERE
                     timestamp >= '${startTime}'
                     AND timestamp <= '${endTime}'
-                  GROUP BY 1, 2
+                  GROUP BY api_key
+                  ORDER BY 2 DESC
+                  LIMIT 100
+                ) as T1
+                on api_key_usage.api_key = T1.api_key
+                GROUP BY 1, 2
+              `)
+              .asCallback((err, res) => cb(err, err ? null : res.rows));
+            },
+            topAPI: (cb) => {
+              db.raw(`
+                SELECT
+                  account_id,
+                  SUM(usage_count) as usage_count,
+                  ARRAY_AGG(api_key) as api_keys,
+                  ARRAY_AGG(ip) as ips
+                FROM (  
+                  SELECT
+                    account_id,
+                    api_key,
+                    ip,
+                    MAX(usage_count) as usage_count
+                  FROM api_key_usage
+                  WHERE
+                    timestamp >= '${startTime}'
+                    AND timestamp <= '${endTime}'
+                  GROUP BY 1, 2, 3
                 ) as T1
                 GROUP BY 1
                 ORDER BY 2 DESC
+                LIMIT 100
+              `)
+              .asCallback((err, res) => cb(err, err ? null : res.rows));
+            },
+            topAPIIP: (cb) => {
+              db.raw(`
+                SELECT
+                  ip,
+                  SUM(usage_count) as usage_count,
+                  ARRAY_AGG(api_key) as api_keys,
+                  ARRAY_AGG(account_id) as account_ids
+                FROM (  
+                  SELECT
+                    account_id,
+                    api_key,
+                    ip,
+                    MAX(usage_count) as usage_count
+                  FROM api_key_usage
+                  WHERE
+                    timestamp >= '${startTime}'
+                    AND timestamp <= '${endTime}'
+                  GROUP BY 1, 2, 3
+                ) as T1
+                GROUP BY 1
+                ORDER BY 2 DESC
+                LIMIT 10
+              `)
+              .asCallback((err, res) => cb(err, err ? null : res.rows));
+            },
+            numAPIUsers: (cb) => {
+              db.raw(`
+                SELECT
+                  COUNT(DISTINCT account_id)
+                FROM api_key_usage
+                WHERE
+                  timestamp >= '${startTime}'
+                  AND timestamp <= '${endTime}'
               `)
               .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
@@ -4049,10 +4111,47 @@ Please keep request rate to approximately 3/s.
                   WHERE
                     timestamp >= '${startTime}'
                     AND timestamp <= '${endTime}'
+                    AND account_id is not null
                   GROUP BY 1, 2
                 ) as T1
                 GROUP BY 1
                 ORDER BY 2 DESC
+                LIMIT 100
+              `)
+              .asCallback((err, res) => cb(err, err ? null : res.rows));
+            },
+            topUsersIP: (cb) => {
+              db.raw(`
+                SELECT
+                  ip,
+                  SUM(usage_count) as usage_count,
+                  ARRAY_AGG(account_id) as account_ids
+                FROM (  
+                  SELECT
+                    account_id,
+                    ip,
+                    MAX(usage_count) as usage_count
+                  FROM api_key_usage
+                  WHERE
+                    timestamp >= '${startTime}'
+                    AND timestamp <= '${endTime}'
+                  GROUP BY 1, 2
+                ) as T1
+                GROUP BY 1
+                ORDER BY 2 DESC
+                LIMIT 10
+              `)
+              .asCallback((err, res) => cb(err, err ? null : res.rows));
+            },
+            numUsers: (cb) => {
+              db.raw(`
+                SELECT
+                  COUNT(DISTINCT account_id)
+                FROM user_usage
+                WHERE
+                  timestamp >= '${startTime}'
+                  AND timestamp <= '${endTime}'
+                  AND account_id is not null
               `)
               .asCallback((err, res) => cb(err, err ? null : res.rows));
             }

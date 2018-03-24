@@ -100,11 +100,11 @@ app.use((req, res, cb) => {
   const isAPIRequest = requestAPIKey && requestAPIKey in OD_API_KEYS;
 
   if (isAPIRequest) {
-    identifier = `API:${requestAPIKey}`;
+    identifier = `API:${ip}:${requestAPIKey}`;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
-    identifier = `USER:${ip}:${req.user ? req.user.account_id : 'anon'}`;
+    identifier = `USER:${ip}:${req.user ? req.user.account_id : ''}`;
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
