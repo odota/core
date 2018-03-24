@@ -6,7 +6,7 @@ const utility = require('../util/utility');
 const invokeInterval = utility.invokeInterval;
 
 function storeUsageCounts(cursor, cb) {
-  redis.hscan('usage_count', cursor, (err, results) => {
+  redis.hscan('usage_count', cursor, "COUNT", 1, (err, results) => {
     if (err) {
       console.log('[ERROR] ', err);
       process.exit(1);

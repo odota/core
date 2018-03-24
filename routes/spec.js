@@ -3992,58 +3992,69 @@ Please keep request rate to approximately 3/s.
     },
     '/admin/apiMetrics': {
       get: {
-        summary: 'GET /schema',
-        description: 'Get database schema',
-        tags: ['schema'],
-        parameters: [],
+        summary: 'GET /admin/apiMetrics',
+        description: 'Get API request metrics',
+        tags: ['status'],
         responses: {
           200: {
             description: 'Success',
             schema: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  table_name: {
-                    description: 'table_name',
-                    type: 'string',
-                  },
-                  column_name: {
-                    description: 'column_name',
-                    type: 'string',
-                  },
-                  data_type: {
-                    description: 'data_type',
-                    type: 'string',
-                  },
-                },
-              },
+              type: 'object',
             },
           },
         },
         route: () => '/admin/apiMetrics',
         func: (req, res, cb) => {
+          const startTime = moment().startOf('month').format("YYYY-MM-DD");
+          const endTime = moment().endOf('month').format("YYYY-MM-DD");
+
           async.parallel({
             timeUsage: (cb) => {
               cb();
             },
             topApi: (cb) => {
-               db.raw(`
-                 SELECT
-                    MAX(usage_count) as usage_count,
+              db.raw(`
+                SELECT
+                  account_id,
+                  SUM(usage_count) as usage_count,
+                  ARRAY_AGG(api_key) as api_keys
+                FROM (  
+                  SELECT
                     account_id,
-                    customer_id,
-                    api_key
+                    api_key,
+                    MAX(usage_count) as usage_count
                   FROM api_key_usage
                   WHERE
-                    timestamp <= '${moment().endOf('month').format("YYYY-MM-DD")}'
-                    AND timestamp >= '${moment().startOf('month').format("YYYY-MM-DD")}'
-                  GROUP BY 2, 3, 4
-               `)
-              .asCallback((err, res) => cb(err, res.rows));
+                    timestamp >= '${startTime}'
+                    AND timestamp <= '${endTime}'
+                  GROUP BY 1, 2
+                ) as T1
+                GROUP BY 1
+                ORDER BY 2 DESC
+              `)
+              .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topUsers: (cb) => {
-              
+              db.raw(`
+                SELECT
+                  account_id,
+                  SUM(usage_count) as usage_count,
+                  ARRAY_AGG(ip) as ips
+                FROM (  
+                  SELECT
+                    account_id,
+                    ip,
+                    MAX(usage_count) as usage_count
+                  FROM user_usage
+                  WHERE
+                    timestamp >= '${startTime}'
+                    AND timestamp <= '${endTime}'
+                  GROUP BY 1, 2
+                ) as T1
+                GROUP BY 1
+                ORDER BY 2 DESC
+              `)
+              .asCallback((err, res) => cb(err, err ? null : res.rows));
             }
           }, (err, result) => {
             if (err) {
