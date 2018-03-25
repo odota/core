@@ -66,6 +66,7 @@ const defaults = {
   API_KEY_PER_MIN_LIMIT: 180, // Rate limit per minute if using an API key
   NO_API_KEY_PER_MIN_LIMIT: 60, // Rate limit per minute if not using an API key
   ADMIN_ACCOUNT_IDS: [], // Whitelisted account IDs to access /admin* routes
+  BACKUP_RETRIEVER_FACTOR: 0, // percent of replay salts to fetch from backup data source
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
