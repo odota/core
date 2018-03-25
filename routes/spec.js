@@ -4039,7 +4039,7 @@ Please keep request rate to approximately 3/s.
                   account_id,
                   SUM(usage_count) as usage_count,
                   ARRAY_AGG(api_key) as api_keys,
-                  ARRAY_AGG(ip) as ips
+                  ARRAY_AGG(DISTINCT ip) as ips
                 FROM (  
                   SELECT
                     account_id,
@@ -4064,7 +4064,7 @@ Please keep request rate to approximately 3/s.
                   ip,
                   SUM(usage_count) as usage_count,
                   ARRAY_AGG(api_key) as api_keys,
-                  ARRAY_AGG(account_id) as account_ids
+                  ARRAY_AGG(DISTINCT account_id) as account_ids
                 FROM (  
                   SELECT
                     account_id,
@@ -4100,18 +4100,11 @@ Please keep request rate to approximately 3/s.
                   account_id,
                   SUM(usage_count) as usage_count,
                   ARRAY_AGG(ip) as ips
-                FROM (  
-                  SELECT
-                    account_id,
-                    ip,
-                    MAX(usage_count) as usage_count
-                  FROM user_usage
-                  WHERE
-                    timestamp >= '${startTime}'
-                    AND timestamp <= '${endTime}'
-                    AND account_id is not null
-                  GROUP BY account_id, ip
-                ) as T1
+                FROM user_usage
+                WHERE
+                  timestamp >= '${startTime}'
+                  AND timestamp <= '${endTime}'
+                  AND account_id != 0
                 GROUP BY account_id
                 ORDER BY usage_count DESC
                 LIMIT 100
@@ -4124,17 +4117,10 @@ Please keep request rate to approximately 3/s.
                   ip,
                   SUM(usage_count) as usage_count,
                   ARRAY_AGG(account_id) as account_ids
-                FROM (
-                  SELECT
-                    account_id,
-                    ip,
-                    MAX(usage_count) as usage_count
-                  FROM user_usage
-                  WHERE
-                    timestamp >= '${startTime}'
-                    AND timestamp <= '${endTime}'
-                  GROUP BY account_id, ip
-                ) as T1
+                FROM user_usage
+                WHERE
+                  timestamp >= '${startTime}'
+                  AND timestamp <= '${endTime}'
                 GROUP BY ip
                 ORDER BY usage_count DESC
                 LIMIT 10
