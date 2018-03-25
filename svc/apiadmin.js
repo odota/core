@@ -3,6 +3,7 @@ const redis = require('../store/redis');
 const db = require('../store/db');
 const utility = require('../util/utility');
 const queries = require('../store/queries');
+const moment = require('moment');
 
 const { invokeInterval } = utility;
 
@@ -15,6 +16,9 @@ function storeUsageCounts(cursor, cb) {
 
     const cursor = results[0];
     const values = results[1];
+
+    const apiTimestamp = moment().startOf('day');
+    const userTimestamp = moment().startOf('month');
 
     async.eachOfLimit(values, 5, (e, i, cb2) => {
       if (i % 2) {
@@ -31,14 +35,17 @@ function storeUsageCounts(cursor, cb) {
             cb2(err);
           }
           if (results.length > 0) {
-            db('api_key_usage')
-              .insert({
-                account_id: results[0].account_id,
-                api_key: results[0].api_key,
-                customer_id: results[0].customer_id,
-                ip: split[1],
-                usage_count: values[i + 1],
-              })
+            db.raw(`
+              INSERT INTO api_key_usage
+              (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
+              (${results[0].account_id},
+               '${results[0].api_key}',
+               '${results[0].customer_id}',
+               '${apiTimestamp}',
+               '${split[1]}',
+               ${values[i + 1]})
+              ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ${values[i + 1]}
+            `)
               .asCallback(cb2);
           } else {
             cb2();
@@ -47,12 +54,16 @@ function storeUsageCounts(cursor, cb) {
       } else if (e.startsWith('USER')) {
         const split = e.split(':');
 
-        db('user_usage')
-          .insert({
-            ip: split[1],
-            account_id: split[2] ? split[2] : null,
-            usage_count: values[i + 1],
-          })
+        // null account_id mapped to 0 to avoid duplicate rows
+        db.raw(`
+          INSERT INTO user_usage
+          (account_id, timestamp, ip, usage_count) VALUES
+          (${split[2] || 0},
+           '${userTimestamp}',
+           '${split[1]}',
+           ${values[i + 1]})
+          ON CONFLICT (account_id, ip, timestamp) DO UPDATE SET usage_count = ${values[i + 1]}
+        `)
           .asCallback(cb2);
       }
     }, (err) => {
@@ -61,7 +72,9 @@ function storeUsageCounts(cursor, cb) {
         process.exit(1);
       }
 
-      storeUsageCounts(cursor, cb);
+      if (cursor !== '0') {
+        storeUsageCounts(cursor, cb);
+      }
     });
   });
 }
@@ -84,7 +97,7 @@ utility.invokeInterval((cb) => {
             console.error('[ERROR] ', err);
             process.exit(1);
           }
-          console.log(res);
+          console.log('[API KEY CACHE] Got resposne:', res);
           cb();
         });
     } else {

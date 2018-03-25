@@ -208,6 +208,7 @@ CREATE TABLE IF NOT EXISTS user_usage (
   timestamp timestamp default current_timestamp
 );
 CREATE INDEX IF NOT EXISTS user_usage_account_id_idx on user_usage(account_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_usage_unique_idx on user_usage(account_id, ip, timestamp);
 
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,
