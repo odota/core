@@ -18,9 +18,10 @@ const insertMatch = queries.insertMatch;
 function getGcDataFromRetriever(match, cb) {
   // make array of retriever urls and use a random one on each retry
   const urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
-  const backupCount = retrieverArr.length * 1;
+  const backupFactor = Math.min(config.BACKUP_RETRIEVER_FACTOR, 0.99);
+  const totalCount = Math.floor(retrieverArr.length / (1 - backupFactor));
   if (config.NODE_ENV !== 'test' && match.allowBackup) {
-    for (let i = 0; i < backupCount; i += 1) {
+    while (urls.length < totalCount) {
       urls.push(`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`);
     }
   }

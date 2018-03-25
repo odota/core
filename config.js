@@ -61,6 +61,7 @@ const defaults = {
   MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
   PLAYER_CACHE_SECONDS: 3600, // number of seconds to cache player aggregations
   SCANNER_PLAYER_PERCENT: 10, // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
+  BACKUP_RETRIEVER_FACTOR: 0, // percent of replay salts to fetch from backup data source
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
