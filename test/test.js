@@ -266,7 +266,8 @@ describe('api limits', () => {
           return assert.equal(res.statusCode, 200);
         }
         assert.equal(res.statusCode, 429);
-        return assert.equal(res.body.error, 'monthly api limit exeeded');
+        assert.equal(res.body.error, 'monthly api limit exeeded');
+        return cb();
       });
     });
   });
@@ -278,7 +279,8 @@ describe('api limits', () => {
           return cb(err);
         }
 
-        return assert.equal(res.statusCode, 200);
+        assert.equal(res.statusCode, 200);
+        return cb();
       });
     });
   });
