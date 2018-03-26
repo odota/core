@@ -121,7 +121,7 @@ app.use((req, res, cb) => {
           error: 'rate limit exceeded',
         });
       }
-      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && resp[2] > config.API_FREE_LIMIT && config.NODE_ENV !== 'test') {
+      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && resp[2] > config.API_FREE_LIMIT) {
         return res.status(429).json({
           error: 'monthly api limit exeeded',
         });
