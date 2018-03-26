@@ -242,8 +242,8 @@ describe('api', () => {
     });
   });
 });
-describe('api limits', (done) => {
-  before(() => {
+describe('api limits', () => {
+  before((done) => {
     config.ENABLE_API_LIMIT = true;
     config.API_FREE_LIMIT = 20;
     redis.sadd('api_keys', 'KEY', (err) => {
