@@ -255,7 +255,7 @@ describe('api limits', () => {
     });
   });
 
-  it('non api key calls should be able to make 20. 21st should fail.', () => {
+  it('non api key calls should be able to make 20. 21st should fail.', (done) => {
     async.timesSeries(21, (i, cb) => {
       supertest(app).get('/api').end((err, res) => {
         if (err) {
@@ -263,16 +263,17 @@ describe('api limits', () => {
         }
 
         if (i <= 20) {
-          return assert.equal(res.statusCode, 200);
+          assert.equal(res.statusCode, 200);
+        } else {
+          assert.equal(res.statusCode, 429);
+          assert.equal(res.body.error, 'monthly api limit exeeded');
         }
-        assert.equal(res.statusCode, 429);
-        assert.equal(res.body.error, 'monthly api limit exeeded');
         return cb();
       });
-    });
+    }, done);
   });
 
-  it('should be able to make more than 20 calls when using API KEY', () => {
+  it('should be able to make more than 20 calls when using API KEY', (done) => {
     async.timesSeries(25, (i, cb) => {
       supertest(app).get('/api?OPENDOTA_API_KEY=KEY').end((err, res) => {
         if (err) {
@@ -282,7 +283,7 @@ describe('api limits', () => {
         assert.equal(res.statusCode, 200);
         return cb();
       });
-    });
+    }, done);
   });
 });
 /*
