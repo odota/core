@@ -242,6 +242,48 @@ describe('api', () => {
     });
   });
 });
+describe('api limits', (done) => {
+  before(() => {
+    config.ENABLE_API_LIMIT = true;
+    config.API_FREE_LIMIT = 20;  
+    redis.sadd('api_keys', 'KEY', (err, res) => {
+      if (err) {
+        return done(err);
+      }
+      
+      return done();
+    })
+  });
+  
+  it('non api key calls should be able to make 20. 21st should fail.', () => {
+    async.timesSeries(21, (i, cb) => {
+      supertest(app).get('/api').end((err, res) => {
+        if (err) {
+          return cb(err);
+        }
+        
+        if (i <= 20) {
+          return assert.equal(res.statusCode, 200);
+        } else {
+          assert.equal(res.statusCode, 429);
+          return assert.equal(res.body.error, 'monthly api limit exeeded');
+        }
+      })
+    })
+  })
+  
+  it('should be able to make more than 20 calls when using API KEY', () => {
+    async.timesSeries(25, (i, cb) => {
+      supertest(app).get('/api?OPENDOTA_API_KEY=KEY').end((err, res) => {
+        if (err) {
+          return cb(err);
+        }
+        
+        return assert.equal(res.statusCode, 200);
+      })
+    })
+  })
+})
 /*
 describe('generateMatchups', () => {
   it('should generate matchups', (done) => {
