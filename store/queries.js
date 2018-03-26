@@ -9,6 +9,7 @@ const queue = require('./queue');
 const async = require('async');
 const moment = require('moment');
 const util = require('util');
+const su = require('../util/scenariosUtil');
 const filter = require('../util/filter');
 const compute = require('../util/compute');
 const db = require('../store/db');
@@ -1264,6 +1265,48 @@ function insertMatch(match, options, cb) {
   });
 }
 
+function getItemTimings(req, cb) {
+  const heroId = req.query.hero_id || 0;
+  const item = req.query.item || '';
+  db.raw(
+    `SELECT hero_id, item, time, sum(games) games, sum(wins) wins
+     FROM scenarios
+     WHERE item IS NOT NULL
+     AND (0 = :heroId OR hero_id = :heroId)
+     AND ('' = :item OR item = :item)
+     GROUP BY hero_id, item, time ORDER BY time, hero_id, item
+     LIMIT 1600`,
+    { heroId, item },
+  ).asCallback((err, result) => cb(err, result));
+}
+
+function getLaneRoles(req, cb) {
+  const heroId = req.query.hero_id || 0;
+  const lane = req.query.lane_role || 0;
+  db.raw(
+    `SELECT hero_id, lane_role, time, sum(games) games, sum(wins) wins
+     FROM scenarios
+     WHERE lane_role IS NOT NULL 
+     AND (0 = :heroId OR hero_id = :heroId)
+     AND (0 = :lane OR lane_role = :lane) 
+     GROUP BY hero_id, lane_role, time ORDER BY hero_id, time, lane_role
+     LIMIT 1200`,
+    { heroId, lane },
+  ).asCallback((err, result) => cb(err, result));
+}
+
+function getTeamScenarios(req, cb) {
+  const scenario = su.teamScenariosQueryParams[req.query.scenario] || '';
+  db.raw(
+    `SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins
+     FROM team_scenarios
+     WHERE ('' = :scenario OR scenario = :scenario) 
+     GROUP BY scenario, is_radiant, region ORDER BY scenario
+     LIMIT 1000`,
+    { scenario },
+  ).asCallback((err, result) => cb(err, result));
+}
+
 module.exports = {
   upsert,
   insertPlayer,
@@ -1284,4 +1327,7 @@ module.exports = {
   getMmrEstimate,
   getPeers,
   getProPeers,
+  getItemTimings,
+  getLaneRoles,
+  getTeamScenarios,
 };
