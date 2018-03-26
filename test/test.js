@@ -265,7 +265,7 @@ describe('api limits', () => {
           return cb(err);
         }
 
-        if (i <= 20) {
+        if (i < 20) {
           assert.equal(res.statusCode, 200);
         } else {
           assert.equal(res.statusCode, 429);
