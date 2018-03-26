@@ -19,6 +19,7 @@ const redis = require('../store/redis');
 const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
+const properties = require('./properties');
 const {
   teamObject, matchObject, heroObject, playerObject,
 } = require('./objects');
@@ -27,7 +28,6 @@ const redisCount = utility.redisCount;
 const subkeys = playerFields.subkeys;
 const countCats = playerFields.countCats;
 const countPeers = utility.countPeers;
-const radiantWinDescr = utility.radiantWinDescr;
 const playerParams = [
   params.accountIdParam,
   params.limitParam,
@@ -125,10 +125,7 @@ Please keep request rate to approximately 3/s.
                         description: 'slot',
                         type: 'integer',
                       },
-                      player_slot: {
-                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                        type: 'integer',
-                      },
+                      player_slot: properties.player_slot,
                     },
                   },
                 },
@@ -167,10 +164,7 @@ Please keep request rate to approximately 3/s.
                         decription: 'The ID value of the hero played',
                         type: 'integer',
                       },
-                      player_slot: {
-                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                        type: 'integer',
-                      },
+                      player_slot: properties.player_slot,
                       extra_time: {
                         description: 'extra_time',
                         type: 'integer',
@@ -182,10 +176,7 @@ Please keep request rate to approximately 3/s.
                     },
                   },
                 },
-                duration: {
-                  description: 'Duration of the game in seconds',
-                  type: 'integer',
-                },
+                duration: properties.duration,
                 engine: {
                   description: 'engine',
                   type: 'integer',
@@ -238,10 +229,7 @@ Please keep request rate to approximately 3/s.
                   description: 'Final score for Radiant (number of kills on Radiant)',
                   type: 'integer',
                 },
-                radiant_win: {
-                  description: radiantWinDescr,
-                  type: 'boolean',
-                },
+                radiant_win: properties.radiant_win,
                 radiant_xp_adv: {
                   description: 'Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ',
                   type: 'object',
@@ -305,10 +293,7 @@ Please keep request rate to approximately 3/s.
                         description: 'Match ID',
                         type: 'integer',
                       },
-                      player_slot: {
-                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                        type: 'integer',
-                      },
+                      player_slot: properties.player_slot,
                       ability_upgrades_arr: {
                         description: 'An array describing how abilities were upgraded',
                         type: 'array',
@@ -370,10 +355,7 @@ Please keep request rate to approximately 3/s.
                               description: 'slot',
                               type: 'integer',
                             },
-                            player_slot: {
-                              description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                              type: 'integer',
-                            },
+                            player_slot: properties.player_slot,
                           },
                         },
                       },
@@ -701,18 +683,12 @@ Please keep request rate to approximately 3/s.
                         description: 'Time in seconds of last login of the player',
                         type: 'dateTime',
                       },
-                      radiant_win: {
-                        description: radiantWinDescr,
-                        type: 'boolean',
-                      },
+                      radiant_win: properties.radiant_win,
                       start_time: {
                         description: 'Start time of the match in seconds since 1970',
                         type: 'integer',
                       },
-                      duration: {
-                        description: 'Duration of the game in seconds',
-                        type: 'integer',
-                      },
+                      duration: properties.duration,
                       cluster: {
                         description: 'cluster',
                         type: 'integer',
@@ -1147,18 +1123,9 @@ Please keep request rate to approximately 3/s.
                     description: 'Match ID',
                     type: 'integer',
                   },
-                  player_slot: {
-                    description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                    type: 'integer',
-                  },
-                  radiant_win: {
-                    description: radiantWinDescr,
-                    type: 'boolean',
-                  },
-                  duration: {
-                    description: 'Duration of the match in seconds',
-                    type: 'integer',
-                  },
+                  player_slot: properties.player_slot,
+                  radiant_win: properties.radiant_win,
+                  duration: properties.duration,
                   game_mode: {
                     description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                     type: 'integer',
@@ -1282,18 +1249,9 @@ Please keep request rate to approximately 3/s.
                     description: 'Match ID',
                     type: 'integer',
                   },
-                  player_slot: {
-                    description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                    type: 'integer',
-                  },
-                  radiant_win: {
-                    description: radiantWinDescr,
-                    type: 'boolean',
-                  },
-                  duration: {
-                    description: 'Duration of the game in seconds',
-                    type: 'integer',
-                  },
+                  player_slot: properties.player_slot,
+                  radiant_win: properties.radiant_win,
+                  duration: properties.duration,
                   game_mode: {
                     description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                     type: 'integer',
@@ -1350,10 +1308,7 @@ Please keep request rate to approximately 3/s.
                             decription: 'The ID value of the hero played',
                             type: 'integer',
                           },
-                          player_slot: {
-                            description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                            type: 'integer',
-                          },
+                          player_slot: properties.player_slot,
                         },
                       },
                     },
@@ -2247,18 +2202,12 @@ Please keep request rate to approximately 3/s.
                     description: 'match_seq_num',
                     type: 'integer',
                   },
-                  radiant_win: {
-                    description: radiantWinDescr,
-                    type: 'boolean',
-                  },
+                  radiant_win: properties.radiant_win,
                   start_time: {
                     description: 'start_time',
                     type: 'integer',
                   },
-                  duration: {
-                    description: 'duration',
-                    type: 'integer',
-                  },
+                  duration: properties.duration,
                   radiant_team: {
                     description: 'radiant_team',
                     type: 'string',
@@ -4086,7 +4035,7 @@ Please keep request rate to approximately 3/s.
                     type: 'string',
                   },
                   is_radiant: {
-                    description: radiantWinDescr,
+                    description: 'Boolean indicating whether Radiant executed this scenario',
                     type: 'boolean',
                   },
                   region: {

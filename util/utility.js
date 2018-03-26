@@ -791,8 +791,6 @@ function epochWeek() {
   return Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7));
 }
 
-const radiantWinDescr = 'Boolean indicating whether Radiant won the match';
-
 module.exports = {
   tokenize,
   generateJob,
@@ -830,5 +828,4 @@ module.exports = {
   getRedisCountHour,
   invokeInterval,
   epochWeek,
-  radiantWinDescr,
 };
