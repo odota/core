@@ -246,13 +246,16 @@ describe('api limits', () => {
   before((done) => {
     config.ENABLE_API_LIMIT = true;
     config.API_FREE_LIMIT = 20;
-    redis.sadd('api_keys', 'KEY', (err) => {
-      if (err) {
-        return done(err);
-      }
+    redis.multi()
+      .del('usage_count')
+      .sadd('api_keys', 'KEY')
+      .exec((err) => {
+        if (err) {
+          return done(err);
+        }
 
-      return done();
-    });
+        return done();
+      });
   });
 
   it('non api key calls should be able to make 20. 21st should fail.', (done) => {
