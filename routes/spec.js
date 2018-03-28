@@ -4022,15 +4022,15 @@ Please keep request rate to approximately 3/s.
                     MAX(usage_count) as usage_count
                   FROM api_key_usage
                   WHERE
-                    timestamp >= '${startTime}'
-                    AND timestamp <= '${endTime}'
+                    timestamp >= ?
+                    AND timestamp <= ?
                   GROUP BY api_key
                   ORDER BY usage_count DESC
                   LIMIT 50
                 ) as T1
                 on api_key_usage.api_key = T1.api_key
                 GROUP BY day, T1.api_key
-              `)
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topAPI: (cb) => {
@@ -4048,14 +4048,14 @@ Please keep request rate to approximately 3/s.
                     MAX(usage_count) as usage_count
                   FROM api_key_usage
                   WHERE
-                    timestamp >= '${startTime}'
-                    AND timestamp <= '${endTime}'
+                    timestamp >= ?
+                    AND timestamp <= ?
                   GROUP BY account_id, api_key, ip
                 ) as T1
                 GROUP BY account_id
                 ORDER BY usage_count DESC
                 LIMIT 100
-              `)
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topAPIIP: (cb) => {
@@ -4073,14 +4073,14 @@ Please keep request rate to approximately 3/s.
                     MAX(usage_count) as usage_count
                   FROM api_key_usage
                   WHERE
-                    timestamp >= '${startTime}'
-                    AND timestamp <= '${endTime}'
+                    timestamp >= ?
+                    AND timestamp <= ?
                   GROUP BY account_id, api_key, ip
                 ) as T1
                 GROUP BY ip
                 ORDER BY usage_count DESC
                 LIMIT 10
-              `)
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             numAPIUsers: (cb) => {
@@ -4089,9 +4089,9 @@ Please keep request rate to approximately 3/s.
                   COUNT(DISTINCT account_id)
                 FROM api_key_usage
                 WHERE
-                  timestamp >= '${startTime}'
-                  AND timestamp <= '${endTime}'
-              `)
+                  timestamp >= ?
+                  AND timestamp <= ?
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topUsers: (cb) => {
@@ -4102,13 +4102,13 @@ Please keep request rate to approximately 3/s.
                   ARRAY_AGG(ip) as ips
                 FROM user_usage
                 WHERE
-                  timestamp >= '${startTime}'
-                  AND timestamp <= '${endTime}'
+                  timestamp >= ?
+                  AND timestamp <= ?
                   AND account_id != 0
                 GROUP BY account_id
                 ORDER BY usage_count DESC
                 LIMIT 100
-              `)
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topUsersIP: (cb) => {
@@ -4119,12 +4119,12 @@ Please keep request rate to approximately 3/s.
                   ARRAY_AGG(account_id) as account_ids
                 FROM user_usage
                 WHERE
-                  timestamp >= '${startTime}'
-                  AND timestamp <= '${endTime}'
+                  timestamp >= ?
+                  AND timestamp <= ?
                 GROUP BY ip
                 ORDER BY usage_count DESC
                 LIMIT 10
-              `)
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             numUsers: (cb) => {
@@ -4133,9 +4133,9 @@ Please keep request rate to approximately 3/s.
                   COUNT(DISTINCT account_id)
                 FROM user_usage
                 WHERE
-                  timestamp >= '${startTime}'
-                  AND timestamp <= '${endTime}'
-              `)
+                  timestamp >= ?
+                  AND timestamp <= ?
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
           }, (err, result) => {
