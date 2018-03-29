@@ -214,8 +214,8 @@ function updateMatchups(match, cb) {
 }
 */
 
-function processCounts(queueItem, cb) {
-  const match = JSON.parse(queueItem);
+function processCounts(match, cb) {
+  console.log('match %s', match.match_id);
   return async.parallel({
     updateRankings(cb) {
       if (isSignificant(match)) {

@@ -7,9 +7,8 @@ const redis = require('./redis');
 const db = require('./db');
 
 function runQueue(queueName, parallelism, processor) {
-  const processingQueueName = `${queueName}:active`;
   function processOneJob(cb) {
-    redis.blpop(queueName, processingQueueName, '0', (err, job) => {
+    redis.blpop(queueName, '0', (err, job) => {
       if (err) {
         throw err;
       }
