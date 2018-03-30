@@ -27,7 +27,8 @@ function doLiveGames(cb) {
               // addToRedis = true;
             }
           });
-          redis.zadd('liveGames', match.lobby_id, JSON.stringify(match));
+          redis.zadd('liveGames', match.lobby_id, match.lobby_id);
+          redis.setex(`liveGame:${match.lobby_id}`, 7200, JSON.stringify(match));
           // Keep only the 100 highest values
           redis.zremrangebyrank('liveGames', '0', '-101');
         }
