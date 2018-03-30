@@ -9,7 +9,7 @@ const api = new express.Router();
 const subkeys = playerFields.subkeys;
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map(e => Number(e));
-console.log(admins);
+
 // Player caches middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   // Check cache

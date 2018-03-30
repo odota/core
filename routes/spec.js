@@ -4019,67 +4019,47 @@ Please keep request rate to approximately 3/s.
                 JOIN ( 
                   SELECT
                     api_key,
-                    MAX(usage_count) as usage_count
+                    usage_count
                   FROM api_key_usage
                   WHERE
-                    timestamp >= ?
-                    AND timestamp <= ?
-                  GROUP BY api_key
+                    timestamp = (SELECT MAX(timestamp) FROM api_key_usage)
                   ORDER BY usage_count DESC
                   LIMIT 50
                 ) as T1
                 on api_key_usage.api_key = T1.api_key
                 GROUP BY day, T1.api_key
-              `, [startTime, endTime])
+              `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topAPI: (cb) => {
               db.raw(`
                 SELECT
                   account_id,
-                  SUM(usage_count) as usage_count,
-                  ARRAY_AGG(api_key) as api_keys,
-                  ARRAY_AGG(DISTINCT ip) as ips
-                FROM (  
-                  SELECT
-                    account_id,
-                    api_key,
-                    ip,
-                    MAX(usage_count) as usage_count
-                  FROM api_key_usage
-                  WHERE
-                    timestamp >= ?
-                    AND timestamp <= ?
-                  GROUP BY account_id, api_key, ip
-                ) as T1
+                  ARRAY_AGG(api_key),
+                  ARRAY_AGG(DISTINCT ip),
+                  SUM(usage_count) as usage_count
+                FROM api_key_usage
+                WHERE
+                  timestamp = (SELECT MAX(timestamp) FROM api_key_usage)
                 GROUP BY account_id
                 ORDER BY usage_count DESC
-                LIMIT 100
-              `, [startTime, endTime])
+                LIMIT 10
+              `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topAPIIP: (cb) => {
               db.raw(`
                 SELECT
                   ip,
-                  SUM(usage_count) as usage_count,
-                  ARRAY_AGG(api_key) as api_keys,
-                  ARRAY_AGG(DISTINCT account_id) as account_ids
-                FROM (  
-                  SELECT
-                    account_id,
-                    api_key,
-                    ip,
-                    MAX(usage_count) as usage_count
-                  FROM api_key_usage
-                  WHERE
-                    timestamp >= ?
-                    AND timestamp <= ?
-                  GROUP BY account_id, api_key, ip
-                ) as T1
+                  ARRAY_AGG(account_id),
+                  ARRAY_AGG(api_key),
+                  SUM(usage_count) as usage_count
+                FROM api_key_usage
+                WHERE
+                  timestamp = (SELECT MAX(timestamp) FROM api_key_usage)
                 GROUP BY ip
                 ORDER BY usage_count DESC
-                LIMIT 10
+                LIMIT 100
               `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
