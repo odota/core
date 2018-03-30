@@ -35,7 +35,7 @@ function storeUsageCounts(cursor, cb) {
                 INSERT INTO api_key_usage
                 (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
                 (?, ?, ?, ?, ?, ?)
-                ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?}
+                ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
               `, [results[0].account_id, results[0].api_key, results[0].customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]])
                 .asCallback(cb2);
             } else {
@@ -50,7 +50,7 @@ function storeUsageCounts(cursor, cb) {
             INSERT INTO user_usage
             (account_id, timestamp, ip, usage_count) VALUES
             (?, ?, ?, ?)
-            ON CONFLICT (account_id, ip, timestamp) DO UPDATE SET usage_count = ?}
+            ON CONFLICT (account_id, ip, timestamp) DO UPDATE SET usage_count = ?
           `, [split[2] || 0, userTimestamp, split[1], values[i + 1], values[i + 1]])
             .asCallback(cb2);
         }
