@@ -196,14 +196,14 @@ CREATE TABLE IF NOT EXISTS api_key_usage (
   customer_id varchar(255),
   api_key uuid,
   usage_count bigint,
-  ip cidr,
+  ip text,
   timestamp timestamp default current_timestamp
 );
 CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_keys(account_id);
 
 CREATE TABLE IF NOT EXISTS user_usage (
   account_id bigint,
-  ip cidr,
+  ip text,
   usage_count bigint,
   timestamp timestamp default current_timestamp
 );

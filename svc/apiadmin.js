@@ -21,9 +21,7 @@ function storeUsageCounts(cursor, cb) {
       async.eachOfLimit(values, 5, (e, i, cb2) => {
         if (i % 2) {
           cb2();
-        }
-
-        if (e.startsWith('API')) {
+        } else if (e.startsWith('API')) {
           const split = e.split(':');
 
           db.from('api_keys').where({
@@ -36,14 +34,9 @@ function storeUsageCounts(cursor, cb) {
               db.raw(`
                 INSERT INTO api_key_usage
                 (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
-                (${results[0].account_id},
-                 '${results[0].api_key}',
-                 '${results[0].customer_id}',
-                 '${apiTimestamp}',
-                 '${split[1]}',
-                 ${values[i + 1]})
-                ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ${values[i + 1]}
-              `)
+                (?, ?, ?, ?, ?, ?)
+                ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?}
+              `, [results[0].account_id, results[0].api_key, results[0].customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]])
                 .asCallback(cb2);
             } else {
               cb2();
@@ -56,12 +49,9 @@ function storeUsageCounts(cursor, cb) {
           db.raw(`
             INSERT INTO user_usage
             (account_id, timestamp, ip, usage_count) VALUES
-            (${split[2] || 0},
-             '${userTimestamp}',
-             '${split[1]}',
-             ${values[i + 1]})
-            ON CONFLICT (account_id, ip, timestamp) DO UPDATE SET usage_count = ${values[i + 1]}
-          `)
+            (?, ?, ?, ?)
+            ON CONFLICT (account_id, ip, timestamp) DO UPDATE SET usage_count = ?}
+          `, [split[2] || 0, userTimestamp, split[1], values[i + 1], values[i + 1]])
             .asCallback(cb2);
         }
       }, (err) => {
