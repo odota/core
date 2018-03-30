@@ -3888,6 +3888,9 @@ Please keep request rate to approximately 3/s.
             if (err) {
               return cb(err);
             }
+            if (!rows.length) {
+              return res.json(rows);
+            }
             const keys = rows.map(r => `liveGame:${r}`);
             return redis.mget(keys, (err, rows) => {
               if (err) {
