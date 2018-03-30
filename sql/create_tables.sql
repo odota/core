@@ -199,7 +199,8 @@ CREATE TABLE IF NOT EXISTS api_key_usage (
   ip text,
   timestamp timestamp default current_timestamp
 );
-CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_keys(account_id);
+CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_key_usage(account_id);
+CREATE INDEX IF NOT EXISTS api_keys_usage_timestamp_idx on api_key_usage(timestamp);
 
 CREATE TABLE IF NOT EXISTS user_usage (
   account_id bigint,
@@ -208,6 +209,7 @@ CREATE TABLE IF NOT EXISTS user_usage (
   timestamp timestamp default current_timestamp
 );
 CREATE INDEX IF NOT EXISTS user_usage_account_id_idx on user_usage(account_id);
+CREATE INDEX IF NOT EXISTS user_usage_timestamp_idx on user_usage(timestamp);
 CREATE UNIQUE INDEX IF NOT EXISTS user_usage_unique_idx on user_usage(account_id, ip, timestamp);
 
 CREATE TABLE IF NOT EXISTS notable_players (
