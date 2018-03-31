@@ -58,6 +58,9 @@ module.exports = function buildStatus(db, redis, cb) {
     mmrQueue(cb) {
       redis.llen('mmrQueue', cb);
     },
+    countsQueue(cb) {
+      redis.llen('countsQueue', cb);
+    },
     scenariosQueue(cb) {
       redis.llen('scenariosQueue', cb);
     },

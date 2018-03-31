@@ -13,7 +13,6 @@ const queries = require('../store/queries');
 const cp = require('child_process');
 const async = require('async');
 const numCPUs = require('os').cpus().length;
-const redis = require('../store/redis');
 
 const insertMatch = queries.insertMatch;
 const buildReplayUrl = utility.buildReplayUrl;
@@ -36,6 +35,7 @@ function runParse(match, job, cb) {
         type: 'parsed',
         skipParse: true,
         doLogParse: match.doLogParse,
+        doScenarios: match.origin === 'scanner' && match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT,
       }, cb);
     },
   );
@@ -61,9 +61,6 @@ function parseProcessor(job, cb) {
       console.error(err.stack || err);
     } else {
       console.log('completed parse of match %s', match.match_id);
-      if (match.origin === 'scanner' && match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT) {
-        redis.lpush('scenariosQueue', match.match_id);
-      }
     }
     return cb(err, match.match_id);
   });

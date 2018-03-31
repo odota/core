@@ -43,18 +43,31 @@ function doTeams(cb) {
         const ugcJob = utility.generateJob('api_get_ugc_file_details', {
           ugcid: logoUgc,
         });
-        return utility.getData({ url: ugcJob.url, noRetry: true }, (err, body) => {
-          if (err) {
-            // Continue even if we can't get a logo
-            console.error(err);
+        const cdnJob = utility.generateJob('steam_cdn_team_logos', {
+          team_id: m.team_id,
+        });
+        // Steam's CDN sometimes has better versions of team logos available
+        return utility.getData({ url: cdnJob.url, noRetry: true }, (err, body) => {
+          if (!err && body) {
+            t.team_id = m.team_id;
+            t.logo_url = cdnJob.url;
+            return queries.upsert(db, 'teams', t, {
+              team_id: m.team_id,
+            }, cb);
           }
-          t.team_id = m.team_id;
-          if (body && body.data) {
-            t.logo_url = body.data.url;
-          }
-          return queries.upsert(db, 'teams', t, {
-            team_id: m.team_id,
-          }, cb);
+          return utility.getData({ url: ugcJob.url, noRetry: true }, (err, body) => {
+            if (err) {
+              // Continue even if we can't get a logo
+              console.error(err);
+            }
+            t.team_id = m.team_id;
+            if (body && body.data) {
+              t.logo_url = body.data.url;
+            }
+            return queries.upsert(db, 'teams', t, {
+              team_id: m.team_id,
+            }, cb);
+          });
         });
       });
     }, cb);

@@ -177,6 +177,12 @@ function generateJob(type, payload) {
         payload,
       };
     },
+    steam_cdn_team_logos() {
+      return {
+        url: `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${payload.team_id}.png`,
+        type: 'steam_cdn',
+      };
+    },
   };
   return opts[type]();
 }

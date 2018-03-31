@@ -7,8 +7,8 @@ const db = require('../store/db');
 const queries = require('../store/queries');
 const config = require('../config');
 
-const getData = utility.getData;
-const retrieverArr = utility.getRetrieverArr();
+const { getData, getRetrieverArr } = utility;
+const retrieverArr = getRetrieverArr();
 
 function processMmr(job, cb) {
   // Don't always do the job

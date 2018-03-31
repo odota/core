@@ -13,11 +13,13 @@ const queryRaw = require('../store/queryRaw');
 const playerFields = require('./playerFields');
 const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
+const su = require('../util/scenariosUtil');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
+const properties = require('./properties');
 const {
   teamObject, matchObject, heroObject, playerObject,
 } = require('./objects');
@@ -123,10 +125,7 @@ Please keep request rate to approximately 3/s.
                         description: 'slot',
                         type: 'integer',
                       },
-                      player_slot: {
-                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                        type: 'integer',
-                      },
+                      player_slot: properties.player_slot,
                     },
                   },
                 },
@@ -165,10 +164,7 @@ Please keep request rate to approximately 3/s.
                         decription: 'The ID value of the hero played',
                         type: 'integer',
                       },
-                      player_slot: {
-                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                        type: 'integer',
-                      },
+                      player_slot: properties.player_slot,
                       extra_time: {
                         description: 'extra_time',
                         type: 'integer',
@@ -180,10 +176,7 @@ Please keep request rate to approximately 3/s.
                     },
                   },
                 },
-                duration: {
-                  description: 'Duration of the game in seconds',
-                  type: 'integer',
-                },
+                duration: properties.duration,
                 engine: {
                   description: 'engine',
                   type: 'integer',
@@ -236,10 +229,7 @@ Please keep request rate to approximately 3/s.
                   description: 'Final score for Radiant (number of kills on Radiant)',
                   type: 'integer',
                 },
-                radiant_win: {
-                  description: 'Boolean indicating whether Radiant won the match',
-                  type: 'boolean',
-                },
+                radiant_win: properties.radiant_win,
                 radiant_xp_adv: {
                   description: 'Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ',
                   type: 'object',
@@ -303,10 +293,7 @@ Please keep request rate to approximately 3/s.
                         description: 'Match ID',
                         type: 'integer',
                       },
-                      player_slot: {
-                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                        type: 'integer',
-                      },
+                      player_slot: properties.player_slot,
                       ability_upgrades_arr: {
                         description: 'An array describing how abilities were upgraded',
                         type: 'array',
@@ -368,10 +355,7 @@ Please keep request rate to approximately 3/s.
                               description: 'slot',
                               type: 'integer',
                             },
-                            player_slot: {
-                              description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                              type: 'integer',
-                            },
+                            player_slot: properties.player_slot,
                           },
                         },
                       },
@@ -699,18 +683,12 @@ Please keep request rate to approximately 3/s.
                         description: 'Time in seconds of last login of the player',
                         type: 'dateTime',
                       },
-                      radiant_win: {
-                        description: 'Boolean indicating whether Radiant won the match',
-                        type: 'boolean',
-                      },
+                      radiant_win: properties.radiant_win,
                       start_time: {
                         description: 'Start time of the match in seconds since 1970',
                         type: 'integer',
                       },
-                      duration: {
-                        description: 'Duration of the game in seconds',
-                        type: 'integer',
-                      },
+                      duration: properties.duration,
                       cluster: {
                         description: 'cluster',
                         type: 'integer',
@@ -1145,18 +1123,9 @@ Please keep request rate to approximately 3/s.
                     description: 'Match ID',
                     type: 'integer',
                   },
-                  player_slot: {
-                    description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                    type: 'integer',
-                  },
-                  radiant_win: {
-                    description: 'Boolean indicating whether Radiant won the match',
-                    type: 'boolean',
-                  },
-                  duration: {
-                    description: 'Duration of the match in seconds',
-                    type: 'integer',
-                  },
+                  player_slot: properties.player_slot,
+                  radiant_win: properties.radiant_win,
+                  duration: properties.duration,
                   game_mode: {
                     description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                     type: 'integer',
@@ -1280,18 +1249,9 @@ Please keep request rate to approximately 3/s.
                     description: 'Match ID',
                     type: 'integer',
                   },
-                  player_slot: {
-                    description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                    type: 'integer',
-                  },
-                  radiant_win: {
-                    description: 'Boolean indicating whether Radiant won the match',
-                    type: 'boolean',
-                  },
-                  duration: {
-                    description: 'Duration of the game in seconds',
-                    type: 'integer',
-                  },
+                  player_slot: properties.player_slot,
+                  radiant_win: properties.radiant_win,
+                  duration: properties.duration,
                   game_mode: {
                     description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                     type: 'integer',
@@ -1348,10 +1308,7 @@ Please keep request rate to approximately 3/s.
                             decription: 'The ID value of the hero played',
                             type: 'integer',
                           },
-                          player_slot: {
-                            description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                            type: 'integer',
-                          },
+                          player_slot: properties.player_slot,
                         },
                       },
                     },
@@ -2245,18 +2202,12 @@ Please keep request rate to approximately 3/s.
                     description: 'match_seq_num',
                     type: 'integer',
                   },
-                  radiant_win: {
-                    description: 'Boolean indicating whether Radiant won the match',
-                    type: 'boolean',
-                  },
+                  radiant_win: properties.radiant_win,
                   start_time: {
                     description: 'start_time',
                     type: 'integer',
                   },
-                  duration: {
-                    description: 'duration',
-                    type: 'integer',
-                  },
+                  duration: properties.duration,
                   radiant_team: {
                     description: 'radiant_team',
                     type: 'string',
@@ -3937,8 +3888,188 @@ Please keep request rate to approximately 3/s.
             if (err) {
               return cb(err);
             }
-            const entries = rows.map(r => JSON.parse(r));
-            return res.json(entries);
+            if (!rows.length) {
+              return res.json(rows);
+            }
+            const keys = rows.map(r => `liveGame:${r}`);
+            return redis.mget(keys, (err, rows) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(rows.map(r => JSON.parse(r)));
+            });
+          });
+        },
+      },
+    },
+    '/scenarios/itemTimings': {
+      get: {
+        summary: 'GET /scenarios/itemTimings',
+        description: `Win rates for certain item timings on a hero for items that cost at least ${su.itemCost} gold`,
+        tags: ['scenarios'],
+        parameters: [{
+          name: 'item',
+          in: 'query',
+          description: 'Filter by item name e.g. "spirit_vessel"',
+          required: false,
+          type: 'string',
+        },
+        params.heroIdParam,
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  hero_id: {
+                    description: 'Hero ID',
+                    type: 'integer',
+                  },
+                  item: {
+                    description: 'Purchased item',
+                    type: 'string',
+                  },
+                  time: {
+                    description: 'Ingame time in seconds before the item was purchased',
+                    type: 'integer',
+                  },
+                  games: {
+                    description: 'The number of games where the hero bought this item before this time',
+                    type: 'string',
+                  },
+                  wins: {
+                    description: 'The number of games won where the hero bought this item before this time',
+                    type: 'string',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/scenarios/itemTimings',
+        func: (req, res, cb) => {
+          queries.getItemTimings(req, (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
+        },
+      },
+    },
+    '/scenarios/laneRoles': {
+      get: {
+        summary: 'GET /scenarios/laneRoles',
+        description: 'Win rates for heroes in certain lane roles',
+        tags: ['scenarios'],
+        parameters: [{
+          name: 'lane_role',
+          in: 'query',
+          description: 'Filter by lane role 1-4 (Safe, Mid, Off, Jungle)',
+          required: false,
+          type: 'string',
+        },
+        params.heroIdParam,
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  hero_id: {
+                    description: 'Hero ID',
+                    type: 'integer',
+                  },
+                  lane_role: {
+                    description: 'The hero\'s lane role',
+                    type: 'integer',
+                  },
+                  time: {
+                    description: 'Maximum game length in seconds',
+                    type: 'integer',
+                  },
+                  games: {
+                    description: 'The number of games where the hero played in this lane role',
+                    type: 'string',
+                  },
+                  wins: {
+                    description: 'The number of games won where the hero played in this lane role',
+                    type: 'string',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/scenarios/laneRoles',
+        func: (req, res, cb) => {
+          queries.getLaneRoles(req, (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
+        },
+      },
+    },
+    '/scenarios/misc': {
+      get: {
+        summary: 'GET /scenarios/misc',
+        description: 'Miscellaneous team scenarios',
+        tags: ['scenarios'],
+        parameters: [{
+          name: 'scenario',
+          in: 'query',
+          description: Object.keys(su.teamScenariosQueryParams).toString(),
+          required: false,
+          type: 'string',
+        }],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  scenario: {
+                    description: 'The scenario\'s name or description',
+                    type: 'string',
+                  },
+                  is_radiant: {
+                    description: 'Boolean indicating whether Radiant executed this scenario',
+                    type: 'boolean',
+                  },
+                  region: {
+                    decription: 'Region the game was played in',
+                    type: 'integer',
+                  },
+                  games: {
+                    description: 'The number of games where this scenario occurred',
+                    type: 'string',
+                  },
+                  wins: {
+                    description: 'The number of games won where this scenario occured',
+                    type: 'string',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/scenarios/misc',
+        func: (req, res, cb) => {
+          queries.getTeamScenarios(req, (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
           });
         },
       },
