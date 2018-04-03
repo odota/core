@@ -4,9 +4,10 @@ const filterDeps = require('../util/filterDeps');
 const config = require('../config');
 const spec = require('./spec');
 const cacheFunctions = require('../store/cacheFunctions');
+const apiManagement = require('./apiManagement');
 
 const api = new express.Router();
-const subkeys = playerFields.subkeys;
+const { subkeys } = playerFields;
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map(e => Number(e));
 
@@ -78,6 +79,8 @@ api.use('/admin*', (req, res, cb) => {
     error: 'Access Denied',
   });
 });
+
+api.use('/keys', apiManagement);
 
 // API spec
 api.get('/', (req, res) => {

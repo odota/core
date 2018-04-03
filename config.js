@@ -67,6 +67,10 @@ const defaults = {
   NO_API_KEY_PER_MIN_LIMIT: 60, // Rate limit per minute if not using an API key
   ADMIN_ACCOUNT_IDS: '', // Whitelisted, comma separated account IDs to access /admin* routes
   BACKUP_RETRIEVER_FACTOR: 0, // percent of replay salts to fetch from backup data source
+  STRIPE_SECRET: '', // for stripe payment processing (kept on server)
+  STRIPE_PUBLIC: '', // for stripe payment processing (sent to client)
+  API_PRICE: 1, // In USD, price per API_UNIT
+  API_UNIT: 1, // How many API calls per API_PRICE
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
