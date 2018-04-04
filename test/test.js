@@ -230,12 +230,63 @@ describe('api', () => {
           }
           return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
             // console.log(verb, replacedPath, res.body);
-            assert.equal(res.statusCode, 200);
+            if (replacedPath.startsWith('/admin')) {
+              assert.equal(res.statusCode, 403);
+            } else {
+              assert.equal(res.statusCode, 200);
+            }
             return cb(err);
           });
         }, cb);
       }, cb);
     });
+  });
+});
+describe('api limits', () => {
+  before((done) => {
+    config.ENABLE_API_LIMIT = true;
+    config.API_FREE_LIMIT = 20;
+    redis.multi()
+      .del('usage_count')
+      .sadd('api_keys', 'KEY')
+      .exec((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        return done();
+      });
+  });
+
+  it('should be able to make 20. 21st should fail as no api key', (done) => {
+    async.timesSeries(21, (i, cb) => {
+      supertest(app).get('/api').end((err, res) => {
+        if (err) {
+          return cb(err);
+        }
+
+        if (i < 20) {
+          assert.equal(res.statusCode, 200);
+        } else {
+          assert.equal(res.statusCode, 429);
+          assert.equal(res.body.error, 'monthly api limit exeeded');
+        }
+        return cb();
+      });
+    }, done);
+  });
+
+  it('should be able to make more than 20 calls when using API KEY', (done) => {
+    async.timesSeries(25, (i, cb) => {
+      supertest(app).get('/api?API_KEY=KEY').end((err, res) => {
+        if (err) {
+          return cb(err);
+        }
+
+        assert.equal(res.statusCode, 200);
+        return cb();
+      });
+    }, done);
   });
 });
 /*

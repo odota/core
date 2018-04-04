@@ -427,6 +427,10 @@ function getStartOfBlockMinutes(size, offset) {
   return (blockStart + (offset * blockS)).toFixed(0);
 }
 
+function getEndOfMonth() {
+  return moment().endOf('month').unix();
+}
+
 /**
  * Finds the arithmetic mean of the input array
  * */
@@ -813,6 +817,7 @@ module.exports = {
   min,
   serialize,
   getStartOfBlockMinutes,
+  getEndOfMonth,
   average,
   stdDev,
   median,

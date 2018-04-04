@@ -17,11 +17,12 @@ const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
 
-const redisCount = utility.redisCount;
+const { redisCount } = utility;
 
 const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
+
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
   maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
@@ -68,27 +69,66 @@ app.use('/ugc', (req, res) => {
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
-// Rate limiter middleware
+
+// Rate limiter and API key middleware
+app.use((req, res, cb) => {
+  if (req.query.API_KEY) {
+    redis.sismember('api_keys', req.query.API_KEY, (err, resp) => {
+      if (err) {
+        cb(err);
+      } else {
+        res.locals.isAPIRequest = resp === 1;
+        cb();
+      }
+    });
+  } else {
+    cb();
+  }
+});
 app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
-  ip = ip.replace(/^.*:/, '').split(',')[0];
-  const key = `rate_limit:${ip}`;
-  console.log('%s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
-  redis.multi().incr(key).expireat(key, utility.getStartOfBlockMinutes(1, 1)).exec((err, resp) => {
-    if (err) {
-      console.log(err);
+  [ip] = ip.replace(/^.*:/, '').split(',');
+
+  let identifier = '';
+  let rateLimit = '';
+
+  if (res.locals.isAPIRequest) {
+    const requestAPIKey = req.query.API_KEY;
+    identifier = `API:${ip}:${requestAPIKey}`;
+    rateLimit = config.API_KEY_PER_MIN_LIMIT;
+    console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
+  } else {
+    identifier = `USER:${ip}:${req.user ? req.user.account_id : ''}`;
+    rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
+    console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
+  }
+
+  redis.multi()
+    .hincrby('rate_limit', identifier, 1)
+    .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1))
+    .hincrby('usage_count', identifier, 1)
+    .expireat('usage_count', utility.getEndOfMonth())
+    .exec((err, resp) => {
+      if (err) {
+        console.log(err);
+        return cb();
+      }
+      if (config.NODE_ENV === 'development') {
+        console.log(resp);
+      }
+      if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
+        return res.status(429).json({
+          error: 'rate limit exceeded',
+        });
+      }
+      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && resp[2] > config.API_FREE_LIMIT) {
+        return res.status(429).json({
+          error: 'monthly api limit exeeded',
+        });
+      }
+
       return cb();
-    }
-    if (config.NODE_ENV === 'development') {
-      console.log(resp);
-    }
-    if (resp[0] > 180 && config.NODE_ENV !== 'test') {
-      return res.status(429).json({
-        error: 'rate limit exceeded',
-      });
-    }
-    return cb();
-  });
+    });
 });
 // Telemetry middleware
 app.use((req, res, cb) => {

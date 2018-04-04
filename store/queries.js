@@ -68,6 +68,17 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   );
 }
 
+function getAPIKeys(db, cb) {
+  db.raw(`
+    SELECT api_key from api_keys WHERE api_key is not null
+    `).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows);
+  });
+}
+
 /**
  * Benchmarks a match against stored data in Redis.
  * */
@@ -1087,6 +1098,7 @@ module.exports = {
   getMmrEstimate,
   getPeers,
   getProPeers,
+  getAPIKeys,
   getItemTimings,
   getLaneRoles,
   getTeamScenarios,
