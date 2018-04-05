@@ -1,11 +1,14 @@
 const express = require('express');
 const playerFields = require('./playerFields');
 const filterDeps = require('../util/filterDeps');
+const config = require('../config');
 const spec = require('./spec');
 const cacheFunctions = require('../store/cacheFunctions');
 
 const api = new express.Router();
 const subkeys = playerFields.subkeys;
+
+const admins = config.ADMIN_ACCOUNT_IDS.split(',').map(e => Number(e));
 
 // Player caches middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
@@ -63,6 +66,17 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
     having: Number(req.query.having),
   };
   return cb();
+});
+
+// Admin endpoints middleware
+api.use('/admin*', (req, res, cb) => {
+  if (req.user && admins.includes(req.user.account_id)) {
+    return cb();
+  }
+
+  return res.status(403).json({
+    error: 'Access Denied',
+  });
 });
 
 // API spec

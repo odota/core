@@ -56,11 +56,16 @@ const defaults = {
   ENABLE_PLAYER_CACHE: 1, // enable/disable player aggregation caching
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   WEBSOCKET_PORT: 80, // port for live match subscription websocket service
-  ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication
   MAXIMUM_AGE_SCENARIOS_ROWS: 4, // maximum allowed age of scenarios rows in weeks
   MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
   PLAYER_CACHE_SECONDS: 3600, // number of seconds to cache player aggregations
   SCANNER_PLAYER_PERCENT: 10, // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
+  ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication,
+  ENABLE_API_LIMIT: '', // if truthy, API calls after exceeding API_FREE_LIMIT are blocked
+  API_FREE_LIMIT: 25000, // number of api requests per month before 429 is returned. If using an API key, calls over this are charged.
+  API_KEY_PER_MIN_LIMIT: 180, // Rate limit per minute if using an API key
+  NO_API_KEY_PER_MIN_LIMIT: 60, // Rate limit per minute if not using an API key
+  ADMIN_ACCOUNT_IDS: '', // Whitelisted, comma separated account IDs to access /admin* routes
   BACKUP_RETRIEVER_FACTOR: 0, // percent of replay salts to fetch from backup data source
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value

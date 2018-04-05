@@ -182,6 +182,36 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE INDEX IF NOT EXISTS subscriptions_account_id_idx on subscriptions(account_id);
 CREATE INDEX IF NOT EXISTS subscriptions_customer_id_idx on subscriptions(customer_id);
 
+CREATE TABLE IF NOT EXISTS api_keys (
+  PRIMARY KEY(account_id),
+  account_id bigint UNIQUE,
+  api_key uuid UNIQUE,
+  customer_id varchar(255)
+);
+CREATE INDEX IF NOT EXISTS api_keys_account_id_idx on api_keys(account_id);
+
+CREATE TABLE IF NOT EXISTS api_key_usage (
+  PRIMARY KEY(account_id, api_key, timestamp),
+  account_id bigint REFERENCES api_keys(account_id),
+  customer_id varchar(255),
+  api_key uuid,
+  usage_count bigint,
+  ip text,
+  timestamp timestamp default current_timestamp
+);
+CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_key_usage(account_id);
+CREATE INDEX IF NOT EXISTS api_keys_usage_timestamp_idx on api_key_usage(timestamp);
+
+CREATE TABLE IF NOT EXISTS user_usage (
+  account_id bigint,
+  ip text,
+  usage_count bigint,
+  timestamp timestamp default current_timestamp
+);
+CREATE INDEX IF NOT EXISTS user_usage_account_id_idx on user_usage(account_id);
+CREATE INDEX IF NOT EXISTS user_usage_timestamp_idx on user_usage(timestamp);
+CREATE UNIQUE INDEX IF NOT EXISTS user_usage_unique_idx on user_usage(account_id, ip, timestamp);
+
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,
   name varchar(255),
@@ -443,7 +473,7 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   epoch_week integer,
   UNIQUE (scenario, is_radiant, region, epoch_week)
 );  
- 
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

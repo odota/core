@@ -23,7 +23,13 @@ if (process.env.ROLE) {
         console.log(app.script, app.instances);
         pm2.start(app.script, {
           instances: app.instances,
-        }, cb);
+        }, (err) => {
+          if (err) {
+            // Log the error and continue
+            console.error(err);
+          }
+          cb();
+        });
       }
     }, (err) => {
       if (err) {
