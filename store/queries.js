@@ -1067,6 +1067,11 @@ function getTeamScenarios(req, cb) {
   ).asCallback((err, result) => cb(err, result));
 }
 
+function getScenariosMetaData(callback, cb) {
+  callback(su.metaData);
+  return cb();
+}
+
 module.exports = {
   upsert,
   insertPlayer,
@@ -1090,5 +1095,6 @@ module.exports = {
   getItemTimings,
   getLaneRoles,
   getTeamScenarios,
+  getScenariosMetaData,
   getMatchRankTier,
 };

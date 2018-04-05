@@ -8,7 +8,6 @@ const playerWon = utility.playerWon;
 const itemCost = 2000;
 const dotaItems = Object.keys(constants.items).map(k => [constants.items[k], k]).filter(x => x[0].cost >= itemCost).map(x => x[1]);
 const timings = [7.5, 10, 12, 15, 20, 25, 30].map(x => x * 60);
-const pingBucket = [10, 25, 50, 100, 150, 200, 500, 1000];
 const gameDurationBucket = [15, 30, 45, 60, 90].map(x => x * 60);
 
 const negativeWords = ['ff', 'report', 'gg', 'end', 'noob'];
@@ -46,21 +45,6 @@ const scenarioChecks = {
             });
           }
         });
-      });
-      return rows;
-    },
-
-    function pings(match) { // how often a player "pings"
-      const rows = [];
-      match.players.forEach((player) => {
-        if (player.pings <= pingBucket[pingBucket.length - 1]) {
-          const pings = pingBucket.find(x => x >= player.pings);
-          rows.push({
-            pings,
-            time: gameDurationBucket.find(x => x >= match.duration),
-            wins: playerWon(player, match) ? '1' : '0',
-          });
-        }
       });
       return rows;
     },
@@ -148,6 +132,10 @@ const scenarioChecks = {
 // list of match object properties that are required for scenario checks.
 const matchProperties = ['players', 'objectives', 'duration', 'chat', 'radiant_win'];
 
+const metaData = {
+  itemCost, timings, gameDurationBucket, teamScenariosQueryParams,
+};
+
 /**
  * Make sure the match object has all required properties.
  * */
@@ -160,4 +148,5 @@ module.exports = {
   validateMatchProperties,
   teamScenariosQueryParams,
   itemCost,
+  metaData,
 };

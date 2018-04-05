@@ -57,7 +57,7 @@ const defaults = {
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   WEBSOCKET_PORT: 80, // port for live match subscription websocket service
   ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication
-  MAXIMUM_AGE_SCENARIOS_ROWS: 2, // maximum allowed age of scenarios rows in weeks
+  MAXIMUM_AGE_SCENARIOS_ROWS: 4, // maximum allowed age of scenarios rows in weeks
   MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
   PLAYER_CACHE_SECONDS: 3600, // number of seconds to cache player aggregations
   SCANNER_PLAYER_PERCENT: 10, // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
