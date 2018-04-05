@@ -1067,8 +1067,8 @@ function getTeamScenarios(req, cb) {
   ).asCallback((err, result) => cb(err, result));
 }
 
-function getScenariosMetaData(callback, cb) {
-  callback(su.metaData);
+function getScenariosMetaData(response, cb) {
+  response(su.metaData);
   return cb();
 }
 
