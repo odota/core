@@ -426,13 +426,11 @@ CREATE TABLE IF NOT EXISTS scenarios (
   hero_id smallint,
   item text,
   time integer,
-  pings integer,
   lane_role smallint,
   games bigint DEFAULT 1,
   wins bigint,
   epoch_week integer,
   UNIQUE (hero_id, item, time, epoch_week),
-  UNIQUE (pings, time, epoch_week),
   UNIQUE (hero_id, lane_role, time, epoch_week)
 ); 
 
