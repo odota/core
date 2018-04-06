@@ -4056,28 +4056,6 @@ Please keep request rate to approximately 3/s.
         },
       },
     },
-    '/scenarios/metaData': {
-      get: {
-        summary: 'GET /scenarios/metaData',
-        description: 'Scenarios metadata',
-        tags: [
-          'scenarios',
-        ],
-        parameters: [],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'object',
-            },
-          },
-        },
-        route: () => '/scenarios/metaData',
-        func: (req, res, cb) => {
-          queries.getScenariosMetaData(data => res.json(data), cb);
-        },
-      },
-    },
     '/schema': {
       get: {
         summary: 'GET /schema',
