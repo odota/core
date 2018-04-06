@@ -1078,9 +1078,29 @@ function getTeamScenarios(req, cb) {
   ).asCallback((err, result) => cb(err, result));
 }
 
-function getScenariosMetaData(response, cb) {
-  response(su.metaData);
-  return cb();
+function getMetadata(req, res, cb) {
+  async.parallel({
+    scenarios(cb) {
+      cb(null, su.metadata);
+    },
+    banner(cb) {
+      redis.get('banner', cb);
+    },
+    cheese(cb) {
+      redis.get('cheese_goal', (err, result) => cb(err, {
+        cheese: result,
+        goal: config.GOAL,
+      }));
+    },
+    user(cb) {
+      cb(null, req.user);
+    },
+  }, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result);
+  });
 }
 
 module.exports = {
@@ -1107,6 +1127,6 @@ module.exports = {
   getItemTimings,
   getLaneRoles,
   getTeamScenarios,
-  getScenariosMetaData,
+  getMetadata,
   getMatchRankTier,
 };

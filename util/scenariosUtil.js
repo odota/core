@@ -132,7 +132,7 @@ const scenarioChecks = {
 // list of match object properties that are required for scenario checks.
 const matchProperties = ['players', 'objectives', 'duration', 'chat', 'radiant_win'];
 
-const metaData = {
+const metadata = {
   itemCost, timings, gameDurationBucket, teamScenariosQueryParams,
 };
 
@@ -148,5 +148,5 @@ module.exports = {
   validateMatchProperties,
   teamScenariosQueryParams,
   itemCost,
-  metaData,
+  metadata,
 };
