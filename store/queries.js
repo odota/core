@@ -1067,7 +1067,7 @@ function getLaneRoles(req, cb) {
 }
 
 function getTeamScenarios(req, cb) {
-  const scenario = su.teamScenariosQueryParams.includes(req.query.scenario) || '';
+  const scenario = (su.teamScenariosQueryParams.includes(req.query.scenario) && req.query.scenario) || '';
   db.raw(
     `SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins
      FROM team_scenarios
