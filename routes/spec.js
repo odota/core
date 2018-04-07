@@ -3789,7 +3789,7 @@ Please keep request rate to approximately 3/s.
               allowBackup: true,
             }, (err, result) => {
               if (err) {
-                console.error(err);
+                // Don't log this to avoid filling the output
               }
               return cb(null, result);
             }),
