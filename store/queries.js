@@ -1067,7 +1067,7 @@ function getLaneRoles(req, cb) {
 }
 
 function getTeamScenarios(req, cb) {
-  const scenario = su.teamScenariosQueryParams[req.query.scenario] || '';
+  const scenario = (su.teamScenariosQueryParams.includes(req.query.scenario) && req.query.scenario) || '';
   db.raw(
     `SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins
      FROM team_scenarios
@@ -1076,6 +1076,26 @@ function getTeamScenarios(req, cb) {
      LIMIT 1000`,
     { scenario },
   ).asCallback((err, result) => cb(err, result));
+}
+
+function getMetadata(req, callback) {
+  async.parallel({
+    scenarios(cb) {
+      cb(null, su.metadata);
+    },
+    banner(cb) {
+      redis.get('banner', cb);
+    },
+    cheese(cb) {
+      redis.get('cheese_goal', (err, result) => cb(err, {
+        cheese: result,
+        goal: config.GOAL,
+      }));
+    },
+    user(cb) {
+      cb(null, req.user);
+    },
+  }, callback);
 }
 
 module.exports = {
@@ -1102,5 +1122,6 @@ module.exports = {
   getItemTimings,
   getLaneRoles,
   getTeamScenarios,
+  getMetadata,
   getMatchRankTier,
 };
