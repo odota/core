@@ -117,7 +117,7 @@ function redisUsage(cb) {
     }
     // console.log(info);
     return cb(err, {
-      metric: redis.server_info.used_memory,
+      metric: Number(redis.server_info.used_memory),
       threshold: 2.5 * (10 ** 9),
     });
   });
