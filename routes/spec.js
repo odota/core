@@ -2335,7 +2335,12 @@ Please keep request rate to approximately 3/s.
         },
         route: () => '/metadata',
         func: (req, res, cb) => {
-          queries.getMetadata(req, res, cb);
+          queries.getMetadata(req, (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result);
+          });
         },
       },
     },
@@ -4008,7 +4013,7 @@ Please keep request rate to approximately 3/s.
         parameters: [{
           name: 'scenario',
           in: 'query',
-          description: Object.keys(su.teamScenariosQueryParams).toString(),
+          description: su.teamScenariosQueryParams.toString(),
           required: false,
           type: 'string',
         }],

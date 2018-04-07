@@ -1067,7 +1067,7 @@ function getLaneRoles(req, cb) {
 }
 
 function getTeamScenarios(req, cb) {
-  const scenario = su.teamScenariosQueryParams[req.query.scenario] || '';
+  const scenario = su.teamScenariosQueryParams.includes(req.query.scenario) || '';
   db.raw(
     `SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins
      FROM team_scenarios
@@ -1078,7 +1078,7 @@ function getTeamScenarios(req, cb) {
   ).asCallback((err, result) => cb(err, result));
 }
 
-function getMetadata(req, res, cb) {
+function getMetadata(req, callback) {
   async.parallel({
     scenarios(cb) {
       cb(null, su.metadata);
@@ -1095,12 +1095,7 @@ function getMetadata(req, res, cb) {
     user(cb) {
       cb(null, req.user);
     },
-  }, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return res.json(result);
-  });
+  }, callback);
 }
 
 module.exports = {
