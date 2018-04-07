@@ -41,7 +41,7 @@
     "moment": "^2.21.0",
     "nock": "^9.1.0",
     "passport": "^0.4.0",
-    "passport-steam": "^1.0.7",
+    "passport-steam": "^1.0.9",
     "pg": "^7.4.0",
     "pg-query-stream": "^1.1.1",
     "pm2": "^2.8.0",

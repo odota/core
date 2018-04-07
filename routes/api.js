@@ -4,7 +4,7 @@ const filterDeps = require('../util/filterDeps');
 const config = require('../config');
 const spec = require('./spec');
 const cacheFunctions = require('../store/cacheFunctions');
-const apiManagement = require('./apiManagement');
+const keys = require('./keyManagement');
 
 const api = new express.Router();
 const { subkeys } = playerFields;
@@ -80,7 +80,7 @@ api.use('/admin*', (req, res, cb) => {
   });
 });
 
-api.use('/keys', apiManagement);
+api.use('/keys', keys);
 
 // API spec
 api.get('/', (req, res) => {
