@@ -41,18 +41,24 @@ keys.route('/').get((req, res, next) => {
       } else if (results.length > 0) {
         async.parallel({
           customer: (cb) => {
-            stripe.customers.retrieve(results[0].customer_id, (err, customer) => {
-              if (err) {
-                cb(err);
-              } else {
-                // const source = customer.sources.data[0];
+            const toReturn = {
+              api_key: results[0].api_key,
+            };
 
-                // results[0].credit_brand = source.brand;
-                // results[0].credit_last4 = source.last4;
+            stripe.customers.retrieve(results[0].customer_id)
+              .then((customer) => {
+                const source = customer.sources.data[0];
 
-                cb(null, results[0]);
-              }
-            });
+                toReturn.credit_brand = source.brand;
+                toReturn.credit_last4 = source.last4;
+
+                return stripe.subscriptions.retrieve(results[0].subscription_id);
+              })
+              .then((sub) => {
+                toReturn.current_period_end = sub.current_period_end;
+              })
+              .then(() => cb(null, toReturn))
+              .catch(err => cb(err));
           },
           usage: (cb) => {
             db.raw(`
@@ -90,16 +96,15 @@ keys.route('/').get((req, res, next) => {
         res.json({});
       }
     });
-}).post((req, res, next) => {
-  const { token, metadata } = req.body;
-  metadata.account_id = req.user.account_id;
+}).post((req, res, next) => { // Creates key
+  const { token } = req.body;
 
   if (!token) {
     res.sendStatus(500).json({
       error: 'Missing token',
     });
   } else {
-    let apiKey = uuid();
+    const apiKey = uuid();
 
     // Customers and subscriptions shouldn't ever be deleted since we have tiered billing
     // otherwise people could just re-create keys.
@@ -108,33 +113,34 @@ keys.route('/').get((req, res, next) => {
       account_id: req.user.account_id,
     })
       .then((rows) => {
-        if (rows.length === 0 || rows[0].customer_id === null || rows[0].subscription_id === null) {
-          apiKey = uuid();
+        if (rows.length > 0 && rows[0].api_key) {
+          throw Error('Key exists');
+        }
 
+        if (rows.length === 0) {
           return stripe.customers.create({
             source: token.id,
             email: token.email,
-            metadata,
+            metadata: {
+              account_id: req.user.account_id,
+            },
           })
             .then(customer => stripe.subscriptions.create({
               customer: customer.id,
               items: [{ plan: stripeAPIPlan }],
+              billing_cycle_anchor: moment().add(1, 'month').startOf('month'),
               metadata: {
                 api_key: apiKey,
               },
             }));
         }
 
-        // If we had an API key already, we don't need to regenerate it
-        apiKey = rows[0].api_key || apiKey;
-
-        return stripe.customers.update(rows[0].subscription_id, {
+        return stripe.customers.update(rows[0].customer_id, {
           email: token.email,
-          metadata,
         }).then(() => stripe.subscriptions.retrieve(rows[0].subscription_id))
           .then((sub) => {
             sub.metadata.api_key = apiKey;
-            stripe.subscriptions.update(rows[0].subscription_id, {
+            return stripe.subscriptions.update(rows[0].subscription_id, {
               source: token.id,
               metadata: sub.metadata,
             });
@@ -146,12 +152,15 @@ keys.route('/').get((req, res, next) => {
         ON CONFLICT (account_id) DO UPDATE SET
         api_key = ?, customer_id = ?, subscription_id = ?
       `, [req.user.account_id, apiKey, sub.customer, sub.id, apiKey, sub.customer, sub.id]))
-      .then(() => res.json({}))
+      .then(() => res.sendStatus(200))
       .catch((err) => {
-        next(err);
+        if (err.message === 'Key exists') {
+          return res.sendStatus(200);
+        }
+        return next(err);
       });
   }
-}).delete((req, res, next) => {
+}).delete((req, res, next) => { // Deletes the current key.
   db.from('api_keys').where({
     account_id: req.user.account_id,
   })
@@ -166,9 +175,7 @@ keys.route('/').get((req, res, next) => {
 
       return stripe.subscriptions.retrieve(rows[0].subscription_id)
         .then((sub) => {
-          const oldKeys = sub.metadata.old_keys || [];
-          oldKeys.push(sub.metadata.api_key);
-          sub.metadata.old_keys = oldKeys;
+          sub.metadata[`old_key_${moment().unix()}`] = sub.metadata.api_key;
           sub.metadata.api_key = null;
 
           return stripe.subscriptions.update(rows[0].subscription_id, {
@@ -189,7 +196,7 @@ keys.route('/').get((req, res, next) => {
     });
 })
   .put((req, res, next) => { // Updates billing
-    const { token, metadata } = req.body;
+    const { token } = req.body;
 
     if (!token) {
       res.status(500).json({
@@ -203,17 +210,15 @@ keys.route('/').get((req, res, next) => {
         account_id: req.user.account_id,
       })
         .then((rows) => {
-          console.log(rows);
           if (rows.length < 1) {
             throw Error('No record to update.');
           } else {
-            customerId = rows[0].subscription_id;
+            customerId = rows[0].customer_id;
             subscriptionId = rows[0].subscription_id;
           }
         })
         .then(() => stripe.customers.update(customerId, {
           email: token.email,
-          metadata,
         }))
         .then(() => stripe.subscriptions.update(subscriptionId, {
           source: token.id,

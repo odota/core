@@ -163,6 +163,8 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
+// CORS Preflight for API keys
+app.options('/api/keys', cors());
 app.route('/healthz').get((req, res) => {
   res.send('ok');
 });
