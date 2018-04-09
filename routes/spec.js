@@ -2335,20 +2335,7 @@ Please keep request rate to approximately 3/s.
         },
         route: () => '/metadata',
         func: (req, res, cb) => {
-          async.parallel({
-            banner(cb) {
-              redis.get('banner', cb);
-            },
-            cheese(cb) {
-              redis.get('cheese_goal', (err, result) => cb(err, {
-                cheese: result,
-                goal: config.GOAL,
-              }));
-            },
-            user(cb) {
-              cb(null, req.user);
-            },
-          }, (err, result) => {
+          queries.getMetadata(req, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -3789,7 +3776,7 @@ Please keep request rate to approximately 3/s.
               allowBackup: true,
             }, (err, result) => {
               if (err) {
-                console.error(err);
+                // Don't log this to avoid filling the output
               }
               return cb(null, result);
             }),
@@ -4026,7 +4013,7 @@ Please keep request rate to approximately 3/s.
         parameters: [{
           name: 'scenario',
           in: 'query',
-          description: Object.keys(su.teamScenariosQueryParams).toString(),
+          description: su.teamScenariosQueryParams.toString(),
           required: false,
           type: 'string',
         }],

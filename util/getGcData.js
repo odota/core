@@ -36,7 +36,7 @@ function getGcDataFromRetriever(match, cb) {
     }
     if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
       // non-retryable error
-      return cb('invalid body or error');
+      return cb(new Error('invalid body or error'));
     }
     // Count retriever calls
     redisCount(redis, 'retriever');
