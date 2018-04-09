@@ -1,16 +1,14 @@
 const express = require('express');
-
-const keys = express.Router();
-const config = require('../config');
-const async = require('async');
-
-const stripeSecret = config.STRIPE_SECRET;
-const stripeAPIPlan = config.STRIPE_API_PLAN;
-const stripe = require('stripe')(stripeSecret);
 const uuid = require('uuid/v4');
 const bodyParser = require('body-parser');
 const moment = require('moment');
+const async = require('async');
 const db = require('../store/db');
+const config = require('../config');
+const stripe = require('stripe')(config.STRIPE_SECRET);
+
+const stripeAPIPlan = config.STRIPE_API_PLAN;
+const keys = express.Router();
 
 keys.use(bodyParser.json());
 keys.use(bodyParser.urlencoded({
@@ -18,10 +16,6 @@ keys.use(bodyParser.urlencoded({
 }));
 
 keys.use((req, res, next) => {
-  // req.user = {
-  //   account_id: 102344608
-  // };
-
   if (!req.user) {
     return res.status(403).json({
       error: 'Authentication required',
@@ -38,7 +32,9 @@ keys.route('/').get((req, res, next) => {
     }).asCallback((err, results) => {
       if (err) {
         next(err);
-      } else if (results.length > 0) {
+      } else if (results.length === 0) {
+        res.json({});
+      } else {
         async.parallel({
           customer: (cb) => {
             const toReturn = {
@@ -92,8 +88,6 @@ keys.route('/').get((req, res, next) => {
             res.json(results);
           }
         });
-      } else {
-        res.json({});
       }
     });
 }).post((req, res, next) => { // Creates key
