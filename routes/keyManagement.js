@@ -128,7 +128,7 @@ keys.route('/').get((req, res, next) => {
             .then(customer => stripe.subscriptions.create({
               customer: customer.id,
               items: [{ plan: stripeAPIPlan }],
-              billing_cycle_anchor: moment().add(1, 'month').startOf('month'),
+              billing_cycle_anchor: moment().add(1, 'month').startOf('month').unix(),
               metadata: {
                 api_key: apiKey,
               },

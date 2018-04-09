@@ -3,11 +3,14 @@ const redis = require('../store/redis');
 const db = require('../store/db');
 const utility = require('../util/utility');
 const queries = require('../store/queries');
+const config = require('../config');
 const moment = require('moment');
+const stripe = require('stripe')(config.STRIPE_SECRET);
 
 const { invokeInterval } = utility;
 
 function storeUsageCounts(cursor, cb) {
+  console.log('[USAGE COUNT] Cursor:', cursor);
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
       cb(err);
@@ -24,24 +27,43 @@ function storeUsageCounts(cursor, cb) {
         } else if (e.startsWith('API')) {
           const split = e.split(':');
 
+          let apiRecord;
           db.from('api_keys').where({
             api_key: split[2],
-          }).asCallback((err, results) => {
-            if (err) {
-              cb2(err);
-            }
-            if (results.length > 0) {
-              db.raw(`
-                INSERT INTO api_key_usage
-                (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
-                (?, ?, ?, ?, ?, ?)
-                ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
-              `, [results[0].account_id, results[0].api_key, results[0].customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]])
-                .asCallback(cb2);
-            } else {
-              cb2();
-            }
-          });
+          })
+            .then((rows) => {
+              if (rows.length > 0) {
+                [apiRecord] = rows;
+
+                return stripe.subscriptions.retrieve(apiRecord.subscription_id);
+              }
+              throw Error('No record found.');
+            })
+            .then(sub =>
+              // Set usage to be the value at end of the billing period
+              // - 1 so that it's within the same month
+              // TODO(albert): We could break this out by day for the invoice
+              // but we'd have to make changes to web.js and metrics
+              stripe.usageRecords.create({
+                quantity: values[i + 1],
+                action: 'set',
+                subscription_item: sub.items.data[0].id,
+                timestamp: sub.current_period_end - 1,
+              }))
+            .then(() => db.raw(`
+              INSERT INTO api_key_usage
+              (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
+              (?, ?, ?, ?, ?, ?)
+              ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
+            `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]]))
+            .then(() => cb2())
+            .catch((e) => {
+              if (e.message === 'No record found.') {
+                cb2();
+              } else {
+                cb2(e);
+              }
+            });
         } else if (e.startsWith('USER')) {
           const split = e.split(':');
 
