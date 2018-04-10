@@ -24,7 +24,6 @@ function processScenarios(matchID, cb) {
             epoch_week: currentWeek,
             wins: row.wins ? '1' : '0',
           });
-          console.log(row);
           const values = Object.keys(row).map(() =>
             '?');
           const query = util.format(
