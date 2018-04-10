@@ -4,8 +4,8 @@ const utility = require('./utility');
 const playerWon = utility.playerWon;
 
 
-// all items that cost at least 2000
-const itemCost = 2000;
+// all items that cost at least 1400
+const itemCost = 1400;
 const dotaItems = Object.keys(constants.items).map(k => [constants.items[k], k]).filter(x => x[0].cost >= itemCost).map(x => x[1]);
 const timings = [7.5, 10, 12, 15, 20, 25, 30].map(x => x * 60);
 const gameDurationBucket = [15, 30, 45, 60, 90].map(x => x * 60);
