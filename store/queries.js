@@ -250,32 +250,31 @@ function getPlayerMatches(accountId, queryObj, cb) {
       queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','),
     );
     const matches = [];
-    return cassandra.stream(query, [accountId], {
-      prepare: true,
-      fetchSize: 1000,
-      autoPage: true,
-    }).on('readable', function handleRow() {
-      // readable is emitted as soon a row is received and parsed
-      while (true) {
-        const read = this.read();
-        if (!read) {
-          break;
-        }
-        const m = deserialize(read);
+    return cassandra.eachRow(
+      query, [accountId], {
+        prepare: true,
+        fetchSize: 100,
+        autoPage: true,
+      },
+      (n, row) => {
+        const m = deserialize(row);
         if (filter([m], queryObj.filter).length) {
           matches.push(m);
         }
-      }
-    }).on('end', (err) => {
-      // stream ended, there aren't any more rows
-      if (queryObj.sort) {
-        matches.sort((a, b) =>
-          b[queryObj.sort] - a[queryObj.sort]);
-      }
-      const offset = matches.slice(queryObj.offset);
-      const result = offset.slice(0, queryObj.limit || offset.length);
-      return cb(err, result);
-    }).on('error', err => console.error(err));
+      },
+      (err) => {
+        if (err) {
+          return cb(err);
+        }
+        if (queryObj.sort) {
+          matches.sort((a, b) =>
+            b[queryObj.sort] - a[queryObj.sort]);
+        }
+        const offset = matches.slice(queryObj.offset);
+        const result = offset.slice(0, queryObj.limit || offset.length);
+        return cb(err, result);
+      },
+    );
   });
 }
 
