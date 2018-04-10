@@ -11,54 +11,57 @@ const cassandra = require('../store/cassandra');
 const redis = require('../store/redis');
 const db = require('../store/db');
 
-const computeMatchData = compute.computeMatchData;
-const deserialize = utility.deserialize;
-const buildReplayUrl = utility.buildReplayUrl;
+const { computeMatchData } = compute;
+const { deserialize, buildReplayUrl } = utility;
+
+function getMatchData(matchId, cb) {
+  cassandra.execute('SELECT * FROM matches where match_id = ?', [Number(matchId)], {
+    prepare: true,
+    fetchSize: 10,
+    autoPage: true,
+  }, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    result = result.rows.map(m => deserialize(m));
+    return cb(err, result[0]);
+  });
+}
+
+function getPlayerMatchData(matchId, cb) {
+  cassandra.execute('SELECT * FROM player_matches where match_id = ?', [Number(matchId)], {
+    prepare: true,
+    fetchSize: 10,
+    autoPage: true,
+  }, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    result = result.rows.map(m => deserialize(m));
+    // get personanames
+    return async.map(result, (r, cb) => {
+      db.raw(`
+        SELECT personaname, name, last_login 
+        FROM players
+        LEFT JOIN notable_players
+        ON players.account_id = notable_players.account_id
+        WHERE players.account_id = ?
+      `, [r.account_id]).asCallback((err, names) => {
+        if (err) {
+          return cb(err);
+        }
+        return cb(err, Object.assign({}, r, names.rows[0]));
+      });
+    }, cb);
+  });
+}
 
 function getMatch(matchId, cb) {
-  function getMatchData(matchId, cb) {
-    cassandra.execute('SELECT * FROM matches where match_id = ?', [Number(matchId)], {
-      prepare: true,
-      fetchSize: 10,
-      autoPage: true,
-    }, (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      result = result.rows.map(m => deserialize(m));
-      return cb(err, result[0]);
-    });
+  if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
+    return cb();
   }
 
-  function getPlayerMatchData(matchId, cb) {
-    cassandra.execute('SELECT * FROM player_matches where match_id = ?', [Number(matchId)], {
-      prepare: true,
-      fetchSize: 10,
-      autoPage: true,
-    }, (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      result = result.rows.map(m => deserialize(m));
-      // get personanames
-      return async.map(result, (r, cb) => {
-        db.raw(`
-          SELECT personaname, name, last_login 
-          FROM players
-          LEFT JOIN notable_players
-          ON players.account_id = notable_players.account_id
-          WHERE players.account_id = ?
-        `, [r.account_id]).asCallback((err, names) => {
-          if (err) {
-            return cb(err);
-          }
-          return cb(err, Object.assign({}, r, names.rows[0]));
-        });
-      }, cb);
-    });
-  }
-
-  getMatchData(matchId, (err, match) => {
+  return getMatchData(matchId, (err, match) => {
     if (err) {
       return cb(err);
     } else if (!match) {
