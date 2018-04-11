@@ -253,7 +253,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
     return cassandra.eachRow(
       query, [accountId], {
         prepare: true,
-        fetchSize: 2500,
+        fetchSize: 5000,
         autoPage: true,
       },
       (n, row) => {
