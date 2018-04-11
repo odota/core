@@ -84,14 +84,18 @@ function getGcDataFromRetriever(match, cb) {
 }
 
 module.exports = function getGcData(match, cb) {
-  db.first().from('match_gcdata').where({
-    match_id: match.match_id,
+  const matchId = match.match_id;
+  if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
+    return cb(new Error('invalid match_id'));
+  }
+  return db.first().from('match_gcdata').where({
+    match_id: matchId,
   }).asCallback((err, gcdata) => {
     if (err) {
       return cb(err);
     }
     if (gcdata && gcdata.replay_salt) {
-      console.log('found cached replay url for %s', match.match_id);
+      console.log('found cached replay url for %s', matchId);
       return cb(err, gcdata);
     }
     return getGcDataFromRetriever(match, cb);
