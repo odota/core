@@ -3,12 +3,10 @@
  * */
 const getGcData = require('../util/getGcData');
 const queue = require('../store/queue');
-// const utility = require('../util/utility');
-
-// const retrieverArr = utility.getRetrieverArr();
+const config = require('../config');
 
 function processGcData(job, cb) {
   getGcData(job, cb);
 }
 
-queue.runQueue('gcQueue', 40, processGcData);
+queue.runQueue('gcQueue', Number(config.GCDATA_PARALLELISM), processGcData);

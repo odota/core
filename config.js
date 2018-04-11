@@ -67,6 +67,7 @@ const defaults = {
   NO_API_KEY_PER_MIN_LIMIT: 60, // Rate limit per minute if not using an API key
   ADMIN_ACCOUNT_IDS: '', // Whitelisted, comma separated account IDs to access /admin* routes
   BACKUP_RETRIEVER_PERCENT: 0, // percent of replay salts to fetch from backup data source
+  GCDATA_PARALLELISM: 50, // number of parallel retriever requests to make in gcdata worker
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

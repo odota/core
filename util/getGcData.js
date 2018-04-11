@@ -17,7 +17,7 @@ const { insertMatch } = queries;
 function getGcDataFromRetriever(match, cb) {
   // make array of retriever urls and use a random one on each retry
   let urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
-  if (config.NODE_ENV !== 'test' && match.allowBackup && (99 - (match.match_id % 100)) < config.BACKUP_RETRIEVER_PERCENT) {
+  if (config.NODE_ENV !== 'test' && match.allowBackup && (Math.random() * 100) < Number(config.BACKUP_RETRIEVER_PERCENT)) {
     urls = [`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`];
   }
   return getData({ url: urls, noRetry: match.noRetry }, (err, body, metadata) => {
