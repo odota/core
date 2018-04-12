@@ -4,20 +4,20 @@ gcloud compute project-info add-metadata --metadata-from-file env=./prod.env
 #postgres
 gcloud compute --project "peaceful-parity-87002" disks create "disk-postgres" --size "100" --zone "us-central1-b" --type "pd-ssd"
 gcloud compute instances delete --quiet postgres-1
-gcloud compute instances create postgres-1 --machine-type n1-highmem-2 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --disk name=disk-postgres-2 --boot-disk-size 10GB --boot-disk-type pd-ssd
+gcloud compute instances create postgres-1 --machine-type n1-highmem-4 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --disk name=disk-postgres-2 --boot-disk-size 10GB --boot-disk-type pd-ssd
 gcloud compute instances add-metadata postgres-1 --metadata-from-file startup-script=./scripts/postgres.sh
 
 #redis
 gcloud compute --project "peaceful-parity-87002" disks create "disk-redis" --size "50" --zone "us-central1-b" --type "pd-ssd"
 gcloud compute instances delete --quiet redis-1
-gcloud compute instances create redis-1 --machine-type n1-highmem-4 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --disk name=disk-redis --boot-disk-size 10GB --boot-disk-type pd-ssd
+gcloud compute instances create redis-1 --machine-type n1-standard-1 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --disk name=disk-redis --boot-disk-size 10GB --boot-disk-type pd-ssd
 gcloud compute instances add-metadata redis-1 --metadata-from-file startup-script=./scripts/redis.sh
 
 #cassandra
-gcloud compute --project "peaceful-parity-87002" disks create "disk-cassandra-4" --size "2000" --zone "us-central1-b" --type "pd-standard"
-gcloud compute instances delete --quiet cassandra-4
-gcloud compute instances create cassandra-4 --machine-type n1-highmem-4 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --disk "name=disk-cassandra-4,device-name=persistent-disk-1" 
-gcloud compute instances add-metadata cassandra-4 --metadata-from-file startup-script=./scripts/cassandra.sh
+gcloud compute --project "peaceful-parity-87002" disks create "disk-cassandra-5" --size "2000" --zone "us-central1-b" --type "pd-standard"
+gcloud compute instances delete --quiet cassandra-5
+gcloud compute instances create cassandra-5 --machine-type n1-highmem-2 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --disk "name=disk-cassandra-5,device-name=persistent-disk-1" 
+gcloud compute instances add-metadata cassandra-5 --metadata-from-file startup-script=./scripts/cassandra.sh
 
 #web, health check, loadbalancer
 gcloud compute forwarding-rules delete --quiet lb-rule
@@ -74,9 +74,3 @@ gcloud compute instance-groups managed delete --quiet cycler-group-1
 gcloud compute instance-templates delete --quiet cycler-1
 gcloud compute instance-templates create cycler-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --preemptible --boot-disk-size 10GB --boot-disk-type pd-ssd --scopes default="https://www.googleapis.com/auth/compute" --metadata-from-file startup-script=./scripts/cycler.py
 gcloud compute instance-groups managed create "cycler-group-1" --base-instance-name "cycler-group-1" --template "cycler-1" --size "1"
-
-#socket
-gcloud compute instance-groups managed delete --quiet socket-group-1 --zone=us-central1-b
-gcloud compute instance-templates delete --quiet socket-1
-gcloud compute instance-templates create socket-1 --machine-type f1-micro --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --tags "https-server" --metadata-from-file startup-script=./scripts/socket.sh
-gcloud compute instance-groups managed create "socket-group-1" --base-instance-name "socket-group-1" --template "socket-1" --size "1" --zone=us-central1-b
