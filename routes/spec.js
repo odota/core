@@ -4238,7 +4238,7 @@ Please keep request rate to approximately 1/s.
             },
           }, (err, result) => {
             if (err) {
-              return cb(err);
+              return res.send(err);
             }
             return res.json(result);
           });
