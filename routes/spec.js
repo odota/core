@@ -4122,7 +4122,7 @@ Please keep request rate to approximately 1/s.
           },
         },
         route: () => '/admin/apiMetrics',
-        func: (req, res, cb) => {
+        func: (req, res) => {
           const startTime = moment().startOf('month').format('YYYY-MM-DD');
           const endTime = moment().endOf('month').format('YYYY-MM-DD');
 
