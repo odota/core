@@ -14,11 +14,11 @@ const cp = require('child_process');
 const async = require('async');
 const numCPUs = require('os').cpus().length;
 
-const insertMatch = queries.insertMatch;
-const buildReplayUrl = utility.buildReplayUrl;
+const { insertMatch } = queries;
+const { buildReplayUrl } = utility;
 
 function runParse(match, job, cb) {
-  let url = match.url;
+  let { url } = match;
   if (config.NODE_ENV === 'test') {
     url = `https://cdn.rawgit.com/odota/testfiles/master/${match.match_id}_1.dem`;
   }

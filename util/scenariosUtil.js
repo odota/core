@@ -1,8 +1,7 @@
 const constants = require('dotaconstants');
 const utility = require('./utility');
 
-const playerWon = utility.playerWon;
-
+const { playerWon } = utility;
 
 // all items that cost at least 2000
 const itemCost = 2000;

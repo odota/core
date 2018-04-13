@@ -5,7 +5,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const utility = require('../util/utility');
 
-const invokeInterval = utility.invokeInterval;
+const { invokeInterval } = utility;
 
 function doHeroStats(cb) {
   const minTime = moment().subtract(30, 'day').format('X');

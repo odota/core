@@ -2,7 +2,7 @@ const utility = require('../util/utility');
 const config = require('../config');
 
 const secret = config.RETRIEVER_SECRET;
-const getData = utility.getData;
+const { getData } = utility;
 const retrieverArr = utility.getRetrieverArr();
 const DATA_POINTS = (60 / (config.MMSTATS_DATA_INTERVAL || 1)) * 24; // Store 24 hours worth of data
 

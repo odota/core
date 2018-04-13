@@ -24,10 +24,8 @@ const {
   teamObject, matchObject, heroObject, playerObject,
 } = require('./objects');
 
-const redisCount = utility.redisCount;
-const subkeys = playerFields.subkeys;
-const countCats = playerFields.countCats;
-const countPeers = utility.countPeers;
+const { redisCount, countPeers } = utility;
+const { subkeys, countCats } = playerFields;
 const playerParams = [
   params.accountIdParam,
   params.limitParam,
@@ -1407,7 +1405,7 @@ Please keep request rate to approximately 1/s.
               return cb(err);
             }
             cache.forEach((m) => {
-              const isRadiant = utility.isRadiant;
+              const { isRadiant } = utility;
               const playerWin = isRadiant(m) === m.radiant_win;
               const group = m.heroes || {};
               Object.keys(group).forEach((key) => {
@@ -1850,7 +1848,7 @@ Please keep request rate to approximately 1/s.
         },
         route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
-          const field = req.params.field;
+          const { field } = req.params;
           req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot').concat([field].filter(f => subkeys[f]));
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {

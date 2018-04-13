@@ -6,7 +6,7 @@ const spec = require('./spec');
 const cacheFunctions = require('../store/cacheFunctions');
 
 const api = new express.Router();
-const subkeys = playerFields.subkeys;
+const { subkeys } = playerFields;
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map(e => Number(e));
 

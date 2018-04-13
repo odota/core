@@ -4,16 +4,15 @@
 const utility = require('../util/utility');
 const queries = require('../store/queries');
 
-const generateJob = utility.generateJob;
-const getData = utility.getData;
-const insertMatch = queries.insertMatch;
+const { generateJob, getData } = utility;
+const { insertMatch } = queries;
 const args = process.argv.slice(2);
 const matchId = Number(args[0]);
 const delay = 1000;
 const job = generateJob('api_details', {
   match_id: matchId,
 });
-const url = job.url;
+const { url } = job;
 getData({
   url,
   delay,

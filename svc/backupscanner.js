@@ -4,9 +4,8 @@ const redis = require('../store/redis');
 const queries = require('../store/queries');
 const config = require('../config');
 
-const generateJob = utility.generateJob;
-const getData = utility.getData;
-const insertMatch = queries.insertMatch;
+const { generateJob, getData } = utility;
+const { insertMatch } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);
@@ -24,7 +23,7 @@ function processMatch(matchId, cb) {
     const job = generateJob('api_details', {
       match_id: matchId,
     });
-    const url = job.url;
+    const { url } = job;
     return getData({
       url,
       delay,

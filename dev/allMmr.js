@@ -4,8 +4,7 @@ const utility = require('../util/utility');
 const queries = require('../store/queries');
 const config = require('../config');
 
-const generateJob = utility.generateJob;
-const getData = utility.getData;
+const { generateJob, getData } = utility;
 const retrieverArr = config.RETRIEVER_HOST.split(',');
 let count = 0;
 const args = process.argv.slice(2);

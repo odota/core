@@ -2,9 +2,9 @@ const vdf = require('simple-vdf');
 const async = require('async');
 const db = require('../store/db');
 const utility = require('../util/utility');
-
-const invokeInterval = utility.invokeInterval;
 const queries = require('../store/queries');
+
+const { invokeInterval } = utility;
 
 function doCosmetics(cb) {
   utility.getData(

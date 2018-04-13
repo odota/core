@@ -546,7 +546,7 @@ function writeCache(accountId, cache, cb) {
 }
 
 function insertPlayerCache(match, cb) {
-  const players = match.players;
+  const { players } = match;
   if (match.pgroup && players) {
     players.forEach((p) => {
       if (match.pgroup[p.player_slot]) {
@@ -990,7 +990,7 @@ function insertMatch(match, options, cb) {
       if (err) {
         return cb(err);
       }
-      const doLogParse = options.doLogParse;
+      const { doLogParse } = options;
       const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
       if (doParse) {
         return queue.addJob('parse', {
