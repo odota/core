@@ -20,7 +20,10 @@ function processScenarios(matchID, cb) {
       su.scenarioChecks[table].forEach((scenarioCheck) => {
         const rows = scenarioCheck(match);
         async.eachSeries(rows, (row, cb) => {
-          row = Object.assign(row, { epoch_week: currentWeek });
+          row = Object.assign(row, {
+            epoch_week: currentWeek,
+            wins: row.wins ? '1' : '0',
+          });
           const values = Object.keys(row).map(() =>
             '?');
           const query = util.format(
