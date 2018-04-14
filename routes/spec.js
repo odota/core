@@ -2633,7 +2633,7 @@ Please keep request rate to approximately 1/s.
     '/search': {
       get: {
         summary: 'GET /search',
-        description: 'Search players by personaname. Default similarity is 0.51',
+        description: 'Search players by personaname.',
         tags: [
           'search',
         ],
@@ -2643,12 +2643,6 @@ Please keep request rate to approximately 1/s.
           description: 'Search string',
           required: true,
           type: 'string',
-        }, {
-          name: 'similarity',
-          in: 'query',
-          description: 'Minimum similarity threshold, between 0 and 1',
-          required: false,
-          type: 'number',
         }],
         responses: {
           200: {
