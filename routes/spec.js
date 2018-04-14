@@ -4143,8 +4143,11 @@ Please keep request rate to approximately 1/s.
                   LIMIT 50
                 ) as T1
                 on api_key_usage.api_key = T1.api_key
+                WHERE
+                  timestamp >= ?
+                  AND timestamp <= ?
                 GROUP BY day, T1.api_key
-              `)
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topAPI: (cb) => {
@@ -4176,7 +4179,7 @@ Please keep request rate to approximately 1/s.
                 GROUP BY ip
                 ORDER BY usage_count DESC
                 LIMIT 100
-              `, [startTime, endTime])
+              `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             numAPIUsers: (cb) => {
@@ -4236,7 +4239,7 @@ Please keep request rate to approximately 1/s.
             },
           }, (err, result) => {
             if (err) {
-              return res.json(err);
+              return res.send(err.message);
             }
             return res.json(result);
           });
