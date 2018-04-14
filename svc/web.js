@@ -65,6 +65,10 @@ app.use('/ugc', (req, res) => {
     })
     .pipe(res);
 });
+// Health check
+app.route('/healthz').get((req, res) => {
+  res.send('ok');
+});
 // Session/Passport middleware
 app.use(session(sessOptions));
 app.use(passport.initialize());
@@ -163,9 +167,6 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
-app.route('/healthz').get((req, res) => {
-  res.send('ok');
-});
 app.route('/login').get(passport.authenticate('steam', {
   failureRedirect: '/api',
 }));
