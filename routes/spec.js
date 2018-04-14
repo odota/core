@@ -4239,7 +4239,7 @@ Please keep request rate to approximately 1/s.
             },
           }, (err, result) => {
             if (err) {
-              return res.send(err.message);
+              return res.status(500).send(err.message);
             }
             return res.json(result);
           });

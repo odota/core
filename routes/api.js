@@ -4,7 +4,6 @@ const filterDeps = require('../util/filterDeps');
 const config = require('../config');
 const spec = require('./spec');
 const cacheFunctions = require('../store/cacheFunctions');
-const keys = require('./keyManagement');
 
 const api = new express.Router();
 const { subkeys } = playerFields;
@@ -79,8 +78,6 @@ api.use('/admin*', (req, res, cb) => {
     error: 'Access Denied',
   });
 });
-
-api.use('/keys', keys);
 
 // API spec
 api.get('/', (req, res) => {

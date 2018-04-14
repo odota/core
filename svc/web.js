@@ -8,6 +8,7 @@ const redis = require('../store/redis');
 const db = require('../store/db');
 const queries = require('../store/queries');
 const api = require('../routes/api');
+const keys = require('../routes/keyManagement');
 const request = require('request');
 const compression = require('compression');
 const session = require('cookie-session');
@@ -164,7 +165,7 @@ app.use(cors({
   credentials: true,
 }));
 // CORS Preflight for API keys
-app.options('/api/keys', cors());
+app.options('/keys', cors());
 app.route('/healthz').get((req, res) => {
   res.send('ok');
 });
@@ -188,6 +189,7 @@ app.route('/logout').get((req, res) => {
   return res.redirect('/api');
 });
 app.use('/api', api);
+app.use('/keys', keys);
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
