@@ -11,19 +11,14 @@ const redis = require('../store/redis');
 
 const secret = config.RETRIEVER_SECRET;
 const retrieverArr = utility.getRetrieverArr();
-const getData = utility.getData;
-const redisCount = utility.redisCount;
-const insertMatch = queries.insertMatch;
+const { getData, redisCount } = utility;
+const { insertMatch } = queries;
 
 function getGcDataFromRetriever(match, cb) {
   // make array of retriever urls and use a random one on each retry
-  const urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
-  const backupFactor = Math.min(config.BACKUP_RETRIEVER_FACTOR, 0.99);
-  const totalCount = Math.floor(retrieverArr.length / (1 - backupFactor));
-  if (config.NODE_ENV !== 'test' && match.allowBackup) {
-    while (urls.length < totalCount) {
-      urls.push(`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`);
-    }
+  let urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
+  if (config.NODE_ENV !== 'test' && match.allowBackup && (Math.random() * 100) < Number(config.BACKUP_RETRIEVER_PERCENT)) {
+    urls = [`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`];
   }
   return getData({ url: urls, noRetry: match.noRetry }, (err, body, metadata) => {
     if (metadata && metadata.hostname === 'api.stratz.com') {
@@ -89,14 +84,18 @@ function getGcDataFromRetriever(match, cb) {
 }
 
 module.exports = function getGcData(match, cb) {
-  db.first().from('match_gcdata').where({
-    match_id: match.match_id,
+  const matchId = match.match_id;
+  if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
+    return cb(new Error('invalid match_id'));
+  }
+  return db.first().from('match_gcdata').where({
+    match_id: matchId,
   }).asCallback((err, gcdata) => {
     if (err) {
       return cb(err);
     }
     if (gcdata && gcdata.replay_salt) {
-      console.log('found cached replay url for %s', match.match_id);
+      console.log('found cached replay url for %s', matchId);
       return cb(err, gcdata);
     }
     return getGcDataFromRetriever(match, cb);

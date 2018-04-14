@@ -84,8 +84,7 @@ function processTeamfights(entries, meta) {
             // add to deaths_pos
             // lookup slot of the killed hero by hero name (e.key)
             // get position from intervalstate
-            const x = intervalState[r.time][r.slot].x;
-            const y = intervalState[r.time][r.slot].y;
+            const { x, y } = intervalState[r.time][r.slot];
             // fill in the copy
             r.type = 'deaths_pos';
             r.key = JSON.stringify([x, y]);

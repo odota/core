@@ -5,7 +5,7 @@
 const cp = require('child_process');
 const pm2 = require('pm2');
 const async = require('async');
-const apps = require('./manifest.json').apps;
+const { apps } = require('./manifest.json');
 
 const args = process.argv.slice(2);
 const group = args[0] || process.env.GROUP;

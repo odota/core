@@ -3,11 +3,11 @@ const db = require('../store/db');
 const queries = require('../store/queries');
 const utility = require('../util/utility');
 
-const invokeInterval = utility.invokeInterval;
+const { invokeInterval, generateJob, getData } = utility;
 
 function doProPlayers(cb) {
-  const container = utility.generateJob('api_notable', {});
-  utility.getData(container.url, (err, body) => {
+  const container = generateJob('api_notable', {});
+  getData(container.url, (err, body) => {
     if (err) {
       return cb(err);
     }

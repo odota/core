@@ -6,15 +6,15 @@ const queries = require('../store/queries');
 const db = require('../store/db');
 const utility = require('../util/utility');
 
-const insertPlayer = queries.insertPlayer;
-const getData = utility.getData;
+const { insertPlayer } = queries;
+const { getData, generateJob } = utility;
 
 function getSummaries(cb) {
   db.raw('SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)').asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
-    const container = utility.generateJob('api_summaries', {
+    const container = generateJob('api_summaries', {
       players: result.rows,
     });
     return getData(container.url, (err, body) => {

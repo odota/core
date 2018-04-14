@@ -7,7 +7,7 @@ const utility = require('../util/utility');
 const queries = require('../store/queries');
 const async = require('async');
 
-const insertMatchSkillCassandra = queries.insertMatchSkillCassandra;
+const { insertMatchSkillCassandra } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 const parallelism = Math.min(3, apiKeys.length);
 const skills = [1, 2, 3];
@@ -30,7 +30,7 @@ function getPageData(start, options, cb) {
       return getPageData(start, options, cb);
     }
     // data is in data.result.matches
-    const matches = data.result.matches;
+    const { matches } = data.result;
     return async.eachSeries(matches, (m, cb) => {
       insertMatchSkillCassandra({
         match_id: m.match_id,

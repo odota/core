@@ -10,9 +10,8 @@ const redis = require('../store/redis');
 const queries = require('../store/queries');
 const async = require('async');
 
-const insertMatch = queries.insertMatch;
-const getData = utility.getData;
-const generateJob = utility.generateJob;
+const { insertMatch } = queries;
+const { getData, generateJob } = utility;
 // const api_hosts = config.STEAM_API_HOST.split(',');
 const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;

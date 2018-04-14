@@ -84,7 +84,7 @@ function getMMStats(idx, cb) {
 
 function getPlayerProfile(idx, accountId, cb) {
   accountId = Number(accountId);
-  const Dota2 = steamObj[idx].Dota2;
+  const { Dota2 } = steamObj[idx];
   console.log('requesting player profile %s', accountId);
   profileRequests += 1;
   Dota2.requestProfileCard(accountId, (err, profileData) => {
@@ -116,7 +116,7 @@ function getPlayerProfile(idx, accountId, cb) {
 }
 
 function getGcMatchData(idx, matchId, cb) {
-  const Dota2 = steamObj[idx].Dota2;
+  const { Dota2 } = steamObj[idx];
   matchRequests += 1;
   const timeout = setTimeout(() => {
     timeouts += 1;

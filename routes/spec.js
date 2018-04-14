@@ -24,10 +24,8 @@ const {
   teamObject, matchObject, heroObject, playerObject,
 } = require('./objects');
 
-const redisCount = utility.redisCount;
-const subkeys = playerFields.subkeys;
-const countCats = playerFields.countCats;
-const countPeers = utility.countPeers;
+const { redisCount, countPeers } = utility;
+const { subkeys, countCats } = playerFields;
 const playerParams = [
   params.accountIdParam,
   params.limitParam,
@@ -67,7 +65,7 @@ const spec = {
     title: 'OpenDota API',
     description: `# Introduction
 This API provides Dota 2 related data.
-Please keep request rate to approximately 3/s.
+Please keep request rate to approximately 1/s.
 `,
     version: packageJson.version,
   },
@@ -1407,7 +1405,7 @@ Please keep request rate to approximately 3/s.
               return cb(err);
             }
             cache.forEach((m) => {
-              const isRadiant = utility.isRadiant;
+              const { isRadiant } = utility;
               const playerWin = isRadiant(m) === m.radiant_win;
               const group = m.heroes || {};
               Object.keys(group).forEach((key) => {
@@ -1850,7 +1848,7 @@ Please keep request rate to approximately 3/s.
         },
         route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
-          const field = req.params.field;
+          const { field } = req.params;
           req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot').concat([field].filter(f => subkeys[f]));
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
@@ -4122,7 +4120,7 @@ Please keep request rate to approximately 3/s.
           },
         },
         route: () => '/admin/apiMetrics',
-        func: (req, res, cb) => {
+        func: (req, res) => {
           const startTime = moment().startOf('month').format('YYYY-MM-DD');
           const endTime = moment().endOf('month').format('YYYY-MM-DD');
 
@@ -4238,7 +4236,7 @@ Please keep request rate to approximately 3/s.
             },
           }, (err, result) => {
             if (err) {
-              return cb(err);
+              return res.json(err);
             }
             return res.json(result);
           });

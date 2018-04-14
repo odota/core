@@ -1,6 +1,6 @@
 const utility = require('./utility');
 
-const isRadiant = utility.isRadiant;
+const { isRadiant } = utility;
 
 function filter(matches, filters) {
   const curtime = Math.floor(Date.now() / 1000);
@@ -9,7 +9,7 @@ function filter(matches, filters) {
   const conditions = {
     // filter: player won
     win(m, key) {
-      return Number(utility.isRadiant(m) === m.radiant_win) === key;
+      return Number(isRadiant(m) === m.radiant_win) === key;
     },
     patch(m, key) {
       return m.patch === key;
@@ -33,7 +33,7 @@ function filter(matches, filters) {
       return m.hero_id === key;
     },
     is_radiant(m, key) {
-      return Number(utility.isRadiant(m)) === key;
+      return Number(isRadiant(m)) === key;
     },
     party_size(m, key) {
       return m.party_size === key;

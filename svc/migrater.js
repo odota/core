@@ -6,7 +6,7 @@ const utility = require('../util/utility');
 
 const sqlQuery = fs.readFileSync('./sql/create_tables.sql', 'utf8');
 // const cassQuery = fs.readFileSync('./sql/create_tables.cql', 'utf8');
-const invokeInterval = utility.invokeInterval;
+const { invokeInterval } = utility;
 
 function doMigrate(cb) {
   async.series({

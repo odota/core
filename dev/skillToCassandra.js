@@ -2,7 +2,7 @@ const db = require('../store/db');
 const JSONStream = require('JSONStream');
 const queries = require('../store/queries');
 
-const insertMatchSkillCassandra = queries.insertMatchSkillCassandra;
+const { insertMatchSkillCassandra } = queries;
 const args = process.argv.slice(2);
 const startId = Number(args[0]) || 0;
 // var end_id = Number(args[1]) || Number.MAX_VALUE;

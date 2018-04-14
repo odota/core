@@ -3,8 +3,7 @@ const db = require('../store/db');
 const utility = require('../util/utility');
 const async = require('async');
 
-const generateJob = utility.generateJob;
-const getData = utility.getData;
+const { generateJob, getData } = utility;
 // const leagueUrl = generateJob('api_leagues', {}).url;
 
 function getPage(url, leagueid, cb) {
@@ -18,7 +17,7 @@ function getPage(url, leagueid, cb) {
       const job = generateJob('api_details', {
         match_id: match.match_id,
       });
-      const url = job.url;
+      const { url } = job;
       getData({
         url,
         delay: 200,
@@ -70,12 +69,12 @@ db
     }
     const leagueIds = data.map(l => l.leagueid);
     async.eachSeries(leagueIds, (leagueid, cb) => {
-      const url = generateJob(
+      const { url } = generateJob(
         'api_history',
         {
           leagueid,
         },
-      ).url;
+      );
       return getPage(url, leagueid, cb);
     }, (err) => {
       process.exit(Number(err));

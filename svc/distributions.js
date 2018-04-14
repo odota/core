@@ -5,7 +5,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const utility = require('../util/utility');
 
-const invokeInterval = utility.invokeInterval;
+const { invokeInterval } = utility;
 
 const sql = {};
 const sqlq = fs.readdirSync('./sql');

@@ -45,7 +45,7 @@ const defaults = {
   MMSTATS_DATA_INTERVAL: 3, // minutes between requests for MMStats data
   DEFAULT_DELAY: 1000, // delay between API requests
   SCANNER_DELAY: 2000, // delay for scanner API requests (stricter rate limit)
-  MMR_PARALLELISM: 10, // Number of simulataneous MMR requests to make (per retriever)
+  MMR_PARALLELISM: 10, // Number of simultaneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
   BENCHMARK_RETENTION_MINUTES: 5, // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: 0, // percent of inserted matches to randomly queue for GC data
@@ -67,7 +67,8 @@ const defaults = {
   API_KEY_PER_MIN_LIMIT: 180, // Rate limit per minute if using an API key
   NO_API_KEY_PER_MIN_LIMIT: 60, // Rate limit per minute if not using an API key
   ADMIN_ACCOUNT_IDS: '', // Whitelisted, comma separated account IDs to access /admin* routes
-  BACKUP_RETRIEVER_FACTOR: 0, // percent of replay salts to fetch from backup data source
+  BACKUP_RETRIEVER_PERCENT: 0, // percent of replay salts to fetch from backup data source
+  GCDATA_PARALLELISM: 1, // Number of simultaneous GC match details requests to make (per retriever)
   STRIPE_SECRET: '', // for stripe payment processing (kept on server)
   STRIPE_PUBLIC: '', // for stripe payment processing (sent to client)
   STRIPE_API_PLAN: '', // plan id for stripe metering

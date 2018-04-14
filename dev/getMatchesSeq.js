@@ -7,9 +7,8 @@ const redis = require('../store/redis');
 const queries = require('../store/queries');
 const cluster = require('cluster');
 
-const generateJob = utility.generateJob;
-const getData = utility.getData;
-const insertMatch = queries.insertMatch;
+const { generateJob, getData } = utility;
+const { insertMatch } = queries;
 const args = process.argv.slice(2);
 const startSeqNum = Number(args[0]) || 0;
 const endSeqNum = Number(args[1]) || 0;
@@ -30,7 +29,7 @@ function getPage(matchSeqNum, bucket) {
   const job = generateJob('api_sequence', {
     start_at_match_seq_num: matchSeqNum,
   });
-  const url = job.url;
+  const { url } = job;
   getData({
     url,
     delay,
@@ -39,7 +38,7 @@ function getPage(matchSeqNum, bucket) {
       throw err;
     }
     if (body.result) {
-      const matches = body.result.matches;
+      const { matches } = body.result;
       async.each(matches, (match, cb) => {
         insertMatch(match, {
           skipCounts: true,

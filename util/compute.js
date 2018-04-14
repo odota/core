@@ -1,10 +1,8 @@
 const constants = require('dotaconstants');
 const utility = require('./utility');
 
-const max = utility.max;
-const min = utility.min;
-const isRadiant = utility.isRadiant;
-const ancients = constants.ancients;
+const { max, min, isRadiant } = utility;
+const { ancients } = constants;
 
 /**
  * Count the words that occur in a set of messages
@@ -171,7 +169,7 @@ function computeMatchData(pm) {
     pm.item_usage = {};
     for (let i = 0; i < pm.purchase_log.length; i += 1) {
       const k = pm.purchase_log[i].key;
-      const time = pm.purchase_log[i].time;
+      const { time } = pm.purchase_log[i];
       if (!pm.purchase_time[k]) {
         pm.purchase_time[k] = 0;
       }
@@ -213,7 +211,7 @@ function computeMatchData(pm) {
     pm.stomp = pm.radiant_win === isRadiant(pm) ? stompVal : undefined;
   }
   if (pm.pings) {
-    pm.pings = pm.pings[0];
+    pm.pings = pm.pings['0'];
   }
   if (pm.life_state) {
     pm.life_state_dead = (pm.life_state[1] || 0) + (pm.life_state[2] || 0);

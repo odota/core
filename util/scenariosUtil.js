@@ -1,11 +1,10 @@
 const constants = require('dotaconstants');
 const utility = require('./utility');
 
-const playerWon = utility.playerWon;
+const { playerWon } = utility;
 
-
-// all items that cost at least 2000
-const itemCost = 2000;
+// all items that cost at least 1400
+const itemCost = 1400;
 const dotaItems = Object.keys(constants.items).map(k => [constants.items[k], k]).filter(x => x[0].cost >= itemCost).map(x => x[1]);
 const timings = [7.5, 10, 12, 15, 20, 25, 30].map(x => x * 60);
 const gameDurationBucket = [15, 30, 45, 60, 90].map(x => x * 60);
@@ -25,7 +24,7 @@ function buildTeamScenario(scenario, isRadiant, match) {
     scenario,
     is_radiant: isRadiant,
     region: match.region,
-    wins: match.radiant_win === isRadiant ? '1' : '0',
+    wins: match.radiant_win === isRadiant,
   }];
 }
 
@@ -35,16 +34,18 @@ const scenarioChecks = {
     function itemTimings(match) {
       const rows = [];
       match.players.forEach((player) => {
-        player.purchase_log.forEach((item) => {
-          if (dotaItems.indexOf(item.key) !== -1 && item.time <= timings[timings.length - 1]) {
-            rows.push({
-              hero_id: player.hero_id,
-              item: item.key,
-              time: timings.find(x => x >= item.time),
-              wins: playerWon(player, match) ? '1' : '0',
-            });
-          }
-        });
+        if (player.purchase_log) {
+          player.purchase_log.forEach((item) => {
+            if (dotaItems.indexOf(item.key) !== -1 && item.time <= timings[timings.length - 1]) {
+              rows.push({
+                hero_id: player.hero_id,
+                item: item.key,
+                time: timings.find(x => x >= item.time),
+                wins: playerWon(player, match),
+              });
+            }
+          });
+        }
       });
       return rows;
     },
@@ -57,7 +58,7 @@ const scenarioChecks = {
             hero_id: player.hero_id,
             lane_role: player.lane_role,
             time: gameDurationBucket.find(x => x >= match.duration),
-            wins: playerWon(player, match) ? '1' : '0',
+            wins: playerWon(player, match),
           });
         }
       });

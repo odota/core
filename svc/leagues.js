@@ -1,20 +1,20 @@
 const vdf = require('simple-vdf');
 const async = require('async');
 const utility = require('../util/utility');
-
-const invokeInterval = utility.invokeInterval;
 const db = require('../store/db');
 const queries = require('../store/queries');
 
+const { invokeInterval, generateJob, getData } = utility;
+
 function doLeagues(cb) {
-  const container = utility.generateJob('api_leagues', {
+  const container = generateJob('api_leagues', {
     language: 'english',
   });
-  utility.getData(container.url, (err, apiLeagues) => {
+  getData(container.url, (err, apiLeagues) => {
     if (err) {
       return cb(err);
     }
-    return utility.getData(
+    return getData(
       {
         url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
         raw: true,
@@ -29,7 +29,7 @@ function doLeagues(cb) {
           const item = itemData.items_game.items[key];
           if (item.prefab === 'league' && item.tool && item.tool.usage) {
             const leagueid = item.tool.usage.league_id;
-            const tier = item.tool.usage.tier;
+            const { tier } = item.tool.usage;
             const ticket = item.image_inventory;
             const banner = item.image_banner;
             leagues[leagueid] = { tier, ticket, banner };

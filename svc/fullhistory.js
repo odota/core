@@ -10,9 +10,8 @@ const db = require('../store/db');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 
-const getData = utility.getData;
-const insertMatch = queries.insertMatch;
-const generateJob = utility.generateJob;
+const { getData, generateJob } = utility;
+const { insertMatch } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once
 const parallelism = Math.min(20, apiKeys.length);

@@ -3,7 +3,7 @@ const redis = require('../store/redis');
 const db = require('../store/db');
 const utility = require('../util/utility');
 
-const invokeInterval = utility.invokeInterval;
+const { invokeInterval } = utility;
 
 function doLiveGames(cb) {
   // Get the list of pro players

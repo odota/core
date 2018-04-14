@@ -230,41 +230,42 @@ function getMmrEstimate(accountId, cb) {
 }
 
 function getPlayerMatches(accountId, queryObj, cb) {
-  if (cassandra) {
-    // call clean method to ensure we have column info cached
-    return cleanRowCassandra(cassandra, 'player_caches', {}, (err) => {
-      if (err) {
-        return cb(err);
-      }
-      // console.log(queryObj.project, cassandraColumnInfo.player_caches);
-      const query = util.format(
-        `
-        SELECT %s FROM player_caches 
-        WHERE account_id = ?
-        ORDER BY match_id DESC
-        ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
-      `,
-        queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','),
-      );
-      const matches = [];
-      return cassandra.stream(query, [accountId], {
+  // Validate accountId
+  if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
+    return cb(null, []);
+  }
+  // call clean method to ensure we have column info cached
+  return cleanRowCassandra(cassandra, 'player_caches', {}, (err) => {
+    if (err) {
+      return cb(err);
+    }
+    // console.log(queryObj.project, cassandraColumnInfo.player_caches);
+    const query = util.format(
+      `
+      SELECT %s FROM player_caches 
+      WHERE account_id = ?
+      ORDER BY match_id DESC
+      ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
+    `,
+      queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','),
+    );
+    const matches = [];
+    return cassandra.eachRow(
+      query, [accountId], {
         prepare: true,
-        fetchSize: 1000,
+        fetchSize: 5000,
         autoPage: true,
-      }).on('readable', function handleRow() {
-        // readable is emitted as soon a row is received and parsed
-        while (true) {
-          const read = this.read();
-          if (!read) {
-            break;
-          }
-          const m = deserialize(read);
-          if (filter([m], queryObj.filter).length) {
-            matches.push(m);
-          }
+      },
+      (n, row) => {
+        const m = deserialize(row);
+        if (filter([m], queryObj.filter).length) {
+          matches.push(m);
         }
-      }).on('end', (err) => {
-        // stream ended, there aren't any more rows
+      },
+      (err) => {
+        if (err) {
+          return cb(err);
+        }
         if (queryObj.sort) {
           matches.sort((a, b) =>
             b[queryObj.sort] - a[queryObj.sort]);
@@ -272,10 +273,9 @@ function getPlayerMatches(accountId, queryObj, cb) {
         const offset = matches.slice(queryObj.offset);
         const result = offset.slice(0, queryObj.limit || offset.length);
         return cb(err, result);
-      }).on('error', err => console.error(err));
-    });
-  }
-  return cb(null, []);
+      },
+    );
+  });
 }
 
 function getPlayerRatings(db, accountId, cb) {
@@ -546,7 +546,7 @@ function writeCache(accountId, cache, cb) {
 }
 
 function insertPlayerCache(match, cb) {
-  const players = match.players;
+  const { players } = match;
   if (match.pgroup && players) {
     players.forEach((p) => {
       if (match.pgroup[p.player_slot]) {
@@ -990,7 +990,7 @@ function insertMatch(match, options, cb) {
       if (err) {
         return cb(err);
       }
-      const doLogParse = options.doLogParse;
+      const { doLogParse } = options;
       const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
       if (doParse) {
         return queue.addJob('parse', {
