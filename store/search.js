@@ -25,7 +25,6 @@ function search(options, cb) {
     },
     personaname(callback) {
       db.raw(`
-        SELECT set_limit(0.6);
         SELECT * FROM 
         (SELECT account_id, avatarfull, personaname, last_match_time, similarity(personaname, ?) AS similarity
         FROM players 
