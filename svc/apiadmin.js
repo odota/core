@@ -45,7 +45,7 @@ function storeUsageCounts(cursor, cb) {
               // TODO(albert): We could break this out by day for the invoice
               // but we'd have to make changes to web.js and metrics
               stripe.usageRecords.create({
-                quantity: Math.round(values[i + 1] / config.API_BILLING_UNIT),
+                quantity: Math.ceil(values[i + 1] / config.API_BILLING_UNIT),
                 action: 'set',
                 subscription_item: sub.items.data[0].id,
                 timestamp: sub.current_period_end - 1,
