@@ -65,7 +65,7 @@ nock(`http://${config.RETRIEVER_HOST}`)
   .get('/?account_id=88367253')
   .reply(200, retrieverPlayer);
 before(function setup(done) {
-  this.timeout(30000);
+  this.timeout(60000);
   async.series([
     function initPostgres(cb) {
       pool.connect((err, client) => {
@@ -289,6 +289,274 @@ describe('api limits', () => {
     }, done);
   });
 });
+describe('api management', () => {
+  
+  it('should get 403 when not logged in.', (done) => {
+    supertest(app).get('/keys').end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+      assert.equal(res.statusCode, 403);
+      return done();
+    })
+  });
+  
+  it('should not get fields for GET', (done) => {
+    supertest(app).get('/keys?loggedin=1').end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+      
+      assert.equal(res.statusCode, 200);
+      assert.deepStrictEqual(res.body, {});
+      return done();
+    })
+  })
+  
+  it('should create api key', (done) => {
+    supertest(app)
+    .post('/keys?loggedin=1')
+    .send({
+      token: {
+        id: 'tok_visa',
+        email: 'test@test.com'
+      }
+    })
+    .end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+
+      assert.equal(res.statusCode, 200);
+      
+      supertest(app).get('/keys?loggedin=1').end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        assert.equal(res.statusCode, 200);
+        assert.equal(res.body.customer.credit_brand, 'Visa');
+        assert.notEqual(res.body.customer.api_key, null);
+        return done();
+      })
+    })
+  }).timeout(5000);
+  
+  it('should not change key', (done) => {
+    supertest(app).get('/keys?loggedin=1').end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+      
+      assert.equal(res.statusCode, 200);
+      assert.equal(res.body.customer.credit_brand, 'Visa');
+      
+      const previousCredit = res.body.customer.credit_brand;
+      const previousKey = res.body.customer.api_key;
+      
+      db.from('api_keys')
+      .where({
+        account_id: 1
+      })
+      .then((res) => {
+        if (res.length === 0) {
+          throw Error('No API record found');
+        }
+        
+        const previousCustomer = res[0].customer_id;
+        const previousSub = res[0].subscription_id;
+        
+        supertest(app)
+        .post('/keys?loggedin=1')
+        .send({
+          token: {
+            id: 'tok_discover',
+            email: 'test@test.com'
+          }
+        })
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          
+          assert.equal(res.statusCode, 200);
+          
+          db.from('api_keys')
+            .where({
+              account_id: 1
+            })
+            .then((res2) => {
+              if (res.length === 0) {
+                throw Error('No API record found');
+              }
+
+              assert.equal(previousCustomer, res2[0].customer_id);
+              assert.equal(previousSub, res2[0].subscription_id);
+              supertest(app).get('/keys?loggedin=1').end((err, res) => {
+                if (err) {
+                  return done(err);
+                }
+        
+                assert.equal(res.statusCode, 200);
+                assert.equal(res.body.customer.credit_brand, previousCredit);
+                assert.equal(res.body.customer.api_key, previousKey);
+                return done();
+              })
+            })
+            .catch(err => done(err));
+        })
+      })
+      .catch(err => done(err));
+    });
+  }).timeout(5000);
+  
+  it('should update payment but not change customer/sub', (done) => {
+    db.from('api_keys')
+    .where({
+      account_id: 1
+    })
+    .then((res) => {
+      if (res.length === 0) {
+        throw Error('No API record found');
+      }
+      
+      supertest(app)
+      .put('/keys?loggedin=1')
+      .send({
+        token: {
+          id: 'tok_mastercard',
+          email: 'test@test.com'
+        }
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+        
+        assert.equal(res.statusCode, 200);
+        
+        supertest(app).get('/keys?loggedin=1').end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.body.customer.credit_brand, 'Mastercard');
+          assert.equal(res.body.customer.api_key, res[0].api_key);
+          db.from('api_keys')
+            .where({
+              account_id: 1
+            })
+            .then((res2) => {
+              if (res.length === 0) {
+                throw Error('No API record found');
+              }
+              assert.equal(res[0].customer_id, res2[0].customer_id);
+              assert.equal(res[0].subscription_id, res2[0].subscription_id);
+              return done();
+            })
+            .catch(err => done(err));
+        })
+      })
+    })
+    .catch(err => done(err));
+  })
+  
+  it('should delete key but not change customer/sub', (done) => {
+    db.from('api_keys')
+      .where({
+        account_id: 1
+      })
+      .then((res) => {
+        if (res.length === 0) {
+          throw Error('No API record found');
+        }
+        
+        assert.notEqual(res[0].api_key, null);
+        
+        supertest(app)
+        .delete('/keys?loggedin=1')
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          
+          assert.equal(res.statusCode, 200);
+          
+          db.from('api_keys')
+            .where({
+              account_id: 1
+            })
+            .then((res2) => {
+              if (res.length === 0) {
+                throw Error('No API record found');
+              }
+              assert.equal(res2[0].api_key, null);
+              assert.equal(res2[0].customer_id, res[0].customer_id);
+              assert.equal(res2[0].subscription_id, res[0].subscription_id);
+              return done();
+            })
+            .catch(err => done(err));
+        })
+      })
+      .catch(err => done(err));
+  });
+
+  it('should get new key but not change customer/sub', (done) => {
+    db.from('api_keys')
+      .where({
+        account_id: 1
+      })
+      .then((res) => {
+        if (res.length === 0) {
+          throw Error('No API record found');
+        }
+        
+        const previousCustomer = res[0].customer_id;
+        const previousSub = res[0].subscription_id;
+        
+        supertest(app)
+        .post('/keys?loggedin=1')
+        .send({
+          token: {
+            id: 'tok_discover',
+            email: 'test@test.com'
+          }
+        })
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          
+          assert.equal(res.statusCode, 200);
+          
+          db.from('api_keys')
+            .where({
+              account_id: 1
+            })
+            .then((res2) => {
+              if (res.length === 0) {
+                throw Error('No API record found');
+              }
+              assert.equal(previousCustomer, res2[0].customer_id);
+              assert.equal(previousSub, res2[0].subscription_id);
+              supertest(app).get('/keys?loggedin=1').end((err, res) => {
+                if (err) {
+                  return done(err);
+                }
+        
+                assert.equal(res.statusCode, 200);
+                assert.equal(res.body.customer.credit_brand, 'Discover');
+                assert.notEqual(res.body.customer.api_key, null);
+                return done();
+              })
+            })
+            .catch(err => done(err));
+        })
+      })
+      .catch(err => done(err));
+  });
+})
 /*
 describe('generateMatchups', () => {
   it('should generate matchups', (done) => {

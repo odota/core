@@ -93,7 +93,7 @@ keys.route('/').get((req, res, next) => {
 }).post((req, res, next) => { // Creates key
   const { token } = req.body;
 
-  if (!token) {
+  if (!token || !token.id || !token.email) {
     res.sendStatus(500).json({
       error: 'Missing token',
     });
@@ -151,6 +151,7 @@ keys.route('/').get((req, res, next) => {
         if (err.message === 'Key exists') {
           return res.sendStatus(200);
         }
+        console.log(err);
         return next(err);
       });
   }
@@ -185,6 +186,7 @@ keys.route('/').get((req, res, next) => {
           }))
         .then(() => res.sendStatus(200))
         .catch((err) => {
+          console.log(err);
           next(err);
         });
     });
@@ -192,7 +194,7 @@ keys.route('/').get((req, res, next) => {
   .put((req, res, next) => { // Updates billing
     const { token } = req.body;
 
-    if (!token) {
+    if (!token || !token.id || !token.email) {
       res.status(500).json({
         error: 'Missng token',
       });
@@ -218,7 +220,10 @@ keys.route('/').get((req, res, next) => {
           source: token.id,
         }))
         .then(() => res.sendStatus(200))
-        .catch(err => next(err));
+        .catch(err => {
+          console.log(err);
+          next(err);
+        });
     }
   });
 
