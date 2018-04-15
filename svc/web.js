@@ -78,10 +78,10 @@ app.use(passport.session());
 // Dummy User ID for testing
 if (config.NODE_ENV === 'test') {
   app.use((req, res, cb) => {
-    if(req.query.loggedin) {
+    if (req.query.loggedin) {
       req.user = {
-        account_id: 1
-      }
+        account_id: 1,
+      };
     }
 
     cb();

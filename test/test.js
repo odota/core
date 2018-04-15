@@ -1,5 +1,5 @@
-/* global before describe it */
-/* eslint-disable global-require */
+/* global before describe it beforeEach */
+/* eslint-disable global-require, consistent-return, no-undef */
 /**
  * Main test script to run tests
  * */

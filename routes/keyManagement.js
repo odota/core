@@ -220,7 +220,7 @@ keys.route('/').get((req, res, next) => {
           source: token.id,
         }))
         .then(() => res.sendStatus(200))
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
           next(err);
         });
