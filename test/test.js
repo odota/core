@@ -1,4 +1,4 @@
-/* global before describe it beforeEach */
+/* global before describe it beforeEach after */
 /* eslint-disable global-require */
 /**
  * Main test script to run tests
@@ -242,59 +242,14 @@ describe('api', () => {
     });
   });
 });
-describe('api limits', () => {
-  before((done) => {
-    config.ENABLE_API_LIMIT = true;
-    config.API_FREE_LIMIT = 20;
-    redis.multi()
-      .del('usage_count')
-      .sadd('api_keys', 'KEY')
-      .exec((err) => {
-        if (err) {
-          return done(err);
-        }
-
-        return done();
-      });
-  });
-
-  it('should be able to make 20. 21st should fail as no api key', (done) => {
-    async.timesSeries(21, (i, cb) => {
-      supertest(app).get('/api').end((err, res) => {
-        if (err) {
-          return cb(err);
-        }
-
-        if (i < 20) {
-          assert.equal(res.statusCode, 200);
-        } else {
-          assert.equal(res.statusCode, 429);
-          assert.equal(res.body.error, 'monthly api limit exeeded');
-        }
-        return cb();
-      });
-    }, done);
-  });
-
-  it('should be able to make more than 20 calls when using API KEY', (done) => {
-    async.timesSeries(25, (i, cb) => {
-      supertest(app).get('/api?API_KEY=KEY').end((err, res) => {
-        if (err) {
-          return cb(err);
-        }
-
-        assert.equal(res.statusCode, 200);
-        return cb();
-      });
-    }, done);
-  });
-});
 describe('api management', () => {
-  // let previousKey;
-  // let previousCustomer;
-  // let previousSub;
+  // before(function checkIfRunApiManagement() {
+  //   if (!process.env.TEST_API_MANAGEMENT) {
+  //     this.skip();
+  //   }
+  // })
 
-  beforeEach(function (done) {
+  beforeEach(function getApiRecord(done) {
     db.from('api_keys')
       .where({
         account_id: 1,
@@ -329,7 +284,7 @@ describe('api management', () => {
       .catch(err => done(err));
   });
 
-  it('should create api key', function (done) {
+  it('should create api key', function testCreatingApiKey(done) {
     this.timeout(5000);
     supertest(app)
       .post('/keys?loggedin=1')
@@ -356,7 +311,7 @@ describe('api management', () => {
       .catch(err => done(err));
   });
 
-  it('should not change key', function (done) {
+  it('should not change key', function testPostDoesNotChangeKey(done) {
     this.timeout(5000);
     supertest(app)
       .get('/keys?loggedin=1')
@@ -405,7 +360,7 @@ describe('api management', () => {
       .catch(err => done(err));
   });
 
-  it('should update payment but not change customer/sub', function (done) {
+  it('should update payment but not change customer/sub', function tesPutOnlyChangesBilling(done) {
     this.timeout(5000);
     supertest(app)
       .put('/keys?loggedin=1')
@@ -442,70 +397,121 @@ describe('api management', () => {
       })
       .catch(err => done(err));
   });
-});
+  it('should delete key but not change customer/sub', (done) => {
+    assert.notEqual(this.previousKey, null);
 
-it('should delete key but not change customer/sub', (done) => {
-  assert.notEqual(this.previousKey, null);
+    supertest(app)
+      .delete('/keys?loggedin=1')
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
 
-  supertest(app)
-    .delete('/keys?loggedin=1')
-    .then((res) => {
-      assert.equal(res.statusCode, 200);
-
-      db.from('api_keys')
-        .where({
-          account_id: 1,
-        })
-        .then((res2) => {
-          if (res.length === 0) {
-            throw Error('No API record found');
-          }
-          assert.equal(res2[0].api_key, null);
-          assert.equal(res2[0].customer_id, this.previousCustomer);
-          assert.equal(res2[0].subscription_id, this.previousSub);
-          return done();
-        })
-        .catch(err => done(err));
-    })
-    .catch(err => done(err));
-});
-
-it('should get new key but not change customer/sub', (done) => {
-  supertest(app)
-    .post('/keys?loggedin=1')
-    .send({
-      token: {
-        id: 'tok_discover',
-        email: 'test@test.com',
-      },
-    })
-    .then((res) => {
-      assert.equal(res.statusCode, 200);
-
-      db.from('api_keys')
-        .where({
-          account_id: 1,
-        })
-        .then((res2) => {
-          if (res.length === 0) {
-            throw Error('No API record found');
-          }
-          assert.equal(res2[0].customer_id, this.previousCustomer);
-          assert.equal(res2[0].subscription_id, this.previousSub);
-          supertest(app).get('/keys?loggedin=1').end((err, res) => {
-            if (err) {
-              return done(err);
+        db.from('api_keys')
+          .where({
+            account_id: 1,
+          })
+          .then((res2) => {
+            if (res.length === 0) {
+              throw Error('No API record found');
             }
-
-            assert.equal(res.statusCode, 200);
-            assert.equal(res.body.customer.credit_brand, 'Discover');
-            assert.notEqual(res.body.customer.api_key, null);
+            assert.equal(res2[0].api_key, null);
+            assert.equal(res2[0].customer_id, this.previousCustomer);
+            assert.equal(res2[0].subscription_id, this.previousSub);
             return done();
-          });
-        })
-        .catch(err => done(err));
-    })
-    .catch(err => done(err));
+          })
+          .catch(err => done(err));
+      })
+      .catch(err => done(err));
+  });
+
+  it('should get new key but not change customer/sub', (done) => {
+    supertest(app)
+      .post('/keys?loggedin=1')
+      .send({
+        token: {
+          id: 'tok_discover',
+          email: 'test@test.com',
+        },
+      })
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+
+        db.from('api_keys')
+          .where({
+            account_id: 1,
+          })
+          .then((res2) => {
+            if (res.length === 0) {
+              throw Error('No API record found');
+            }
+            assert.equal(res2[0].customer_id, this.previousCustomer);
+            assert.equal(res2[0].subscription_id, this.previousSub);
+            supertest(app).get('/keys?loggedin=1').end((err, res) => {
+              if (err) {
+                return done(err);
+              }
+
+              assert.equal(res.statusCode, 200);
+              assert.equal(res.body.customer.credit_brand, 'Discover');
+              assert.notEqual(res.body.customer.api_key, null);
+              return done();
+            });
+          })
+          .catch(err => done(err));
+      })
+      .catch(err => done(err));
+  });
+});
+describe('api limits', () => {
+  before((done) => {
+    config.ENABLE_API_LIMIT = true;
+    config.API_FREE_LIMIT = 20;
+    redis.multi()
+      .del('usage_count')
+      .sadd('api_keys', 'KEY')
+      .exec((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        return done();
+      });
+  });
+
+  it('should be able to make 20. 21st should fail as no api key', (done) => {
+    async.timesSeries(21, (i, cb) => {
+      supertest(app).get('/api').end((err, res) => {
+        if (err) {
+          return cb(err);
+        }
+
+        if (i < 20) {
+          assert.equal(res.statusCode, 200);
+        } else {
+          assert.equal(res.statusCode, 429);
+          assert.equal(res.body.error, 'monthly api limit exeeded');
+        }
+        return cb();
+      });
+    }, done);
+  });
+
+  it('should be able to make more than 20 calls when using API KEY', (done) => {
+    async.timesSeries(25, (i, cb) => {
+      supertest(app).get('/api?API_KEY=KEY').end((err, res) => {
+        if (err) {
+          return cb(err);
+        }
+
+        assert.equal(res.statusCode, 200);
+        return cb();
+      });
+    }, done);
+  });
+
+  after(() => {
+    config.ENABLE_API_LIMIT = false;
+    config.API_FREE_LIMIT = 50000;
+  });
 });
 /*
 describe('generateMatchups', () => {
