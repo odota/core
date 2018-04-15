@@ -243,12 +243,6 @@ describe('api', () => {
   });
 });
 describe('api management', () => {
-  // before(function checkIfRunApiManagement() {
-  //   if (!process.env.TEST_API_MANAGEMENT) {
-  //     this.skip();
-  //   }
-  // })
-
   beforeEach(function getApiRecord(done) {
     db.from('api_keys')
       .where({
@@ -398,6 +392,7 @@ describe('api management', () => {
       .catch(err => done(err));
   });
   it('should delete key but not change customer/sub', function testDeleteOnlyModifiesKey(done) {
+    this.timeout(5000);
     assert.notEqual(this.previousKey, null);
 
     supertest(app)
@@ -424,6 +419,7 @@ describe('api management', () => {
   });
 
   it('should get new key but not change customer/sub', function testGettingNewKeyOnlyModifiesKey(done) {
+    this.timeout(5000);
     supertest(app)
       .post('/keys?loggedin=1')
       .send({
