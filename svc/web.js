@@ -181,8 +181,6 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
-// CORS Preflight for API keys
-app.options('/keys', cors());
 app.route('/healthz').get((req, res) => {
   res.send('ok');
 });
@@ -206,6 +204,8 @@ app.route('/logout').get((req, res) => {
   return res.redirect('/api');
 });
 app.use('/api', api);
+// CORS Preflight for API keys
+app.options('/keys', cors());
 app.use('/keys', keys);
 // 404 route
 app.use((req, res) =>

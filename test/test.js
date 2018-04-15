@@ -1,5 +1,5 @@
 /* global before describe it beforeEach */
-/* eslint-disable global-require, consistent-return, no-undef */
+/* eslint-disable global-require */
 /**
  * Main test script to run tests
  * */
@@ -290,44 +290,43 @@ describe('api limits', () => {
   });
 });
 describe('api management', () => {
-  let previousKey;
-  let previousCustomer;
-  let previousSub;
+  // let previousKey;
+  // let previousCustomer;
+  // let previousSub;
 
-  beforeEach((done) => {
+  beforeEach(function (done) {
     db.from('api_keys')
       .where({
         account_id: 1,
       })
       .then((res) => {
-        previousKey = res[0] ? res[0].api_key : null;
-        previousCustomer = res[0] ? res[0].customer_id : null;
-        previousSub = res[0] ? res[0].subscription_id : null;
+        this.previousKey = res[0] ? res[0].api_key : null;
+        this.previousCustomer = res[0] ? res[0].customer_id : null;
+        this.previousSub = res[0] ? res[0].subscription_id : null;
         done();
       })
       .catch(err => done(err));
   });
 
   it('should get 403 when not logged in.', (done) => {
-    supertest(app).get('/keys').end((err, res) => {
-      if (err) {
-        return done(err);
-      }
-      assert.equal(res.statusCode, 403);
-      return done();
-    });
+    supertest(app)
+      .get('/keys')
+      .then((res) => {
+        assert.equal(res.statusCode, 403);
+        return done();
+      })
+      .catch(err => done(err));
   });
 
   it('should not get fields for GET', (done) => {
-    supertest(app).get('/keys?loggedin=1').end((err, res) => {
-      if (err) {
-        return done(err);
-      }
-
-      assert.equal(res.statusCode, 200);
-      assert.deepStrictEqual(res.body, {});
-      return done();
-    });
+    supertest(app)
+      .get('/keys?loggedin=1')
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+        assert.deepStrictEqual(res.body, {});
+        return done();
+      })
+      .catch(err => done(err));
   });
 
   it('should create api key', function (done) {
@@ -340,11 +339,7 @@ describe('api management', () => {
           email: 'test@test.com',
         },
       })
-      .end((err, res) => {
-        if (err) {
-          return done(err);
-        }
-
+      .then((res) => {
         assert.equal(res.statusCode, 200);
 
         supertest(app).get('/keys?loggedin=1').end((err, res) => {
@@ -357,62 +352,57 @@ describe('api management', () => {
           assert.notEqual(res.body.customer.api_key, null);
           return done();
         });
-      });
+      })
+      .catch(err => done(err));
   });
 
   it('should not change key', function (done) {
     this.timeout(5000);
-    supertest(app).get('/keys?loggedin=1').end((err, res) => {
-      if (err) {
-        return done(err);
-      }
+    supertest(app)
+      .get('/keys?loggedin=1')
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+        assert.equal(res.body.customer.credit_brand, 'Visa');
 
-      assert.equal(res.statusCode, 200);
-      assert.equal(res.body.customer.credit_brand, 'Visa');
+        const previousCredit = res.body.customer.credit_brand;
 
-      const previousCredit = res.body.customer.credit_brand;
-      const previousKey = res.body.customer.api_key;
+        supertest(app)
+          .post('/keys?loggedin=1')
+          .send({
+            token: {
+              id: 'tok_discover',
+              email: 'test@test.com',
+            },
+          })
+          .then((res) => {
+            assert.equal(res.statusCode, 200);
 
-      supertest(app)
-        .post('/keys?loggedin=1')
-        .send({
-          token: {
-            id: 'tok_discover',
-            email: 'test@test.com',
-          },
-        })
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-
-          assert.equal(res.statusCode, 200);
-
-          db.from('api_keys')
-            .where({
-              account_id: 1,
-            })
-            .then((res2) => {
-              if (res.length === 0) {
-                throw Error('No API record found');
-              }
-
-              assert.equal(res2[0].customer_id, previousCustomer);
-              assert.equal(res2[0].subscription_id, previousSub);
-              supertest(app).get('/keys?loggedin=1').end((err, res) => {
-                if (err) {
-                  return done(err);
+            db.from('api_keys')
+              .where({
+                account_id: 1,
+              })
+              .then((res2) => {
+                if (res.length === 0) {
+                  throw Error('No API record found');
                 }
+                assert.equal(res2[0].customer_id, this.previousCustomer);
+                assert.equal(res2[0].subscription_id, this.previousSub);
+                supertest(app).get('/keys?loggedin=1').end((err, res) => {
+                  if (err) {
+                    return done(err);
+                  }
 
-                assert.equal(res.statusCode, 200);
-                assert.equal(res.body.customer.credit_brand, previousCredit);
-                assert.equal(res.body.customer.api_key, previousKey);
-                return done();
-              });
-            })
-            .catch(err => done(err));
-        });
-    });
+                  assert.equal(res.statusCode, 200);
+                  assert.equal(res.body.customer.credit_brand, previousCredit);
+                  assert.equal(res.body.customer.api_key, this.previousKey);
+                  return done();
+                });
+              })
+              .catch(err => done(err));
+          })
+          .catch(err => done(err));
+      })
+      .catch(err => done(err));
   });
 
   it('should update payment but not change customer/sub', function (done) {
@@ -425,49 +415,41 @@ describe('api management', () => {
           email: 'test@test.com',
         },
       })
-      .end((err, res) => {
-        if (err) {
-          return done(err);
-        }
-
+      .then((res) => {
         assert.equal(res.statusCode, 200);
 
-        supertest(app).get('/keys?loggedin=1').end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-
-          assert.equal(res.statusCode, 200);
-          assert.equal(res.body.customer.credit_brand, 'MasterCard');
-          assert.equal(res.body.customer.api_key, previousKey);
-          db.from('api_keys')
-            .where({
-              account_id: 1,
-            })
-            .then((res2) => {
-              if (res.length === 0) {
-                throw Error('No API record found');
-              }
-              assert.equal(res2[0].customer_id, previousCustomer);
-              assert.equal(res2[0].subscription_id, previousSub);
-              return done();
-            })
-            .catch(err => done(err));
-        });
-      });
+        supertest(app)
+          .get('/keys?loggedin=1')
+          .then((res) => {
+            assert.equal(res.statusCode, 200);
+            assert.equal(res.body.customer.credit_brand, 'MasterCard');
+            assert.equal(res.body.customer.api_key, this.previousKey);
+            db.from('api_keys')
+              .where({
+                account_id: 1,
+              })
+              .then((res2) => {
+                if (res.length === 0) {
+                  throw Error('No API record found');
+                }
+                assert.equal(res2[0].customer_id, this.previousCustomer);
+                assert.equal(res2[0].subscription_id, this.previousSub);
+                return done();
+              })
+              .catch(err => done(err));
+          })
+          .catch(err => done(err));
+      })
+      .catch(err => done(err));
   });
 });
 
 it('should delete key but not change customer/sub', (done) => {
-  assert.notEqual(previousKey, null);
+  assert.notEqual(this.previousKey, null);
 
   supertest(app)
     .delete('/keys?loggedin=1')
-    .end((err, res) => {
-      if (err) {
-        return done(err);
-      }
-
+    .then((res) => {
       assert.equal(res.statusCode, 200);
 
       db.from('api_keys')
@@ -479,12 +461,13 @@ it('should delete key but not change customer/sub', (done) => {
             throw Error('No API record found');
           }
           assert.equal(res2[0].api_key, null);
-          assert.equal(res2[0].customer_id, previousCustomer);
-          assert.equal(res2[0].subscription_id, previousSub);
+          assert.equal(res2[0].customer_id, this.previousCustomer);
+          assert.equal(res2[0].subscription_id, this.previousSub);
           return done();
         })
         .catch(err => done(err));
-    });
+    })
+    .catch(err => done(err));
 });
 
 it('should get new key but not change customer/sub', (done) => {
@@ -496,11 +479,7 @@ it('should get new key but not change customer/sub', (done) => {
         email: 'test@test.com',
       },
     })
-    .end((err, res) => {
-      if (err) {
-        return done(err);
-      }
-
+    .then((res) => {
       assert.equal(res.statusCode, 200);
 
       db.from('api_keys')
@@ -511,8 +490,8 @@ it('should get new key but not change customer/sub', (done) => {
           if (res.length === 0) {
             throw Error('No API record found');
           }
-          assert.equal(res2[0].customer_id, previousCustomer);
-          assert.equal(res2[0].subscription_id, previousSub);
+          assert.equal(res2[0].customer_id, this.previousCustomer);
+          assert.equal(res2[0].subscription_id, this.previousSub);
           supertest(app).get('/keys?loggedin=1').end((err, res) => {
             if (err) {
               return done(err);
@@ -525,7 +504,8 @@ it('should get new key but not change customer/sub', (done) => {
           });
         })
         .catch(err => done(err));
-    });
+    })
+    .catch(err => done(err));
 });
 /*
 describe('generateMatchups', () => {
