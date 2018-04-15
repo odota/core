@@ -397,7 +397,7 @@ describe('api management', () => {
       })
       .catch(err => done(err));
   });
-  it('should delete key but not change customer/sub', (done) => {
+  it('should delete key but not change customer/sub', function testDeleteOnlyModifiesKey(done) {
     assert.notEqual(this.previousKey, null);
 
     supertest(app)
@@ -423,7 +423,7 @@ describe('api management', () => {
       .catch(err => done(err));
   });
 
-  it('should get new key but not change customer/sub', (done) => {
+  it('should get new key but not change customer/sub', function testGettingNewKeyOnlyModifiesKey(done) {
     supertest(app)
       .post('/keys?loggedin=1')
       .send({
