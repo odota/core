@@ -9,4 +9,4 @@ sudo docker run -d --privileged --name cassandra --net=host -e "CASSANDRA_LISTEN
 sudo docker run -d --privileged --name postgres --net=host postgres:9.5
 sudo docker run -d --privileged --name redis --net=host redis:4
 sudo docker run -d --name parser --net=host odota/parser
-sudo docker build -t "odota/core" . && sudo docker run --net=host -i odota/core sh -c 'STRIPE_SECRET=${$STRIPE_SECRET} STRIPE_API_PLAN=${$STRIPE_API_PLAN} npm run test'
+sudo docker build -t "odota/core" . && sudo docker run --net=host -i odota/core sh -c 'STRIPE_SECRET=$STRIPE_SECRET STRIPE_API_PLAN=$STRIPE_API_PLAN npm run test'
