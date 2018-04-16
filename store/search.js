@@ -29,7 +29,7 @@ function search(options, cb) {
         (SELECT account_id, avatarfull, personaname, last_match_time, similarity(personaname, ?) AS similarity
         FROM players 
         WHERE personaname % ? 
-        LIMIT 150) search
+        LIMIT 300) search
         ORDER BY similarity DESC, last_match_time DESC NULLS LAST;
         `, [query, query]).asCallback((err, result) => {
         if (err) {
