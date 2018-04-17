@@ -90,7 +90,7 @@ if (config.NODE_ENV === 'test') {
 
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
-  if (req.query.API_KEY) {
+  if (config.ENABLE_API_LIMIT && req.query.API_KEY) {
     redis.sismember('api_keys', req.query.API_KEY, (err, resp) => {
       if (err) {
         cb(err);

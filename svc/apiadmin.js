@@ -24,7 +24,7 @@ function storeUsageCounts(cursor, cb) {
       async.eachOfLimit(values, 5, (e, i, cb2) => {
         if (i % 2) {
           cb2();
-        } else if (e.startsWith('API')) {
+        } else if (config.ENABLE_API_LIMIT && e.startsWith('API')) {
           const split = e.split(':');
 
           let apiRecord;
