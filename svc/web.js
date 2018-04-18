@@ -181,9 +181,6 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
-app.route('/healthz').get((req, res) => {
-  res.send('ok');
-});
 app.route('/login').get(passport.authenticate('steam', {
   failureRedirect: '/api',
 }));
