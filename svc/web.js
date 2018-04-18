@@ -8,6 +8,7 @@ const redis = require('../store/redis');
 const db = require('../store/db');
 const queries = require('../store/queries');
 const api = require('../routes/api');
+const keys = require('../routes/keyManagement');
 const request = require('request');
 const compression = require('compression');
 const session = require('cookie-session');
@@ -74,10 +75,23 @@ app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Dummy User ID for testing
+if (config.NODE_ENV === 'test') {
+  app.use((req, res, cb) => {
+    if (req.query.loggedin) {
+      req.user = {
+        account_id: 1,
+      };
+    }
+
+    cb();
+  });
+}
+
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
-  if (req.query.API_KEY) {
-    redis.sismember('api_keys', req.query.API_KEY, (err, resp) => {
+  if (config.ENABLE_API_LIMIT && req.query.api_key) {
+    redis.sismember('api_keys', req.query.api_key, (err, resp) => {
       if (err) {
         cb(err);
       } else {
@@ -97,7 +111,7 @@ app.use((req, res, cb) => {
   let rateLimit = '';
 
   if (res.locals.isAPIRequest) {
-    const requestAPIKey = req.query.API_KEY;
+    const requestAPIKey = req.query.api_key;
     identifier = `API:${ip}:${requestAPIKey}`;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
@@ -187,6 +201,9 @@ app.route('/logout').get((req, res) => {
   return res.redirect('/api');
 });
 app.use('/api', api);
+// CORS Preflight for API keys
+app.options('/keys', cors());
+app.use('/keys', keys);
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
@@ -194,7 +211,7 @@ app.use((req, res) =>
   }));
 // 500 route
 app.use((err, req, res, cb) => {
-  if (config.NODE_ENV === 'development') {
+  if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
     // default express handler
     return cb(err);
   }

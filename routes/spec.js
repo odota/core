@@ -64,10 +64,23 @@ const spec = {
   info: {
     title: 'OpenDota API',
     description: `# Introduction
-This API provides Dota 2 related data.
+The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.
 Please keep request rate to approximately 1/s.
+
+**Begining 4/22/2018, the OpenDota API will be limited to 50,000 free calls per month.** We'll be offering a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api) to learn more.
 `,
     version: packageJson.version,
+  },
+  securityDefinitions: {
+    api_key: {
+      type: 'apiKey',
+      name: 'api_key',
+      description: `Use an API key to remove call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api).
+      
+      Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
+      `,
+      in: 'query',
+    },
   },
   host: 'api.opendota.com',
   basePath: '/api',
@@ -4137,8 +4150,11 @@ Please keep request rate to approximately 1/s.
                   LIMIT 50
                 ) as T1
                 on api_key_usage.api_key = T1.api_key
+                WHERE
+                  timestamp >= ?
+                  AND timestamp <= ?
                 GROUP BY day, T1.api_key
-              `)
+              `, [startTime, endTime])
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topAPI: (cb) => {
@@ -4170,7 +4186,7 @@ Please keep request rate to approximately 1/s.
                 GROUP BY ip
                 ORDER BY usage_count DESC
                 LIMIT 100
-              `, [startTime, endTime])
+              `)
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             numAPIUsers: (cb) => {
@@ -4230,7 +4246,7 @@ Please keep request rate to approximately 1/s.
             },
           }, (err, result) => {
             if (err) {
-              return res.json(err);
+              return res.status(500).send(err.message);
             }
             return res.json(result);
           });

@@ -62,12 +62,15 @@ const defaults = {
   SCANNER_PLAYER_PERCENT: 10, // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
   ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication,
   ENABLE_API_LIMIT: '', // if truthy, API calls after exceeding API_FREE_LIMIT are blocked
-  API_FREE_LIMIT: 25000, // number of api requests per month before 429 is returned. If using an API key, calls over this are charged.
-  API_KEY_PER_MIN_LIMIT: 180, // Rate limit per minute if using an API key
+  API_FREE_LIMIT: 50000, // number of api requests per month before 429 is returned. If using an API key, calls over this are charged.
+  API_BILLING_UNIT: 100, // how many calls is equivalent to a unit of calls e.g. 100 calls per $0.01.
+  API_KEY_PER_MIN_LIMIT: 300, // Rate limit per minute if using an API key
   NO_API_KEY_PER_MIN_LIMIT: 60, // Rate limit per minute if not using an API key
   ADMIN_ACCOUNT_IDS: '', // Whitelisted, comma separated account IDs to access /admin* routes
   BACKUP_RETRIEVER_PERCENT: 0, // percent of replay salts to fetch from backup data source
   GCDATA_PARALLELISM: 1, // Number of simultaneous GC match details requests to make (per retriever)
+  STRIPE_SECRET: '', // for stripe payment processing (kept on server)
+  STRIPE_API_PLAN: '', // plan id for stripe metering
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

@@ -1,4 +1,4 @@
-/* global before describe it */
+/* global before describe it beforeEach after */
 /* eslint-disable global-require */
 /**
  * Main test script to run tests
@@ -65,7 +65,7 @@ nock(`http://${config.RETRIEVER_HOST}`)
   .get('/?account_id=88367253')
   .reply(200, retrieverPlayer);
 before(function setup(done) {
-  this.timeout(30000);
+  this.timeout(60000);
   async.series([
     function initPostgres(cb) {
       pool.connect((err, client) => {
@@ -242,6 +242,221 @@ describe('api', () => {
     });
   });
 });
+describe('api management', () => {
+  beforeEach(function getApiRecord(done) {
+    db.from('api_keys')
+      .where({
+        account_id: 1,
+      })
+      .then((res) => {
+        this.previousKey = res[0] ? res[0].api_key : null;
+        this.previousCustomer = res[0] ? res[0].customer_id : null;
+        this.previousSub = res[0] ? res[0].subscription_id : null;
+        done();
+      })
+      .catch(err => done(err));
+  });
+
+  it('should get 403 when not logged in.', (done) => {
+    supertest(app)
+      .get('/keys')
+      .then((res) => {
+        assert.equal(res.statusCode, 403);
+        return done();
+      })
+      .catch(err => done(err));
+  });
+
+  it('should not get fields for GET', (done) => {
+    supertest(app)
+      .get('/keys?loggedin=1')
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+        assert.deepStrictEqual(res.body, {});
+        return done();
+      })
+      .catch(err => done(err));
+  });
+
+  it('should create api key', function testCreatingApiKey(done) {
+    this.timeout(5000);
+    supertest(app)
+      .post('/keys?loggedin=1')
+      .send({
+        token: {
+          id: 'tok_visa',
+          email: 'test@test.com',
+        },
+      })
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+
+        supertest(app).get('/keys?loggedin=1').end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.body.customer.credit_brand, 'Visa');
+          assert.notEqual(res.body.customer.api_key, null);
+          return done();
+        });
+      })
+      .catch(err => done(err));
+  });
+
+  it('should not change key', function testPostDoesNotChangeKey(done) {
+    this.timeout(5000);
+    supertest(app)
+      .get('/keys?loggedin=1')
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+        assert.equal(res.body.customer.credit_brand, 'Visa');
+
+        const previousCredit = res.body.customer.credit_brand;
+
+        supertest(app)
+          .post('/keys?loggedin=1')
+          .send({
+            token: {
+              id: 'tok_discover',
+              email: 'test@test.com',
+            },
+          })
+          .then((res) => {
+            assert.equal(res.statusCode, 200);
+
+            db.from('api_keys')
+              .where({
+                account_id: 1,
+              })
+              .then((res2) => {
+                if (res.length === 0) {
+                  throw Error('No API record found');
+                }
+                assert.equal(res2[0].customer_id, this.previousCustomer);
+                assert.equal(res2[0].subscription_id, this.previousSub);
+                supertest(app).get('/keys?loggedin=1').end((err, res) => {
+                  if (err) {
+                    return done(err);
+                  }
+
+                  assert.equal(res.statusCode, 200);
+                  assert.equal(res.body.customer.credit_brand, previousCredit);
+                  assert.equal(res.body.customer.api_key, this.previousKey);
+                  return done();
+                });
+              })
+              .catch(err => done(err));
+          })
+          .catch(err => done(err));
+      })
+      .catch(err => done(err));
+  });
+
+  it('should update payment but not change customer/sub', function tesPutOnlyChangesBilling(done) {
+    this.timeout(5000);
+    supertest(app)
+      .put('/keys?loggedin=1')
+      .send({
+        token: {
+          id: 'tok_mastercard',
+          email: 'test@test.com',
+        },
+      })
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+
+        supertest(app)
+          .get('/keys?loggedin=1')
+          .then((res) => {
+            assert.equal(res.statusCode, 200);
+            assert.equal(res.body.customer.credit_brand, 'MasterCard');
+            assert.equal(res.body.customer.api_key, this.previousKey);
+            db.from('api_keys')
+              .where({
+                account_id: 1,
+              })
+              .then((res2) => {
+                if (res.length === 0) {
+                  throw Error('No API record found');
+                }
+                assert.equal(res2[0].customer_id, this.previousCustomer);
+                assert.equal(res2[0].subscription_id, this.previousSub);
+                return done();
+              })
+              .catch(err => done(err));
+          })
+          .catch(err => done(err));
+      })
+      .catch(err => done(err));
+  });
+  it('should delete key but not change customer/sub', function testDeleteOnlyModifiesKey(done) {
+    this.timeout(5000);
+    assert.notEqual(this.previousKey, null);
+
+    supertest(app)
+      .delete('/keys?loggedin=1')
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+
+        db.from('api_keys')
+          .where({
+            account_id: 1,
+          })
+          .then((res2) => {
+            if (res.length === 0) {
+              throw Error('No API record found');
+            }
+            assert.equal(res2[0].api_key, null);
+            assert.equal(res2[0].customer_id, this.previousCustomer);
+            assert.equal(res2[0].subscription_id, this.previousSub);
+            return done();
+          })
+          .catch(err => done(err));
+      })
+      .catch(err => done(err));
+  });
+
+  it('should get new key but not change customer/sub', function testGettingNewKeyOnlyModifiesKey(done) {
+    this.timeout(5000);
+    supertest(app)
+      .post('/keys?loggedin=1')
+      .send({
+        token: {
+          id: 'tok_discover',
+          email: 'test@test.com',
+        },
+      })
+      .then((res) => {
+        assert.equal(res.statusCode, 200);
+
+        db.from('api_keys')
+          .where({
+            account_id: 1,
+          })
+          .then((res2) => {
+            if (res.length === 0) {
+              throw Error('No API record found');
+            }
+            assert.equal(res2[0].customer_id, this.previousCustomer);
+            assert.equal(res2[0].subscription_id, this.previousSub);
+            supertest(app).get('/keys?loggedin=1').end((err, res) => {
+              if (err) {
+                return done(err);
+              }
+
+              assert.equal(res.statusCode, 200);
+              assert.equal(res.body.customer.credit_brand, 'Discover');
+              assert.notEqual(res.body.customer.api_key, null);
+              return done();
+            });
+          })
+          .catch(err => done(err));
+      })
+      .catch(err => done(err));
+  });
+});
 describe('api limits', () => {
   before((done) => {
     config.ENABLE_API_LIMIT = true;
@@ -278,7 +493,7 @@ describe('api limits', () => {
 
   it('should be able to make more than 20 calls when using API KEY', (done) => {
     async.timesSeries(25, (i, cb) => {
-      supertest(app).get('/api?API_KEY=KEY').end((err, res) => {
+      supertest(app).get('/api?api_key=KEY').end((err, res) => {
         if (err) {
           return cb(err);
         }
@@ -287,6 +502,11 @@ describe('api limits', () => {
         return cb();
       });
     }, done);
+  });
+
+  after(() => {
+    config.ENABLE_API_LIMIT = false;
+    config.API_FREE_LIMIT = 50000;
   });
 });
 /*
