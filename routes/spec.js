@@ -67,7 +67,7 @@ const spec = {
 The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.
 Please keep request rate to approximately 1/s.
 
-**Begining 4/22/2018, the OpenDota API will be limited to 50,000 free calls per month.** We'll be offering a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api) to learn more.
+**Begining 4/22/2018, the OpenDota API will be limited to 50,000 free calls per month.** We'll be offering a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.
 `,
     version: packageJson.version,
   },
@@ -75,7 +75,7 @@ Please keep request rate to approximately 1/s.
     api_key: {
       type: 'apiKey',
       name: 'api_key',
-      description: `Use an API key to remove call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api).
+      description: `Use an API key to remove call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
       
       Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
       `,
