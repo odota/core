@@ -64,10 +64,21 @@ const spec = {
   info: {
     title: 'OpenDota API',
     description: `# Introduction
-This API provides Dota 2 related data.
+The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.
 Please keep request rate to approximately 1/s.
+
+**Begining 4/22/2018, the OpenDota API will move to a free tier limited to 50,000 calls per month.** We'll be offering a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](//opendota.com/api) to learn more.
 `,
     version: packageJson.version,
+  },
+  securityDefinitions: {
+    api_key: {
+      type: 'apiKey',
+      name: 'api_key',
+      description: 'Use an API key to remove call limits and to receive higher rate limits. [Learn more and get your API key](//opendota.com/api).',
+      in: 'query',
+
+    },
   },
   host: 'api.opendota.com',
   basePath: '/api',

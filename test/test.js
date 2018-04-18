@@ -493,7 +493,7 @@ describe('api limits', () => {
 
   it('should be able to make more than 20 calls when using API KEY', (done) => {
     async.timesSeries(25, (i, cb) => {
-      supertest(app).get('/api?API_KEY=KEY').end((err, res) => {
+      supertest(app).get('/api?api_key=KEY').end((err, res) => {
         if (err) {
           return cb(err);
         }

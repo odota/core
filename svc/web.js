@@ -90,8 +90,8 @@ if (config.NODE_ENV === 'test') {
 
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
-  if (config.ENABLE_API_LIMIT && req.query.API_KEY) {
-    redis.sismember('api_keys', req.query.API_KEY, (err, resp) => {
+  if (config.ENABLE_API_LIMIT && req.query.api_key) {
+    redis.sismember('api_keys', req.query.api_key, (err, resp) => {
       if (err) {
         cb(err);
       } else {
@@ -111,7 +111,7 @@ app.use((req, res, cb) => {
   let rateLimit = '';
 
   if (res.locals.isAPIRequest) {
-    const requestAPIKey = req.query.API_KEY;
+    const requestAPIKey = req.query.api_key;
     identifier = `API:${ip}:${requestAPIKey}`;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
