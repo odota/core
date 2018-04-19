@@ -293,13 +293,19 @@ describe('api management', () => {
 
         supertest(app).get('/keys?loggedin=1').end((err, res) => {
           if (err) {
-            return done(err);
+            done(err);
+          } else {
+            assert.equal(res.statusCode, 200);
+            assert.equal(res.body.customer.credit_brand, 'Visa');
+            assert.notEqual(res.body.customer.api_key, null);
+            redis.sismember('api_keys', res.body.customer.api_key, (err, resp) => {
+              if (err) {
+                return done(err);
+              }
+              assert.equal(resp, 1);
+              return done();
+            });
           }
-
-          assert.equal(res.statusCode, 200);
-          assert.equal(res.body.customer.credit_brand, 'Visa');
-          assert.notEqual(res.body.customer.api_key, null);
-          return done();
         });
       })
       .catch(err => done(err));
@@ -473,22 +479,37 @@ describe('api limits', () => {
       });
   });
 
-  it('should be able to make 20. 21st should fail as no api key', (done) => {
-    async.timesSeries(21, (i, cb) => {
-      supertest(app).get('/api').end((err, res) => {
-        if (err) {
-          return cb(err);
-        }
+  it('should be able to make 21 calls where first is a 404. 22nd should fail as no api key', (done) => {
+    supertest(app)
+      .get('/thisroutedoesntexist')
+      .then((res) => {
+        assert.equal(res.statusCode, 404);
+        async.timesSeries(20, (i, cb) => {
+          supertest(app).get('/api').end((err, res) => {
+            if (err) {
+              return cb(err);
+            }
 
-        if (i < 20) {
-          assert.equal(res.statusCode, 200);
-        } else {
-          assert.equal(res.statusCode, 429);
-          assert.equal(res.body.error, 'monthly api limit exeeded');
-        }
-        return cb();
-      });
-    }, done);
+            assert.equal(res.statusCode, 200);
+            return cb();
+          });
+        }, (err) => {
+          if (err) {
+            done(err);
+          } else {
+            supertest(app).get('/api').end((err, res) => {
+              if (err) {
+                return done(err);
+              }
+
+              assert.equal(res.statusCode, 429);
+              assert.equal(res.body.error, 'monthly api limit exeeded');
+              return done();
+            });
+          }
+        });
+      })
+      .catch(err => done(err));
   });
 
   it('should be able to make more than 20 calls when using API KEY', (done) => {

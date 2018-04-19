@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const moment = require('moment');
 const async = require('async');
 const db = require('../store/db');
+const redis = require('../store/redis');
 const config = require('../config');
 const stripe = require('stripe')(config.STRIPE_SECRET);
 
@@ -146,7 +147,15 @@ keys.route('/').get((req, res, next) => {
         ON CONFLICT (account_id) DO UPDATE SET
         api_key = ?, customer_id = ?, subscription_id = ?
       `, [req.user.account_id, apiKey, sub.customer, sub.id, apiKey, sub.customer, sub.id]))
-      .then(() => res.sendStatus(200))
+      .then(() => {
+        redis.sadd('api_keys', apiKey, (err) => {
+          if (err) {
+            throw err;
+          }
+
+          res.sendStatus(200);
+        });
+      })
       .catch((err) => {
         if (err.message === 'Key exists') {
           return res.sendStatus(200);
