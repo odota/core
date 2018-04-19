@@ -402,36 +402,37 @@ describe('api management', () => {
     assert.notEqual(this.previousKey, null);
     redis.sismember('api_keys', this.previousKey, (err, resp) => {
       if (err) {
-        return done(err);
-      }
-      assert.equal(resp, 1);
-      supertest(app)
-        .delete('/keys?loggedin=1')
-        .then((res) => {
-          assert.equal(res.statusCode, 200);
-  
-          db.from('api_keys')
-            .where({
-              account_id: 1,
-            })
-            .then((res2) => {
-              if (res.length === 0) {
-                throw Error('No API record found');
-              }
-              assert.equal(res2[0].api_key, null);
-              assert.equal(res2[0].customer_id, this.previousCustomer);
-              assert.equal(res2[0].subscription_id, this.previousSub);
-              redis.sismember('api_keys', this.previousKey, (err, resp) => {
-                if (err) {
-                  return done(err);
+        done(err);
+      } else {
+        assert.equal(resp, 1);
+        supertest(app)
+          .delete('/keys?loggedin=1')
+          .then((res) => {
+            assert.equal(res.statusCode, 200);
+
+            db.from('api_keys')
+              .where({
+                account_id: 1,
+              })
+              .then((res2) => {
+                if (res.length === 0) {
+                  throw Error('No API record found');
                 }
-                assert.equal(resp, 0);
-                return done();
-              });
-            })
-            .catch(err => done(err));
-        })
-        .catch(err => done(err));
+                assert.equal(res2[0].api_key, null);
+                assert.equal(res2[0].customer_id, this.previousCustomer);
+                assert.equal(res2[0].subscription_id, this.previousSub);
+                redis.sismember('api_keys', this.previousKey, (err, resp) => {
+                  if (err) {
+                    return done(err);
+                  }
+                  assert.equal(resp, 0);
+                  return done();
+                });
+              })
+              .catch(err => done(err));
+          })
+          .catch(err => done(err));
+      }
     });
   });
 
