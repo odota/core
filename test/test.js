@@ -400,28 +400,39 @@ describe('api management', () => {
   it('should delete key but not change customer/sub', function testDeleteOnlyModifiesKey(done) {
     this.timeout(5000);
     assert.notEqual(this.previousKey, null);
-
-    supertest(app)
-      .delete('/keys?loggedin=1')
-      .then((res) => {
-        assert.equal(res.statusCode, 200);
-
-        db.from('api_keys')
-          .where({
-            account_id: 1,
-          })
-          .then((res2) => {
-            if (res.length === 0) {
-              throw Error('No API record found');
-            }
-            assert.equal(res2[0].api_key, null);
-            assert.equal(res2[0].customer_id, this.previousCustomer);
-            assert.equal(res2[0].subscription_id, this.previousSub);
-            return done();
-          })
-          .catch(err => done(err));
-      })
-      .catch(err => done(err));
+    redis.sismember('api_keys', this.previousKey, (err, resp) => {
+      if (err) {
+        return done(err);
+      }
+      assert.equal(resp, 1);
+      supertest(app)
+        .delete('/keys?loggedin=1')
+        .then((res) => {
+          assert.equal(res.statusCode, 200);
+  
+          db.from('api_keys')
+            .where({
+              account_id: 1,
+            })
+            .then((res2) => {
+              if (res.length === 0) {
+                throw Error('No API record found');
+              }
+              assert.equal(res2[0].api_key, null);
+              assert.equal(res2[0].customer_id, this.previousCustomer);
+              assert.equal(res2[0].subscription_id, this.previousSub);
+              redis.sismember('api_keys', this.previousKey, (err, resp) => {
+                if (err) {
+                  return done(err);
+                }
+                assert.equal(resp, 0);
+                return done();
+              });
+            })
+            .catch(err => done(err));
+        })
+        .catch(err => done(err));
+    });
   });
 
   it('should get new key but not change customer/sub', function testGettingNewKeyOnlyModifiesKey(done) {

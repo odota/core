@@ -168,37 +168,42 @@ keys.route('/').get((req, res, next) => {
   db.from('api_keys').where({
     account_id: req.user.account_id,
   })
-    .asCallback((err, rows) => {
-      if (err) {
-        return next(err);
-      }
-
+    .then((rows) => {
       if (rows.length === 0 || !rows[0].api_key) {
-        return res.sendStatus(200);
-      }
+        res.sendStatus(200);
+      } else {
+        stripe.subscriptions.retrieve(rows[0].subscription_id)
+          .then((sub) => {
+            sub.metadata[`old_key_${moment().unix()}`] = sub.metadata.api_key;
+            sub.metadata.api_key = null;
 
-      return stripe.subscriptions.retrieve(rows[0].subscription_id)
-        .then((sub) => {
-          sub.metadata[`old_key_${moment().unix()}`] = sub.metadata.api_key;
-          sub.metadata.api_key = null;
-
-          return stripe.subscriptions.update(rows[0].subscription_id, {
-            metadata: sub.metadata,
-          });
-        })
-        .then(() => db.from('api_keys')
-          .where({
-            account_id: req.user.account_id,
+            return stripe.subscriptions.update(rows[0].subscription_id, {
+              metadata: sub.metadata,
+            });
           })
-          .update({
-            api_key: null,
-          }))
-        .then(() => res.sendStatus(200))
-        .catch((err) => {
-          console.log(err);
-          next(err);
-        });
-    });
+          .then(() => db.from('api_keys')
+            .where({
+              account_id: req.user.account_id,
+            })
+            .update({
+              api_key: null,
+            }))
+          .then(() => {
+            redis.srem('api_keys', rows[0].api_key, (err) => {
+              if (err) {
+                throw err;
+              }
+
+              res.sendStatus(200);
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            next(err);
+          });
+      }
+    })
+    .catch(err => next(err));
 })
   .put((req, res, next) => { // Updates billing
     const { token } = req.body;
