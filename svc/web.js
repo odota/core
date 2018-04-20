@@ -89,7 +89,6 @@ if (config.NODE_ENV === 'test') {
 }
 
 // Rate limiter and API key middleware
-let usageIdentifier = '';
 app.use((req, res, cb) => {
   if (config.ENABLE_API_LIMIT && req.query.api_key) {
     redis.sismember('api_keys', req.query.api_key, (err, resp) => {
@@ -97,6 +96,7 @@ app.use((req, res, cb) => {
         cb(err);
       } else {
         res.locals.isAPIRequest = resp === 1;
+
         cb();
       }
     });
@@ -111,19 +111,19 @@ app.use((req, res, cb) => {
   let rateLimit = '';
   if (res.locals.isAPIRequest) {
     const requestAPIKey = req.query.api_key;
-    usageIdentifier = `API:${ip}:${requestAPIKey}`;
+    res.locals.usageIdentifier = `API:${ip}:${requestAPIKey}`;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
-    usageIdentifier = `USER:${ip}:${req.user ? req.user.account_id : ''}`;
+    res.locals.usageIdentifier = `USER:${ip}:${req.user ? req.user.account_id : ''}`;
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
 
   redis.multi()
-    .hincrby('rate_limit', usageIdentifier, 1)
+    .hincrby('rate_limit', res.locals.usageIdentifier, 1)
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1))
-    .hincrby('usage_count', usageIdentifier, 1)
+    .hincrby('usage_count', res.locals.usageIdentifier, 1)
     .expireat('usage_count', utility.getEndOfMonth())
     .exec((err, resp) => {
       if (err) {
@@ -207,9 +207,9 @@ app.use('/keys', keys);
 // Decrement usage since we didn't give a good resposne.
 app.use((req, res, cb) => {
   redis.multi()
-    .hincrby('usage_count', usageIdentifier, -1)
+    .hincrby('usage_count', res.locals.usageIdentifier, -1)
     .expireat('usage_count', utility.getEndOfMonth())
-    .exec(err => (err ? cb(err) : cb()));
+    .exec(cb);
 });
 // 404 route
 app.use((req, res) =>
