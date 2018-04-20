@@ -123,8 +123,7 @@ app.use((req, res, cb) => {
   redis.multi()
     .hincrby('rate_limit', res.locals.usageIdentifier, 1)
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1))
-    .hincrby('usage_count', res.locals.usageIdentifier, 1)
-    .expireat('usage_count', utility.getEndOfMonth())
+    .hget('usage_count', res.locals.usageIdentifier)
     .exec((err, resp) => {
       if (err) {
         console.log(err);
@@ -138,7 +137,7 @@ app.use((req, res, cb) => {
           error: 'rate limit exceeded',
         });
       }
-      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && resp[2] > config.API_FREE_LIMIT) {
+      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && Number(resp[2]) > config.API_FREE_LIMIT) {
         return res.status(429).json({
           error: 'monthly api limit exeeded',
         });
@@ -151,11 +150,20 @@ app.use((req, res, cb) => {
 app.use((req, res, cb) => {
   const timeStart = new Date();
   res.once('finish', () => {
+    console.log(res.statusCode);
     const timeEnd = new Date();
     const elapsed = timeEnd - timeStart;
     if (elapsed > 1000 || config.NODE_ENV === 'development') {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
+
+    if (res.statusCode === 500) {
+      redis.multi()
+        .hincrby('usage_count', res.locals.usageIdentifier, 1)
+        .expireat('usage_count', utility.getEndOfMonth())
+        .exec();
+    }
+
     if (req.originalUrl.indexOf('/api') === 0) {
       redisCount(redis, 'api_hits');
       if (req.headers.origin === 'https://www.opendota.com') {
@@ -204,13 +212,6 @@ app.use('/api', api);
 app.options('/keys', cors());
 app.use('/keys', keys);
 // These routes get hit if there was a 404 or 500.
-// Decrement usage since we didn't give a good resposne.
-app.use((req, res, cb) => {
-  redis.multi()
-    .hincrby('usage_count', res.locals.usageIdentifier, -1)
-    .expireat('usage_count', utility.getEndOfMonth())
-    .exec(cb);
-});
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
