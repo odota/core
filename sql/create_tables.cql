@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS matches (
   version int,
   cosmetics text,
   skill int,
+  radiant_team_id int,
+  dire_team_id int,
 );
 
 CREATE TABLE IF NOT EXISTS player_matches (
