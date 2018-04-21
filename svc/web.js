@@ -150,7 +150,6 @@ app.use((req, res, cb) => {
 app.use((req, res, cb) => {
   const timeStart = new Date();
   res.once('finish', () => {
-    console.log(res.statusCode);
     const timeEnd = new Date();
     const elapsed = timeEnd - timeStart;
     if (elapsed > 1000 || config.NODE_ENV === 'development') {
@@ -211,7 +210,6 @@ app.use('/api', api);
 // CORS Preflight for API keys
 app.options('/keys', cors());
 app.use('/keys', keys);
-// These routes get hit if there was a 404 or 500.
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
