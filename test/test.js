@@ -82,12 +82,13 @@ before(function setup(done) {
             client.query('CREATE DATABASE yasp_test', cb);
           },
           function tables(cb) {
-            db = require('../store/db');
-            console.log('connecting to test database and creating tables');
+            console.log('create postgres test tables');
             const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
-            db.raw(query).asCallback(cb);
+            client.query(query, cb);
           },
           function setup(cb) {
+            db = require('../store/db');
+            console.log('insert postgres test data');
             // populate the DB with this leagueid so we insert a pro match
             db.raw('INSERT INTO leagues(leagueid, tier) VALUES(5399, \'professional\')').asCallback(cb);
           },
