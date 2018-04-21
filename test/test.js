@@ -92,7 +92,7 @@ before(function setup(done) {
               }
               console.log('create postgres test tables');
               const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
-              client2.query(query, cb);
+              return client2.query(query, cb);
             });
           },
           function setup(cb) {
