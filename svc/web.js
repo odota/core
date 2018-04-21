@@ -157,7 +157,7 @@ app.use((req, res, cb) => {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
 
-    if (res.statusCode === 500) {
+    if (res.statusCode !== 500) {
       redis.multi()
         .hincrby('usage_count', res.locals.usageIdentifier, 1)
         .expireat('usage_count', utility.getEndOfMonth())
