@@ -24,9 +24,7 @@ const detailsApiPro = require('./data/details_api_pro.json');
 
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = config.INIT_CASSANDRA_HOST;
-const pool = new pg.Pool({
-  connectionString: initPostgresHost,
-});
+
 // these are loaded later, as the database needs to be created when these are required
 let db;
 let cassandra;
@@ -68,6 +66,9 @@ before(function setup(done) {
   this.timeout(60000);
   async.series([
     function initPostgres(cb) {
+      const pool = new pg.Pool({
+        connectionString: initPostgresHost,
+      });
       pool.connect((err, client) => {
         if (err) {
           return cb(err);
@@ -82,9 +83,17 @@ before(function setup(done) {
             client.query('CREATE DATABASE yasp_test', cb);
           },
           function tables(cb) {
-            console.log('create postgres test tables');
-            const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
-            client.query(query, cb);
+            const pool2 = new pg.Pool({
+              connectionString: config.POSTGRES_URL,
+            });
+            pool2.connect((err, client2) => {
+              if (err) {
+                return cb(err);
+              }
+              console.log('create postgres test tables');
+              const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
+              client2.query(query, cb);
+            });
           },
           function setup(cb) {
             db = require('../store/db');
