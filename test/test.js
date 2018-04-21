@@ -293,13 +293,19 @@ describe('api management', () => {
 
         supertest(app).get('/keys?loggedin=1').end((err, res) => {
           if (err) {
-            return done(err);
+            done(err);
+          } else {
+            assert.equal(res.statusCode, 200);
+            assert.equal(res.body.customer.credit_brand, 'Visa');
+            assert.notEqual(res.body.customer.api_key, null);
+            redis.sismember('api_keys', res.body.customer.api_key, (err, resp) => {
+              if (err) {
+                return done(err);
+              }
+              assert.equal(resp, 1);
+              return done();
+            });
           }
-
-          assert.equal(res.statusCode, 200);
-          assert.equal(res.body.customer.credit_brand, 'Visa');
-          assert.notEqual(res.body.customer.api_key, null);
-          return done();
         });
       })
       .catch(err => done(err));
@@ -394,28 +400,40 @@ describe('api management', () => {
   it('should delete key but not change customer/sub', function testDeleteOnlyModifiesKey(done) {
     this.timeout(5000);
     assert.notEqual(this.previousKey, null);
+    redis.sismember('api_keys', this.previousKey, (err, resp) => {
+      if (err) {
+        done(err);
+      } else {
+        assert.equal(resp, 1);
+        supertest(app)
+          .delete('/keys?loggedin=1')
+          .then((res) => {
+            assert.equal(res.statusCode, 200);
 
-    supertest(app)
-      .delete('/keys?loggedin=1')
-      .then((res) => {
-        assert.equal(res.statusCode, 200);
-
-        db.from('api_keys')
-          .where({
-            account_id: 1,
-          })
-          .then((res2) => {
-            if (res.length === 0) {
-              throw Error('No API record found');
-            }
-            assert.equal(res2[0].api_key, null);
-            assert.equal(res2[0].customer_id, this.previousCustomer);
-            assert.equal(res2[0].subscription_id, this.previousSub);
-            return done();
+            db.from('api_keys')
+              .where({
+                account_id: 1,
+              })
+              .then((res2) => {
+                if (res.length === 0) {
+                  throw Error('No API record found');
+                }
+                assert.equal(res2[0].api_key, null);
+                assert.equal(res2[0].customer_id, this.previousCustomer);
+                assert.equal(res2[0].subscription_id, this.previousSub);
+                redis.sismember('api_keys', this.previousKey, (err, resp) => {
+                  if (err) {
+                    return done(err);
+                  }
+                  assert.equal(resp, 0);
+                  return done();
+                });
+              })
+              .catch(err => done(err));
           })
           .catch(err => done(err));
-      })
-      .catch(err => done(err));
+      }
+    });
   });
 
   it('should get new key but not change customer/sub', function testGettingNewKeyOnlyModifiesKey(done) {
@@ -460,7 +478,7 @@ describe('api management', () => {
 describe('api limits', () => {
   before((done) => {
     config.ENABLE_API_LIMIT = true;
-    config.API_FREE_LIMIT = 20;
+    config.API_FREE_LIMIT = 10;
     redis.multi()
       .del('usage_count')
       .sadd('api_keys', 'KEY')
@@ -473,25 +491,43 @@ describe('api limits', () => {
       });
   });
 
-  it('should be able to make 20. 21st should fail as no api key', (done) => {
-    async.timesSeries(21, (i, cb) => {
-      supertest(app).get('/api').end((err, res) => {
-        if (err) {
-          return cb(err);
-        }
+  it('should be able to make 11 calls where first is a 404. 12nd should fail as no api key', function testNoApiLimit(done) {
+    this.timeout(10000);
+    supertest(app)
+      .get('/thisroutedoesntexist')
+      .then((res) => {
+        assert.equal(res.statusCode, 404);
+        async.timesSeries(10, (i, cb) => {
+          setTimeout(() => {
+            supertest(app).get('/api').end((err, res) => {
+              if (err) {
+                return cb(err);
+              }
 
-        if (i < 20) {
-          assert.equal(res.statusCode, 200);
-        } else {
-          assert.equal(res.statusCode, 429);
-          assert.equal(res.body.error, 'monthly api limit exeeded');
-        }
-        return cb();
-      });
-    }, done);
+              assert.equal(res.statusCode, 200);
+              return cb();
+            });
+          }, i * 200);
+        }, (err) => {
+          if (err) {
+            done(err);
+          } else {
+            supertest(app).get('/api').end((err, res) => {
+              if (err) {
+                return done(err);
+              }
+
+              assert.equal(res.statusCode, 429);
+              assert.equal(res.body.error, 'monthly api limit exeeded');
+              return done();
+            });
+          }
+        });
+      })
+      .catch(err => done(err));
   });
 
-  it('should be able to make more than 20 calls when using API KEY', (done) => {
+  it('should be able to make more than 10 calls when using API KEY', (done) => {
     async.timesSeries(25, (i, cb) => {
       supertest(app).get('/api?api_key=KEY').end((err, res) => {
         if (err) {

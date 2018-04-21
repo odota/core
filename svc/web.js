@@ -96,6 +96,7 @@ app.use((req, res, cb) => {
         cb(err);
       } else {
         res.locals.isAPIRequest = resp === 1;
+
         cb();
       }
     });
@@ -107,29 +108,26 @@ app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   [ip] = ip.replace(/^.*:/, '').split(',');
 
-  let identifier = '';
   let rateLimit = '';
-
   if (res.locals.isAPIRequest) {
     const requestAPIKey = req.query.api_key;
-    identifier = `API:${ip}:${requestAPIKey}`;
+    res.locals.usageIdentifier = `API:${ip}:${requestAPIKey}`;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
-    identifier = `USER:${ip}:${req.user ? req.user.account_id : ''}`;
+    res.locals.usageIdentifier = `USER:${ip}:${req.user ? req.user.account_id : ''}`;
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
 
   redis.multi()
-    .hincrby('rate_limit', identifier, 1)
+    .hincrby('rate_limit', res.locals.usageIdentifier, 1)
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1))
-    .hincrby('usage_count', identifier, 1)
-    .expireat('usage_count', utility.getEndOfMonth())
+    .hget('usage_count', res.locals.usageIdentifier)
     .exec((err, resp) => {
       if (err) {
         console.log(err);
-        return cb();
+        return cb(err);
       }
       if (config.NODE_ENV === 'development') {
         console.log(resp);
@@ -139,7 +137,7 @@ app.use((req, res, cb) => {
           error: 'rate limit exceeded',
         });
       }
-      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && resp[2] > config.API_FREE_LIMIT) {
+      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && Number(resp[2]) > config.API_FREE_LIMIT) {
         return res.status(429).json({
           error: 'monthly api limit exeeded',
         });
@@ -157,6 +155,14 @@ app.use((req, res, cb) => {
     if (elapsed > 1000 || config.NODE_ENV === 'development') {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
+
+    if (res.statusCode !== 500) {
+      redis.multi()
+        .hincrby('usage_count', res.locals.usageIdentifier, 1)
+        .expireat('usage_count', utility.getEndOfMonth())
+        .exec();
+    }
+
     if (req.originalUrl.indexOf('/api') === 0) {
       redisCount(redis, 'api_hits');
       if (req.headers.origin === 'https://www.opendota.com') {
