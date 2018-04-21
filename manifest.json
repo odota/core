@@ -1,5 +1,5 @@
 {
-  "apps": [/*
+  "apps": [
     {
       "script": "svc/skill.js",
       "watch": true,
@@ -183,7 +183,7 @@
       "group": "socket",
       "exec_mode": "cluster",
       "instances": 1
-    },*/
+    },
     {
       "script": "svc/scheduler.js",
       "group": "backend"

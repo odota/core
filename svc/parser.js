@@ -61,7 +61,7 @@ function parseProcessor(job, cb) {
       console.error(err.stack || err);
     } else {
       console.log('completed parse of match %s', match.match_id);
-      if (match.origin === 'scanner' && match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT) {
+      if (true || match.origin === 'scanner' && match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT) {
         redis.lpush('scenariosQueue', match.match_id);
       }
     }

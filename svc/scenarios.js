@@ -21,7 +21,7 @@ function processScenarios(matchID, cb) {
           const values = Object.keys(row).map(() =>
             '?');
           const query = util.format(
-            'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
+            'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s, current) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
             table,
             Object.keys(row).join(','),
             values,

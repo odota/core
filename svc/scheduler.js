@@ -12,22 +12,30 @@ function getStatus(process, cb) {
     cb(status);
   });
 }
-
+//var today = new Date("2018-04-26T04:55:08.009Z")
 const tasks = [
   // clear the scenarios tables after a certain time
   function resetScenariosTables(cb) {
     console.log('a');
     redis.get('scenarios_reset_date', (err, reply) => {
       const today = new Date();
+      console.log(today)
       if (!reply) {
         redis.set('scenarios_reset_date', today);
       }
       const scenarios_reset = reply || today;
+      console.log("last reset" + scenarios_reset)
       const dayDifference = Math.ceil(Math.abs(today.getTime() - new Date(scenarios_reset).getTime()) / (1000 * 3600 * 24));
+      console.log("daydif" + dayDifference)
       if (dayDifference >= config.SCENARIOS_TABLES_RESET_PERIOD) {
+        console.log("hhhh")
         async.parallel([
           (cb) => {
-            db('team_scenarios').del().asCallback((err) => {
+            db('team_scenarios').where('current', '!=', 'true').del().then(
+              () => db('team_scenarios').update({
+                current: 'false'
+              })
+            ).asCallback((err) => {
               if (err) {
                 cb(err);
               } else {
@@ -36,7 +44,11 @@ const tasks = [
             });
           },
           (cb) => {
-            db('scenarios').del().asCallback((err) => {
+            db('scenarios').where('current', '!=', 'true').del().then(
+              () => db('scenarios').update({
+                current: 'false'
+              })
+            ).asCallback((err) => {
               if (err) {
                 cb(err);
               } else {
@@ -50,11 +62,13 @@ const tasks = [
             console.error(err.toString());
             cb(err);
           }
+          console.log("set")
           redis.set('scenarios_reset_date', new Date());
           cb();
         });
+      } else {
+        cb();
       }
-      cb();
     });
   },
   // scenarios service should only for a certain amount of time after a reset
@@ -67,32 +81,32 @@ const tasks = [
       getStatus('scenarios', (status) => {
         console.log(status)
         console.log(dayDifference)
-        if (dayDifference < config.SCENARIOS_SERVICE_UPTIME && status !== 'online') {
-                    pm2.start('svc/scenarios.js', {
-                        "group": "backend",
-                        "exec_mode": "cluster",
-                        "instances": 1
-                    }, (err) => {
-                        if (err) {
-                            console.error('Error while starting scenarios service.');
-                            cb(err);
-                        }
-                        console.log('Starting scenarios service.');
-                        cb()
-                    });
-        } else {
-            if (dayDifference >= config.SCENARIOS_SERVICE_UPTIME && status === 'online') {
-                console.log("f")
-              pm2.stop('scenarios', (err) => {
-                if (err) {
-                  console.error('Error while stopping scenarios service.');
-                  cb(err);
-                }
-                console.log('Stopping scenarios service.');
-                console.log("c")
-              });
+        if (parseInt(dayDifference) + parseInt(config.SCENARIOS_SERVICE_UPTIME) >= config.SCENARIOS_TABLES_RESET_PERIOD && status !== 'online') {
+          pm2.start('svc/scenarios.js', {
+            "group": "backend",
+            "exec_mode": "cluster",
+            "instances": 1
+          }, (err) => {
+            if (err) {
+              console.error('Error while starting scenarios service.');
+              cb(err);
             }
+            console.log('Starting scenarios service.');
             cb()
+          });
+        } else {
+          if (parseInt(dayDifference) + parseInt(config.SCENARIOS_SERVICE_UPTIME) < config.SCENARIOS_TABLES_RESET_PERIOD && status === 'online') {
+            console.log("f")
+            pm2.stop('scenarios', (err) => {
+              if (err) {
+                console.error('Error while stopping scenarios service.');
+                cb(err);
+              }
+              console.log('Stopping scenarios service.');
+              console.log("c")
+            });
+          }
+          cb()
         }
       });
     });
@@ -101,16 +115,16 @@ const tasks = [
 
 
 function start() {
-    setTimeout(function () {
-        async.eachSeries(tasks, (task, cb) => {
-            task(cb);
-        }, (err) => {
-            if (err) {
-                console.error(err);
-            }
-            start()
-        })
-    }, 3000);
+  setTimeout(function () {
+    async.eachSeries(tasks, (task, cb) => {
+      task(cb);
+    }, (err) => {
+      if (err) {
+        console.error(err);
+      }
+      start()
+    })
+  }, 3000);
 }
 
-start() 
+start()
