@@ -19,4 +19,6 @@ const db = knex({
 db.on('query-error', (err) => {
   throw err;
 });
+// Set the minimum similarity for pg_trgm
+db.raw('select set_limit(0.51)');
 module.exports = db;
