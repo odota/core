@@ -56,6 +56,7 @@ function storeUsageCounts(cursor, cb) {
               (?, ?, ?, ?, ?, ?)
               ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
             `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, null, values[i + 1], values[i + 1]]))
+            .then(() => console.log('Values is now', values))
             .then(() => cb2())
             .catch((e) => {
               if (e.message === 'No record found.') {
@@ -105,7 +106,7 @@ utility.invokeInterval((cb) => {
           if (err) {
             cb(err);
           }
-          console.log('[API KEY CACHE] Got resposne:', res);
+          console.log('[API KEY CACHE] Got response:', res);
           cb();
         });
     } else {
