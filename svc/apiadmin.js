@@ -29,7 +29,7 @@ function storeUsageCounts(cursor, cb) {
 
           let apiRecord;
           db.from('api_keys').where({
-            api_key: split[2],
+            api_key: split[1],
           })
             .then((rows) => {
               if (rows.length > 0) {
@@ -55,7 +55,7 @@ function storeUsageCounts(cursor, cb) {
               (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
               (?, ?, ?, ?, ?, ?)
               ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
-            `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]]))
+            `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, null, values[i + 1], values[i + 1]]))
             .then(() => cb2())
             .catch((e) => {
               if (e.message === 'No record found.') {
@@ -112,6 +112,6 @@ utility.invokeInterval((cb) => {
       cb();
     }
   });
-}, 5 * 60 * 1000); // Update every 5 min
+}, 5 * 1000); // Update every 5 min
 
-invokeInterval(cb => storeUsageCounts(0, cb), 10 * 60 * 1000); // Every 10 minutes
+invokeInterval(cb => storeUsageCounts(0, cb), 10 * 1000); // Every 10 minutes
