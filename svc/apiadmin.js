@@ -10,7 +10,6 @@ const stripe = require('stripe')(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
 
 function storeUsageCounts(cursor, cb) {
-  console.log('[USAGE COUNT] Cursor:', cursor);
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
       cb(err);
@@ -26,10 +25,11 @@ function storeUsageCounts(cursor, cb) {
           cb2();
         } else if (config.ENABLE_API_LIMIT && e.startsWith('API')) {
           const split = e.split(':');
-
+          console.log('Updating API usage for key', split[1], 'usage', values[i + 1]);
+          console.log('Full values array is ', values);
           let apiRecord;
           db.from('api_keys').where({
-            api_key: split[2],
+            api_key: split[1],
           })
             .then((rows) => {
               if (rows.length > 0) {
@@ -55,7 +55,8 @@ function storeUsageCounts(cursor, cb) {
               (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
               (?, ?, ?, ?, ?, ?)
               ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
-            `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]]))
+            `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, null, values[i + 1], values[i + 1]]))
+            .then(() => console.log('Values is now', values))
             .then(() => cb2())
             .catch((e) => {
               if (e.message === 'No record found.') {
@@ -105,7 +106,7 @@ utility.invokeInterval((cb) => {
           if (err) {
             cb(err);
           }
-          console.log('[API KEY CACHE] Got resposne:', res);
+          console.log('[API KEY CACHE] Got response:', res);
           cb();
         });
     } else {
