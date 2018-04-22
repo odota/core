@@ -10,7 +10,6 @@ const stripe = require('stripe')(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
 
 function storeUsageCounts(cursor, cb) {
-  console.log('[USAGE COUNT] Cursor:', cursor);
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
       cb(err);
@@ -26,7 +25,8 @@ function storeUsageCounts(cursor, cb) {
           cb2();
         } else if (config.ENABLE_API_LIMIT && e.startsWith('API')) {
           const split = e.split(':');
-
+          console.log('Updating API usage for key', split[1], 'usage', values[i + 1]);
+          console.log('Full values array is ', values);
           let apiRecord;
           db.from('api_keys').where({
             api_key: split[1],
