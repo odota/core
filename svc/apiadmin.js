@@ -25,46 +25,37 @@ function storeUsageCounts(cursor, cb) {
           cb2();
         } else if (config.ENABLE_API_LIMIT && e.startsWith('API')) {
           const split = e.split(':');
-          console.log('Updating API usage for key', split[1], 'usage', values[i + 1]);
-          console.log('Full values array is ', values);
-          let apiRecord;
-          db.from('api_keys').where({
-            api_key: split[1],
-          })
-            .then((rows) => {
-              if (rows.length > 0) {
-                [apiRecord] = rows;
-
-                return stripe.subscriptions.retrieve(apiRecord.subscription_id);
-              }
-              throw Error('No record found.');
+          if (split.length !== 3) {
+            cb2();
+          } else {
+            console.log('Updating API usage for key', split[1], 'usage', values[i + 1]);
+            console.log('Full values array is ', values);
+            let apiRecord;
+            db.from('api_keys').where({
+              api_key: split[2],
             })
-            .then(sub =>
-              // Set usage to be the value at end of the billing period
-              // - 1 so that it's within the same month
-              // TODO(albert): We could break this out by day for the invoice
-              // but we'd have to make changes to web.js and metrics
-              stripe.usageRecords.create({
-                quantity: Math.ceil(values[i + 1] / config.API_BILLING_UNIT),
-                action: 'set',
-                subscription_item: sub.items.data[0].id,
-                timestamp: sub.current_period_end - 1,
-              }))
-            .then(() => db.raw(`
-              INSERT INTO api_key_usage
-              (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
-              (?, ?, ?, ?, ?, ?)
-              ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
-            `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, null, values[i + 1], values[i + 1]]))
-            .then(() => console.log('Values is now', values))
-            .then(() => cb2())
-            .catch((e) => {
-              if (e.message === 'No record found.') {
-                cb2();
-              } else {
-                cb2(e);
-              }
-            });
+              .then((rows) => {
+                if (rows.length > 0) {
+                  [apiRecord] = rows;
+                  return db.raw(`
+                    INSERT INTO api_key_usage
+                    (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
+                    (?, ?, ?, ?, ?, ?)
+                    ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
+                  `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]]);
+                }
+                throw Error('No record found');
+              })
+              .then(() => console.log('Values is now', values))
+              .then(() => cb2())
+              .catch((e) => {
+                if (e.message === 'No record found.') {
+                  cb2();
+                } else {
+                  cb2(e);
+                }
+              });
+          }
         } else if (e.startsWith('USER')) {
           const split = e.split(':');
 
@@ -92,6 +83,52 @@ function storeUsageCounts(cursor, cb) {
   });
 }
 
+function updateStripeUsage(cb) {
+  const startTime = moment().startOf('month').format('YYYY-MM-DD');
+  const endTime = moment().endOf('month').format('YYYY-MM-DD');
+  db.raw(`
+    SELECT
+      api_key_usage.account_id,
+      subscription_id,
+      ARRAY_AGG(api_key_usage.api_key) as keys,
+      ARRAY_AGG(DISTINCT ip) as ips,
+      SUM(usage_count) as usage_count
+    FROM api_key_usage, api_keys
+    WHERE
+      api_key_usage.account_id = api_keys.account_id
+      AND timestamp = (
+        SELECT
+          MAX(timestamp)
+        FROM api_key_usage
+        WHERE timestamp >= ?
+        AND timestamp <= ?)
+    GROUP BY
+      api_key_usage.account_id,
+      subscription_id
+  `, [startTime, endTime])
+    .then((res) => {
+      async.eachLimit(res.rows, 5, (e, cb2) => {
+        stripe.subscriptions.retrieve(e.subscription_id)
+          .then(sub =>
+          // Set usage to be the value at end of the billing period
+          // - 1 so that it's within the same month
+          // TODO(albert): We could break this out by day for the invoice
+          // but we'd have to make changes to web.js and metrics
+            stripe.usageRecords.create({
+              quantity: Math.ceil(e.usage_count / config.API_BILLING_UNIT),
+              action: 'set',
+              subscription_item: sub.items.data[0].id,
+              timestamp: sub.current_period_end - 1,
+            }))
+          .then(cb2)
+          .catch(err => cb2(err));
+      }, (err) => {
+        cb(err);
+      });
+    })
+    .catch(err => console.log(err));
+}
+
 utility.invokeInterval((cb) => {
   queries.getAPIKeys(db, (err, rows) => {
     if (err) {
@@ -116,3 +153,4 @@ utility.invokeInterval((cb) => {
 }, 5 * 60 * 1000); // Update every 5 min
 
 invokeInterval(cb => storeUsageCounts(0, cb), 10 * 60 * 1000); // Every 10 minutes
+invokeInterval(cb => updateStripeUsage(cb), 10 * 60 * 1000);
