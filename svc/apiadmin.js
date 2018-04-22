@@ -112,6 +112,6 @@ utility.invokeInterval((cb) => {
       cb();
     }
   });
-}, 5 * 1000); // Update every 5 min
+}, 5 * 60 * 1000); // Update every 5 min
 
-invokeInterval(cb => storeUsageCounts(0, cb), 10 * 1000); // Every 10 minutes
+invokeInterval(cb => storeUsageCounts(0, cb), 10 * 60 * 1000); // Every 10 minutes
