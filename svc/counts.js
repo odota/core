@@ -28,7 +28,7 @@ function updateHeroRankings(match, cb) {
       return cb();
     }
     return async.each(match.players, (player, cb) => {
-      if (!player.account_id || player.account_id === getAnonymousAccountId()) {
+      if (!player.account_id || player.account_id === getAnonymousAccountId() || !player.hero_id) {
         return cb();
       }
       player.radiant_win = match.radiant_win;
