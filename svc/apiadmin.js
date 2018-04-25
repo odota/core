@@ -85,22 +85,25 @@ function updateStripeUsage(cb) {
   const endTime = moment().endOf('month').format('YYYY-MM-DD');
   db.raw(`
     SELECT
-      api_key_usage.account_id,
+      t1.account_id,
       subscription_id,
-      ARRAY_AGG(api_key_usage.api_key) as keys,
-      ARRAY_AGG(DISTINCT ip) as ips,
-      SUM(usage_count) as usage_count
-    FROM api_key_usage, api_keys
+      SUM(usage) as usage_count
+    FROM (
+      SELECT
+        account_id,
+        api_key,
+        ip,
+        MAX(usage_count) as usage
+      FROM api_key_usage
+      WHERE
+        timestamp >= ?
+        AND timestamp <= ?
+      GROUP BY account_id, api_key, ip
+    ) as t1, api_keys
     WHERE
-      api_key_usage.account_id = api_keys.account_id
-      AND timestamp = (
-        SELECT
-          MAX(timestamp)
-        FROM api_key_usage
-        WHERE timestamp >= ?
-        AND timestamp <= ?)
+      t1.account_id = api_keys.account_id
     GROUP BY
-      api_key_usage.account_id,
+      t1.account_id,
       subscription_id
   `, [startTime, endTime])
     .then((res) => {
