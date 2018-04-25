@@ -29,7 +29,6 @@ function storeUsageCounts(cursor, cb) {
             cb2();
           } else {
             console.log('Updating API usage for key', split[1], 'usage', values[i + 1]);
-            console.log('Full values array is ', values);
             let apiRecord;
             db.from('api_keys').where({
               api_key: split[2],
@@ -44,9 +43,8 @@ function storeUsageCounts(cursor, cb) {
                     ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
                   `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]]);
                 }
-                throw Error('No record found');
+                throw Error('No record found.');
               })
-              .then(() => console.log('Values is now', values))
               .then(() => cb2())
               .catch((e) => {
                 if (e.message === 'No record found.') {

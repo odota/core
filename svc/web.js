@@ -125,7 +125,7 @@ app.use((req, res, cb) => {
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
-    res.locals.usageIdentifier = `USER:${ip}:${req.user ? req.user.account_id : ''}`;
+    res.locals.usageIdentifier = `USER:${ip}`;
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
