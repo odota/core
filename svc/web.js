@@ -166,7 +166,8 @@ app.use((req, res, cb) => {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
 
-    if (res.statusCode !== 500 && !whitelistedPaths.includes(req.path)) {
+    // When called from a middleware, the mount point is not included in req.path. See Express docs.
+    if (res.statusCode !== 500 && !whitelistedPaths.includes(req.baseUrl + (req.path === '/' ? '' : req.path))) {
       redis.multi()
         .hincrby('usage_count', res.locals.usageIdentifier, 1)
         .expireat('usage_count', utility.getEndOfMonth())
