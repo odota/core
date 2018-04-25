@@ -513,7 +513,7 @@ describe('api limits', () => {
             return cb(err);
           }
 
-          assert.equal(res.statusCode, 200);
+          assert.notEqual(res.statusCode, 429);
           return cb();
         });
       },
