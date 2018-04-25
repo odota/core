@@ -28,7 +28,7 @@ function storeUsageCounts(cursor, cb) {
           if (split.length !== 3) {
             cb2();
           } else {
-            console.log('Updating API usage for key', split[1], 'usage', values[i + 1]);
+            console.log('Updating API usage for key', split[2], 'usage', values[i + 1]);
             let apiRecord;
             db.from('api_keys').where({
               api_key: split[2],
@@ -56,7 +56,6 @@ function storeUsageCounts(cursor, cb) {
           }
         } else if (e.startsWith('USER')) {
           const split = e.split(':');
-
           // null account_id mapped to 0 to avoid duplicate rows
           db.raw(`
             INSERT INTO user_usage
