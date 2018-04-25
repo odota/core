@@ -506,8 +506,6 @@ describe('api limits', () => {
       [
         '/api', // Docs
         '/api/metadata', // Login status
-        '/login',
-        '/logout',
         '/api/admin/apiMetrics', // Admin metrics
         '/keys', // API Key management
       ], (i, cb) => {
