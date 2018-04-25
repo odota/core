@@ -502,7 +502,7 @@ describe('api limits', () => {
   });
 
   function testWhiteListedRoutes(done) {
-    async.series(
+    async.eachSeries(
       [
         '/api', // Docs
         '/api/metadata', // Login status
