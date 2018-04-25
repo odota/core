@@ -506,7 +506,6 @@ describe('api limits', () => {
       [
         '/api', // Docs
         '/api/metadata', // Login status
-        '/api/admin/apiMetrics', // Admin metrics
         '/keys', // API Key management
       ], (i, cb) => {
         supertest(app).get(i).end((err, res) => {
