@@ -28,7 +28,7 @@ function storeUsageCounts(cursor, cb) {
           if (split.length !== 3) {
             cb2();
           } else {
-            console.log('Updating API usage for key', split[2], 'usage', values[i + 1]);
+            console.log('Updating usage for', e, 'usage', values[i + 1]);
             let apiRecord;
             db.from('api_keys').where({
               api_key: split[2],
@@ -117,6 +117,7 @@ function updateStripeUsage(cb) {
               subscription_item: sub.items.data[0].id,
               timestamp: sub.current_period_end - 1,
             }))
+          .then(() => console.log('[STRIPE] updated ', e.subscription_id, e.usage_count))
           .then(cb2)
           .catch(err => cb2(err));
       }, (err) => {
@@ -150,4 +151,4 @@ utility.invokeInterval((cb) => {
 }, 5 * 60 * 1000); // Update every 5 min
 
 invokeInterval(cb => storeUsageCounts(0, cb), 10 * 60 * 1000); // Every 10 minutes
-invokeInterval(cb => updateStripeUsage(cb), 10 * 60 * 1000);
+invokeInterval(cb => updateStripeUsage(cb), 5 * 60 * 1000); // Every 5 minutes
