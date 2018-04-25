@@ -29,6 +29,16 @@ const sessOptions = {
   maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
   secret: config.SESSION_SECRET,
 };
+
+const whitelistedPaths = [
+  '/api', // Docs
+  '/api/metadata', // Login status
+  '/login',
+  '/logout',
+  '/api/admin/apiMetrics', // Admin metrics
+  '/keys', // API Key management
+];
+
 // PASSPORT config
 passport.serializeUser((user, done) => {
   done(null, user.account_id);
@@ -137,7 +147,7 @@ app.use((req, res, cb) => {
           error: 'rate limit exceeded',
         });
       }
-      if (config.ENABLE_API_LIMIT && !res.locals.isAPIRequest && Number(resp[2]) > config.API_FREE_LIMIT) {
+      if (config.ENABLE_API_LIMIT && !whitelistedPaths.includes(req.path) && !res.locals.isAPIRequest && Number(resp[2]) > config.API_FREE_LIMIT) {
         return res.status(429).json({
           error: 'monthly api limit exeeded',
         });
@@ -156,7 +166,7 @@ app.use((req, res, cb) => {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
 
-    if (res.statusCode !== 500) {
+    if (res.statusCode !== 500 && !whitelistedPaths.includes(req.path)) {
       redis.multi()
         .hincrby('usage_count', res.locals.usageIdentifier, 1)
         .expireat('usage_count', utility.getEndOfMonth())
