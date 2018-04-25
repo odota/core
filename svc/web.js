@@ -9,6 +9,7 @@ const db = require('../store/db');
 const queries = require('../store/queries');
 const api = require('../routes/api');
 const keys = require('../routes/keyManagement');
+const notifications = require('../routes/notificationManagement');
 const request = require('request');
 const compression = require('compression');
 const session = require('cookie-session');
@@ -210,6 +211,8 @@ app.use('/api', api);
 // CORS Preflight for API keys
 app.options('/keys', cors());
 app.use('/keys', keys);
+app.options('/notifications', cors());
+app.use('/notifications', notifications);
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
