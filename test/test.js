@@ -501,40 +501,64 @@ describe('api limits', () => {
       });
   });
 
-  it('should be able to make 11 calls where first is a 404. 12nd should fail as no api key', function testNoApiLimit(done) {
-    this.timeout(10000);
-    supertest(app)
-      .get('/thisroutedoesntexist')
-      .then((res) => {
-        assert.equal(res.statusCode, 404);
-        async.timesSeries(10, (i, cb) => {
-          setTimeout(() => {
-            supertest(app).get('/api').end((err, res) => {
-              if (err) {
-                return cb(err);
-              }
+  function testWhiteListedRoutes(done) {
+    async.eachSeries(
+      [
+        '/api', // Docs
+        '/api/metadata', // Login status
+        '/keys', // API Key management
+      ], (i, cb) => {
+        supertest(app).get(i).end((err, res) => {
+          if (err) {
+            return cb(err);
+          }
 
-              assert.equal(res.statusCode, 200);
-              return cb();
-            });
-          }, i * 200);
-        }, (err) => {
+          assert.notEqual(res.statusCode, 429);
+          return cb();
+        });
+      },
+      done,
+    );
+  }
+
+  function testRateCheckedRoute(done) {
+    async.timesSeries(10, (i, cb) => {
+      setTimeout(() => {
+        supertest(app).get('/api/matches/1781962623').end((err, res) => {
+          if (err) {
+            return cb(err);
+          }
+
+          assert.equal(res.statusCode, 200);
+          return cb();
+        });
+      }, i * 300);
+    }, done);
+  }
+
+  it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', function testNoApiLimit(done) {
+    this.timeout(20000);
+    testWhiteListedRoutes((err) => {
+      if (err) {
+        done(err);
+      } else {
+        testRateCheckedRoute((err) => {
           if (err) {
             done(err);
           } else {
-            supertest(app).get('/api').end((err, res) => {
+            supertest(app).get('/api/matches/1781962623').end((err, res) => {
               if (err) {
-                return done(err);
+                done(err);
               }
-
               assert.equal(res.statusCode, 429);
               assert.equal(res.body.error, 'monthly api limit exeeded');
-              return done();
+
+              testWhiteListedRoutes(done);
             });
           }
         });
-      })
-      .catch(err => done(err));
+      }
+    });
   });
 
   it('should be able to make more than 10 calls when using API KEY', (done) => {
