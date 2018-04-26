@@ -532,7 +532,7 @@ describe('api limits', () => {
           assert.equal(res.statusCode, 200);
           return cb();
         });
-      }, i * 200);
+      }, i * 300);
     }, done);
   }
 
