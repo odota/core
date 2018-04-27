@@ -26,11 +26,11 @@ function search(options, cb) {
     personaname(callback) {
       db.raw(`
         SELECT * FROM 
-        (SELECT account_id, avatarfull, personaname, last_match_time, similarity(personaname, ?) AS similarity
+        (SELECT account_id, avatarfull, personaname, last_match_time
         FROM players 
-        WHERE personaname % ? 
-        LIMIT 300) search
-        ORDER BY similarity DESC, last_match_time DESC NULLS LAST;
+        WHERE personaname % ?
+        LIMIT 150) search
+        ORDER BY last_match_time DESC NULLS LAST;
         `, [query, query]).asCallback((err, result) => {
         if (err) {
           return callback(err);
