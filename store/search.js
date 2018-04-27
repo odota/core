@@ -31,7 +31,7 @@ function search(options, cb) {
         WHERE personaname % ?
         LIMIT 150) search
         ORDER BY last_match_time DESC NULLS LAST;
-        `, [query, query]).asCallback((err, result) => {
+        `, [query]).asCallback((err, result) => {
         if (err) {
           return callback(err);
         }
