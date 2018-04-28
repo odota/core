@@ -21,11 +21,13 @@ def run1(zoneList):
       instancegroupname = "retriever-group-" + zone
       # Invert to cycle through in reverse order, so we create new instances before deleting old ones
       size = targetsize if i == (len(zoneList) - bucket - 1) else 0
-      minsize = 1 if i == (len(zoneList) - bucket - 1) else 0
-      print bucket, size, minsize
-      #subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
-      #subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, minsize, size), shell=True)
-      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
+      minsize = 1
+      print bucket, size
+      if size > 0:
+        subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, minsize, size), shell=True)
+      else:
+        subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
+        subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
       # if size > 0:
       #   # Iterate over instances in the group
       #   instancesCmd = "gcloud compute instance-groups managed list-instances {} --zone={} --format='value(NAME)'".format(instancegroupname, zone);
