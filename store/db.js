@@ -14,7 +14,7 @@ const db = knex({
   pool: {
     afterCreate: (conn, done) => {
       // Set the minimum similarity for pg_trgm
-      conn.query('SELECT set_limit(0.7);', (err) => {
+      conn.query('SELECT set_limit(0.6);', (err) => {
         // if err is not falsy, connection is discarded from pool
         done(err, conn);
       });
