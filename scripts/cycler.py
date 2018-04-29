@@ -24,7 +24,7 @@ def run1(zoneList):
       minsize = 1
       print bucket, size
       if size > 0:
-        subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, minsize, size), shell=True)
+        subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing --target-load-balancing-utilization=1".format(instancegroupname, zone, minsize, size), shell=True)
       else:
         subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
         subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, size), shell=True)
