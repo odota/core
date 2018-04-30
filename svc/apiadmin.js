@@ -18,7 +18,6 @@ function storeUsageCounts(cursor, cb) {
       const values = results[1];
 
       const apiTimestamp = moment().startOf('day');
-      const userTimestamp = moment().startOf('month');
 
       async.eachOfLimit(values, 5, (e, i, cb2) => {
         if (i % 2) {
@@ -54,16 +53,8 @@ function storeUsageCounts(cursor, cb) {
                 }
               });
           }
-        } else if (e.startsWith('USER')) {
-          const split = e.split(':');
-          // null account_id mapped to 0 to avoid duplicate rows
-          db.raw(`
-            INSERT INTO user_usage
-            (account_id, timestamp, ip, usage_count) VALUES
-            (?, ?, ?, ?)
-            ON CONFLICT (account_id, ip, timestamp) DO UPDATE SET usage_count = ?
-          `, [split[2] || 0, userTimestamp, split[1], values[i + 1], values[i + 1]])
-            .asCallback(cb2);
+        } else {
+          cb2();
         }
       }, (err) => {
         if (err) {

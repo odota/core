@@ -125,36 +125,40 @@ app.use((req, res, cb) => {
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
-    res.locals.usageIdentifier = `USER:${ip}`;
+    res.locals.usageIdentifier = ip;
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
 
-  redis.multi()
+  const multi = redis.multi()
     .hincrby('rate_limit', res.locals.usageIdentifier, 1)
-    .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1))
-    .hget('usage_count', res.locals.usageIdentifier)
-    .exec((err, resp) => {
-      if (err) {
-        console.log(err);
-        return cb(err);
-      }
-      if (config.NODE_ENV === 'development') {
-        console.log(resp);
-      }
-      if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
-        return res.status(429).json({
-          error: 'rate limit exceeded',
-        });
-      }
-      if (config.ENABLE_API_LIMIT && !whitelistedPaths.includes(req.path) && !res.locals.isAPIRequest && Number(resp[2]) >= config.API_FREE_LIMIT) {
-        return res.status(429).json({
-          error: 'monthly api limit exeeded',
-        });
-      }
+    .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
 
-      return cb();
-    });
+  if (!res.locals.isAPIRequest) {
+    multi.zcore('user_usage_count', res.locals.usageIdentifier); // not API request so check previous usage.
+  }
+
+  multi.exec((err, resp) => {
+    if (err) {
+      console.log(err);
+      return cb(err);
+    }
+    if (config.NODE_ENV === 'development') {
+      console.log(resp);
+    }
+    if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
+      return res.status(429).json({
+        error: 'rate limit exceeded',
+      });
+    }
+    if (config.ENABLE_API_LIMIT && !whitelistedPaths.includes(req.path) && !res.locals.isAPIRequest && Number(resp[2]) >= config.API_FREE_LIMIT) {
+      return res.status(429).json({
+        error: 'monthly api limit exeeded',
+      });
+    }
+
+    return cb();
+  });
 });
 // Telemetry middleware
 app.use((req, res, cb) => {
@@ -168,10 +172,16 @@ app.use((req, res, cb) => {
 
     // When called from a middleware, the mount point is not included in req.path. See Express docs.
     if (res.statusCode !== 500 && !whitelistedPaths.includes(req.baseUrl + (req.path === '/' ? '' : req.path))) {
-      redis.multi()
-        .hincrby('usage_count', res.locals.usageIdentifier, 1)
-        .expireat('usage_count', utility.getEndOfMonth())
-        .exec();
+      const multi = redis.multi();
+      if (res.locals.isAPIRequest) {
+        multi.hincrby('usage_count', res.locals.usageIdentifier, 1)
+          .expireat('usage_count', utility.getEndOfMonth());
+      } else {
+        multi.zincrby('user_usage_count', 1, res.locals.usageIdentifier)
+          .expireat('user_usage_count', utility.getEndOfMonth());
+      }
+
+      multi.exec();
     }
 
     if (req.originalUrl.indexOf('/api') === 0) {
