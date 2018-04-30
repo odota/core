@@ -4194,31 +4194,10 @@ Please keep request rate to approximately 1/s.
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topUsersIP: (cb) => {
-              db.raw(`
-                SELECT
-                  ip,
-                  SUM(usage_count) as usage_count,
-                  ARRAY_AGG(account_id) as account_ids
-                FROM user_usage
-                WHERE
-                  timestamp >= ?
-                  AND timestamp <= ?
-                GROUP BY ip
-                ORDER BY usage_count DESC
-                LIMIT 10
-              `, [startTime, endTime])
-                .asCallback((err, res) => cb(err, err ? null : res.rows));
+              redis.zrevrange('user_usage_count', 0, 24, cb);
             },
             numUsersIP: (cb) => {
-              db.raw(`
-                SELECT
-                  COUNT(DISTINCT ip)
-                FROM user_usage
-                WHERE
-                  timestamp >= ?
-                  AND timestamp <= ?
-              `, [startTime, endTime])
-                .asCallback((err, res) => cb(err, err ? null : res.rows));
+              redis.zcard('user_usage_count', cb);
             },
           }, (err, result) => {
             if (err) {
