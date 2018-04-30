@@ -2,15 +2,10 @@ const express = require('express');
 const uuid = require('uuid/v4');
 const bodyParser = require('body-parser');
 const moment = require('moment');
-const firebase = require('firebase-admin');
+
 //const async = require('async');
 //const db = require('../store/db');
 const redis = require('../store/redis');
-const config = require('../config');
-
-firebase.initializeApp({
-  credential: firebase.credential.applicationDefault()
-});
 
 const notifications = express.Router();
 
@@ -33,7 +28,6 @@ notifications.route('/')
   .post((req, res, next) => {
     const { token } = req.body;
 
-    console.log(token);
     if (!token) {
       res.status(500).json({
         error: 'Missng token',
@@ -41,7 +35,10 @@ notifications.route('/')
     } else {
       redis.multi()
       .zadd('notification_tokens', moment().unix(), token)
-      .hset('notification_users', req.user ? req.user.account_id : uuid, token);
+      .hset('notification_users', req.user ? req.user.account_id : uuid, token)
+      .exec((err) =>{
+        return res.sendStatus(err ? 500 : 200);
+      });
     }
   });
 

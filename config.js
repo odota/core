@@ -71,6 +71,9 @@ const defaults = {
   GCDATA_PARALLELISM: 1, // Number of simultaneous GC match details requests to make (per retriever)
   STRIPE_SECRET: '', // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: '', // plan id for stripe metering
+  GCP_PROJECT_ID: '', // used for notifications
+  GCP_CLIENT_EMAIL: '', // used for notifications
+  GCP_PRIVATE_KEY: '', // used for notifications
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {

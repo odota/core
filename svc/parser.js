@@ -13,7 +13,7 @@ const queries = require('../store/queries');
 const cp = require('child_process');
 const async = require('async');
 const numCPUs = require('os').cpus().length;
-
+const { sendNotificationViaAccountId } = require('../util/notifications');
 const { insertMatch } = queries;
 const { buildReplayUrl } = utility;
 
@@ -43,6 +43,7 @@ function runParse(match, job, cb) {
 
 function parseProcessor(job, cb) {
   const match = job;
+  console.log(match);
   async.series({
     getDataSource(cb) {
       getGcData(match, (err, result) => {
