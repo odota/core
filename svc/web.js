@@ -143,7 +143,7 @@ app.use((req, res, cb) => {
       console.log(err);
       return cb(err);
     }
-    if (config.NODE_ENV === 'development') {
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       console.log(resp);
     }
     if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
@@ -181,7 +181,11 @@ app.use((req, res, cb) => {
           .expireat('user_usage_count', utility.getEndOfMonth());
       }
 
-      multi.exec();
+      multi.exec((err, res) => {
+        if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+          console.log('usage count increment', err, res);
+        }
+      });
     }
 
     if (req.originalUrl.indexOf('/api') === 0) {
