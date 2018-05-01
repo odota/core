@@ -135,7 +135,7 @@ app.use((req, res, cb) => {
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
 
   if (!res.locals.isAPIRequest) {
-    multi.zcore('user_usage_count', res.locals.usageIdentifier); // not API request so check previous usage.
+    multi.zscore('user_usage_count', res.locals.usageIdentifier); // not API request so check previous usage.
   }
 
   multi.exec((err, resp) => {
