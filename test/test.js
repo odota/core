@@ -490,6 +490,7 @@ describe('api limits', () => {
     config.ENABLE_API_LIMIT = true;
     config.API_FREE_LIMIT = 10;
     redis.multi()
+      .del('user_usage_count')
       .del('usage_count')
       .sadd('api_keys', 'KEY')
       .exec((err) => {
@@ -537,7 +538,7 @@ describe('api limits', () => {
   }
 
   it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', function testNoApiLimit(done) {
-    this.timeout(20000);
+    this.timeout(25000);
     testWhiteListedRoutes((err) => {
       if (err) {
         done(err);
