@@ -962,7 +962,7 @@ function insertMatch(match, options, cb) {
 
   function decideGcData(cb) {
     if (options.origin === 'scanner' && utility.isSignificant(match) && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
-      redis.lpush('gcQueue', JSON.stringify({
+      redis.rpush('gcQueue', JSON.stringify({
         match_id: match.match_id,
       }), cb);
     } else {
