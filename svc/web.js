@@ -140,11 +140,11 @@ app.use((req, res, cb) => {
 
   multi.exec((err, resp) => {
     res.set({
-      "X-Rate-Limit": rateLimit,
-      "X-Rate-Limit-Remaining": rateLimit - resp[0],
+      'X-Rate-Limit': rateLimit,
+      'X-Rate-Limit-Remaining': rateLimit - resp[0],
     });
     if (!res.locals.isAPIRequest) {
-      res.set("X-Free-Requests-Remaining", config.API_FREE_LIMIT - Number(resp[2]));
+      res.set('X-Free-Requests-Remaining', config.API_FREE_LIMIT - Number(resp[2]));
     }
     if (err) {
       console.log(err);
