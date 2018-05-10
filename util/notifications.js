@@ -12,11 +12,9 @@ firebase.initializeApp({
 });
 
 
-function sendNotificationViaToken(token, title, body, url, icon, cb) {
+function sendNotificationViaToken(token, data, title, body, icon, cb) {
   firebase.messaging().send({
-    data: {
-      url: url
-    },
+    data: data,
     notification: {
       title: title,
       body: body,
@@ -53,14 +51,14 @@ function sendNotificationViaToken(token, title, body, url, icon, cb) {
   });
 }
 
-function sendNotificationViaAccountId(accountId, title, body, icon, cb) {
+function sendNotificationViaAccountId(accountId, data, title, body, icon, cb) {
   redis.hget('notification_users', accountId, (err, res) => {
     if (err) {
       cb(err);
     } else {
       if (res) {
         console.log(res);
-        sendNotificationViaToken(res, title, body, icon, cb);
+        sendNotificationViaToken(res, data, title, body, icon || {}, cb);
       } else {
         cb(false)
       }

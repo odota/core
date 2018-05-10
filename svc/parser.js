@@ -43,7 +43,6 @@ function runParse(match, job, cb) {
 
 function parseProcessor(job, cb) {
   const match = job;
-  console.log(match);
   async.series({
     getDataSource(cb) {
       getGcData(match, (err, result) => {
@@ -62,9 +61,36 @@ function parseProcessor(job, cb) {
       console.error(err.stack || err);
     } else {
       console.log('completed parse of match %s', match.match_id);
+      sendNotifications(match);
     }
     return cb(err, match.match_id);
   });
+}
+
+function sendNotifications(match) {
+  for (let slot in match.pgroup) {
+    let player = match.pgroup[slot];
+    console.log(player);
+    if (player.account_id) {
+      sendNotificationViaAccountId(
+        player.account_id,
+        {
+          match_id: String(match.match_id),
+          start_time: String(match.start_time),
+          hero_id: String(player.hero_id),
+          player_slot: String(player.player_slot)
+        },
+        `Parsed ${match.match_id}`,
+        `Check out your performance in match ${match.match_id}.`,
+        null,
+        (res) => {
+          if (res) {
+            console.log('Sent notification - match', match.match_id, 'player', player.account_id);
+          }
+        }
+      )  
+    }
+  }
 }
 
 queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, parseProcessor);
