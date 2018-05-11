@@ -23,6 +23,7 @@ if (process.env.ROLE) {
         console.log(app.script, app.instances);
         pm2.start(app.script, {
           instances: app.instances,
+          restartDelay: 10000,
         }, (err) => {
           if (err) {
             // Log the error and continue
