@@ -4136,8 +4136,7 @@ Please keep request rate to approximately 1/s.
               db.raw(`
                 SELECT
                   account_id,
-                  ARRAY_AGG(api_key),
-                  ARRAY_AGG(DISTINCT ip),
+                  ARRAY_AGG(api_key) as api_keys,
                   SUM(usage) as usage_count
                 FROM (
                   SELECT
@@ -4161,8 +4160,8 @@ Please keep request rate to approximately 1/s.
               db.raw(`
                 SELECT
                   ip,
-                  ARRAY_AGG(account_id),
-                  ARRAY_AGG(api_key),
+                  ARRAY_AGG(account_id) as account_ids,
+                  ARRAY_AGG(api_key) as api_keys,
                   SUM(usage) as usage_count
                 FROM (
                   SELECT
@@ -4194,7 +4193,7 @@ Please keep request rate to approximately 1/s.
                 .asCallback((err, res) => cb(err, err ? null : res.rows));
             },
             topUsersIP: (cb) => {
-              redis.zrevrange('user_usage_count', 0, 24, cb);
+              redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
             },
             numUsersIP: (cb) => {
               redis.zcard('user_usage_count', cb);
