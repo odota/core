@@ -82,6 +82,7 @@
     },
     {
       "script": "svc/cosmetics.js",
+      "restart_delay": 5000,
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -130,6 +131,7 @@
     },
     {
       "script": "svc/livegames.js",
+      "restart_delay": 5000,
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
