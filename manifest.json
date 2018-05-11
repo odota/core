@@ -82,10 +82,9 @@
     },
     {
       "script": "svc/cosmetics.js",
-      "restart_delay": 5000,
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
-      "group": "backend",
+      "group": "null",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -125,13 +124,12 @@
       "script": "svc/leagues.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
-      "group": "backend",
+      "group": "null",
       "exec_mode": "cluster",
       "instances": 1
     },
     {
       "script": "svc/livegames.js",
-      "restart_delay": 5000,
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
