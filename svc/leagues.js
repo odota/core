@@ -1,4 +1,4 @@
-const vdf = require('simple-vdf');
+// const vdf = require('simple-vdf');
 const async = require('async');
 const utility = require('../util/utility');
 const db = require('../store/db');
@@ -19,13 +19,13 @@ function doLeagues(cb) {
         url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
         raw: true,
       },
-      (err, body) => {
+      (err) => {
         if (err) {
           return cb(err);
         }
+        const leagues = {};
         /*
         const itemData = vdf.parse(body);
-        const leagues = {};
         Object.keys(itemData.items_game.items).forEach((key) => {
           const item = itemData.items_game.items[key];
           if (item.prefab === 'league' && item.tool && item.tool.usage) {
