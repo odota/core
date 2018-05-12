@@ -23,6 +23,7 @@ function doLeagues(cb) {
         if (err) {
           return cb(err);
         }
+        /*
         const itemData = vdf.parse(body);
         const leagues = {};
         Object.keys(itemData.items_game.items).forEach((key) => {
@@ -35,6 +36,7 @@ function doLeagues(cb) {
             leagues[leagueid] = { tier, ticket, banner };
           }
         });
+        */
         // League tier corrections and missing data
         const leagueTiers = {
           4177: 'excluded', // CDEC Master
