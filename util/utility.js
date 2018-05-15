@@ -801,6 +801,7 @@ function epochWeek() {
   return Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7));
 }
 
+/* eslint-disable no-tabs */
 function cleanItemSchema(input) {
   return input.replace(`"12187"
 		{
@@ -1078,6 +1079,7 @@ function cleanItemSchema(input) {
 			}
 		}`, '');
 }
+/* eslint-enable no-tabs */
 
 module.exports = {
   tokenize,
