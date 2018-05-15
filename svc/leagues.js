@@ -4,7 +4,9 @@ const utility = require('../util/utility');
 const db = require('../store/db');
 const queries = require('../store/queries');
 
-const { invokeInterval, generateJob, getData, cleanItemSchema } = utility;
+const {
+  invokeInterval, generateJob, getData, cleanItemSchema,
+} = utility;
 
 function doLeagues(cb) {
   const container = generateJob('api_leagues', {
