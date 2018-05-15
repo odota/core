@@ -84,7 +84,7 @@
       "script": "svc/cosmetics.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
-      "group": "null",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
@@ -124,7 +124,7 @@
       "script": "svc/leagues.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
-      "group": "null",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },

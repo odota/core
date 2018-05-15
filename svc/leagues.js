@@ -1,10 +1,10 @@
-// const vdf = require('simple-vdf');
+const vdf = require('simple-vdf');
 const async = require('async');
 const utility = require('../util/utility');
 const db = require('../store/db');
 const queries = require('../store/queries');
 
-const { invokeInterval, generateJob, getData } = utility;
+const { invokeInterval, generateJob, getData, cleanItemSchema } = utility;
 
 function doLeagues(cb) {
   const container = generateJob('api_leagues', {
@@ -19,13 +19,12 @@ function doLeagues(cb) {
         url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
         raw: true,
       },
-      (err) => {
+      (err, body) => {
         if (err) {
           return cb(err);
         }
         const leagues = {};
-        /*
-        const itemData = vdf.parse(body);
+        const itemData = vdf.parse(cleanItemSchema(body));
         Object.keys(itemData.items_game.items).forEach((key) => {
           const item = itemData.items_game.items[key];
           if (item.prefab === 'league' && item.tool && item.tool.usage) {
@@ -36,7 +35,6 @@ function doLeagues(cb) {
             leagues[leagueid] = { tier, ticket, banner };
           }
         });
-        */
         // League tier corrections and missing data
         const leagueTiers = {
           4177: 'excluded', // CDEC Master
