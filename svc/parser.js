@@ -75,20 +75,18 @@ function sendNotifications(match) {
       sendNotificationViaAccountId(
         player.account_id,
         {
+          type: 'MATCH',
           match_id: String(match.match_id),
           start_time: String(match.start_time),
           hero_id: String(player.hero_id),
           player_slot: String(player.player_slot)
         },
-        `Parsed ${match.match_id}`,
-        `Check out your performance in match ${match.match_id}.`,
-        null,
         (res) => {
           if (res) {
             console.log('Sent notification - match', match.match_id, 'player', player.account_id);
           }
         }
-      )  
+      )
     }
   }
 }

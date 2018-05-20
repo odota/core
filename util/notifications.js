@@ -12,32 +12,9 @@ firebase.initializeApp({
 });
 
 
-function sendNotificationViaToken(token, data, title, body, icon, cb) {
+function sendNotificationViaToken(token, data, cb) {
   firebase.messaging().send({
     data: data,
-    notification: {
-      title: title,
-      body: body,
-    },
-    android: { // Android specific options
-      ttl: 3600 * 1000,
-      notification: {
-        icon: icon.android || null,
-        color: '#f45342',
-      },
-    },
-    apns: { // iOS specific options
-      payload: {
-        aps: {
-          badge: icon.ios || 0,
-        },
-      },
-    },
-    webpush: {
-      notification: {
-        icon: icon.web || null
-      }
-    },
     token: token
   })
   .then((response) => {
@@ -51,14 +28,14 @@ function sendNotificationViaToken(token, data, title, body, icon, cb) {
   });
 }
 
-function sendNotificationViaAccountId(accountId, data, title, body, icon, cb) {
+function sendNotificationViaAccountId(accountId, data, cb) {
   redis.hget('notification_users', accountId, (err, res) => {
     if (err) {
       cb(err);
     } else {
       if (res) {
         console.log(res);
-        sendNotificationViaToken(res, data, title, body, icon || {}, cb);
+        sendNotificationViaToken(res, data, cb);
       } else {
         cb(false)
       }
