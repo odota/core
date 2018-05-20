@@ -4136,7 +4136,7 @@ Please keep request rate to approximately 1/s.
               db.raw(`
                 SELECT
                   account_id,
-                  ARRAY_AGG(api_key) as api_keys,
+                  ARRAY_AGG(DISTINCT api_key) as api_keys,
                   SUM(usage) as usage_count
                 FROM (
                   SELECT
@@ -4160,8 +4160,8 @@ Please keep request rate to approximately 1/s.
               db.raw(`
                 SELECT
                   ip,
-                  ARRAY_AGG(account_id) as account_ids,
-                  ARRAY_AGG(api_key) as api_keys,
+                  ARRAY_AGG(DISTINCT account_id) as account_ids,
+                  ARRAY_AGG(DISTINCT api_key) as api_keys,
                   SUM(usage) as usage_count
                 FROM (
                   SELECT
