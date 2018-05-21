@@ -47,7 +47,7 @@
     "pm2": "^2.10.3",
     "redis": "^2.8.0",
     "request": "^2.85.0",
-    "simple-vdf": "^1.1.0",
+    "simple-vdf": "^1.1.1",
     "steam": "^1.4.0",
     "stripe": "^5.8.0",
     "supertest": "^3.0.0",
