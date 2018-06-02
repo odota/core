@@ -68,6 +68,7 @@ keys.route('/').get((req, res, next) => {
                   SELECT
                     account_id,
                     api_key,
+                    ip,
                     date_part('month', timestamp) as month,
                     MAX(usage_count) as usage_count
                   FROM api_key_usage
@@ -75,11 +76,11 @@ keys.route('/').get((req, res, next) => {
                     timestamp >= ?
                     AND timestamp <= ?
                     AND account_id = ?
-                  GROUP BY account_id, api_key, month
+                  GROUP BY account_id, api_key, ip, month
                 ) as T1
                 GROUP BY account_id, month
                 ORDER BY month DESC
-              `, [moment().subtract(1, 'month').startOf('month'), moment().endOf('month'), req.user.account_id])
+              `, [moment().subtract(5, 'month').startOf('month'), moment().endOf('month'), req.user.account_id])
               .asCallback((err, results) => cb(err, err ? null : results.rows));
           },
         }, (err, results) => {
