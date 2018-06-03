@@ -68,7 +68,7 @@ function processFullHistory(job, cb) {
   }
 
   const player = job;
-  if (player.account_id === 0) {
+  if (Number(player.account_id) === 0) {
     return cb();
   }
   // if test or only want 500 of any hero, use the short array
