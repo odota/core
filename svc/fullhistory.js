@@ -75,7 +75,7 @@ function processFullHistory(job, cb) {
   const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   player.match_ids = {};
-  async.eachLimit(heroArray, parallelism, (heroId, cb) => {
+  return async.eachLimit(heroArray, parallelism, (heroId, cb) => {
     // make a request for every possible hero
     const container = generateJob('api_history', {
       account_id: player.account_id,
