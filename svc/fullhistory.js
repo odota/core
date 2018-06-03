@@ -68,6 +68,9 @@ function processFullHistory(job, cb) {
   }
 
   const player = job;
+  if (player.account_id === 0) {
+    return cb();
+  }
   // if test or only want 500 of any hero, use the short array
   const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
