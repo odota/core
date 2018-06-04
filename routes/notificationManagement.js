@@ -2,9 +2,6 @@ const express = require('express');
 const uuid = require('uuid/v4');
 const bodyParser = require('body-parser');
 const moment = require('moment');
-
-//const async = require('async');
-//const db = require('../store/db');
 const redis = require('../store/redis');
 
 const notifications = express.Router();
@@ -25,7 +22,7 @@ notifications.use((req, res, next) => {
 });
 
 notifications.route('/')
-  .post((req, res, next) => {
+  .post((req, res) => {
     const { token } = req.body;
 
     if (!token) {
@@ -34,11 +31,9 @@ notifications.route('/')
       });
     } else {
       redis.multi()
-      .zadd('notification_tokens', moment().unix(), token)
-      .hset('notification_users', req.user ? req.user.account_id : uuid, token)
-      .exec((err) =>{
-        return res.sendStatus(err ? 500 : 200);
-      });
+        .zadd('notification_tokens', moment().unix(), token)
+        .hset('notification_users', req.user ? req.user.account_id : uuid, token)
+        .exec(err => res.sendStatus(err ? 500 : 200));
     }
   });
 
