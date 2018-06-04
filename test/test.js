@@ -552,7 +552,7 @@ describe('api limits', () => {
                 done(err);
               }
               assert.equal(res.statusCode, 429);
-              assert.equal(res.body.error, 'monthly api limit exeeded');
+              assert.equal(res.body.error, 'monthly api limit exceeded');
 
               testWhiteListedRoutes(done);
             });
