@@ -145,11 +145,10 @@ app.use((req, res, cb) => {
     }
 
     res.set({
-      'X-Rate-Limit': rateLimit,
-      'X-Rate-Limit-Remaining': rateLimit - resp[0],
+      'X-Rate-Limit-Remaining-Minute': rateLimit - resp[0],
     });
     if (!res.locals.isAPIRequest) {
-      res.set('X-Free-Requests-Remaining', config.API_FREE_LIMIT - Number(resp[2]));
+      res.set('X-Rate-Limit-Remaining-Month', config.API_FREE_LIMIT - Number(resp[2]));
     }
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       console.log(resp);
@@ -161,7 +160,7 @@ app.use((req, res, cb) => {
     }
     if (config.ENABLE_API_LIMIT && !whitelistedPaths.includes(req.path) && !res.locals.isAPIRequest && Number(resp[2]) >= config.API_FREE_LIMIT) {
       return res.status(429).json({
-        error: 'monthly api limit exeeded',
+        error: 'monthly api limit exceeded',
       });
     }
 
