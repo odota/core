@@ -599,7 +599,6 @@ describe('api limits', () => {
                   const keys = Object.keys(res);
                   assert.equal(keys.length, 1);
                   assert.equal(Number(res[keys[0]]), 25);
-                  console.log('WITHIN IF');
                   done();
                 }
               });
