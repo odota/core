@@ -96,6 +96,10 @@ if (config.NODE_ENV === 'test') {
 
     cb();
   });
+
+  app.route('/gen429').get((req, res) => res.status(429).end());
+
+  app.route('/gen500').get((req, res) => res.status(500).end());
 }
 
 // Rate limiter and API key middleware
@@ -151,7 +155,7 @@ app.use((req, res, cb) => {
       res.set('X-Rate-Limit-Remaining-Month', config.API_FREE_LIMIT - Number(resp[2]));
     }
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      console.log(resp);
+      console.log('rate limit increment', resp);
     }
     if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
       return res.status(429).json({

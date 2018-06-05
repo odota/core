@@ -502,12 +502,12 @@ describe('api limits', () => {
       });
   });
 
-  function testWhiteListedRoutes(done) {
+  function testWhiteListedRoutes(done, key) {
     async.eachSeries(
       [
-        '/api', // Docs
-        '/api/metadata', // Login status
-        '/keys', // API Key management
+        `/api${key}`, // Docs
+        `/api/metadata${key}`, // Login status
+        `/keys${key}`, // API Key management
       ], (i, cb) => {
         supertest(app).get(i).end((err, res) => {
           if (err) {
@@ -554,17 +554,18 @@ describe('api limits', () => {
               assert.equal(res.statusCode, 429);
               assert.equal(res.body.error, 'monthly api limit exceeded');
 
-              testWhiteListedRoutes(done);
+              testWhiteListedRoutes(done, '');
             });
           }
         });
       }
-    });
+    }, '');
   });
 
-  it('should be able to make more than 10 calls when using API KEY', (done) => {
+  it('should be able to make more than 10 calls when using API KEY', function testAPIKeyLimitsAndCounting(done) {
+    this.timeout(25000);
     async.timesSeries(25, (i, cb) => {
-      supertest(app).get('/api?api_key=KEY').end((err, res) => {
+      supertest(app).get('/api/matches/1781962623?api_key=KEY').end((err, res) => {
         if (err) {
           return cb(err);
         }
@@ -572,7 +573,41 @@ describe('api limits', () => {
         assert.equal(res.statusCode, 200);
         return cb();
       });
-    }, done);
+    }, () => {
+      // Try whitelisted routes. Should not increment usage.
+      testWhiteListedRoutes((err) => {
+        if (err) {
+          done(err);
+        } else {
+          // Try a 429. Should not increment usage.
+          supertest(app).get('/gen429').end((err, res) => {
+            if (err) {
+              done(err);
+            }
+            assert.equal(res.statusCode, 429);
+
+            // Try a 500. Should not increment usage.
+            supertest(app).get('/gen500').end((err, res) => {
+              if (err) {
+                done(err);
+              }
+              assert.equal(res.statusCode, 500);
+              redis.hgetall('usage_count', (err, res) => {
+                if (err) {
+                  done(err);
+                } else {
+                  const keys = Object.keys(res);
+                  assert.equal(keys.length, 1);
+                  assert.equal(Number(res[keys[0]]), 25);
+                  console.log('WITHIN IF');
+                  done();
+                }
+              });
+            });
+          });
+        }
+      }, '?api_key=KEY');
+    });
   });
 
   after(() => {
