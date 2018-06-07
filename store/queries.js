@@ -13,6 +13,7 @@ const filter = require('../util/filter');
 const compute = require('../util/compute');
 const db = require('../store/db');
 const redis = require('../store/redis');
+const es = require('../store/elasticsearch');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
 
@@ -451,6 +452,17 @@ function insertPlayer(db, player, cb) {
   if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
     return cb();
   }
+  
+  es.index({
+    index: 'dota',
+    type: 'player',
+    id: player.account_id,
+    body: player
+  }, (err, res) => {
+    console.log("INDEXING!!!!!!!!!!!")
+    console.log(err, res);
+  });
+  
   return upsert(db, 'players', player, {
     account_id: player.account_id,
   }, cb);
