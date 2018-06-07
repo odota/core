@@ -182,7 +182,10 @@ app.use((req, res, cb) => {
     }
 
     // When called from a middleware, the mount point is not included in req.path. See Express docs.
-    if (res.statusCode !== 500 && res.statusCode !== 429 && !whitelistedPaths.includes(req.baseUrl + (req.path === '/' ? '' : req.path))) {
+    if (res.statusCode !== 500 &&
+        res.statusCode !== 429 &&
+        !whitelistedPaths.includes(req.baseUrl + (req.path === '/' ? '' : req.path)) &&
+        elapsed < 10000) {
       const multi = redis.multi();
       if (res.locals.isAPIRequest) {
         multi.hincrby('usage_count', res.locals.usageIdentifier, 1)
