@@ -24,10 +24,6 @@ function search(options, cb) {
       }, callback);
     },
     personaname(callback) {
-      if (!Number.isNaN(Number(query))) {
-        // Don't try personaname search on numeric queries
-        return callback(null, []);
-      }
       db.raw(`
         SELECT * FROM 
         (SELECT account_id, avatarfull, personaname, last_match_time
