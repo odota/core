@@ -28,10 +28,10 @@ function search(options, cb) {
         SELECT * FROM 
         (SELECT account_id, avatarfull, personaname, last_match_time
         FROM players 
-        WHERE personaname % ?
+        WHERE personaname ILIKE ?
         LIMIT 100) search
         ORDER BY last_match_time DESC NULLS LAST;
-        `, [query]).asCallback((err, result) => {
+        `, ['%' + query + '%']).asCallback((err, result) => {
         if (err) {
           return callback(err);
         }
