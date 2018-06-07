@@ -29,7 +29,7 @@ function search(options, cb) {
         (SELECT account_id, avatarfull, personaname, last_match_time
         FROM players 
         WHERE personaname % ?
-        LIMIT 150) search
+        LIMIT 100) search
         ORDER BY last_match_time DESC NULLS LAST;
         `, [query]).asCallback((err, result) => {
         if (err) {
