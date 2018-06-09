@@ -452,17 +452,19 @@ function insertPlayer(db, player, cb) {
   if (!player.account_id || player.account_id === utility.getAnonymousAccountId()) {
     return cb();
   }
-  
+
   es.index({
     index: 'dota',
     type: 'player',
     id: player.account_id,
-    body: player
+    body: {
+      personaname: player.personaname,
+      avatarfull: player.avatarfull,
+    },
   }, (err, res) => {
-    console.log("INDEXING!!!!!!!!!!!")
     console.log(err, res);
   });
-  
+
   return upsert(db, 'players', player, {
     account_id: player.account_id,
   }, cb);

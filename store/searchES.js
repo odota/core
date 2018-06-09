@@ -3,6 +3,7 @@
  * */
 const async = require('async');
 const db = require('./db');
+const es = require('./elasticsearch');
 /**
  * @param db - database object
  * @param search - object for where parameter of query
@@ -24,18 +25,27 @@ function search(options, cb) {
       }, callback);
     },
     personaname(callback) {
-      db.raw(`
-        SELECT * FROM 
-        (SELECT account_id, avatarfull, personaname, last_match_time
-        FROM players 
-        WHERE personaname % ?
-        LIMIT 150) search
-        ORDER BY last_match_time DESC NULLS LAST;
-        `, [query]).asCallback((err, result) => {
+      es.search({
+        index: 'dota',
+        body: {
+          query: {
+            match: {
+              personaname: {
+                query,
+              },
+            },
+          },
+        },
+      }, (err, res) => {
         if (err) {
           return callback(err);
         }
-        return callback(err, result.rows);
+        // TODO: get lastmatch time or remove from UI
+        return callback(null, res.hits.hits.map(e => ({
+          account_id: e._id,
+          personaname: e._source.personaname,
+          avatarfull: e._source.avatarfull,
+        })));
       });
     },
   }, (err, result) => {

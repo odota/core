@@ -7,6 +7,7 @@ const moment = require('moment');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 const search = require('../store/search');
+const searchES = require('../store/searchES');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const queryRaw = require('../store/queryRaw');
@@ -2692,6 +2693,63 @@ Please keep request rate to approximately 1/s.
             return res.status(400).json([]);
           }
           return search(req.query, (err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result);
+          });
+        },
+      },
+    },
+    '/searchES': {
+      get: {
+        summary: 'GET /searchES',
+        description: 'Search players by personaname, powered by ElasticSearch. Experimental.',
+        tags: [
+          'search',
+        ],
+        parameters: [{
+          name: 'q',
+          in: 'query',
+          description: 'Search string',
+          required: true,
+          type: 'string',
+        }],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  account_id: {
+                    description: 'account_id',
+                    type: 'integer',
+                  },
+                  avatarfull: {
+                    description: 'avatarfull',
+                    type: 'string',
+                  },
+                  personaname: {
+                    description: 'personaname',
+                    type: 'string',
+                  },
+                  similarity: {
+                    description: 'similarity',
+                    type: 'number',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/searchES',
+        func: (req, res, cb) => {
+          if (!req.query.q) {
+            return res.status(400).json([]);
+          }
+          return searchES(req.query, (err, result) => {
             if (err) {
               return cb(err);
             }

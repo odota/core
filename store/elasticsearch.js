@@ -1,13 +1,18 @@
 /**
- * Interface to PostgreSQL client
+ * Interface to ElasticSearch client
  * */
 const config = require('../config');
 const elasticsearch = require('elasticsearch');
 
+
 console.log('connecting %s', config.ELASTICSEARCH_URL);
 const es = new elasticsearch.Client({
   host: config.ELASTICSEARCH_URL,
-  log: 'trace'
+  log: config.NODE_ENV === 'development' ? 'trace' : {
+    type: 'file',
+    level: 'trace',
+    path: '/var/log/elasticsearch.log',
+  },
 });
 
 module.exports = es;
