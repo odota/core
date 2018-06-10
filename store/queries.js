@@ -462,7 +462,7 @@ function insertPlayer(db, player, cb) {
       avatarfull: player.avatarfull,
     },
   }, (err, res) => {
-    console.log(err, res);
+    console.log('[ELASTICSEARCH] Insert', err, res);
   });
 
   return upsert(db, 'players', player, {

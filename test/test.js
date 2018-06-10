@@ -221,7 +221,8 @@ describe('teamRanking', () => {
 });
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
 describe('api', () => {
-  it('should get API spec', (cb) => {
+  it('should get API spec', function testAPISpec(cb) {
+    this.timeout(5000);
     supertest(app).get('/api').end((err, res) => {
       if (err) {
         return cb(err);
