@@ -32,7 +32,7 @@
     "cookie-session": "2.0.0-beta.3",
     "cors": "^2.8.4",
     "dota2": "^6.0.1",
-    "dotaconstants": "^5.32.0",
+    "dotaconstants": "^5.33.0",
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
     "http-proxy": "^1.17.0",
