@@ -17,7 +17,7 @@ const { deserialize, buildReplayUrl } = utility;
 function getMatchData(matchId, cb) {
   cassandra.execute('SELECT * FROM matches where match_id = ?', [Number(matchId)], {
     prepare: true,
-    fetchSize: 10,
+    fetchSize: 1,
     autoPage: true,
   }, (err, result) => {
     if (err) {
@@ -31,7 +31,7 @@ function getMatchData(matchId, cb) {
 function getPlayerMatchData(matchId, cb) {
   cassandra.execute('SELECT * FROM player_matches where match_id = ?', [Number(matchId)], {
     prepare: true,
-    fetchSize: 10,
+    fetchSize: 24,
     autoPage: true,
   }, (err, result) => {
     if (err) {
