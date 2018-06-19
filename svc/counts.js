@@ -6,7 +6,7 @@ const moment = require('moment');
 const redis = require('../store/redis');
 const db = require('../store/db');
 const utility = require('../util/utility');
-const benchmarks = require('../util/benchmarks');
+const benchmarksUtil = require('../util/benchmarksUtil');
 const queries = require('../store/queries');
 const queue = require('../store/queue');
 const config = require('../config');
@@ -49,31 +49,6 @@ function updateHeroRankings(match, cb) {
       });
     }, cb);
   });
-}
-
-function updateBenchmarks(match, cb) {
-  for (let i = 0; i < match.players.length; i += 1) {
-    const p = match.players[i];
-    // only do if all players have heroes
-    if (p.hero_id) {
-      Object.keys(benchmarks).forEach((key) => {
-        const metric = benchmarks[key](match, p);
-        if (metric !== undefined && metric !== null && !Number.isNaN(Number(metric))) {
-          const rkey = [
-            'benchmarks',
-            utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
-            key,
-            p.hero_id,
-          ].join(':');
-          redis.zadd(rkey, metric, match.match_id);
-          // expire at time two epochs later (after prev/current cycle)
-          const expiretime = utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 2);
-          redis.expireat(rkey, expiretime);
-        }
-      });
-    }
-  }
-  return cb();
 }
 
 function updateMmrEstimate(match, cb) {
@@ -225,7 +200,7 @@ function processCounts(match, cb) {
     },
     updateBenchmarks(cb) {
       if (isSignificant(match)) {
-        return updateBenchmarks(match, cb);
+        return benchmarksUtil.updateBenchmarks(match, cb);
       }
       return cb();
     },
