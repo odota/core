@@ -60,6 +60,7 @@ function updateBenchmarks(match, cb, parsed) {
   }
   return cb();
 }
+
 module.exports = {
   benchmarks: {
     ...benchmarks,
