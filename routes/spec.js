@@ -76,7 +76,7 @@ Please keep request rate to approximately 1/s.
       type: 'apiKey',
       name: 'api_key',
       description: `Use an API key to remove call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
-      
+
       Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
       `,
       in: 'query',
@@ -1120,7 +1120,7 @@ Please keep request rate to approximately 1/s.
         tags: [
           'players',
         ],
-        parameters: [],
+        parameters: [params.accountIdParam],
         responses: {
           200: {
             description: 'Success',
@@ -3321,6 +3321,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /heroes/{hero_id}/matches',
         description: 'Get recent matches with a hero',
         tags: ['heroes'],
+        parameters: [params.heroIdPathParam],
         responses: {
           200: {
             description: 'Success',
@@ -3367,6 +3368,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /heroes/{hero_id}/matchups',
         description: 'Get results against other heroes for a hero',
         tags: ['heroes'],
+        parameters: [params.heroIdPathParam],
         responses: {
           200: {
             description: 'Success',
@@ -3404,6 +3406,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /heroes/{hero_id}/durations',
         description: 'Get hero performance over a range of match durations',
         tags: ['heroes'],
+        parameters: [params.heroIdPathParam],
         responses: {
           200: {
             description: 'Success',
@@ -3454,6 +3457,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /heroes/{hero_id}/players',
         description: 'Get players who have played this hero',
         tags: ['heroes'],
+        parameters: [params.heroIdPathParam],
         responses: {
           200: {
             description: 'Success',
@@ -3569,6 +3573,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /teams/{team_id}',
         description: 'Get data for a team',
         tags: ['teams'],
+        parameters: [params.teamIdPathParam],
         responses: {
           200: {
             description: 'Success',
@@ -3595,6 +3600,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /teams/{team_id}/matches',
         description: 'Get matches for a team',
         tags: ['teams'],
+        parameters: [params.teamIdPathParam],
         responses: {
           200: {
             description: 'Success',
@@ -3604,7 +3610,7 @@ Please keep request rate to approximately 1/s.
         route: () => '/teams/:team_id/matches',
         func: (req, res, cb) => {
           db.raw(`
-            SELECT team_match.match_id, radiant_win, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo 
+            SELECT team_match.match_id, radiant_win, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
             FROM team_match
             JOIN matches USING(match_id)
             JOIN leagues USING(leagueid)
@@ -3627,6 +3633,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /teams/{team_id}/players',
         description: 'Get players who have played for a team',
         tags: ['teams'],
+        parameters: [params.teamIdPathParam],
         responses: {
           200: {
             description: 'Success',
@@ -3682,6 +3689,7 @@ Please keep request rate to approximately 1/s.
         summary: 'GET /teams/{team_id}/heroes',
         description: 'Get heroes for a team',
         tags: ['teams'],
+        parameters: [params.teamIdPathParam],
         responses: {
           200: {
             description: 'Success',
