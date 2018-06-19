@@ -4,7 +4,6 @@ const buildMatch = require('../store/buildMatch');
 
 const { updateBenchmarks } = benchmarksUtil;
 
-
 function doParsedBenchmarks(matchID, cb) {
   buildMatch(matchID, (err, match) => {
     if (err) {
