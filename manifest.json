@@ -217,7 +217,7 @@
       "instances": 1
     },
     {
-      "script": "svc/parsedBenchmarks.js",
+      "script": "svc/benchmarks.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",

@@ -6,7 +6,6 @@ const moment = require('moment');
 const redis = require('../store/redis');
 const db = require('../store/db');
 const utility = require('../util/utility');
-const benchmarksUtil = require('../util/benchmarksUtil');
 const queries = require('../store/queries');
 const queue = require('../store/queue');
 const config = require('../config');
@@ -195,12 +194,6 @@ function processCounts(match, cb) {
     updateRankings(cb) {
       if (isSignificant(match)) {
         return updateHeroRankings(match, cb);
-      }
-      return cb();
-    },
-    updateBenchmarks(cb) {
-      if (isSignificant(match)) {
-        return benchmarksUtil.updateBenchmarks(match, cb);
       }
       return cb();
     },
