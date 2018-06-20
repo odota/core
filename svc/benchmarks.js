@@ -9,7 +9,6 @@ const { benchmarks } = benchmarksUtil;
 
 function doParsedBenchmarks(matchID, cb) {
   buildMatch(matchID, (err, match) => {
-    console.log(match);
     if (err) {
       return cb(err);
     }
