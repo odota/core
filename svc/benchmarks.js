@@ -13,7 +13,7 @@ function doParsedBenchmarks(matchID, cb) {
     if (err) {
       return cb(err);
     }
-    if (match.players) {
+    if (match.players && utility.isSignificant(match)) {
       for (let i = 0; i < match.players.length; i += 1) {
         const p = match.players[i];
         // only do if all players have heroes
