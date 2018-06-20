@@ -4,7 +4,6 @@
 const async = require('async');
 const constants = require('dotaconstants');
 const utility = require('../util/utility');
-const benchmarksUtil = require('../util/benchmarksUtil');
 const config = require('../config');
 const queue = require('./queue');
 const util = require('util');
@@ -22,7 +21,6 @@ const {
 const { computeMatchData } = compute;
 const columnInfo = {};
 const cassandraColumnInfo = {};
-const { benchmarks } = benchmarksUtil;
 
 function doCleanRow(err, schema, row, cb) {
   if (err) {
