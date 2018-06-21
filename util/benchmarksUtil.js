@@ -23,7 +23,7 @@ const benchmarks = {
   stuns(m, p) {
     return p.stuns;
   },
-  lh_ten(m, p) {
+  lhten(m, p) {
     return p.lh_t && p.lh_t[10];
   },
 };
