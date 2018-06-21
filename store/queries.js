@@ -14,6 +14,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
+const benchmarksUtil = require('../util/benchmarksUtil');
 
 const {
   redisCount, convert64to32, serialize, deserialize, isRadiant,
@@ -21,6 +22,7 @@ const {
 const { computeMatchData } = compute;
 const columnInfo = {};
 const cassandraColumnInfo = {};
+const { benchmarks } = benchmarksUtil;
 
 function doCleanRow(err, schema, row, cb) {
   if (err) {
