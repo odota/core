@@ -3798,9 +3798,6 @@ Please keep request rate to approximately 1/s.
                 return cb(err);
               }
               const final = result.filter(Boolean);
-              if (!final || !final.length) {
-                res.status(500);
-              }
               return res.json(final);
             },
           );
