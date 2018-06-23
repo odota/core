@@ -36,6 +36,7 @@ function runParse(match, job, cb) {
         skipParse: true,
         doLogParse: match.doLogParse,
         doScenarios: match.origin === 'scanner' && match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT,
+        doParsedBenchmarks: match.origin === 'scanner' && match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT,
       }, cb);
     },
   );

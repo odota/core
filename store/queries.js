@@ -4,7 +4,6 @@
 const async = require('async');
 const constants = require('dotaconstants');
 const utility = require('../util/utility');
-const benchmarks = require('../util/benchmarks');
 const config = require('../config');
 const queue = require('./queue');
 const util = require('util');
@@ -15,6 +14,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
+const benchmarksUtil = require('../util/benchmarksUtil');
 
 const {
   redisCount, convert64to32, serialize, deserialize, isRadiant,
@@ -22,6 +22,7 @@ const {
 const { computeMatchData } = compute;
 const columnInfo = {};
 const cassandraColumnInfo = {};
+const { benchmarks } = benchmarksUtil;
 
 function doCleanRow(err, schema, row, cb) {
   if (err) {
@@ -930,6 +931,13 @@ function insertMatch(match, options, cb) {
     return cb();
   }
 
+  function decideParsedBenchmarks(cb) {
+    if (options.doParsedBenchmarks) {
+      return redis.lpush('parsedBenchmarksQueue', match.match_id, cb);
+    }
+    return cb();
+  }
+
   function decideMmr(cb) {
     async.each(match.players, (p, cb) => {
       if (options.origin === 'scanner' &&
@@ -1026,6 +1034,7 @@ function insertMatch(match, options, cb) {
     telemetry,
     decideCounts,
     decideScenarios,
+    decideParsedBenchmarks,
     decideMmr,
     decideProfile,
     decideGcData,

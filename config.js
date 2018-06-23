@@ -47,11 +47,12 @@ const defaults = {
   SCANNER_DELAY: 2000, // delay for scanner API requests (stricter rate limit)
   MMR_PARALLELISM: 10, // Number of simultaneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
-  BENCHMARK_RETENTION_MINUTES: 5, // minutes in block to retain benchmark data for percentile
+  BENCHMARK_RETENTION_MINUTES: 60, // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: 0, // percent of inserted matches to randomly queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
   SCENARIOS_SAMPLE_PERCENT: 50, // percent of parsed matches to sample for scenarios
+  BENCHMARKS_SAMPLE_PERCENT: 100, // percent of parsed matches to sample for benchmarks
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
   ENABLE_PLAYER_CACHE: 1, // enable/disable player aggregation caching
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches

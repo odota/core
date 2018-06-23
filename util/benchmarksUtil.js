@@ -20,5 +20,15 @@ const benchmarks = {
   tower_damage(m, p) {
     return p.tower_damage;
   },
+  stuns(m, p) {
+    return p.stuns;
+  },
+  lhten(m, p) {
+    return p.lh_t && p.lh_t[10];
+  },
 };
-module.exports = benchmarks;
+
+
+module.exports = {
+  benchmarks,
+};
