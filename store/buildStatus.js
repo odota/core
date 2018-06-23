@@ -64,6 +64,9 @@ module.exports = function buildStatus(db, redis, cb) {
     scenariosQueue(cb) {
       redis.llen('scenariosQueue', cb);
     },
+    benchmarksQueue(cb) {
+      redis.llen('parsedBenchmarksQueue', cb);
+    },
     retriever(cb) {
       redis.zrangebyscore('retrieverCounts', '-inf', 'inf', 'WITHSCORES', (err, results) => {
         if (err) {
