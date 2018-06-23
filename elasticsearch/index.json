@@ -1,0 +1,31 @@
+{
+  "mappings": {
+    "player": {
+      "properties": {
+        "personaname": {
+          "type": "text",
+          "analyzer": "username_analyzer"
+        },
+        "avatarfull" : {
+          "type": "text"
+        }
+      }
+    }
+  },
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "username_analyzer": {
+          "tokenizer": "username_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "username_tokenizer": {
+          "type": "ngram",
+          "min_gram": 3,
+          "max_gram": 3
+        }
+      }
+    }
+  }
+} 

@@ -18,6 +18,18 @@ services:
   redis:
     image: redis:4
     container_name: odota-redis
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+    container_name: odota-elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - bootstrap.system_call_filter=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
   parser:
     image: odota/parser
     container_name: odota-parser
@@ -40,6 +52,7 @@ services:
       REDIS_TEST_URL: redis://odota-redis:6379/1
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
       CASSANDRA_TEST_URL: cassandra://odota-cassandra/yasp_test
+      ELASTICSEARCH_URL: odota-elasticsearch:9200
       INIT_POSTGRES_HOST: odota-postgres
       INIT_CASSANDRA_HOST: odota-cassandra
     volumes: 
@@ -48,5 +61,6 @@ services:
       - postgres
       - cassandra
       - redis
+      - elasticsearch
       - parser
     container_name: odota-core
