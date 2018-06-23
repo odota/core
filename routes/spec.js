@@ -3797,7 +3797,11 @@ Please keep request rate to approximately 1/s.
               if (err) {
                 return cb(err);
               }
-              return res.json(result.filter(Boolean));
+              const final = result.filter(Boolean);
+              if (!final || !final.length) {
+                res.status(500);
+              }
+              return res.json(final);
             },
           );
         },
