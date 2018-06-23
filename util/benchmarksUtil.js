@@ -21,7 +21,7 @@ const benchmarks = {
     return p.tower_damage;
   },
   stuns(m, p) {
-    return p.stuns;
+    return (p.stuns / m.duration) * 60;
   },
   lhten(m, p) {
     return p.lh_t && p.lh_t[10];
