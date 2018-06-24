@@ -23,6 +23,7 @@ function getSummaries(cb) {
         return cb(JSON.stringify(err));
       }
       // player summaries response
+      // TODO: update to use bulk update APIs
       return async.each(body.response.players, (player, cb) => {
         insertPlayer(db, player, cb);
       }, cb);
