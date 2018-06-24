@@ -465,16 +465,22 @@ function insertPlayer(db, player, cb) {
         }
       },
     }, (err, res) => {
-      console.log('[ELASTICSEARCH] Update', err, res);
+      console.log('[ELASTICSEARCH] Update Last Played', err, res);
     });
   } else {
-    es.index({
+    es.update({
       index: 'dota',
       type: 'player',
       id: player.account_id,
       body: {
-        personaname: player.personaname,
-        avatarfull: player.avatarfull
+        doc: {
+          personaname: player.personaname,
+          avatarfull: player.avatarfull
+        },        
+        upsert: {
+          personaname: player.personaname,
+          avatarfull: player.avatarfull
+        }
       },
     }, (err, res) => {
       console.log('[ELASTICSEARCH] Insert', err, res);
