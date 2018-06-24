@@ -453,17 +453,33 @@ function insertPlayer(db, player, cb) {
     return cb();
   }
 
-  es.index({
-    index: 'dota',
-    type: 'player',
-    id: player.account_id,
-    body: {
-      personaname: player.personaname,
-      avatarfull: player.avatarfull,
-    },
-  }, (err, res) => {
-    console.log('[ELASTICSEARCH] Insert', err, res);
-  });
+  // called from updateLastPlayed
+  if (player.last_match_time) {
+    es.update({
+      index: 'dota',
+      type: 'player',
+      id: player.account_id,
+      body: {
+        doc: {
+          last_match_time: player.last_match_time
+        }
+      },
+    }, (err, res) => {
+      console.log('[ELASTICSEARCH] Update', err, res);
+    });
+  } else {
+    es.index({
+      index: 'dota',
+      type: 'player',
+      id: player.account_id,
+      body: {
+        personaname: player.personaname,
+        avatarfull: player.avatarfull
+      },
+    }, (err, res) => {
+      console.log('[ELASTICSEARCH] Insert', err, res);
+    });
+  }
 
   return upsert(db, 'players', player, {
     account_id: player.account_id,
