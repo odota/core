@@ -12,7 +12,7 @@ const redis = require('../store/redis');
 const secret = config.RETRIEVER_SECRET;
 const retrieverArr = utility.getRetrieverArr();
 const { getData, redisCount } = utility;
-const { insertMatch, upsert } = queries;
+const { insertMatch } = queries;
 
 function getGcDataFromRetriever(match, cb) {
   // make array of retriever urls and use a random one on each retry

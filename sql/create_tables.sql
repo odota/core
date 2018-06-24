@@ -473,7 +473,15 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   wins bigint,
   epoch_week integer,
   UNIQUE (scenario, is_radiant, region, epoch_week)
-);  
+);
+
+CREATE TABLE IF NOT EXISTS retriever_telemetry (
+  PRIMARY KEY (hostname, hostip, hostaccount)
+  hostname text,
+  hostip text,
+  hostaccount text,
+  successes int
+);
 
 DO $$
 BEGIN
