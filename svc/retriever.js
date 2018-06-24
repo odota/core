@@ -9,6 +9,7 @@ const async = require('async');
 const express = require('express');
 const compression = require('compression');
 const cp = require('child_process');
+const http = require('http');
 
 const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
   /* eslint-disable global-require */
@@ -18,6 +19,13 @@ const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
   pendingTwoFactorAuth: {},
   pendingSteamGuardAuth: {},
 } : null;
+
+let publicIp = null;
+http.get({'host': 'api.ipify.org', 'port': 80, 'path': '/'}, function(resp) {
+  resp.on('data', function(ip) {
+    publicIp = ip;
+  });
+});
 
 const app = express();
 const steamObj = {};
@@ -128,6 +136,8 @@ function getGcMatchData(idx, matchId, cb) {
     matchRequestDelayIncr = 0;
     console.log('received match %s', matchId);
     clearTimeout(timeout);
+    matchData.hostip = publicIp;
+    matchData.hostaccount = users[idx];
     cb(err, matchData);
   });
 }

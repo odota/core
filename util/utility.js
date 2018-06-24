@@ -275,6 +275,8 @@ function getData(url, cb) {
       }
       return cb(null, body, {
         hostname: parse.host,
+        hostip: body.hostip,
+        hostaccount: body.hostaccount,
       });
     });
   }, delay);

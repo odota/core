@@ -12,7 +12,7 @@ const redis = require('../store/redis');
 const secret = config.RETRIEVER_SECRET;
 const retrieverArr = utility.getRetrieverArr();
 const { getData, redisCount } = utility;
-const { insertMatch } = queries;
+const { insertMatch, upsert } = queries;
 
 function getGcDataFromRetriever(match, cb) {
   // make array of retriever urls and use a random one on each retry
@@ -37,6 +37,9 @@ function getGcDataFromRetriever(match, cb) {
     redisCount(redis, 'retriever');
     redis.zincrby('retrieverCounts', 1, metadata.hostname);
     redis.expireat('retrieverCounts', moment().startOf('hour').add(1, 'hour').format('X'));
+    // Write retriever telemetry to postgres
+    db.raw(`INSERT INTO retriever_telemetry SET hostname = {hostname}, hostip = {hostip}, hostaccount = {hostaccount}, successes = 1 ON CONFLICT DO UPDATE SET successes = successes + 1`, 
+    { hostname: metadata.hostname, hostip: metadata.hostip, hostaccount: metadata.hostaccount });
 
     // TODO add discovered account_ids to database and fetch account data/rank medal
 
