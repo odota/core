@@ -461,8 +461,8 @@ function insertPlayer(db, player, cb) {
       id: player.account_id,
       body: {
         doc: {
-          last_match_time: player.last_match_time
-        }
+          last_match_time: player.last_match_time,
+        },
       },
     }, (err, res) => {
       console.log('[ELASTICSEARCH] Update Last Played', err, res);
@@ -475,12 +475,12 @@ function insertPlayer(db, player, cb) {
       body: {
         doc: {
           personaname: player.personaname,
-          avatarfull: player.avatarfull
-        },        
+          avatarfull: player.avatarfull,
+        },
         upsert: {
           personaname: player.personaname,
-          avatarfull: player.avatarfull
-        }
+          avatarfull: player.avatarfull,
+        },
       },
     }, (err, res) => {
       console.log('[ELASTICSEARCH] Insert', err, res);
