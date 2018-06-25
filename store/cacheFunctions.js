@@ -1,7 +1,7 @@
 const redis = require('./redis');
 const config = require('../config');
 
-const getKeys = () => ['wl', 'heroes', 'peers'];
+const getKeys = () => ['wl', 'heroes', 'peers', 'counts'];
 
 module.exports = {
   read: (req, cb) => {
