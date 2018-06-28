@@ -465,8 +465,10 @@ function insertPlayer(db, player, cb) {
           last_match_time: player.last_match_time,
         },
       },
-    }, (err, res) => {
-      console.log('[ELASTICSEARCH] Update Last Played', err, res);
+    }, (err) => {
+      if (err) {
+        console.log(err);
+      }
     });
   } else {
     es.update({
@@ -483,8 +485,10 @@ function insertPlayer(db, player, cb) {
           avatarfull: player.avatarfull,
         },
       },
-    }, (err, res) => {
-      console.log('[ELASTICSEARCH] Insert', err, res);
+    }, (err) => {
+      if (err) {
+        console.log(err);
+      }
     });
   }
 

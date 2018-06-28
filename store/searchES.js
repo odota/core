@@ -27,6 +27,7 @@ function search(options, cb) {
     personaname(callback) {
       es.search({
         index: 'dota',
+        size: 50,
         body: {
           query: {
             match: {
@@ -40,11 +41,13 @@ function search(options, cb) {
         if (err) {
           return callback(err);
         }
-        // TODO: get lastmatch time or remove from UI
+
         return callback(null, res.hits.hits.map(e => ({
-          account_id: e._id,
+          account_id: Number(e._id),
           personaname: e._source.personaname,
           avatarfull: e._source.avatarfull,
+          last_match_time: e._source.last_match_time,
+          similarity: e._score,
         })));
       });
     },

@@ -2678,6 +2678,10 @@ Please keep request rate to approximately 1/s.
                     description: 'personaname',
                     type: 'string',
                   },
+                  last_match_time: {
+                    description: 'last_match_time',
+                    type: 'string',
+                  },
                   similarity: {
                     description: 'similarity',
                     type: 'number',
@@ -2733,6 +2737,10 @@ Please keep request rate to approximately 1/s.
                   },
                   personaname: {
                     description: 'personaname',
+                    type: 'string',
+                  },
+                  last_match_time: {
+                    description: 'last_match_time. May not be present or null.',
                     type: 'string',
                   },
                   similarity: {
