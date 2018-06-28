@@ -464,6 +464,9 @@ function insertPlayer(db, player, cb) {
         doc: {
           last_match_time: player.last_match_time,
         },
+        upsert: {
+          last_match_time: player.last_match_time,
+        },
       },
     }, (err) => {
       if (err) {
