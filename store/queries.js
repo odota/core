@@ -480,11 +480,13 @@ function insertPlayer(db, player, indexPlayer, cb) {
 
 function bulkIndexPlayer(bulkActions, cb) {
   // Bulk call to ElasticSearch
-  es.bulk({
-    body: bulkActions,
-    index: 'dota',
-    type: 'player',
-  }, cb);
+  if (bulkActions.length > 0) {
+    es.bulk({
+      body: bulkActions,
+      index: 'dota',
+      type: 'player',
+    }, cb);
+  }
 }
 
 function insertPlayerRating(db, row, cb) {
