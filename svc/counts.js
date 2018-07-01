@@ -11,7 +11,7 @@ const queue = require('../store/queue');
 const config = require('../config');
 
 const {
-  getMatchRankTier, getMatchRating, upsert, insertPlayer,
+  getMatchRankTier, getMatchRating, upsert, insertPlayer, bulkIndexPlayer,
 } = queries;
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
 
@@ -150,11 +150,38 @@ function updateRecords(match, cb) {
 function updateLastPlayed(match, cb) {
   const filteredPlayers = (match.players || []).filter(player =>
     player.account_id && player.account_id !== getAnonymousAccountId());
+
+  const lastMatchTime = new Date(match.start_time * 1000);
+
+  const bulkUpdate = filteredPlayers.reduce((acc, player) => {
+    acc.push(
+      {
+        update: {
+          _id: player.account_id,
+        },
+      },
+      {
+        doc: {
+          last_match_time: lastMatchTime,
+        },
+        doc_as_upsert: true,
+      },
+    );
+
+    return acc;
+  }, []);
+
+  bulkIndexPlayer(bulkUpdate, (err) => {
+    if (err) {
+      console.log(err);
+    }
+  });
+
   async.each(filteredPlayers, (player, cb) => {
     insertPlayer(db, {
       account_id: player.account_id,
-      last_match_time: new Date(match.start_time * 1000),
-    }, cb);
+      last_match_time: lastMatchTime,
+    }, false, cb);
   }, cb);
 }
 

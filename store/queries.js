@@ -445,7 +445,7 @@ function upsert(db, table, row, conflict, cb) {
   });
 }
 
-function insertPlayer(db, player, cb) {
+function insertPlayer(db, player, indexPlayer, cb) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
     player.account_id = Number(convert64to32(player.steamid));
@@ -454,26 +454,7 @@ function insertPlayer(db, player, cb) {
     return cb();
   }
 
-  // called from updateLastPlayed
-  if (player.last_match_time) {
-    es.update({
-      index: 'dota',
-      type: 'player',
-      id: player.account_id,
-      body: {
-        doc: {
-          last_match_time: player.last_match_time,
-        },
-        upsert: {
-          last_match_time: player.last_match_time,
-        },
-      },
-    }, (err) => {
-      if (err) {
-        console.log(err);
-      }
-    });
-  } else {
+  if (indexPlayer) {
     es.update({
       index: 'dota',
       type: 'player',
@@ -483,10 +464,7 @@ function insertPlayer(db, player, cb) {
           personaname: player.personaname,
           avatarfull: player.avatarfull,
         },
-        upsert: {
-          personaname: player.personaname,
-          avatarfull: player.avatarfull,
-        },
+        doc_as_upsert: true,
       },
     }, (err) => {
       if (err) {
@@ -497,6 +475,15 @@ function insertPlayer(db, player, cb) {
 
   return upsert(db, 'players', player, {
     account_id: player.account_id,
+  }, cb);
+}
+
+function bulkIndexPlayer(bulkActions, cb) {
+  // Bulk call to ElasticSearch
+  es.bulk({
+    body: bulkActions,
+    index: 'dota',
+    type: 'player',
   }, cb);
 }
 
@@ -1153,6 +1140,7 @@ function getMetadata(req, callback) {
 module.exports = {
   upsert,
   insertPlayer,
+  bulkIndexPlayer,
   insertMatch,
   insertPlayerRating,
   insertMatchSkillCassandra,

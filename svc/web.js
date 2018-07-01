@@ -55,7 +55,7 @@ passport.use(new SteamStrategy({
 }, (identifier, profile, cb) => {
   const player = profile._json;
   player.last_login = new Date();
-  queries.insertPlayer(db, player, (err) => {
+  queries.insertPlayer(db, player, true, (err) => {
     if (err) {
       return cb(err);
     }
