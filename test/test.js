@@ -154,7 +154,7 @@ before(function setup(done) {
     function loadPlayers(cb) {
       console.log('loading players');
       async.mapSeries(summariesApi.response.players, (p, cb) => {
-        queries.insertPlayer(db, p, false, cb);
+        queries.insertPlayer(db, p, true, cb);
       }, cb);
     },
   ], done);
@@ -241,7 +241,6 @@ describe('api', () => {
           }
           return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
             // console.log(verb, replacedPath, res.body);
-            console.log(replacedPath);
             if (replacedPath.startsWith('/admin')) {
               assert.equal(res.statusCode, 403);
             } else {
