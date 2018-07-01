@@ -154,7 +154,7 @@ before(function setup(done) {
     function loadPlayers(cb) {
       console.log('loading players');
       async.mapSeries(summariesApi.response.players, (p, cb) => {
-        queries.insertPlayer(db, p, cb);
+        queries.insertPlayer(db, p, false, cb);
       }, cb);
     },
   ], done);
