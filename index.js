@@ -39,8 +39,8 @@ if (process.env.ROLE) {
       pm2.disconnect();
     });
   });
-  // Clean up the logs once a day
-  setInterval(() => pm2.flush(), 86400 * 1000);
+  // Clean up the logs once an hour
+  setInterval(() => pm2.flush(), 3600 * 1000);
 } else {
   // Block indefinitely (keep process alive for Docker)
   process.stdin.resume();
