@@ -150,6 +150,9 @@ function init() {
       console.log('acct %s ready', i);
       cb();
     });
+    client.on('servers', (svrs) => {
+      Steam.servers = svrs;
+    });
     client.on('connected', () => {
       console.log('[STEAM] Trying to log on with %s,%s', user, pass);
       client.steamUser.logOn(logOnDetails);
