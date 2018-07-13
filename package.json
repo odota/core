@@ -31,7 +31,7 @@
     "compression": "^1.7.2",
     "cookie-session": "2.0.0-beta.3",
     "cors": "^2.8.4",
-    "dota2": "github:odota/node-dota2#18c96f3f6f3e6f29e8b4036e182ece2f109afa9d",
+    "dota2": "github:odota/node-dota2#5cfc867132e855a02fca8253f89467000e92a666",
     "dotaconstants": "^5.34.0",
     "dotenv": "^5.0.1",
     "elasticsearch": "^15.0.0",
