@@ -49,7 +49,7 @@
     "redis": "^2.8.0",
     "request": "^2.85.0",
     "simple-vdf": "^1.1.1",
-    "steam": "github:odota/node-steam-npm#593cc6e",
+    "steam": "^1.4.0",
     "stripe": "^5.8.0",
     "supertest": "^3.0.0",
     "uuid": "^3.2.1",
