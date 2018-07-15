@@ -240,7 +240,7 @@ describe('api', () => {
             return cb(err);
           }
           return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
-            // console.log(verb, replacedPath, res.body);
+            console.log(verb, replacedPath, res.body);
             if (replacedPath.startsWith('/admin')) {
               assert.equal(res.statusCode, 403);
             } else {
