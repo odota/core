@@ -36,6 +36,9 @@ function search(options, cb) {
               },
             },
           },
+          sort: [
+            { last_match_time: 'desc' },
+          ],
         },
       }, (err, res) => {
         if (err) {

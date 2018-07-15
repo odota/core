@@ -60,6 +60,19 @@ function sendDataWithCache(req, res, data, key) {
   return res.json(data);
 }
 
+
+function hash(s) {
+  let hash = 0;
+  let chr;
+  if (s.length === 0) return hash;
+  for (let i = 0; i < s.length; i += 1) {
+    chr = s.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr; // eslint-disable-line no-bitwise
+    hash |= 0; // eslint-disable-line no-bitwise
+  }
+  return hash;
+}
+
 const spec = {
   swagger: '2.0',
   info: {
@@ -2695,6 +2708,15 @@ Please keep request rate to approximately 1/s.
         func: (req, res, cb) => {
           if (!req.query.q) {
             return res.status(400).json([]);
+          }
+
+          if (config.ENABLE_ES_SEARCH && hash(res.locals.ip) % 100 < config.ES_SEARCH_PERCENT) {
+            return searchES(req.query, (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
           }
           return search(req.query, (err, result) => {
             if (err) {
