@@ -11,6 +11,7 @@ const supertest = require('supertest');
 const pg = require('pg');
 const fs = require('fs');
 const cassandraDriver = require('cassandra-driver');
+const { es } = require('../store/elasticsearch');
 const config = require('../config');
 const redis = require('../store/redis');
 // const utility = require('../util/utility');
@@ -124,6 +125,57 @@ before(function setup(done) {
           cassandra.execute(cql, cb);
         }, cb);
       },
+      ], cb);
+    },
+    function initElasticsearch(cb) {
+      console.log('Create Elasticsearch Mapping');
+      const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
+      async.series([
+        (cb) => {
+          es.indices.exists({
+            index: 'dota-test',
+          }, (err, res) => {
+            if (err) {
+              cb(err);
+            }
+
+            if (res) {
+              es.indices.delete({
+                index: 'dota-test', // explicitly name the index to avoid embarrassing errors.
+              }, cb);
+            } else {
+              cb();
+            }
+          });
+        },
+        (cb) => {
+          es.indices.create({
+            index: 'dota-test',
+          }, cb);
+        },
+        (cb) => {
+          es.indices.close({
+            index: 'dota-test',
+          }, cb);
+        },
+        (cb) => {
+          es.indices.putSettings({
+            index: 'dota-test',
+            body: mapping.settings,
+          }, cb);
+        },
+        (cb) => {
+          es.indices.putMapping({
+            index: 'dota-test',
+            type: 'player',
+            body: mapping.mappings.player,
+          }, cb);
+        },
+        (cb) => {
+          es.indices.open({
+            index: 'dota-test',
+          }, cb);
+        },
       ], cb);
     },
     function wipeRedis(cb) {

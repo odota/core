@@ -8,6 +8,9 @@
         },
         "avatarfull" : {
           "type": "text"
+        },
+        "last_match_time": {
+          "type": "date"
         }
       }
     }
