@@ -122,6 +122,8 @@ app.use((req, res, cb) => {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   [ip] = ip.replace(/^.*:/, '').split(',');
 
+  res.locals.ip = ip;
+
   let rateLimit = '';
   if (res.locals.isAPIRequest) {
     const requestAPIKey = req.query.api_key;

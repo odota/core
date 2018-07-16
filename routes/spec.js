@@ -2679,7 +2679,7 @@ Please keep request rate to approximately 1/s.
                     type: 'string',
                   },
                   last_match_time: {
-                    description: 'last_match_time',
+                    description: 'last_match_time. May not be present or null.',
                     type: 'string',
                   },
                   similarity: {
@@ -2696,68 +2696,16 @@ Please keep request rate to approximately 1/s.
           if (!req.query.q) {
             return res.status(400).json([]);
           }
-          return search(req.query, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
-        },
-      },
-    },
-    '/searchES': {
-      get: {
-        summary: 'GET /searchES',
-        description: 'Search players by personaname, powered by ElasticSearch. Experimental.',
-        tags: [
-          'search',
-        ],
-        parameters: [{
-          name: 'q',
-          in: 'query',
-          description: 'Search string',
-          required: true,
-          type: 'string',
-        }],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  account_id: {
-                    description: 'account_id',
-                    type: 'integer',
-                  },
-                  avatarfull: {
-                    description: 'avatarfull',
-                    type: 'string',
-                  },
-                  personaname: {
-                    description: 'personaname',
-                    type: 'string',
-                  },
-                  last_match_time: {
-                    description: 'last_match_time. May not be present or null.',
-                    type: 'string',
-                  },
-                  similarity: {
-                    description: 'similarity',
-                    type: 'number',
-                  },
-                },
-              },
-            },
-          },
-        },
-        route: () => '/searchES',
-        func: (req, res, cb) => {
-          if (!req.query.q) {
-            return res.status(400).json([]);
+
+          if (req.query.es || utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)) {
+            return searchES(req.query, (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
+            });
           }
-          return searchES(req.query, (err, result) => {
+          return search(req.query, (err, result) => {
             if (err) {
               return cb(err);
             }

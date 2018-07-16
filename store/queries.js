@@ -12,7 +12,7 @@ const filter = require('../util/filter');
 const compute = require('../util/compute');
 const db = require('../store/db');
 const redis = require('../store/redis');
-const es = require('../store/elasticsearch');
+const { es, INDEX } = require('../store/elasticsearch');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
@@ -456,7 +456,7 @@ function insertPlayer(db, player, indexPlayer, cb) {
 
   if (indexPlayer) {
     es.update({
-      index: 'dota',
+      index: INDEX,
       type: 'player',
       id: player.account_id,
       body: {
@@ -483,7 +483,7 @@ function bulkIndexPlayer(bulkActions, cb) {
   if (bulkActions.length > 0) {
     es.bulk({
       body: bulkActions,
-      index: 'dota',
+      index: INDEX,
       type: 'player',
     }, cb);
   }

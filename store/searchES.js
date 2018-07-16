@@ -3,7 +3,7 @@
  * */
 const async = require('async');
 const db = require('./db');
-const es = require('./elasticsearch');
+const { es, INDEX } = require('./elasticsearch');
 /**
  * @param db - database object
  * @param search - object for where parameter of query
@@ -26,7 +26,7 @@ function search(options, cb) {
     },
     personaname(callback) {
       es.search({
-        index: 'dota',
+        index: INDEX,
         size: 50,
         body: {
           query: {
@@ -36,6 +36,9 @@ function search(options, cb) {
               },
             },
           },
+          sort: [
+            { last_match_time: 'desc' },
+          ],
         },
       }, (err, res) => {
         if (err) {
