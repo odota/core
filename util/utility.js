@@ -807,7 +807,7 @@ function cleanItemSchema(input) {
 }
 
 function checkIfInExperiment(ip, mod) {
-  return crypto.createHash('md5').update(ip).digest('hex') % 100 < mod;
+  return crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod;
 }
 
 module.exports = {
