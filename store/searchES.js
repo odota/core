@@ -37,6 +37,7 @@ function search(options, cb) {
             },
           },
           sort: [
+            { _score: 'desc' },
             { last_match_time: 'desc' },
           ],
         },
