@@ -60,19 +60,6 @@ function sendDataWithCache(req, res, data, key) {
   return res.json(data);
 }
 
-
-function hash(s) {
-  let hash = 0;
-  let chr;
-  if (s.length === 0) return hash;
-  for (let i = 0; i < s.length; i += 1) {
-    chr = s.charCodeAt(i);
-    hash = ((hash << 5) - hash) + chr; // eslint-disable-line no-bitwise
-    hash |= 0; // eslint-disable-line no-bitwise
-  }
-  return hash;
-}
-
 const spec = {
   swagger: '2.0',
   info: {
@@ -2692,7 +2679,7 @@ Please keep request rate to approximately 1/s.
                     type: 'string',
                   },
                   last_match_time: {
-                    description: 'last_match_time',
+                    description: 'last_match_time. May not be present or null.',
                     type: 'string',
                   },
                   similarity: {
@@ -2710,7 +2697,7 @@ Please keep request rate to approximately 1/s.
             return res.status(400).json([]);
           }
 
-          if (config.ENABLE_ES_SEARCH && hash(res.locals.ip) % 100 < config.ES_SEARCH_PERCENT) {
+          if (req.query.es || utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)) {
             return searchES(req.query, (err, result) => {
               if (err) {
                 return cb(err);
@@ -2719,67 +2706,6 @@ Please keep request rate to approximately 1/s.
             });
           }
           return search(req.query, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
-        },
-      },
-    },
-    '/searchES': {
-      get: {
-        summary: 'GET /searchES',
-        description: 'Search players by personaname, powered by ElasticSearch. Experimental.',
-        tags: [
-          'search',
-        ],
-        parameters: [{
-          name: 'q',
-          in: 'query',
-          description: 'Search string',
-          required: true,
-          type: 'string',
-        }],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  account_id: {
-                    description: 'account_id',
-                    type: 'integer',
-                  },
-                  avatarfull: {
-                    description: 'avatarfull',
-                    type: 'string',
-                  },
-                  personaname: {
-                    description: 'personaname',
-                    type: 'string',
-                  },
-                  last_match_time: {
-                    description: 'last_match_time. May not be present or null.',
-                    type: 'string',
-                  },
-                  similarity: {
-                    description: 'similarity',
-                    type: 'number',
-                  },
-                },
-              },
-            },
-          },
-        },
-        route: () => '/searchES',
-        func: (req, res, cb) => {
-          if (!req.query.q) {
-            return res.status(400).json([]);
-          }
-          return searchES(req.query, (err, result) => {
             if (err) {
               return cb(err);
             }

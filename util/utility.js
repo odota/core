@@ -10,6 +10,7 @@ const urllib = require('url');
 const uuidV4 = require('uuid/v4');
 const moment = require('moment');
 const laneMappings = require('./laneMappings');
+const crypto = require('crypto');
 
 /**
  * Tokenizes an input string.
@@ -805,6 +806,10 @@ function cleanItemSchema(input) {
   return input;
 }
 
+function checkIfInExperiment(ip, mod) {
+  return crypto.createHash('md5').update(ip).digest('hex') % 100 < mod;
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -844,4 +849,5 @@ module.exports = {
   invokeInterval,
   epochWeek,
   cleanItemSchema,
+  checkIfInExperiment,
 };
