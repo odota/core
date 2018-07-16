@@ -19,5 +19,5 @@ const INDEX = config.NODE_ENV === 'test' ? 'dota-test' : 'dota';
 
 module.exports = {
   es,
-  INDEX
+  INDEX,
 };
