@@ -1,7 +1,6 @@
 core
 ====
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/odota/core.svg)](https://greenkeeper.io/)
 [![Help Contribute to Open Source](https://www.codetriage.com/odota/core/badges/users.svg)](https://www.codetriage.com/odota/core)
 
 Overview
