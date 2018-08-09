@@ -17,12 +17,19 @@ function doProPlayers(cb) {
         && p.locked_until < 1502694000) {
         p.locked_until = 1502694000;
       }
+      if (p.account_id === 116525052 && p.locked_until < 1535785200) {
+        // Duster's locked until value is incorrect
+        p.locked_until = 1535785200;
+      }
       if (p.account_id === 87382579 && p.team_id === 39) {
         // Misery no longer on EG
         p.team_id = 0;
       }
       if (p.account_id === 88271237) {
         p.name = '7ckngMad';
+      }
+      if (p.account_id === 88271237 && p.locked_until < 1535785200) {
+        p.locked_until = 1535785200;
       }
       if (p.account_id === 311360822 && p.team_id === 5216274) {
         // Ana is now on OG
@@ -34,7 +41,7 @@ function doProPlayers(cb) {
       }
       if (p.account_id === 124936122 && p.team_id === 2643401) {
         // Zyd now on Team Serenity
-        p.team_id = 5021898;
+        p.team_id = 5066616;
       }
       queries.upsert(db, 'notable_players', p, {
         account_id: p.account_id,
