@@ -3388,7 +3388,23 @@ Please keep request rate to approximately 1/s.
             description: 'Success',
             schema: {
               type: 'array',
-              items: heroObject,
+              items: {
+                type: 'object',
+                properties: {
+                  hero_id: {
+                    description: 'Numeric identifier for the hero object',
+                    type: 'integer',
+                  },
+                  games_played: {
+                    description: 'Number of games played',
+                    type: 'integer',
+                  },
+                  wins: {
+                    description: 'Number of games won',
+                    type: 'integer',
+                  },
+                },
+              },
             },
           },
         },
