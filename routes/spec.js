@@ -157,7 +157,7 @@ Please keep request rate to approximately 1/s.
                   description: 'draft_timings',
                   type: 'array',
                   items: {
-                    decription: 'draft_stage',
+                    description: 'draft_stage',
                     type: 'object',
                     properties: {
                       order: {
@@ -173,7 +173,7 @@ Please keep request rate to approximately 1/s.
                         type: 'integer',
                       },
                       hero_id: {
-                        decription: 'The ID value of the hero played',
+                        description: 'The ID value of the hero played',
                         type: 'integer',
                       },
                       player_slot: properties.player_slot,
@@ -446,7 +446,7 @@ Please keep request rate to approximately 1/s.
                         type: 'object',
                       },
                       hero_id: {
-                        decription: 'The ID value of the hero played',
+                        description: 'The ID value of the hero played',
                         type: 'integer',
                       },
                       item_0: {
@@ -1147,7 +1147,7 @@ Please keep request rate to approximately 1/s.
                     type: 'integer',
                   },
                   hero_id: {
-                    decription: 'The ID value of the hero played',
+                    description: 'The ID value of the hero played',
                     type: 'integer',
                   },
                   start_time: {
@@ -1273,7 +1273,7 @@ Please keep request rate to approximately 1/s.
                     type: 'integer',
                   },
                   hero_id: {
-                    decription: 'The ID value of the hero played',
+                    description: 'The ID value of the hero played',
                     type: 'integer',
                   },
                   start_time: {
@@ -1317,7 +1317,7 @@ Please keep request rate to approximately 1/s.
                             type: 'integer',
                           },
                           hero_id: {
-                            decription: 'The ID value of the hero played',
+                            description: 'The ID value of the hero played',
                             type: 'integer',
                           },
                           player_slot: properties.player_slot,
@@ -1360,7 +1360,7 @@ Please keep request rate to approximately 1/s.
                 type: 'object',
                 properties: {
                   hero_id: {
-                    decription: 'The ID value of the hero played',
+                    description: 'The ID value of the hero played',
                     type: 'integer',
                   },
                   last_played: {
@@ -2057,7 +2057,7 @@ Please keep request rate to approximately 1/s.
                 type: 'object',
                 properies: {
                   hero_id: {
-                    decription: 'The ID value of the hero played',
+                    description: 'The ID value of the hero played',
                     type: 'string',
                   },
                   rank: {
@@ -2735,7 +2735,7 @@ Please keep request rate to approximately 1/s.
               type: 'object',
               properties: {
                 hero_id: {
-                  decription: 'The ID value of the hero played',
+                  description: 'The ID value of the hero played',
                   type: 'integer',
                 },
                 rankings: {
@@ -2836,7 +2836,7 @@ Please keep request rate to approximately 1/s.
               type: 'object',
               properties: {
                 hero_id: {
-                  decription: 'The ID value of the hero played',
+                  description: 'The ID value of the hero played',
                   type: 'integer',
                 },
                 result: {
@@ -4079,7 +4079,7 @@ Please keep request rate to approximately 1/s.
                     type: 'boolean',
                   },
                   region: {
-                    decription: 'Region the game was played in',
+                    description: 'Region the game was played in',
                     type: 'integer',
                   },
                   games: {
