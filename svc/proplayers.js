@@ -14,7 +14,7 @@ function doProPlayers(cb) {
     return async.each(body.player_infos, (p, cb) => {
       // Corrections
       if (p.account_id === 116525052 && p.locked_until < 1535785200) {
-        // Duster's locked until value is incorrect
+        // Duster
         p.locked_until = 1535785200;
       }
       if (p.account_id === 87382579 && p.team_id === 39) {
@@ -22,36 +22,7 @@ function doProPlayers(cb) {
         p.team_id = 0;
       }
       if (p.account_id === 88271237 && p.locked_until < 1535785200) {
-        p.locked_until = 1535785200;
-      }
-      if (p.account_id === 311360822 && p.team_id === 5216274) {
-        // Ana is now on OG
-        p.team_id = 2586976;
-        p.locked_until = 1535785200;
-      }
-      if (p.account_id === 94054712 && p.team_id === 5154470) {
-        // Topson is now on OG
-        p.team_id = 2586976;
-        p.locked_until = 1535785200;
-      }
-      if (p.account_id === 124936122) {
-        // Zyd now on Team Serenity
-        p.team_id = 5066616;
-        p.locked_until = 1535785200;
-      }
-      if (p.account_id === 94155156) {
-        // Fly now on EG
-        p.team_id = 39;
-        p.locked_until = 1535785200;
-      }
-      if (p.account_id === 41231571) {
-        // s4 now on EG
-        p.team_id = 39;
-        p.locked_until = 1535785200;
-      }
-      if (p.account_id === 86725175) {
-        // Reso now on VGJ.Storm
-        p.team_id = 5228654;
+        // Ceb
         p.locked_until = 1535785200;
       }
       queries.upsert(db, 'notable_players', p, {
