@@ -22,7 +22,6 @@ function doProPlayers(cb) {
         p.team_id = 0;
       }
       if (p.account_id === 88271237 && p.locked_until < 1535785200) {
-        p.name = '7ckngMad';
         p.locked_until = 1535785200;
       }
       if (p.account_id === 311360822 && p.team_id === 5216274) {
