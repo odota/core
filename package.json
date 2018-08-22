@@ -47,7 +47,7 @@
     "pg-query-stream": "^1.1.1",
     "pm2": "^2.10.3",
     "redis": "^2.8.0",
-    "request": "^2.87.0",
+    "request": "^2.88.0",
     "simple-vdf": "^1.1.1",
     "steam": "^1.4.0",
     "stripe": "^5.8.0",
