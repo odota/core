@@ -25,9 +25,9 @@ function doProPlayers(cb) {
         // Ceb
         p.locked_until = 1535785200;
       }
-      if (p.account_id === 124936122 && p.locked_until < 1535785200) {	
+      if (p.account_id === 124936122 && p.locked_until < 1535785200) {
         // Zyd
-        p.locked_until = 1535785200;	
+        p.locked_until = 1535785200;
       }
       queries.upsert(db, 'notable_players', p, {
         account_id: p.account_id,
