@@ -298,8 +298,8 @@ function getPlayerHeroRankings(accountId, cb) {
   hero_id,
   playerscore.score,
   count(1) filter (where hr.score <= playerscore.score)::float/count(1) as percent_rank,
-  count(1) * 500 card
-  FROM (select * from hero_ranking TABLESAMPLE SYSTEM(0.2)) hr
+  count(1) * 250 card
+  FROM (select * from hero_ranking TABLESAMPLE SYSTEM(0.4)) hr
   JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = ?) playerscore using (hero_id)
   GROUP BY hero_id, playerscore.score
   ORDER BY percent_rank desc
