@@ -28,7 +28,7 @@
     "async": "^2.6.1",
     "body-parser": "^1.18.2",
     "cassandra-driver": "^3.5.0",
-    "compression": "^1.7.2",
+    "compression": "^1.7.3",
     "cookie-session": "2.0.0-beta.3",
     "cors": "^2.8.4",
     "dota2": "^6.1.1",
