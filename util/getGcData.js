@@ -23,6 +23,7 @@ function getGcDataFromRetriever(match, cb) {
   return getData({ url: urls, noRetry: match.noRetry, timeout: 3000 }, (err, body, metadata) => {
     if (metadata && metadata.hostname === 'api.stratz.com') {
       // handle backup urls (don't save to DB since no party/buffs data)
+      redisCount(redis, 'backup');
       return cb(err, {
         match_id: Number(match.match_id),
         cluster: body.results[0].clusterId,

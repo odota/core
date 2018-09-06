@@ -37,6 +37,9 @@ module.exports = function buildStatus(db, redis, cb) {
     retriever_matches_last_day(cb) {
       utility.getRedisCountDay(redis, 'retriever', cb);
     },
+    backup_retriever_last_day(cb) {
+      utility.getRedisCountDay(redis, 'backup', cb);
+    },
     parsed_matches_last_day(cb) {
       utility.getRedisCountDay(redis, 'parser', cb);
     },
