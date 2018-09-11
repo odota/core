@@ -45,7 +45,7 @@
     "passport-steam": "^1.0.10",
     "pg": "^7.4.3",
     "pg-query-stream": "^1.1.1",
-    "pm2": "^2.10.3",
+    "pm2": "^3.1.2",
     "redis": "^2.8.0",
     "request": "^2.88.0",
     "simple-vdf": "^1.1.1",
