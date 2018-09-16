@@ -21,3 +21,4 @@ postgres-config.yaml
 dependency-reduced-pom.xml
 Procfile.dev
 docker-compose.override.yml
+.idea
