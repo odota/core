@@ -21,6 +21,7 @@ const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
 const properties = require('./properties');
+const contributors = require('../CONTRIBUTORS');
 const {
   teamObject, matchObject, heroObject, playerObject,
 } = require('./objects');
@@ -1017,6 +1018,11 @@ Please keep request rate to approximately 1/s.
                       description: 'loccountrycode',
                       type: 'string',
                     },
+                    is_contributor: {
+                      description: 'Boolean indicating if the user contributed to the development of OpenDota',
+                      type: 'boolean',
+                      default: false,
+                    },
                   },
                 },
               },
@@ -1028,7 +1034,12 @@ Please keep request rate to approximately 1/s.
           const accountId = Number(req.params.account_id);
           async.parallel({
             profile(cb) {
-              queries.getPlayer(db, accountId, cb);
+              queries.getPlayer(db, accountId, (err, playerData) => {
+                if (playerData !== null && playerData !== undefined) {
+                  playerData.is_contributor = accountId in contributors;
+                }
+                cb(err, playerData);
+              });
             },
             tracked_until(cb) {
               redis.zscore('tracked', accountId, cb);
