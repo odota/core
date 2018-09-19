@@ -1035,7 +1035,7 @@ Please keep request rate to approximately 1/s.
           async.parallel({
             profile(cb) {
               queries.getPlayer(db, accountId, (err, playerData) => {
-                if (playerData !== undefined) {
+                if (playerData !== null && playerData !== undefined) {
                   playerData.is_contributor = accountId in contributors;
                 }
                 cb(err, playerData);
