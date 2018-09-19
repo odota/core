@@ -1019,7 +1019,7 @@ Please keep request rate to approximately 1/s.
                       type: 'string',
                     },
                     is_contributor: {
-                      description: 'Has the user contributed to the development of OpenDota',
+                      description: 'Boolean indicating if the user contributed to the development of OpenDota',
                       type: 'boolean',
                       default: false,
                     },
@@ -1035,7 +1035,7 @@ Please keep request rate to approximately 1/s.
           async.parallel({
             profile(cb) {
               queries.getPlayer(db, accountId, (err, playerData) => {
-                if (!err && playerData !== undefined) {
+                if (playerData !== undefined) {
                   playerData.is_contributor = accountId in contributors;
                 }
                 cb(err, playerData);
