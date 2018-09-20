@@ -5,7 +5,10 @@ const db = require('../store/db');
 const queries = require('../store/queries');
 
 const {
-  invokeInterval, generateJob, getData, cleanItemSchema,
+  invokeInterval,
+  generateJob,
+  getData,
+  cleanItemSchema,
 } = utility;
 
 function doLeagues(cb) {
@@ -128,6 +131,10 @@ function doLeagues(cb) {
           125: 'professional', // Nexon Sponsorship League Season 2 & Gama Brothers Courier
         };
         const openQualifierTier = league => (league.name.indexOf('Open Qualifier') === -1 ? null : 'excluded');
+
+        // Manually add this league until Valve fixes APIs or we find a new one
+        apiLeagues.result.leagues.push({ name: 'The Kuala Lumpur Major', leagueid: 10296, tier: 'premium' });
+
         return async.each(apiLeagues.result.leagues, (l, cb) => {
           const itemSchemaLeague = leagues[l.leagueid] || {};
           l.tier = leagueTiers[l.leagueid] || openQualifierTier(l) || itemSchemaLeague.tier || null;
