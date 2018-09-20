@@ -137,7 +137,7 @@ function doLeagues(cb) {
 
         return async.each(apiLeagues.result.leagues, (l, cb) => {
           const itemSchemaLeague = leagues[l.leagueid] || {};
-          l.tier = leagueTiers[l.leagueid] || openQualifierTier(l) || itemSchemaLeague.tier || null;
+          l.tier = leagueTiers[l.leagueid] || openQualifierTier(l) || itemSchemaLeague.tier || l.tier || null;
           l.ticket = itemSchemaLeague.ticket || null;
           l.banner = itemSchemaLeague.banner || null;
           queries.upsert(db, 'leagues', l, {
