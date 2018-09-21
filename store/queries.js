@@ -1001,7 +1001,8 @@ function insertMatch(match, options, cb) {
   }
 
   function decideGcData(cb) {
-    if (options.origin === 'scanner' && utility.isSignificant(match) && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
+    // Don't get replay URLs for event matches
+    if (options.origin === 'scanner' && match.game_mode !== 19 && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
       redis.rpush('gcQueue', JSON.stringify({
         match_id: match.match_id,
       }), cb);
