@@ -36,7 +36,7 @@ Notes
 * The process manager `pm2` is used to manage the individual services. Each is run as a separate Node.js process.
   * `pm2 list` See the currently running services.
   * `pm2 start manifest.json` Start all the services according to the manifest file
-  * `pm2 start web --watch` Starts a specific service and enable watch mode on it, so it'll restart automatically when files change
+  * `pm2 start manifest.json --only web` Starts a specific service
   * `pm2 stop web` Stop a specific service
   * `pm2 stop all` Stop all the services
   * `pm2 logs web` Inspect the output of a service
