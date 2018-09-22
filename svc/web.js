@@ -39,6 +39,10 @@ const whitelistedPaths = [
   '/keys', // API Key management
 ];
 
+const pathCosts = {
+  '/api/explorer': 5,
+};
+
 // PASSPORT config
 passport.serializeUser((user, done) => {
   done(null, user.account_id);
@@ -135,9 +139,8 @@ app.use((req, res, cb) => {
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
-
   const multi = redis.multi()
-    .hincrby('rate_limit', res.locals.usageIdentifier, 1)
+    .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
 
   if (!res.locals.isAPIRequest) {
