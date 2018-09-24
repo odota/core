@@ -67,9 +67,8 @@ const spec = {
     title: 'OpenDota API',
     description: `# Introduction
 The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.
-Please keep request rate to approximately 1/s.
 
-**Begining 4/22/2018, the OpenDota API will be limited to 50,000 free calls per month.** We'll be offering a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.
+**Beginning 2018-04-22, the OpenDota API is limited to 50,000 free calls per month and 60 requests/minute** We offer a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.
 `,
     version: packageJson.version,
   },
@@ -77,7 +76,7 @@ Please keep request rate to approximately 1/s.
     api_key: {
       type: 'apiKey',
       name: 'api_key',
-      description: `Use an API key to remove call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
+      description: `Use an API key to remove monthly call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
 
       Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
       `,
@@ -881,19 +880,27 @@ Please keep request rate to approximately 1/s.
                   type: 'integer',
                 },
                 all_word_counts: {
-                  description: 'all_word_counts',
+                  description: 'Word counts of the all chat messages in the player\'s games',
                   type: 'object',
                 },
                 my_word_counts: {
-                  description: 'my_word_counts',
+                  description: 'Word counts of the player\'s all chat messages',
                   type: 'object',
                 },
                 throw: {
-                  description: 'throw',
+                  description: 'Maximum gold advantage of the player\'s team if they lost the match',
+                  type: 'integer',
+                },
+                comeback: {
+                  description: 'Maximum gold disadvantage of the player\'s team if they won the match',
                   type: 'integer',
                 },
                 loss: {
-                  description: 'loss',
+                  description: 'Maximum gold disadvantage of the player\'s team if they lost the match',
+                  type: 'integer',
+                },
+                win: {
+                  description: 'Maximum gold advantage of the player\'s team if they won the match',
                   type: 'integer',
                 },
                 replay_url: {
