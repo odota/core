@@ -13,9 +13,16 @@ const queries = require('../store/queries');
 const cp = require('child_process');
 const async = require('async');
 const numCPUs = require('os').cpus().length;
+const express = require('express');
 
 const { insertMatch } = queries;
 const { buildReplayUrl } = utility;
+
+const app = express();
+app.get('/healthz', (req, res) => {
+  res.end('ok');
+});
+app.listen(config.PORT || config.PARSER_PORT);
 
 function runParse(match, job, cb) {
   let { url } = match;
