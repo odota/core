@@ -21,12 +21,12 @@ const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
 const properties = require('./properties');
-const contributors = require('../CONTRIBUTORS');
+
 const {
   teamObject, matchObject, heroObject, playerObject,
 } = require('./objects');
 
-const { redisCount, countPeers } = utility;
+const { redisCount, countPeers, isContributor } = utility;
 const { subkeys, countCats } = playerFields;
 const playerParams = [
   params.accountIdParam,
@@ -1036,7 +1036,7 @@ Please keep request rate to approximately 1/s.
             profile(cb) {
               queries.getPlayer(db, accountId, (err, playerData) => {
                 if (playerData !== null && playerData !== undefined) {
-                  playerData.is_contributor = accountId in contributors;
+                    playerData.isContributor = isContributor(accountId);
                 }
                 cb(err, playerData);
               });
