@@ -1036,7 +1036,7 @@ Please keep request rate to approximately 1/s.
             profile(cb) {
               queries.getPlayer(db, accountId, (err, playerData) => {
                 if (playerData !== null && playerData !== undefined) {
-                    playerData.isContributor = isContributor(accountId);
+                    playerData.is_contributor = isContributor(accountId);
                 }
                 cb(err, playerData);
               });
