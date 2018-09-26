@@ -291,7 +291,7 @@ function isRadiant(player) {
 /**
  * Determines if a player has contributed to the development of OpenDota
 */
-function isContributor(accountId){
+function isContributor(accountId) {
   return accountId in contributors;
 }
 
