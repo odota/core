@@ -27,7 +27,7 @@ app.listen(config.PORT || config.PARSER_PORT);
 function runParse(match, job, cb) {
   let { url } = match;
   if (config.NODE_ENV === 'test') {
-    url = `https://cdn.rawgit.com/odota/testfiles/master/${match.match_id}_1.dem`;
+    url = `https://raw.githubusercontent.com/odota/testfiles/master/${match.match_id}_1.dem`;
   }
   console.log(new Date(), url);
   cp.exec(
