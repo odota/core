@@ -201,22 +201,32 @@ function getHeroBenchmarks(db, redis, options, cb) {
     const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
     async.each(arr, (percentile, cb) => {
       // Use data from previous epoch
-      const key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, heroId].join(':');
-      redis.zcard(key, (err, card) => {
+      let key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, heroId].join(':');
+      const backupKey = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), metric, heroId].join(':');
+      redis.exists(key, (err, exists) => {
         if (err) {
           return cb(err);
         }
-        const position = Math.floor(card * percentile);
-        return redis.zrange(key, position, position, 'WITHSCORES', (err, result) => {
-          const obj = {
-            percentile,
-            value: Number(result[1]),
-          };
-          if (!ret[metric]) {
-            ret[metric] = [];
+        if (exists === 0) {
+          // No data, use backup key (current epoch)
+          key = backupKey;
+        }
+        return redis.zcard(key, (err, card) => {
+          if (err) {
+            return cb(err);
           }
-          ret[metric].push(obj);
-          cb(err, obj);
+          const position = Math.floor(card * percentile);
+          return redis.zrange(key, position, position, 'WITHSCORES', (err, result) => {
+            const obj = {
+              percentile,
+              value: Number(result[1]),
+            };
+            if (!ret[metric]) {
+              ret[metric] = [];
+            }
+            ret[metric].push(obj);
+            cb(err, obj);
+          });
         });
       });
     }, cb);
