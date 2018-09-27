@@ -81,7 +81,7 @@ function getMatch(matchId, cb) {
             p.cluster = match.cluster;
             p.lobby_type = match.lobby_type;
             p.game_mode = match.game_mode;
-            p.isContributor = isContributor(p.account_id);
+            p.is_contributor = isContributor(p.account_id);
             computeMatchData(p);
             db.first().from('rank_tier').where({ account_id: p.account_id || null }).asCallback((err, row) => {
               p.rank_tier = row ? row.rating : null;
