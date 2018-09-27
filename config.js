@@ -52,7 +52,7 @@ const defaults = {
   GCDATA_PERCENT: 0, // percent of inserted matches to randomly queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
-  SCENARIOS_SAMPLE_PERCENT: 50, // percent of parsed matches to sample for scenarios
+  SCENARIOS_SAMPLE_PERCENT: 100, // percent of parsed matches to sample for scenarios
   BENCHMARKS_SAMPLE_PERCENT: 100, // percent of parsed matches to sample for benchmarks
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
   ENABLE_PLAYER_CACHE: 1, // enable/disable player aggregation caching
