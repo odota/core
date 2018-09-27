@@ -21,12 +21,12 @@ const packageJson = require('../package.json');
 const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./params');
 const properties = require('./properties');
-const contributors = require('../CONTRIBUTORS');
+
 const {
   teamObject, matchObject, heroObject, playerObject,
 } = require('./objects');
 
-const { redisCount, countPeers } = utility;
+const { redisCount, countPeers, isContributor } = utility;
 const { subkeys, countCats } = playerFields;
 const playerParams = [
   params.accountIdParam,
@@ -1043,7 +1043,7 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
             profile(cb) {
               queries.getPlayer(db, accountId, (err, playerData) => {
                 if (playerData !== null && playerData !== undefined) {
-                  playerData.is_contributor = accountId in contributors;
+                  playerData.is_contributor = isContributor(accountId);
                 }
                 cb(err, playerData);
               });

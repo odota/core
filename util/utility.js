@@ -11,6 +11,7 @@ const uuidV4 = require('uuid/v4');
 const moment = require('moment');
 const laneMappings = require('./laneMappings');
 const crypto = require('crypto');
+const contributors = require('../CONTRIBUTORS');
 
 /**
  * Tokenizes an input string.
@@ -285,6 +286,13 @@ function getData(url, cb) {
  * */
 function isRadiant(player) {
   return player.player_slot < 128;
+}
+
+/**
+ * Determines if a player has contributed to the development of OpenDota
+*/
+function isContributor(accountId) {
+  return accountId in contributors;
 }
 
 /**
@@ -817,6 +825,7 @@ module.exports = {
   convert32to64,
   convert64to32,
   isRadiant,
+  isContributor,
   playerWon,
   mergeObjects,
   modeWithCount,
