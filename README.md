@@ -26,8 +26,8 @@ Quickstart (Docker)
 * Start containers and initialize databases: `docker-compose up`
 * Make some changes and commit them.
 * Submit a pull request.  Wait for it to be reviewed and merged.
+* **OPTIONAL** Add your DOTA friend code (SteamId3) to the `CONTRIBUTORS.js` file.
 * Congratulations!  You're a contributor.
-* **Optional** Add your DOTA friend code (SteamId3) to the `CONTRIBUTORS.js` file.  The API will return a boolean that denotes if you've contributed to the development of OpenDota.
 
 Notes
 ----
