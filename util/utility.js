@@ -97,7 +97,7 @@ function generateJob(type, payload) {
     },
     api_leagues() {
       return {
-        url: `${apiUrl}/IDOTA2Match_570/GetLeagueListing/v0001/?key=${apiKey}&language=${payload.language}`,
+        url: 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001',
         title: [type].join(),
         type: 'api',
         payload,
@@ -121,7 +121,7 @@ function generateJob(type, payload) {
     },
     api_notable() {
       return {
-        url: `${apiUrl}/IDOTA2Fantasy_570/GetProPlayerList/v1/?key=${apiKey}`,
+        url: 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001',
         title: [type].join(),
         type: 'api',
         payload,
