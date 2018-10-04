@@ -10,7 +10,7 @@ const search = require('../store/search');
 const searchES = require('../store/searchES');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
-const queryRaw = require('../store/queryRaw');
+const explorerQuery = require('../store/explorerQuery');
 const playerFields = require('./playerFields');
 const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
@@ -2315,12 +2315,12 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         func: (req, res) => {
           // TODO handle NQL (@nicholashh query language)
           const input = req.query.sql;
-          return queryRaw(input, (err, result) => {
+          return explorerQuery(input, (err, result) => {
             if (err) {
               console.error(err);
             }
             const final = Object.assign({}, result, {
-              err: err ? err.stack : err,
+              err: err && err.toString(),
             });
             return res.status(err ? 400 : 200).json(final);
           });
