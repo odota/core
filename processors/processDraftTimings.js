@@ -46,7 +46,7 @@ function processDraftTimings(entries, meta) {
     draftTimings[0].active_team = ((sumActiveTeam % 2) + 2);
     for (let j = 0; j < draftTimings.length; j += 1) {
       if (draftTimings[j].order === 1) {
-        draftTimings[j].total_time_taken = (meta.game_zero + draftTimings[j].time);
+        draftTimings[j].total_time_taken = (draftTimings[j].time);
       } else {
         let index2;
         // find the time of the end of the previous order

@@ -91,13 +91,6 @@ function createParsedDataBlob(entries, matchId, doLogParse) {
   meta.match_id = matchId;
   logConsole.timeEnd('metadata');
 
-  logConsole.time('adjust');
-  // adjust time by zero value to get actual game time
-  entries.forEach((e) => {
-    e.time -= meta.game_zero;
-  });
-  logConsole.timeEnd('adjust');
-
   logConsole.time('expand');
   const expanded = processExpand(entries, meta);
   logConsole.timeEnd('expand');

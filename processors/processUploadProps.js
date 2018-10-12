@@ -6,7 +6,6 @@ function processUploadProps(entries, meta) {
   const container = {
     player_map: {},
   };
-  container.duration = meta.game_end - meta.game_zero;
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     let dota;
