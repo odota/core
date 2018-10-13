@@ -2,7 +2,7 @@
  * A processor to extract basic match stats from the replay file.
  * This is used for uploaded match parses since we can't get basic match data from the API.
  * */
-function processUploadProps(entries, meta) {
+function processUploadProps(entries) {
   const container = {
     player_map: {},
   };
