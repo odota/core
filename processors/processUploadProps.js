@@ -2,11 +2,10 @@
  * A processor to extract basic match stats from the replay file.
  * This is used for uploaded match parses since we can't get basic match data from the API.
  * */
-function processUploadProps(entries, meta) {
+function processUploadProps(entries) {
   const container = {
     player_map: {},
   };
-  container.duration = meta.game_end - meta.game_zero;
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     let dota;
