@@ -11,4 +11,5 @@ module.exports = {
   115042342: {}, // builder-247
   197868209: {}, // TOG
   55268262: {}, // Proyoyo
+  1900588: {}, // c0rdawg
 };
