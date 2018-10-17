@@ -12,4 +12,6 @@ module.exports = {
   197868209: {}, // TOG
   55268262: {}, // Proyoyo
   95211699: {}, // mdiller
+  1900588: {}, // c0rdawg
+  103637655: {}, // samantha
 };
