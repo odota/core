@@ -96,7 +96,7 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         tags: [
           'matches',
         ],
-        parameters: [params.matchIdParam],
+        parameters: [params.matchIdParam, params.matchOverviewParam],
         responses: {
           200: {
             description: 'Success',
@@ -912,16 +912,25 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
           },
         },
         route: () => '/matches/:match_id/:info?',
-        func: (req, res, cb) => {
-          buildMatch(req.params.match_id, (err, match) => {
-            if (err) {
-              return cb(err);
-            }
+        func: async (req, res, cb) => {
+          try {
+            const match = await buildMatch(req.params.match_id, req.query);
             if (!match) {
               return cb();
             }
             return res.json(match);
-          });
+          } catch (err) {
+            return cb(err);
+          }
+          // buildMatch(req.params.match_id, req.query, (err, match) => {
+          //   if (err) {
+          //     return cb(err);
+          //   }
+          //   if (!match) {
+          //     return cb();
+          //   }
+          //   return res.json(match);
+          // });
         },
       },
     },

@@ -215,4 +215,11 @@ module.exports = {
     required: false,
     type: 'integer',
   },
+  matchOverviewParam: {
+    name: 'overview',
+    in: 'query',
+    description: 'Only fetch data required for match overview page',
+    required: false,
+    type: 'integer',
+  },
 };
