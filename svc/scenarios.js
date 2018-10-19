@@ -6,11 +6,9 @@ const util = require('util');
 const utility = require('../util/utility');
 const su = require('../util/scenariosUtil');
 
-function processScenarios(matchID, cb) {
-  buildMatch(matchID, (err, match) => {
-    if (err) {
-      return cb(err);
-    }
+async function processScenarios(matchID, cb) {
+  try {
+    const match = buildMatch(matchID);
     if (!su.validateMatchProperties(match)) {
       console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
       return cb();
@@ -41,7 +39,9 @@ function processScenarios(matchID, cb) {
       });
     });
     return cb();
-  });
+  } catch (err) {
+    return cb(err);
+  }
 }
 
 queue.runQueue('scenariosQueue', 1, processScenarios);

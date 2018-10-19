@@ -236,22 +236,18 @@ describe('replay parse', function testReplayParse() {
         attempts: 1,
       }, (err, job) => {
         assert(job && !err);
-        setTimeout(() => {
+        setTimeout(async () => {
           // ensure parse data got inserted
-          buildMatch(tests[key].match_id, (err, match) => {
-            if (err) {
-              return done(err);
-            }
-            console.log(match.players[0]);
-            assert(match.players);
-            assert(match.players[0]);
-            assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
-            assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
-            assert(match.teamfights && match.teamfights.length > 0);
-            assert(match.draft_timings);
-            assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
-            return done();
-          });
+          const match = await buildMatch(tests[key].match_id);
+          console.log(match.players[0]);
+          assert(match.players);
+          assert(match.players[0]);
+          assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
+          assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
+          assert(match.teamfights && match.teamfights.length > 0);
+          assert(match.draft_timings);
+          assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
+          return done();
         }, 30000);
       });
     });
