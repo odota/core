@@ -101,11 +101,11 @@ function cassandraUsage(cb) {
     }
     let size = 0;
     result.rows.forEach((r) => {
-      size += r.mean_partition_size * r.partitions_count * 0.5 * 4;
+      size += r.mean_partition_size * r.partitions_count * 0.4;
     });
     return cb(err, {
       metric: size,
-      threshold: 10 * (10 ** 12),
+      threshold: 2.5 * (10 ** 12),
     });
   });
 }
