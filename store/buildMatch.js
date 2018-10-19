@@ -31,14 +31,16 @@ async function getPlayerMatchData(matchId) {
     fetchSize: 24,
     autoPage: true,
   });
-  const serializedResult = result.rows.map(m => deserialize(m));
-  return Promise.all(serializedResult.map(r => db.raw(`
+  const deserializedResult = result.rows.map(m => deserialize(m));
+  return Promise.all(deserializedResult.map(r => db.raw(`
         SELECT personaname, name, last_login 
         FROM players
         LEFT JOIN notable_players
         ON players.account_id = notable_players.account_id
         WHERE players.account_id = ?
-      `, [r.account_id])));
+      `, [r.account_id]
+      )
+      .then(names => ({ ...r, ...names.rows[0] }))));
 }
 
 async function extendPlayerData(player, match) {
