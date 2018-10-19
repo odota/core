@@ -38,9 +38,8 @@ async function getPlayerMatchData(matchId) {
         LEFT JOIN notable_players
         ON players.account_id = notable_players.account_id
         WHERE players.account_id = ?
-      `, [r.account_id]
-      )
-      .then(names => ({ ...r, ...names.rows[0] }))));
+      `, [r.account_id])
+    .then(names => ({ ...r, ...names.rows[0] }))));
 }
 
 async function extendPlayerData(player, match) {
