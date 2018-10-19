@@ -922,15 +922,6 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
           } catch (err) {
             return cb(err);
           }
-          // buildMatch(req.params.match_id, req.query, (err, match) => {
-          //   if (err) {
-          //     return cb(err);
-          //   }
-          //   if (!match) {
-          //     return cb();
-          //   }
-          //   return res.json(match);
-          // });
         },
       },
     },
