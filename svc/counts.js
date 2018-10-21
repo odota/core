@@ -20,9 +20,9 @@ function updateHeroRankings(match, cb) {
     if (err) {
       return cb(err);
     }
-    const matchScore = (avg && !Number.isNaN(Number(avg))) ?
-      avg * 100 :
-      undefined;
+    const matchScore = (avg && !Number.isNaN(Number(avg)))
+      ? avg * 100
+      : undefined;
     if (!matchScore) {
       return cb();
     }
@@ -148,8 +148,7 @@ function updateRecords(match, cb) {
 }
 
 function updateLastPlayed(match, cb) {
-  const filteredPlayers = (match.players || []).filter(player =>
-    player.account_id && player.account_id !== getAnonymousAccountId());
+  const filteredPlayers = (match.players || []).filter(player => player.account_id && player.account_id !== getAnonymousAccountId());
 
   const lastMatchTime = new Date(match.start_time * 1000);
 

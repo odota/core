@@ -1,6 +1,6 @@
-const db = require('../store/db');
 const async = require('async');
 const request = require('request');
+const db = require('../store/db');
 
 const host = 'localhost:5000';
 function cb(err) {
@@ -24,4 +24,3 @@ db.select('account_id', 'last_login')
       });
     }, cb);
   });
-

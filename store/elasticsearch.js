@@ -1,8 +1,8 @@
 /**
  * Interface to ElasticSearch client
  * */
-const config = require('../config');
 const elasticsearch = require('elasticsearch');
+const config = require('../config');
 
 
 console.log('connecting %s', config.ELASTICSEARCH_URL);

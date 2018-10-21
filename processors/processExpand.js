@@ -139,10 +139,10 @@ function processExpand(entries, meta) {
       const key = computeIllusionString(e.targetname, e.targetillusion);
 
       // If it is a building kill
-      if (e.targetname.indexOf('_tower') > -1 ||
-          e.targetname.indexOf('_rax_') > -1 ||
-          e.targetname.indexOf('_healers') > -1 ||
-          e.targetname.indexOf('_fort') > -1) {
+      if (e.targetname.indexOf('_tower') > -1
+          || e.targetname.indexOf('_rax_') > -1
+          || e.targetname.indexOf('_healers') > -1
+          || e.targetname.indexOf('_fort') > -1) {
         expand({
           time: e.time,
           type: 'building_kill',
@@ -158,7 +158,7 @@ function processExpand(entries, meta) {
           // If the hero is meepo than the clones will also get killed
           aegisDeathTime = e.time;
           return;
-        } else if (aegisDeathTime !== e.time) {
+        } if (aegisDeathTime !== e.time) {
           // We are after the aegis death tick, so clear everything
           aegisDeathTime = null;
           aegisHolder = null;
