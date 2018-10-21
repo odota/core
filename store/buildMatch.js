@@ -87,12 +87,11 @@ async function prodataInfo(matchId) {
 
 async function getMatch(matchId) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
-    return Promise.reject();
+    return Promise.resolve();
   }
   const match = await getMatchData(matchId);
   if (!match) {
-    console.log('no match found');
-    return Promise.reject();
+    return Promise.resolve();
   }
   const playersMatchData = await getPlayerMatchData(matchId);
   const playersPromise = Promise.all(playersMatchData.map(p => extendPlayerData(p, match)));
@@ -137,6 +136,7 @@ async function getMatch(matchId) {
 }
 
 async function buildMatch(matchId) {
+  return Promise.reject();
   const key = `match:${matchId}`;
   const reply = await getRedisAsync(key);
   if (reply) {
@@ -144,7 +144,7 @@ async function buildMatch(matchId) {
   }
   const match = await getMatch(matchId);
   if (!match) {
-    return Promise.reject();
+    return Promise.resolve();
   }
   if (match.version && config.ENABLE_MATCH_CACHE) {
     await redis.setex(key, config.MATCH_CACHE_SECONDS, JSON.stringify(match));
