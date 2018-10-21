@@ -1,12 +1,13 @@
 const async = require('async');
+const moment = require('moment');
+const stripeLib = require('stripe');
 const redis = require('../store/redis');
 const db = require('../store/db');
 const utility = require('../util/utility');
 const queries = require('../store/queries');
 const config = require('../config');
-const moment = require('moment');
-const stripe = require('stripe')(config.STRIPE_SECRET);
 
+const stripe = stripeLib(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
 
 function storeUsageCounts(cursor, cb) {

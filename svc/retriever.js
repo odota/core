@@ -2,13 +2,13 @@
  * Worker interfacing with the Steam GC.
  * Provides HTTP endpoints for other workers.
  * */
-const config = require('../config');
 const Steam = require('steam');
 const Dota2 = require('dota2');
 const async = require('async');
 const express = require('express');
 const compression = require('compression');
 const cp = require('child_process');
+const config = require('../config');
 
 const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
   /* eslint-disable global-require */
@@ -238,8 +238,8 @@ function init() {
     client.on('error', (err) => {
       console.error(err);
       if (advancedAuth && (
-        user in advancedAuth.pendingTwoFactorAuth ||
-        user in advancedAuth.pendingSteamGuardAuth)) {
+        user in advancedAuth.pendingTwoFactorAuth
+        || user in advancedAuth.pendingSteamGuardAuth)) {
         console.log('not reconnecting %s, waiting for auth...', user);
         client.pendingLogOn = true;
       } else {
@@ -398,7 +398,7 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.match_id) {
+  } if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
     if (lastRequestTime
@@ -412,7 +412,7 @@ app.get('/', (req, res, cb) => {
       res.locals.data = data;
       return cb(err);
     });
-  } else if (req.query.account_id) {
+  } if (req.query.account_id) {
     return getPlayerProfile(rKey, req.query.account_id, (err, data) => {
       res.locals.data = data;
       return cb(err);
@@ -424,10 +424,9 @@ app.get('/', (req, res, cb) => {
 app.use((req, res) => {
   res.json(res.locals.data);
 });
-app.use((err, req, res) =>
-  res.status(500).json({
-    error: err,
-  }));
+app.use((err, req, res) => res.status(500).json({
+  error: err,
+}));
 const server = app.listen(port, () => {
   const host = server.address().address;
   console.log('[RETRIEVER] listening at http://%s:%s', host, port);

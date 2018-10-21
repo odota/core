@@ -1,12 +1,12 @@
 /**
  * Functions to build/cache match object
  * */
-const config = require('../config');
 const async = require('async');
+const constants = require('dotaconstants');
+const config = require('../config');
 const queries = require('./queries');
 const compute = require('../util/compute');
 const utility = require('../util/utility');
-const constants = require('dotaconstants');
 const cassandra = require('../store/cassandra');
 const redis = require('../store/redis');
 const db = require('../store/db');
@@ -64,7 +64,7 @@ function getMatch(matchId, cb) {
   return getMatchData(matchId, (err, match) => {
     if (err) {
       return cb(err);
-    } else if (!match) {
+    } if (!match) {
       return cb();
     }
     return async.parallel({
@@ -143,8 +143,8 @@ function getMatch(matchId, cb) {
       if (result.cosmetics) {
         match.players.forEach((p) => {
           const hero = constants.heroes[p.hero_id] || {};
-          p.cosmetics = result.cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot &&
-            (!c.used_by_heroes || c.used_by_heroes === hero.name));
+          p.cosmetics = result.cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot
+            && (!c.used_by_heroes || c.used_by_heroes === hero.name));
         });
       }
       computeMatchData(match);
@@ -161,7 +161,7 @@ function buildMatch(matchId, cb) {
   redis.get(key, (err, reply) => {
     if (err) {
       return cb(err);
-    } else if (reply) {
+    } if (reply) {
       // console.log(`Cache hit for match ${matchId}`);
       const match = JSON.parse(reply);
       return cb(err, match);

@@ -1,5 +1,5 @@
-const db = require('../store/db');
 const async = require('async');
+const db = require('../store/db');
 const utility = require('../util/utility');
 const queries = require('../store/queries');
 const config = require('../config');
@@ -21,8 +21,7 @@ db.select('account_id')
       const job = {
         data: generateJob('mmr', {
           account_id: p.account_id,
-          url: retrieverArr.map(r =>
-            `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${p.account_id}`)[p.account_id % retrieverArr.length],
+          url: retrieverArr.map(r => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${p.account_id}`)[p.account_id % retrieverArr.length],
         }),
       };
       getData({

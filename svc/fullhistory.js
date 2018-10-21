@@ -3,8 +3,8 @@
  * */
 const async = require('async');
 const urllib = require('url');
-const config = require('../config');
 const constants = require('dotaconstants');
+const config = require('../config');
 const utility = require('../util/utility');
 const db = require('../store/db');
 const queue = require('../store/queue');

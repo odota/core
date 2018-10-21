@@ -52,8 +52,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   let filterCols = [];
   Object.keys(req.query).forEach((key) => {
     // numberify and arrayify everything in query
-    req.query[key] = [].concat(req.query[key]).map(e =>
-      (Number.isNaN(Number(e)) ? e : Number(e)));
+    req.query[key] = [].concat(req.query[key]).map(e => (Number.isNaN(Number(e)) ? e : Number(e)));
     // build array of required projections due to filters
     filterCols = filterCols.concat(filterDeps[key] || []);
   });

@@ -1,5 +1,5 @@
-const db = require('../store/db');
 const async = require('async');
+const db = require('../store/db');
 const config = require('../config');
 const utility = require('../util/utility');
 

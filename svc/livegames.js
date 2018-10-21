@@ -20,8 +20,7 @@ function doLiveGames(cb) {
         // let addToRedis = false;
         if (match && match.players) {
           match.players.forEach((player, i) => {
-            const proPlayer = proPlayers.find(proPlayer =>
-              proPlayer.account_id.toString() === player.account_id.toString());
+            const proPlayer = proPlayers.find(proPlayer => proPlayer.account_id.toString() === player.account_id.toString());
             if (proPlayer) {
               match.players[i] = Object.assign({}, player, proPlayer);
               // addToRedis = true;

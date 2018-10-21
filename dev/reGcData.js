@@ -1,8 +1,8 @@
 /**
  * Call getGcData for all matches in match table
  * */
-const db = require('../store/db');
 const async = require('async');
+const db = require('../store/db');
 const getGcData = require('../util/getGcData');
 
 db.select(['match_id']).from('matches').asCallback((err, matches) => {

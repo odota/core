@@ -1,8 +1,8 @@
 const async = require('async');
 const constants = require('dotaconstants');
+const moment = require('moment');
 const config = require('../config');
 // const crypto = require('crypto');
-const moment = require('moment');
 // const uuidV4 = require('uuid/v4');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
@@ -3900,14 +3900,12 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
             if (err) {
               return cb(err);
             }
-            const entries = rows.map((r, i) =>
-              ({
-                match_id: r.split(':')[0],
-                start_time: r.split(':')[1],
-                hero_id: r.split(':')[2],
-                score: rows[i + 1],
-              })).filter((r, i) =>
-              i % 2 === 0);
+            const entries = rows.map((r, i) => ({
+              match_id: r.split(':')[0],
+              start_time: r.split(':')[1],
+              hero_id: r.split(':')[2],
+              score: rows[i + 1],
+            })).filter((r, i) => i % 2 === 0);
             return res.json(entries);
           });
         },
