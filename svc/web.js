@@ -2,13 +2,6 @@
  * Worker serving as main web application
  * Serves web/API requests
  * */
-const config = require('../config');
-const utility = require('../util/utility');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const queries = require('../store/queries');
-const api = require('../routes/api');
-const keys = require('../routes/keyManagement');
 const request = require('request');
 const compression = require('compression');
 const session = require('cookie-session');
@@ -17,6 +10,13 @@ const express = require('express');
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
+const keys = require('../routes/keyManagement');
+const api = require('../routes/api');
+const queries = require('../store/queries');
+const db = require('../store/db');
+const redis = require('../store/redis');
+const utility = require('../util/utility');
+const config = require('../config');
 
 const { redisCount } = utility;
 
@@ -187,10 +187,10 @@ app.use((req, res, cb) => {
     }
 
     // When called from a middleware, the mount point is not included in req.path. See Express docs.
-    if (res.statusCode !== 500 &&
-        res.statusCode !== 429 &&
-        !whitelistedPaths.includes(req.baseUrl + (req.path === '/' ? '' : req.path)) &&
-        elapsed < 10000) {
+    if (res.statusCode !== 500
+        && res.statusCode !== 429
+        && !whitelistedPaths.includes(req.baseUrl + (req.path === '/' ? '' : req.path))
+        && elapsed < 10000) {
       const multi = redis.multi();
       if (res.locals.isAPIRequest) {
         multi.hincrby('usage_count', res.locals.usageIdentifier, 1)
@@ -255,10 +255,9 @@ app.use('/api', api);
 app.options('/keys', cors());
 app.use('/keys', keys);
 // 404 route
-app.use((req, res) =>
-  res.status(404).json({
-    error: 'Not Found',
-  }));
+app.use((req, res) => res.status(404).json({
+  error: 'Not Found',
+}));
 // 500 route
 app.use((err, req, res, cb) => {
   if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {

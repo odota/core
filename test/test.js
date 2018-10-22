@@ -120,8 +120,7 @@ before(function setup(done) {
       function tables(cb) {
         cassandra = require('../store/cassandra');
         console.log('create cassandra test tables');
-        async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter(cql =>
-          cql.length > 1), (cql, cb) => {
+        async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter(cql => cql.length > 1), (cql, cb) => {
           cassandra.execute(cql, cb);
         }, cb);
       },

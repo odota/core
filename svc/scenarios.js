@@ -1,8 +1,8 @@
+const async = require('async');
+const util = require('util');
 const queue = require('../store/queue');
 const buildMatch = require('../store/buildMatch');
 const db = require('../store/db');
-const async = require('async');
-const util = require('util');
 const utility = require('../util/utility');
 const su = require('../util/scenariosUtil');
 
@@ -22,8 +22,7 @@ async function processScenarios(matchID, cb) {
             epoch_week: currentWeek,
             wins: row.wins ? '1' : '0',
           });
-          const values = Object.keys(row).map(() =>
-            '?');
+          const values = Object.keys(row).map(() => '?');
           const query = util.format(
             'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
             table,
@@ -33,8 +32,7 @@ async function processScenarios(matchID, cb) {
             table,
             table,
           );
-          db.raw(query, Object.keys(row).map(key =>
-            row[key])).asCallback(cb);
+          db.raw(query, Object.keys(row).map(key => row[key])).asCallback(cb);
         });
       });
     });

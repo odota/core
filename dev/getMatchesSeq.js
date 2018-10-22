@@ -2,10 +2,10 @@
  * Load a range of matches by match_seq_num from the Steam API, without replay parsing
  * */
 const async = require('async');
+const cluster = require('cluster');
 const utility = require('../util/utility');
 const redis = require('../store/redis');
 const queries = require('../store/queries');
-const cluster = require('cluster');
 
 const { generateJob, getData } = utility;
 const { insertMatch } = queries;

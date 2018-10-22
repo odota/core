@@ -1,15 +1,15 @@
 /**
  * Functions to build/cache match object
  * */
+const constants = require('dotaconstants');
+const { promisify } = require('util');
 const config = require('../config');
 const queries = require('./queries');
 const compute = require('../util/compute');
 const utility = require('../util/utility');
-const constants = require('dotaconstants');
 const cassandra = require('../store/cassandra');
 const redis = require('../store/redis');
 const db = require('../store/db');
-const { promisify } = require('util');
 
 const { computeMatchData } = compute;
 const { deserialize, buildReplayUrl, isContributor } = utility;
@@ -115,8 +115,8 @@ async function getMatch(matchId) {
   if (cosmetics) {
     const playersWithCosmetics = matchResult.players.map((p) => {
       const hero = constants.heroes[p.hero_id] || {};
-      const playerCosmetics = cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot &&
-        (!c.used_by_heroes || c.used_by_heroes === hero.name));
+      const playerCosmetics = cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot
+        && (!c.used_by_heroes || c.used_by_heroes === hero.name));
       return {
         ...p,
         cosmetics: playerCosmetics,
@@ -136,7 +136,6 @@ async function getMatch(matchId) {
 }
 
 async function buildMatch(matchId) {
-  return Promise.reject();
   const key = `match:${matchId}`;
   const reply = await getRedisAsync(key);
   if (reply) {
