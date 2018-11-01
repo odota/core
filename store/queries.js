@@ -115,6 +115,17 @@ function getMatchBenchmarks(m, cb) {
   }, cb);
 }
 
+async function getMatchBenchmarksPromisified(m) {
+  return new Promise((resolve, reject) => {
+    getMatchBenchmarks(m, (err) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(m);
+    });
+  });
+}
+
 function getDistributions(redis, cb) {
   const keys = ['distribution:ranks', 'distribution:mmr', 'distribution:country_mmr'];
   const result = {};
@@ -1145,6 +1156,7 @@ module.exports = {
   getHeroRankings,
   getHeroBenchmarks,
   getMatchBenchmarks,
+  getMatchBenchmarksPromisified,
   getMatchRating,
   getLeaderboard,
   getPlayerMatches,
