@@ -98,9 +98,9 @@ async function getMatch(matchId) {
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,
   });
-  const cosmeticsPromise = Object.keys(match.cosmetics || {}).map(itemId => db.first().from('cosmetics').where({
+  const cosmeticsPromise = Promise.all(Object.keys(match.cosmetics || {}).map(itemId => db.first().from('cosmetics').where({
     item_id: itemId,
-  }));
+  })));
   const prodataPromise = prodataInfo(matchId);
 
   const [players, gcdata, prodata, cosmetics] = await Promise.all([playersPromise, gcdataPromise, prodataPromise, cosmeticsPromise]);
