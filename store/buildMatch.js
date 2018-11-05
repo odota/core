@@ -115,7 +115,7 @@ async function getMatch(matchId) {
   if (cosmetics) {
     const playersWithCosmetics = matchResult.players.map((p) => {
       const hero = constants.heroes[p.hero_id] || {};
-      const playerCosmetics = cosmetics.filter(c => match.cosmetics[c.item_id] === p.player_slot
+      const playerCosmetics = cosmetics.filter(Boolean).filter(c => match.cosmetics[c.item_id] === p.player_slot
         && (!c.used_by_heroes || c.used_by_heroes === hero.name));
       return {
         ...p,
