@@ -70,6 +70,17 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   );
 }
 
+function getWebhooks(db, cb) {
+  db.raw(`
+    SELECT * from webhooks
+    `).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows);
+  });
+}
+
 function getAPIKeys(db, cb) {
   db.raw(`
     SELECT api_key from api_keys WHERE api_key is not null
@@ -1166,6 +1177,7 @@ module.exports = {
   getMmrEstimate,
   getPeers,
   getProPeers,
+  getWebhooks,
   getAPIKeys,
   getItemTimings,
   getLaneRoles,
