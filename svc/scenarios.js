@@ -8,7 +8,7 @@ const su = require('../util/scenariosUtil');
 
 async function processScenarios(matchID, cb) {
   try {
-    const match = buildMatch(matchID);
+    const match = await buildMatch(matchID);
     if (!su.validateMatchProperties(match)) {
       console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
       return cb();

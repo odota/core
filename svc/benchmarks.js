@@ -9,7 +9,7 @@ const { benchmarks } = benchmarksUtil;
 
 async function doParsedBenchmarks(matchID, cb) {
   try {
-    const match = buildMatch(matchID);
+    const match = await buildMatch(matchID);
     if (match.players && utility.isSignificant(match)) {
       for (let i = 0; i < match.players.length; i += 1) {
         const p = match.players[i];
