@@ -4169,6 +4169,27 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         },
       },
     },
+    '/feed': {
+      get: {
+        summary: 'GET /feed',
+        description: 'Get streaming feed of latest matches as newline-delimited JSON',
+        tags: ['feed'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: matchObject,
+            },
+          },
+        },
+        route: () => '/feed',
+        func: (req, res, cb) => {
+          
+        },
+      },
+    },
     '/admin/apiMetrics': {
       get: {
         summary: 'GET /admin/apiMetrics',

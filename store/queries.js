@@ -711,10 +711,12 @@ function insertMatch(match, options, cb) {
     cb();
   }
 
-  function tellSocket(cb) {
+  function tellFeed(cb) {
     if (options.origin === 'scanner') {
+      // TODO write to redis stream
       redis.publish('socket:matches:scanner', JSON.stringify(match));
     } else if (options.origin === 'parsed') {
+      // TODO write to redis stream
       redis.publish('socket:matches:parser', JSON.stringify(match));
     }
     cb();
@@ -1061,7 +1063,7 @@ function insertMatch(match, options, cb) {
   }
   async.series({
     preprocess,
-    tellSocket,
+    tellFeed,
     decideLogParse,
     upsertMatch,
     upsertMatchCassandra,
