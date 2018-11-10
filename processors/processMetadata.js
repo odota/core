@@ -16,8 +16,7 @@ function processMetadata(entries) {
         const combatLogName = `npc_dota_hero_${ending.toLowerCase()}`;
         // don't include final underscore here
         // the first letter is always capitalized and will be converted to underscore
-        const combatLogName2 = `npc_dota_hero${ending.replace(/([A-Z])/g, $1 =>
-          `_${$1.toLowerCase()}`).toLowerCase()}`;
+        const combatLogName2 = `npc_dota_hero${ending.replace(/([A-Z])/g, $1 => `_${$1.toLowerCase()}`).toLowerCase()}`;
         // console.log(combatLogName, combatLogName2);
         // populate hero_to_slot for combat log mapping
         heroToSlot[combatLogName] = e.slot;

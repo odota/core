@@ -8,9 +8,9 @@
     "start": "node index",
     "test": "NODE_ENV=test mocha --exit",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "build": "npm install && npm run lintnofix",
-    "lint": "eslint . --ext .js,.jsx --fix",
-    "lintnofix": "eslint . --ext .js,.jsx",
+    "build": "npm install && npm run lint",
+    "lint": "eslint . --ext .js,.jsx --ignore-path .gitignore",
+    "lintfix": "eslint . --ext .js,.jsx --ignore-path .gitignore --fix",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
     "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
     "resetrecords": "redis-cli keys 'records*' | xargs redis-cli del",
@@ -24,7 +24,7 @@
     "url": "http://github.com/odota/core"
   },
   "dependencies": {
-    "JSONStream": "^1.3.4",
+    "JSONStream": "^1.3.5",
     "async": "^2.6.1",
     "body-parser": "^1.18.3",
     "cassandra-driver": "^3.5.0",
@@ -32,7 +32,7 @@
     "cookie-session": "2.0.0-beta.3",
     "cors": "^2.8.4",
     "dota2": "^6.1.1",
-    "dotaconstants": "^6.3.0",
+    "dotaconstants": "^6.5.0",
     "dotenv": "^6.1.0",
     "elasticsearch": "^15.0.0",
     "express": "^4.16.3",
@@ -56,8 +56,8 @@
     "ws": "^5.1.1"
   },
   "devDependencies": {
-    "eslint": "^5.7.0",
-    "eslint-config-airbnb": "^16.1.0",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
     "mocha": "^5.2.0"
   },

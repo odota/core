@@ -14,17 +14,15 @@ sqlq.forEach((f) => {
 });
 
 function mapMmr(results) {
-  const sum = results.rows.reduce((prev, current) =>
-    ({
-      count: prev.count + current.count,
-    }), {
+  const sum = results.rows.reduce((prev, current) => ({
+    count: prev.count + current.count,
+  }), {
     count: 0,
   });
   results.rows = results.rows.map((r, i) => {
-    r.cumulative_sum = results.rows.slice(0, i + 1).reduce((prev, current) =>
-      ({
-        count: prev.count + current.count,
-      }), {
+    r.cumulative_sum = results.rows.slice(0, i + 1).reduce((prev, current) => ({
+      count: prev.count + current.count,
+    }), {
       count: 0,
     }).count;
     return r;

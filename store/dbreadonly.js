@@ -1,5 +1,5 @@
-const config = require('../config');
 const knex = require('knex');
+const config = require('../config');
 
 const conn = knex({
   client: 'pg',

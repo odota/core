@@ -1,7 +1,7 @@
+const async = require('async');
 const queries = require('../store/queries');
 const db = require('../store/db');
 const utility = require('../util/utility');
-const async = require('async');
 
 const { generateJob, getData } = utility;
 // const leagueUrl = generateJob('api_leagues', {}).url;

@@ -18,20 +18,19 @@ function processTeamfights(entries, meta) {
         end: null,
         last_death: e.time,
         deaths: 0,
-        players: Array(...new Array(10)).map(() =>
-          ({
-            deaths_pos: {},
-            ability_uses: {},
-            ability_targets: {},
-            item_uses: {},
-            killed: {},
-            deaths: 0,
-            buybacks: 0,
-            damage: 0,
-            healing: 0,
-            gold_delta: 0,
-            xp_delta: 0,
-          })),
+        players: Array(...new Array(10)).map(() => ({
+          deaths_pos: {},
+          ability_uses: {},
+          ability_targets: {},
+          item_uses: {},
+          killed: {},
+          deaths: 0,
+          buybacks: 0,
+          damage: 0,
+          healing: 0,
+          gold_delta: 0,
+          xp_delta: 0,
+        })),
       };
       // update the last_death time of the current fight
       currTeamfight.last_death = e.time;
@@ -55,8 +54,7 @@ function processTeamfights(entries, meta) {
   }
   // fights that didnt end wont be pushed to teamfights array (endgame case)
   // filter only fights where 3+ heroes died
-  teamfights = teamfights.filter(tf =>
-    tf.deaths >= 3);
+  teamfights = teamfights.filter(tf => tf.deaths >= 3);
   teamfights.forEach((tf) => {
     tf.players.forEach((p, ind) => {
       // record player's start/end xp for level change computation

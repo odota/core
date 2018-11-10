@@ -1,10 +1,10 @@
 /**
  * Load match IDs from database, then issue re-insert and re-parse on all of them
  * */
+const async = require('async');
 const utility = require('../util/utility');
 const queries = require('../store/queries');
 const db = require('../store/db');
-const async = require('async');
 
 const { generateJob, getData } = utility;
 const { insertMatch } = queries;

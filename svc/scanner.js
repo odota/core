@@ -4,11 +4,11 @@
  * The endpoint usually takes around 2 seconds to return data
  * Therefore each IP should generally avoid requesting more than once every 10 seconds
  * */
+const async = require('async');
 const utility = require('../util/utility');
 const config = require('../config');
 const redis = require('../store/redis');
 const queries = require('../store/queries');
-const async = require('async');
 
 const { insertMatch } = queries;
 const { getData, generateJob } = utility;

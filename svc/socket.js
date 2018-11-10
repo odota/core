@@ -2,10 +2,10 @@
  * websocket server that recieves match data as it arrives and checks if
  * any connected clients are subscribed to match properties.
  * */
-const config = require('../config');
 const redis = require('redis');
 const WebSocket = require('ws');
 const uuidV1 = require('uuid/v4');
+const config = require('../config');
 
 const subTypes = ['player', 'team', 'league'];
 
@@ -36,10 +36,15 @@ class Subclient {
   }
 
   get ws() { return this._ws; }
+
   get uuid() { return this._uuid; }
+
   get player() { return this._subscriptions.player; }
+
   get team() { return this._subscriptions.team; }
+
   get league() { return this._subscriptions.league; }
+
   get subscriptions() { return this._subscriptions; }
 
   // send data to this websocket
