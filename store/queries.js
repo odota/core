@@ -89,27 +89,37 @@ function getMatchBenchmarks(m, cb) {
     p.benchmarks = {};
     async.eachSeries(Object.keys(benchmarks), (metric, cb) => {
       // Use data from previous epoch
-      const key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, p.hero_id].join(':');
+      let key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, p.hero_id].join(':');
+      const backupKey = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), metric, p.hero_id].join(':');
       const raw = benchmarks[metric](m, p);
       p.benchmarks[metric] = {
         raw,
       };
-      redis.zcard(key, (err, card) => {
+      redis.exists(key, (err, exists) => {
         if (err) {
           return cb(err);
         }
-        if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
-          return redis.zcount(key, '0', raw, (err, count) => {
-            if (err) {
-              return cb(err);
-            }
-            const pct = count / card;
-            p.benchmarks[metric].pct = pct;
-            return cb(err);
-          });
+        if (exists === 0) {
+          // No data, use backup key (current epoch)
+          key = backupKey;
         }
-        p.benchmarks[metric] = {};
-        return cb();
+        return redis.zcard(key, (err, card) => {
+          if (err) {
+            return cb(err);
+          }
+          if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
+            return redis.zcount(key, '0', raw, (err, count) => {
+              if (err) {
+                return cb(err);
+              }
+              const pct = count / card;
+              p.benchmarks[metric].pct = pct;
+              return cb(err);
+            });
+          }
+          p.benchmarks[metric] = {};
+          return cb();
+        });
       });
     }, cb);
   }, cb);
