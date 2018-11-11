@@ -71,14 +71,14 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 }
 
 function getWebhooks(db, cb) {
-  db.raw(`
-    SELECT * from webhooks
-    `).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows);
-  });
+  db.select('url', 'subscriptions')
+    .from('webhooks')
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return cb(err, result.rows);
+    });
 }
 
 function getAPIKeys(db, cb) {

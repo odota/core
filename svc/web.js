@@ -11,6 +11,7 @@ const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
 const keys = require('../routes/keyManagement');
+const webhooks = require('../routes/webhookManagement');
 const api = require('../routes/api');
 const queries = require('../store/queries');
 const db = require('../store/db');
@@ -37,6 +38,7 @@ const whitelistedPaths = [
   '/logout',
   '/api/admin/apiMetrics', // Admin metrics
   '/keys', // API Key management
+  '/webhooks', // Webhook management
 ];
 
 const pathCosts = {
@@ -251,6 +253,7 @@ app.route('/logout').get((req, res) => {
   return res.redirect('/api');
 });
 app.use('/api', api);
+app.use('/webhooks', webhooks);
 // CORS Preflight for API keys
 app.options('/keys', cors());
 app.use('/keys', keys);

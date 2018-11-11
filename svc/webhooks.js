@@ -14,19 +14,20 @@ redisClient.on('error', (err) => {
 });
 
 function filterWebhook(webhook, match) {
+  const subscriptions = JSON.parse(webhook.subscriptions);
   let matches = 0;
   match.players.forEach((player) => {
-    if (webhook.subscriptions.player.indexOf(Number(player.account_id)) !== -1) {
+    if (subscriptions.player.indexOf(Number(player.account_id)) !== -1) {
       matches += 1;
     }
   });
-  if (webhook.subscriptions.team.indexOf(Number(match.radiant_team_id)) !== -1) {
+  if (subscriptions.team.indexOf(Number(match.radiant_team_id)) !== -1) {
     matches += 1;
   }
-  if (webhook.subscriptions.team.indexOf(Number(match.dire_team_id)) !== -1) {
+  if (subscriptions.team.indexOf(Number(match.dire_team_id)) !== -1) {
     matches += 1;
   }
-  if (webhook.subscriptions.league.indexOf(Number(match.leagueid)) !== -1) {
+  if (subscriptions.league.indexOf(Number(match.leagueid)) !== -1) {
     matches += 1;
   }
   return matches > 0;
@@ -46,7 +47,7 @@ redisClient.on('message', (channel, message) => {
             match: message,
           },
         });
-    }));
+      }));
   });
 });
 
