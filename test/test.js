@@ -283,7 +283,7 @@ describe('api', () => {
           .replace(/{hero_id}/, 1)
           .replace(/{field}/, 'kills');
         async.eachSeries(Object.keys(spec.paths[path]), (verb, cb) => {
-          if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0 || path.indexOf('feed') === 0) {
+          if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0 || path.indexOf('/feed') === 0) {
             return cb(err);
           }
           return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
