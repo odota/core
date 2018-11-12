@@ -4206,10 +4206,10 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
                 res.write(`${JSON.stringify(final)}\n`);
                 redisCount(redis, 'feed');
               });
-              readFromStream(nextSeqNum);
+              return readFromStream(nextSeqNum);
             });
           };
-          return readFromStream(req.query.seq_num || '$');
+          readFromStream(req.query.seq_num || '$');
         },
       },
     },
