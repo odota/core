@@ -34,8 +34,8 @@ function filterWebhook(webhook, match) {
 }
 
 redisClient.on('message', (channel, message) => {
-  const origin = channel.split(':')[2];
-  message = JSON.parse(message);
+  const { match, origin } = message;
+
   queries.getWebhooks(db, (err, webhooks) => {
     parallel.async(webhooks
       .filter(filterWebhook)
@@ -44,10 +44,11 @@ redisClient.on('message', (channel, message) => {
           json: true,
           body: {
             origin,
-            match: message,
+            match,
           },
         });
       }));
   });
 });
 
+redisClient.subscribe('webhooks');

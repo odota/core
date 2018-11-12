@@ -722,6 +722,11 @@ function insertMatch(match, options, cb) {
     cb();
   }
 
+  function tellWebhooks(cb) {
+    redis.publish('webhooks', JSON.stringify({ ...match, origin: options.origin }));
+    cb();
+  }
+
   function tellSocket(cb) {
     if (options.origin === 'scanner') {
       redis.publish('socket:matches:scanner', JSON.stringify(match));
@@ -1073,6 +1078,7 @@ function insertMatch(match, options, cb) {
   async.series({
     preprocess,
     tellSocket,
+    tellWebhooks,
     decideLogParse,
     upsertMatch,
     upsertMatchCassandra,
