@@ -4174,7 +4174,9 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         summary: 'GET /feed',
         description: 'Get streaming feed of latest matches as newline-delimited JSON',
         tags: ['feed'],
-        parameters: [],
+        parameters: [
+          // TODO fill this out
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -4186,7 +4188,28 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         },
         route: () => '/feed',
         func: (req, res, cb) => {
-          
+          const readFromStream = (seqNum) => {
+            redis.xread('block', '0', 'STREAMS', 'feed', seqNum, (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              let nextSeqNum = '$';
+              // console.log(result[0][1].length);
+              // TODO do condition checks on req.query parameters, e.g. game_mode, lobby_type, leagueid, contains an account_id
+              result[0][1].forEach((dataArray) => {
+                const dataMatch = JSON.parse(dataArray[1]['1']);
+                const dataSeqNum = dataArray[0];
+                nextSeqNum = dataSeqNum;
+                // This is an array of 2 elements where the first is the sequence number and the second is the stream key-value pairs
+                // Put the sequence number in the match object so client can know where they're at
+                const final = { ...dataMatch, seq_num: dataSeqNum };
+                res.write(`${JSON.stringify(final)}\n`);
+                redisCount(redis, 'feed');
+              });
+              readFromStream(nextSeqNum);
+            });
+          };
+          readFromStream(req.query.seq_num || '$');
         },
       },
     },

@@ -722,14 +722,7 @@ function insertMatch(match, options, cb) {
   }
 
   function tellFeed(cb) {
-    if (options.origin === 'scanner') {
-      // TODO write to redis stream
-      redis.publish('socket:matches:scanner', JSON.stringify(match));
-    } else if (options.origin === 'parsed') {
-      // TODO write to redis stream
-      redis.publish('socket:matches:parser', JSON.stringify(match));
-    }
-    cb();
+    redis.xadd('feed', 'maxlen', '~', '10000', '*', 'data', JSON.stringify({ ...match, origin: options.origin }), cb);
   }
 
   function decideLogParse(cb) {
