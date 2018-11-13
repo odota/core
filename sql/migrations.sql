@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS webhooks (
   PRIMARY KEY(hook_id),
-  hook_id bigint UNIQUE,
+  hook_id uuid UNIQUE,
   account_id bigint UNIQUE,
   url text NOT NULL UNIQUE,
   subscriptions text NOT NULL

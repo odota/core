@@ -38,9 +38,10 @@ hooks.route('/')
       });
   })
   .post((req, res, next) => {
+    console.log(req.body);
     const { url, subscriptions } = req.body;
     const { teams, players, leagues } = subscriptions;
-    const accountId = req.user.accountid;
+    const accountId = req.user.account_id;
 
     if (!url) {
       res.sendStatus(400).json({
@@ -48,14 +49,16 @@ hooks.route('/')
       });
       return;
     }
-    if ((!teams && !players && !leagues) ||
-      (teams.length === 0 && players.length === 0 && leagues.length === 0)) {
+    if ((!teams && !players && !leagues)
+      || (teams.length === 0 && players.length === 0 && leagues.length === 0)) {
       res.sendStatus(400).json({
         error: 'Missing subscriptions',
       });
       return;
     }
 
+    console.log(accountId);
+    console.log(url);
     db
       .from('webhooks')
       .where({
@@ -95,42 +98,40 @@ hooks.route('/')
   });
 
 hooks.route('/:hookId')
-  .get((req, res, next) =>
-    db('webhooks')
-      .select('hook_id', 'url', 'subscriptions')
-      .where({
-        account_id: req.user.accountid,
-      })
-      .then(rows => res.sendStatus(200).json(rows))
-      .catch((err) => {
-        console.log(err);
-        return next(err);
-      }))
-  .delete((req, res, next) =>
-    db('webhooks')
-      .where({
-        account_id: req.user.accountid,
-        hook_id: req.params.hookId,
-      })
-      .del()
-      .then((rows) => {
-        if (rows.length === 0) {
-          throw Error('Unknown hook');
-        }
-      })
-      .catch((err) => {
-        if (err.message === 'Unknown hook') {
-          return res.sendStatus(200);
-        }
-        console.log(err);
-        return next(err);
-      }))
+  .get((req, res, next) => db('webhooks')
+    .select('hook_id', 'url', 'subscriptions')
+    .where({
+      account_id: req.user.account_id,
+    })
+    .then(rows => res.sendStatus(200).json(rows))
+    .catch((err) => {
+      console.log(err);
+      return next(err);
+    }))
+  .delete((req, res, next) => db('webhooks')
+    .where({
+      account_id: req.user.account_id,
+      hook_id: req.params.hookId,
+    })
+    .del()
+    .then((rows) => {
+      if (rows.length === 0) {
+        throw Error('Unknown hook');
+      }
+    })
+    .catch((err) => {
+      if (err.message === 'Unknown hook') {
+        return res.sendStatus(200);
+      }
+      console.log(err);
+      return next(err);
+    }))
   .put((req, res, next) => {
     const { subscriptions } = req.body;
     const { teams, players, leagues } = subscriptions;
 
-    if ((!teams && !players && !leagues) ||
-      (teams.length === 0 && players.length === 0 && leagues.length === 0)) {
+    if ((!teams && !players && !leagues)
+      || (teams.length === 0 && players.length === 0 && leagues.length === 0)) {
       res.sendStatus(400).json({
         error: 'Missing subscriptions',
       });
@@ -139,7 +140,7 @@ hooks.route('/:hookId')
 
     db('webhooks')
       .where({
-        account_id: req.user.accountid,
+        account_id: req.user.account_id,
         hook_id: req.params.hookId,
       })
       .update({

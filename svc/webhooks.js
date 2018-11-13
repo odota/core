@@ -1,7 +1,7 @@
-const config = require('../config');
 const redis = require('redis');
 const request = require('request');
 const parallel = require('async/parallel');
+const config = require('../config');
 const db = require('../store/db');
 const queries = require('../store/queries');
 
@@ -37,17 +37,19 @@ redisClient.on('message', (channel, message) => {
   const { match, origin } = message;
 
   queries.getWebhooks(db, (err, webhooks) => {
-    parallel.async(webhooks
-      .filter(filterWebhook)
-      .map(webhook => () => {
-        request.post(webhook.url, {
-          json: true,
-          body: {
-            origin,
-            match,
-          },
-        });
-      }));
+    if (webhooks) {
+      parallel.async(webhooks
+        .filter(filterWebhook)
+        .map(webhook => () => {
+          request.post(webhook.url, {
+            json: true,
+            body: {
+              origin,
+              match,
+            },
+          });
+        }));
+    }
   });
 });
 
