@@ -96,7 +96,7 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         tags: [
           'matches',
         ],
-        parameters: [params.matchIdParam, params.matchOverviewParam],
+        parameters: [params.matchIdParam],
         responses: {
           200: {
             description: 'Success',
