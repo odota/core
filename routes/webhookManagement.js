@@ -25,20 +25,13 @@ hooks.route('/')
     db.select('hook_id')
       .from('webhooks')
       .where('account_id', req.user.account_id)
-      .asCallback((err, results) => {
-        if (err) {
-          next(err);
-        } else if (results.length === 0) {
-          res.json({});
-        } else {
-          res.json(results.map(result => ({
-            hook_id: result.hook_id,
-          })));
-        }
+      .then(results => res.json(results))
+      .catch((err) => {
+        console.log(err);
+        return next(err);
       });
   })
   .post((req, res, next) => {
-    console.log(req.body);
     const { url, subscriptions } = req.body;
     const { teams, players, leagues } = subscriptions;
     const accountId = req.user.account_id;
@@ -69,9 +62,8 @@ hooks.route('/')
         if (rows.length > 0) {
           throw Error('URL exists');
         }
-        const hookId = uuid();
-        db('webhooks').insert({
-          hook_id: hookId,
+        return db('webhooks').insert({
+          hook_id: uuid(),
           account_id: accountId,
           url,
           subscriptions: {
@@ -79,12 +71,12 @@ hooks.route('/')
             players,
             leagues,
           },
-        }).then((rows) => {
-          if (rows.length === 0) {
-            throw Error('Could not create webhook');
-          }
-          res.sendStatus(200);
         });
+      }).then((rows) => {
+        if (rows.length === 0) {
+          throw Error('Could not create webhook');
+        }
+        return res.sendStatus(200);
       })
       .catch((err) => {
         if (err.message === 'URL exists') {
@@ -103,7 +95,7 @@ hooks.route('/:hookId')
     .where({
       account_id: req.user.account_id,
     })
-    .then(rows => res.sendStatus(200).json(rows))
+    .then(rows => res.json(rows))
     .catch((err) => {
       console.log(err);
       return next(err);
@@ -114,15 +106,8 @@ hooks.route('/:hookId')
       hook_id: req.params.hookId,
     })
     .del()
-    .then((rows) => {
-      if (rows.length === 0) {
-        throw Error('Unknown hook');
-      }
-    })
+    .then(() => res.statusCode(200))
     .catch((err) => {
-      if (err.message === 'Unknown hook') {
-        return res.sendStatus(200);
-      }
       console.log(err);
       return next(err);
     }))
