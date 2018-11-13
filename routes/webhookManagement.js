@@ -106,7 +106,7 @@ hooks.route('/:hookId')
       hook_id: req.params.hookId,
     })
     .del()
-    .then(() => res.statusCode(200))
+    .then(() => res.sendStatus(200))
     .catch((err) => {
       console.log(err);
       return next(err);
