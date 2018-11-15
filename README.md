@@ -1,4 +1,4 @@
-core
+opendota-core
 ====
 
 [![Help Contribute to Open Source](https://www.codetriage.com/odota/core/badges/users.svg)](https://www.codetriage.com/odota/core)
