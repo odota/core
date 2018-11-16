@@ -35,16 +35,24 @@ function filterWebhook(webhook, match) {
   return matches > 0;
 }
 
+function callWebhook(webhook, match) {
+  request.post(
+    webhook.url,
+    { json: true, body: match, timeout: 1000 },
+  ).on('error', err => console.log(`${webhook.url} - ${err.code}`));
+}
+
 const readFromFeed = async () => {
   const result = await asyncXRead('block', '0', 'STREAMS', 'feed', '$');
   result[0][1].forEach(async (dataArray) => {
     const match = JSON.parse(dataArray[1]['1']);
-    console.log(dataArray[1]['1']);
     const webhooks = await queries.getWebhooks(db);
-    const workers = webhooks
-      .filter(filterWebhook)
-      .map(webhook => (() => request.post(webhook.url, { json: true, body: match })));
-    parallel.async(workers);
+    if (webhooks) {
+      const workers = webhooks
+        .filter(filterWebhook)
+        .map(webhook => (() => callWebhook(webhook, match)));
+      parallel(workers);
+    }
   });
   readFromFeed();
 };
