@@ -70,15 +70,10 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   );
 }
 
-function getWebhooks(db, cb) {
-  db.select('url', 'subscriptions')
+function getWebhooks(db) {
+  return db.select('url', 'subscriptions')
     .from('webhooks')
-    .asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(err, result.rows);
-    });
+    .then(result => result.rows);
 }
 
 function getAPIKeys(db, cb) {
@@ -722,9 +717,17 @@ function insertMatch(match, options, cb) {
     cb();
   }
 
-  function tellWebhooks(cb) {
-    redis.publish('webhooks', JSON.stringify({ ...match, origin: options.origin }));
-    cb();
+  function tellFeed(cb) {
+    redis.xadd(
+      'feed',
+      'maxlen',
+      '~',
+      '10000',
+      '*',
+      'data',
+      JSON.stringify({ ...match, origin: options.origin }),
+      cb,
+    );
   }
 
   function tellSocket(cb) {
@@ -1078,7 +1081,7 @@ function insertMatch(match, options, cb) {
   async.series({
     preprocess,
     tellSocket,
-    tellWebhooks,
+    tellFeed,
     decideLogParse,
     upsertMatch,
     upsertMatchCassandra,

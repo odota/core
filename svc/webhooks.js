@@ -1,4 +1,5 @@
 const redis = require('redis');
+const { promisify } = require('util');
 const request = require('request');
 const parallel = require('async/parallel');
 const config = require('../config');
@@ -12,6 +13,7 @@ redisClient.on('error', (err) => {
   console.error(err);
   process.exit(1);
 });
+const asyncXRead = promisify(redisClient.xread).bind(redisClient);
 
 function filterWebhook(webhook, match) {
   const subscriptions = JSON.parse(webhook.subscriptions);
@@ -33,24 +35,17 @@ function filterWebhook(webhook, match) {
   return matches > 0;
 }
 
-redisClient.on('message', (channel, message) => {
-  const { match, origin } = message;
-
-  queries.getWebhooks(db, (err, webhooks) => {
-    if (webhooks) {
-      parallel.async(webhooks
-        .filter(filterWebhook)
-        .map(webhook => () => {
-          request.post(webhook.url, {
-            json: true,
-            body: {
-              origin,
-              match,
-            },
-          });
-        }));
-    }
+const readFromFeed = async () => {
+  const result = await asyncXRead('block', '0', 'STREAMS', 'feed', '$');
+  result[0][1].forEach(async (dataArray) => {
+    const match = JSON.parse(dataArray[1]['1']);
+    console.log(dataArray[1]['1']);
+    const webhooks = await queries.getWebhooks(db);
+    const workers = webhooks
+      .filter(filterWebhook)
+      .map(webhook => (() => request.post(webhook.url, { json: true, body: match })));
+    parallel.async(workers);
   });
-});
-
-redisClient.subscribe('webhooks');
+  readFromFeed();
+};
+readFromFeed();
