@@ -71,9 +71,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 }
 
 function getWebhooks(db) {
-  return db.select('url', 'subscriptions')
-    .from('webhooks')
-    .then(result => result.rows);
+  return db.select('url', 'subscriptions').from('webhooks');
 }
 
 function getAPIKeys(db, cb) {
