@@ -17,4 +17,5 @@ module.exports = {
   103637655: {}, // samantha
   178988948: {}, // diw1
   17065256: {}, // phry
+  161440418: {}, // Crazy-Duck
 };
