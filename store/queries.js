@@ -721,13 +721,8 @@ function insertMatch(match, options, cb) {
     cb();
   }
 
-  function tellSocket(cb) {
-    if (options.origin === 'scanner') {
-      redis.publish('socket:matches:scanner', JSON.stringify(match));
-    } else if (options.origin === 'parsed') {
-      redis.publish('socket:matches:parser', JSON.stringify(match));
-    }
-    cb();
+  function tellFeed(cb) {
+    redis.xadd('feed', 'maxlen', '~', '10000', '*', 'data', JSON.stringify({ ...match, origin: options.origin }), cb);
   }
 
   function decideLogParse(cb) {
@@ -1071,7 +1066,7 @@ function insertMatch(match, options, cb) {
   }
   async.series({
     preprocess,
-    tellSocket,
+    tellFeed,
     decideLogParse,
     upsertMatch,
     upsertMatchCassandra,

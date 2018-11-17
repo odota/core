@@ -238,7 +238,7 @@ describe('replay parse', function testReplayParse() {
         setTimeout(async () => {
           // ensure parse data got inserted
           const match = await buildMatch(tests[key].match_id);
-          console.log(match.players[0]);
+          // console.log(match.players[0]);
           assert(match.players);
           assert(match.players[0]);
           assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
@@ -283,11 +283,11 @@ describe('api', () => {
           .replace(/{hero_id}/, 1)
           .replace(/{field}/, 'kills');
         async.eachSeries(Object.keys(spec.paths[path]), (verb, cb) => {
-          if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0) {
+          if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0 || path.indexOf('/feed') === 0) {
             return cb(err);
           }
           return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
-            console.log(verb, replacedPath, res.body);
+            // console.log(verb, replacedPath, res.body);
             if (replacedPath.startsWith('/admin')) {
               assert.equal(res.statusCode, 403);
             } else {

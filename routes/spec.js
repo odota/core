@@ -15,6 +15,7 @@ const playerFields = require('./playerFields');
 const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const su = require('../util/scenariosUtil');
+const filter = require('../util/filter');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const packageJson = require('../package.json');
@@ -4166,6 +4167,78 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
               }
               return res.json(result);
             });
+        },
+      },
+    },
+    '/feed': {
+      get: {
+        summary: 'GET /feed',
+        description: 'Get streaming feed of latest matches as newline-delimited JSON',
+        tags: ['feed'],
+        parameters: [
+          {
+            name: 'seq_num',
+            in: 'query',
+            description: 'Return only matches after this sequence number. If not provided, returns a stream starting at the current time.',
+            required: false,
+            type: 'number',
+          },
+          {
+            name: 'game_mode',
+            in: 'query',
+            description: 'Filter to only matches in this game mode',
+            required: false,
+            type: 'number',
+          },
+          {
+            name: 'leagueid',
+            in: 'query',
+            description: 'Filter to only matches in this league',
+            required: false,
+            type: 'number',
+          },
+          {
+            name: 'included_account_id',
+            in: 'query',
+            description: 'Filter to only matches with this account_id participating',
+            required: false,
+            type: 'number',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: matchObject,
+            },
+          },
+        },
+        route: () => '/feed',
+        func: (req, res, cb) => {
+          const readFromStream = (seqNum) => {
+            redis.xread('block', '0', 'STREAMS', 'feed', seqNum, (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              let nextSeqNum = '$';
+              // console.log(result[0][1].length);
+              result[0][1].forEach((dataArray) => {
+                const dataMatch = JSON.parse(dataArray[1]['1']);
+                if (filter([dataMatch]).length) {
+                  const dataSeqNum = dataArray[0];
+                  nextSeqNum = dataSeqNum;
+                  // This is an array of 2 elements where the first is the sequence number and the second is the stream key-value pairs
+                  // Put the sequence number in the match object so client can know where they're at
+                  const final = { ...dataMatch, seq_num: dataSeqNum };
+                  res.write(`${JSON.stringify(final)}\n`);
+                  redisCount(redis, 'feed');
+                }
+              });
+              return readFromStream(nextSeqNum);
+            });
+          };
+          readFromStream(req.query.seq_num || '$');
         },
       },
     },
