@@ -36,10 +36,9 @@ function filterWebhook(webhook, match) {
 }
 
 function callWebhook(webhook, match) {
-  request.post(
-    webhook.url,
-    { json: true, body: match, timeout: 1000 },
-  ).on('error', err => console.log(`${webhook.url} - ${err.code}`));
+  request
+    .post(webhook.url, { json: true, body: match, timeout: config.WEBHOOK_TIMEOUT })
+    .on('error', err => console.log(`${webhook.url} - ${err.code}`));
 }
 
 const readFromFeed = async () => {

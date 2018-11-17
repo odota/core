@@ -74,6 +74,7 @@ const defaults = {
   STRIPE_SECRET: 'rk_test_gRqwhv4xqv0a1olp8kk8fZ94', // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: 'plan_CgLthOgwrDgz2K', // plan id for stripe metering
   ES_SEARCH_PERCENT: 0, // % of users to roll out elasticsearch to
+  WEBHOOK_TIMEOUT: 1000,
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
