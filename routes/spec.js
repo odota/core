@@ -4241,7 +4241,7 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
               return readFromStream(nextSeqNum);
             });
           };
-          readFromStream(req.query.seq_num || '$');
+          return readFromStream(req.query.seq_num || '$');
         },
       },
     },
