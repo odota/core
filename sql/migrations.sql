@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS webhooks (
   hook_id uuid UNIQUE,
   account_id bigint,
   url text NOT NULL UNIQUE,
-  subscriptions text NOT NULL
+  subscriptions jsonb NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS webhooks_hook_id_idx on webhooks(hook_id);
