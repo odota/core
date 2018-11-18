@@ -148,7 +148,7 @@ module.exports = {
   significantParam: {
     name: 'significant',
     in: 'query',
-    description: 'Whether the match was significant for aggregation purposes',
+    description: 'Whether the match was significant for aggregation purposes. Defaults to 1 (true), set this to 0 to return data for non-standard modes/matches.',
     required: false,
     type: 'integer',
   },

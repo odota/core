@@ -57,7 +57,6 @@ const defaults = {
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
   ENABLE_PLAYER_CACHE: 1, // enable/disable player aggregation caching
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
-  WEBSOCKET_PORT: 80, // port for live match subscription websocket service
   MAXIMUM_AGE_SCENARIOS_ROWS: 4, // maximum allowed age of scenarios rows in weeks
   MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
   PLAYER_CACHE_SECONDS: 1800, // number of seconds to cache player aggregations
@@ -74,7 +73,7 @@ const defaults = {
   STRIPE_SECRET: 'rk_test_gRqwhv4xqv0a1olp8kk8fZ94', // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: 'plan_CgLthOgwrDgz2K', // plan id for stripe metering
   ES_SEARCH_PERCENT: 0, // % of users to roll out elasticsearch to
-  WEBHOOK_TIMEOUT: 1000,
+  WEBHOOK_TIMEOUT: 1000, // Timeout in milliseconds when calling a webhook
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
