@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS webhooks (
   PRIMARY KEY(hook_id),
   hook_id uuid UNIQUE,
   account_id bigint,
-  url text NOT NULL UNIQUE,
+  url text NOT NULL,
   subscriptions jsonb NOT NULL
 );
 
