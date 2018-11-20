@@ -16,10 +16,10 @@ redisClient.on('error', (err) => {
 const asyncXRead = promisify(redisClient.xread).bind(redisClient);
 
 function filterWebhook(webhook, match) {
-  const { players, teams, leagues } = JSON.parse(webhook.subscriptions);
-  const p = players ? players.map(Number) : [];
-  const t = teams ? teams.map(Number) : [];
-  const l = leagues ? leagues.map(Number) : [];
+  const { players = [], teams = [], leagues = [] } = webhook.subscriptions;
+  const p = players.map(Number);
+  const t = teams.map(Number);
+  const l = leagues.map(Number);
 
   return (match.players.map(player => player.account_id).map(Number).filter(id => p.includes(id)).length > 0)
     || (t.includes(Number(match.radiant_team_id)))
@@ -40,7 +40,7 @@ const readFromFeed = async () => {
     const webhooks = await queries.getWebhooks(db);
     if (webhooks) {
       const workers = webhooks
-        .filter(filterWebhook)
+        .filter(webhook => filterWebhook(webhook, match))
         .map(webhook => (() => callWebhook(webhook, match)));
       parallel(workers);
     }
