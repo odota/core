@@ -12,7 +12,7 @@ is subscribing to. The available criteria are:
 
 You can subscribe to any combination of the above criteria and ofcourse,
 multiple of the same ones. Each time a match is scanned or parsed that
-contains a player, league, team who's ID you've subscribed to, the result
+contains a player, league, team whose ID you've subscribed to, the result
 will get posted to your webhook. It has the same format a call to the 
 `/matches` endpoint would get you, with an additional `origin` field
 indicating whether the match was scanned or parsed. 
