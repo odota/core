@@ -4228,7 +4228,7 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
               // console.log(result[0][1].length);
               result[0][1].forEach((dataArray) => {
                 const dataMatch = JSON.parse(dataArray[1]['1']);
-                if (filter([dataMatch]).length) {
+                if (filter([dataMatch], req.query).length) {
                   const dataSeqNum = dataArray[0];
                   nextSeqNum = dataSeqNum;
                   // This is an array of 2 elements where the first is the sequence number and the second is the stream key-value pairs
