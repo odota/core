@@ -87,7 +87,7 @@ function filter(matches, filters) {
     },
     leagueid(m, key) {
       return m.leagueid === key;
-    }
+    },
   };
   const filtered = [];
   for (let i = 0; i < matches.length; i += 1) {
