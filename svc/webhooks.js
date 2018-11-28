@@ -21,7 +21,7 @@ function filterWebhook(webhook, match) {
   const t = teams.map(Number);
   const l = leagues.map(Number);
 
-  return (match.players.map(player => player.account_id).map(Number).filter(id => p.includes(id)).length > 0)
+  return (match.players.map(player => player.account_id).map(Number).some(id => p.includes(id)))
     || (t.includes(Number(match.radiant_team_id)))
     || (t.includes(Number(match.dire_team_id)))
     || (l.includes(Number(match.leagueid)));
