@@ -10,7 +10,7 @@ is subscribing to. The available criteria are:
 * League ID
 * Team ID
 
-You can subscribe to any combination of the above criteria and ofcourse,
+You can subscribe to any combination of the above criteria and of course,
 multiple of the same ones. Each time a match is scanned or parsed that
 contains a player, league, team whose ID you've subscribed to, the result
 will get posted to your webhook. It has the same format a call to the 
@@ -20,12 +20,14 @@ indicating whether the match was scanned or parsed.
 ## Webhook management endpoints
 
 In order to call any of the following endpoints, you must be authenticated.
+This means that you must have a valid Steam OpenID 2.0 session on the 
+`opendota.com` domain
 
 ### `/webhooks`
 
 #### GET
 
-Lists the ID's of all your registered webhooks
+Lists the IDs of all your registered webhooks
 
 ##### Example response body
 
