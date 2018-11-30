@@ -226,13 +226,18 @@ app.use((req, res, cb) => {
   });
   cb();
 });
-// CORS headers
 app.use((req, res, next) => {
-  cors({
-    origin: req.method === 'GET' ? true : config.UI_HOST,
-    credentials: true,
-  })(req, res, next);
+  // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
+  if (req.method !== 'GET' && req.header('Origin') && req.header('Origin') !== config.UI_HOST) {
+    return res.status(403).json({ error: 'Invalid Origin header' });
+  }
+  return next();
 });
+// CORS headers
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
 app.route('/login').get(passport.authenticate('steam', {
   failureRedirect: '/api',
 }));
