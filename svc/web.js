@@ -227,10 +227,12 @@ app.use((req, res, cb) => {
   cb();
 });
 // CORS headers
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
+app.use((req, res, next) => {
+  cors({
+    origin: req.method === 'GET' ? true : config.UI_HOST,
+    credentials: true,
+  })(req, res, next);
+});
 app.route('/login').get(passport.authenticate('steam', {
   failureRedirect: '/api',
 }));
