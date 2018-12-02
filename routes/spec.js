@@ -4225,6 +4225,10 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
           if (!req.query.game_mode && !req.query.leagueid && !req.query.included_account_id) {
             return res.status(400).json({ error: 'A filter parameter is required' });
           }
+          const keepAlive = setInterval(() => res.write('\n'), 5000);
+          req.on('end', () => {
+            clearTimeout(keepAlive);
+          });
           const readFromStream = (seqNum) => {
             redis.xread('block', '0', 'STREAMS', 'feed', seqNum, (err, result) => {
               if (err) {
