@@ -5,6 +5,9 @@ const parallel = require('async/parallel');
 const config = require('../config');
 const db = require('../store/db');
 const queries = require('../store/queries');
+const utility = require('../util/utility');
+
+const { redisCount } = utility;
 
 const redisClient = redis.createClient(config.REDIS_URL, {
   detect_buffers: true,
@@ -28,6 +31,7 @@ function filterWebhook(webhook, match) {
 }
 
 function callWebhook(webhook, match) {
+  redisCount(redisClient, 'webhook');
   request
     .post(webhook.url, { json: true, body: match, timeout: config.WEBHOOK_TIMEOUT })
     .on('error', err => console.log(`${webhook.url} - ${err.code}`));
