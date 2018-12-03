@@ -17,6 +17,7 @@ redisClient.on('error', (err) => {
   process.exit(1);
 });
 const asyncXRead = promisify(redisClient.xread).bind(redisClient);
+const asyncGet = promisify(redisClient.get).bind(redisClient);
 
 function filterWebhook(webhook, match) {
   const { players = [], teams = [], leagues = [] } = webhook.subscriptions;
@@ -53,8 +54,7 @@ const readFromFeed = async (seqNum) => {
   redisClient.set('webhooks:seqNum', lastIndex);
   readFromFeed(lastIndex);
 };
-redisClient
-  .get('webhooks:seqNum')
+asyncGet('webhooks:seqNum')
   .then(seqNum => readFromFeed(seqNum))
   .catch((err) => {
     console.log(`${err.code} - Could not find webhooks sequence number, starting from top`);
