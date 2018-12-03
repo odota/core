@@ -46,6 +46,9 @@ module.exports = function buildStatus(db, redis, cb) {
     requests_last_day(cb) {
       utility.getRedisCountDay(redis, 'request', cb);
     },
+    webhooks_last_day(cb) {
+      utility.getRedisCountDay(redis, 'webhook', cb);
+    },
     feed_last_day(cb) {
       utility.getRedisCountDay(redis, 'feed', cb);
     },
