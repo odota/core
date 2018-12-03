@@ -6,5 +6,4 @@ CREATE TABLE IF NOT EXISTS webhooks (
   subscriptions jsonb NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS webhooks_hook_id_idx on webhooks(hook_id);
 CREATE INDEX IF NOT EXISTS webhooks_account_id_idx on webhooks(account_id);

@@ -189,7 +189,6 @@ CREATE TABLE IF NOT EXISTS webhooks (
   url text NOT NULL,
   subscriptions jsonb NOT NULL
 );
-CREATE INDEX IF NOT EXISTS webhooks_hook_id_idx on webhooks(hook_id);
 CREATE INDEX IF NOT EXISTS webhooks_account_id_idx on webhooks(account_id);
 
 CREATE TABLE IF NOT EXISTS api_keys (
@@ -199,7 +198,6 @@ CREATE TABLE IF NOT EXISTS api_keys (
   customer_id text NOT NULL,
   subscription_id text NOT NULL
 );
-CREATE INDEX IF NOT EXISTS api_keys_account_id_idx on api_keys(account_id);
 
 CREATE TABLE IF NOT EXISTS api_key_usage (
   PRIMARY KEY(account_id, api_key, ip, timestamp),
