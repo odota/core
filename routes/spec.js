@@ -376,6 +376,24 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
                         description: 'Number of camps stacked',
                         type: 'integer',
                       },
+                      connection_log: {
+                        description: 'Array containing information about the player\'s disconnections and reconnections',
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            time: {
+                              description: 'Time in seconds an event ocurred',
+                              type: 'integer',
+                            },
+                            event: {
+                              description: '0 for disconnections (i.e. end of game), 1 for anormal disconnections (i.e. waiting for a reconnect) and 2 for reconnections',
+                              type: 'integer',
+                            },
+                            player_slot: properties.player_slot,
+                          },
+                        },
+                      },
                       creeps_stacked: {
                         description: 'Number of creeps stacked',
                         type: 'integer',

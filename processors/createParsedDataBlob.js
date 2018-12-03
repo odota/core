@@ -50,6 +50,7 @@ function getParseSchema() {
       kills_log: [],
       buyback_log: [],
       runes_log: [],
+      connection_log: [],
       // "pos": {},
       lane_pos: {},
       obs: {},
