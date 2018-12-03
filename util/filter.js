@@ -85,6 +85,9 @@ function filter(matches, filters) {
     significant(m, key) {
       return Number(utility.isSignificant(m)) === key;
     },
+    leagueid(m, key) {
+      return m.leagueid === key;
+    },
   };
   const filtered = [];
   for (let i = 0; i < matches.length; i += 1) {
