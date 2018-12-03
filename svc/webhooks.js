@@ -37,8 +37,8 @@ function callWebhook(webhook, match) {
     .on('error', err => console.log(`${webhook.url} - ${err.code}`));
 }
 
-const readFromFeed = async () => {
-  const result = await asyncXRead('block', '0', 'STREAMS', 'feed', '$');
+const readFromFeed = async (seqNum) => {
+  const result = await asyncXRead('block', '0', 'STREAMS', 'feed', seqNum);
   result[0][1].forEach(async (dataArray) => {
     const match = JSON.parse(dataArray[1]['1']);
     const webhooks = await queries.getWebhooks(db);
@@ -49,6 +49,14 @@ const readFromFeed = async () => {
       parallel(workers);
     }
   });
-  readFromFeed();
+  const lastIndex = result[0][1].slice(-1)[0];
+  redisClient.set('webhooks:seqNum', lastIndex);
+  readFromFeed(lastIndex);
 };
-readFromFeed();
+redisClient
+  .get('webhooks:seqNum')
+  .then(seqNum => readFromFeed(seqNum))
+  .catch((err) => {
+    console.log(`${err.code} - Could not find webhooks sequence number, starting from top`);
+    readFromFeed('$');
+  });
