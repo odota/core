@@ -50,7 +50,8 @@ const readFromFeed = async (seqNum) => {
       parallel(workers);
     }
   });
-  const lastIndex = result[0][1].slice(-1)[0];
+  const l = result[0][1].length;
+  const lastIndex = l ? result[0][1][l - 1][0] : '$';
   redisClient.set('webhooks:seqNum', lastIndex);
   readFromFeed(lastIndex);
 };
