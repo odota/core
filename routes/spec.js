@@ -383,12 +383,12 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Time in seconds an event ocurred',
+                              description: 'Time in seconds the event ocurred',
                               type: 'integer',
                             },
                             event: {
-                              description: '0 for disconnections (i.e. end of game), 1 for anormal disconnections (i.e. waiting for a reconnect) and 2 for reconnections',
-                              type: 'integer',
+                              description: 'Event that occurred',
+                              type: 'string',
                             },
                             player_slot: properties.player_slot,
                           },

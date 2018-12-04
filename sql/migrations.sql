@@ -20,3 +20,5 @@ CREATE TABLE IF NOT EXISTS api_key_usage (
 );
 CREATE INDEX IF NOT EXISTS api_keys_usage_account_id_idx on api_key_usage(account_id);
 CREATE INDEX IF NOT EXISTS api_keys_usage_timestamp_idx on api_key_usage(timestamp);
+
+ALTER TABLE player_matches ADD connection_log json[];

@@ -411,7 +411,7 @@ function processExpand(entries, meta) {
         time: e.time,
         type: 'connection_log',
         slot: e.player1,
-        event: 2,
+        event: 'reconnect',
       });
     },
     CHAT_MESSAGE_DISCONNECT_WAIT_FOR_RECONNECT(e) {
@@ -419,15 +419,7 @@ function processExpand(entries, meta) {
         time: e.time,
         type: 'connection_log',
         slot: e.player1,
-        event: 1,
-      });
-    },
-    CHAT_MESSAGE_DISCONNECT(e) {
-      expand({
-        time: e.time,
-        type: 'connection_log',
-        slot: e.player1,
-        event: 0,
+        event: 'disconnect',
       });
     },
     CHAT_MESSAGE_FIRSTBLOOD(e) {
