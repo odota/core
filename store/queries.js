@@ -72,7 +72,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 }
 
 function getWebhooks(db) {
-  return db.query(new QueryStream('select url, subscriptions from webhooks'));
+  return db.raw(new QueryStream('select url, subscriptions from webhooks'));
 }
 
 function getAPIKeys(db, cb) {
