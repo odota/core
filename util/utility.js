@@ -9,6 +9,7 @@ const urllib = require('url');
 const uuidV4 = require('uuid/v4');
 const moment = require('moment');
 const crypto = require('crypto');
+const { Transform } = require('stream');
 const laneMappings = require('./laneMappings');
 const config = require('../config');
 const contributors = require('../CONTRIBUTORS');
@@ -814,6 +815,34 @@ function checkIfInExperiment(ip, mod) {
   return crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod;
 }
 
+function filterStream(fn) {
+  return new Transform({
+    objectMode: true,
+    transform(chunk, _, callback) {
+      try {
+        if (fn(chunk)) this.push(chunk);
+        return callback();
+      } catch (e) {
+        return callback(e);
+      }
+    },
+  });
+}
+
+function spyStream(fn) {
+  return new Transform({
+    objectMode: true,
+    transform(chunk, _, callback) {
+      try {
+        fn(chunk);
+      } catch (e) {
+        return callback(e);
+      }
+      return callback(null, chunk);
+    },
+  });
+}
+
 module.exports = {
   tokenize,
   generateJob,
@@ -855,4 +884,6 @@ module.exports = {
   epochWeek,
   cleanItemSchema,
   checkIfInExperiment,
+  filterStream,
+  spyStream,
 };

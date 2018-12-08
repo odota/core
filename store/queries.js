@@ -4,6 +4,7 @@
 const async = require('async');
 const constants = require('dotaconstants');
 const util = require('util');
+const QueryStream = require('pg-query-stream');
 const utility = require('../util/utility');
 const config = require('../config');
 const queue = require('./queue');
@@ -71,7 +72,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 }
 
 function getWebhooks(db) {
-  return db.select('url', 'subscriptions').from('webhooks');
+  return db.query(new QueryStream('select url, subscriptions from webhooks'));
 }
 
 function getAPIKeys(db, cb) {
