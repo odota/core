@@ -9,7 +9,6 @@ const urllib = require('url');
 const uuidV4 = require('uuid/v4');
 const moment = require('moment');
 const crypto = require('crypto');
-const { Transform } = require('stream');
 const laneMappings = require('./laneMappings');
 const config = require('../config');
 const contributors = require('../CONTRIBUTORS');
