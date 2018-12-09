@@ -31,7 +31,7 @@ function filterWebhook(webhook, match) {
 
 const readFromFeed = async (seqNum) => {
   const result = await asyncXRead('block', '0', 'STREAMS', 'feed', seqNum);
-  const hookStream = queries.getWebhooks(db).pipe(JSONStream.parse);
+  const hookStream = queries.getWebhooks(db).pipe(JSONStream.parse());
 
   hookStream.on('data', (webhook) => {
     result[0][1].forEach((dataArray) => {
