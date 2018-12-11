@@ -383,7 +383,7 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Time in seconds the event ocurred',
+                              description: 'Game time in seconds the event ocurred',
                               type: 'integer',
                             },
                             event: {
