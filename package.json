@@ -39,7 +39,7 @@
     "http-proxy": "^1.17.0",
     "knex": "^0.15.2",
     "long": "^4.0.0",
-    "moment": "^2.22.2",
+    "moment": "^2.23.0",
     "nock": "^10.0.1",
     "passport": "^0.4.0",
     "passport-steam": "^1.0.10",
