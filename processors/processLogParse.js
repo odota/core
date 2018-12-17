@@ -36,6 +36,8 @@ function processReduce(entries, meta) {
       || e.type === 'CHAT_MESSAGE_UNPAUSED'
       || e.type === 'CHAT_MESSAGE_RUNE_PICKUP'
       || e.type === 'CHAT_MESSAGE_FIRSTBLOOD'
+      || e.type === 'CHAT_MESSAGE_DISCONNECT_WAIT_FOR_RECONNECT'
+      || e.type === 'CHAT_MESSAGE_RECONNECT'
       || e.type === 'obs'
       || e.type === 'sen'
       || e.type === 'obs_left'

@@ -406,6 +406,22 @@ function processExpand(entries, meta) {
       // starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
       // so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
     },
+    CHAT_MESSAGE_RECONNECT(e) {
+      expand({
+        time: e.time,
+        type: 'connection_log',
+        slot: e.player1,
+        event: 'reconnect',
+      });
+    },
+    CHAT_MESSAGE_DISCONNECT_WAIT_FOR_RECONNECT(e) {
+      expand({
+        time: e.time,
+        type: 'connection_log',
+        slot: e.player1,
+        event: 'disconnect',
+      });
+    },
     CHAT_MESSAGE_FIRSTBLOOD(e) {
       expand({
         time: e.time,

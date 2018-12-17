@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   kills_log json[],
   buyback_log json[],
   runes_log json[],
+  connection_log json[],
   lane_pos json,
   obs json,
   sen json,
@@ -471,7 +472,7 @@ CREATE TABLE IF NOT EXISTS scenarios (
   epoch_week integer,
   UNIQUE (hero_id, item, time, epoch_week),
   UNIQUE (hero_id, lane_role, time, epoch_week)
-); 
+);
 
 CREATE TABLE IF NOT EXISTS team_scenarios (
   scenario text,
@@ -481,7 +482,7 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   wins bigint,
   epoch_week integer,
   UNIQUE (scenario, is_radiant, region, epoch_week)
-);  
+);
 
 DO $$
 BEGIN
