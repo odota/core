@@ -188,7 +188,7 @@
       "script": "svc/webhooks.js",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
-      "group": "webhooks",
+      "group": "backend",
       "exec_mode": "cluster",
       "instances": 1
     },
