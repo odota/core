@@ -32,9 +32,10 @@ function filterWebhook(webhook, match) {
 const readFromFeed = async (seqNum) => {
   const result = await asyncXRead('block', '0', 'STREAMS', 'feed', seqNum);
   const hookStream = queries.getWebhooks(db).pipe(JSONStream.parse());
-
+   console.log(result[0][1].length);
+  
   hookStream.on('data', (webhook) => {
-    console.log(result[0][1].length, webhook);
+    console.log(webhook);
     result[0][1].forEach((dataArray) => {
       const match = JSON.parse(dataArray[1]['1']);
       if (filterWebhook(webhook, match)) {
