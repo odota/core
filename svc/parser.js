@@ -44,6 +44,7 @@ function runParse(match, job, cb) {
         doLogParse: match.doLogParse,
         doScenarios: match.origin === 'scanner' && match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT,
         doParsedBenchmarks: match.origin === 'scanner' && match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT,
+        doTellFeed: match.origin === 'scanner',
       }, cb);
     },
   );
