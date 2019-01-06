@@ -726,7 +726,11 @@ function insertMatch(match, options, cb) {
   }
 
   function tellFeed(cb) {
-    redis.xadd('feed', 'maxlen', '~', '10000', '*', 'data', JSON.stringify({ ...match, origin: options.origin }), cb);
+    if (options.origin === 'scanner') {
+      redis.xadd('feed', 'maxlen', '~', '10000', '*', 'data', JSON.stringify({ ...match, origin: options.origin }), cb);
+    } else {
+      cb();
+    }
   }
 
   function decideLogParse(cb) {
