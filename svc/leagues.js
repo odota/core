@@ -18,7 +18,13 @@ function doLeagues(cb) {
 
     return async.each(apiLeagues.infos, (league, cb) => {
       const openQualifierTier = league.name.indexOf('Open Qualifier') === -1 ? null : 'excluded';
-      league.tier = openQualifierTier || (league.tier > 1 ? 'professional' : 'excluded') || null;
+      let eventTier = 'excluded';
+      if (league.tier === 2) {
+        eventTier = 'professional';
+      } else if (league.tier >= 3) {
+        eventTier = 'premium';
+      }
+      league.tier = openQualifierTier || eventTier || null;
       league.ticket = null;
       league.banner = null;
       league.leagueid = league.league_id;
