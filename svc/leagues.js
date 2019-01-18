@@ -24,6 +24,9 @@ function doLeagues(cb) {
       } else if (league.tier >= 3) {
         eventTier = 'premium';
       }
+      if (league.league_id === 4664) {
+        eventTier = 'premium';
+      }
       league.tier = openQualifierTier || eventTier || null;
       league.ticket = null;
       league.banner = null;
