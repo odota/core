@@ -383,6 +383,8 @@ function getPeers(db, input, player, cb) {
         return cb(err);
       }
       t.personaname = row.personaname;
+      t.name = row.name;
+      t.is_contributor = row.is_contributor;
       t.last_login = row.last_login;
       t.avatar = row.avatar;
       t.avatarfull = row.avatarfull;
