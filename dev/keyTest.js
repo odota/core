@@ -1,6 +1,6 @@
 const request = require('request');
-const config = require('../config');
 const async = require('async');
+const config = require('../config');
 
 async.eachSeries(config.STEAM_API_KEY.split(','), (key, cb) => {
   setTimeout(() => {

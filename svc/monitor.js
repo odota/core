@@ -1,12 +1,12 @@
 /**
  * Worker that monitors health metrics and saves results
  * */
+const request = require('request');
 const config = require('../config');
 const redis = require('../store/redis');
 const db = require('../store/db');
 const cassandra = require('../store/cassandra');
 const utility = require('../util/utility');
-const request = require('request');
 
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
@@ -101,11 +101,11 @@ function cassandraUsage(cb) {
     }
     let size = 0;
     result.rows.forEach((r) => {
-      size += r.mean_partition_size * r.partitions_count * 0.5 * 4;
+      size += r.mean_partition_size * r.partitions_count * 0.4;
     });
     return cb(err, {
       metric: size,
-      threshold: 10 * (10 ** 12),
+      threshold: 2.5 * (10 ** 12),
     });
   });
 }

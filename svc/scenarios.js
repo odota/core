@@ -1,16 +1,14 @@
+const async = require('async');
+const util = require('util');
 const queue = require('../store/queue');
 const buildMatch = require('../store/buildMatch');
 const db = require('../store/db');
-const async = require('async');
-const util = require('util');
 const utility = require('../util/utility');
 const su = require('../util/scenariosUtil');
 
-function processScenarios(matchID, cb) {
-  buildMatch(matchID, (err, match) => {
-    if (err) {
-      return cb(err);
-    }
+async function processScenarios(matchID, cb) {
+  try {
+    const match = await buildMatch(matchID);
     if (!su.validateMatchProperties(match)) {
       console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
       return cb();
@@ -24,8 +22,7 @@ function processScenarios(matchID, cb) {
             epoch_week: currentWeek,
             wins: row.wins ? '1' : '0',
           });
-          const values = Object.keys(row).map(() =>
-            '?');
+          const values = Object.keys(row).map(() => '?');
           const query = util.format(
             'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
             table,
@@ -35,13 +32,14 @@ function processScenarios(matchID, cb) {
             table,
             table,
           );
-          db.raw(query, Object.keys(row).map(key =>
-            row[key])).asCallback(cb);
+          db.raw(query, Object.keys(row).map(key => row[key])).asCallback(cb);
         });
       });
     });
     return cb();
-  });
+  } catch (err) {
+    return cb(err);
+  }
 }
 
 queue.runQueue('scenariosQueue', 1, processScenarios);

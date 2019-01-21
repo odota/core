@@ -1,5 +1,5 @@
-const db = require('../store/db');
 const JSONStream = require('JSONStream');
+const db = require('../store/db');
 const queries = require('../store/queries');
 
 const { insertMatchSkillCassandra } = queries;

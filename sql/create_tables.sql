@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   kills_log json[],
   buyback_log json[],
   runes_log json[],
+  connection_log json[],
   lane_pos json,
   obs json,
   sen json,
@@ -182,6 +183,15 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE INDEX IF NOT EXISTS subscriptions_account_id_idx on subscriptions(account_id);
 CREATE INDEX IF NOT EXISTS subscriptions_customer_id_idx on subscriptions(customer_id);
 
+CREATE TABLE IF NOT EXISTS webhooks (
+  PRIMARY KEY(hook_id),
+  hook_id uuid UNIQUE,
+  account_id bigint,
+  url text NOT NULL,
+  subscriptions jsonb NOT NULL
+);
+CREATE INDEX IF NOT EXISTS webhooks_account_id_idx on webhooks(account_id);
+
 CREATE TABLE IF NOT EXISTS api_keys (
   PRIMARY KEY(account_id),
   account_id bigint UNIQUE,
@@ -189,7 +199,6 @@ CREATE TABLE IF NOT EXISTS api_keys (
   customer_id text NOT NULL,
   subscription_id text NOT NULL
 );
-CREATE INDEX IF NOT EXISTS api_keys_account_id_idx on api_keys(account_id);
 
 CREATE TABLE IF NOT EXISTS api_key_usage (
   PRIMARY KEY(account_id, api_key, ip, timestamp),
@@ -463,7 +472,7 @@ CREATE TABLE IF NOT EXISTS scenarios (
   epoch_week integer,
   UNIQUE (hero_id, item, time, epoch_week),
   UNIQUE (hero_id, lane_role, time, epoch_week)
-); 
+);
 
 CREATE TABLE IF NOT EXISTS team_scenarios (
   scenario text,
@@ -473,7 +482,7 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   wins bigint,
   epoch_week integer,
   UNIQUE (scenario, is_radiant, region, epoch_week)
-);  
+);
 
 DO $$
 BEGIN

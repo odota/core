@@ -16,7 +16,7 @@ services:
     image: odota/cassandra
     container_name: odota-cassandra
   redis:
-    image: redis:4
+    image: redis:5
     container_name: odota-redis
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4

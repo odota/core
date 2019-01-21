@@ -3,11 +3,12 @@ const uuid = require('uuid/v4');
 const bodyParser = require('body-parser');
 const moment = require('moment');
 const async = require('async');
+const stripeLib = require('stripe');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const config = require('../config');
-const stripe = require('stripe')(config.STRIPE_SECRET);
 
+const stripe = stripeLib(config.STRIPE_SECRET);
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
 

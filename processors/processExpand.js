@@ -139,10 +139,10 @@ function processExpand(entries, meta) {
       const key = computeIllusionString(e.targetname, e.targetillusion);
 
       // If it is a building kill
-      if (e.targetname.indexOf('_tower') > -1 ||
-          e.targetname.indexOf('_rax_') > -1 ||
-          e.targetname.indexOf('_healers') > -1 ||
-          e.targetname.indexOf('_fort') > -1) {
+      if (e.targetname.indexOf('_tower') > -1
+          || e.targetname.indexOf('_rax_') > -1
+          || e.targetname.indexOf('_healers') > -1
+          || e.targetname.indexOf('_fort') > -1) {
         expand({
           time: e.time,
           type: 'building_kill',
@@ -158,7 +158,7 @@ function processExpand(entries, meta) {
           // If the hero is meepo than the clones will also get killed
           aegisDeathTime = e.time;
           return;
-        } else if (aegisDeathTime !== e.time) {
+        } if (aegisDeathTime !== e.time) {
           // We are after the aegis death tick, so clear everything
           aegisDeathTime = null;
           aegisHolder = null;
@@ -405,6 +405,22 @@ function processExpand(entries, meta) {
       // They go in incremental powers of 2
       // starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
       // so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
+    },
+    CHAT_MESSAGE_RECONNECT(e) {
+      expand({
+        time: e.time,
+        type: 'connection_log',
+        slot: e.player1,
+        event: 'reconnect',
+      });
+    },
+    CHAT_MESSAGE_DISCONNECT_WAIT_FOR_RECONNECT(e) {
+      expand({
+        time: e.time,
+        type: 'connection_log',
+        slot: e.player1,
+        event: 'disconnect',
+      });
     },
     CHAT_MESSAGE_FIRSTBLOOD(e) {
       expand({

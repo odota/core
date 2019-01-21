@@ -5,15 +5,15 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
+const cp = require('child_process');
+const async = require('async');
+const numCPUs = require('os').cpus().length;
+const express = require('express');
 const utility = require('../util/utility');
 const getGcData = require('../util/getGcData');
 const config = require('../config');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
-const cp = require('child_process');
-const async = require('async');
-const numCPUs = require('os').cpus().length;
-const express = require('express');
 
 const { insertMatch } = queries;
 const { buildReplayUrl } = utility;
@@ -44,6 +44,7 @@ function runParse(match, job, cb) {
         doLogParse: match.doLogParse,
         doScenarios: match.origin === 'scanner' && match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT,
         doParsedBenchmarks: match.origin === 'scanner' && match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT,
+        doTellFeed: match.origin === 'scanner',
       }, cb);
     },
   );

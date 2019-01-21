@@ -148,7 +148,7 @@ module.exports = {
   significantParam: {
     name: 'significant',
     in: 'query',
-    description: 'Whether the match was significant for aggregation purposes',
+    description: 'Whether the match was significant for aggregation purposes. Defaults to 1 (true), set this to 0 to return data for non-standard modes/matches.',
     required: false,
     type: 'integer',
   },
@@ -212,6 +212,13 @@ module.exports = {
     name: 'less_than_match_id',
     in: 'query',
     description: 'Get matches with a match ID lower than this value',
+    required: false,
+    type: 'integer',
+  },
+  matchOverviewParam: {
+    name: 'overview',
+    in: 'query',
+    description: 'Only fetch data required for match overview page',
     required: false,
     type: 'integer',
   },

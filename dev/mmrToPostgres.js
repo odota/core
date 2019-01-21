@@ -1,6 +1,6 @@
+const async = require('async');
 const redis = require('../store/redis');
 const db = require('../store/db');
-const async = require('async');
 
 redis.zrange('solo_competitive_rank', 0, -1, 'WITHSCORES', (err, ids) => {
   const inserts = [];

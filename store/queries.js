@@ -3,10 +3,10 @@
  * */
 const async = require('async');
 const constants = require('dotaconstants');
+const util = require('util');
 const utility = require('../util/utility');
 const config = require('../config');
 const queue = require('./queue');
-const util = require('util');
 const su = require('../util/scenariosUtil');
 const filter = require('../util/filter');
 const compute = require('../util/compute');
@@ -70,6 +70,10 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   );
 }
 
+function getWebhooks(db) {
+  return db.select('url', 'subscriptions').from('webhooks').stream();
+}
+
 function getAPIKeys(db, cb) {
   db.raw(`
     SELECT api_key from api_keys WHERE api_key is not null
@@ -89,30 +93,51 @@ function getMatchBenchmarks(m, cb) {
     p.benchmarks = {};
     async.eachSeries(Object.keys(benchmarks), (metric, cb) => {
       // Use data from previous epoch
-      const key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, p.hero_id].join(':');
+      let key = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1), metric, p.hero_id].join(':');
+      const backupKey = ['benchmarks', utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0), metric, p.hero_id].join(':');
       const raw = benchmarks[metric](m, p);
       p.benchmarks[metric] = {
         raw,
       };
-      redis.zcard(key, (err, card) => {
+      redis.exists(key, (err, exists) => {
         if (err) {
           return cb(err);
         }
-        if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
-          return redis.zcount(key, '0', raw, (err, count) => {
-            if (err) {
-              return cb(err);
-            }
-            const pct = count / card;
-            p.benchmarks[metric].pct = pct;
-            return cb(err);
-          });
+        if (exists === 0) {
+          // No data, use backup key (current epoch)
+          key = backupKey;
         }
-        p.benchmarks[metric] = {};
-        return cb();
+        return redis.zcard(key, (err, card) => {
+          if (err) {
+            return cb(err);
+          }
+          if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
+            return redis.zcount(key, '0', raw, (err, count) => {
+              if (err) {
+                return cb(err);
+              }
+              const pct = count / card;
+              p.benchmarks[metric].pct = pct;
+              return cb(err);
+            });
+          }
+          p.benchmarks[metric] = {};
+          return cb();
+        });
       });
     }, cb);
   }, cb);
+}
+
+async function getMatchBenchmarksPromisified(m) {
+  return new Promise((resolve, reject) => {
+    getMatchBenchmarks(m, (err) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(m);
+    });
+  });
 }
 
 function getDistributions(redis, cb) {
@@ -145,14 +170,11 @@ function getLeaderboard(db, redis, key, n, cb) {
     if (err) {
       return cb(err);
     }
-    const entries = rows.map((r, i) =>
-      ({
-        account_id: r,
-        score: rows[i + 1],
-      })).filter((r, i) =>
-      i % 2 === 0);
-    const accountIds = entries.map(r =>
-      r.account_id);
+    const entries = rows.map((r, i) => ({
+      account_id: r,
+      score: rows[i + 1],
+    })).filter((r, i) => i % 2 === 0);
+    const accountIds = entries.map(r => r.account_id);
     // get player data from DB
     return db.select().from('players').whereIn('account_id', accountIds).asCallback((err, names) => {
       if (err) {
@@ -230,11 +252,10 @@ function getHeroBenchmarks(db, redis, options, cb) {
         });
       });
     }, cb);
-  }, err =>
-    cb(err, {
-      hero_id: Number(heroId),
-      result: ret,
-    }));
+  }, err => cb(err, {
+    hero_id: Number(heroId),
+    result: ret,
+  }));
 }
 
 function getMmrEstimate(accountId, cb) {
@@ -279,8 +300,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
           return cb(err);
         }
         if (queryObj.sort) {
-          matches.sort((a, b) =>
-            b[queryObj.sort] - a[queryObj.sort]);
+          matches.sort((a, b) => b[queryObj.sort] - a[queryObj.sort]);
         }
         const offset = matches.slice(queryObj.offset);
         const result = offset.slice(0, queryObj.limit || offset.length);
@@ -345,15 +365,14 @@ function getPeers(db, input, player, cb) {
     const tm = teammates[id];
     const numId = Number(id);
     // don't include if anonymous, self or if few games together
-    if (numId &&
-      numId !== Number(player.account_id) &&
-      numId !== utility.getAnonymousAccountId() &&
-      tm.games >= 5) {
+    if (numId
+      && numId !== Number(player.account_id)
+      && numId !== utility.getAnonymousAccountId()
+      && tm.games >= 5) {
       teammatesArr.push(tm);
     }
   });
-  teammatesArr.sort((a, b) =>
-    b.games - a.games);
+  teammatesArr.sort((a, b) => b.games - a.games);
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
   return async.each(teammatesArr, (t, cb) => {
@@ -387,8 +406,7 @@ function getProPeers(db, input, player, cb) {
     if (err) {
       return cb(err);
     }
-    const arr = result.rows.map(r =>
-      Object.assign({}, r, teammates[r.account_id]))
+    const arr = result.rows.map(r => Object.assign({}, r, teammates[r.account_id]))
       .filter(r => (r.account_id !== player.account_id) && r.games)
       .sort((a, b) => b.games - a.games);
     return cb(err, arr);
@@ -438,10 +456,8 @@ function upsert(db, table, row, conflict, cb) {
     if (err) {
       return cb(err);
     }
-    const values = Object.keys(row).map(() =>
-      '?');
-    const update = Object.keys(row).map(key =>
-      util.format('%s=%s', key, `EXCLUDED.${key}`));
+    const values = Object.keys(row).map(() => '?');
+    const update = Object.keys(row).map(key => util.format('%s=%s', key, `EXCLUDED.${key}`));
     const query = util.format(
       'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
       table,
@@ -450,8 +466,7 @@ function upsert(db, table, row, conflict, cb) {
       Object.keys(conflict).join(','),
       update.join(','),
     );
-    return db.raw(query, Object.keys(row).map(key =>
-      row[key])).asCallback(cb);
+    return db.raw(query, Object.keys(row).map(key => row[key])).asCallback(cb);
   });
 }
 
@@ -553,8 +568,8 @@ function insertMatchSkillCassandra(row, cb) {
         return cb(err);
       }
       if (row.players) {
-        const filteredPlayers = row.players.filter(player => player.account_id &&
-          player.account_id !== utility.getAnonymousAccountId());
+        const filteredPlayers = row.players.filter(player => player.account_id
+          && player.account_id !== utility.getAnonymousAccountId());
         return async.eachSeries(filteredPlayers, (player, cb) => {
           cassandra.execute(
             'UPDATE player_caches SET skill = ? WHERE account_id = ? AND match_id = ? IF EXISTS', [String(row.skill), String(player.account_id), String(row.match_id)], { prepare: true },
@@ -579,8 +594,7 @@ function writeCache(accountId, cache, cb) {
         Object.keys(serializedMatch).join(','),
         Object.keys(serializedMatch).map(() => '?').join(','),
       );
-      const arr = Object.keys(serializedMatch).map(k =>
-        serializedMatch[k]);
+      const arr = Object.keys(serializedMatch).map(k => serializedMatch[k]);
       return cassandra.execute(query, arr, {
         prepare: true,
       }, cb);
@@ -694,8 +708,7 @@ function insertMatch(match, options, cb) {
     if (players) {
       players.forEach((p) => {
         if (p.ability_upgrades) {
-          p.ability_upgrades_arr = p.ability_upgrades.map(au =>
-            au.ability);
+          p.ability_upgrades_arr = p.ability_upgrades.map(au => au.ability);
           const abilityLvls = {};
           p.ability_upgrades.forEach((au) => {
             if (au.ability in savedAbilityLvls) {
@@ -712,13 +725,12 @@ function insertMatch(match, options, cb) {
     cb();
   }
 
-  function tellSocket(cb) {
-    if (options.origin === 'scanner') {
-      redis.publish('socket:matches:scanner', JSON.stringify(match));
-    } else if (options.origin === 'parsed') {
-      redis.publish('socket:matches:parser', JSON.stringify(match));
+  function tellFeed(cb) {
+    if (options.origin === 'scanner' || options.doTellFeed) {
+      redis.xadd('feed', 'maxlen', '~', '10000', '*', 'data', JSON.stringify({ ...match, origin: options.origin }), cb);
+    } else {
+      cb();
     }
-    cb();
   }
 
   function decideLogParse(cb) {
@@ -731,8 +743,8 @@ function insertMatch(match, options, cb) {
           if (err) {
             return cb(err);
           }
-          options.doLogParse = options.doLogParse ||
-            utility.isProMatch(match, leagueids.map(l => l.leagueid));
+          options.doLogParse = options.doLogParse
+            || utility.isProMatch(match, leagueids.map(l => l.leagueid));
           return cb(err);
         });
     } else {
@@ -879,10 +891,7 @@ function insertMatch(match, options, cb) {
         Object.keys(obj).join(','),
         Object.keys(obj).map(() => '?').join(','),
       );
-      const arr = Object.keys(obj).map(k =>
-        // boolean types need to be expressed as booleans
-        // if strings the cassandra driver will always convert it to true, e.g. 'false'
-        ((obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k]));
+      const arr = Object.keys(obj).map(k => ((obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k]));
       return cassandra.execute(query, arr, {
         prepare: true,
       }, (err) => {
@@ -904,8 +913,7 @@ function insertMatch(match, options, cb) {
               Object.keys(obj2).join(','),
               Object.keys(obj2).map(() => '?').join(','),
             );
-            const arr2 = Object.keys(obj2).map(k =>
-              ((obj2[k] === 'true' || obj2[k] === 'false') ? JSON.parse(obj2[k]) : obj2[k]));
+            const arr2 = Object.keys(obj2).map(k => ((obj2[k] === 'true' || obj2[k] === 'false') ? JSON.parse(obj2[k]) : obj2[k]));
             return cassandra.execute(query2, arr2, {
               prepare: true,
             }, cb);
@@ -982,11 +990,11 @@ function insertMatch(match, options, cb) {
 
   function decideMmr(cb) {
     async.each(match.players, (p, cb) => {
-      if (options.origin === 'scanner' &&
-        match.lobby_type === 7 &&
-        p.account_id &&
-        p.account_id !== utility.getAnonymousAccountId() &&
-        config.ENABLE_RANDOM_MMR_UPDATE) {
+      if (options.origin === 'scanner'
+        && match.lobby_type === 7
+        && p.account_id
+        && p.account_id !== utility.getAnonymousAccountId()
+        && config.ENABLE_RANDOM_MMR_UPDATE) {
         redis.lpush('mmrQueue', JSON.stringify({
           match_id: match.match_id,
           account_id: p.account_id,
@@ -999,10 +1007,10 @@ function insertMatch(match, options, cb) {
 
   function decideProfile(cb) {
     async.each(match.players, (p, cb) => {
-      if ((match.match_id % 100) < Number(config.SCANNER_PLAYER_PERCENT) &&
-        options.origin === 'scanner' &&
-        p.account_id &&
-        p.account_id !== utility.getAnonymousAccountId()) {
+      if ((match.match_id % 100) < Number(config.SCANNER_PLAYER_PERCENT)
+        && options.origin === 'scanner'
+        && p.account_id
+        && p.account_id !== utility.getAnonymousAccountId()) {
         upsert(db, 'players', { account_id: p.account_id }, { account_id: p.account_id }, cb);
       } else {
         cb();
@@ -1035,8 +1043,7 @@ function insertMatch(match, options, cb) {
     }
     // determine if any player in the match is tracked
     return async.some(match.players, (p, cb) => {
-      redis.zscore('tracked', String(p.account_id), (err, score) =>
-        cb(err, Boolean(score)));
+      redis.zscore('tracked', String(p.account_id), (err, score) => cb(err, Boolean(score)));
     }, (err, hasTrackedPlayer) => {
       if (err) {
         return cb(err);
@@ -1067,7 +1074,7 @@ function insertMatch(match, options, cb) {
   }
   async.series({
     preprocess,
-    tellSocket,
+    tellFeed,
     decideLogParse,
     upsertMatch,
     upsertMatchCassandra,
@@ -1162,6 +1169,7 @@ module.exports = {
   getHeroRankings,
   getHeroBenchmarks,
   getMatchBenchmarks,
+  getMatchBenchmarksPromisified,
   getMatchRating,
   getLeaderboard,
   getPlayerMatches,
@@ -1171,6 +1179,7 @@ module.exports = {
   getMmrEstimate,
   getPeers,
   getProPeers,
+  getWebhooks,
   getAPIKeys,
   getItemTimings,
   getLaneRoles,

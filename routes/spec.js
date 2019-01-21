@@ -1,8 +1,8 @@
 const async = require('async');
 const constants = require('dotaconstants');
+const moment = require('moment');
 const config = require('../config');
 // const crypto = require('crypto');
-const moment = require('moment');
 // const uuidV4 = require('uuid/v4');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
@@ -10,11 +10,12 @@ const search = require('../store/search');
 const searchES = require('../store/searchES');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
-const queryRaw = require('../store/queryRaw');
+const explorerQuery = require('../store/explorerQuery');
 const playerFields = require('./playerFields');
 const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const su = require('../util/scenariosUtil');
+const filter = require('../util/filter');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const packageJson = require('../package.json');
@@ -374,6 +375,24 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
                       camps_stacked: {
                         description: 'Number of camps stacked',
                         type: 'integer',
+                      },
+                      connection_log: {
+                        description: 'Array containing information about the player\'s disconnections and reconnections',
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            time: {
+                              description: 'Game time in seconds the event ocurred',
+                              type: 'integer',
+                            },
+                            event: {
+                              description: 'Event that occurred',
+                              type: 'string',
+                            },
+                            player_slot: properties.player_slot,
+                          },
+                        },
                       },
                       creeps_stacked: {
                         description: 'Number of creeps stacked',
@@ -912,16 +931,16 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
           },
         },
         route: () => '/matches/:match_id/:info?',
-        func: (req, res, cb) => {
-          buildMatch(req.params.match_id, (err, match) => {
-            if (err) {
-              return cb(err);
-            }
+        func: async (req, res, cb) => {
+          try {
+            const match = await buildMatch(req.params.match_id, req.query);
             if (!match) {
               return cb();
             }
             return res.json(match);
-          });
+          } catch (err) {
+            return cb(err);
+          }
         },
       },
     },
@@ -2315,12 +2334,12 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         func: (req, res) => {
           // TODO handle NQL (@nicholashh query language)
           const input = req.query.sql;
-          return queryRaw(input, (err, result) => {
+          return explorerQuery(input, (err, result) => {
             if (err) {
               console.error(err);
             }
             const final = Object.assign({}, result, {
-              err: err ? err.stack : err,
+              err: err && err.toString(),
             });
             return res.status(err ? 400 : 200).json(final);
           });
@@ -3900,14 +3919,12 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
             if (err) {
               return cb(err);
             }
-            const entries = rows.map((r, i) =>
-              ({
-                match_id: r.split(':')[0],
-                start_time: r.split(':')[1],
-                hero_id: r.split(':')[2],
-                score: rows[i + 1],
-              })).filter((r, i) =>
-              i % 2 === 0);
+            const entries = rows.map((r, i) => ({
+              match_id: r.split(':')[0],
+              start_time: r.split(':')[1],
+              hero_id: r.split(':')[2],
+              score: rows[i + 1],
+            })).filter((r, i) => i % 2 === 0);
             return res.json(entries);
           });
         },
@@ -4168,6 +4185,91 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
               }
               return res.json(result);
             });
+        },
+      },
+    },
+    '/feed': {
+      get: {
+        summary: 'GET /feed',
+        description: 'Get streaming feed of latest matches as newline-delimited JSON',
+        tags: ['feed'],
+        parameters: [
+          {
+            name: 'seq_num',
+            in: 'query',
+            description: 'Return only matches after this sequence number. If not provided, returns a stream starting at the current time.',
+            required: false,
+            type: 'number',
+          },
+          {
+            name: 'game_mode',
+            in: 'query',
+            description: 'Filter to only matches in this game mode',
+            required: false,
+            type: 'number',
+          },
+          {
+            name: 'leagueid',
+            in: 'query',
+            description: 'Filter to only matches in this league',
+            required: false,
+            type: 'number',
+          },
+          {
+            name: 'included_account_id',
+            in: 'query',
+            description: 'Filter to only matches with this account_id participating',
+            required: false,
+            type: 'number',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: matchObject,
+            },
+          },
+        },
+        route: () => '/feed',
+        func: (req, res, cb) => {
+          if (!res.locals.isAPIRequest) {
+            return res.status(403).json({ error: 'API key required' });
+          }
+          if (!req.query) {
+            return res.status(400).json({ error: 'No query string detected' });
+          }
+          if (!req.query.game_mode && !req.query.leagueid && !req.query.included_account_id) {
+            return res.status(400).json({ error: 'A filter parameter is required' });
+          }
+          const keepAlive = setInterval(() => res.write('\n'), 5000);
+          req.on('end', () => {
+            clearTimeout(keepAlive);
+          });
+          const readFromStream = (seqNum) => {
+            redis.xread('block', '0', 'STREAMS', 'feed', seqNum, (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              let nextSeqNum = '$';
+              // console.log(result[0][1].length);
+              result[0][1].forEach((dataArray) => {
+                const dataMatch = JSON.parse(dataArray[1]['1']);
+                if (filter([dataMatch], req.query).length) {
+                  const dataSeqNum = dataArray[0];
+                  nextSeqNum = dataSeqNum;
+                  // This is an array of 2 elements where the first is the sequence number and the second is the stream key-value pairs
+                  // Put the sequence number in the match object so client can know where they're at
+                  const final = { ...dataMatch, seq_num: dataSeqNum };
+                  res.write(`${JSON.stringify(final)}\n`);
+                  redisCount(redis, 'feed');
+                }
+              });
+              return readFromStream(nextSeqNum);
+            });
+          };
+          return readFromStream(req.query.seq_num || '$');
         },
       },
     },

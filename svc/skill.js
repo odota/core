@@ -2,10 +2,10 @@
  * Worker checking the GetMatchHistory endpoint to get skill data for matches
  * */
 const constants = require('dotaconstants');
+const async = require('async');
 const config = require('../config.js');
 const utility = require('../util/utility');
 const queries = require('../store/queries');
-const async = require('async');
 
 const { insertMatchSkillCassandra } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');

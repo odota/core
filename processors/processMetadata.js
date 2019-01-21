@@ -5,23 +5,7 @@ function processMetadata(entries) {
   const heroToSlot = {};
   const slotToPlayerslot = {};
   const heroIdToSlot = {};
-  let gameZero = 0;
-  let gameEnd = 0;
-  let gameStart = 0;
   const metaTypes = {
-    DOTA_COMBATLOG_GAME_STATE(e) {
-      // capture the replay time at which the game clock was 0:00
-      // 4 is pre game
-      // 5 is playing
-      // https://github.com/skadistats/clarity/blob/master/src/main/java/skadistats/clarity/model/s1/GameRulesStateType.java
-      if (e.value === 4) {
-        gameStart = e.time;
-      } else if (e.value === 5) {
-        gameZero = e.time;
-      } else if (e.value === 6) {
-        gameEnd = e.time;
-      }
-    },
     interval(e) {
       // check if hero has been assigned to entity
       if (e.hero_id) {
@@ -32,8 +16,7 @@ function processMetadata(entries) {
         const combatLogName = `npc_dota_hero_${ending.toLowerCase()}`;
         // don't include final underscore here
         // the first letter is always capitalized and will be converted to underscore
-        const combatLogName2 = `npc_dota_hero${ending.replace(/([A-Z])/g, $1 =>
-          `_${$1.toLowerCase()}`).toLowerCase()}`;
+        const combatLogName2 = `npc_dota_hero${ending.replace(/([A-Z])/g, $1 => `_${$1.toLowerCase()}`).toLowerCase()}`;
         // console.log(combatLogName, combatLogName2);
         // populate hero_to_slot for combat log mapping
         heroToSlot[combatLogName] = e.slot;
@@ -57,12 +40,9 @@ function processMetadata(entries) {
     }
   }
   return {
-    game_zero: gameZero,
     hero_to_slot: heroToSlot,
     slot_to_playerslot: slotToPlayerslot,
     hero_id_to_slot: heroIdToSlot,
-    game_end: gameEnd,
-    game_start: gameStart,
   };
 }
 module.exports = processMetadata;
