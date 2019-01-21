@@ -201,8 +201,8 @@ function getHeroRankings(db, redis, heroId, options, cb) {
   join players using(account_id)
   left join notable_players using(account_id)
   left join rank_tier using(account_id)
-  WHERE hero_id = ? 
-  ORDER BY score DESC 
+  WHERE hero_id = ?
+  ORDER BY score DESC
   LIMIT 100
   `, [heroId || 0]).asCallback((err, result) => {
     if (err) {
@@ -275,7 +275,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
     // console.log(queryObj.project, cassandraColumnInfo.player_caches);
     const query = util.format(
       `
-      SELECT %s FROM player_caches 
+      SELECT %s FROM player_caches
       WHERE account_id = ?
       ORDER BY match_id DESC
       ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
@@ -653,7 +653,7 @@ async function updateTeamRankings(match, options) {
     const win2 = Number(!team1Win);
     const ratingDiff1 = kFactor * (win1 - e1);
     const ratingDiff2 = kFactor * (win2 - e2);
-    const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?) 
+    const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
     ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?`;
     await db.raw(query, [
       team1, currRating1 + ratingDiff1, win1, Number(!win1), match.start_time,
@@ -1120,9 +1120,9 @@ function getLaneRoles(req, cb) {
   db.raw(
     `SELECT hero_id, lane_role, time, sum(games) games, sum(wins) wins
      FROM scenarios
-     WHERE lane_role IS NOT NULL 
+     WHERE lane_role IS NOT NULL
      AND (0 = :heroId OR hero_id = :heroId)
-     AND (0 = :lane OR lane_role = :lane) 
+     AND (0 = :lane OR lane_role = :lane)
      GROUP BY hero_id, lane_role, time ORDER BY hero_id, time, lane_role
      LIMIT 1200`,
     { heroId, lane },
@@ -1134,7 +1134,7 @@ function getTeamScenarios(req, cb) {
   db.raw(
     `SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins
      FROM team_scenarios
-     WHERE ('' = :scenario OR scenario = :scenario) 
+     WHERE ('' = :scenario OR scenario = :scenario)
      GROUP BY scenario, is_radiant, region ORDER BY scenario
      LIMIT 1000`,
     { scenario },
