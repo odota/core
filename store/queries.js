@@ -18,7 +18,7 @@ const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
 
 const {
-  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor,
+  redisCount, convert64to32, serialize, deserialize, isRadiant,
 } = utility;
 const { computeMatchData } = compute;
 const columnInfo = {};
