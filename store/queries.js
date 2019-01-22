@@ -18,7 +18,7 @@ const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
 
 const {
-  redisCount, convert64to32, serialize, deserialize, isRadiant,
+  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor,
 } = utility;
 const { computeMatchData } = compute;
 const columnInfo = {};
@@ -384,7 +384,7 @@ function getPeers(db, input, player, cb) {
       }
       t.personaname = row.personaname;
       t.name = row.name;
-      t.is_contributor = row.is_contributor;
+      t.is_contributor = isContributor(t.account_id);
       t.last_login = row.last_login;
       t.avatar = row.avatar;
       t.avatarfull = row.avatarfull;
