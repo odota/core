@@ -376,10 +376,9 @@ function getPeers(db, input, player, cb) {
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
   return async.each(teammatesArr, (t, cb) => {
-    db.first().from('players')
-      .where({
-        account_id: t.account_id,
-      })
+    db.first().from('players').leftJoin('notable_players', 'players.account_id', 'notable_players.account_id').where({
+      account_id: t.account_id,
+    })
       .asCallback((err, row) => {
         if (err || !row) {
           return cb(err);
