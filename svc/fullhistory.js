@@ -4,12 +4,12 @@
 const async = require('async');
 const urllib = require('url');
 const constants = require('dotaconstants');
+const redis = require('redis');
 const config = require('../config');
 const { redisCount, getData, generateJob } = require('../util/utility');
 const db = require('../store/db');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
-const redis = require('redis');
 
 const { insertMatch } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
