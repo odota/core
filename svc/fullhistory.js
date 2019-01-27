@@ -4,10 +4,10 @@
 const async = require('async');
 const urllib = require('url');
 const constants = require('dotaconstants');
-const redis = require('redis');
 const config = require('../config');
 const { redisCount, getData, generateJob } = require('../util/utility');
 const db = require('../store/db');
+const redis = require('../store/redis');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 
