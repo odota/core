@@ -1551,6 +1551,14 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
                     description: 'personaname',
                     type: 'string',
                   },
+                  name: {
+                    description: 'name',
+                    type: 'string',
+                  },
+                  is_contributor: {
+                    description: 'is_contributor',
+                    type: 'boolean',
+                  },
                   last_login: {
                     description: 'last_login',
                     type: 'string',

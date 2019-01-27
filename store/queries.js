@@ -18,7 +18,7 @@ const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
 
 const {
-  redisCount, convert64to32, serialize, deserialize, isRadiant,
+  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor,
 } = utility;
 const { computeMatchData } = compute;
 const columnInfo = {};
@@ -376,18 +376,21 @@ function getPeers(db, input, player, cb) {
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
   return async.each(teammatesArr, (t, cb) => {
-    db.first().from('players').where({
+    db.first().from('players').leftJoin('notable_players', 'players.account_id', 'notable_players.account_id').where({
       account_id: t.account_id,
-    }).asCallback((err, row) => {
-      if (err || !row) {
+    })
+      .asCallback((err, row) => {
+        if (err || !row) {
+          return cb(err);
+        }
+        t.personaname = row.personaname;
+        t.name = row.name;
+        t.is_contributor = isContributor(t.account_id);
+        t.last_login = row.last_login;
+        t.avatar = row.avatar;
+        t.avatarfull = row.avatarfull;
         return cb(err);
-      }
-      t.personaname = row.personaname;
-      t.last_login = row.last_login;
-      t.avatar = row.avatar;
-      t.avatarfull = row.avatarfull;
-      return cb(err);
-    });
+      });
   }, (err) => {
     cb(err, teammatesArr);
   });
