@@ -2129,6 +2129,137 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         },
       },
     },
+    '/players/{account_id}/records': {
+      get: {
+        summary: 'GET /players/{account_id}/records',
+        description: 'Player records',
+        tags: [
+          'players',
+        ],
+        parameters: [params.accountIdParam],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+              properties: {
+                hero_healing: {
+                  type: 'object',
+                  properties: {
+                    hero_healing: {
+                      description: 'hero_healing',
+                      type: 'integer',
+                    },
+                    hero_id: {
+                      description: 'hero_id',
+                      type: 'integer',
+                    },
+                    start_time: {
+                      description: 'start_time',
+                      type: 'integer',
+                    },
+                  },
+                },
+                gold_per_min: {
+                  type: 'object',
+                  properties: {
+                    gold_per_min: {
+                      description: 'gold_per_min',
+                      type: 'integer',
+                    },
+                    hero_id: {
+                      description: 'hero_id',
+                      type: 'integer',
+                    },
+                    start_time: {
+                      description: 'start_time',
+                      type: 'integer',
+                    },
+                  },
+                },
+                kda: {
+                  type: 'object',
+                  properties: {
+                    kda: {
+                      description: 'kda',
+                      type: 'integer',
+                    },
+                    hero_id: {
+                      description: 'hero_id',
+                      type: 'integer',
+                    },
+                    start_time: {
+                      description: 'start_time',
+                      type: 'integer',
+                    },
+                  },
+                },
+                last_hits: {
+                  type: 'object',
+                  properties: {
+                    last_hits: {
+                      description: 'last_hits',
+                      type: 'integer',
+                    },
+                    hero_id: {
+                      description: 'hero_id',
+                      type: 'integer',
+                    },
+                    start_time: {
+                      description: 'start_time',
+                      type: 'integer',
+                    },
+                  },
+                },
+                neutral_kills: {
+                  type: 'object',
+                  properties: {
+                    neutral_kills: {
+                      description: 'neutral_kills',
+                      type: 'integer',
+                    },
+                    hero_id: {
+                      description: 'hero_id',
+                      type: 'integer',
+                    },
+                    start_time: {
+                      description: 'start_time',
+                      type: 'integer',
+                    },
+                  },
+                },
+                pings: {
+                  type: 'object',
+                  properties: {
+                    pings: {
+                      description: 'pings',
+                      type: 'integer',
+                    },
+                    hero_id: {
+                      description: 'hero_id',
+                      type: 'integer',
+                    },
+                    start_time: {
+                      description: 'start_time',
+                      type: 'integer',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/players/:account_id/records',
+        func: (req, res, cb) => {
+          queries.getPlayerRecords(req.params.account_id, (err, records) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(records);
+          });
+        },
+      },
+    },
     '/players/{account_id}/refresh': {
       post: {
         summary: 'POST /players/{account_id}/refresh',

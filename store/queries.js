@@ -16,6 +16,7 @@ const { es, INDEX } = require('../store/elasticsearch');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
+const recordFields = require('../routes/recordFields');
 
 const {
   redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor,
@@ -451,6 +452,29 @@ function getMatchRankTier(match, cb) {
     const filt = result.filter(r => r);
     const avg = Math.floor(filt.map(r => Number(r)).reduce((a, b) => a + b, 0) / filt.length);
     return cb(err, avg, filt.length);
+  });
+}
+
+function getPlayerRecords(player, cb) {
+  const obj = {};
+  async.each(recordFields, (field, done) => {
+    const queryObj = {
+      sort: field,
+      limit: 1,
+      project: [field, 'hero_id', 'start_time'],
+    };
+    getPlayerMatches(player, queryObj, (err, cache) => {
+      if (err) {
+        return cb(err);
+      }
+      [obj[field]] = cache;
+      return done();
+    });
+  }, (err) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(null, obj);
   });
 }
 
@@ -1178,6 +1202,7 @@ module.exports = {
   getPlayerMatches,
   getPlayerRatings,
   getPlayerHeroRankings,
+  getPlayerRecords,
   getPlayer,
   getMmrEstimate,
   getPeers,
