@@ -37,6 +37,7 @@
     "elasticsearch": "^15.0.0",
     "express": "^4.16.4",
     "http-proxy": "^1.17.0",
+    "json-bigint": "^0.3.0",
     "knex": "^0.15.2",
     "long": "^4.0.0",
     "moment": "^2.22.2",

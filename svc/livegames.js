@@ -1,19 +1,24 @@
 const async = require('async');
+const JSONbig = require('json-bigint');
+const request = require('request');
 const redis = require('../store/redis');
 const db = require('../store/db');
 const utility = require('../util/utility');
+const config = require('../config');
 
 const { invokeInterval } = utility;
 
 function doLiveGames(cb) {
   // Get the list of pro players
   db.select().from('notable_players').asCallback((err, proPlayers) => {
-    const liveGamesUrl = utility.generateJob('api_top_live_game').url;
     // Get the list of live games
-    utility.getData(liveGamesUrl, (err, json) => {
+    const apiKeys = config.STEAM_API_KEY.split(',');
+    const liveGamesUrl = `https://api.steampowered.com/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKeys[0]}&partner=0`;
+    request.get(liveGamesUrl, (err, resp, body) => {
       if (err) {
         return cb(err);
       }
+      const json = JSONbig.parse(body);
       // If a match contains a pro player
       // add their name to the match object, save it to redis zset, keyed by server_steam_id
       return async.eachSeries(json.game_list, (match, cb) => {
@@ -26,6 +31,8 @@ function doLiveGames(cb) {
               // addToRedis = true;
             }
           });
+          // convert the BigInt to a string
+          match.lobby_id = match.lobby_id.toString();
           redis.zadd('liveGames', match.lobby_id, match.lobby_id);
           redis.setex(`liveGame:${match.lobby_id}`, 28800, JSON.stringify(match));
           // Keep only the 100 highest values
