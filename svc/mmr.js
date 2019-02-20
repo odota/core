@@ -1,10 +1,10 @@
 /**
- * Worker to fetch MMR data for players
+ * Worker to fetch MMR and Dota Plus data for players
  * */
 const utility = require('../util/utility');
 const queue = require('../store/queue');
 const db = require('../store/db');
-const queries = require('../store/queries');
+const { insertPlayer, insertPlayerRating } = require('../store/queries');
 const config = require('../config');
 
 const { getData, getRetrieverArr } = utility;
@@ -22,15 +22,21 @@ function processMmr(job, cb) {
     if (err) {
       return cb(err);
     }
-    if (data.solo_competitive_rank || data.competitive_rank || data.rank_tier || data.leaderboard_rank) {
-      data.account_id = job.account_id || null;
-      data.match_id = job.match_id || null;
-      data.solo_competitive_rank = data.solo_competitive_rank || null; // 0 MMR is not a valid value
-      data.competitive_rank = data.competitive_rank || null;
-      data.time = new Date();
-      return queries.insertPlayerRating(db, data, cb);
-    }
-    return cb();
+    const player = {
+      account_id: job.account_id || null,
+      plus: Boolean(data.is_plus_subscriber),
+    };
+    return insertPlayer(db, player, false, () => {
+      if (data.solo_competitive_rank || data.competitive_rank || data.rank_tier || data.leaderboard_rank) {
+        data.account_id = job.account_id || null;
+        data.match_id = job.match_id || null;
+        data.solo_competitive_rank = data.solo_competitive_rank || null; // 0 MMR is not a valid value
+        data.competitive_rank = data.competitive_rank || null;
+        data.time = new Date();
+        return insertPlayerRating(db, data, cb);
+      }
+      return cb();
+    });
   });
 }
 

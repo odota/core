@@ -9,8 +9,6 @@ const express = require('express');
 const compression = require('compression');
 const cp = require('child_process');
 const config = require('../config');
-const db = require('../store/db');
-const { insertPlayer } = require('../store/queries');
 
 const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
   /* eslint-disable global-require */
@@ -106,7 +104,6 @@ function getPlayerProfile(idx, accountId, cb) {
     if (err) {
       return cb(err);
     }
-    console.log(profileData);
     const response = { ...profileData };
     profileSuccesses += 1;
     profileData.slots.forEach((s) => {
@@ -419,11 +416,7 @@ app.get('/', (req, res, cb) => {
   } if (req.query.account_id) {
     return getPlayerProfile(rKey, req.query.account_id, (err, data) => {
       res.locals.data = data;
-      const player = {
-        account_id: req.query.account_id,
-        plus: Boolean(data.is_plus_subscriber),
-      };
-      insertPlayer(db, player, false, () => cb(err));
+      return cb(err);
     });
   }
   res.locals.data = genStats();
