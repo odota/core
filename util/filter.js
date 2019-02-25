@@ -60,6 +60,28 @@ function filter(matches, filters) {
         return passed;
       });
     },
+    with_account_id(m, key, arr) {
+      return arr.every((k) => {
+        let passed = false;
+        Object.keys(m.heroes || {}).forEach((key) => {
+          if (m.heroes[key].account_id === k && isRadiant(m.heroes[key]) === isRadiant(m)) {
+            passed = true;
+          }
+        });
+        return passed;
+      });
+    },
+    against_account_id(m, key, arr) {
+      return arr.every((k) => {
+        let passed = false;
+        Object.keys(m.heroes || {}).forEach((key) => {
+          if (m.heroes[key].account_id === k && isRadiant(m.heroes[key]) !== isRadiant(m)) {
+            passed = true;
+          }
+        });
+        return passed;
+      });
+    },
     with_hero_id(m, key, arr) {
       return arr.every((k) => {
         let passed = false;

@@ -131,6 +131,20 @@ module.exports = {
     required: false,
     type: 'integer',
   },
+  withAccountIdParam: {
+    name: 'with_account_id',
+    in: 'query',
+    description: "Account IDs on the player's team (array)",
+    required: false,
+    type: 'integer',
+  },
+  againstAccountIdParam: {
+    name: 'against_account_id',
+    in: 'query',
+    description: "Account IDs against the player's team (array)",
+    required: false,
+    type: 'integer',
+  },
   includedAccountIdParam: {
     name: 'included_account_id',
     in: 'query',
