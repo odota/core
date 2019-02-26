@@ -1012,6 +1012,10 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
                       description: 'name',
                       type: 'string',
                     },
+                    plus: {
+                      description: 'Boolean indicating status of current Dota Plus subscription',
+                      type: 'boolean',
+                    },
                     cheese: {
                       description: 'cheese',
                       type: 'integer',
