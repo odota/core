@@ -10,6 +10,7 @@ const { getRetrieverArr } = utility;
 const retrieverArr = getRetrieverArr();
 
 function processGcData(job, cb) {
+  job.useGcDataArr = true;
   getGcData(job, cb);
 }
 

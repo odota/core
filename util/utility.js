@@ -746,8 +746,9 @@ function getLaneFromPosData(lanePos, isRadiant) {
 /**
  * Get array of retriever endpoints from config
  * */
-function getRetrieverArr() {
-  const input = config.RETRIEVER_HOST;
+function getRetrieverArr(useGcDataArr) {
+  const parserHosts = useGcDataArr ? config.GCDATA_RETRIEVER_HOST : '';
+  const input = parserHosts || config.RETRIEVER_HOST;
   const output = [];
   const arr = input.split(',');
   arr.forEach((element) => {

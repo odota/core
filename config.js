@@ -24,6 +24,7 @@ const defaults = {
   PROXY_PORT: '5300',
   ROOT_URL: 'http://localhost:5000', // base url to redirect to after steam oauth login
   RETRIEVER_HOST: 'localhost:5100', // Comma separated list of retriever hosts (access to Dota 2 GC data)
+  GCDATA_RETRIEVER_HOST: '', // Comma separated list of retriever hosts dedicated for gcdata job
   PARSER_HOST: 'http://localhost:5600', // host of the parse server
   UI_HOST: '', // The host of the UI, target of /logout and /return
   PROXY_URLS: '', // comma separated list of proxy urls to use

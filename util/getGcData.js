@@ -10,11 +10,11 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 
 const secret = config.RETRIEVER_SECRET;
-const retrieverArr = utility.getRetrieverArr();
 const { getData, redisCount } = utility;
 const { insertMatch } = queries;
 
 function getGcDataFromRetriever(match, cb) {
+  const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
   let urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
   if (config.NODE_ENV !== 'test' && match.allowBackup && (Math.random() * 100) < Number(config.BACKUP_RETRIEVER_PERCENT)) {
