@@ -244,7 +244,7 @@ function getData(url, cb) {
           && !body.game_list
           && !body.match
           && !body.data)
-        || (stratzApi && (!body.results || !body.results[0]))
+        || (stratzApi && (!body || !body[0]))
       ) {
         // invalid response
         if (url.noRetry) {
