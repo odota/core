@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS players (
   avatarfull varchar(255),
   profileurl varchar(255),
   personaname varchar(255),
+  plus boolean DEFAULT false,
   last_login timestamp with time zone,
   full_history_time timestamp with time zone,
   cheese integer DEFAULT 0,
