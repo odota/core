@@ -26,8 +26,8 @@ function getGcDataFromRetriever(match, cb) {
       redisCount(redis, 'backup');
       return cb(err, {
         match_id: Number(match.match_id),
-        cluster: body.results[0].clusterId,
-        replay_salt: body.results[0].replaySalt,
+        cluster: body[0].clusterId,
+        replay_salt: body[0].replaySalt,
       });
     }
     if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
