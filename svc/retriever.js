@@ -24,12 +24,12 @@ const steamObj = {};
 const launch = new Date();
 const minUpTimeSeconds = 660;
 const maxUpTimeSeconds = 3600;
-const timeoutMs = 5000;
+const timeoutMs = 1500;
 const timeoutThreshold = 50;
 const accountsToUse = 6;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 500;
-const matchRequestDelayStep = 300;
+const matchRequestDelay = 400;
+const matchRequestDelayStep = 200;
 const matchRequestLimit = 500;
 
 let matchRequestDelayIncr = 0;
