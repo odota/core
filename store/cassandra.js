@@ -10,6 +10,7 @@ const cps = spl.map(u => url.parse(u).host);
 console.log('connecting %s', config.CASSANDRA_URL);
 const cassandra = new cassandraDriver.Client({
   contactPoints: cps,
+  localDataCenter: 'datacenter1',
   keyspace: url.parse(spl[0]).path.substring(1),
 });
 module.exports = cassandra;
