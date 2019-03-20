@@ -10,24 +10,24 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 
 const secret = config.RETRIEVER_SECRET;
-const retrieverArr = utility.getRetrieverArr();
 const { getData, redisCount } = utility;
 const { insertMatch } = queries;
 
 function getGcDataFromRetriever(match, cb) {
+  const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
   let urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
   if (config.NODE_ENV !== 'test' && match.allowBackup && (Math.random() * 100) < Number(config.BACKUP_RETRIEVER_PERCENT)) {
     urls = [`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`];
   }
-  return getData({ url: urls, noRetry: match.noRetry, timeout: 3000 }, (err, body, metadata) => {
+  return getData({ url: urls, noRetry: match.noRetry, timeout: 1500 }, (err, body, metadata) => {
     if (metadata && metadata.hostname === 'api.stratz.com') {
       // handle backup urls (don't save to DB since no party/buffs data)
       redisCount(redis, 'backup');
       return cb(err, {
         match_id: Number(match.match_id),
-        cluster: body.results[0].clusterId,
-        replay_salt: body.results[0].replaySalt,
+        cluster: body[0].clusterId,
+        replay_salt: body[0].replaySalt,
       });
     }
     if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
@@ -42,8 +42,10 @@ function getGcDataFromRetriever(match, cb) {
     // TODO add discovered account_ids to database and fetch account data/rank medal
 
     // Persist parties and permanent buffs
-    const players = body.match.players.map(p => ({
-      player_slot: p.player_slot,
+    const players = body.match.players.map((p, i) => ({
+      // As of 2019-03-05 (Mars patch) the GC is returning incorrect player_slot values. Just use the index to determine player slot for now.
+      player_slot: i > 4 ? i + 123 : i,
+      // player_slot: p.player_slot,
       party_id: Number(p.party_id),
       permanent_buffs: p.permanent_buffs,
       party_size: body.match.players

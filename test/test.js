@@ -108,6 +108,7 @@ before(function setup(done) {
     function initCassandra(cb) {
       const client = new cassandraDriver.Client({
         contactPoints: [initCassandraHost],
+        localDataCenter: 'datacenter1',
       });
       async.series([function drop(cb) {
         console.log('drop cassandra test keyspace');

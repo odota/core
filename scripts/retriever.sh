@@ -15,4 +15,4 @@ sleep 5
 done
 
 sudo docker logs -f retriever
-gcloud compute instances delete $VMNAME --zone $ZONE --quiet
+sudo shutdown -h now

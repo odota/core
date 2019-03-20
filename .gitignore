@@ -22,3 +22,4 @@ dependency-reduced-pom.xml
 Procfile.dev
 docker-compose.override.yml
 .idea
+STEAM_ACCOUNT_DATA*.txt

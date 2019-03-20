@@ -6,7 +6,7 @@ const queries = require('../store/queries');
 const { invokeInterval } = utility;
 
 function doTeams(cb) {
-  db.raw('select distinct team_id from team_match').asCallback((err, result) => {
+  db.raw('select distinct team_id from team_match order by team_id desc').asCallback((err, result) => {
     if (err) {
       return cb(err);
     }

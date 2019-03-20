@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from itertools import cycle
 import subprocess
@@ -6,9 +6,9 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 2
+targetsize = 20
 backendname = "retriever"
-templatename = "retriever-8"
+templatename = "retriever-9"
 
 # Rotating single group
 def run1(zoneList):
@@ -64,9 +64,10 @@ def run3(zoneList):
       instancegroupname = "retriever-group-" + zone
       #subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 1, targetsize), shell=True)
       subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
-      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
+      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize * 2), shell=True)
+      time.sleep(30)
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
-    time.sleep(1800)
+    time.sleep(2700)
     
 def createGroups(zoneList):
   for i, zone in enumerate(zoneList):
@@ -92,13 +93,13 @@ def start():
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   # zoneList = sorted(zoneList, key=lambda x: x[-1])
-  zoneList = filter(lambda s: s.startswith('us-east') or s.startswith('us-central'), zoneList)
+  zoneList = filter(lambda s: s.endswith('-b'), zoneList)
   createGroups(zoneList)
   while True:
     try:
-      # run1(zoneList)
+      run1(zoneList)
       # run2(zoneList)
-      run3(zoneList)
+      # run3(zoneList)
       pass
     except KeyboardInterrupt:
       raise
