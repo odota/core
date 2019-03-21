@@ -31,4 +31,4 @@ function rePatch() {
     });
   });
 }
-invokeInterval(rePatch, 12 * 60 * 60 * 1000);
+invokeInterval(rePatch, 24 * 60 * 60 * 1000);
