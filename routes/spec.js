@@ -27,7 +27,9 @@ const {
   teamObject, matchObject, heroObject, playerObject,
 } = require('./objects');
 
-const { redisCount, countPeers, isContributor } = utility;
+const {
+  redisCount, countPeers, isContributor,
+} = utility;
 const { subkeys, countCats } = playerFields;
 const playerParams = [
   params.accountIdParam,
@@ -3143,7 +3145,7 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
               },
             });
           }
-
+          console.log(match);
           if (match && match.match_id) {
             // match id request, get data from API
             return utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
@@ -3172,6 +3174,56 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
               type: 'object',
             },
           },
+        },
+      },
+    },
+    '/findMatches': {
+      get: {
+        summary: 'GET /',
+        description: 'Finds matches by heroes played (currently includes matches played after April 2019)',
+        tags: ['findMatches'],
+        parameters: [{
+          name: 'teamA',
+          in: 'query',
+          description: 'Hero IDs on first team (array)',
+          required: false,
+          type: 'integer',
+        }, {
+          name: 'teamB',
+          in: 'query',
+          description: 'Hero IDs on second team (array)',
+          required: false,
+          type: 'integer',
+        }],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        route: () => '/findMatches',
+        func: (req, res, cb) => {
+          // accept as input two arrays of up to 5
+          const t0 = [].concat(req.query.teamA || []).slice(0, 5);
+          const t1 = [].concat(req.query.teamB || []).slice(0, 5);
+
+          // Determine which comes first
+          // const rcg = groupToString(t0);
+          // const dcg = groupToString(t1);
+
+          // const inverted = rcg > dcg;
+          const inverted = false;
+          const teamA = inverted ? t1 : t0;
+          const teamB = inverted ? t0 : t1;
+
+          db.raw('select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) limit 10', [teamA, teamB, teamB, teamA]).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },

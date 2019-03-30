@@ -13,7 +13,9 @@ const config = require('../config');
 const {
   getMatchRankTier, getMatchRating, upsert, insertPlayer, bulkIndexPlayer,
 } = queries;
-const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
+const {
+  getAnonymousAccountId, isRadiant, isSignificant,
+} = utility;
 
 function updateHeroRankings(match, cb) {
   getMatchRankTier(match, (err, avg) => {
@@ -184,7 +186,43 @@ function updateLastPlayed(match, cb) {
   }, cb);
 }
 
+/**
+ * Update table storing heroes played in a game for lookup of games by heroes played
+ * */
+function updateHeroSearch(match, cb) {
+  const radiant = [];
+  const dire = [];
+  for (let i = 0; i < match.players.length; i += 1) {
+    const p = match.players[i];
+    if (p.hero_id === 0) {
+      // exclude this match if any hero is 0
+      return cb();
+    }
+    if (isRadiant(p)) {
+      radiant.push(p.hero_id);
+    } else {
+      dire.push(p.hero_id);
+    }
+  }
+
+  // Turn the arrays into strings
+  // const rcg = groupToString(radiant);
+  // const dcg = groupToString(dire);
+
+  // Always store the team whose string representation comes first (as teamA)
+  // This lets us only search in one order when we do a query
+  // Currently disabled because this doesn't work if the query is performed with a subset
+  // const inverted = rcg > dcg;
+  const inverted = false;
+  const teamA = inverted ? dire : radiant;
+  const teamB = inverted ? radiant : dire;
+  const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
+
+  return db.raw('INSERT INTO hero_search (match_id, teamA, teamB, teamAWin) VALUES (?, ?, ?, ?)', [match.match_id, teamA, teamB, teamAWin]).asCallback(cb);
+}
+
 /*
+// Stores winrate of each subset of heroes in this game
 function updateCompositions(match, cb) {
   async.each(generateMatchups(match, 5, true), (team, cb) => {
     const key = team.split(':')[0];
@@ -198,6 +236,7 @@ function updateCompositions(match, cb) {
   }, cb);
 }
 
+// Stores result of each matchup of subsets of heroes in this game
 function updateMatchups(match, cb) {
   async.each(generateMatchups(match, 1), (key, cb) => {
     db.raw(`INSERT INTO matchups (matchup, num)
@@ -243,6 +282,9 @@ function processCounts(match, cb) {
     },
     updateLastPlayed(cb) {
       return updateLastPlayed(match, cb);
+    },
+    updateHeroSearch(cb) {
+      return updateHeroSearch(match, cb);
     },
     /*
       updateCompositions(cb) {
