@@ -491,8 +491,8 @@ CREATE TABLE IF NOT EXISTS hero_search (
   teamB int[],
   teamAWin boolean
 );
-CREATE INDEX IF NOT EXISTS hero_search_teamA_idx_gin ON players USING GIN(teamA);
-CREATE INDEX IF NOT EXISTS hero_search_teamB_idx_gin ON players USING GIN(teamB);
+CREATE INDEX IF NOT EXISTS hero_search_teamA_idx_gin ON hero_search USING GIN(teamA);
+CREATE INDEX IF NOT EXISTS hero_search_teamB_idx_gin ON hero_search USING GIN(teamB);
 
 
 DO $$
