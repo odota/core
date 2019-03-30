@@ -3145,7 +3145,6 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
               },
             });
           }
-          console.log(match);
           if (match && match.match_id) {
             // match id request, get data from API
             return utility.getData(utility.generateJob('api_details', match).url, (err, body) => {

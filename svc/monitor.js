@@ -89,7 +89,7 @@ function postgresUsage(cb) {
     }
     return cb(err, {
       metric: result.rows[0].pg_database_size,
-      threshold: 3 * (10 ** 11),
+      threshold: 4 * (10 ** 11),
     });
   });
 }
