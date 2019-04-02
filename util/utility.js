@@ -498,8 +498,7 @@ function getPatchIndex(startTime) {
  * */
 function buildReplayUrl(matchId, cluster, replaySalt) {
   const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
-  if (cluster === 236)
-  {
+  if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
   }
   return `http://replay${cluster}.valve.net/570/${matchId}_${replaySalt}${suffix}`;
