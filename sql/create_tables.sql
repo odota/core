@@ -485,6 +485,16 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   UNIQUE (scenario, is_radiant, region, epoch_week)
 );
 
+CREATE TABLE IF NOT EXISTS hero_search (
+  match_id bigint,
+  teamA int[],
+  teamB int[],
+  teamAWin boolean
+);
+CREATE INDEX IF NOT EXISTS hero_search_teamA_idx_gin ON hero_search USING GIN(teamA);
+CREATE INDEX IF NOT EXISTS hero_search_teamB_idx_gin ON hero_search USING GIN(teamB);
+
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
