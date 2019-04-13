@@ -489,7 +489,8 @@ CREATE TABLE IF NOT EXISTS hero_search (
   match_id bigint,
   teamA int[],
   teamB int[],
-  teamAWin boolean
+  teamAWin boolean,
+  start_time int
 );
 CREATE INDEX IF NOT EXISTS hero_search_teamA_idx_gin ON hero_search USING GIN(teamA);
 CREATE INDEX IF NOT EXISTS hero_search_teamB_idx_gin ON hero_search USING GIN(teamB);

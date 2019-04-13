@@ -218,7 +218,7 @@ function updateHeroSearch(match, cb) {
   const teamB = inverted ? radiant : dire;
   const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
 
-  return db.raw('INSERT INTO hero_search (match_id, teamA, teamB, teamAWin) VALUES (?, ?, ?, ?)', [match.match_id, teamA, teamB, teamAWin]).asCallback(cb);
+  return db.raw('INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)', [match.match_id, teamA, teamB, teamAWin, match.start_time]).asCallback(cb);
 }
 
 /*
