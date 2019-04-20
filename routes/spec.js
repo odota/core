@@ -4319,7 +4319,7 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
               let nextSeqNum = '$';
               result[0][1].forEach((dataArray) => {
                 const dataMatch = JSON.parse(dataArray[1]['1']);
-                const filters = { 
+                const filters = {
                   game_mode: [Number(req.query.game_mode)],
                   leagueid: [Number(req.query.leagueid)],
                   included_account_id: [Number(req.query.included_account_id)],
