@@ -4297,6 +4297,9 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
         },
         route: () => '/feed',
         func: (req, res, cb) => {
+          if (true) {
+            return res.status(500).json({ error: 'currently disabled' });
+          }
           if (!res.locals.isAPIRequest) {
             return res.status(403).json({ error: 'API key required' });
           }
