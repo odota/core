@@ -116,7 +116,7 @@ function filter(matches, filters) {
     let include = true;
     // verify the match passes each filter test
     Object.keys(filters || {}).forEach((key) => {
-      if (conditions[key]) {
+      if (conditions[key] && filters[key] && filters[key].length) {
         // earlier, we arrayified everything
         // pass the first element, as well as the full array
         // check that it passes all filters
