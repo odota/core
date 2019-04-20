@@ -3,6 +3,8 @@
  * */
 const async = require('async');
 const moment = require('moment');
+const request = require('request');
+const config = require('../config');
 
 module.exports = function buildSets(db, redis, cb) {
   console.log('rebuilding sets');
@@ -18,6 +20,25 @@ module.exports = function buildSets(db, redis, cb) {
           redis.zadd('tracked', moment().add(1, 'month').format('X'), player.account_id);
         });
         return cb(err);
+      });
+    },
+    // Additional users to track from a URL
+    tracked_account_url(cb) {
+      if (!config.TRACKED_ACCOUNT_URL) {
+        return cb();
+      }
+      return request.get({ url: config.TRACKED_ACCOUNT_URL, json: true }, (err, resp, body) => {
+        if (err) {
+          return cb(err);
+        }
+        if (body && body.data && body.data.account_ids) {
+          body.data.account_ids.forEach((id) => {
+            console.log(id);
+            // Refresh with expire date in one day
+            redis.zadd('tracked', moment().add(1, 'day').format('X'), id);
+          });
+        }
+        return cb();
       });
     },
   }, (err) => {
