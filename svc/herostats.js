@@ -22,8 +22,9 @@ function doHeroStats(cb) {
               JOIN 
               (SELECT * FROM public_matches
               TABLESAMPLE SYSTEM_ROWS(10000000)
-              WHERE start_time > ?
-              AND start_time < ?
+              WHERE ((start_time > ?
+              AND start_time < ?)
+              OR start_time IS NULL)
               AND avg_rank_tier IS NOT NULL)
               matches_list USING(match_id)
               WHERE hero_id > 0
@@ -41,8 +42,9 @@ function doHeroStats(cb) {
               FROM heroes
               LEFT JOIN player_matches ON heroes.id = player_matches.hero_id
               LEFT JOIN matches on player_matches.match_id = matches.match_id
-              WHERE start_time > ?
-              AND start_time < ?
+              WHERE (start_time > ?
+              AND start_time < ?)
+              OR start_time IS NULL
               GROUP BY heroes.id
               ORDER BY heroes.id
           `, [minTime, maxTime])
@@ -56,8 +58,9 @@ function doHeroStats(cb) {
               FROM heroes
               LEFT JOIN picks_bans ON heroes.id = picks_bans.hero_id AND is_pick IS FALSE
               LEFT JOIN matches on picks_bans.match_id = matches.match_id
-              WHERE start_time > ?
-              AND start_time < ?
+              WHERE (start_time > ?
+              AND start_time < ?)
+              OR start_time IS NULL
               GROUP BY heroes.id
               ORDER BY heroes.id
           `, [minTime, maxTime])
