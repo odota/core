@@ -18,8 +18,8 @@ function doHeroStats(cb) {
               sum(case when radiant_win = (player_slot < 128) then 1 when hero_id is null then null else 0 end) as win, 
               case when hero_id is not null then count(*) else null end as pick,
               heroes.id as hero_id
-              FROM public_player_matches 
-              RIGHT JOIN heroes on heroes.id = public_player_matches.hero_id
+              FROM heroes
+			        LEFT JOIN public_player_matches on public_player_matches.hero_id = heroes.id
               LEFT JOIN 
               (SELECT * FROM public_matches
               TABLESAMPLE SYSTEM_ROWS(10000000)
