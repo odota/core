@@ -15,8 +15,8 @@ function doHeroStats(cb) {
       db.raw(`
               SELECT
               floor(avg_rank_tier / 10) as rank_tier,
-              sum(case when radiant_win = (player_slot < 128) then 1 when hero_id is null then null else 0 end) as win, 
-              case when hero_id is not null then count(*) else null end as pick,
+              sum(case when radiant_win = (player_slot < 128) then 1 when public_player_matches.hero_id is null then null else 0 end) as win, 
+              case when public_player_matches.hero_id is not null then count(*) else null end as pick,
               heroes.id as hero_id
               FROM heroes
               LEFT JOIN public_player_matches on public_player_matches.hero_id = heroes.id
@@ -28,7 +28,7 @@ function doHeroStats(cb) {
               AND avg_rank_tier IS NOT NULL)
               matches_list USING(match_id)
               WHERE heroes.id > 0
-              GROUP BY rank_tier, hero_id, heroes.id
+              GROUP BY rank_tier, public_player_matches.hero_id, heroes.id
               ORDER BY heroes.id
           `, [minTime, maxTime])
         .asCallback(cb);
