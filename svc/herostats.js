@@ -19,7 +19,7 @@ function doHeroStats(cb) {
               case when hero_id is not null then count(*) else null end as pick,
               heroes.id as hero_id
               FROM heroes
-			        LEFT JOIN public_player_matches on public_player_matches.hero_id = heroes.id
+              LEFT JOIN public_player_matches on public_player_matches.hero_id = heroes.id
               LEFT JOIN 
               (SELECT * FROM public_matches
               TABLESAMPLE SYSTEM_ROWS(10000000)
