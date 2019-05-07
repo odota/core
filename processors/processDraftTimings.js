@@ -18,6 +18,8 @@ function processDraftTimings(entries, meta) {
   const heroIdToSlot = meta.hero_id_to_slot;
   let sumActiveTeam = 0;
   let previousActiveTeam = 0;
+  let draftStart = 0;
+
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     const heroId = e.hero_id;
@@ -38,7 +40,7 @@ function processDraftTimings(entries, meta) {
       };
       draftTimings.push(JSON.parse(JSON.stringify(currpickban)));
       previousActiveTeam = e.draft_active_team;
-    }
+    } else if (e.type === 'draft_start') draftStart = e.time;
   }
   // ignore Source 1 games
   if (draftTimings.length !== 0) {
@@ -46,7 +48,7 @@ function processDraftTimings(entries, meta) {
     draftTimings[0].active_team = ((sumActiveTeam % 2) + 2);
     for (let j = 0; j < draftTimings.length; j += 1) {
       if (draftTimings[j].order === 1) {
-        draftTimings[j].total_time_taken = (draftTimings[j].time);
+        draftTimings[j].total_time_taken = (draftTimings[j].time - draftStart);
       } else {
         let index2;
         // find the time of the end of the previous order
