@@ -40,7 +40,9 @@ function processDraftTimings(entries, meta) {
       };
       draftTimings.push(JSON.parse(JSON.stringify(currpickban)));
       previousActiveTeam = e.draft_active_team;
-    } else if (e.type === 'draft_start') draftStart = e.time;
+    } else if (e.type === 'draft_start') {
+      draftStart = e.time;
+    }
   }
   // ignore Source 1 games
   if (draftTimings.length !== 0) {
