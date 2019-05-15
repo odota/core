@@ -269,7 +269,7 @@ describe('teamRanking', () => {
 });
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
 describe('api', () => {
-  it('should get API spec', function testAPI(cb) {
+  it('should get API spec', (cb) => {
     supertest(app).get('/api').end((err, res) => {
       const spec = res.body;
       return async.eachSeries(Object.keys(spec.paths), (path, cb) => {
@@ -283,7 +283,7 @@ describe('api', () => {
           if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0 || path.indexOf('/feed') === 0) {
             return cb(err);
           }
-          it('should succeed ' + replacedPath, function testAPI(cb) {
+          return it(`should succeed: ${replacedPath}`, (cb) => {
             this.timeout(2000);
             return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
               // console.log(verb, replacedPath, res.body);
@@ -294,9 +294,9 @@ describe('api', () => {
               }
               return cb(err);
             });
+          }, cb);
         }, cb);
       }, cb);
-    }, cb);
     });
   });
 });
