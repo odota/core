@@ -758,11 +758,9 @@ function insertMatch(match, options, cb) {
     }
   }
 
-  function upsertMatchGcData(cb) {
+  function updateMatchGcData(cb) {
     if (options.type === 'gcdata') {
-      upsert(db, 'matches', match, {
-        match_id: match.match_id,
-      }, cb);
+      db.raw(`UPDATE matches SET series_id = ?, series_type = ? WHERE match_id = ?`, [match.series_id, match.series_type, match.match_id]).asCallback(cb);
     } else {
       cb();
     }
@@ -1092,7 +1090,7 @@ function insertMatch(match, options, cb) {
     preprocess,
     tellFeed,
     decideLogParse,
-    upsertMatchGcData,
+    updateMatchGcData,
     upsertMatch,
     upsertMatchCassandra,
     updatePlayerCaches,
