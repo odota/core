@@ -269,12 +269,8 @@ describe('teamRanking', () => {
 });
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
 describe('api', () => {
-  it('should get API spec', function testAPISpec(cb) {
-    this.timeout(5000);
+  it('should get API spec', function testAPI(cb) {
     supertest(app).get('/api').end((err, res) => {
-      if (err) {
-        return cb(err);
-      }
       const spec = res.body;
       return async.eachSeries(Object.keys(spec.paths), (path, cb) => {
         const replacedPath = path
@@ -287,17 +283,20 @@ describe('api', () => {
           if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0 || path.indexOf('/feed') === 0) {
             return cb(err);
           }
-          return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
-            // console.log(verb, replacedPath, res.body);
-            if (replacedPath.startsWith('/admin')) {
-              assert.equal(res.statusCode, 403);
-            } else {
-              assert.equal(res.statusCode, 200);
-            }
-            return cb(err);
-          });
+          it('should succeed ' + replacedPath, function testAPI(cb) {
+            this.timeout(2000);
+            return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
+              // console.log(verb, replacedPath, res.body);
+              if (replacedPath.startsWith('/admin')) {
+                assert.equal(res.statusCode, 403);
+              } else {
+                assert.equal(res.statusCode, 200);
+              }
+              return cb(err);
+            });
         }, cb);
       }, cb);
+    }, cb);
     });
   });
 });
