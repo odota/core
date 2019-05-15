@@ -758,8 +758,18 @@ function insertMatch(match, options, cb) {
     }
   }
 
+  function upsertMatchGcData(cb) {
+    if (options.type === 'gcdata') {
+      upsert(db, 'matches', match, {
+        match_id: match.match_id,
+      }, cb);
+    } else {
+      cb();
+    }
+  }
+
   function upsertMatch(cb) {
-    if (!options.doLogParse && options.type !== 'gcdata') {
+    if (!options.doLogParse) {
       // Skip this if not a pro match (doLogParse true) and not inserting gcdata (series_id/type)
       return cb();
     }
@@ -1082,6 +1092,7 @@ function insertMatch(match, options, cb) {
     preprocess,
     tellFeed,
     decideLogParse,
+    upsertMatchGcData,
     upsertMatch,
     upsertMatchCassandra,
     updatePlayerCaches,
