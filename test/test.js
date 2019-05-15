@@ -283,6 +283,7 @@ describe('api', () => {
           .replace(/{team_id}/, 15)
           .replace(/{hero_id}/, 1)
           .replace(/{field}/, 'kills');
+        console.log(replacedPath);
         async.eachSeries(Object.keys(spec.paths[path]), (verb, cb) => {
           if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0 || path.indexOf('/feed') === 0) {
             return cb(err);

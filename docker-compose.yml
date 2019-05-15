@@ -25,7 +25,7 @@ services:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - bootstrap.system_call_filter=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms128m -Xmx128m"
     ulimits:
       memlock:
         soft: -1
