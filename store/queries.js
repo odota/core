@@ -760,7 +760,7 @@ function insertMatch(match, options, cb) {
 
   function updateMatchGcData(cb) {
     if (options.type === 'gcdata') {
-      db.raw(`UPDATE matches SET series_id = ?, series_type = ? WHERE match_id = ?`, [match.series_id, match.series_type, match.match_id]).asCallback(cb);
+      db.raw('UPDATE matches SET series_id = ?, series_type = ? WHERE match_id = ?', [match.series_id, match.series_type, match.match_id]).asCallback(cb);
     } else {
       cb();
     }
