@@ -38,7 +38,9 @@ CREATE TABLE IF NOT EXISTS matches (
   teamfights json[],
   draft_timings json[],
   version integer,
-  cosmetics json
+  cosmetics json,
+  series_id integer,
+  series_type integer
 );
 CREATE INDEX IF NOT EXISTS matches_leagueid_idx on matches(leagueid) WHERE leagueid > 0;
 

@@ -56,6 +56,8 @@ function getGcDataFromRetriever(match, cb) {
       match_id: match.match_id,
       pgroup: match.pgroup,
       players,
+      series_id: body.match.series_id,
+      series_type: body.match.series_type,
     };
     const gcdata = {
       match_id: Number(match.match_id),

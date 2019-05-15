@@ -759,8 +759,8 @@ function insertMatch(match, options, cb) {
   }
 
   function upsertMatch(cb) {
-    if (!options.doLogParse) {
-      // Skip this if not a pro match (doLogParse true)
+    if (!options.doLogParse && options.type !== 'gcdata') {
+      // Skip this if not a pro match (doLogParse true) and not inserting gcdata (series_id/type)
       return cb();
     }
     // console.log('[INSERTMATCH] upserting into Postgres');
