@@ -2225,7 +2225,6 @@ The OpenDota API provides Dota 2 related data including advanced match data extr
           LEFT JOIN teams dire
           ON dire.team_id = matches.dire_team_id
           LEFT JOIN leagues USING(leagueid)
-          LEFT JOIN match_gcdata USING(match_id)
           WHERE match_id < ?
           ORDER BY match_id DESC
           LIMIT 100

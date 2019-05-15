@@ -283,13 +283,14 @@ describe('api', () => {
           .replace(/{team_id}/, 15)
           .replace(/{hero_id}/, 1)
           .replace(/{field}/, 'kills');
-        console.log(replacedPath);
         async.eachSeries(Object.keys(spec.paths[path]), (verb, cb) => {
           if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0 || path.indexOf('/feed') === 0) {
             return cb(err);
           }
           return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
-            // console.log(verb, replacedPath, res.body);
+            if (err || res.statusCode !== 200) {
+              console.error(verb, replacedPath, res.body);
+            }
             if (replacedPath.startsWith('/admin')) {
               assert.equal(res.statusCode, 403);
             } else {
