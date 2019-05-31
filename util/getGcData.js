@@ -20,7 +20,7 @@ function getGcDataFromRetriever(match, cb) {
   if (config.NODE_ENV !== 'test' && match.allowBackup && (Math.random() * 100) < Number(config.BACKUP_RETRIEVER_PERCENT)) {
     urls = [`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`];
   }
-  return getData({ url: urls, noRetry: match.noRetry, timeout: 1500 }, (err, body, metadata) => {
+  return getData({ url: urls, noRetry: match.noRetry, timeout: 500 }, (err, body, metadata) => {
     if (metadata && metadata.hostname === 'api.stratz.com') {
       // handle backup urls (don't save to DB since no party/buffs data)
       redisCount(redis, 'backup');
