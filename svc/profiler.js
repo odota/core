@@ -22,7 +22,7 @@ function getSummaries(cb) {
         // couldn't get data from api, non-retryable
         return cb(JSON.stringify(err));
       }
-      
+
       const results = body.response.players.filter(player => player.steamid);
 
       const bulkUpdate = results.reduce((acc, player) => {
