@@ -22,8 +22,10 @@ function getSummaries(cb) {
         // couldn't get data from api, non-retryable
         return cb(JSON.stringify(err));
       }
+      
+      const results = body.response.players.filter(player => player.steamid);
 
-      const bulkUpdate = body.response.players.reduce((acc, player) => {
+      const bulkUpdate = results.reduce((acc, player) => {
         acc.push(
           {
             update: {
@@ -49,7 +51,7 @@ function getSummaries(cb) {
       });
 
       // player summaries response
-      return async.each(body.response.players, (player, cb) => {
+      return async.each(results, (player, cb) => {
         insertPlayer(db, player, false, cb);
       }, cb);
     });
