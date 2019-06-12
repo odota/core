@@ -15,7 +15,6 @@ function rePatch() {
       throw err;
     }
     async.eachSeries(matchIds, (match, cb) => {
-      console.log(match.match_id);
       queries.upsert(
         db, 'match_patch',
         {
@@ -27,7 +26,7 @@ function rePatch() {
         }, cb,
       );
     }, (err) => {
-      process.exit(Number(err));
+      console.error(err);
     });
   });
 }
