@@ -26,11 +26,11 @@ const minUpTimeSeconds = 660;
 const maxUpTimeSeconds = 3600;
 const timeoutMs = 1500;
 const timeoutThreshold = 50;
-const accountsToUse = 5;
+const accountsToUse = 4;
+const matchRequestLimit = accountsToUse * 100;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 500;
-const matchRequestDelayStep = 200;
-const matchRequestLimit = 500;
+const matchRequestDelayStep = 100;
 
 let matchRequestDelayIncr = 0;
 let lastRequestTime;
