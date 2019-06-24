@@ -25,7 +25,7 @@ const launch = new Date();
 const minUpTimeSeconds = 660;
 const maxUpTimeSeconds = 3600;
 const timeoutMs = 1500;
-const timeoutThreshold = 50;
+const successThreshold = 0.5;
 const accountsToUse = 4;
 const matchRequestLimit = accountsToUse * 100;
 const port = config.PORT || config.RETRIEVER_PORT;
@@ -38,7 +38,6 @@ let matchRequests = 0;
 let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
-let timeouts = 0;
 let allReady = false;
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
@@ -122,7 +121,6 @@ function getGcMatchData(idx, matchId, cb) {
   const { Dota2 } = steamObj[idx];
   matchRequests += 1;
   const timeout = setTimeout(() => {
-    timeouts += 1;
     matchRequestDelayIncr += matchRequestDelayStep;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
@@ -279,13 +277,6 @@ function init() {
       }, 5000);
     });
     */
-    /*
-    setInterval(() => {
-      if (timeouts > timeoutThreshold) {
-        client.connect();
-      }
-    }, 10000);
-    */
   }, () => {
     allReady = true;
   });
@@ -382,7 +373,7 @@ app.use((req, res, cb) => {
   const shouldRestart = (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds)
     || getUptime() > maxUpTimeSeconds
     || (!allReady && getUptime() > minUpTimeSeconds)
-    || (timeouts > timeoutThreshold && getUptime() > minUpTimeSeconds);
+    || (matchSuccesses / matchRequests < successThreshold && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
