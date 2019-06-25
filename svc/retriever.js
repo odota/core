@@ -393,6 +393,9 @@ app.get('/', (req, res, cb) => {
   } if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
+    if (matchRequests >= matchRequestLimit) {
+      return res.status(403).json({ error: 'match request limit exceeded' });
+    }
     if (lastRequestTime
       && (curRequestTime - lastRequestTime < (matchRequestDelay + matchRequestDelayIncr))) {
       return res.status(429).json({
