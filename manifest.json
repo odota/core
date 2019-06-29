@@ -70,7 +70,7 @@
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
-      "instances": 6
+      "instances": 8
     },
     {
       "script": "svc/buildsets.js",
