@@ -82,6 +82,18 @@ function parseDelay(cb) {
   });
 }
 
+function gcDelay(cb) {
+  redis.llen('gcQueue', (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, {
+      metric: result,
+      threshold: 400000,
+    });
+  });
+}
+
 function postgresUsage(cb) {
   db.raw('select pg_database_size(\'yasp\')').asCallback((err, result) => {
     if (err) {
@@ -126,6 +138,7 @@ const health = {
   steamApi,
   seqNumDelay,
   parseDelay,
+  gcDelay,
   postgresUsage,
   cassandraUsage,
   redisUsage,
