@@ -77,7 +77,7 @@ function parseDelay(cb) {
     }
     return cb(err, {
       metric: result.rows[0].count,
-      threshold: 2000,
+      threshold: 3000,
     });
   });
 }
@@ -89,7 +89,7 @@ function gcDelay(cb) {
     }
     return cb(err, {
       metric: result,
-      threshold: 400000,
+      threshold: 300000,
     });
   });
 }
@@ -117,7 +117,7 @@ function cassandraUsage(cb) {
     });
     return cb(err, {
       metric: size,
-      threshold: 2.5 * (10 ** 12),
+      threshold: 1.8 * (10 ** 12),
     });
   });
 }
@@ -130,7 +130,7 @@ function redisUsage(cb) {
     // console.log(info);
     return cb(err, {
       metric: Number(redis.server_info.used_memory),
-      threshold: 2.5 * (10 ** 9),
+      threshold: 4 * (10 ** 9),
     });
   });
 }
