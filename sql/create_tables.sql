@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS matches (
   series_type integer
 );
 CREATE INDEX IF NOT EXISTS matches_leagueid_idx on matches(leagueid) WHERE leagueid > 0;
+CREATE INDEX IF NOT EXISTS matches_start_time_idx on matches(start_time);
 
 CREATE TABLE IF NOT EXISTS player_matches (
   PRIMARY KEY(match_id, player_slot),
