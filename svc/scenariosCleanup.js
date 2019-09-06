@@ -14,6 +14,9 @@ function clearScenariosTables() {
       db('scenarios').whereNull('epoch_week').orWhere('epoch_week', '<=', currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS).del()
         .asCallback(cb);
     },
+    (cb) => {
+      db.raw('DELETE from public_matches where start_time < extract(epoch from now() - interval \'6 month\')::int').asCallback(cb);
+    },
   ]);
 }
 
