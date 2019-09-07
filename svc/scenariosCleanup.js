@@ -3,7 +3,7 @@ const db = require('../store/db');
 const config = require('../config');
 const utility = require('../util/utility');
 
-function clearScenariosTables() {
+function clearScenariosTables(cb) {
   const currentWeek = utility.epochWeek();
   async.parallel([
     (cb) => {
@@ -17,9 +17,7 @@ function clearScenariosTables() {
     (cb) => {
       db.raw('DELETE from public_matches where start_time < extract(epoch from now() - interval \'6 month\')::int').asCallback(cb);
     },
-  ]);
+  ], cb);
 }
 
-setInterval(() => {
-  clearScenariosTables();
-}, 1000 * 60 * 60 * 1);
+utility.invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 1);
