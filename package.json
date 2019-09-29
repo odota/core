@@ -59,7 +59,7 @@
     "eslint": "^5.7.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "mocha": "^5.2.0"
+    "mocha": "^6.2.1"
   },
   "engines": {
     "node": "10.15.1"
