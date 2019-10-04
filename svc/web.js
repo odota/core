@@ -42,7 +42,7 @@ const whitelistedPaths = [
 ];
 
 const pathCosts = {
-  '/api/request': 5,
+  '/api/request': 30,
   '/api/explorer': 5,
 };
 
