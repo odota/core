@@ -158,6 +158,7 @@ app.use((req, res, cb) => {
 
     res.set({
       'X-Rate-Limit-Remaining-Minute': rateLimit - resp[0],
+      'X-IP-Address': ip,
     });
     if (!res.locals.isAPIRequest) {
       res.set('X-Rate-Limit-Remaining-Month', config.API_FREE_LIMIT - Number(resp[2]));
