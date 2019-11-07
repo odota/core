@@ -1406,7 +1406,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 properties: {
                   hero_id: {
                     description: 'The ID value of the hero played',
-                    type: 'integer',
+                    type: 'string',
                   },
                   last_played: {
                     description: 'last_played',
