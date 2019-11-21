@@ -15,7 +15,7 @@ function getSummaries(cb) {
       return redis.lpush('fhQueue', JSON.stringify({
         account_id: row.account_id,
         short_history: true,
-      }, cb));
+      }), cb);
     }, cb);
   });
 }
