@@ -2155,7 +2155,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/players/:account_id/refresh',
         func: (req, res, cb) => {
-          redis.lpush('fhQueue', JSON.stringify({
+          redis.rpush('fhQueue', JSON.stringify({
             account_id: req.params.account_id || '1',
           }), (err, length) => {
             if (err) {

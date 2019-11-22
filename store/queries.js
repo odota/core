@@ -973,7 +973,6 @@ function insertMatch(match, options, cb) {
   function clearPlayerCaches(cb) {
     async.each((match.players || []).filter(player => Boolean(player.account_id)), (player, cb) => {
       async.each(cacheFunctions.getKeys(), (key, cb) => {
-        cacheFunctions.update({ key, account_id: player.account_id }, cb);
       }, cb);
     }, cb);
   }
@@ -983,21 +982,21 @@ function insertMatch(match, options, cb) {
       return cb();
     }
     if (options.origin === 'scanner') {
-      return redis.lpush('countsQueue', JSON.stringify(match), cb);
+      return redis.rpush('countsQueue', JSON.stringify(match), cb);
     }
     return cb();
   }
 
   function decideScenarios(cb) {
     if (options.doScenarios) {
-      return redis.lpush('scenariosQueue', match.match_id, cb);
+      return redis.rpush('scenariosQueue', match.match_id, cb);
     }
     return cb();
   }
 
   function decideParsedBenchmarks(cb) {
     if (options.doParsedBenchmarks) {
-      return redis.lpush('parsedBenchmarksQueue', match.match_id, cb);
+      return redis.rpush('parsedBenchmarksQueue', match.match_id, cb);
     }
     return cb();
   }
@@ -1009,7 +1008,7 @@ function insertMatch(match, options, cb) {
         && p.account_id
         && p.account_id !== utility.getAnonymousAccountId()
         && config.ENABLE_RANDOM_MMR_UPDATE) {
-        redis.lpush('mmrQueue', JSON.stringify({
+        redis.rpush('mmrQueue', JSON.stringify({
           match_id: match.match_id,
           account_id: p.account_id,
         }), cb);

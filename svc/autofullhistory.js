@@ -12,7 +12,7 @@ function getSummaries(cb) {
     }
     console.log(result.rows);
     return async.each(result.rows, (row, cb) => {
-      return redis.lpush('fhQueue', JSON.stringify({
+      return redis.rpush('fhQueue', JSON.stringify({
         account_id: row.account_id,
         short_history: true,
       }), cb);
