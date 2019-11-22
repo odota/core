@@ -55,7 +55,7 @@ function processFullHistory(job, cb) {
         startId = match.match_id;
       });
       const rem = body.result.results_remaining;
-      if (rem === 0) {
+      if (rem === 0 || player.short_history) {
         // no more pages
         return cb(err);
       }
@@ -72,7 +72,7 @@ function processFullHistory(job, cb) {
   if (Number(player.account_id) === 0) {
     return cb();
   }
-  // if test or only want 500 of any hero, use the short array
+  // if test or only want last 100 (no paging), set short_history
   const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   player.match_ids = {};
