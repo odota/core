@@ -973,6 +973,7 @@ function insertMatch(match, options, cb) {
   function clearPlayerCaches(cb) {
     async.each((match.players || []).filter(player => Boolean(player.account_id)), (player, cb) => {
       async.each(cacheFunctions.getKeys(), (key, cb) => {
+        cacheFunctions.update({ key, account_id: player.account_id }, cb);	
       }, cb);
     }, cb);
   }
