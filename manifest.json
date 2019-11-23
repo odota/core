@@ -46,7 +46,7 @@
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
-      "instances": 12
+      "instances": 16
     },
     {
       "script": "svc/autofullhistory.js",

@@ -6,7 +6,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 
 function getSummaries(cb) {
-  db.raw('SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)').asCallback((err, result) => {
+  db.raw(`SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100) where last_match_time > (now() - interval '7 day')`).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
@@ -25,7 +25,7 @@ function start() {
     if (err) {
       throw err;
     }
-    return setTimeout(start, 100000);
+    return setTimeout(start, 10000);
   });
 }
 
