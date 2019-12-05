@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   backpack_0 integer,
   backpack_1 integer,
   backpack_2 integer,
+  backpack_3 integer,
   kills integer,
   deaths integer,
   assists integer,

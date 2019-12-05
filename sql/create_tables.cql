@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   backpack_0 int,
   backpack_1 int,
   backpack_2 int,
+  backpack_3 int,
   kills int,
   deaths int,
   assists int,
@@ -182,6 +183,12 @@ CREATE TABLE IF NOT EXISTS player_caches (
   lane_efficiency_pct text,
   skill text,
   party_size text,
+  item_0 text,
+  item_1 text,
+  item_2 text,
+  item_3 text,
+  item_4 text,
+  item_5 text
 );
 
 ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
