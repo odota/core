@@ -40,7 +40,7 @@
     "json-bigint": "^0.3.0",
     "knex": "^0.15.2",
     "long": "^4.0.0",
-    "moment": "^2.22.2",
+    "moment": "^2.24.0",
     "nock": "^11.7.0",
     "passport": "^0.4.0",
     "passport-steam": "^1.0.10",
