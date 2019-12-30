@@ -869,7 +869,7 @@ function insertMatch(match, options, cb) {
       }
 
       function upsertParsedMatch(cb) {
-        if (match.start_time) {
+        if (match.version) {
           return upsert(trx, 'parsed_matches', {
             match_id: match.match_id,
           }, {
