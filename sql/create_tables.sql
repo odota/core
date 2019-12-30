@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   backpack_0 integer,
   backpack_1 integer,
   backpack_2 integer,
+  backpack_3 integer,
   kills integer,
   deaths integer,
   assists integer,
@@ -498,6 +499,10 @@ CREATE TABLE IF NOT EXISTS hero_search (
 CREATE INDEX IF NOT EXISTS hero_search_teamA_idx_gin ON hero_search USING GIN(teamA);
 CREATE INDEX IF NOT EXISTS hero_search_teamB_idx_gin ON hero_search USING GIN(teamB);
 
+CREATE TABLE IF NOT EXISTS parsed_matches (
+  PRIMARY KEY (match_id),
+  match_id bigint
+);
 
 DO $$
 BEGIN
