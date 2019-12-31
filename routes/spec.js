@@ -2356,7 +2356,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
 
           db.raw(`
           SELECT * FROM parsed_matches
-          WHERE match_id < ?
+          WHERE match_id <= ?
           LIMIT 100
           `, [lessThan])
             .asCallback((err, result) => {
