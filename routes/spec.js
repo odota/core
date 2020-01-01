@@ -2328,8 +2328,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
     '/parsedMatches': {
       get: {
         summary: 'GET /parsedMatches',
-        description: 'Get list of parsed matches',
-        tags: ['parsed public matches'],
+        description: 'Get list of parsed match IDs',
+        tags: ['parsed matches'],
         parameters: [
           params.lessThanMatchIdParam,
         ],
@@ -2356,7 +2356,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
 
           db.raw(`
           SELECT * FROM parsed_matches
-          WHERE match_id <= ?
+          WHERE match_id < ?
           ORDER BY match_id DESC
           LIMIT 100
           `, [lessThan])
