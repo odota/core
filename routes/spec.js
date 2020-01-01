@@ -2352,7 +2352,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/parsedMatches',
         func: (req, res, cb) => {
-          const lessThan = Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
+          const lessThan = req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
 
           db.raw(`
           SELECT * FROM parsed_matches
