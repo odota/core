@@ -2325,6 +2325,50 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
       },
     },
+    '/parsedMatches': {
+      get: {
+        summary: 'GET /parsedMatches',
+        description: 'Get list of parsed match IDs',
+        tags: ['parsed matches'],
+        parameters: [
+          params.lessThanMatchIdParam,
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  match_id: {
+                    description: 'match_id',
+                    type: 'integer',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/parsedMatches',
+        func: (req, res, cb) => {
+          const lessThan = req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
+
+          db.raw(`
+          SELECT * FROM parsed_matches
+          WHERE match_id < ?
+          ORDER BY match_id DESC
+          LIMIT 100
+          `, [lessThan])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
     '/explorer': {
       get: {
         summary: 'GET /explorer',
