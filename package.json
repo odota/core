@@ -52,7 +52,7 @@
     "request-ip": "^2.1.3",
     "simple-vdf": "^1.1.1",
     "steam": "git+https://github.com/odota/node-steam-npm.git",
-    "stripe": "^5.8.0",
+    "stripe": "^8.5.0",
     "supertest": "^4.0.2",
     "uuid": "^3.3.3"
   },
