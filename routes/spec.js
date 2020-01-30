@@ -959,6 +959,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
           db.raw(`
           SELECT account_id, rank_tier, fh_unavailable
           FROM players
+          LEFT JOIN rank_tier
+          USING (account_id)
           ORDER BY rank_tier DESC
           LIMIT 100
           `, [])
