@@ -957,11 +957,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/playersByRank',
         func: (req, res, cb) => {
           db.raw(`
-          SELECT account_id, rank_tier, fh_unavailable
+          SELECT account_id, rating, fh_unavailable
           FROM players
-          LEFT JOIN rank_tier
+          JOIN rank_tier
           USING (account_id)
-          ORDER BY rank_tier DESC
+          ORDER BY rating DESC
           LIMIT 100
           `, [])
             .asCallback((err, result) => {
