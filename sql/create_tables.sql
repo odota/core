@@ -460,6 +460,7 @@ CREATE TABLE IF NOT EXISTS rank_tier (
   account_id bigint,
   rating int
 );
+CREATE INDEX IF NOT EXISTS rank_tier_rating_idx ON rank_tier(rating);
 
 CREATE TABLE IF NOT EXISTS leaderboard_rank (
   PRIMARY KEY (account_id),
