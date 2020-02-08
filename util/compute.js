@@ -182,7 +182,10 @@ function computeMatchData(pm) {
   }
   if (pm.purchase) {
     // account for stacks
-    pm.purchase.dust *= 2;
+    if (pm.patch < 42) {
+      // In 7.23 dust changed to one per stack
+      pm.purchase.dust *= 2;
+    }
     pm.purchase_ward_observer = pm.purchase.ward_observer;
     pm.purchase_ward_sentry = pm.purchase.ward_sentry;
     pm.purchase_tpscroll = pm.purchase.tpscroll;
