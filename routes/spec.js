@@ -4346,7 +4346,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     '/constants/{resource}': {
       get: {
         summary: 'GET /constants',
-        description: 'Get constant data mirrored from the dotaconstants repository',
+        description: 'Get static game data mirrored from the dotaconstants repository',
         tags: ['constants'],
         parameters: [{
           name: 'resource',
