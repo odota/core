@@ -91,6 +91,7 @@ if (process.env.NODE_ENV === 'test') {
   process.env.POSTGRES_URL = process.env.POSTGRES_TEST_URL;
   process.env.CASSANDRA_URL = process.env.CASSANDRA_TEST_URL;
   process.env.REDIS_URL = process.env.REDIS_TEST_URL;
+  process.env.INIT_CASSANDRA_HOST = process.env.INIT_CASSANDRA_HOST;
   process.env.SESSION_SECRET = 'testsecretvalue';
   process.env.ENABLE_MATCH_CACHE = 1;
   process.env.FRONTEND_PORT = 5001;
