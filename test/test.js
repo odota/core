@@ -31,7 +31,6 @@ let cassandra;
 let app;
 let queries;
 let buildMatch;
-let es;
 // fake api responses
 nock('http://api.steampowered.com')
   // fake 500 error
@@ -130,7 +129,7 @@ before(function setup(done) {
     function initElasticsearch(cb) {
       console.log('Create Elasticsearch Mapping');
       const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
-      { es } = require('../store/elasticsearch');
+      const { es } = require('../store/elasticsearch');
       async.series([
         (cb) => {
           es.indices.exists({
