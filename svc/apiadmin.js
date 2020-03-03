@@ -40,7 +40,7 @@ function storeUsageCounts(cursor, cb) {
                   (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
                   (?, ?, ?, ?, ?, ?)
                   ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
-                `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, null, values[i + 1], values[i + 1]]);
+                `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, '', values[i + 1], values[i + 1]]);
               }
               throw Error('No record found.');
             })
