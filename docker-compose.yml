@@ -9,6 +9,8 @@ services:
       dockerfile: docker/postgres.dockerfile
     image: odota/postgres
     container_name: odota-postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
   cassandra:
     build:
       context: .
