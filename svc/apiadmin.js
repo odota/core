@@ -23,37 +23,33 @@ function storeUsageCounts(cursor, cb) {
       async.eachOfLimit(values, 5, (e, i, cb2) => {
         if (i % 2) {
           cb2();
-        } else if (config.ENABLE_API_LIMIT && e.startsWith('API')) {
-          const split = e.split(':');
-          if (split.length !== 3) {
-            cb2();
-          } else {
-            console.log('Updating usage for', e, 'usage', values[i + 1]);
-            let apiRecord;
-            db.from('api_keys').where({
-              api_key: split[2],
+        } else if (config.ENABLE_API_LIMIT) {
+          const split = e;
+          console.log('Updating usage for', e, 'usage', values[i + 1]);
+          let apiRecord;
+          db.from('api_keys').where({
+            api_key: split,
+          })
+            .then((rows) => {
+              if (rows.length > 0) {
+                [apiRecord] = rows;
+                return db.raw(`
+                  INSERT INTO api_key_usage
+                  (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
+                  (?, ?, ?, ?, ?, ?)
+                  ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
+                `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, null, values[i + 1], values[i + 1]]);
+              }
+              throw Error('No record found.');
             })
-              .then((rows) => {
-                if (rows.length > 0) {
-                  [apiRecord] = rows;
-                  return db.raw(`
-                    INSERT INTO api_key_usage
-                    (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
-                    (?, ?, ?, ?, ?, ?)
-                    ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
-                  `, [apiRecord.account_id, apiRecord.api_key, apiRecord.customer_id, apiTimestamp, split[1], values[i + 1], values[i + 1]]);
-                }
-                throw Error('No record found.');
-              })
-              .then(() => cb2())
-              .catch((e) => {
-                if (e.message === 'No record found.') {
-                  cb2();
-                } else {
-                  cb2(e);
-                }
-              });
-          }
+            .then(() => cb2())
+            .catch((e) => {
+              if (e.message === 'No record found.') {
+                cb2();
+              } else {
+                cb2(e);
+              }
+            });
         } else {
           cb2();
         }
