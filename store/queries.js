@@ -468,7 +468,7 @@ function upsert(db, table, row, conflict, cb) {
       'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
       table,
       Object.keys(row).join(','),
-      values,
+      values.join(','),
       Object.keys(conflict).join(','),
       update.join(','),
     );
