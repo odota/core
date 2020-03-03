@@ -23,6 +23,8 @@ function storeUsageCounts(cursor, cb) {
       async.eachOfLimit(values, 5, (e, i, cb2) => {
         if (i % 2) {
           cb2();
+        } else if (e.includes(':')) {
+          cb2();
         } else if (config.ENABLE_API_LIMIT) {
           const split = e;
           console.log('Updating usage for', e, 'usage', values[i + 1]);
