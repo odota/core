@@ -130,7 +130,7 @@ before(function setup(done) {
     function initElasticsearch(cb) {
       console.log('Create Elasticsearch Mapping');
       const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
-      es = require('../store/elasticsearch').es;
+      { es } = require('../store/elasticsearch');
       async.series([
         (cb) => {
           es.indices.exists({
