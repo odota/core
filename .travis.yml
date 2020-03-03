@@ -8,12 +8,6 @@ notifications:
   email:
   - howardc93@gmail.com
   - aqc2109@columbia.edu
-before_install:
-- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-- sudo apt-get update
-- sudo apt-get -y install docker-ce
-install: true
 script:
 - sudo bash scripts/build.sh
 deploy:
