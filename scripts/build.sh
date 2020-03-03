@@ -11,3 +11,4 @@ sudo docker-compose up -d
 # sudo docker run -d --privileged --name elasticsearch --net=host docker.elastic.co/elasticsearch/elasticsearch:6.2.4
 # sudo docker run -d --name parser --net=host odota/parser
 # sudo docker build -t "odota/core" . && sudo docker run --net=host -i odota/core sh -c 'npm run test'
+sudo docker run --net=host -i odota-core sh -c 'npm run test'
