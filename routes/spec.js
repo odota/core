@@ -4358,7 +4358,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/constants/:resource?',
         func: (req, res, cb) => {
           if (!req.params.resource) {
-            return res.json({ resources: Object.keys(constants) });
+            return res.json(Object.keys(constants));
           }
           const { resource } = req.params;
           if (resource in constants) {
