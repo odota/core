@@ -4346,17 +4346,20 @@ You can find data that can be used to convert hero and ability IDs and other inf
     '/constants/{resource}': {
       get: {
         summary: 'GET /constants',
-        description: 'Get static game data mirrored from the dotaconstants repository',
+        description: 'Get static game data mirrored from the dotaconstants repository. If no resource is specified, returns an array of available resources.',
         tags: ['constants'],
         parameters: [{
           name: 'resource',
           in: 'path',
           description: 'Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)',
-          required: true,
+          required: false,
           type: 'string',
         }],
-        route: () => '/constants/:resource',
+        route: () => '/constants/:resource?',
         func: (req, res, cb) => {
+          if (!req.params.resource) {
+            return res.json({ resources: Object.keys(constants) });
+          }
           const { resource } = req.params;
           if (resource in constants) {
             return res.json(constants[resource]);
