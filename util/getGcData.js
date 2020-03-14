@@ -8,10 +8,53 @@ const config = require('../config');
 const queries = require('../store/queries');
 const db = require('../store/db');
 const redis = require('../store/redis');
+const zlib = require('zlib');
 
 const secret = config.RETRIEVER_SECRET;
 const { getData, redisCount } = utility;
 const { insertMatch } = queries;
+
+function handleGcData(match, body, cb) {
+  // Persist parties and permanent buffs
+  const players = body.match.players.map((p, i) => ({
+    // As of 2019-03-05 (Mars patch) the GC is returning incorrect player_slot values. Just use the index to determine player slot for now.
+    player_slot: i > 4 ? i + 123 : i,
+    // player_slot: p.player_slot,
+    party_id: Number(p.party_id),
+    permanent_buffs: p.permanent_buffs,
+    party_size: body.match.players
+      .filter(matchPlayer => matchPlayer.party_id === p.party_id)
+      .length,
+  }));
+  const matchToInsert = {
+    match_id: match.match_id,
+    pgroup: match.pgroup,
+    players,
+    series_id: body.match.series_id,
+    series_type: body.match.series_type,
+  };
+  const gcdata = {
+    match_id: Number(match.match_id),
+    cluster: body.match.cluster,
+    replay_salt: body.match.replay_salt,
+    series_id: body.match.series_id,
+    series_type: body.match.series_type,
+  };
+  return insertMatch(matchToInsert, {
+    type: 'gcdata',
+    skipParse: true,
+  }, (err) => {
+    if (err) {
+      return cb(err);
+    }
+    // Persist GC data to database
+    return queries.upsert(db, 'match_gcdata', gcdata, {
+      match_id: body.match.match_id,
+    }, (err) => {
+      cb(err, gcdata);
+    });
+  });
+}
 
 function getGcDataFromRetriever(match, cb) {
   const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
@@ -39,47 +82,9 @@ function getGcDataFromRetriever(match, cb) {
     redis.zincrby('retrieverCounts', 1, metadata.hostname);
     redis.expireat('retrieverCounts', moment().startOf('hour').add(1, 'hour').format('X'));
 
+    redis.setex(`gcdata:${match.match_id}`, 86400 * 3, zlib.gzipSync(JSON.stringify(body)));
     // TODO add discovered account_ids to database and fetch account data/rank medal
-
-    // Persist parties and permanent buffs
-    const players = body.match.players.map((p, i) => ({
-      // As of 2019-03-05 (Mars patch) the GC is returning incorrect player_slot values. Just use the index to determine player slot for now.
-      player_slot: i > 4 ? i + 123 : i,
-      // player_slot: p.player_slot,
-      party_id: Number(p.party_id),
-      permanent_buffs: p.permanent_buffs,
-      party_size: body.match.players
-        .filter(matchPlayer => matchPlayer.party_id === p.party_id)
-        .length,
-    }));
-    const matchToInsert = {
-      match_id: match.match_id,
-      pgroup: match.pgroup,
-      players,
-      series_id: body.match.series_id,
-      series_type: body.match.series_type,
-    };
-    const gcdata = {
-      match_id: Number(match.match_id),
-      cluster: body.match.cluster,
-      replay_salt: body.match.replay_salt,
-      series_id: body.match.series_id,
-      series_type: body.match.series_type,
-    };
-    return insertMatch(matchToInsert, {
-      type: 'gcdata',
-      skipParse: true,
-    }, (err) => {
-      if (err) {
-        return cb(err);
-      }
-      // Persist GC data to database
-      return queries.upsert(db, 'match_gcdata', gcdata, {
-        match_id: body.match.match_id,
-      }, (err) => {
-        cb(err, gcdata);
-      });
-    });
+    return handleGcData(match, body, cb);
   });
 }
 
@@ -88,15 +93,12 @@ module.exports = function getGcData(match, cb) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return cb(new Error('invalid match_id'));
   }
-  return db.first().from('match_gcdata').where({
-    match_id: matchId,
-  }).asCallback((err, gcdata) => {
+  return redis.get(Buffer.from(`gcdata:${match.match_id}`), (err, body) => {
     if (err) {
       return cb(err);
     }
-    if (gcdata && gcdata.replay_salt) {
-      console.log('found cached replay url for %s', matchId);
-      return cb(err, gcdata);
+    if (body) {
+      return handleGcData(match, JSON.parse(zlib.gunzipSync(body)), cb);
     }
     return getGcDataFromRetriever(match, cb);
   });
