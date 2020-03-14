@@ -3,12 +3,12 @@
  * Calls back with an object containing the GC data
  * */
 const moment = require('moment');
+const zlib = require('zlib');
 const utility = require('../util/utility');
 const config = require('../config');
 const queries = require('../store/queries');
 const db = require('../store/db');
 const redis = require('../store/redis');
-const zlib = require('zlib');
 
 const secret = config.RETRIEVER_SECRET;
 const { getData, redisCount } = utility;
