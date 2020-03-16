@@ -82,7 +82,7 @@ function getGcDataFromRetriever(match, cb) {
     redis.zincrby('retrieverCounts', 1, metadata.hostname);
     redis.expireat('retrieverCounts', moment().startOf('hour').add(1, 'hour').format('X'));
 
-    redis.setex(`gcdata:${match.match_id}`, 86400 * 2, zlib.gzipSync(JSON.stringify(body)));
+    redis.setex(`gcdata:${match.match_id}`, 60 * 60 * 36, zlib.gzipSync(JSON.stringify(body)));
     // TODO add discovered account_ids to database and fetch account data/rank medal
     return handleGcData(match, body, cb);
   });
