@@ -1049,6 +1049,7 @@ function insertMatch(match, options, cb) {
     if (options.origin === 'scanner' && match.game_mode !== 19 && (match.match_id % 100) < Number(config.GCDATA_PERCENT)) {
       redis.rpush('gcQueue', JSON.stringify({
         match_id: match.match_id,
+        pgroup: match.pgroup,
       }), cb);
     } else {
       cb();
