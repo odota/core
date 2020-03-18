@@ -22,7 +22,7 @@ async function processScenarios(matchID, cb) {
             epoch_week: currentWeek,
             wins: row.wins ? '1' : '0',
           });
-          const values = Object.keys(row).map(() => '?');
+          const values = Object.keys(row).map(() => '?').join(',');
           const query = util.format(
             'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
             table,
