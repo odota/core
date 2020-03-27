@@ -3753,7 +3753,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                 },
                 mid_game_items: {
-                  description: 'Items bought between 10 and 20 min of the game, with cost at least 2000',
+                  description: 'Items bought between 10 and 25 min of the game, with cost at least 2000',
                   type: 'object',
                   properties: {
                     item: {
@@ -3763,7 +3763,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                 },
                 late_game_items: {
-                  description: 'Items bought at least 20 min after game started, with cost at least 4000',
+                  description: 'Items bought at least 25 min after game started, with cost at least 4000',
                   type: 'object',
                   properties: {
                     item: {
