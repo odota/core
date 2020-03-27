@@ -18,7 +18,7 @@ const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
 
 const {
-  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor,
+  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor, countItemPopularity,
 } = utility;
 const { computeMatchData } = compute;
 const columnInfo = {};
@@ -213,6 +213,49 @@ function getHeroRankings(db, redis, heroId, options, cb) {
       hero_id: Number(heroId),
       rankings: entries,
     });
+  });
+}
+
+async function getItemCost(db, redis, itemName) {
+  return db.raw(`
+  SELECT cost
+  FROM items
+  WHERE name = ?
+  `, [itemName || 0]);
+}
+
+function getHeroItemPopularity(db, redis, heroId, options, cb) {
+  db.raw(`
+  SELECT purchase_log
+  from player_matches
+  JOIN parsed_matches USING(match_id)
+  WHERE hero_id = ?
+  LIMIT 100
+  `, [heroId || 0]).asCallback((err, purchaseLogs) => {
+    if (err) {
+      return cb(err);
+    }
+    return Promise.all(purchaseLogs.rows.flatMap(purchaseLog => purchaseLog.purchase_log).map(async (item) => {
+      const itemName = `item_${item.key}`;
+      const time = parseInt(item.time, 10);
+      const cost = parseInt((await getItemCost(db, redis, itemName)).rows[0].cost, 10);
+      return { itemName, time, cost };
+    }))
+      .then((items) => {
+        const startGameItems = countItemPopularity(items.filter(item => item.time <= 0));
+        const earlyGameItems = countItemPopularity(items.filter(item => item.time > 0 && item.time < 60 * 10 && item.cost > 700));
+        const midGameItems = countItemPopularity(items.filter(item => item.time >= 60 * 10 && item.time < 60 * 20 && item.cost > 2000));
+        const lateGameItems = countItemPopularity(items.filter(item => item.time >= 60 * 20 && item.cost > 4000));
+        cb(null, {
+          start_game_items: startGameItems,
+          early_game_items: earlyGameItems,
+          mid_game_items: midGameItems,
+          late_game_items: lateGameItems,
+        });
+      })
+      .catch((err) => {
+        cb(err);
+      });
   });
 }
 
@@ -1195,6 +1238,7 @@ module.exports = {
   getDistributions,
   getProPlayers,
   getHeroRankings,
+  getHeroItemPopularity,
   getHeroBenchmarks,
   getMatchBenchmarks,
   getMatchBenchmarksPromisified,
