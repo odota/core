@@ -646,7 +646,7 @@ function generateMatchups(match, max, oneSided) {
 function countItemPopularity(items) {
   // get count of each items
   return items.reduce((acc, item) => {
-    acc[item.itemName] = (acc[item.itemName] || 0) + 1;
+    acc[item.itemId] = (acc[item.itemId] || 0) + 1;
     return acc;
   }, {});
 }
