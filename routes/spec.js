@@ -59,7 +59,7 @@ function sendDataWithCache(req, res, data, key) {
     cacheFunctions.write({
       key,
       account_id: req.params.account_id,
-    }, JSON.stringify(data), () => { });
+    }, JSON.stringify(data), () => {});
   }
   return res.json(data);
 }
