@@ -3713,7 +3713,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     '/heroes/{hero_id}/itemPopularity': {
       get: {
         summary: 'GET /heroes/{hero_id}/itemPopularity',
-        description: 'Get item popularity of hero categoried by start, early, mid and late game',
+        description: 'Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games',
         tags: ['heroes'],
         parameters: [params.heroIdPathParam],
         route: () => '/heroes/:hero_id/itemPopularity',
