@@ -18,7 +18,7 @@ const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
 
 const {
-  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor,
+  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor, countItemPopularity,
 } = utility;
 const { computeMatchData } = compute;
 const columnInfo = {};
@@ -212,6 +212,39 @@ function getHeroRankings(db, redis, heroId, options, cb) {
     return cb(err, {
       hero_id: Number(heroId),
       rankings: entries,
+    });
+  });
+}
+
+function getHeroItemPopularity(db, redis, heroId, options, cb) {
+  db.raw(`
+  SELECT purchase_log
+  FROM player_matches
+  JOIN matches USING(match_id)
+  WHERE hero_id = ? AND version IS NOT NULL
+  ORDER BY match_id DESC
+  LIMIT 100
+  `, [heroId || 0]).asCallback((err, purchaseLogs) => {
+    if (err) {
+      return cb(err);
+    }
+
+    const items = purchaseLogs.rows.flatMap(purchaseLog => purchaseLog.purchase_log).map((item) => {
+      const time = parseInt(item.time, 10);
+      const { cost, id } = constants.items[item.key];
+      return { cost, id, time };
+    });
+
+    const startGameItems = countItemPopularity(items.filter(item => item.time <= 0));
+    const earlyGameItems = countItemPopularity(items.filter(item => item.time > 0 && item.time < 60 * 10 && item.cost > 700));
+    const midGameItems = countItemPopularity(items.filter(item => item.time >= 60 * 10 && item.time < 60 * 25 && item.cost > 2000));
+    const lateGameItems = countItemPopularity(items.filter(item => item.time >= 60 * 25 && item.cost > 4000));
+
+    return cb(null, {
+      start_game_items: startGameItems,
+      early_game_items: earlyGameItems,
+      mid_game_items: midGameItems,
+      late_game_items: lateGameItems,
     });
   });
 }
@@ -1195,6 +1228,7 @@ module.exports = {
   getDistributions,
   getProPlayers,
   getHeroRankings,
+  getHeroItemPopularity,
   getHeroBenchmarks,
   getMatchBenchmarks,
   getMatchBenchmarksPromisified,
