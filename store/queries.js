@@ -220,7 +220,8 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
   db.raw(`
   SELECT purchase_log
   FROM player_matches
-  WHERE hero_id = ?
+  JOIN matches USING(match_id)
+  WHERE hero_id = ? AND version IS NOT NULL
   ORDER BY match_id DESC
   LIMIT 100
   `, [heroId || 0]).asCallback((err, purchaseLogs) => {
