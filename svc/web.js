@@ -137,11 +137,11 @@ app.use((req, res, cb) => {
     const requestAPIKey = req.query.api_key;
     res.locals.usageIdentifier = requestAPIKey;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
-    console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
+    // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
   } else {
     res.locals.usageIdentifier = ip;
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
-    console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
+    // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
   const multi = redis.multi()
     .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
@@ -187,7 +187,7 @@ app.use((req, res, cb) => {
   res.once('finish', () => {
     const timeEnd = new Date();
     const elapsed = timeEnd - timeStart;
-    if (elapsed > 1000 || config.NODE_ENV === 'development') {
+    if (elapsed > 2000 || config.NODE_ENV === 'development') {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
 
