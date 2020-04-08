@@ -229,6 +229,7 @@ function getData(url, cb) {
     request({
       url: target,
       json: !(url.raw),
+      gzip: true,
       timeout,
     }, (err, res, body) => {
       if (err
