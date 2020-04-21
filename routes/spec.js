@@ -15,7 +15,6 @@ const playerFields = require('./playerFields');
 const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const su = require('../util/scenariosUtil');
-const filter = require('../util/filter');
 const db = require('../store/db');
 const redis = require('../store/redis');
 const packageJson = require('../package.json');
@@ -4443,6 +4442,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
       },
     },
+    /*
     '/feed': {
       get: {
         summary: 'GET /feed',
@@ -4535,100 +4535,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
       },
     },
-    '/admin/apiMetrics': {
-      get: {
-        summary: 'GET /admin/apiMetrics',
-        description: 'Get API request metrics',
-        tags: ['status'],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'object',
-            },
-          },
-        },
-        route: () => '/admin/apiMetrics',
-        func: (req, res) => {
-          const startTime = moment().startOf('month').format('YYYY-MM-DD');
-          const endTime = moment().endOf('month').format('YYYY-MM-DD');
-
-          async.parallel({
-            topAPI: (cb) => {
-              db.raw(`
-                SELECT
-                  account_id,
-                  ARRAY_AGG(DISTINCT api_key) as api_keys,
-                  SUM(usage) as usage_count
-                FROM (
-                  SELECT
-                    account_id,
-                    api_key,
-                    ip,
-                    MAX(usage_count) as usage
-                  FROM api_key_usage
-                  WHERE
-                    timestamp >= ?
-                    AND timestamp <= ?
-                  GROUP BY account_id, api_key, ip
-                ) as t1
-                GROUP BY account_id
-                ORDER BY usage_count DESC
-                LIMIT 10
-              `, [startTime, endTime])
-                .asCallback((err, res) => cb(err, err ? null : res.rows));
-            },
-            topAPIIP: (cb) => {
-              db.raw(`
-                SELECT
-                  ip,
-                  ARRAY_AGG(DISTINCT account_id) as account_ids,
-                  ARRAY_AGG(DISTINCT api_key) as api_keys,
-                  SUM(usage) as usage_count
-                FROM (
-                  SELECT
-                    account_id,
-                    api_key,
-                    ip,
-                    MAX(usage_count) as usage
-                  FROM api_key_usage
-                  WHERE
-                    timestamp >= ?
-                    AND timestamp <= ?
-                  GROUP BY account_id, api_key, ip
-                ) as t1
-                GROUP BY ip
-                ORDER BY usage_count DESC
-                LIMIT 10
-              `, [startTime, endTime])
-                .asCallback((err, res) => cb(err, err ? null : res.rows));
-            },
-            numAPIUsers: (cb) => {
-              db.raw(`
-                SELECT
-                  COUNT(DISTINCT account_id)
-                FROM api_key_usage
-                WHERE
-                  timestamp >= ?
-                  AND timestamp <= ?
-              `, [startTime, endTime])
-                .asCallback((err, res) => cb(err, err ? null : res.rows));
-            },
-            topUsersIP: (cb) => {
-              redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
-            },
-            numUsersIP: (cb) => {
-              redis.zcard('user_usage_count', cb);
-            },
-          }, (err, result) => {
-            if (err) {
-              return res.status(500).send(err.message);
-            }
-            return res.json(result);
-          });
-        },
-      },
-    },
+    */
   },
 };
 module.exports = spec;

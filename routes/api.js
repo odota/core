@@ -1,9 +1,13 @@
 const express = require('express');
+const moment = require('moment');
+const async = require('async');
 const playerFields = require('./playerFields');
 const filterDeps = require('../util/filterDeps');
 const config = require('../config');
 const spec = require('./spec');
 const cacheFunctions = require('../store/cacheFunctions');
+const db = require('../store/db');
+const redis = require('../store/redis');
 
 const api = new express.Router();
 const { subkeys } = playerFields;
@@ -75,6 +79,85 @@ api.use('/admin*', (req, res, cb) => {
 
   return res.status(403).json({
     error: 'Access Denied',
+  });
+});
+
+api.get('/admin/apiMetrics', (req, res) => {
+  const startTime = moment().startOf('month').format('YYYY-MM-DD');
+  const endTime = moment().endOf('month').format('YYYY-MM-DD');
+
+  async.parallel({
+    topAPI: (cb) => {
+      db.raw(`
+        SELECT
+            account_id,
+            ARRAY_AGG(DISTINCT api_key) as api_keys,
+            SUM(usage) as usage_count
+        FROM (
+            SELECT
+            account_id,
+            api_key,
+            ip,
+            MAX(usage_count) as usage
+            FROM api_key_usage
+            WHERE
+            timestamp >= ?
+            AND timestamp <= ?
+            GROUP BY account_id, api_key, ip
+        ) as t1
+        GROUP BY account_id
+        ORDER BY usage_count DESC
+        LIMIT 10
+        `, [startTime, endTime])
+        .asCallback((err, res) => cb(err, err ? null : res.rows));
+    },
+    topAPIIP: (cb) => {
+      db.raw(`
+        SELECT
+            ip,
+            ARRAY_AGG(DISTINCT account_id) as account_ids,
+            ARRAY_AGG(DISTINCT api_key) as api_keys,
+            SUM(usage) as usage_count
+        FROM (
+            SELECT
+            account_id,
+            api_key,
+            ip,
+            MAX(usage_count) as usage
+            FROM api_key_usage
+            WHERE
+            timestamp >= ?
+            AND timestamp <= ?
+            GROUP BY account_id, api_key, ip
+        ) as t1
+        GROUP BY ip
+        ORDER BY usage_count DESC
+        LIMIT 10
+        `, [startTime, endTime])
+        .asCallback((err, res) => cb(err, err ? null : res.rows));
+    },
+    numAPIUsers: (cb) => {
+      db.raw(`
+        SELECT
+            COUNT(DISTINCT account_id)
+        FROM api_key_usage
+        WHERE
+            timestamp >= ?
+            AND timestamp <= ?
+        `, [startTime, endTime])
+        .asCallback((err, res) => cb(err, err ? null : res.rows));
+    },
+    topUsersIP: (cb) => {
+      redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
+    },
+    numUsersIP: (cb) => {
+      redis.zcard('user_usage_count', cb);
+    },
+  }, (err, result) => {
+    if (err) {
+      return res.status(500).send(err.message);
+    }
+    return res.json(result);
   });
 });
 
