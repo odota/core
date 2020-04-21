@@ -7,7 +7,7 @@ const conn = knex({
   connection: config.READONLY_POSTGRES_URL,
   pool: {
     min: 1,
-    max: 5,
+    max: 1,
   },
 });
 

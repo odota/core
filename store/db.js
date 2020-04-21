@@ -12,18 +12,18 @@ const db = knex({
   client: 'pg',
   connection: config.POSTGRES_URL,
   pool: {
-    min: 2,
+    // min: 2,
     // max: 20,
-    afterCreate: (conn, done) => {
-      // Set the minimum similarity for pg_trgm
-      conn.query('SELECT set_limit(0.6);', (err) => {
-        // if err is not falsy, connection is discarded from pool
-        done(err, conn);
-      });
-    },
+    // afterCreate: (conn, done) => {
+    //   // Set the minimum similarity for pg_trgm
+    //   conn.query('SELECT set_limit(0.6);', (err) => {
+    //     // if err is not falsy, connection is discarded from pool
+    //     done(err, conn);
+    //   });
+    // },
   },
 });
-db.on('query-error', (err) => {
-  throw err;
-});
+// db.on('query-error', (err) => {
+//   console.error(err);
+// });
 module.exports = db;
