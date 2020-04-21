@@ -1,6 +1,7 @@
 const async = require('async');
 const constants = require('dotaconstants');
 const moment = require('moment');
+const { Client } = require('pg');
 const config = require('../config');
 // const crypto = require('crypto');
 // const uuidV4 = require('uuid/v4');
@@ -10,7 +11,6 @@ const search = require('../store/search');
 const searchES = require('../store/searchES');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
-const explorerQuery = require('../store/explorerQuery');
 const playerFields = require('./playerFields');
 const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
@@ -2437,20 +2437,27 @@ You can find data that can be used to convert hero and ability IDs and other inf
           },
         },
         route: () => '/explorer',
-        func: (req, res) => {
+        func: async (req, res) => {
           // TODO handle NQL (@nicholashh query language)
           const input = req.query.sql;
-          return explorerQuery(input, (err, result) => {
-            if (err) {
-              console.error(err);
-            }
-            const final = Object.assign({}, result, {
-              err: err && err.toString(),
-            });
-            return res.status(err ? 400 : 200).json(final);
+          const client = new Client({
+            connectionString: config.READONLY_POSTGRES_URL,
+            statement_timeout: 10000,
           });
+          client.connect();
+          let result = null;
+          let err = null;
+          try {
+            result = await client.query(input);
+          } catch (e) {
+            err = e;
+          }
+          client.end();
+          const final = Object.assign({}, result, {
+            err: err && err.toString(),
+          });
+          return res.status(err ? 400 : 200).json(final);
         },
-
       },
     },
     '/metadata': {
