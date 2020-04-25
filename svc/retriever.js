@@ -29,8 +29,8 @@ const successThreshold = 0.5;
 const accountsToUse = 5;
 const matchRequestLimit = 500;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 2000;
-const matchRequestDelayStep = 100;
+const matchRequestDelay = 1300;
+const matchRequestDelayStep = 200;
 
 let matchRequestDelayIncr = 0;
 let lastRequestTime;
