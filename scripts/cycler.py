@@ -43,20 +43,6 @@ def run1(zoneList):
       #     subprocess.call("gcloud compute instances add-access-config {} --access-config-name={} --zone={}".format(instance, "external-nat", zone), shell=True)
     time.sleep(300)
 
-# Rolling single group
-def run2(zoneList):
-  pool = cycle(zoneList)
-  while True:
-    zone = next(pool)
-    instancegroupname = "retriever-group-" + zone
-    currentsize = int(subprocess.check_output("gcloud compute instance-groups managed describe {} --quiet --zone={} --format='value(targetSize)'".format(instancegroupname, zone), shell=True))
-    if currentsize > 0:
-      nextzone = next(pool)
-      nextinstancegroupname = "retriever-group-" + nextzone
-      nextsize = max(targetsize - currentsize, 0)
-      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(nextinstancegroupname, nextzone, nextsize), shell=True)
-      time.sleep(300)
-
 # Even distribution
 def run3(zoneList):
   while True:
@@ -64,7 +50,9 @@ def run3(zoneList):
       instancegroupname = "retriever-group-" + zone
       #subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing".format(instancegroupname, zone, 1, targetsize), shell=True)
       #subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
-      # Optionally, resize 0, wait, then re-create
+      # Optionally, resize 0, then re-create
+      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
+      time.sleep(5)
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
     time.sleep(3600)
     
@@ -80,7 +68,7 @@ def createGroups(zoneList):
     subprocess.call("gcloud compute backend-services add-backend {} --quiet --global --instance-group={} --instance-group-zone={}".format(backendname, instancegroupname, zone), shell=True)
     # Configure load balancing policy
     subprocess.call("gcloud compute backend-services update-backend {} --quiet --global --instance-group={} --instance-group-zone={} --balancing-mode=RATE --max-rate-per-instance={} --capacity-scaler={}".format(backendname, instancegroupname, zone, 0.01, 1), shell=True)
-    # Scale (resize 0 to recreate instances)
+    # Scale (resize 0 to empty the group)
     #subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
     #subprocess.call("gcloud compute instance-groups managed stop-autoscaling {} --quiet --zone={}".format(instancegroupname, zone), shell=True)
 
@@ -93,7 +81,8 @@ def start():
   # sort by zone letter (last character)
   # zoneList = sorted(zoneList, key=lambda x: x[-1])
   zoneList = filter(lambda s: s.endswith('-b'), zoneList)
-  createGroups(zoneList)
+  # Commenting out createGroups makes this faster but turn it back on when there are new regions
+  # createGroups(zoneList)
   while True:
     try:
       # run1(zoneList)
