@@ -56,6 +56,9 @@ function getUptime() {
 function genStats() {
   const data = {
     matchRequests,
+    matchSuccesses,
+    profileRequests,
+    profileSuccesses,
     uptime: getUptime(),
     numReadyAccounts: Object.keys(steamObj).length,
     totalAccounts: users.length,
