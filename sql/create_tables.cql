@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS matches (
   teamfights text,
   version int,
   cosmetics text,
+  dotaplus text,
   skill int,
   radiant_team_id int,
   dire_team_id int,

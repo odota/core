@@ -51,6 +51,7 @@ async function extendPlayerData(player, match) {
     cluster: match.cluster,
     lobby_type: match.lobby_type,
     game_mode: match.game_mode,
+    hero_dotaplus_xp: (match.dotaplus || {})[player.account_id] || 0,
     is_contributor: isContributor(player.account_id),
   };
   computeMatchData(p);
@@ -93,6 +94,7 @@ async function getMatch(matchId) {
   if (!match) {
     return Promise.resolve();
   }
+  console.log(match);
   const playersMatchData = await getPlayerMatchData(matchId);
   const playersPromise = Promise.all(playersMatchData.map(p => extendPlayerData(p, match)));
   const gcdataPromise = db.first().from('match_gcdata').where({

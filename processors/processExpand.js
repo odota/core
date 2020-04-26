@@ -612,6 +612,9 @@ function processExpand(entries, meta) {
     cosmetics(e) {
       expand(e);
     },
+    dotaplus(e) {
+      expand(e);
+    },
   };
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];

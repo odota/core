@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS matches (
   draft_timings json[],
   version integer,
   cosmetics json,
+  dotaplus json,
   series_id integer,
   series_type integer
 );

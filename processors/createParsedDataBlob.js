@@ -21,6 +21,7 @@ function getParseSchema() {
     radiant_gold_adv: [],
     radiant_xp_adv: [],
     cosmetics: {},
+    dotaplus: {},
     players: Array(...new Array(10)).map(() => ({
       player_slot: 0,
       obs_placed: 0,

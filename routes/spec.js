@@ -472,6 +472,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         description: 'The ID value of the hero played',
                         type: 'integer',
                       },
+                      hero_dotaplus_xp: {
+                        description: 'Dota Plus hero xp',
+                        type: 'integer',
+                      },
                       item_0: {
                         description: 'Item in the player\'s first slot',
                         type: 'integer',
@@ -1483,6 +1487,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'against_win',
                     type: 'integer',
                   },
+                  hero_dotaplus_xp: {
+                    description: 'Dota Plus hero experience',
+                    type: 'integer',
+                  },
                 },
               },
             },
@@ -1502,6 +1510,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               with_win: 0,
               against_games: 0,
               against_win: 0,
+              hero_dotaplus_xp: 0,
             };
             heroes[heroId] = hero;
           });
