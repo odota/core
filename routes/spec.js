@@ -12,7 +12,7 @@ const searchES = require('../store/searchES');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const playerFields = require('./playerFields');
-const getGcData = require('../util/getGcData');
+// const getGcData = require('../util/getGcData');
 const utility = require('../util/utility');
 const su = require('../util/scenariosUtil');
 const db = require('../store/db');
@@ -4073,11 +4073,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/replays',
         func: (req, res, cb) => {
           db.select(['match_id', 'cluster', 'replay_salt'])
-           .from('match_gcdata')
-           .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 5))
-           .asCallback((err, result) => {
-             return res.json(result.rows);
-           });
+            .from('match_gcdata')
+            .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 5))
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
           /*
           async.map(
             [].concat(req.query.match_id || []).slice(0, 5),
