@@ -4072,12 +4072,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/replays',
         func: (req, res, cb) => {
-          /*
           db.select(['match_id', 'cluster', 'replay_salt'])
            .from('match_gcdata')
-           .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 20))
+           .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 5))
            .asCallback((err, result) => {
-          */
+             return res.json(result.rows);
+          /*
           async.map(
             [].concat(req.query.match_id || []).slice(0, 5),
             (matchId, cb) => getGcData({
@@ -4098,6 +4098,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               return res.json(final);
             },
           );
+          */
         },
       },
     },
