@@ -4077,6 +4077,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
            .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 5))
            .asCallback((err, result) => {
              return res.json(result.rows);
+           });
           /*
           async.map(
             [].concat(req.query.match_id || []).slice(0, 5),
