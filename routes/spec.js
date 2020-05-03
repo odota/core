@@ -1487,10 +1487,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'against_win',
                     type: 'integer',
                   },
-                  hero_dotaplus_xp: {
-                    description: 'Dota Plus hero experience',
-                    type: 'integer',
-                  },
                 },
               },
             },
