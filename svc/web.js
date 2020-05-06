@@ -135,7 +135,7 @@ app.use((req, res, cb) => {
 
   let rateLimit = '';
   if (res.locals.isAPIRequest) {
-    const requestAPIKey = (req.headers.authorization && req.headers.authorization.replace('Bearer: ', '')) || req.query.api_key;
+    const requestAPIKey = (req.headers.authorization && req.headers.authorization.replace('Bearer ', '')) || req.query.api_key;
     res.locals.usageIdentifier = requestAPIKey;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
