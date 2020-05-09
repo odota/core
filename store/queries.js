@@ -556,7 +556,7 @@ function bulkIndexPlayer(bulkActions, cb) {
 function insertPlayerRating(db, row, cb) {
   async.series({
     pr(cb) {
-      if (row.solo_competitive_rank || row.competitive_rank) {
+      if (row.match_id && (row.solo_competitive_rank || row.competitive_rank)) {
         db('player_ratings').insert({
           account_id: row.account_id,
           match_id: row.match_id,

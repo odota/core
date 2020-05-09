@@ -4,6 +4,7 @@
 const async = require('async');
 const queries = require('../store/queries');
 const db = require('../store/db');
+const redis = require('../store/redis');
 const utility = require('../util/utility');
 
 const { insertPlayer, bulkIndexPlayer } = queries;
@@ -16,6 +17,13 @@ function getSummaries(cb) {
     }
     const container = generateJob('api_summaries', {
       players: result.rows,
+    });
+    // Request rank_tier data for these players
+    result.rows.forEach((row) => {
+      redis.rpush('mmrQueue', JSON.stringify({
+        match_id: null,
+        account_id: row.account_id,
+      }));
     });
     return getData(container.url, (err, body) => {
       if (err) {
