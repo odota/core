@@ -82,7 +82,7 @@ function getGcDataFromRetriever(match, cb) {
     redis.zincrby('retrieverCounts', 1, metadata.hostname);
     redis.expireat('retrieverCounts', moment().startOf('hour').add(1, 'hour').format('X'));
 
-    redis.setex(`gcdata:${match.match_id}`, 60 * 60 * 12, zlib.gzipSync(JSON.stringify(body)));
+    // redis.setex(`gcdata:${match.match_id}`, 60 * 60 * 12, zlib.gzipSync(JSON.stringify(body)));
     // TODO add discovered account_ids to database and fetch account data/rank medal
     return handleGcData(match, body, cb);
   });
@@ -93,13 +93,14 @@ module.exports = function getGcData(match, cb) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return cb(new Error('invalid match_id'));
   }
-  return redis.get(Buffer.from(`gcdata:${match.match_id}`), (err, body) => {
-    if (err) {
-      return cb(err);
-    }
-    if (body) {
-      return handleGcData(match, JSON.parse(zlib.gunzipSync(body)), cb);
-    }
-    return getGcDataFromRetriever(match, cb);
-  });
+  return getGcDataFromRetriever(match, cb);
+  // return redis.get(Buffer.from(`gcdata:${match.match_id}`), (err, body) => {
+  //   if (err) {
+  //     return cb(err);
+  //   }
+  //   if (body) {
+  //     return handleGcData(match, JSON.parse(zlib.gunzipSync(body)), cb);
+  //   }
+  //   return getGcDataFromRetriever(match, cb);
+  // });
 };
