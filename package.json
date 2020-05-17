@@ -36,7 +36,7 @@
     "dotenv": "^8.2.0",
     "elasticsearch": "^15.0.0",
     "express": "^4.17.1",
-    "http-proxy": "^1.17.0",
+    "http-proxy": "^1.18.1",
     "json-bigint": "^0.3.0",
     "knex": "^0.21.0",
     "long": "^4.0.0",
