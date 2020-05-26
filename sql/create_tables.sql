@@ -492,6 +492,7 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
 );
 
 CREATE TABLE IF NOT EXISTS hero_search (
+  PRIMARY KEY (match_id),
   match_id bigint,
   teamA int[],
   teamB int[],
