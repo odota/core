@@ -127,6 +127,12 @@ function getGcMatchData(idx, matchId, cb) {
     matchRequestDelayIncr += matchRequestDelayStep;
   }, timeoutMs);
   return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
+    if (matchData.result === 15) {
+      // Valve is blocking GC access to this match, probably a community prediction match
+      // Return a 200 success code without the data, so we treat it as an unretryable error
+      // Returning something like 403 will mix it up with issues like bad API keys, which can be retried with a new key
+      return cb(null, null);
+    }
     matchSuccesses += 1;
     // Reset delay on success
     matchRequestDelayIncr = 0;

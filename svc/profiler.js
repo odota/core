@@ -19,12 +19,12 @@ function getSummaries(cb) {
       players: result.rows,
     });
     // Request rank_tier data for these players
-    result.rows.forEach((row) => {
-      redis.rpush('mmrQueue', JSON.stringify({
-        match_id: null,
-        account_id: row.account_id,
-      }));
-    });
+    // result.rows.forEach((row) => {
+    //   redis.rpush('mmrQueue', JSON.stringify({
+    //     match_id: null,
+    //     account_id: row.account_id,
+    //   }));
+    // });
     return getData(container.url, (err, body) => {
       if (err) {
         // couldn't get data from api, non-retryable
