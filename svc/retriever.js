@@ -138,7 +138,7 @@ function getGcMatchData(idx, matchId, cb) {
     matchRequestDelayIncr = 0;
     console.log('received match %s', matchId);
     clearTimeout(timeout);
-    cb(err, matchData);
+    return cb(err, matchData);
   });
 }
 

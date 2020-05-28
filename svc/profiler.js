@@ -4,7 +4,7 @@
 const async = require('async');
 const queries = require('../store/queries');
 const db = require('../store/db');
-const redis = require('../store/redis');
+// const redis = require('../store/redis');
 const utility = require('../util/utility');
 
 const { insertPlayer, bulkIndexPlayer } = queries;
