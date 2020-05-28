@@ -17,7 +17,8 @@
     "dockerbuild": "sudo docker build -t odota/core .",
     "reparse": "cat matches.csv | xargs -n1 node dev/getMatch.js",
     "createAccounts": "node dev/createAccounts.js > accounts.log",
-    "psql": "docker exec -it odota-postgres psql -U postgres -d yasp"
+    "psql": "docker exec -it odota-postgres psql -U postgres -d yasp",
+    "prettier": "prettier --single-quote --write ."
   },
   "repository": {
     "type": "git",
@@ -60,7 +61,8 @@
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "mocha": "^6.2.2"
+    "mocha": "^6.2.2",
+    "prettier": "^2.0.5"
   },
   "engines": {
     "node": "12.14.0"
