@@ -6,7 +6,7 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 30
+targetsize = 60
 backendname = "retriever"
 templatename = "retriever-11"
 
@@ -22,7 +22,7 @@ def run1(zoneList):
       # Invert to cycle through in reverse order, so we create new instances before deleting old ones
       size = targetsize if i == (len(zoneList) - bucket - 1) else 0
       minsize = 1
-      print bucket, size
+      print(bucket, size)
       if size > 0:
         subprocess.call("gcloud compute instance-groups managed set-autoscaling {} --quiet --zone={} --min-num-replicas={} --max-num-replicas={} --scale-based-on-load-balancing --target-load-balancing-utilization=1".format(instancegroupname, zone, minsize, size), shell=True)
       else:
@@ -31,7 +31,6 @@ def run1(zoneList):
       # if size > 0:
       #   # Iterate over instances in the group
       #   instancesCmd = "gcloud compute instance-groups managed list-instances {} --zone={} --format='value(NAME)'".format(instancegroupname, zone);
-      #   # print instancesCmd
       #   instances = subprocess.check_output(instancesCmd, shell=True)
       #   instanceList = instances.strip().split('\n')
       #   for i, instance in enumerate(instanceList):
@@ -60,7 +59,7 @@ def run3(zoneList):
 def createGroups(zoneList):
   for i, zone in enumerate(zoneList):
     instancegroupname = "retriever-group-" + zone
-    print i, zone, instancegroupname
+    print(i, zone, instancegroupname)
     # Create the instance group
     subprocess.call("gcloud compute instance-groups managed create {} --quiet --zone={} --size=0 --template={}".format(instancegroupname, zone, templatename), shell=True)
     # Set instance template
@@ -75,13 +74,13 @@ def createGroups(zoneList):
 
 def start():
   # Get the available zones
-  zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True)
+  zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True).decode("utf-8")
   zoneList = zones.strip().split('\n')
   # sort by zone (alphabetical)
   # zoneList = sorted(zoneList)
   # sort by zone letter (last character)
   # zoneList = sorted(zoneList, key=lambda x: x[-1])
-  zoneList = filter(lambda s: s.endswith('-b'), zoneList)
+  zoneList = list(filter(lambda s: s.endswith('-b'), zoneList))
   # Commenting out createGroups makes this faster but turn it back on when there are new regions
   # createGroups(zoneList)
   while True:
