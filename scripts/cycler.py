@@ -6,9 +6,9 @@ import time
 
 # subprocess.call("sudo gcloud components update --quiet", shell=True)
 # For completeness this should also create the backend, HTTP load balancer, template, and network
-targetsize = 1
+targetsize = 30
 backendname = "retriever"
-templatename = "retriever-9"
+templatename = "retriever-11"
 
 # Rotating single group
 def run1(zoneList):
@@ -45,6 +45,7 @@ def run1(zoneList):
 
 # Even distribution
 def run3(zoneList):
+  zoneSize = targetsize / len(zoneList)
   while True:
     for i, zone in enumerate(zoneList):
       instancegroupname = "retriever-group-" + zone
@@ -53,7 +54,7 @@ def run3(zoneList):
       # Optionally, resize 0, then re-create
       subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, 0), shell=True)
       time.sleep(5)
-      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, targetsize), shell=True)
+      subprocess.call("gcloud compute instance-groups managed resize {} --quiet --zone={} --size={}".format(instancegroupname, zone, zoneSize), shell=True)
     time.sleep(3600)
     
 def createGroups(zoneList):
@@ -85,9 +86,8 @@ def start():
   # createGroups(zoneList)
   while True:
     try:
-      # run1(zoneList)
-      # run2(zoneList)
-      run3(zoneList)
+      run1(zoneList)
+      # run3(zoneList)
       pass
     except KeyboardInterrupt:
       raise
