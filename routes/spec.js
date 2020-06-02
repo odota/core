@@ -27,7 +27,7 @@ const {
 } = require('./objects');
 
 const {
-  redisCount, countPeers, isContributor,
+  redisCount, countPeers, isContributor, matchupToString,
 } = utility;
 const { subkeys, countCats } = playerFields;
 const playerParams = [
@@ -3279,7 +3279,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     '/findMatches': {
       get: {
         summary: 'GET /',
-        description: 'Finds matches by heroes played (currently includes matches played after April 2019)',
+        description: 'Finds recent matches by heroes played',
         tags: ['findMatches'],
         parameters: [{
           name: 'teamA',
@@ -3308,20 +3308,31 @@ You can find data that can be used to convert hero and ability IDs and other inf
           const t0 = [].concat(req.query.teamA || []).slice(0, 5);
           const t1 = [].concat(req.query.teamB || []).slice(0, 5);
 
-          // Determine which comes first
-          // const rcg = groupToString(t0);
-          // const dcg = groupToString(t1);
-
-          // const inverted = rcg > dcg;
-          const inverted = false;
-          const teamA = inverted ? t1 : t0;
-          const teamB = inverted ? t0 : t1;
-
-          db.raw('select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) limit 5', [teamA, teamB, teamB, teamA]).asCallback((err, result) => {
+          // Construct key for redis
+          const key = `combos:${matchupToString(t0, t1, true)}`;
+          redis.get(key, (err, reply) => {
             if (err) {
               return cb(err);
             }
-            return res.json(result.rows);
+            if (reply) {
+              return res.end(reply);
+            }
+            // Determine which comes first
+            // const rcg = groupToString(t0);
+            // const dcg = groupToString(t1);
+
+            // const inverted = rcg > dcg;
+            const inverted = false;
+            const teamA = inverted ? t1 : t0;
+            const teamB = inverted ? t0 : t1;
+
+            return db.raw('select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) limit 5', [teamA, teamB, teamB, teamA]).asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              redis.setex(key, 60, JSON.stringify(result.rows));
+              return res.json(result.rows);
+            });
           });
         },
       },
