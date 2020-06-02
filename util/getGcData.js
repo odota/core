@@ -75,6 +75,8 @@ function getGcDataFromRetriever(match, cb) {
     }
     if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
       // non-retryable error
+      redis.lpush('nonRetryable', JSON.stringify({ matchId: match.match_id, body }));
+      redis.ltrim('nonRetryable', 0, 10000);
       return cb(new Error('invalid body or error'));
     }
     // Count retriever calls
