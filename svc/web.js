@@ -57,6 +57,7 @@ passport.deserializeUser((accountId, done) => {
   });
 });
 passport.use(new SteamStrategy({
+  providerURL: 'https://steamcommunity.com/openid',
   returnURL: `${host}/return`,
   realm: host,
   apiKey,
