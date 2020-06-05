@@ -9,7 +9,7 @@ const moment = require('moment');
 const express = require('express');
 const requestIp = require('request-ip');
 const passport = require('passport');
-const SteamStrategy = require('passport-steam').Strategy;
+const OpenIDStrategy = require('passport-openid').Strategy;
 const cors = require('cors');
 const keys = require('../routes/keyManagement');
 const webhooks = require('../routes/webhookManagement');
@@ -56,20 +56,24 @@ passport.deserializeUser((accountId, done) => {
     account_id: accountId,
   });
 });
-passport.use(new SteamStrategy({
+passport.use(new OpenIDStrategy({
+  profile: false,
+  stateless: true,
   providerURL: 'https://steamcommunity.com/openid',
   returnURL: `${host}/return`,
   realm: host,
-  apiKey,
 }, (identifier, profile, cb) => {
-  const player = profile._json;
-  player.last_login = new Date();
-  queries.insertPlayer(db, player, true, (err) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, player);
-  });
+  console.log(identifier);
+  const steamId = id.split('/')[5].toString();
+  const player = { last_login: new Date(), account_id: utility.convert64To32(steamId) };
+  console.log(player);
+  cb(err, player);
+  // queries.insertPlayer(db, player, true, (err) => {
+  //   if (err) {
+  //     return cb(err);
+  //   }
+  //   return cb(err, player);
+  // });
 }));
 // Compression middleware
 app.use(compression());
@@ -245,10 +249,10 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
-app.route('/login').get(passport.authenticate('steam', {
+app.route('/login').get(passport.authenticate('openid', {
   failureRedirect: '/api',
 }));
-app.route('/return').get(passport.authenticate('steam', {
+app.route('/return').get(passport.authenticate('openid', {
   failureRedirect: '/api',
 }), (req, res) => {
   if (config.UI_HOST) {

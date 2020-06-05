@@ -44,6 +44,7 @@
     "moment": "^2.24.0",
     "nock": "^11.7.0",
     "passport": "^0.4.1",
+    "passport-openid": "^0.4.0",
     "passport-steam": "^1.0.12",
     "pg": "^7.15.1",
     "pg-query-stream": "^2.1.0",
