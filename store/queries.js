@@ -1115,7 +1115,7 @@ function insertMatch(match, options, cb) {
         redis.lpush('gcQueue', JSON.stringify({
           match_id: match.match_id,
           pgroup: match.pgroup,
-        }), cb);
+        }));
         return queue.addJob('parse', {
           data: {
             match_id: match.match_id,
