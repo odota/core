@@ -1111,6 +1111,11 @@ function insertMatch(match, options, cb) {
       const { doLogParse } = options;
       const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
       if (doParse) {
+        // Enqueue at head of list to prioritize gcdata for matches we want to parse
+        redis.lpush('gcQueue', JSON.stringify({
+          match_id: match.match_id,
+          pgroup: match.pgroup,
+        }), cb);
         return queue.addJob('parse', {
           data: {
             match_id: match.match_id,
