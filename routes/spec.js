@@ -2336,7 +2336,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/publicMatches',
         func: (req, res, cb) => {
           const lessThan = Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
-          let minTime = moment().subtract(3, 'day').format('X');
+          let moreThan = lessThan - 1000000;
           let order = '';
           if (req.query.mmr_ascending) {
             order = 'ORDER BY avg_rank_tier ASC NULLS LAST';
@@ -2344,12 +2344,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
             order = 'ORDER BY avg_rank_tier DESC NULLS LAST';
           } else {
             order = 'ORDER BY match_id DESC';
-            minTime = 0;
+            moreThan = 0;
           }
           db.raw(`
           WITH match_ids AS (SELECT match_id FROM public_matches
           WHERE TRUE
-          AND start_time > ?
+          AND match_id > ?
           AND match_id < ?
           ${order}
           LIMIT 100)
@@ -2363,7 +2363,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           (SELECT match_id, string_agg(hero_id::text, ',') dire_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot > 127 GROUP BY match_id) dire_team
           USING(match_id)
           ${order}
-          `, [minTime, lessThan])
+          `, [moreThan, lessThan])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
