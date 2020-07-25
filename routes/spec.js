@@ -3326,7 +3326,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             const teamA = inverted ? t1 : t0;
             const teamB = inverted ? t0 : t1;
 
-            return db.raw('select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) limit 5', [teamA, teamB, teamB, teamA]).asCallback((err, result) => {
+            return db.raw('select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10', [teamA, teamB, teamB, teamA]).asCallback((err, result) => {
               if (err) {
                 return cb(err);
               }
