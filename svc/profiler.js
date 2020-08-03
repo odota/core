@@ -71,7 +71,7 @@ function start() {
     if (err) {
       throw err;
     }
-    return setTimeout(start, 1000);
+    return setTimeout(start, 500);
   });
 }
 
