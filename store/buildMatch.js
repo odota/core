@@ -13,7 +13,7 @@ const db = require('../store/db');
 
 const { computeMatchData } = compute;
 const {
-  deserialize, convert32to64, buildReplayUrl, isContributor,
+  deserialize, buildReplayUrl, isContributor,
 } = utility;
 const getRedisAsync = promisify(redis.get).bind(redis);
 
