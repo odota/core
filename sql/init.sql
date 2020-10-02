@@ -4,6 +4,5 @@ REVOKE CREATE ON SCHEMA public FROM public;
 GRANT CREATE ON SCHEMA public TO postgres;
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM readonly;
 ALTER ROLE "readonly" WITH LOGIN;
-CREATE DATABASE yasp;
 ALTER DATABASE yasp SET seq_page_cost = 1;
 ALTER DATABASE yasp SET random_page_cost = 0.1;

@@ -10,6 +10,7 @@ services:
     image: odota/postgres
     container_name: odota-postgres
     environment:
+      POSTGRES_DB: yasp
       POSTGRES_PASSWORD: postgres
   cassandra:
     build:
@@ -58,7 +59,7 @@ services:
       ELASTICSEARCH_URL: odota-elasticsearch:9200
       INIT_POSTGRES_HOST: odota-postgres
       INIT_CASSANDRA_HOST: odota-cassandra
-    volumes: 
+    volumes:
       - .:/usr/src
     links:
       - postgres
