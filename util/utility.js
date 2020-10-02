@@ -21,7 +21,7 @@ const contributors = require('../CONTRIBUTORS');
  * @return {Array}
  */
 function tokenize(input) {
-  return input.replace(/[^a-zA-Z- ]+/g, '').replace('/ {2,}/', ' ').toLowerCase().split(' ');
+  return input.replace(/[^a-zа-я- ]+/gi, '').replace('/ {2,}/', ' ').toLowerCase().split(' ');
 }
 
 /*
