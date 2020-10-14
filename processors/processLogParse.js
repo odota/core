@@ -6,13 +6,12 @@ const insignificantDeaths = [
 function translate(s) {
   return s === 'dota_unknown' ? null : s;
 }
-
 /**
  * A processor to reduce the event stream to only logs we want to persist
  * */
 function processReduce(entries, meta) {
   const result = entries.filter((e) => {
-    if (e.type === 'DOTA_COMBATLOG_PURCHASE'
+    if (e.type === 'DOTA_COMBATLOG_PURCHASE' || e.type === 'STARTING_ITEM'
       || (e.type === 'DOTA_COMBATLOG_DEATH' && insignificantDeaths.every(prefix => e.targetname.indexOf(prefix) !== 0))
     ) {
       return Boolean(e.time);
