@@ -677,6 +677,27 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         description: 'How many sentries were placed by the player',
                         type: 'integer',
                       },
+                      starting_items: {
+                        description: 'Object containing information on items at the start of the game',
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            key: {
+                              description: 'Time in seconds the item was bought',
+                              type: 'integer',
+                            },
+                            itemslot: {
+                              description: 'Slot the item was in',
+                              type: 'integer',
+                            },
+                            charges: {
+                              description: 'Integer Amount of charges an item has',
+                              type: 'integer',
+                            },
+                          },
+                        },
+                      },
                       stuns: {
                         description: 'Total stun duration of all stuns by the player',
                         type: 'number',
