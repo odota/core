@@ -14,8 +14,6 @@ const getGcData = require('../util/getGcData');
 const config = require('../config');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
-const fs = require('fs');
-const { json } = require('body-parser');
 
 const { insertMatch } = queries;
 const { buildReplayUrl } = utility;
@@ -28,16 +26,10 @@ app.listen(config.PORT || config.PARSER_PORT);
 
 function runParse(match, job, cb) {
   let { url } = match;
-  console.log(match)
-  console.log('uuuuuuuuuuuuu',url)
   if (config.NODE_ENV === 'test') {
     url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
-    // url = `replay133.valve.net/570/5636217501_1032939160.dem.bz2`;
   }
-  let container_ip = '172.17.0.1:5700'
-  console.log('runparser',new Date(), url);
-  console.log(`curl --max-time 180 --fail ${url} | ${url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'} | curl -X POST -T - 172.:5600 |
-   node processors/createParsedDataBlob.js ${match.match_id} ${Boolean(match.doLogParse)}`)
+  console.log(new Date(), url);
   cp.exec(
     `curl --max-time 180 --fail ${url} | ${url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'} | curl -X POST -T - ${config.PARSER_HOST} | node processors/createParsedDataBlob.js ${match.match_id} ${Boolean(match.doLogParse)}`,
     { shell: true, maxBuffer: 10 * 1024 * 1024 },
@@ -45,16 +37,7 @@ function runParse(match, job, cb) {
       if (err) {
         return cb(err);
       }
-      fs.writeFileSync("z_output/out.txt", stdout, "utf8", (err) => {
-        if (err) console.log(err);
-        console.log("saved");
-      });
-      // console.log(typeof(result),typeof(JSON.stringify(result,null,2)));
       const result = Object.assign({}, JSON.parse(stdout), match);
-      fs.writeFileSync("z_output/parsed.json", JSON.stringify(result,null,2), "utf8", (err) => {
-        if (err) console.log(err);
-        console.log("saved");
-      });
       return insertMatch(result, {
         type: 'parsed',
         skipParse: true,
@@ -69,7 +52,6 @@ function runParse(match, job, cb) {
 
 function parseProcessor(job, cb) {
   const match = job;
-  console.log('parseprocessor',match)
   async.series({
     getDataSource(cb) {
       getGcData(match, (err, result) => {
