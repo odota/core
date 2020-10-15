@@ -621,7 +621,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                               type: 'integer',
                             },
                             key: {
-                              description: 'Integer item ID',
+                              description: 'String item name',
                               type: 'string',
                             },
                           },
@@ -684,15 +684,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           type: 'object',
                           properties: {
                             key: {
-                              description: 'Time in seconds the item was bought',
-                              type: 'integer',
+                              description: 'Item name',
+                              type: 'string',
                             },
                             itemslot: {
-                              description: 'Slot the item was in',
+                              description: 'Inventory slot the item was in',
                               type: 'integer',
                             },
                             charges: {
-                              description: 'Integer Amount of charges an item has',
+                              description: 'Amount of charges an item has',
                               type: 'integer',
                             },
                           },
