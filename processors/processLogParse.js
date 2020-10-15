@@ -11,7 +11,7 @@ function translate(s) {
  * */
 function processReduce(entries, meta) {
   const result = entries.filter((e) => {
-    if (e.type === 'DOTA_COMBATLOG_PURCHASE' || e.type === 'STARTING_ITEM'
+    if (e.type === 'DOTA_COMBATLOG_PURCHASE'
       || (e.type === 'DOTA_COMBATLOG_DEATH' && insignificantDeaths.every(prefix => e.targetname.indexOf(prefix) !== 0))
     ) {
       return Boolean(e.time);
