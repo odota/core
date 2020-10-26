@@ -263,6 +263,7 @@ function processExpand(entries, meta) {
         value: 1,
         unit,
         key,
+        charges: e.charges,
         type: 'purchase',
       });
       // don't include recipes in purchase logs
@@ -272,6 +273,7 @@ function processExpand(entries, meta) {
           value: 1,
           unit,
           key,
+          charges: e.charges,
           type: 'purchase_log',
         });
       }
