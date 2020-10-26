@@ -62,6 +62,13 @@ function populate(e, container) {
             time: e.time,
             key: e.key,
           };
+          if (e.type === 'purchase_log' && e.charges) {
+            let maxCharges = 1;
+            if (e.key === 'tango') maxCharges = 3;
+            for (let i = 1; i < maxCharges / e.charges; i += 1) {
+              t.push(arrEntry);
+            }
+          }
           if (e.type === 'kills_log' && e.tracked_death) {
             arrEntry = Object.assign({}, {
               tracked_death: e.tracked_death,
