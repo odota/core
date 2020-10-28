@@ -622,7 +622,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                             },
                             key: {
                               description: 'Integer item ID',
-                              type: 'string',
+                              type: 'integer',
+                            },
+                            charges: {
+                              description: 'Integer amount of charges',
+                              type: 'integer',
                             },
                           },
                         },
