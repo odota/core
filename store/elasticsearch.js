@@ -8,6 +8,7 @@ const config = require('../config');
 console.log('connecting %s', config.ELASTICSEARCH_URL);
 const es = new elasticsearch.Client({
   host: config.ELASTICSEARCH_URL,
+  apiVersion: 6.7,
   log: config.NODE_ENV === 'development' ? 'trace' : {
     type: 'file',
     level: 'trace',
