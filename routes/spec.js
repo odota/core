@@ -1487,6 +1487,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'against_win',
                     type: 'integer',
                   },
+                  hero_dotaplus_xp: {
+                    description: 'hero_dotaplus_xp',
+                    type: 'integer',
+                  },
                 },
               },
             },
@@ -1510,7 +1514,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             };
             heroes[heroId] = hero;
           });
-          req.queryObj.project = req.queryObj.project.concat('heroes', 'account_id', 'start_time', 'player_slot', 'radiant_win');
+          req.queryObj.project = req.queryObj.project.concat('heroes', 'account_id', 'start_time', 'player_slot', 'radiant_win', 'hero_dotaplus_xp');
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
               return cb(err);
@@ -1539,6 +1543,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     heroes[tmHero].against_games += 1;
                     heroes[tmHero].against_win += playerWin ? 1 : 0;
                   }
+                  // Use the highest xp value
+                  heroes[tmHero].hero_dotaplus_xp = Math.max(m.hero_dotaplus_xp, heroes[tmHero].hero_dotaplus_xp);
                 }
               });
             });

@@ -650,6 +650,8 @@ function insertPlayerCache(match, cb) {
         p.account_id = match.pgroup[p.player_slot].account_id;
         // add hero_id to each player so we update records with hero played
         p.hero_id = match.pgroup[p.player_slot].hero_id;
+        // add dotaplusxp
+        p.hero_dotaplus_xp = (match.dotaplus || {})[p.player_slot] || 0;
       }
     });
   }

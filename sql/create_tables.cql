@@ -151,6 +151,7 @@ CREATE TABLE IF NOT EXISTS player_caches (
   gold_per_min text,
   xp_per_min text,
   hero_id text,
+  hero_dotaplus_xp text,
   leaver_status text,
   version text,
   courier_kills text,
