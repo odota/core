@@ -2338,8 +2338,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
           },
         },
         route: () => '/publicMatches',
-        func: (req, res, cb) => {
-          const lessThan = Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
+        func: async (req, res, cb) => {
+          const currMax = (await db('public_matches').max('match_id').first()).max || 0;
+          const lessThan = Number(req.query.less_than_match_id) || currMax;
           let moreThan = lessThan - 1000000;
           let order = '';
           if (req.query.mmr_ascending) {
