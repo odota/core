@@ -1445,7 +1445,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /players/{account_id}/heroes',
         description: 'Heroes played',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: [...playerParams, {
+          name: 'hero_dotaplus_xp',
+          in: 'query',
+          description: 'Hero dotaplus level progress',
+          required: false,
+          type: 'boolean',
+        }],
         responses: {
           200: {
             description: 'Success',
@@ -1488,7 +1494,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   hero_dotaplus_xp: {
-                    description: 'hero_dotaplus_xp',
+                    description: 'Appears if the parameter is set',
                     type: 'integer',
                   },
                 },
@@ -1510,7 +1516,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
               with_win: 0,
               against_games: 0,
               against_win: 0,
-              hero_dotaplus_xp: 0,
             };
             heroes[heroId] = hero;
           });
@@ -1543,8 +1548,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     heroes[tmHero].against_games += 1;
                     heroes[tmHero].against_win += playerWin ? 1 : 0;
                   }
-                  // Use the highest xp value
-                  heroes[tmHero].hero_dotaplus_xp = Math.max(m.hero_dotaplus_xp, heroes[tmHero].hero_dotaplus_xp);
+                  if (req.query.hero_dotaplus_xp) {
+                    // Use the highest xp value
+                    heroes[tmHero].hero_dotaplus_xp = Math.max(m.hero_dotaplus_xp, heroes[tmHero].hero_dotaplus_xp || 0);
+                  }
                 }
               });
             });

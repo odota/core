@@ -101,7 +101,6 @@ async function getMatch(matchId) {
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,
   });
-  delete match.dotaplus;
   const cosmeticsPromise = Promise.all(Object.keys(match.cosmetics || {}).map(itemId => db.first().from('cosmetics').where({
     item_id: itemId,
   })));
