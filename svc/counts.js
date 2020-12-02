@@ -221,6 +221,23 @@ function updateHeroSearch(match, cb) {
   return db.raw('INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)', [match.match_id, teamA, teamB, teamAWin, match.start_time]).asCallback(cb);
 }
 
+function updateTurbo(match, cb) {
+  for (let i = 0; i < match.players.length; i += 1) {
+    const player = match.players[i];
+    const heroId = player.hero_id;
+    if (heroId) {
+      const win = Number(isRadiant(player) === match.radiant_win);
+      redis.hincrby('turboPicks', heroId, 1);
+      if (win) {
+        redis.hincrby('turboWins', heroId, 1);
+      }
+    }
+  }
+  redis.expireat('turboPicks', moment().endOf('month').unix());
+  redis.expireat('turboWins', moment().endOf('month').unix());
+  cb();
+}
+
 /*
 // Stores winrate of each subset of heroes in this game
 function updateCompositions(match, cb) {
@@ -285,6 +302,12 @@ function processCounts(match, cb) {
     },
     updateHeroSearch(cb) {
       return updateHeroSearch(match, cb);
+    },
+    updateTurbo(cb) {
+      if (match.game_mode === 23) {
+        return updateTurbo(match, cb);
+      }
+      return cb();
     },
     /*
       updateCompositions(cb) {
