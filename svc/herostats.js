@@ -69,13 +69,15 @@ function doHeroStats(cb) {
     turboHeroes(cb) {
       redis.hgetall('turboPicks', (err, picks) => {
         redis.hgetall('turboWins', (err, wins) => {
-          const result = { rows: Object.keys(picks).map(key => {
-            return { hero_id: key, turbo_picks: Number(picks[key]) || 0, turbo_wins: Number(wins[key]) || 0}
-          })};
+          const result = {
+            rows: Object.keys(picks).map((key) => {
+              return { hero_id: key, turbo_picks: Number(picks[key]) || 0, turbo_wins: Number(wins[key]) || 0 };
+            }),
+          };
           cb(null, result);
         });
       });
-    }
+    },
   }, (err, result) => {
     if (err) {
       return cb(err);

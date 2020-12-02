@@ -3537,11 +3537,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'Immortal wins',
                     type: 'integer',
                   },
-                  'turbo_pick': {
+                  turbo_pick: {
                     description: 'Picks in Turbo mode this month',
                     type: 'integer',
                   },
-                  'turbo_win': {
+                  turbo_win: {
                     description: 'Wins in Turbo mode this month',
                     type: 'integer',
                   },
