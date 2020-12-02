@@ -66,6 +66,16 @@ function doHeroStats(cb) {
           `, [minTime, maxTime])
         .asCallback(cb);
     },
+    turboHeroes(cb) {
+      redis.hgetall('turboPicks', (err, picks) => {
+        redis.hgetall('turboWins', (err, wins) => {
+          const result = { rows: Object.keys(picks).map(key => {
+            return { hero_id: key, turbo_picks: Number(picks[key]) || 0, turbo_wins: Number(wins[key]) || 0}
+          })};
+          cb(null, result);
+        });
+      });
+    }
   }, (err, result) => {
     if (err) {
       return cb(err);
@@ -83,7 +93,7 @@ function doHeroStats(cb) {
         );
       });
     });
-    return redis.set('heroStats', JSON.stringify(Object.keys(objectResponse).map(key => objectResponse[key])), cb);
+    return redis.set('heroStats', JSON.stringify(Object.values(objectResponse)), cb);
   });
 }
 invokeInterval(doHeroStats, 60 * 60 * 1000);
