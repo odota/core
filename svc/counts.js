@@ -228,13 +228,13 @@ function updateTurbo(match, cb) {
     if (heroId) {
       const win = Number(isRadiant(player) === match.radiant_win);
       redis.hincrby('turboPicks', heroId, 1);
-      redis.expireat('turboPicks', moment().endOf('month').unix());
       if (win) {
         redis.hincrby('turboWins', heroId, 1);
-        redis.expireat('turboWins', moment().endOf('month').unix());
       }
     }
   }
+  redis.expireat('turboPicks', moment().endOf('month').unix());
+  redis.expireat('turboWins', moment().endOf('month').unix());
   cb();
 }
 
