@@ -25,6 +25,7 @@ function handleGcData(match, body, cb) {
     party_size: body.match.players
       .filter(matchPlayer => matchPlayer.party_id === p.party_id)
       .length,
+    net_worth: p.net_worth,
   }));
   const matchToInsert = {
     match_id: match.match_id,

@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   roshans_killed int,
   firstblood_claimed int,
   party_size int,
+  net_worth int,
 );
 
 CREATE TABLE IF NOT EXISTS player_caches (

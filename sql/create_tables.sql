@@ -134,7 +134,8 @@ CREATE TABLE IF NOT EXISTS player_matches (
   towers_killed int,
   roshans_killed int,
   observers_placed int,
-  party_size int
+  party_size int,
+  net_worth int
 );
 CREATE INDEX IF NOT EXISTS player_matches_account_id_idx on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS player_matches_hero_id_idx on player_matches(hero_id);
