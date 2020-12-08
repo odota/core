@@ -219,15 +219,15 @@ function processExpand(entries, meta) {
         });
       }
     },
-    DOTA_ABILITY_LEVEL(e){
+    DOTA_ABILITY_LEVEL(e) {
       // ability levels
-        expand({
-          time: e.time,
-          unit: e.targetname,
-          level: e.abilitylevel,
-          key: translate(e.valuename),
-          type: 'ability_levels',
-        });
+      expand({
+        time: e.time,
+        unit: e.targetname,
+        level: e.abilitylevel,
+        key: translate(e.valuename),
+        type: 'ability_levels',
+      });
     },
     DOTA_COMBATLOG_ITEM(e) {
       // item use

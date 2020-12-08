@@ -28,7 +28,7 @@ function greevilsGreed(e, container, meta) {
 
 function track(e, container, meta) {
   if (e.tracked_death && e.type === "killed") {
-    const bhName = 'npc_dota_hero_bountyhunter'
+    const bhName = 'npc_dota_hero_bountyhunter';
     const trackerSlot = meta.hero_to_slot[e.tracked_sourcename];
     const trackerPlayer = container.players[trackerSlot];
 
@@ -36,7 +36,7 @@ function track(e, container, meta) {
     const trackTalentLvl = meta.ability_levels[bhName]["special_bonus_unique_bounty_hunter_3"];
 
     let gold = 0;
-    
+
     switch (trackLvl) {
       case 1: gold = 130; break;
       case 2: gold = 225; break;
@@ -44,7 +44,7 @@ function track(e, container, meta) {
       default: return;
     }
     // If the talent is selected add the extra bonus
-    if (trackTalentLvl == 1){
+    if (trackTalentLvl === 1) {
       gold += 250;
     }
 
