@@ -24,6 +24,12 @@ function populate(e, container, meta) {
     case 'building_kill':
       container.objectives.push(JSON.parse(JSON.stringify(e)));
       break;
+    case 'ability_levels':
+      meta.ability_levels[e.unit] = Object.assign({}, {
+        [e.key]: e.level,
+      }, meta.ability_levels[e.unit]);
+      meta.ability_levels[e.unit][e.key] = e.level;
+      break;
     default:
       if (!container.players[e.slot]) {
       // couldn't associate with a player, probably attributed to a creep/tower/necro unit
@@ -104,11 +110,6 @@ function populate(e, container, meta) {
           t[ability][target] = 0;
         }
         t[ability][target] += damage;
-      } else if (e.type === 'ability_levels') {
-        meta.ability_levels[e.unit] = Object.assign({}, {
-          [e.key]: e.level,
-        }, meta.ability_levels[e.unit]);
-        meta.ability_levels[e.unit][e.key] = e.level;
       } else if (typeof t === 'object') {
       // add it to hash of counts
         e.value = e.value || 1;
@@ -117,7 +118,6 @@ function populate(e, container, meta) {
         } else {
           t[e.key] = e.value;
         }
-            
         performanceOthers(e, container, meta);
       } else if (typeof t === 'string') {
       // string, used for steam id
