@@ -105,7 +105,10 @@ function populate(e, container, meta) {
         }
         t[ability][target] += damage;
       } else if (e.type === 'ability_levels') {
-        container.players[e.slot][e.type][e.key] = e.level;
+        meta.ability_levels[e.unit] = Object.assign({}, {
+          [e.key]: e.level,
+        }, meta.ability_levels[e.unit]);
+        meta.ability_levels[e.unit][e.key] = e.level;
       } else if (typeof t === 'object') {
       // add it to hash of counts
         e.value = e.value || 1;
