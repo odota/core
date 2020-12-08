@@ -5,7 +5,7 @@ function greevilsGreed(e, container, meta) {
     const alchSlot = meta.hero_to_slot[alchName];
     const alchPlayer = container.players[alchSlot];
 
-    const ggLvl = meta.ability_levels[alchName]["alchemist_goblins_greed"];
+    const ggLvl = meta.ability_levels[alchName].alchemist_goblins_greed;
 
     const goldBase = 3;
     let goldStack = e.greevils_greed_stack * 3;
@@ -32,8 +32,8 @@ function track(e, container, meta) {
     const trackerSlot = meta.hero_to_slot[e.tracked_sourcename];
     const trackerPlayer = container.players[trackerSlot];
 
-    const trackLvl = meta.ability_levels[bhName]["bounty_hunter_track"];
-    const trackTalentLvl = meta.ability_levels[bhName]["special_bonus_unique_bounty_hunter_3"];
+    const trackLvl = meta.ability_levels[bhName].bounty_hunter_track;
+    const trackTalentLvl = meta.ability_levels[bhName].special_bonus_unique_bounty_hunter_3;
 
     let gold = 0;
 
