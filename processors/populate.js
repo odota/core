@@ -1,5 +1,6 @@
-// const performanceOthers = require('./performanceOthers');
-function populate(e, container) {
+const performanceOthers = require('./performanceOthers');
+
+function populate(e, container, meta) {
   let t;
   switch (e.type) {
     case 'interval':
@@ -103,6 +104,8 @@ function populate(e, container) {
           t[ability][target] = 0;
         }
         t[ability][target] += damage;
+      } else if (e.type === 'ability_levels') {
+        container.players[e.slot][e.type][e.key] = e.level;
       } else if (typeof t === 'object') {
       // add it to hash of counts
         e.value = e.value || 1;
@@ -111,8 +114,8 @@ function populate(e, container) {
         } else {
           t[e.key] = e.value;
         }
-
-        // performanceOthers(e, container, meta);
+            
+        performanceOthers(e, container, meta);
       } else if (typeof t === 'string') {
       // string, used for steam id
         container.players[e.slot][e.type] = e.key;

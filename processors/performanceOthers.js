@@ -1,8 +1,3 @@
-function getSkillLevel(meta, ability, time) {
-  const upgrades = (meta.abilities || []).filter(au => au.ability === ability && au.time < time);
-  const lastUpgrade = upgrades.reduce((x, y) => (x.time > y.time ? x : y), {});
-  return lastUpgrade;
-}
 
 function greevilsGreed(e, container, meta) {
   if (e.type === 'killed' && 'greevils_greed_stack' in e) {
@@ -10,17 +5,16 @@ function greevilsGreed(e, container, meta) {
     const alchSlot = meta.hero_to_slot[alchName];
     const alchPlayer = container.players[alchSlot];
 
-    const greevilsGreedId = 5368;
-    const ggLvl = getSkillLevel(meta, greevilsGreedId, e.time);
+    const ggLvl = alchPlayer.ability_levels["alchemist_goblins_greed"];
 
-    const goldBase = 4;
-    let goldStack = e.greevils_greed_stack * 4;
+    const goldBase = 3;
+    let goldStack = e.greevils_greed_stack * 3;
 
-    switch (ggLvl.level) {
-      case 1: goldStack = Math.min(goldStack, 20); break;
-      case 2: goldStack = Math.min(goldStack, 24); break;
-      case 3: goldStack = Math.min(goldStack, 28); break;
-      case 4: goldStack = Math.min(goldStack, 32); break;
+    switch (ggLvl) {
+      case 1: goldStack = Math.min(goldStack, 18); break;
+      case 2: goldStack = Math.min(goldStack, 22); break;
+      case 3: goldStack = Math.min(goldStack, 26); break;
+      case 4: goldStack = Math.min(goldStack, 30); break;
       default: return;
     }
 
@@ -33,19 +27,24 @@ function greevilsGreed(e, container, meta) {
 }
 
 function track(e, container, meta) {
-  if (e.tracked_death) {
+  if (e.tracked_death && e.type === "killed") {
     const trackerSlot = meta.hero_to_slot[e.tracked_sourcename];
     const trackerPlayer = container.players[trackerSlot];
 
-    const trackerId = 5288;
-    const trackLvl = getSkillLevel(meta, trackerId, e.time);
+    const trackLvl = trackerPlayer.ability_levels["bounty_hunter_track"];
+    const trackTalentLvl = trackerPlayer.ability_levels["special_bonus_unique_bounty_hunter_3"];
 
     let gold = 0;
-    switch (trackLvl.level) {
-      case 1: gold = 150; break;
-      case 2: gold = 250; break;
-      case 3: gold = 350; break;
+    
+    switch (trackLvl) {
+      case 1: gold = 130; break;
+      case 2: gold = 225; break;
+      case 3: gold = 320; break;
       default: return;
+    }
+    // If the talent is selected add the extra bonus
+    if (trackTalentLvl == 1){
+      gold += 250;
     }
 
     trackerPlayer.performance_others = Object.assign({}, {
@@ -62,7 +61,6 @@ function performanceOthers(e, container, meta) {
   if (!meta) {
     return;
   }
-
   greevilsGreed(e, container, meta);
   track(e, container, meta);
 }

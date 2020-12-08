@@ -62,6 +62,7 @@ function getParseSchema() {
       xp_reasons: {},
       killed: {},
       item_uses: {},
+      ability_levels: {},
       ability_uses: {},
       ability_targets: {},
       damage_targets: {},
