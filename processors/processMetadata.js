@@ -5,6 +5,7 @@ function processMetadata(entries) {
   const heroToSlot = {};
   const slotToPlayerslot = {};
   const heroIdToSlot = {};
+  const abilityLevels = {};
   const metaTypes = {
     interval(e) {
       // check if hero has been assigned to entity
@@ -43,6 +44,7 @@ function processMetadata(entries) {
     hero_to_slot: heroToSlot,
     slot_to_playerslot: slotToPlayerslot,
     hero_id_to_slot: heroIdToSlot,
+    ability_levels: abilityLevels,
   };
 }
 module.exports = processMetadata;

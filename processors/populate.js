@@ -1,5 +1,6 @@
-// const performanceOthers = require('./performanceOthers');
-function populate(e, container) {
+const performanceOthers = require('./performanceOthers');
+
+function populate(e, container, meta) {
   let t;
   switch (e.type) {
     case 'interval':
@@ -22,6 +23,12 @@ function populate(e, container) {
     case 'CHAT_MESSAGE_ROSHAN_KILL':
     case 'building_kill':
       container.objectives.push(JSON.parse(JSON.stringify(e)));
+      break;
+    case 'ability_levels':
+      meta.ability_levels[e.unit] = Object.assign({}, {
+        [e.key]: e.level,
+      }, meta.ability_levels[e.unit]);
+      meta.ability_levels[e.unit][e.key] = e.level;
       break;
     default:
       if (!container.players[e.slot]) {
@@ -111,8 +118,7 @@ function populate(e, container) {
         } else {
           t[e.key] = e.value;
         }
-
-        // performanceOthers(e, container, meta);
+        performanceOthers(e, container, meta);
       } else if (typeof t === 'string') {
       // string, used for steam id
         container.players[e.slot][e.type] = e.key;
