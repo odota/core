@@ -37,6 +37,7 @@ const whitelistedPaths = [
   '/api/metadata', // Login status
   '/login',
   '/logout',
+  '/return',
   '/api/admin/apiMetrics', // Admin metrics
   '/keys', // API Key management
   '/webhooks', // Webhook management
