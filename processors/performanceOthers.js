@@ -11,10 +11,10 @@ function greevilsGreed(e, container, meta) {
     let goldStack = e.greevils_greed_stack * 3;
 
     switch (ggLvl) {
-      case 1: goldStack = Math.min(goldStack, 18); break;
-      case 2: goldStack = Math.min(goldStack, 21); break;
-      case 3: goldStack = Math.min(goldStack, 24); break;
-      case 4: goldStack = Math.min(goldStack, 27); break;
+      case 1: goldStack = Math.min(goldStack, 15); break;
+      case 2: goldStack = Math.min(goldStack, 18); break;
+      case 3: goldStack = Math.min(goldStack, 21); break;
+      case 4: goldStack = Math.min(goldStack, 24); break;
       default: return;
     }
 
