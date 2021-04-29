@@ -32,7 +32,7 @@
     "compression": "^1.7.4",
     "cookie-session": "2.0.0-beta.3",
     "cors": "^2.8.5",
-    "dota2": "^6.2.0",
+    "dota2": "^7.0.3",
     "dotaconstants": "^7.4.0",
     "dotenv": "^8.2.0",
     "elasticsearch": "^16.7.1",
