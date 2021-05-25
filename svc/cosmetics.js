@@ -18,7 +18,7 @@ function doCosmetics(cb) {
       }
       const itemData = vdf.parse(cleanItemSchema(body));
       console.log(Object.keys(itemData.items_game.items).length);
-      return async.eachLimit(Object.keys(itemData.items_game.items), 5, (itemId, cb) => {
+      return async.eachLimit(Object.keys(itemData.items_game.items), 10, (itemId, cb) => {
         const item = itemData.items_game.items[itemId];
         item.item_id = Number(itemId);
         const hero = item.used_by_heroes && typeof (item.used_by_heroes) === 'object' && Object.keys(item.used_by_heroes)[0];
