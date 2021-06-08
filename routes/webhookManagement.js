@@ -97,7 +97,7 @@ hooks.route('/')
         if (rows.length === 0) {
           throw Error('Could not create webhook');
         }
-        return res.sendStatus(200);
+        return res.json(rows[0]);
       })
       .catch((err) => {
         if (err.message === 'URL exists') {
