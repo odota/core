@@ -222,6 +222,7 @@ describe('swagger schema', function testSwaggerSchema() {
         spec: true,
       },
     };
+    // We stringify and imediately parse the object in order to remove the route() and func() properties, which arent a part of the OpenAPI spec
     swaggerParser.validate(JSON.parse(JSON.stringify(spec)), validOpts, (err) => {
       if (!err) {
         assert(!err);
