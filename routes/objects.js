@@ -163,11 +163,13 @@ const playerObject = {
       },
       last_login: {
         description: 'Date and time of last login to OpenDota',
-        type: 'dateTime',
+        type: 'string',
+        format: 'date-time',
       },
       full_history_time: {
         description: 'Date and time of last request to refresh player\'s match history',
-        type: 'dateTime',
+        type: 'string',
+        format: 'date-time'
       },
       cheese: {
         description: 'Amount of dollars the player has donated to OpenDota',
