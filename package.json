@@ -59,12 +59,12 @@
     "uuid": "^3.3.3"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^10.0.2",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^8.2.1",
-    "prettier": "^2.0.5",
-    "@apidevtools/swagger-parser": "^10.0.2"
+    "prettier": "^2.0.5"
   },
   "engines": {
     "node": "12.14.0"
