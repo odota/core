@@ -169,7 +169,7 @@ const playerObject = {
       full_history_time: {
         description: 'Date and time of last request to refresh player\'s match history',
         type: 'string',
-        format: 'date-time'
+        format: 'date-time',
       },
       cheese: {
         description: 'Amount of dollars the player has donated to OpenDota',
