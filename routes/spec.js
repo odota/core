@@ -720,8 +720,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'string',
                       },
                       last_login: {
-                        description: 'Time in seconds of last login of the player',
-                        type: 'dateTime',
+                        description: 'Time of player\'s last login',
+                        type: 'string',
+                        format: 'date-time',
                       },
                       radiant_win: properties.radiant_win,
                       start_time: {
@@ -1734,11 +1735,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                   last_login: {
                     description: 'last_login',
-                    type: 'dateTime',
+                    type: 'string',
+                    format: 'date-time',
                   },
                   full_history_time: {
                     description: 'full_history_time',
-                    type: 'dateTime',
+                    type: 'string',
+                    format: 'date-time',
                   },
                   cheese: {
                     description: 'cheese',
@@ -2127,7 +2130,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                   time: {
                     description: 'time',
-                    type: 'dateTime',
+                    type: 'integer',
                   },
                 },
               },
@@ -2160,7 +2163,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               type: 'array',
               items: {
                 type: 'object',
-                properies: {
+                properties: {
                   hero_id: {
                     description: 'The ID value of the hero played',
                     type: 'string',
@@ -2932,11 +2935,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     },
                     last_login: {
                       description: 'last_login',
-                      type: 'dateTime',
+                      type: 'string',
+                      format: 'date-time',
                     },
                     full_history_time: {
                       description: 'full_history_time',
-                      type: 'dateTime',
+                      type: 'string',
+                      format: 'date-time',
                     },
                     cheese: {
                       description: 'cheese',
@@ -4459,25 +4464,54 @@ You can find data that can be used to convert hero and ability IDs and other inf
     '/constants/{resource}': {
       get: {
         summary: 'GET /constants',
-        description: 'Get static game data mirrored from the dotaconstants repository. If no resource is specified, returns an array of available resources.',
+        description: 'Get static game data mirrored from the dotaconstants repository.',
         tags: ['constants'],
         parameters: [{
           name: 'resource',
           in: 'path',
           description: 'Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)',
-          required: false,
+          required: true,
           type: 'string',
         }],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {},
+            },
+          },
+        },
         route: () => '/constants/:resource?',
         func: (req, res, cb) => {
-          if (!req.params.resource) {
-            return res.json(Object.keys(constants));
-          }
           const { resource } = req.params;
           if (resource in constants) {
             return res.json(constants[resource]);
           }
           return cb();
+        },
+      },
+    },
+    '/constants': {
+      get: {
+        summary: 'GET /constants',
+        description: 'Gets an array of available resources.',
+        tags: ['constants'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: {
+              type: 'array',
+              items: {
+                type: "string",
+              },
+            },
+          },
+        },
+        route: () => '/constants',
+        func: (req, res) => {
+          return res.json(Object.keys(constants));
         },
       },
     },

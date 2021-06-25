@@ -11,6 +11,7 @@ const supertest = require('supertest');
 const pg = require('pg');
 const fs = require('fs');
 const cassandraDriver = require('cassandra-driver');
+const swaggerParser = require('@apidevtools/swagger-parser')
 const config = require('../config');
 const redis = require('../store/redis');
 // const utility = require('../util/utility');
@@ -21,6 +22,7 @@ const heroesApi = require('./data/heroes_api.json');
 const leaguesApi = require('./data/leagues_api.json');
 const retrieverPlayer = require('./data/retriever_player.json');
 const detailsApiPro = require('./data/details_api_pro.json');
+const spec = require('../routes/spec')
 
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = config.INIT_CASSANDRA_HOST;
@@ -210,6 +212,26 @@ before(function setup(done) {
       }, cb);
     },
   ], done);
+});
+describe('swagger schema', function testSwaggerSchema() {
+  this.timeout(2000);
+  it('should be valid', (cb) => {
+    const validOpts = {
+      validate: {
+        schema: true,
+        spec: true,
+      },
+    };
+    // We stringify and imediately parse the object in order to remove the route() and func() properties, which arent a part of the OpenAPI spec
+    swaggerParser.validate(JSON.parse(JSON.stringify(spec)), validOpts, (err) => {
+      if (!err) {
+        assert(!err);
+      } else {
+        assert.fail(err.message);
+      }
+      cb();
+    });
+  });
 });
 describe('replay parse', function testReplayParse() {
   this.timeout(120000);
