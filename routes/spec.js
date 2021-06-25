@@ -4484,9 +4484,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/constants/:resource?',
         func: (req, res, cb) => {
-          if (!req.params.resource) {
-            return res.json(Object.keys(constants));
-          }
           const { resource } = req.params;
           if (resource in constants) {
             return res.json(constants[resource]);
@@ -4513,15 +4510,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
           },
         },
         route: () => '/constants',
-        func: (req, res, cb) => {
-          if (!req.params.resource) {
-            return res.json(Object.keys(constants));
-          }
-          const { resource } = req.params;
-          if (resource in constants) {
-            return res.json(constants[resource]);
-          }
-          return cb();
+        func: (req, res) => {
+          return res.json(Object.keys(constants));
         },
       },
     },
