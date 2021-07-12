@@ -304,6 +304,7 @@ describe('api', () => {
           .replace(/{account_id}/, 120269134)
           .replace(/{team_id}/, 15)
           .replace(/{hero_id}/, 1)
+          .replace(/{league_id}/, 1)
           .replace(/{field}/, 'kills')
           .replace(/{resource}/, 'heroes');
         async.eachSeries(Object.keys(spec.paths[path]), (verb, cb) => {

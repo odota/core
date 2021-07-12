@@ -23,7 +23,7 @@ const params = require('./params');
 const properties = require('./properties');
 
 const {
-  teamObject, matchObject, heroObject, playerObject,
+  teamObject, matchObject, heroObject, playerObject, leagueObject,
 } = require('./objects');
 
 const {
@@ -3831,34 +3831,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: 'Success',
-            schema: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  leagueid: {
-                    description: 'leagueid',
-                    type: 'integer',
-                  },
-                  ticket: {
-                    description: 'ticket',
-                    type: 'string',
-                  },
-                  banner: {
-                    description: 'banner',
-                    type: 'string',
-                  },
-                  tier: {
-                    description: 'tier',
-                    type: 'string',
-                  },
-                  name: {
-                    description: 'name',
-                    type: 'string',
-                  },
-                },
-              },
-            },
+            schema: leagueObject,
           },
         },
         route: () => '/leagues',
@@ -3870,6 +3843,88 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 return cb(err);
               }
               return res.json(result);
+            });
+        },
+      },
+    },
+    '/leagues/{league_id}': {
+      get: {
+        summary: 'GET /leagues/{league_id}',
+        description: 'Get data for a league',
+        tags: ['leagues'],
+        parameters: [params.leagueIdPathParam],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: leagueObject,
+          },
+        },
+        route: () => '/leagues/:league_id',
+        func: (req, res, cb) => {
+          db.raw(`SELECT leagues.*
+            FROM leagues
+            WHERE leagues.leagueid = ?`, [req.params.league_id])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows[0]);
+            });
+        },
+      },
+    },
+    '/leagues/{league_id}/matches': {
+      get: {
+        summary: 'GET /leagues/{league_id}/matches',
+        description: 'Get matches for a team',
+        tags: ['leagues'],
+        parameters: [params.leagueIdPathParam],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: matchObject,
+          },
+        },
+        route: () => '/leagues/:league_id/matches',
+        func: (req, res, cb) => {
+          db.raw(`SELECT matches.*
+            FROM matches
+            WHERE matches.leagueid = ?`, [req.params.league_id])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
+            });
+        },
+      },
+    },
+    '/leagues/{league_id}/teams': {
+      get: {
+        summary: 'GET /leagues/{league_id}/teams',
+        description: 'Get teams for a league',
+        tags: ['leagues'],
+        parameters: [params.leagueIdPathParam],
+        responses: {
+          200: {
+            description: 'Success',
+            schema: teamObject,
+          },
+        },
+        route: () => '/leagues/:league_id/teams',
+        func: (req, res, cb) => {
+          db.raw(`SELECT team_rating.*, teams.*
+            FROM matches
+            LEFT JOIN team_match using(match_id)
+            LEFT JOIN teams using(team_id)
+            LEFT JOIN team_rating using(team_id)
+            WHERE matches.leagueid = ?
+            GROUP BY (teams.team_id, team_rating.team_id)`, [req.params.league_id])
+            .asCallback((err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result.rows);
             });
         },
       },
