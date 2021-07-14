@@ -19,6 +19,13 @@ module.exports = {
     required: true,
     type: 'integer',
   },
+  leagueIdPathParam: {
+    name: 'league_id',
+    in: 'path',
+    description: 'League ID',
+    required: true,
+    type: 'integer',
+  },
   heroIdPathParam: {
     name: 'hero_id',
     in: 'path',
