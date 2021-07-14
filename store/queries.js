@@ -798,6 +798,17 @@ function insertMatch(match, options, cb) {
       cb();
     }
   }
+  
+  function upsertParsedMatch(cb) {
+    if (match.version) {
+      return upsert(trx, 'parsed_matches', {
+        match_id: match.match_id,
+      }, {
+        match_id: match.match_id,
+      }, cb);
+    }
+    return cb();
+  }
 
   function upsertMatch(cb) {
     if (!options.doLogParse) {
@@ -901,17 +912,6 @@ function insertMatch(match, options, cb) {
           });
       }
 
-      function upsertParsedMatch(cb) {
-        if (match.version) {
-          return upsert(trx, 'parsed_matches', {
-            match_id: match.match_id,
-          }, {
-            match_id: match.match_id,
-          }, cb);
-        }
-        return cb();
-      }
-
       function exit(err) {
         if (err) {
           console.error(err);
@@ -930,7 +930,6 @@ function insertMatch(match, options, cb) {
         upsertTeamMatch,
         upsertTeamRankings,
         upsertMatchLogs,
-        upsertParsedMatch,
       }, exit);
     });
   }
@@ -1144,6 +1143,7 @@ function insertMatch(match, options, cb) {
     updateMatchGcData,
     upsertMatch,
     upsertMatchCassandra,
+    upsertParsedMatch,
     updatePlayerCaches,
     clearMatchCache,
     clearPlayerCaches,
