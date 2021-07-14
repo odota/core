@@ -798,10 +798,10 @@ function insertMatch(match, options, cb) {
       cb();
     }
   }
-  
+
   function upsertParsedMatch(cb) {
     if (match.version) {
-      return upsert(trx, 'parsed_matches', {
+      return upsert(db, 'parsed_matches', {
         match_id: match.match_id,
       }, {
         match_id: match.match_id,
