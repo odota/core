@@ -39,7 +39,7 @@
     "express": "^4.17.1",
     "extend": "^3.0.2",
     "http-proxy": "^1.18.1",
-    "json-bigint": "^0.3.0",
+    "json-bigint": "^1.0.0",
     "knex": "^0.21.12",
     "long": "^4.0.0",
     "moment": "^2.24.0",
