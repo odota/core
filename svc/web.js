@@ -238,13 +238,11 @@ app.use((req, res, cb) => {
 app.use((req, res, next) => {
   // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
   if (req.method !== 'GET' && req.header('Origin') && req.header('Origin') !== config.UI_HOST) {
-
     // Make an exception for replay parse request
-    if(req.method === 'POST' && req.path.startsWith('/api/request/')) {
+    if (req.method === 'POST' && req.path.startsWith('/api/request/')) {
       return next();
-    } else {
-      return res.status(403).json({ error: 'Invalid Origin header' });
     }
+    return res.status(403).json({ error: 'Invalid Origin header' });
   }
   return next();
 });
