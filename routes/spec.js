@@ -2168,7 +2168,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'The ID value of the hero played',
                     type: 'string',
                   },
-                  rank: {
+                  score: {
+                    description: 'hero_score',
+                    type: 'number',
+                  },
+                  percent_rank: {
                     description: 'percent_rank',
                     type: 'number',
                   },
