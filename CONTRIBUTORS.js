@@ -25,4 +25,5 @@ module.exports = {
   89457522: {}, // 27bslash
   115074332: {}, // Sheemap
   94620402: {}, // lmmfranco
+  193480093: {}, // angary
 };
