@@ -1272,8 +1272,32 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
                     type: 'integer',
                   },
+                  xp_per_min: {
+                    description: 'Experience per minute of the player',
+                    type: 'integer',
+                  },
+                  gold_per_min: {
+                    description: 'Gold per minute of the player',
+                    type: 'integer',
+                  },
+                  hero_damage: {
+                    description: 'Amount of damage dealt by the player to other heroes',
+                    type: 'integer',
+                  },
+                  tower_damage: {
+                    description: 'Amount of damage dealt by the player to buildings',
+                    type: 'integer',
+                  },
+                  hero_healing: {
+                    description: 'Amount of healing done by the player',
+                    type: 'integer',
+                  },
+                  last_hits: {
+                    description: 'Amount of last hits the player obtained',
+                    type: 'integer',
+                  },
                   lane: {
-                    description: 'Integer corresponding to which lane the player laned in for the match',
+                    description: 'Integer corresponding to which lane the player laned in for the match, null if replay has not been parsed',
                     type: 'integer',
                   },
                   lane_role: {
@@ -1398,8 +1422,52 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
                     type: 'integer',
                   },
+                  xp_per_min: {
+                    description: 'Experience per minute of the player',
+                    type: 'integer',
+                  },
+                  gold_per_min: {
+                    description: 'Gold per minute of the player',
+                    type: 'integer',
+                  },
+                  hero_damage: {
+                    description: 'Amount of damage dealt by the player to other heroes',
+                    type: 'integer',
+                  },
+                  tower_damage: {
+                    description: 'Amount of damage dealt by the player to buildings',
+                    type: 'integer',
+                  },
+                  hero_healing: {
+                    description: 'Amount of healing done by the player',
+                    type: 'integer',
+                  },
+                  last_hits: {
+                    description: 'Amount of last hits the player obtained',
+                    type: 'integer',
+                  },
+                  lane: {
+                    description: 'Integer corresponding to which lane the player laned in for the match, null if replay has not been parsed',
+                    type: 'integer',
+                  },
+                  lane_role: {
+                    description: 'lane_role',
+                    type: 'integer',
+                  },
+                  is_roaming: {
+                    description: 'Boolean describing whether or not the player roamed, null if replay has not been parsed',
+                    type: 'boolean',
+                  },
+                  cluster: {
+                    description: 'cluster',
+                    type: 'integer',
+                  },
+                  leaver_status: {
+                    description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
+                    type: 'integer',
+                  },
                   party_size: {
-                    description: "Size of the player's party",
+                    description: "Size of the player's party. If not in a party, will return 1.",
                     type: 'integer',
                   },
                   heroes: {
@@ -1431,7 +1499,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/players/:account_id/matches',
         func: (req, res, cb) => {
           // Use passed fields as additional fields, if available
-          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'leaver_status', 'party_size'];
+          const additionalFields = req.query.project || ['hero_id', 'start_time',
+            'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type',
+            'version', 'kills', 'deaths', 'assists', 'skill', 'xp_per_min',
+            'gold_per_min', 'hero_damage', 'tower_damage', 'hero_healing',
+            'last_hits', 'lane', 'lane_role', 'is_roaming', 'cluster',
+            'leaver_status', 'party_size'];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
