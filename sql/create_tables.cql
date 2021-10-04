@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   gold_per_min int,
   xp_per_min int,
   gold_spent int,
-  hero_damage int,
+  hero_damage varint,
   tower_damage bigint,
   hero_healing bigint,
   level int,
