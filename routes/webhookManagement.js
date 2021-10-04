@@ -92,7 +92,7 @@ hooks.route('/')
             players,
             leagues,
           },
-        });
+        }, ['hook_id']);
       }).then((rows) => {
         if (rows.length === 0) {
           throw Error('Could not create webhook');
