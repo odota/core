@@ -1043,14 +1043,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       description: 'estimate',
                       type: 'number',
                     },
-                    stdDev: {
-                      description: 'stdDev',
-                      type: 'number',
-                    },
-                    n: {
-                      description: 'n',
-                      type: 'integer',
-                    },
                   },
                 },
                 profile: {
@@ -1269,8 +1261,28 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   skill: {
-                    description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
+                    description: 'Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.',
                     type: 'integer',
+                  },
+                  xp_per_min: {
+                    description: 'Experience Per Minute obtained by the player',
+                    type: 'integer',
+                  },
+                  gold_per_min: {
+                    description: 'Average gold per minute of the player',
+                    type: 'integer'
+                  },
+                  hero_damage: {
+                    description: 'Total hero damage to enemy heroes',
+                    type: 'integer'
+                  },
+                  hero_healing: {
+                    description: 'Total healing of ally heroes',
+                    type: 'integer'
+                  },
+                  last_hits: {
+                    description: 'Total last hits the player had at the end of the match',
+                    type: 'integer'
                   },
                   lane: {
                     description: 'Integer corresponding to which lane the player laned in for the match',
@@ -1398,30 +1410,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
                     type: 'integer',
                   },
+                  leaver_status: {
+                    description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
+                    type: 'integer',
+                  },
                   party_size: {
                     description: "Size of the player's party",
                     type: 'integer',
-                  },
-                  heroes: {
-                    description: 'heroes (requires ?project=heroes)',
-                    type: 'object',
-                    properties: {
-                      player_slot: {
-                        description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
-                        type: 'object',
-                        properties: {
-                          account_id: {
-                            description: 'account_id',
-                            type: 'integer',
-                          },
-                          hero_id: {
-                            description: 'The ID value of the hero played',
-                            type: 'integer',
-                          },
-                          player_slot: properties.player_slot,
-                        },
-                      },
-                    },
                   },
                 },
               },

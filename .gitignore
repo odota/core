@@ -23,3 +23,4 @@ Procfile.dev
 docker-compose.override.yml
 .idea
 STEAM_ACCOUNT_DATA*.txt
+.DS_Store
