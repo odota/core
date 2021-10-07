@@ -418,6 +418,7 @@ function deserialize(row) {
     try {
       obj[key] = JSON.parse(row[key]);
     } catch (e) {
+      console.log(row[key]);
       console.error('exception occurred during JSON parse: %s', e);
     }
   });
