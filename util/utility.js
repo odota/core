@@ -414,15 +414,16 @@ function serialize(row) {
  * */
 function deserialize(row) {
   const obj = {};
-  row.keys().forEach((key) => {
-    try {
+  const keys = row.keys();
+  try {
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
       obj[key] = JSON.parse(row[key]);
-    } catch (e) {
-      console.log(row[key]);
-      console.error('exception occurred during JSON parse: %s', e);
-      process.exit(1);
     }
-  });
+  } catch (e) {
+    console.log(key, row[key]);
+    console.error('exception occurred during JSON parse: %s', e);
+  }
   return obj;
 }
 
