@@ -52,6 +52,10 @@ function runParse(match, job, cb) {
 
 function parseProcessor(job, cb) {
   const match = job;
+  if (!match.game_mode && match.origin !== 'scanner') {
+    // Skip parses without game_mode that weren't from scanner (do this to clear queue of event matches)
+    return cb();
+  }
   async.series({
     getDataSource(cb) {
       getGcData(match, (err, result) => {

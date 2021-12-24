@@ -1094,8 +1094,7 @@ function insertMatch(match, options, cb) {
   }
 
   function decideReplayParse(cb) {
-    // (!utility.isSignificant(match) && !options.forceParse)
-    if (options.skipParse || (match.game_mode === 19 && !options.forceParse)) {
+    if (options.skipParse || (match.game_mode === 19)) {
       // skipped or event games
       // not parsing this match
       return cb();
@@ -1118,6 +1117,7 @@ function insertMatch(match, options, cb) {
         return queue.addJob('parse', {
           data: {
             match_id: match.match_id,
+            game_mode: match.game_mode,
             radiant_win: match.radiant_win,
             start_time: match.start_time,
             duration: match.duration,
