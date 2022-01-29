@@ -123,6 +123,9 @@ async function getMatch(matchId) {
         });
       });
     });
+    playersMatchData = await getPlayerMatchData(matchId);
+    } else {
+      throw e;
     }
   }
   const playersPromise = Promise.all(playersMatchData.map(p => extendPlayerData(p, match)));
