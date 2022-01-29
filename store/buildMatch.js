@@ -96,9 +96,12 @@ async function getMatch(matchId) {
   let playersMatchData = [];
   try {
     playersMatchData = await getPlayerMatchData(matchId);
+    if (playersMatchData.length === 0) {
+      throw new Error('no players found for match %s');
+    }
   } catch (e) {
     console.error(e);
-    if (e.message.startsWith('Server failure during read query')) {
+    if (e.message.startsWith('Server failure during read query') || e.message.startsWith('no players found')) {
       // Delete and request new 
       await cassandra.execute('DELETE FROM player_matches where match_id = ?', [Number(matchId)], { prepare: true });
       const match = {
