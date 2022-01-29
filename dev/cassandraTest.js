@@ -1,11 +1,13 @@
 const cassandra = require('../store/cassandra');
+const myArgs = process.argv.slice(2);
 
+// 5000000000
 const test = async () => {
     let ok = 0;
     let noResult = 0;
     let error = 0;
     const query = 'SELECT match_id FROM player_matches WHERE match_id = ?';
-    for (let i = 5000000000; i < 5000000100; i++) {
+    for (let i = myArgs[0]; i < myArgs[1]; i++) {
         try {
         const result = await cassandra.execute(query, [ i ]);
         if (result.rows.length === 0) {
