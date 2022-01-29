@@ -14,7 +14,7 @@ const test = async () => {
             fetchSize: 24,
             autoPage: true,
           });
-        console.log(result.rows);
+        // console.log(result.rows);
         if (result.rows[0] != null) {
             ok += 1;
         } else {
