@@ -22,7 +22,7 @@ const test = async () => {
         }
         } catch (e) {
             console.error(i);
-            console.error(e);
+            console.error(e.message);
             error += 1;
             // Remediate by deleting and requesting
             // await cassandra.execute(`DELETE from player_matches where match_id = ?`, [ i ]);

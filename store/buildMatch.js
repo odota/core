@@ -93,7 +93,38 @@ async function getMatch(matchId) {
   if (!match) {
     return Promise.resolve();
   }
-  const playersMatchData = await getPlayerMatchData(matchId);
+  let playersMatchData = [];
+  try {
+    playersMatchData = await getPlayerMatchData(matchId);
+  } catch (e) {
+    if (e.message.startsWith('Server failure during read query')) {
+      // Delete and request new 
+      await cassandra.execute('DELETE FROM player_matches where match_id = ?', [Number(matchId)]);
+      const match = {
+        match_id: Number(matchId),
+      };
+      await new Promise((resolve, reject) => {
+      utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
+        if (err) {
+          console.error(err);
+          return reject();
+        }
+        // match details response
+        const match = body.result;
+        return queries.insertMatch(match, {
+          type: 'api',
+          attempts: 1,
+          priority: 1,
+          forceParse: false,
+        }, () => {
+          // Count for logging
+          utility.redisCount(redis, 'cassandra_repair');
+          resolve();
+        });
+      });
+    });
+    }
+  }
   const playersPromise = Promise.all(playersMatchData.map(p => extendPlayerData(p, match)));
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,

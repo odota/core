@@ -3267,9 +3267,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               const match = body.result;
               return queries.insertMatch(match, {
                 type: 'api',
-                attempts: 1,
-                priority: 1,
-                forceParse: true,
+                skipParse: true,
               }, exitWithJob);
             });
           }
