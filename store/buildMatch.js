@@ -100,7 +100,7 @@ async function getMatch(matchId) {
     console.error(e);
     if (e.message.startsWith('Server failure during read query')) {
       // Delete and request new 
-      await cassandra.execute('DELETE FROM player_matches where match_id = ?', [Number(matchId)]);
+      await cassandra.execute('DELETE FROM player_matches where match_id = ?', [Number(matchId)], { prepare: true });
       const match = {
         match_id: Number(matchId),
       };
