@@ -10,8 +10,8 @@ const test = async () => {
     for (let i = Number(myArgs[0]); i < Number(myArgs[1]); i++) {
         try {
         const result = await cassandra.execute(query, [ i ]);
-        console.log(result.rows[0]);
-        if (result.rows.length === 0) {
+        console.log(result.rows);
+        if (result.rows[0] != null) {
             ok += 1;
         } else {
             noResult += 1;
@@ -19,7 +19,7 @@ const test = async () => {
         } catch (e) {
             console.error(i);
             console.error(e);
-            error +=1;
+            error += 1;
             // Remediate by deleting and requesting
             // await cassandra.execute(`DELETE from player_matches where match_id = ?`, [ i ]);
 
