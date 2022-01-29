@@ -9,7 +9,11 @@ const test = async () => {
     const query = 'SELECT match_id FROM player_matches WHERE match_id = ?';
     for (let i = Number(myArgs[0]); i < Number(myArgs[1]); i++) {
         try {
-        const result = await cassandra.execute(query, [ i ]);
+        const result = await cassandra.execute(query, [ i ], {
+            prepare: true,
+            fetchSize: 24,
+            autoPage: true,
+          });
         console.log(result.rows);
         if (result.rows[0] != null) {
             ok += 1;
