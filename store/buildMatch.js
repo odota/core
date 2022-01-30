@@ -117,9 +117,7 @@ async function getMatch(matchId) {
         const match = body.result;
         return queries.insertMatch(match, {
           type: 'api',
-          attempts: 1,
-          priority: 1,
-          forceParse: false,
+          skipParse: true,
         }, () => {
           // Count for logging
           utility.redisCount(redis, 'cassandra_repair');
