@@ -415,14 +415,9 @@ function serialize(row) {
 function deserialize(row) {
   const obj = {};
   const keys = row.keys();
-  try {
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      obj[key] = JSON.parse(row[key]);
-    }
-  } catch (e) {
-    console.log(key, row[key]);
-    console.error('exception occurred during JSON parse: %s', e);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    obj[key] = JSON.parse(row[key]);
   }
   return obj;
 }

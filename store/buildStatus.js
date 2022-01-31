@@ -52,6 +52,9 @@ module.exports = function buildStatus(db, redis, cb) {
     cassandra_repair_last_day(cb) {
       utility.getRedisCountDay(redis, 'cassandra_repair', cb);
     },
+    build_match_last_day(cb) {
+      utility.getRedisCountDay(redis, 'build_match', cb);
+    },
     fullhistory_last_day(cb) {
       utility.getRedisCountDay(redis, 'fullhistory', cb);
     },

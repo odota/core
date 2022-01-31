@@ -93,6 +93,7 @@ async function getMatch(matchId) {
   if (!match) {
     return Promise.resolve();
   }
+  utility.redisCount(redis, 'build_match');
   let playersMatchData = [];
   try {
     playersMatchData = await getPlayerMatchData(matchId);
