@@ -116,7 +116,7 @@ if (config.NODE_ENV === 'test') {
 
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
-  console.log('[REQ]', req.originalUrl);
+  //console.log('[REQ]', req.originalUrl);
   const apiKey = (req.headers.authorization && req.headers.authorization.replace('Bearer ', '')) || req.query.api_key;
   if (config.ENABLE_API_LIMIT && apiKey) {
     redis.sismember('api_keys', apiKey, (err, resp) => {
@@ -281,6 +281,7 @@ app.use((req, res) => res.status(404).json({
 }));
 // 500 route
 app.use((err, req, res, cb) => {
+  console.log('[ERR]', req.originalUrl);
   redisCount(redis, '500_error');
   if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
     // default express handler
