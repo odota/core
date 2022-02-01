@@ -281,6 +281,7 @@ app.use((req, res) => res.status(404).json({
 }));
 // 500 route
 app.use((err, req, res, cb) => {
+  redisCount(redis, '500_error');
   if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
     // default express handler
     return cb(err);

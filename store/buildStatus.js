@@ -55,6 +55,9 @@ module.exports = function buildStatus(db, redis, cb) {
     build_match_last_day(cb) {
       utility.getRedisCountDay(redis, 'build_match', cb);
     },
+    error_last_day(cb) {
+      utility.getRedisCountDay(redis, '500_error', cb);
+    },
     fullhistory_last_day(cb) {
       utility.getRedisCountDay(redis, 'fullhistory', cb);
     },
