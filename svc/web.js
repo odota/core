@@ -287,7 +287,7 @@ app.use((err, req, res, cb) => {
     // default express handler
     return cb(err);
   }
-  console.error(err && err.stacktrace);
+  console.error(err, err.stacktrace);
   return res.status(500).json({
     error: 'Internal Server Error',
   });

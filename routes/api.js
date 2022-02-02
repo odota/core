@@ -44,7 +44,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.account_id))) {
-    return cb('invalid account_id');
+    return res.status(400).json({ error: 'invalid account id' });
   }
   req.originalQuery = JSON.parse(JSON.stringify(req.query));
   // Enable significance filter by default, disable it if 0 is passed
