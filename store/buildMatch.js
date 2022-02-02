@@ -102,7 +102,7 @@ async function getMatch(matchId) {
     }
   } catch (e) {
     console.error(e);
-    if (e.message.startsWith('Server failure during read query') || e.message.startsWith('no players found') || e.message.startsWith('Unexpected') || e.message.startsWith('[ERR_BUFFER_OUT_OF_BOUNDS]')) {
+    if (e.message.startsWith('Server failure during read query') || e.message.startsWith('no players found') || e.message.startsWith('Unexpected') || e.message.includes('Attempt to access memory outside buffer bounds')) {
       // Delete and request new 
       await cassandra.execute('DELETE FROM player_matches where match_id = ?', [Number(matchId)], { prepare: true });
       const match = {
