@@ -75,12 +75,14 @@ api.use('/teams/:team_id/:info?', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.team_id))) {
     return res.status(400).json({ error: 'invalid team id' });
   }
+  return cb();
 });
 
 api.use('/request/{jobId}', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.jobId))) {
     return res.status(400).json({ error: 'invalid job id' });
   }
+  return cb();
 });
 
 // Admin endpoints middleware
