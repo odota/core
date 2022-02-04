@@ -71,6 +71,18 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   return cb();
 });
 
+api.use('/teams/:team_id/:info?', (req, res, cb) => {
+  if (Number.isNaN(Number(req.params.team_id))) {
+    return res.status(400).json({ error: 'invalid team id' });
+  }
+});
+
+api.use('/request/{jobId}', (req, res, cb) => {
+  if (Number.isNaN(Number(req.params.jobId))) {
+    return res.status(400).json({ error: 'invalid job id' });
+  }
+});
+
 // Admin endpoints middleware
 api.use('/admin*', (req, res, cb) => {
   if (req.user && admins.includes(req.user.account_id)) {
