@@ -2,7 +2,6 @@ sudo: required
 language: node_js
 services:
 - docker
-- elasticsearch
 node_js:
 - 'lts/*'
 notifications:
