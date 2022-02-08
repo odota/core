@@ -139,6 +139,11 @@ before(function setup(done) {
           }, cb);
         },
         (cb) => {
+          es.indices.close({
+            index: 'dota-test',
+          }, cb);
+        },
+        (cb) => {
           es.indices.putSettings({
             index: 'dota-test',
             body: mapping.settings,
@@ -149,6 +154,11 @@ before(function setup(done) {
             index: 'dota-test',
             type: 'player',
             body: mapping.mappings.player,
+          }, cb);
+        },
+        (cb) => {
+          es.indices.open({
+            index: 'dota-test',
           }, cb);
         },
       ], cb);
