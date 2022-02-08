@@ -7,7 +7,7 @@ const db = require('../store/db');
 // const redis = require('../store/redis');
 const utility = require('../util/utility');
 
-const { insertPlayer } = queries;
+const { insertPlayer, bulkIndexPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;
 
 function getSummaries(cb) {

@@ -11,7 +11,7 @@ const queue = require('../store/queue');
 const config = require('../config');
 
 const {
-  getMatchRankTier, getMatchRating, upsert, insertPlayer,
+  getMatchRankTier, getMatchRating, upsert, insertPlayer, bulkIndexPlayer,
 } = queries;
 const {
   getAnonymousAccountId, isRadiant, isSignificant,
