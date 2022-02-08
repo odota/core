@@ -27,6 +27,8 @@ services:
       dockerfile: docker/elasticsearch.dockerfile
     image: elasticsearch:6.8.23
     container_name: odota-elasticsearch
+    group_add:
+      - 0
     environment:
       discovery.type: "single-node"
       TAKE_FILE_OWNERSHIP: "true"
