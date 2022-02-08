@@ -21,12 +21,12 @@ services:
   redis:
     image: redis:5
     container_name: odota-redis
-  elasticsearch:
-    image: elasticsearch:6.8.23
-    container_name: odota-elasticsearch
-    environment:
-      discovery.type: "single-node"
-      TAKE_FILE_OWNERSHIP: "true"
+  # elasticsearch:
+  #   image: elasticsearch:6.8.23
+  #   container_name: odota-elasticsearch
+  #   environment:
+  #     discovery.type: "single-node"
+  #     TAKE_FILE_OWNERSHIP: "true"
   parser:
     image: odota/parser
     container_name: odota-parser
