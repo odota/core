@@ -134,29 +134,7 @@ before(function setup(done) {
       const { es } = require('../store/elasticsearch');
       async.series([
         (cb) => {
-          es.indices.exists({
-            index: 'dota-test',
-          }, (err, res) => {
-            if (err) {
-              cb(err);
-            }
-
-            if (res) {
-              es.indices.delete({
-                index: 'dota-test', // explicitly name the index to avoid embarrassing errors.
-              }, cb);
-            } else {
-              cb();
-            }
-          });
-        },
-        (cb) => {
           es.indices.create({
-            index: 'dota-test',
-          }, cb);
-        },
-        (cb) => {
-          es.indices.close({
             index: 'dota-test',
           }, cb);
         },
@@ -171,11 +149,6 @@ before(function setup(done) {
             index: 'dota-test',
             type: 'player',
             body: mapping.mappings.player,
-          }, cb);
-        },
-        (cb) => {
-          es.indices.open({
-            index: 'dota-test',
           }, cb);
         },
       ], cb);
