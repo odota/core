@@ -26,12 +26,7 @@ services:
     container_name: odota-elasticsearch
     environment:
       - discovery.type=single-node
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - /var/log:/var/log
+      - TAKE_FILE_OWNERSHIP=true
   parser:
     image: odota/parser
     container_name: odota-parser
