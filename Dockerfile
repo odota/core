@@ -1,7 +1,5 @@
 FROM node:16
 
-RUN apk update && apk add bash && apk add curl && apk add git
-
 ENV NPM_CONFIG_LOGLEVEL warn
 
 COPY . /usr/src
