@@ -59,6 +59,7 @@ services:
       INIT_CASSANDRA_HOST: odota-cassandra
     volumes:
       - .:/usr/src
+      - /var/log:/var/log
     links:
       - postgres
       - cassandra
