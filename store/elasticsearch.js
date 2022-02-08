@@ -1,7 +1,7 @@
 /**
  * Interface to ElasticSearch client
  * */
-const elasticsearch = require('elasticsearch');
+const elasticsearch = require('@elastic/elasticsearch');
 const config = require('../config');
 
 

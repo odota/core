@@ -129,57 +129,56 @@ before(function setup(done) {
       ], cb);
     },
     function initElasticsearch(cb) {
-      cb();
-      // console.log('Create Elasticsearch Mapping');
-      // const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
-      // const { es } = require('../store/elasticsearch');
-      // async.series([
-      //   (cb) => {
-      //     es.indices.exists({
-      //       index: 'dota-test',
-      //     }, (err, res) => {
-      //       if (err) {
-      //         cb(err);
-      //       }
+      console.log('Create Elasticsearch Mapping');
+      const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
+      const { es } = require('../store/elasticsearch');
+      async.series([
+        (cb) => {
+          es.indices.exists({
+            index: 'dota-test',
+          }, (err, res) => {
+            if (err) {
+              cb(err);
+            }
 
-      //       if (res) {
-      //         es.indices.delete({
-      //           index: 'dota-test', // explicitly name the index to avoid embarrassing errors.
-      //         }, cb);
-      //       } else {
-      //         cb();
-      //       }
-      //     });
-      //   },
-      //   (cb) => {
-      //     es.indices.create({
-      //       index: 'dota-test',
-      //     }, cb);
-      //   },
-      //   (cb) => {
-      //     es.indices.close({
-      //       index: 'dota-test',
-      //     }, cb);
-      //   },
-      //   (cb) => {
-      //     es.indices.putSettings({
-      //       index: 'dota-test',
-      //       body: mapping.settings,
-      //     }, cb);
-      //   },
-      //   (cb) => {
-      //     es.indices.putMapping({
-      //       index: 'dota-test',
-      //       type: 'player',
-      //       body: mapping.mappings.player,
-      //     }, cb);
-      //   },
-      //   (cb) => {
-      //     es.indices.open({
-      //       index: 'dota-test',
-      //     }, cb);
-      //   },
-      // ], cb);
+            if (res) {
+              es.indices.delete({
+                index: 'dota-test', // explicitly name the index to avoid embarrassing errors.
+              }, cb);
+            } else {
+              cb();
+            }
+          });
+        },
+        (cb) => {
+          es.indices.create({
+            index: 'dota-test',
+          }, cb);
+        },
+        (cb) => {
+          es.indices.close({
+            index: 'dota-test',
+          }, cb);
+        },
+        (cb) => {
+          es.indices.putSettings({
+            index: 'dota-test',
+            body: mapping.settings,
+          }, cb);
+        },
+        (cb) => {
+          es.indices.putMapping({
+            index: 'dota-test',
+            type: 'player',
+            body: mapping.mappings.player,
+          }, cb);
+        },
+        (cb) => {
+          es.indices.open({
+            index: 'dota-test',
+          }, cb);
+        },
+      ], cb);
     },
     function wipeRedis(cb) {
       console.log('wiping redis');

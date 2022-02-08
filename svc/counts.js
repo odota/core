@@ -172,11 +172,11 @@ function updateLastPlayed(match, cb) {
     return acc;
   }, []);
 
-  // bulkIndexPlayer(bulkUpdate, (err) => {
-  //   if (err) {
-  //     console.log(err);
-  //   }
-  // });
+  bulkIndexPlayer(bulkUpdate, (err) => {
+    if (err) {
+      console.log(err);
+    }
+  });
 
   async.each(filteredPlayers, (player, cb) => {
     insertPlayer(db, {

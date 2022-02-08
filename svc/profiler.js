@@ -52,11 +52,11 @@ function getSummaries(cb) {
         return acc;
       }, []);
 
-      // bulkIndexPlayer(bulkUpdate, (err) => {
-      //   if (err) {
-      //     console.log(err);
-      //   }
-      // });
+      bulkIndexPlayer(bulkUpdate, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
 
       // player summaries response
       return async.each(results, (player, cb) => {

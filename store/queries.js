@@ -12,7 +12,7 @@ const filter = require('../util/filter');
 const compute = require('../util/compute');
 const db = require('../store/db');
 const redis = require('../store/redis');
-// const { es, INDEX } = require('../store/elasticsearch');
+const { es, INDEX } = require('../store/elasticsearch');
 const cassandra = require('../store/cassandra');
 const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
@@ -542,16 +542,16 @@ function insertPlayer(db, player, indexPlayer, cb) {
   }, cb);
 }
 
-// function bulkIndexPlayer(bulkActions, cb) {
-//   // Bulk call to ElasticSearch
-//   if (bulkActions.length > 0) {
-//     es.bulk({
-//       body: bulkActions,
-//       index: INDEX,
-//       type: 'player',
-//     }, cb);
-//   }
-// }
+function bulkIndexPlayer(bulkActions, cb) {
+  // Bulk call to ElasticSearch
+  if (bulkActions.length > 0) {
+    es.bulk({
+      body: bulkActions,
+      index: INDEX,
+      type: 'player',
+    }, cb);
+  }
+}
 
 function insertPlayerRating(db, row, cb) {
   async.series({
@@ -1226,7 +1226,7 @@ function getMetadata(req, callback) {
 module.exports = {
   upsert,
   insertPlayer,
-  // bulkIndexPlayer,
+  bulkIndexPlayer,
   insertMatch,
   insertPlayerRating,
   insertMatchSkillCassandra,
