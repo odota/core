@@ -7,7 +7,7 @@ const db = require('../store/db');
 // const redis = require('../store/redis');
 const utility = require('../util/utility');
 
-const { insertPlayer, bulkIndexPlayer } = queries;
+const { insertPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;
 
 function getSummaries(cb) {
@@ -52,11 +52,11 @@ function getSummaries(cb) {
         return acc;
       }, []);
 
-      bulkIndexPlayer(bulkUpdate, (err) => {
-        if (err) {
-          console.log(err);
-        }
-      });
+      // bulkIndexPlayer(bulkUpdate, (err) => {
+      //   if (err) {
+      //     console.log(err);
+      //   }
+      // });
 
       // player summaries response
       return async.each(results, (player, cb) => {

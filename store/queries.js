@@ -1226,7 +1226,7 @@ function getMetadata(req, callback) {
 module.exports = {
   upsert,
   insertPlayer,
-  bulkIndexPlayer,
+  // bulkIndexPlayer,
   insertMatch,
   insertPlayerRating,
   insertMatchSkillCassandra,

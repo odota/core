@@ -11,7 +11,7 @@ const queue = require('../store/queue');
 const config = require('../config');
 
 const {
-  getMatchRankTier, getMatchRating, upsert, insertPlayer, bulkIndexPlayer,
+  getMatchRankTier, getMatchRating, upsert, insertPlayer,
 } = queries;
 const {
   getAnonymousAccountId, isRadiant, isSignificant,
@@ -172,11 +172,11 @@ function updateLastPlayed(match, cb) {
     return acc;
   }, []);
 
-  bulkIndexPlayer(bulkUpdate, (err) => {
-    if (err) {
-      console.log(err);
-    }
-  });
+  // bulkIndexPlayer(bulkUpdate, (err) => {
+  //   if (err) {
+  //     console.log(err);
+  //   }
+  // });
 
   async.each(filteredPlayers, (player, cb) => {
     insertPlayer(db, {
