@@ -21,12 +21,12 @@ services:
   redis:
     image: redis:5
     container_name: odota-redis
-  # elasticsearch:
-  #   image: elasticsearch:6.8.23
-  #   container_name: odota-elasticsearch
-  #   environment:
-  #     discovery.type: "single-node"
-  #     TAKE_FILE_OWNERSHIP: "true"
+  elasticsearch:
+    image: elasticsearch:6.8.23
+    container_name: odota-elasticsearch
+    environment:
+      discovery.type: "single-node"
+      TAKE_FILE_OWNERSHIP: "true"
   parser:
     image: odota/parser
     container_name: odota-parser
@@ -49,7 +49,7 @@ services:
       REDIS_TEST_URL: redis://odota-redis:6379/1
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
       CASSANDRA_TEST_URL: cassandra://odota-cassandra/yasp_test
-      ELASTICSEARCH_URL: localhost:9200
+      ELASTICSEARCH_URL: odota-elasticsearch:9200
       INIT_POSTGRES_HOST: odota-postgres
       INIT_CASSANDRA_HOST: odota-cassandra
     volumes:
@@ -58,6 +58,6 @@ services:
       - postgres
       - cassandra
       - redis
-      # - elasticsearch
+      - elasticsearch
       - parser
     container_name: odota-core
