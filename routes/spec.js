@@ -8,7 +8,7 @@ const config = require('../config');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 const search = require('../store/search');
-const searchES = require('../store/searchES');
+// const searchES = require('../store/searchES');
 const buildMatch = require('../store/buildMatch');
 const buildStatus = require('../store/buildStatus');
 const playerFields = require('./playerFields.json');
@@ -2855,14 +2855,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
             return res.status(400).json([]);
           }
 
-          if (req.query.es || utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)) {
-            return searchES(req.query, (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
-          }
+          // if (req.query.es || utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)) {
+          //   return searchES(req.query, (err, result) => {
+          //     if (err) {
+          //       return cb(err);
+          //     }
+          //     return res.json(result);
+          //   });
+          // }
           return search(req.query, (err, result) => {
             if (err) {
               return cb(err);
