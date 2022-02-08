@@ -58,6 +58,6 @@ services:
       - postgres
       - cassandra
       - redis
-      - elasticsearch
+      # - elasticsearch
       - parser
     container_name: odota-core
