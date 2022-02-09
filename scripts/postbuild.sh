@@ -1,7 +1,8 @@
 #!/bin/bash
 
 if [ -n "$DOCKER_USERNAME" ]; then
-  sudo docker tag odota/core:latest odota/core:${TRAVIS_COMMIT}
-  sudo docker push odota/core:${TRAVIS_COMMIT}
-  sudo docker push odota/core:latest
+  echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  docker tag odota/core:latest odota/core:${TRAVIS_COMMIT}
+  docker push odota/core:${TRAVIS_COMMIT}
+  docker push odota/core:latest
 fi

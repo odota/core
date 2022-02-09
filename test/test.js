@@ -134,20 +134,13 @@ before(function setup(done) {
       const { es } = require('../store/elasticsearch');
       async.series([
         (cb) => {
-          es.indices.exists({
-            index: 'dota-test',
-          }, (err, res) => {
+          es.indices.delete({
+            index: 'dota-test', // explicitly name the index to avoid embarrassing errors.
+          }, (err) => {
             if (err) {
-              cb(err);
+              console.warn(err);
             }
-
-            if (res) {
-              es.indices.delete({
-                index: 'dota-test', // explicitly name the index to avoid embarrassing errors.
-              }, cb);
-            } else {
-              cb();
-            }
+            cb();
           });
         },
         (cb) => {

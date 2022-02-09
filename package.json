@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index",
-    "test": "NODE_ENV=test npx mocha --exit",
+    "test": "NODE_ENV=test mocha --exit",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "build": "npm install",
     "lint": "eslint . --ext .js,.jsx --ignore-path .gitignore",
@@ -25,7 +25,7 @@
     "url": "http://github.com/odota/core"
   },
   "dependencies": {
-    "JSONStream": "^1.3.5",
+    "@elastic/elasticsearch": "^7.17.0",
     "async": "^2.6.1",
     "body-parser": "^1.19.0",
     "cassandra-driver": "^4.4.0",
@@ -35,11 +35,11 @@
     "dota2": "^6.2.0",
     "dotaconstants": "^7.7.0",
     "dotenv": "^8.2.0",
-    "elasticsearch": "^16.7.1",
     "express": "^4.17.1",
     "extend": "^3.0.2",
     "http-proxy": "^1.18.1",
     "json-bigint": "^0.3.0",
+    "JSONStream": "^1.3.5",
     "knex": "^0.21.12",
     "long": "^4.0.0",
     "moment": "^2.24.0",
@@ -67,6 +67,6 @@
     "prettier": "^2.0.5"
   },
   "engines": {
-    "node": "12.14.0"
+    "node": "16"
   }
 }

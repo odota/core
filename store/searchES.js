@@ -41,12 +41,12 @@ function search(options, cb) {
             { last_match_time: 'desc' },
           ],
         },
-      }, (err, res) => {
+      }, (err, {body}) => {
         if (err) {
           return callback(err);
         }
 
-        return callback(null, res.hits.hits.map(e => ({
+        return callback(null, body.hits.hits.map(e => ({
           account_id: Number(e._id),
           personaname: e._source.personaname,
           avatarfull: e._source.avatarfull,
