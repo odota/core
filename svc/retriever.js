@@ -2,7 +2,7 @@
  * Worker interfacing with the Steam GC.
  * Provides HTTP endpoints for other workers.
  * */
-const Steam = require('steam-client');
+const Steam = require('steam');
 const Dota2 = require('dota2');
 const async = require('async');
 const express = require('express');
