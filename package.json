@@ -55,7 +55,6 @@
     "request-ip": "^2.1.3",
     "simple-vdf": "^1.1.1",
     "steam": "github:odota/node-steam-npm",
-    "steam-client": "^2.5.8",
     "steam-resources": "github:odota/node-steam-resources",
     "stripe": "^5.8.0",
     "supertest": "^4.0.2",
