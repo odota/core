@@ -105,30 +105,30 @@ async function getMatch(matchId) {
   } catch (e) {
     console.error(e);
     if (e.message.startsWith('Server failure during read query') || e.message.startsWith('no players found') || e.message.startsWith('Unexpected') || e.message.includes('Attempt to access memory outside buffer bounds')) {
-      // Delete and request new 
+      // Delete and request new
       await cassandra.execute('DELETE FROM player_matches where match_id = ?', [Number(matchId)], { prepare: true });
       const match = {
         match_id: Number(matchId),
       };
       await new Promise((resolve, reject) => {
-      utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
-        if (err) {
-          console.error(err);
-          return reject();
-        }
-        // match details response
-        const match = body.result;
-        return queries.insertMatch(match, {
-          type: 'api',
-          skipParse: true,
-        }, () => {
+        utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
+          if (err) {
+            console.error(err);
+            return reject();
+          }
+          // match details response
+          const match = body.result;
+          return queries.insertMatch(match, {
+            type: 'api',
+            skipParse: true,
+          }, () => {
           // Count for logging
-          utility.redisCount(redis, 'cassandra_repair');
-          resolve();
+            utility.redisCount(redis, 'cassandra_repair');
+            resolve();
+          });
         });
       });
-    });
-    playersMatchData = await getPlayerMatchData(matchId);
+      playersMatchData = await getPlayerMatchData(matchId);
     } else {
       throw e;
     }

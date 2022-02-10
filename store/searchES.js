@@ -41,7 +41,7 @@ function search(options, cb) {
             { last_match_time: 'desc' },
           ],
         },
-      }, (err, {body}) => {
+      }, (err, { body }) => {
         if (err) {
           return callback(err);
         }

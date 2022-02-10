@@ -418,7 +418,7 @@ describe('api management', () => {
                 account_id: 1,
               })
               .then((res2) => {
-                if (res.length === 0) {
+                if (res2.length === 0) {
                   throw Error('No API record found');
                 }
                 assert.equal(res2[0].customer_id, this.previousCustomer);
