@@ -200,7 +200,7 @@ CREATE TABLE IF NOT EXISTS webhooks (
 CREATE INDEX IF NOT EXISTS webhooks_account_id_idx on webhooks(account_id);
 
 CREATE TABLE IF NOT EXISTS api_keys (
-  PRIMARY KEY(account_id),
+  PRIMARY KEY(account_id, subscription_id),
   account_id bigint UNIQUE,
   api_key uuid UNIQUE,
   customer_id text NOT NULL,
