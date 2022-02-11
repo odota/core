@@ -1,11 +1,11 @@
-name: docker-compose-actions-workflow
-on: push
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build and test
-        run: docker-compose up -d && sleep 20 && docker exec -i odota-core sh -c 'npm run test'
-      - name: Push to Docker
-        run: ./scripts/postbuild.sh
+# name: docker-compose-actions-workflow
+# on: push
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Build and test
+#         run: docker-compose up -d && sleep 20 && docker exec -i odota-core sh -c 'npm run test'
+#       - name: Push to Docker
+#         run: ./scripts/postbuild.sh
