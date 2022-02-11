@@ -5,11 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build the stack
-        run: docker-compose up -d
-      - name: Wait for Cassandra/ES
-        run: sleep 20
-      - name: Test
-        run: docker exec -i odota-core sh -c 'npm run test'
+      - name: Build and test
+        run: docker-compose up -d && sleep 20 && docker exec -i odota-core sh -c 'npm run test'
       - name: Push to Docker
         run: ./scripts/postbuild.sh
