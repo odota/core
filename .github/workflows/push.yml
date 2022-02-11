@@ -1,0 +1,15 @@
+name: docker-compose-actions-workflow
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the stack
+        run: docker-compose up -d
+      - name: Sleep
+        run: sleep 20
+      - name: Test
+        run: docker exec -it odota-core sh -c 'npm run test'
+      - name: Push
+        run: sleep 1
