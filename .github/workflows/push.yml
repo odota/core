@@ -7,9 +7,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build the stack
         run: docker-compose up -d
-      - name: Sleep
+      - name: Wait for Cassandra/ES
         run: sleep 20
       - name: Test
-        run: docker exec -it odota-core sh -c 'npm run test'
-      - name: Push
-        run: sleep 1
+        run: docker exec -i odota-core sh -c 'npm run test'
+      - name: Push to Docker
+        run: ./scripts/postbuild.sh
