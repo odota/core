@@ -4,6 +4,8 @@
 # Script run in the main container
 # If this script exits, so does the main container
 
+sudo npm cache clean --force 
+
 # Rebuild to replace mapped directory build
 npm run build
 
