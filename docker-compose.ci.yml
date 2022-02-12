@@ -1,0 +1,64 @@
+
+version: '2'
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: docker/postgres.dockerfile
+    image: odota/postgres
+    container_name: odota-postgres
+    environment:
+      POSTGRES_DB: yasp
+      POSTGRES_PASSWORD: postgres
+  cassandra:
+    build:
+      context: .
+      dockerfile: docker/cassandra.dockerfile
+    image: odota/cassandra
+    container_name: odota-cassandra
+  redis:
+    image: redis:5
+    container_name: odota-redis
+  elasticsearch:
+    image: elasticsearch:6.8.23
+    container_name: odota-elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - bootstrap.system_call_filter=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+  parser:
+    image: odota/parser
+    container_name: odota-parser
+  core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: odota/core
+    ports:
+      - "5000:5000"
+      - "5100:5100"
+    environment:
+      PARSER_HOST: http://odota-parser:5600
+      POSTGRES_URL: postgresql://postgres:postgres@odota-postgres/yasp
+      POSTGRES_TEST_URL: postgresql://postgres:postgres@odota-postgres/yasp_test
+      READONLY_POSTGRES_URL: postgresql://readonly:readonly@odota-postgres/yasp
+      REDIS_URL: redis://odota-redis:6379/0
+      REDIS_TEST_URL: redis://odota-redis:6379/1
+      CASSANDRA_URL: cassandra://odota-cassandra/yasp
+      CASSANDRA_TEST_URL: cassandra://odota-cassandra/yasp_test
+      ELASTICSEARCH_URL: odota-elasticsearch:9200
+      INIT_POSTGRES_HOST: odota-postgres
+      INIT_CASSANDRA_HOST: odota-cassandra
+    links:
+      - postgres
+      - cassandra
+      - redis
+      - elasticsearch
+      - parser
+    container_name: odota-core
