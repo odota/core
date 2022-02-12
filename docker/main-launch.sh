@@ -4,10 +4,6 @@
 # Script run in the main container
 # If this script exits, so does the main container
 
-sudo npm cache clean --force 
-
-sudo chown -R 1001:121 "/root/.npm"
-
 # Rebuild to replace mapped directory build
 npm run build
 
