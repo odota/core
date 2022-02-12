@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build and test
-        run: docker-compose up -d -f docker-compose.ci.yml && sleep 15 && docker ps -a && docker logs odota-core && docker exec -i odota-core sh -c 'npm run test'
+        run: docker-compose -f docker-compose.ci.yml up -d && sleep 15 && docker ps -a && docker logs odota-core && docker exec -i odota-core sh -c 'npm run test'
       - name: Push to Docker
         run: ./scripts/postbuild.sh
         env:
