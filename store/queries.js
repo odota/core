@@ -766,7 +766,7 @@ function insertMatch(match, options, cb) {
 
   function tellFeed(cb) {
     if (options.origin === 'scanner' || options.doTellFeed) {
-      redis.xadd('feed', 'maxlen', '~', '10000', '*', 'data', JSON.stringify({ ...match, origin: options.origin }), cb);
+      redis.xadd('feed', 'maxlen', '~', '1000', '*', 'data', JSON.stringify({ ...match, origin: options.origin }), cb);
     } else {
       cb();
     }
