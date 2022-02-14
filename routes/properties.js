@@ -4,7 +4,8 @@ module.exports = {
     type: 'boolean',
   },
   player_slot: {
-    description: 'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
+    description:
+      'Which slot the player is in. 0-127 are Radiant, 128-255 are Dire',
     type: 'integer',
   },
   duration: {

@@ -20,48 +20,63 @@ function getPageData(start, options, cb) {
     hero_id: options.hero_id,
     start_at_match_id: start,
   });
-  utility.getData({
-    url: container.url,
-  }, (err, data) => {
-    if (err) {
-      return cb(err);
-    }
-    if (!data || !data.result || !data.result.matches) {
-      return getPageData(start, options, cb);
-    }
-    // data is in data.result.matches
-    const { matches } = data.result;
-    return async.eachSeries(matches, (m, cb) => {
-      insertMatchSkillCassandra({
-        match_id: m.match_id,
-        skill: options.skill,
-        players: m.players,
-      }, cb);
-    }, (err) => {
+  utility.getData(
+    {
+      url: container.url,
+    },
+    (err, data) => {
       if (err) {
         return cb(err);
       }
-      // repeat until results_remaining===0
-      if (data.result.results_remaining === 0) {
-        return cb(err);
+      if (!data || !data.result || !data.result.matches) {
+        return getPageData(start, options, cb);
       }
-      const nextStart = matches[matches.length - 1].match_id - 1;
-      return getPageData(nextStart, options, cb);
-    });
-  });
+      // data is in data.result.matches
+      const { matches } = data.result;
+      return async.eachSeries(
+        matches,
+        (m, cb) => {
+          insertMatchSkillCassandra(
+            {
+              match_id: m.match_id,
+              skill: options.skill,
+              players: m.players,
+            },
+            cb
+          );
+        },
+        (err) => {
+          if (err) {
+            return cb(err);
+          }
+          // repeat until results_remaining===0
+          if (data.result.results_remaining === 0) {
+            return cb(err);
+          }
+          const nextStart = matches[matches.length - 1].match_id - 1;
+          return getPageData(nextStart, options, cb);
+        }
+      );
+    }
+  );
 }
 
 function scanSkill() {
-  async.eachLimit(permute, parallelism, (object, cb) => {
-    // use api_skill
-    const start = null;
-    getPageData(start, object, cb);
-  }, (err) => {
-    if (err) {
-      throw err;
+  async.eachLimit(
+    permute,
+    parallelism,
+    (object, cb) => {
+      // use api_skill
+      const start = null;
+      getPageData(start, object, cb);
+    },
+    (err) => {
+      if (err) {
+        throw err;
+      }
+      return scanSkill();
     }
-    return scanSkill();
-  });
+  );
 }
 
 for (let i = 0; i < heroes.length; i += 1) {

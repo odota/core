@@ -16,8 +16,9 @@ function processMmr(job, cb) {
     return cb();
   }
   const accountId = job.account_id;
-  const urls = retrieverArr
-    .map(r => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`);
+  const urls = retrieverArr.map(
+    (r) => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
+  );
   return getData({ url: urls }, (err, data) => {
     if (err) {
       return cb(err);
@@ -28,7 +29,12 @@ function processMmr(job, cb) {
       plus: Boolean(data.is_plus_subscriber),
     };
     return insertPlayer(db, player, false, () => {
-      if (data.solo_competitive_rank || data.competitive_rank || data.rank_tier || data.leaderboard_rank) {
+      if (
+        data.solo_competitive_rank ||
+        data.competitive_rank ||
+        data.rank_tier ||
+        data.leaderboard_rank
+      ) {
         data.account_id = job.account_id || null;
         data.match_id = job.match_id || null;
         data.solo_competitive_rank = data.solo_competitive_rank || null; // 0 MMR is not a valid value
@@ -41,4 +47,8 @@ function processMmr(job, cb) {
   });
 }
 
-queue.runQueue('mmrQueue', config.MMR_PARALLELISM * retrieverArr.length, processMmr);
+queue.runQueue(
+  'mmrQueue',
+  config.MMR_PARALLELISM * retrieverArr.length,
+  processMmr
+);

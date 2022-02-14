@@ -25,7 +25,7 @@ function processDraftTimings(entries, meta) {
     const heroId = e.hero_id;
     if (e.type === 'draft_timings') {
       // The active team needs to be downshifted by 1, so ignore the final observation.
-      if (i < (entries.length - 1)) {
+      if (i < entries.length - 1) {
         sumActiveTeam += e.draft_active_team;
       }
       const currpickban = {
@@ -35,7 +35,8 @@ function processDraftTimings(entries, meta) {
         hero_id: e.hero_id,
         player_slot: e.pick === true ? heroIdToSlot[heroId] : null,
         time: e.time,
-        extra_time: e.draft_active_team === 2 ? e.draft_extime0 : e.draft_extime1,
+        extra_time:
+          e.draft_active_team === 2 ? e.draft_extime0 : e.draft_extime1,
         total_time_taken: 0,
       };
       draftTimings.push(JSON.parse(JSON.stringify(currpickban)));
@@ -47,21 +48,22 @@ function processDraftTimings(entries, meta) {
   // ignore Source 1 games
   if (draftTimings.length !== 0) {
     // update the team that had the first pick/ban
-    draftTimings[0].active_team = ((sumActiveTeam % 2) + 2);
+    draftTimings[0].active_team = (sumActiveTeam % 2) + 2;
     for (let j = 0; j < draftTimings.length; j += 1) {
       if (draftTimings[j].order === 1) {
-        draftTimings[j].total_time_taken = (draftTimings[j].time - draftStart);
+        draftTimings[j].total_time_taken = draftTimings[j].time - draftStart;
       } else {
         let index2;
         // find the time of the end of the previous order
         for (let i = 0; i < draftTimings.length; i += 1) {
           const currpick = draftTimings[i];
-          if (currpick.order === (draftTimings[j].order - 1)) {
+          if (currpick.order === draftTimings[j].order - 1) {
             index2 = i;
           }
         }
         // calculate the timings
-        draftTimings[j].total_time_taken = (draftTimings[j].time - draftTimings[index2].time);
+        draftTimings[j].total_time_taken =
+          draftTimings[j].time - draftTimings[index2].time;
       }
     }
   }

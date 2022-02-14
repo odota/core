@@ -16,11 +16,16 @@ db.select('account_id', 'last_login')
     if (err) {
       return cb(err);
     }
-    return async.eachLimit(results, 10, (r, cb) => {
-      console.time(r.account_id);
-      request(`http://${host}/players/${r.account_id}`, (err) => {
-        console.timeEnd(r.account_id);
-        cb(err);
-      });
-    }, cb);
+    return async.eachLimit(
+      results,
+      10,
+      (r, cb) => {
+        console.time(r.account_id);
+        request(`http://${host}/players/${r.account_id}`, (err) => {
+          console.timeEnd(r.account_id);
+          cb(err);
+        });
+      },
+      cb
+    );
   });

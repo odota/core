@@ -24,30 +24,41 @@ function processMatch(matchId, cb) {
       match_id: matchId,
     });
     const { url } = job;
-    return getData({
-      url,
-      delay,
-    }, (err, body) => {
-      if (err) {
-        throw err;
-      }
-      if (!body.result) {
-        return cb();
-      }
-      const match = body.result;
-      return insertMatch(match, {
-        type: 'api',
-        origin: 'scanner',
-        skipCounts: false,
-      }, (err) => {
-        if (!err) {
-          // Set with long expiration (1 month) to avoid picking up the same matches again
-          // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
-          redis.setex(`scanner_insert:${match.match_id}`, 3600 * 24 * 30, 1);
+    return getData(
+      {
+        url,
+        delay,
+      },
+      (err, body) => {
+        if (err) {
+          throw err;
         }
-        cb(err);
-      });
-    });
+        if (!body.result) {
+          return cb();
+        }
+        const match = body.result;
+        return insertMatch(
+          match,
+          {
+            type: 'api',
+            origin: 'scanner',
+            skipCounts: false,
+          },
+          (err) => {
+            if (!err) {
+              // Set with long expiration (1 month) to avoid picking up the same matches again
+              // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
+              redis.setex(
+                `scanner_insert:${match.match_id}`,
+                3600 * 24 * 30,
+                1
+              );
+            }
+            cb(err);
+          }
+        );
+      }
+    );
   });
 }
 
@@ -55,28 +66,31 @@ function processPlayer(accountId, cb) {
   const ajob = generateJob('api_history', {
     account_id: accountId,
   });
-  getData({
-    url: ajob.url,
-    delay,
-  }, (err, body) => {
-    if (err) {
-      console.error(err);
-    }
-    if (!body || !body.result || !body.result.matches) {
-      // Skip this player on this iteration
-      return cb();
-    }
-    return redis.get('match_seq_num', (err, res) => {
+  getData(
+    {
+      url: ajob.url,
+      delay,
+    },
+    (err, body) => {
       if (err) {
-        return cb(err);
+        console.error(err);
       }
-      // Get matches with recent seqnums
-      const matches = body.result.matches
-        .filter(m => m.match_seq_num > Number(res))
-        .map(m => m.match_id);
-      return async.eachLimit(matches, 1, processMatch, cb);
-    });
-  });
+      if (!body || !body.result || !body.result.matches) {
+        // Skip this player on this iteration
+        return cb();
+      }
+      return redis.get('match_seq_num', (err, res) => {
+        if (err) {
+          return cb(err);
+        }
+        // Get matches with recent seqnums
+        const matches = body.result.matches
+          .filter((m) => m.match_seq_num > Number(res))
+          .map((m) => m.match_id);
+        return async.eachLimit(matches, 1, processMatch, cb);
+      });
+    }
+  );
 }
 
 function start(err) {

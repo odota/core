@@ -17,8 +17,9 @@ function countWords(playerMatch, playerFilter) {
   messages.forEach((message) => {
     // if there is no player_filter
     // if the passed player's player_slot matches this message's parseSlot converted to player_slot
-    const messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
-    if (!playerFilter || (messageParseSlot === playerFilter.player_slot)) {
+    const messageParseSlot =
+      message.slot < 5 ? message.slot : message.slot + (128 - 5);
+    if (!playerFilter || messageParseSlot === playerFilter.player_slot) {
       chatWords.push(message.key);
     }
   });
@@ -65,7 +66,11 @@ function computeMatchData(pm) {
   if (pm.duration && pm.kills) {
     pm.kills_per_min = pm.kills / (pm.duration / 60);
   }
-  if (pm.kills !== undefined && pm.deaths !== undefined && pm.assists !== undefined) {
+  if (
+    pm.kills !== undefined &&
+    pm.deaths !== undefined &&
+    pm.assists !== undefined
+  ) {
     pm.kda = Math.floor((pm.kills + pm.assists) / (pm.deaths + 1));
   }
   if (pm.leaver_status !== undefined) {
@@ -83,7 +88,7 @@ function computeMatchData(pm) {
   }
   if (pm.kills_log && selfHero) {
     // remove self kills
-    pm.kills_log = pm.kills_log.filter(k => k.key !== selfHero.name);
+    pm.kills_log = pm.kills_log.filter((k) => k.key !== selfHero.name);
   }
   if (pm.killed) {
     pm.neutral_kills = 0;
@@ -97,7 +102,10 @@ function computeMatchData(pm) {
     pm.necronomicon_kills = 0;
     pm.ancient_kills = 0;
     Object.keys(pm.killed).forEach((key) => {
-      if (key.indexOf('creep_goodguys') !== -1 || key.indexOf('creep_badguys') !== -1) {
+      if (
+        key.indexOf('creep_goodguys') !== -1 ||
+        key.indexOf('creep_badguys') !== -1
+      ) {
         pm.lane_kills += pm.killed[key];
       }
       if (key.indexOf('observer') !== -1) {
@@ -114,7 +122,7 @@ function computeMatchData(pm) {
       if (key.indexOf('npc_dota_neutral') === 0) {
         pm.neutral_kills += pm.killed[key];
       }
-      if ((key in ancients)) {
+      if (key in ancients) {
         pm.ancient_kills += pm.killed[key];
       }
       if (key.indexOf('_tower') !== -1) {
@@ -142,10 +150,10 @@ function computeMatchData(pm) {
     // lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
     // var tenMinute = (43 * 60 + 48 * 20 + 74 * 2);
     // 6.84 change
-    const melee = (40 * 60);
-    const ranged = (45 * 20);
-    const siege = (74 * 2);
-    const passive = (600 * 1.5);
+    const melee = 40 * 60;
+    const ranged = 45 * 20;
+    const siege = 74 * 2;
+    const passive = 600 * 1.5;
     const starting = 600;
     const tenMinute = melee + ranged + siege + passive + starting;
     pm.lane_efficiency = pm.gold_t[10] / tenMinute;
@@ -160,7 +168,13 @@ function computeMatchData(pm) {
   // compute hashes of purchase time sums and counts from logs
   if (pm.purchase_log) {
     // remove ward dispenser and recipes
-    pm.purchase_log = pm.purchase_log.filter(purchase => !(purchase.key.indexOf('recipe_') === 0 || purchase.key === 'ward_dispenser'));
+    pm.purchase_log = pm.purchase_log.filter(
+      (purchase) =>
+        !(
+          purchase.key.indexOf('recipe_') === 0 ||
+          purchase.key === 'ward_dispenser'
+        )
+    );
     pm.purchase_time = {};
     pm.first_purchase_time = {};
     pm.item_win = {};
@@ -202,10 +216,18 @@ function computeMatchData(pm) {
   // compute throw/comeback levels
   if (pm.radiant_gold_adv && pm.radiant_win !== undefined) {
     const radiantGoldAdvantage = pm.radiant_gold_adv;
-    const throwVal = isRadiant(pm) ? max(radiantGoldAdvantage) : min(radiantGoldAdvantage) * -1;
-    const comebackVal = isRadiant(pm) ? min(radiantGoldAdvantage) * -1 : max(radiantGoldAdvantage);
-    const lossVal = isRadiant(pm) ? min(radiantGoldAdvantage) * -1 : max(radiantGoldAdvantage);
-    const stompVal = isRadiant(pm) ? max(radiantGoldAdvantage) : min(radiantGoldAdvantage) * -1;
+    const throwVal = isRadiant(pm)
+      ? max(radiantGoldAdvantage)
+      : min(radiantGoldAdvantage) * -1;
+    const comebackVal = isRadiant(pm)
+      ? min(radiantGoldAdvantage) * -1
+      : max(radiantGoldAdvantage);
+    const lossVal = isRadiant(pm)
+      ? min(radiantGoldAdvantage) * -1
+      : max(radiantGoldAdvantage);
+    const stompVal = isRadiant(pm)
+      ? max(radiantGoldAdvantage)
+      : min(radiantGoldAdvantage) * -1;
     pm.throw = pm.radiant_win !== isRadiant(pm) ? throwVal : undefined;
     pm.comeback = pm.radiant_win === isRadiant(pm) ? comebackVal : undefined;
     pm.loss = pm.radiant_win !== isRadiant(pm) ? lossVal : undefined;

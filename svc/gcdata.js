@@ -14,4 +14,8 @@ function processGcData(job, cb) {
   getGcData(job, cb);
 }
 
-queue.runQueue('gcQueue', Number(config.GCDATA_PARALLELISM) * retrieverArr.length, processGcData);
+queue.runQueue(
+  'gcQueue',
+  Number(config.GCDATA_PARALLELISM) * retrieverArr.length,
+  processGcData
+);

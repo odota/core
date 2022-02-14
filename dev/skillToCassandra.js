@@ -15,7 +15,10 @@ function done(err) {
   process.exit(Number(err));
 }
 
-const stream = db.select().from('match_skill').where('match_id', '>=', startId)
+const stream = db
+  .select()
+  .from('match_skill')
+  .where('match_id', '>=', startId)
   .orderBy('match_id', 'asc')
   .stream();
 stream.on('end', done);

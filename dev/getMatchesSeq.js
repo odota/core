@@ -30,32 +30,43 @@ function getPage(matchSeqNum, bucket) {
     start_at_match_seq_num: matchSeqNum,
   });
   const { url } = job;
-  getData({
-    url,
-    delay,
-  }, (err, body) => {
-    if (err) {
-      throw err;
+  getData(
+    {
+      url,
+      delay,
+    },
+    (err, body) => {
+      if (err) {
+        throw err;
+      }
+      if (body.result) {
+        const { matches } = body.result;
+        async.each(
+          matches,
+          (match, cb) => {
+            insertMatch(
+              match,
+              {
+                skipCounts: true,
+                skipParse: true,
+              },
+              cb
+            );
+          },
+          (err) => {
+            if (err) {
+              throw err;
+            }
+            const nextSeqNum = matches[matches.length - 1].match_seq_num + 1;
+            redis.set(`complete_history:${bucket}`, nextSeqNum);
+            return getPage(nextSeqNum, bucket);
+          }
+        );
+      } else {
+        throw body;
+      }
     }
-    if (body.result) {
-      const { matches } = body.result;
-      async.each(matches, (match, cb) => {
-        insertMatch(match, {
-          skipCounts: true,
-          skipParse: true,
-        }, cb);
-      }, (err) => {
-        if (err) {
-          throw err;
-        }
-        const nextSeqNum = matches[matches.length - 1].match_seq_num + 1;
-        redis.set(`complete_history:${bucket}`, nextSeqNum);
-        return getPage(nextSeqNum, bucket);
-      });
-    } else {
-      throw body;
-    }
-  });
+  );
 }
 
 if (cluster.isMaster) {

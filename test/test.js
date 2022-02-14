@@ -66,145 +66,205 @@ nock(`http://${config.RETRIEVER_HOST}`)
   .reply(200, retrieverPlayer);
 before(function setup(done) {
   this.timeout(60000);
-  async.series([
-    function initPostgres(cb) {
-      const pool = new pg.Pool({
-        connectionString: initPostgresHost,
-      });
-      pool.connect((err, client) => {
-        if (err) {
-          return cb(err);
-        }
-        return async.series([
-          function drop(cb) {
-            console.log('drop postgres test database');
-            client.query('DROP DATABASE IF EXISTS yasp_test', cb);
-          },
-          function create(cb) {
-            console.log('create postgres test database');
-            client.query('CREATE DATABASE yasp_test', cb);
-          },
-          function tables(cb) {
-            const pool2 = new pg.Pool({
-              connectionString: config.POSTGRES_URL,
-            });
-            pool2.connect((err, client2) => {
-              if (err) {
-                return cb(err);
-              }
-              console.log('create postgres test tables');
-              const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
-              return client2.query(query, cb);
-            });
-          },
-          function setup(cb) {
-            db = require('../store/db');
-            console.log('insert postgres test data');
-            // populate the DB with this leagueid so we insert a pro match
-            db.raw('INSERT INTO leagues(leagueid, tier) VALUES(5399, \'professional\')').asCallback(cb);
-          },
-        ], cb);
-      });
-    },
-    function initCassandra(cb) {
-      const client = new cassandraDriver.Client({
-        contactPoints: [initCassandraHost],
-        localDataCenter: 'datacenter1',
-      });
-      async.series([function drop(cb) {
-        console.log('drop cassandra test keyspace');
-        client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+  async.series(
+    [
+      function initPostgres(cb) {
+        const pool = new pg.Pool({
+          connectionString: initPostgresHost,
+        });
+        pool.connect((err, client) => {
+          if (err) {
+            return cb(err);
+          }
+          return async.series(
+            [
+              function drop(cb) {
+                console.log('drop postgres test database');
+                client.query('DROP DATABASE IF EXISTS yasp_test', cb);
+              },
+              function create(cb) {
+                console.log('create postgres test database');
+                client.query('CREATE DATABASE yasp_test', cb);
+              },
+              function tables(cb) {
+                const pool2 = new pg.Pool({
+                  connectionString: config.POSTGRES_URL,
+                });
+                pool2.connect((err, client2) => {
+                  if (err) {
+                    return cb(err);
+                  }
+                  console.log('create postgres test tables');
+                  const query = fs.readFileSync(
+                    './sql/create_tables.sql',
+                    'utf8'
+                  );
+                  return client2.query(query, cb);
+                });
+              },
+              function setup(cb) {
+                db = require('../store/db');
+                console.log('insert postgres test data');
+                // populate the DB with this leagueid so we insert a pro match
+                db.raw(
+                  "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')"
+                ).asCallback(cb);
+              },
+            ],
+            cb
+          );
+        });
       },
-      function create(cb) {
-        console.log('create cassandra test keyspace');
-        client.execute('CREATE KEYSPACE yasp_test WITH REPLICATION = { \'class\': \'NetworkTopologyStrategy\', \'datacenter1\': 1 };', cb);
+      function initCassandra(cb) {
+        const client = new cassandraDriver.Client({
+          contactPoints: [initCassandraHost],
+          localDataCenter: 'datacenter1',
+        });
+        async.series(
+          [
+            function drop(cb) {
+              console.log('drop cassandra test keyspace');
+              client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+            },
+            function create(cb) {
+              console.log('create cassandra test keyspace');
+              client.execute(
+                "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
+                cb
+              );
+            },
+            function tables(cb) {
+              cassandra = require('../store/cassandra');
+              console.log('create cassandra test tables');
+              async.eachSeries(
+                fs
+                  .readFileSync('./sql/create_tables.cql', 'utf8')
+                  .split(';')
+                  .filter((cql) => cql.length > 1),
+                (cql, cb) => {
+                  cassandra.execute(cql, cb);
+                },
+                cb
+              );
+            },
+          ],
+          cb
+        );
       },
-      function tables(cb) {
-        cassandra = require('../store/cassandra');
-        console.log('create cassandra test tables');
-        async.eachSeries(fs.readFileSync('./sql/create_tables.cql', 'utf8').split(';').filter(cql => cql.length > 1), (cql, cb) => {
-          cassandra.execute(cql, cb);
-        }, cb);
+      function initElasticsearch(cb) {
+        console.log('Create Elasticsearch Mapping');
+        const mapping = JSON.parse(
+          fs.readFileSync('./elasticsearch/index.json')
+        );
+        const { es } = require('../store/elasticsearch');
+        async.series(
+          [
+            (cb) => {
+              es.indices.delete(
+                {
+                  index: 'dota-test', // explicitly name the index to avoid embarrassing errors.
+                },
+                (err) => {
+                  if (err) {
+                    console.warn(err);
+                  }
+                  cb();
+                }
+              );
+            },
+            (cb) => {
+              es.indices.create(
+                {
+                  index: 'dota-test',
+                },
+                cb
+              );
+            },
+            (cb) => {
+              es.indices.close(
+                {
+                  index: 'dota-test',
+                },
+                cb
+              );
+            },
+            (cb) => {
+              es.indices.putSettings(
+                {
+                  index: 'dota-test',
+                  body: mapping.settings,
+                },
+                cb
+              );
+            },
+            (cb) => {
+              es.indices.putMapping(
+                {
+                  index: 'dota-test',
+                  type: 'player',
+                  body: mapping.mappings.player,
+                },
+                cb
+              );
+            },
+            (cb) => {
+              es.indices.open(
+                {
+                  index: 'dota-test',
+                },
+                cb
+              );
+            },
+          ],
+          cb
+        );
       },
-      ], cb);
-    },
-    function initElasticsearch(cb) {
-      console.log('Create Elasticsearch Mapping');
-      const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
-      const { es } = require('../store/elasticsearch');
-      async.series([
-        (cb) => {
-          es.indices.delete({
-            index: 'dota-test', // explicitly name the index to avoid embarrassing errors.
-          }, (err) => {
-            if (err) {
-              console.warn(err);
-            }
-            cb();
-          });
-        },
-        (cb) => {
-          es.indices.create({
-            index: 'dota-test',
-          }, cb);
-        },
-        (cb) => {
-          es.indices.close({
-            index: 'dota-test',
-          }, cb);
-        },
-        (cb) => {
-          es.indices.putSettings({
-            index: 'dota-test',
-            body: mapping.settings,
-          }, cb);
-        },
-        (cb) => {
-          es.indices.putMapping({
-            index: 'dota-test',
-            type: 'player',
-            body: mapping.mappings.player,
-          }, cb);
-        },
-        (cb) => {
-          es.indices.open({
-            index: 'dota-test',
-          }, cb);
-        },
-      ], cb);
-    },
-    function wipeRedis(cb) {
-      console.log('wiping redis');
-      redis.flushdb((err, success) => {
-        console.log(err, success);
-        cb(err);
-      });
-    },
-    function startServices(cb) {
-      console.log('starting services');
-      app = require('../svc/web');
-      queries = require('../store/queries');
-      buildMatch = require('../store/buildMatch');
-      require('../svc/parser');
-      cb();
-    },
-    function loadMatches(cb) {
-      console.log('loading matches');
-      async.mapSeries([detailsApi.result, detailsApiPro.result, detailsApiPro.result], (m, cb) => {
-        queries.insertMatch(m, {
-          type: 'api',
-          origin: 'scanner',
-          skipParse: true,
-        }, cb);
-      }, cb);
-    },
-    function loadPlayers(cb) {
-      console.log('loading players');
-      async.mapSeries(summariesApi.response.players, (p, cb) => {
-        queries.insertPlayer(db, p, true, cb);
-      }, cb);
-    },
-  ], done);
+      function wipeRedis(cb) {
+        console.log('wiping redis');
+        redis.flushdb((err, success) => {
+          console.log(err, success);
+          cb(err);
+        });
+      },
+      function startServices(cb) {
+        console.log('starting services');
+        app = require('../svc/web');
+        queries = require('../store/queries');
+        buildMatch = require('../store/buildMatch');
+        require('../svc/parser');
+        cb();
+      },
+      function loadMatches(cb) {
+        console.log('loading matches');
+        async.mapSeries(
+          [detailsApi.result, detailsApiPro.result, detailsApiPro.result],
+          (m, cb) => {
+            queries.insertMatch(
+              m,
+              {
+                type: 'api',
+                origin: 'scanner',
+                skipParse: true,
+              },
+              cb
+            );
+          },
+          cb
+        );
+      },
+      function loadPlayers(cb) {
+        console.log('loading players');
+        async.mapSeries(
+          summariesApi.response.players,
+          (p, cb) => {
+            queries.insertPlayer(db, p, true, cb);
+          },
+          cb
+        );
+      },
+    ],
+    done
+  );
 });
 describe('swagger schema', function testSwaggerSchema() {
   this.timeout(2000);
@@ -216,14 +276,18 @@ describe('swagger schema', function testSwaggerSchema() {
       },
     };
     // We stringify and imediately parse the object in order to remove the route() and func() properties, which arent a part of the OpenAPI spec
-    swaggerParser.validate(JSON.parse(JSON.stringify(spec)), validOpts, (err) => {
-      if (!err) {
-        assert(!err);
-      } else {
-        assert.fail(err.message);
+    swaggerParser.validate(
+      JSON.parse(JSON.stringify(spec)),
+      validOpts,
+      (err) => {
+        if (!err) {
+          assert(!err);
+        } else {
+          assert.fail(err.message);
+        }
+        cb();
       }
-      cb();
-    });
+    );
   });
 });
 describe('replay parse', function testReplayParse() {
@@ -233,91 +297,116 @@ describe('replay parse', function testReplayParse() {
   };
   Object.keys(tests).forEach((key) => {
     const match = tests[key];
-    nock(`http://${config.RETRIEVER_HOST}`).get('/').query(true).reply(200, {
-      match: {
-        match_id: match.match_id,
-        cluster: match.cluster,
-        replay_salt: 1,
-        series_id: 0,
-        series_type: 0,
-        players: [],
-      },
-    });
-    it(`should parse replay ${key}`, (done) => {
-      queries.insertMatch(match, {
-        cassandra,
-        type: 'api',
-        forceParse: true,
-        attempts: 1,
-      }, (err, job) => {
-        assert(job && !err);
-        setTimeout(async () => {
-          // ensure parse data got inserted
-          const match = await buildMatch(tests[key].match_id);
-          // console.log(match.players[0]);
-          assert(match.players);
-          assert(match.players[0]);
-          assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
-          assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
-          assert(match.teamfights && match.teamfights.length > 0);
-          assert(match.draft_timings);
-          assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
-          return done();
-        }, 30000);
+    nock(`http://${config.RETRIEVER_HOST}`)
+      .get('/')
+      .query(true)
+      .reply(200, {
+        match: {
+          match_id: match.match_id,
+          cluster: match.cluster,
+          replay_salt: 1,
+          series_id: 0,
+          series_type: 0,
+          players: [],
+        },
       });
+    it(`should parse replay ${key}`, (done) => {
+      queries.insertMatch(
+        match,
+        {
+          cassandra,
+          type: 'api',
+          forceParse: true,
+          attempts: 1,
+        },
+        (err, job) => {
+          assert(job && !err);
+          setTimeout(async () => {
+            // ensure parse data got inserted
+            const match = await buildMatch(tests[key].match_id);
+            // console.log(match.players[0]);
+            assert(match.players);
+            assert(match.players[0]);
+            assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
+            assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
+            assert(match.teamfights && match.teamfights.length > 0);
+            assert(match.draft_timings);
+            assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
+            return done();
+          }, 30000);
+        }
+      );
     });
   });
 });
 describe('teamRanking', () => {
   it('should have team rankings', (cb) => {
-    db.select(['team_id', 'rating', 'wins', 'losses']).from('team_rating').asCallback((err, rows) => {
-      // We inserted the pro match twice so expect to update the ratings twice
-      const loser = rows.find(row => row.team_id === 4251435);
-      const winner = rows.find(row => row.team_id === 1375614);
-      console.log(loser.rating, winner.rating);
-      assert(loser.losses === 2);
-      assert(winner.wins === 2);
-      assert(loser.rating < winner.rating);
-      return cb(err);
-    });
+    db.select(['team_id', 'rating', 'wins', 'losses'])
+      .from('team_rating')
+      .asCallback((err, rows) => {
+        // We inserted the pro match twice so expect to update the ratings twice
+        const loser = rows.find((row) => row.team_id === 4251435);
+        const winner = rows.find((row) => row.team_id === 1375614);
+        console.log(loser.rating, winner.rating);
+        assert(loser.losses === 2);
+        assert(winner.wins === 2);
+        assert(loser.rating < winner.rating);
+        return cb(err);
+      });
   });
 });
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
 describe('api', () => {
   it('should get API spec', function testAPISpec(cb) {
     this.timeout(5000);
-    supertest(app).get('/api').end((err, res) => {
-      if (err) {
-        return cb(err);
-      }
-      const spec = res.body;
-      return async.eachSeries(Object.keys(spec.paths), (path, cb) => {
-        const replacedPath = path
-          .replace(/{match_id}/, 1781962623)
-          .replace(/{account_id}/, 120269134)
-          .replace(/{team_id}/, 15)
-          .replace(/{hero_id}/, 1)
-          .replace(/{league_id}/, 1)
-          .replace(/{field}/, 'kills')
-          .replace(/{resource}/, 'heroes');
-        async.eachSeries(Object.keys(spec.paths[path]), (verb, cb) => {
-          if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0 || path.indexOf('/feed') === 0) {
-            return cb(err);
-          }
-          return supertest(app)[verb](`/api${replacedPath}?q=testsearch`).end((err, res) => {
-            if (err || res.statusCode !== 200) {
-              console.error(verb, replacedPath, res.body);
-            }
-            if (replacedPath.startsWith('/admin')) {
-              assert.equal(res.statusCode, 403);
-            } else {
-              assert.equal(res.statusCode, 200);
-            }
-            return cb(err);
-          });
-        }, cb);
-      }, cb);
-    });
+    supertest(app)
+      .get('/api')
+      .end((err, res) => {
+        if (err) {
+          return cb(err);
+        }
+        const spec = res.body;
+        return async.eachSeries(
+          Object.keys(spec.paths),
+          (path, cb) => {
+            const replacedPath = path
+              .replace(/{match_id}/, 1781962623)
+              .replace(/{account_id}/, 120269134)
+              .replace(/{team_id}/, 15)
+              .replace(/{hero_id}/, 1)
+              .replace(/{league_id}/, 1)
+              .replace(/{field}/, 'kills')
+              .replace(/{resource}/, 'heroes');
+            async.eachSeries(
+              Object.keys(spec.paths[path]),
+              (verb, cb) => {
+                if (
+                  path.indexOf('/explorer') === 0 ||
+                  path.indexOf('/request') === 0 ||
+                  path.indexOf('/feed') === 0
+                ) {
+                  return cb(err);
+                }
+                return supertest(app)
+                  [verb](`/api${replacedPath}?q=testsearch`)
+                  .end((err, res) => {
+                    if (err || res.statusCode !== 200) {
+                      console.error(verb, replacedPath, res.body);
+                    }
+                    if (replacedPath.startsWith('/admin')) {
+                      assert.equal(res.statusCode, 403);
+                    } else {
+                      assert.equal(res.statusCode, 200);
+                    }
+                    return cb(err);
+                  });
+              },
+              cb
+            );
+          },
+          cb
+        );
+      });
   });
 });
 describe('api management', () => {
@@ -332,7 +421,7 @@ describe('api management', () => {
         this.previousSub = res[0] ? res[0].subscription_id : null;
         done();
       })
-      .catch(err => done(err));
+      .catch((err) => done(err));
   });
 
   it('should get 403 when not logged in.', (done) => {
@@ -342,7 +431,7 @@ describe('api management', () => {
         assert.equal(res.statusCode, 403);
         return done();
       })
-      .catch(err => done(err));
+      .catch((err) => done(err));
   });
 
   it('should not get fields for GET', (done) => {
@@ -353,7 +442,7 @@ describe('api management', () => {
         assert.deepStrictEqual(res.body, {});
         return done();
       })
-      .catch(err => done(err));
+      .catch((err) => done(err));
   });
 
   it('should create api key', function testCreatingApiKey(done) {
@@ -369,24 +458,30 @@ describe('api management', () => {
       .then((res) => {
         assert.equal(res.statusCode, 200);
 
-        supertest(app).get('/keys?loggedin=1').end((err, res) => {
-          if (err) {
-            done(err);
-          } else {
-            assert.equal(res.statusCode, 200);
-            assert.equal(res.body.customer.credit_brand, 'Visa');
-            assert.notEqual(res.body.customer.api_key, null);
-            redis.sismember('api_keys', res.body.customer.api_key, (err, resp) => {
-              if (err) {
-                return done(err);
-              }
-              assert.equal(resp, 1);
-              return done();
-            });
-          }
-        });
+        supertest(app)
+          .get('/keys?loggedin=1')
+          .end((err, res) => {
+            if (err) {
+              done(err);
+            } else {
+              assert.equal(res.statusCode, 200);
+              assert.equal(res.body.customer.credit_brand, 'Visa');
+              assert.notEqual(res.body.customer.api_key, null);
+              redis.sismember(
+                'api_keys',
+                res.body.customer.api_key,
+                (err, resp) => {
+                  if (err) {
+                    return done(err);
+                  }
+                  assert.equal(resp, 1);
+                  return done();
+                }
+              );
+            }
+          });
       })
-      .catch(err => done(err));
+      .catch((err) => done(err));
   });
 
   it('should not change key', function testPostDoesNotChangeKey(done) {
@@ -420,22 +515,27 @@ describe('api management', () => {
                 }
                 assert.equal(res2[0].customer_id, this.previousCustomer);
                 assert.equal(res2[0].subscription_id, this.previousSub);
-                supertest(app).get('/keys?loggedin=1').end((err, res) => {
-                  if (err) {
-                    return done(err);
-                  }
+                supertest(app)
+                  .get('/keys?loggedin=1')
+                  .end((err, res) => {
+                    if (err) {
+                      return done(err);
+                    }
 
-                  assert.equal(res.statusCode, 200);
-                  assert.equal(res.body.customer.credit_brand, previousCredit);
-                  assert.equal(res.body.customer.api_key, this.previousKey);
-                  return done();
-                });
+                    assert.equal(res.statusCode, 200);
+                    assert.equal(
+                      res.body.customer.credit_brand,
+                      previousCredit
+                    );
+                    assert.equal(res.body.customer.api_key, this.previousKey);
+                    return done();
+                  });
               })
-              .catch(err => done(err));
+              .catch((err) => done(err));
           })
-          .catch(err => done(err));
+          .catch((err) => done(err));
       })
-      .catch(err => done(err));
+      .catch((err) => done(err));
   });
 
   it('should update payment but not change customer/sub', function tesPutOnlyChangesBilling(done) {
@@ -469,11 +569,11 @@ describe('api management', () => {
                 assert.equal(res2[0].subscription_id, this.previousSub);
                 return done();
               })
-              .catch(err => done(err));
+              .catch((err) => done(err));
           })
-          .catch(err => done(err));
+          .catch((err) => done(err));
       })
-      .catch(err => done(err));
+      .catch((err) => done(err));
   });
   it('should delete key but not change customer/sub', function testDeleteOnlyModifiesKey(done) {
     this.timeout(5000);
@@ -507,9 +607,9 @@ describe('api management', () => {
                   return done();
                 });
               })
-              .catch(err => done(err));
+              .catch((err) => done(err));
           })
-          .catch(err => done(err));
+          .catch((err) => done(err));
       }
     });
   });
@@ -537,27 +637,30 @@ describe('api management', () => {
             }
             assert.equal(res2[0].customer_id, this.previousCustomer);
             assert.equal(res2[0].subscription_id, this.previousSub);
-            supertest(app).get('/keys?loggedin=1').end((err, res) => {
-              if (err) {
-                return done(err);
-              }
+            supertest(app)
+              .get('/keys?loggedin=1')
+              .end((err, res) => {
+                if (err) {
+                  return done(err);
+                }
 
-              assert.equal(res.statusCode, 200);
-              assert.equal(res.body.customer.credit_brand, 'Discover');
-              assert.notEqual(res.body.customer.api_key, null);
-              return done();
-            });
+                assert.equal(res.statusCode, 200);
+                assert.equal(res.body.customer.credit_brand, 'Discover');
+                assert.notEqual(res.body.customer.api_key, null);
+                return done();
+              });
           })
-          .catch(err => done(err));
+          .catch((err) => done(err));
       })
-      .catch(err => done(err));
+      .catch((err) => done(err));
   });
 });
 describe('api limits', () => {
   before((done) => {
     config.ENABLE_API_LIMIT = true;
     config.API_FREE_LIMIT = 10;
-    redis.multi()
+    redis
+      .multi()
       .del('user_usage_count')
       .del('usage_count')
       .sadd('api_keys', 'KEY')
@@ -576,33 +679,42 @@ describe('api limits', () => {
         `/api${key}`, // Docs
         `/api/metadata${key}`, // Login status
         `/keys${key}`, // API Key management
-      ], (i, cb) => {
-        supertest(app).get(i).end((err, res) => {
-          if (err) {
-            return cb(err);
-          }
+      ],
+      (i, cb) => {
+        supertest(app)
+          .get(i)
+          .end((err, res) => {
+            if (err) {
+              return cb(err);
+            }
 
-          assert.notEqual(res.statusCode, 429);
-          return cb();
-        });
+            assert.notEqual(res.statusCode, 429);
+            return cb();
+          });
       },
-      done,
+      done
     );
   }
 
   function testRateCheckedRoute(done) {
-    async.timesSeries(10, (i, cb) => {
-      setTimeout(() => {
-        supertest(app).get('/api/matches/1781962623').end((err, res) => {
-          if (err) {
-            return cb(err);
-          }
+    async.timesSeries(
+      10,
+      (i, cb) => {
+        setTimeout(() => {
+          supertest(app)
+            .get('/api/matches/1781962623')
+            .end((err, res) => {
+              if (err) {
+                return cb(err);
+              }
 
-          assert.equal(res.statusCode, 200);
-          return cb();
-        });
-      }, i * 300);
-    }, done);
+              assert.equal(res.statusCode, 200);
+              return cb();
+            });
+        }, i * 300);
+      },
+      done
+    );
   }
 
   it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', function testNoApiLimit(done) {
@@ -615,15 +727,17 @@ describe('api limits', () => {
           if (err) {
             done(err);
           } else {
-            supertest(app).get('/api/matches/1781962623').end((err, res) => {
-              if (err) {
-                done(err);
-              }
-              assert.equal(res.statusCode, 429);
-              assert.equal(res.body.error, 'monthly api limit exceeded');
+            supertest(app)
+              .get('/api/matches/1781962623')
+              .end((err, res) => {
+                if (err) {
+                  done(err);
+                }
+                assert.equal(res.statusCode, 429);
+                assert.equal(res.body.error, 'monthly api limit exceeded');
 
-              testWhiteListedRoutes(done, '');
-            });
+                testWhiteListedRoutes(done, '');
+              });
           }
         });
       }
@@ -632,49 +746,59 @@ describe('api limits', () => {
 
   it('should be able to make more than 10 calls when using API KEY', function testAPIKeyLimitsAndCounting(done) {
     this.timeout(25000);
-    async.timesSeries(25, (i, cb) => {
-      supertest(app).get('/api/matches/1781962623?api_key=KEY').end((err, res) => {
-        if (err) {
-          return cb(err);
-        }
-
-        assert.equal(res.statusCode, 200);
-        return cb();
-      });
-    }, () => {
-      // Try whitelisted routes. Should not increment usage.
-      testWhiteListedRoutes((err) => {
-        if (err) {
-          done(err);
-        } else {
-          // Try a 429. Should not increment usage.
-          supertest(app).get('/gen429').end((err, res) => {
+    async.timesSeries(
+      25,
+      (i, cb) => {
+        supertest(app)
+          .get('/api/matches/1781962623?api_key=KEY')
+          .end((err, res) => {
             if (err) {
-              done(err);
+              return cb(err);
             }
-            assert.equal(res.statusCode, 429);
 
-            // Try a 500. Should not increment usage.
-            supertest(app).get('/gen500').end((err, res) => {
-              if (err) {
-                done(err);
-              }
-              assert.equal(res.statusCode, 500);
-              redis.hgetall('usage_count', (err, res) => {
+            assert.equal(res.statusCode, 200);
+            return cb();
+          });
+      },
+      () => {
+        // Try whitelisted routes. Should not increment usage.
+        testWhiteListedRoutes((err) => {
+          if (err) {
+            done(err);
+          } else {
+            // Try a 429. Should not increment usage.
+            supertest(app)
+              .get('/gen429')
+              .end((err, res) => {
                 if (err) {
                   done(err);
-                } else {
-                  const keys = Object.keys(res);
-                  assert.equal(keys.length, 1);
-                  assert.equal(Number(res[keys[0]]), 25);
-                  done();
                 }
+                assert.equal(res.statusCode, 429);
+
+                // Try a 500. Should not increment usage.
+                supertest(app)
+                  .get('/gen500')
+                  .end((err, res) => {
+                    if (err) {
+                      done(err);
+                    }
+                    assert.equal(res.statusCode, 500);
+                    redis.hgetall('usage_count', (err, res) => {
+                      if (err) {
+                        done(err);
+                      } else {
+                        const keys = Object.keys(res);
+                        assert.equal(keys.length, 1);
+                        assert.equal(Number(res[keys[0]]), 25);
+                        done();
+                      }
+                    });
+                  });
               });
-            });
-          });
-        }
-      }, '?api_key=KEY');
-    });
+          }
+        }, '?api_key=KEY');
+      }
+    );
   });
 
   after(() => {

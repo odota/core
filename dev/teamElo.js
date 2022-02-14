@@ -11,14 +11,17 @@ const losses = {};
 const startTimes = {};
 const kFactor = 32;
 // Read a stream from the database
-const stream = db.raw(`
+const stream = db
+  .raw(
+    `
 SELECT team_match.team_id team_id1, tm2.team_id team_id2, matches.match_id, team_match.radiant = radiant_win team1_win, start_time
 FROM team_match
 JOIN matches using(match_id)
 JOIN team_match tm2 on team_match.match_id = tm2.match_id AND team_match.team_id < tm2.team_id
 WHERE matches.radiant_team_id IS NOT NULL AND matches.dire_team_id IS NOT NULL
 ORDER BY match_id ASC
-`)
+`
+  )
   .stream();
 stream.pipe(JSONStream.parse());
 stream.on('data', (match) => {
@@ -63,18 +66,36 @@ stream.on('data', (match) => {
 stream.on('end', () => {
   console.log(teams, wins, losses, startTimes);
   // Write the results to table
-  async.eachSeries(Object.keys(teams), (teamId, cb) => {
-    console.log([teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]]);
-    db.raw(
-      `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
+  async.eachSeries(
+    Object.keys(teams),
+    (teamId, cb) => {
+      console.log([
+        teamId,
+        teams[teamId],
+        wins[teamId],
+        losses[teamId],
+        startTimes[teamId],
+      ]);
+      db.raw(
+        `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
   ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses, last_match_time=EXCLUDED.last_match_time`,
-      [teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]],
-    ).asCallback(cb);
-  }, (err) => {
-    if (err) {
-      console.error(err);
+        [
+          teamId,
+          teams[teamId],
+          wins[teamId],
+          losses[teamId],
+          startTimes[teamId],
+        ]
+      ).asCallback(cb);
+    },
+    (err) => {
+      if (err) {
+        console.error(err);
+      }
+      process.exit(Number(err));
     }
-    process.exit(Number(err));
-  });
+  );
 });
-stream.on('error', (err) => { throw err; });
+stream.on('error', (err) => {
+  throw err;
+});

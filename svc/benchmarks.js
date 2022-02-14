@@ -17,16 +17,26 @@ async function doParsedBenchmarks(matchID, cb) {
         if (p.hero_id) {
           Object.keys(benchmarks).forEach((key) => {
             const metric = benchmarks[key](match, p);
-            if (metric !== undefined && metric !== null && !Number.isNaN(Number(metric))) {
+            if (
+              metric !== undefined &&
+              metric !== null &&
+              !Number.isNaN(Number(metric))
+            ) {
               const rkey = [
                 'benchmarks',
-                utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+                utility.getStartOfBlockMinutes(
+                  config.BENCHMARK_RETENTION_MINUTES,
+                  0
+                ),
                 key,
                 p.hero_id,
               ].join(':');
               redis.zadd(rkey, metric, match.match_id);
               // expire at time two epochs later (after prev/current cycle)
-              const expiretime = utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 2);
+              const expiretime = utility.getStartOfBlockMinutes(
+                config.BENCHMARK_RETENTION_MINUTES,
+                2
+              );
               redis.expireat(rkey, expiretime);
             }
           });

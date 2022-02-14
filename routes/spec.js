@@ -23,12 +23,14 @@ const params = require('./params');
 const properties = require('./properties');
 
 const {
-  teamObject, matchObject, heroObject, playerObject, leagueObject,
+  teamObject,
+  matchObject,
+  heroObject,
+  playerObject,
+  leagueObject,
 } = require('./objects');
 
-const {
-  redisCount, countPeers, isContributor, matchupToString,
-} = utility;
+const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
 const playerParams = [
   params.accountIdParam,
@@ -52,13 +54,20 @@ const playerParams = [
   params.sortParam,
 ];
 
-
 function sendDataWithCache(req, res, data, key) {
-  if (config.ENABLE_PLAYER_CACHE && req.originalQuery && !Object.keys(req.originalQuery).length) {
-    cacheFunctions.write({
-      key,
-      account_id: req.params.account_id,
-    }, JSON.stringify(data), () => {});
+  if (
+    config.ENABLE_PLAYER_CACHE &&
+    req.originalQuery &&
+    !Object.keys(req.originalQuery).length
+  ) {
+    cacheFunctions.write(
+      {
+        key,
+        account_id: req.params.account_id,
+      },
+      JSON.stringify(data),
+      () => {}
+    );
   }
   return res.json(data);
 }
@@ -91,17 +100,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
   },
   host: 'api.opendota.com',
   basePath: '/api',
-  produces: [
-    'application/json',
-  ],
+  produces: ['application/json'],
   paths: {
     '/matches/{match_id}': {
       get: {
         summary: 'GET /matches/{match_id}',
         description: 'Match data',
-        tags: [
-          'matches',
-        ],
+        tags: ['matches'],
         parameters: [params.matchIdParam],
         responses: {
           200: {
@@ -114,21 +119,25 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'integer',
                 },
                 barracks_status_dire: {
-                  description: 'Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.',
+                  description:
+                    'Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.',
                   type: 'integer',
                 },
                 barracks_status_radiant: {
-                  description: 'Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.',
+                  description:
+                    'Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.',
                   type: 'integer',
                 },
                 chat: {
-                  description: 'Array containing information on the chat of the game',
+                  description:
+                    'Array containing information on the chat of the game',
                   type: 'array',
                   items: {
                     type: 'object',
                     properties: {
                       time: {
-                        description: 'Time in seconds at which the message was said',
+                        description:
+                          'Time in seconds at which the message was said',
                         type: 'integer',
                       },
                       unit: {
@@ -156,7 +165,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'object',
                 },
                 dire_score: {
-                  description: 'Final score for Dire (number of kills on Radiant)',
+                  description:
+                    'Final score for Dire (number of kills on Radiant)',
                   type: 'integer',
                 },
                 draft_timings: {
@@ -204,7 +214,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'integer',
                 },
                 game_mode: {
-                  description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
+                  description:
+                    'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                   type: 'integer',
                 },
                 human_players: {
@@ -216,7 +227,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'integer',
                 },
                 lobby_type: {
-                  description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
+                  description:
+                    'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                   type: 'integer',
                 },
                 match_seq_num: {
@@ -224,7 +236,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'integer',
                 },
                 negative_votes: {
-                  description: 'Number of negative votes the replay received in the in-game client',
+                  description:
+                    'Number of negative votes the replay received in the in-game client',
                   type: 'integer',
                 },
                 objectives: {
@@ -232,24 +245,29 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'object',
                 },
                 picks_bans: {
-                  description: 'Object containing information on the draft. Each pick/ban contains a boolean relating to whether the choice is a pick or a ban, the hero ID, the team the picked or banned it, and the order.',
+                  description:
+                    'Object containing information on the draft. Each pick/ban contains a boolean relating to whether the choice is a pick or a ban, the hero ID, the team the picked or banned it, and the order.',
                   type: 'object',
                 },
                 positive_votes: {
-                  description: 'Number of positive votes the replay received in the in-game client',
+                  description:
+                    'Number of positive votes the replay received in the in-game client',
                   type: 'integer',
                 },
                 radiant_gold_adv: {
-                  description: 'Array of the Radiant gold advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their gold disadvantage. ',
+                  description:
+                    'Array of the Radiant gold advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their gold disadvantage. ',
                   type: 'object',
                 },
                 radiant_score: {
-                  description: 'Final score for Radiant (number of kills on Radiant)',
+                  description:
+                    'Final score for Radiant (number of kills on Radiant)',
                   type: 'integer',
                 },
                 radiant_win: properties.radiant_win,
                 radiant_xp_adv: {
-                  description: 'Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ',
+                  description:
+                    'Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ',
                   type: 'object',
                 },
                 start_time: {
@@ -261,11 +279,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'object',
                 },
                 tower_status_dire: {
-                  description: 'Bitmask. An integer that represents a binary of which Dire towers are still standing.',
+                  description:
+                    'Bitmask. An integer that represents a binary of which Dire towers are still standing.',
                   type: 'integer',
                 },
                 tower_status_radiant: {
-                  description: 'Bitmask. An integer that represents a binary of which Radiant towers are still standing.',
+                  description:
+                    'Bitmask. An integer that represents a binary of which Radiant towers are still standing.',
                   type: 'integer',
                 },
                 version: {
@@ -297,7 +317,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'object',
                 },
                 skill: {
-                  description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
+                  description:
+                    'Skill bracket assigned by Valve (Normal, High, Very High)',
                   type: 'integer',
                 },
                 players: {
@@ -313,22 +334,26 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       },
                       player_slot: properties.player_slot,
                       ability_upgrades_arr: {
-                        description: 'An array describing how abilities were upgraded',
+                        description:
+                          'An array describing how abilities were upgraded',
                         type: 'array',
                         items: {
                           type: 'integer',
                         },
                       },
                       ability_uses: {
-                        description: 'Object containing information on how many times the played used their abilities',
+                        description:
+                          'Object containing information on how many times the played used their abilities',
                         type: 'object',
                       },
                       ability_targets: {
-                        description: 'Object containing information on who the player used their abilities on',
+                        description:
+                          'Object containing information on who the player used their abilities on',
                         type: 'object',
                       },
                       damage_targets: {
-                        description: 'Object containing information on how and how much damage the player dealt to other heroes',
+                        description:
+                          'Object containing information on how and how much damage the player dealt to other heroes',
                         type: 'object',
                       },
                       account_id: {
@@ -336,11 +361,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       actions: {
-                        description: 'Object containing information on how many and what type of actions the player issued to their hero',
+                        description:
+                          'Object containing information on how many and what type of actions the player issued to their hero',
                         type: 'object',
                       },
                       additional_units: {
-                        description: 'Object containing information on additional units the player had under their control',
+                        description:
+                          'Object containing information on additional units the player had under their control',
                         type: 'object',
                       },
                       assists: {
@@ -360,13 +387,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       buyback_log: {
-                        description: 'Array containing information about buybacks',
+                        description:
+                          'Array containing information about buybacks',
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Time in seconds the buyback occurred',
+                              description:
+                                'Time in seconds the buyback occurred',
                               type: 'integer',
                             },
                             slot: {
@@ -382,13 +411,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       connection_log: {
-                        description: 'Array containing information about the player\'s disconnections and reconnections',
+                        description:
+                          "Array containing information about the player's disconnections and reconnections",
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Game time in seconds the event ocurred',
+                              description:
+                                'Game time in seconds the event ocurred',
                               type: 'integer',
                             },
                             event: {
@@ -404,19 +435,23 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       damage: {
-                        description: 'Object containing information about damage dealt by the player to different units',
+                        description:
+                          'Object containing information about damage dealt by the player to different units',
                         type: 'object',
                       },
                       damage_inflictor: {
-                        description: 'Object containing information about about the sources of this player\'s damage to heroes',
+                        description:
+                          "Object containing information about about the sources of this player's damage to heroes",
                         type: 'object',
                       },
                       damage_inflictor_received: {
-                        description: 'Object containing information about the sources of damage received by this player from heroes',
+                        description:
+                          'Object containing information about the sources of damage received by this player from heroes',
                         type: 'object',
                       },
                       damage_taken: {
-                        description: 'Object containing information about from whom the player took damage',
+                        description:
+                          'Object containing information about from whom the player took damage',
                         type: 'object',
                       },
                       deaths: {
@@ -428,7 +463,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       dn_t: {
-                        description: 'Array containing number of denies at different times of the match',
+                        description:
+                          'Array containing number of denies at different times of the match',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -443,7 +479,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       gold_reasons: {
-                        description: 'Object containing information on how the player gainined gold over the course of the match',
+                        description:
+                          'Object containing information on how the player gainined gold over the course of the match',
                         type: 'object',
                       },
                       gold_spent: {
@@ -451,7 +488,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       gold_t: {
-                        description: 'Array containing total gold at different times of the match',
+                        description:
+                          'Array containing total gold at different times of the match',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -466,7 +504,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       hero_hits: {
-                        description: 'Object containing information on how many ticks of damages the hero inflicted with different spells and damage inflictors',
+                        description:
+                          'Object containing information on how many ticks of damages the hero inflicted with different spells and damage inflictors',
                         type: 'object',
                       },
                       hero_id: {
@@ -474,43 +513,47 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       item_0: {
-                        description: 'Item in the player\'s first slot',
+                        description: "Item in the player's first slot",
                         type: 'integer',
                       },
                       item_1: {
-                        description: 'Item in the player\'s second slot',
+                        description: "Item in the player's second slot",
                         type: 'integer',
                       },
                       item_2: {
-                        description: 'Item in the player\'s third slot',
+                        description: "Item in the player's third slot",
                         type: 'integer',
                       },
                       item_3: {
-                        description: 'Item in the player\'s fourth slot',
+                        description: "Item in the player's fourth slot",
                         type: 'integer',
                       },
                       item_4: {
-                        description: 'Item in the player\'s fifth slot',
+                        description: "Item in the player's fifth slot",
                         type: 'integer',
                       },
                       item_5: {
-                        description: 'Item in the player\'s sixth slot',
+                        description: "Item in the player's sixth slot",
                         type: 'integer',
                       },
                       item_uses: {
-                        description: 'Object containing information about how many times a player used items',
+                        description:
+                          'Object containing information about how many times a player used items',
                         type: 'object',
                       },
                       kill_streaks: {
-                        description: 'Object containing information about the player\'s killstreaks',
+                        description:
+                          "Object containing information about the player's killstreaks",
                         type: 'object',
                       },
                       killed: {
-                        description: 'Object containing information about what units the player killed',
+                        description:
+                          'Object containing information about what units the player killed',
                         type: 'object',
                       },
                       killed_by: {
-                        description: 'Object containing information about who killed the player',
+                        description:
+                          'Object containing information about who killed the player',
                         type: 'object',
                       },
                       kills: {
@@ -518,13 +561,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       kills_log: {
-                        description: 'Array containing information on which hero the player killed at what time',
+                        description:
+                          'Array containing information on which hero the player killed at what time',
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Time in seconds the player killed the hero',
+                              description:
+                                'Time in seconds the player killed the hero',
                               type: 'integer',
                             },
                             key: {
@@ -535,7 +580,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         },
                       },
                       lane_pos: {
-                        description: 'Object containing information on lane position',
+                        description:
+                          'Object containing information on lane position',
                         type: 'object',
                       },
                       last_hits: {
@@ -543,7 +589,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       leaver_status: {
-                        description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
+                        description:
+                          "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
                         type: 'integer',
                       },
                       level: {
@@ -551,7 +598,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       lh_t: {
-                        description: 'Array describing last hits at each minute in the game',
+                        description:
+                          'Array describing last hits at each minute in the game',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -562,15 +610,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'object',
                       },
                       max_hero_hit: {
-                        description: 'Object with information on the highest damage instance the player inflicted',
+                        description:
+                          'Object with information on the highest damage instance the player inflicted',
                         type: 'object',
                       },
                       multi_kills: {
-                        description: 'Object with information on the number of the number of multikills the player had',
+                        description:
+                          'Object with information on the number of the number of multikills the player had',
                         type: 'object',
                       },
                       obs: {
-                        description: 'Object with information on where the player placed observer wards. The location takes the form (outer number, inner number) and are from ~64-192.',
+                        description:
+                          'Object with information on where the player placed observer wards. The location takes the form (outer number, inner number) and are from ~64-192.',
                         type: 'object',
                       },
                       obs_left_log: {
@@ -581,7 +632,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         },
                       },
                       obs_log: {
-                        description: 'Object containing information on when and where the player placed observer wards',
+                        description:
+                          'Object containing information on when and where the player placed observer wards',
                         type: 'array',
                         items: {
                           type: 'object',
@@ -596,7 +648,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       permanent_buffs: {
-                        description: 'Array describing permanent buffs the player had at the end of the game. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/permanent_buffs.json',
+                        description:
+                          'Array describing permanent buffs the player had at the end of the game. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/permanent_buffs.json',
                         type: 'array',
                         items: {
                           type: 'object',
@@ -607,17 +660,20 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       purchase: {
-                        description: 'Object containing information on the items the player purchased',
+                        description:
+                          'Object containing information on the items the player purchased',
                         type: 'object',
                       },
                       purchase_log: {
-                        description: 'Object containing information on when items were purchased',
+                        description:
+                          'Object containing information on when items were purchased',
                         type: 'array',
                         items: {
                           type: 'object',
                           properties: {
                             time: {
-                              description: 'Time in seconds the item was bought',
+                              description:
+                                'Time in seconds the item was bought',
                               type: 'integer',
                             },
                             key: {
@@ -636,14 +692,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       runes: {
-                        description: 'Object with information about which runes the player picked up',
+                        description:
+                          'Object with information about which runes the player picked up',
                         type: 'object',
                         additionalProperties: {
                           type: 'integer',
                         },
                       },
                       runes_log: {
-                        description: 'Array with information on when runes were picked up',
+                        description:
+                          'Array with information on when runes were picked up',
                         type: 'array',
                         items: {
                           type: 'object',
@@ -660,33 +718,39 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         },
                       },
                       sen: {
-                        description: 'Object with information on where sentries were placed. The location takes the form (outer number, inner number) and are from ~64-192.',
+                        description:
+                          'Object with information on where sentries were placed. The location takes the form (outer number, inner number) and are from ~64-192.',
                         type: 'object',
                       },
                       sen_left_log: {
-                        description: 'Array containing information on when and where the player placed sentries',
+                        description:
+                          'Array containing information on when and where the player placed sentries',
                         type: 'array',
                         items: {
                           type: 'object',
                         },
                       },
                       sen_log: {
-                        description: 'Array with information on when and where sentries were placed by the player',
+                        description:
+                          'Array with information on when and where sentries were placed by the player',
                         type: 'array',
                         items: {
                           type: 'object',
                         },
                       },
                       sen_placed: {
-                        description: 'How many sentries were placed by the player',
+                        description:
+                          'How many sentries were placed by the player',
                         type: 'integer',
                       },
                       stuns: {
-                        description: 'Total stun duration of all stuns by the player',
+                        description:
+                          'Total stun duration of all stuns by the player',
                         type: 'number',
                       },
                       times: {
-                        description: 'Time in seconds corresponding to the time of entries of other arrays in the match.',
+                        description:
+                          'Time in seconds corresponding to the time of entries of other arrays in the match.',
                         type: 'array',
                         items: {
                           type: 'integer',
@@ -697,11 +761,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       xp_per_min: {
-                        description: 'Experience Per Minute obtained by the player',
+                        description:
+                          'Experience Per Minute obtained by the player',
                         type: 'integer',
                       },
                       xp_reasons: {
-                        description: 'Object containing information on the sources of this player\'s experience',
+                        description:
+                          "Object containing information on the sources of this player's experience",
                         type: 'object',
                       },
                       xp_t: {
@@ -720,13 +786,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'string',
                       },
                       last_login: {
-                        description: 'Time of player\'s last login',
+                        description: "Time of player's last login",
                         type: 'string',
                         format: 'date-time',
                       },
                       radiant_win: properties.radiant_win,
                       start_time: {
-                        description: 'Start time of the match in seconds since 1970',
+                        description:
+                          'Start time of the match in seconds since 1970',
                         type: 'integer',
                       },
                       duration: properties.duration,
@@ -735,31 +802,38 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       lobby_type: {
-                        description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
+                        description:
+                          'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                         type: 'integer',
                       },
                       game_mode: {
-                        description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
+                        description:
+                          'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                         type: 'integer',
                       },
                       patch: {
-                        description: 'Integer representing the patch the game was played on',
+                        description:
+                          'Integer representing the patch the game was played on',
                         type: 'integer',
                       },
                       region: {
-                        description: 'Integer corresponding to the region the game was played on',
+                        description:
+                          'Integer corresponding to the region the game was played on',
                         type: 'integer',
                       },
                       isRadiant: {
-                        description: 'Boolean for whether or not the player is on Radiant',
+                        description:
+                          'Boolean for whether or not the player is on Radiant',
                         type: 'boolean',
                       },
                       win: {
-                        description: 'Binary integer representing whether or not the player won',
+                        description:
+                          'Binary integer representing whether or not the player won',
                         type: 'integer',
                       },
                       lose: {
-                        description: 'Binary integer representing whether or not the player lost',
+                        description:
+                          'Binary integer representing whether or not the player lost',
                         type: 'integer',
                       },
                       total_gold: {
@@ -787,39 +861,48 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       tower_kills: {
-                        description: 'Total number of tower kills the player had',
+                        description:
+                          'Total number of tower kills the player had',
                         type: 'integer',
                       },
                       courier_kills: {
-                        description: 'Total number of courier kills the player had',
+                        description:
+                          'Total number of courier kills the player had',
                         type: 'integer',
                       },
                       lane_kills: {
-                        description: 'Total number of lane creeps killed by the player',
+                        description:
+                          'Total number of lane creeps killed by the player',
                         type: 'integer',
                       },
                       hero_kills: {
-                        description: 'Total number of heroes killed by the player',
+                        description:
+                          'Total number of heroes killed by the player',
                         type: 'integer',
                       },
                       observer_kills: {
-                        description: 'Total number of observer wards killed by the player',
+                        description:
+                          'Total number of observer wards killed by the player',
                         type: 'integer',
                       },
                       sentry_kills: {
-                        description: 'Total number of sentry wards killed by the player',
+                        description:
+                          'Total number of sentry wards killed by the player',
                         type: 'integer',
                       },
                       roshan_kills: {
-                        description: 'Total number of roshan kills (last hit on roshan) the player had',
+                        description:
+                          'Total number of roshan kills (last hit on roshan) the player had',
                         type: 'integer',
                       },
                       necronomicon_kills: {
-                        description: 'Total number of Necronomicon creeps killed by the player',
+                        description:
+                          'Total number of Necronomicon creeps killed by the player',
                         type: 'integer',
                       },
                       ancient_kills: {
-                        description: 'Total number of Ancient creeps killed by the player',
+                        description:
+                          'Total number of Ancient creeps killed by the player',
                         type: 'integer',
                       },
                       buyback_count: {
@@ -843,7 +926,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'number',
                       },
                       lane: {
-                        description: 'Integer referring to which lane the hero laned in',
+                        description:
+                          'Integer referring to which lane the hero laned in',
                         type: 'integer',
                       },
                       lane_role: {
@@ -851,27 +935,33 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       is_roaming: {
-                        description: 'Boolean referring to whether or not the player roamed',
+                        description:
+                          'Boolean referring to whether or not the player roamed',
                         type: 'boolean',
                       },
                       purchase_time: {
-                        description: 'Object with information on when the player last purchased an item',
+                        description:
+                          'Object with information on when the player last purchased an item',
                         type: 'object',
                       },
                       first_purchase_time: {
-                        description: 'Object with information on when the player first puchased an item',
+                        description:
+                          'Object with information on when the player first puchased an item',
                         type: 'object',
                       },
                       item_win: {
-                        description: 'Object with information on whether or not the item won',
+                        description:
+                          'Object with information on whether or not the item won',
                         type: 'object',
                       },
                       item_usage: {
-                        description: 'Object containing binary integers the tell whether the item was purchased by the player (note: this is always 1)',
+                        description:
+                          'Object containing binary integers the tell whether the item was purchased by the player (note: this is always 1)',
                         type: 'object',
                       },
                       purchase_tpscroll: {
-                        description: 'Total number of TP scrolls purchased by the player',
+                        description:
+                          'Total number of TP scrolls purchased by the player',
                         type: 'object',
                       },
                       actions_per_min: {
@@ -883,7 +973,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         type: 'integer',
                       },
                       rank_tier: {
-                        description: 'The rank tier of the player. Tens place indicates rank, ones place indicates stars.',
+                        description:
+                          'The rank tier of the player. Tens place indicates rank, ones place indicates stars.',
                         type: 'integer',
                       },
                       cosmetics: {
@@ -894,42 +985,50 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         },
                       },
                       benchmarks: {
-                        description: 'Object containing information on certain benchmarks like GPM, XPM, KDA, tower damage, etc',
+                        description:
+                          'Object containing information on certain benchmarks like GPM, XPM, KDA, tower damage, etc',
                         type: 'object',
                       },
                     },
                   },
                 },
                 patch: {
-                  description: 'Information on the patch version the game is played on',
+                  description:
+                    'Information on the patch version the game is played on',
                   type: 'integer',
                 },
                 region: {
-                  description: 'Integer corresponding to the region the game was played on',
+                  description:
+                    'Integer corresponding to the region the game was played on',
                   type: 'integer',
                 },
                 all_word_counts: {
-                  description: 'Word counts of the all chat messages in the player\'s games',
+                  description:
+                    "Word counts of the all chat messages in the player's games",
                   type: 'object',
                 },
                 my_word_counts: {
-                  description: 'Word counts of the player\'s all chat messages',
+                  description: "Word counts of the player's all chat messages",
                   type: 'object',
                 },
                 throw: {
-                  description: 'Maximum gold advantage of the player\'s team if they lost the match',
+                  description:
+                    "Maximum gold advantage of the player's team if they lost the match",
                   type: 'integer',
                 },
                 comeback: {
-                  description: 'Maximum gold disadvantage of the player\'s team if they won the match',
+                  description:
+                    "Maximum gold disadvantage of the player's team if they won the match",
                   type: 'integer',
                 },
                 loss: {
-                  description: 'Maximum gold disadvantage of the player\'s team if they lost the match',
+                  description:
+                    "Maximum gold disadvantage of the player's team if they lost the match",
                   type: 'integer',
                 },
                 win: {
-                  description: 'Maximum gold advantage of the player\'s team if they won the match',
+                  description:
+                    "Maximum gold advantage of the player's team if they won the match",
                   type: 'integer',
                 },
                 replay_url: {
@@ -962,20 +1061,22 @@ You can find data that can be used to convert hero and ability IDs and other inf
         parameters: [],
         route: () => '/playersByRank',
         func: (req, res, cb) => {
-          db.raw(`
+          db.raw(
+            `
           SELECT account_id, rating, fh_unavailable
           FROM players
           JOIN rank_tier
           USING (account_id)
           ORDER BY rating DESC
           LIMIT 100
-          `, [])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+          `,
+            []
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
         responses: {
           200: {
@@ -988,11 +1089,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'number',
                 },
                 rank_tier: {
-                  description: 'Integer indicating the rank/medal of the player',
+                  description:
+                    'Integer indicating the rank/medal of the player',
                   type: 'number',
                 },
                 fh_unavailable: {
-                  description: 'Indicates if we were unable to fetch full history for this player due to privacy settings',
+                  description:
+                    'Indicates if we were unable to fetch full history for this player due to privacy settings',
                   type: 'boolean',
                 },
               },
@@ -1005,9 +1108,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}',
         description: 'Player data',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: [params.accountIdParam],
         responses: {
           200: {
@@ -1062,7 +1163,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       type: 'string',
                     },
                     plus: {
-                      description: 'Boolean indicating status of current Dota Plus subscription',
+                      description:
+                        'Boolean indicating status of current Dota Plus subscription',
                       type: 'boolean',
                     },
                     cheese: {
@@ -1098,7 +1200,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       type: 'string',
                     },
                     is_contributor: {
-                      description: 'Boolean indicating if the user contributed to the development of OpenDota',
+                      description:
+                        'Boolean indicating if the user contributed to the development of OpenDota',
                       type: 'boolean',
                       default: false,
                     },
@@ -1111,47 +1214,64 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/players/:account_id',
         func: (req, res, cb) => {
           const accountId = Number(req.params.account_id);
-          async.parallel({
-            profile(cb) {
-              queries.getPlayer(db, accountId, (err, playerData) => {
-                if (playerData !== null && playerData !== undefined) {
-                  playerData.is_contributor = isContributor(accountId);
-                }
-                cb(err, playerData);
-              });
+          async.parallel(
+            {
+              profile(cb) {
+                queries.getPlayer(db, accountId, (err, playerData) => {
+                  if (playerData !== null && playerData !== undefined) {
+                    playerData.is_contributor = isContributor(accountId);
+                  }
+                  cb(err, playerData);
+                });
+              },
+              tracked_until(cb) {
+                redis.zscore('tracked', accountId, cb);
+              },
+              solo_competitive_rank(cb) {
+                db.first()
+                  .from('solo_competitive_rank')
+                  .where({ account_id: accountId })
+                  .asCallback((err, row) => {
+                    cb(err, row ? row.rating : null);
+                  });
+              },
+              competitive_rank(cb) {
+                db.first()
+                  .from('competitive_rank')
+                  .where({ account_id: accountId })
+                  .asCallback((err, row) => {
+                    cb(err, row ? row.rating : null);
+                  });
+              },
+              rank_tier(cb) {
+                db.first()
+                  .from('rank_tier')
+                  .where({ account_id: accountId })
+                  .asCallback((err, row) => {
+                    cb(err, row ? row.rating : null);
+                  });
+              },
+              leaderboard_rank(cb) {
+                db.first()
+                  .from('leaderboard_rank')
+                  .where({ account_id: accountId })
+                  .asCallback((err, row) => {
+                    cb(err, row ? row.rating : null);
+                  });
+              },
+              mmr_estimate(cb) {
+                queries.getMmrEstimate(accountId, (err, est) =>
+                  cb(err, est || {})
+                );
+              },
             },
-            tracked_until(cb) {
-              redis.zscore('tracked', accountId, cb);
-            },
-            solo_competitive_rank(cb) {
-              db.first().from('solo_competitive_rank').where({ account_id: accountId }).asCallback((err, row) => {
-                cb(err, row ? row.rating : null);
-              });
-            },
-            competitive_rank(cb) {
-              db.first().from('competitive_rank').where({ account_id: accountId }).asCallback((err, row) => {
-                cb(err, row ? row.rating : null);
-              });
-            },
-            rank_tier(cb) {
-              db.first().from('rank_tier').where({ account_id: accountId }).asCallback((err, row) => {
-                cb(err, row ? row.rating : null);
-              });
-            },
-            leaderboard_rank(cb) {
-              db.first().from('leaderboard_rank').where({ account_id: accountId }).asCallback((err, row) => {
-                cb(err, row ? row.rating : null);
-              });
-            },
-            mmr_estimate(cb) {
-              queries.getMmrEstimate(accountId, (err, est) => cb(err, est || {}));
-            },
-          }, (err, result) => {
-            if (err) {
-              return cb(err);
+            (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
             }
-            return res.json(result);
-          });
+          );
         },
       },
     },
@@ -1159,9 +1279,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/wl',
         description: 'Win/Loss count',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
@@ -1187,20 +1305,27 @@ You can find data that can be used to convert hero and ability IDs and other inf
             win: 0,
             lose: 0,
           };
-          req.queryObj.project = req.queryObj.project.concat('player_slot', 'radiant_win');
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            cache.forEach((m) => {
-              if (utility.isRadiant(m) === m.radiant_win) {
-                result.win += 1;
-              } else {
-                result.lose += 1;
+          req.queryObj.project = req.queryObj.project.concat(
+            'player_slot',
+            'radiant_win'
+          );
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
+              if (err) {
+                return cb(err);
               }
-            });
-            return sendDataWithCache(req, res, result, 'wl');
-          });
+              cache.forEach((m) => {
+                if (utility.isRadiant(m) === m.radiant_win) {
+                  result.win += 1;
+                } else {
+                  result.lose += 1;
+                }
+              });
+              return sendDataWithCache(req, res, result, 'wl');
+            }
+          );
         },
       },
     },
@@ -1208,9 +1333,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/recentMatches',
         description: 'Recent matches played',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: [params.accountIdParam],
         responses: {
           200: {
@@ -1229,11 +1352,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   radiant_win: properties.radiant_win,
                   duration: properties.duration,
                   game_mode: {
-                    description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
+                    description:
+                      'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                     type: 'integer',
                   },
                   lobby_type: {
-                    description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
+                    description:
+                      'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                     type: 'integer',
                   },
                   hero_id: {
@@ -1241,7 +1366,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   start_time: {
-                    description: 'Start time of the match in seconds elapsed since 1970',
+                    description:
+                      'Start time of the match in seconds elapsed since 1970',
                     type: 'integer',
                   },
                   version: {
@@ -1249,19 +1375,23 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   kills: {
-                    description: 'Total kills the player had at the end of the match',
+                    description:
+                      'Total kills the player had at the end of the match',
                     type: 'integer',
                   },
                   deaths: {
-                    description: 'Total deaths the player had at the end of the match',
+                    description:
+                      'Total deaths the player had at the end of the match',
                     type: 'integer',
                   },
                   assists: {
-                    description: 'Total assists the player had at the end of the match',
+                    description:
+                      'Total assists the player had at the end of the match',
                     type: 'integer',
                   },
                   skill: {
-                    description: 'Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.',
+                    description:
+                      'Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.',
                     type: 'integer',
                   },
                   xp_per_min: {
@@ -1270,22 +1400,24 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                   gold_per_min: {
                     description: 'Average gold per minute of the player',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   hero_damage: {
                     description: 'Total hero damage to enemy heroes',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   hero_healing: {
                     description: 'Total healing of ally heroes',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   last_hits: {
-                    description: 'Total last hits the player had at the end of the match',
-                    type: 'integer'
+                    description:
+                      'Total last hits the player had at the end of the match',
+                    type: 'integer',
                   },
                   lane: {
-                    description: 'Integer corresponding to which lane the player laned in for the match',
+                    description:
+                      'Integer corresponding to which lane the player laned in for the match',
                     type: 'integer',
                   },
                   lane_role: {
@@ -1293,7 +1425,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   is_roaming: {
-                    description: 'Boolean describing whether or not the player roamed',
+                    description:
+                      'Boolean describing whether or not the player roamed',
                     type: 'boolean',
                   },
                   cluster: {
@@ -1301,11 +1434,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   leaver_status: {
-                    description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
+                    description:
+                      "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
                     type: 'integer',
                   },
                   party_size: {
-                    description: 'Size of the players party. If not in a party, will return 1.',
+                    description:
+                      'Size of the players party. If not in a party, will return 1.',
                     type: 'integer',
                   },
                 },
@@ -1315,38 +1450,44 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/players/:account_id/recentMatches',
         func: (req, res, cb) => {
-          queries.getPlayerMatches(req.params.account_id, {
-            project: req.queryObj.project.concat(['hero_id',
-              'start_time',
-              'duration',
-              'player_slot',
-              'radiant_win',
-              'game_mode',
-              'lobby_type',
-              'version',
-              'kills',
-              'deaths',
-              'assists',
-              'skill',
-              'xp_per_min',
-              'gold_per_min',
-              'hero_damage',
-              'tower_damage',
-              'hero_healing',
-              'last_hits',
-              'lane',
-              'lane_role',
-              'is_roaming',
-              'cluster',
-              'leaver_status',
-              'party_size']),
-            dbLimit: 20,
-          }, (err, cache) => {
-            if (err) {
-              return cb(err);
+          queries.getPlayerMatches(
+            req.params.account_id,
+            {
+              project: req.queryObj.project.concat([
+                'hero_id',
+                'start_time',
+                'duration',
+                'player_slot',
+                'radiant_win',
+                'game_mode',
+                'lobby_type',
+                'version',
+                'kills',
+                'deaths',
+                'assists',
+                'skill',
+                'xp_per_min',
+                'gold_per_min',
+                'hero_damage',
+                'tower_damage',
+                'hero_healing',
+                'last_hits',
+                'lane',
+                'lane_role',
+                'is_roaming',
+                'cluster',
+                'leaver_status',
+                'party_size',
+              ]),
+              dbLimit: 20,
+            },
+            (err, cache) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(cache.filter((match) => match.duration));
             }
-            return res.json(cache.filter(match => match.duration));
-          });
+          );
         },
       },
     },
@@ -1354,9 +1495,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/matches',
         description: 'Matches played',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams.concat(params.projectParam),
         responses: {
           200: {
@@ -1375,11 +1514,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   radiant_win: properties.radiant_win,
                   duration: properties.duration,
                   game_mode: {
-                    description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
+                    description:
+                      'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                     type: 'integer',
                   },
                   lobby_type: {
-                    description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
+                    description:
+                      'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                     type: 'integer',
                   },
                   hero_id: {
@@ -1395,23 +1536,28 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   kills: {
-                    description: 'Total kills the player had at the end of the game',
+                    description:
+                      'Total kills the player had at the end of the game',
                     type: 'integer',
                   },
                   deaths: {
-                    description: 'Total deaths the player had at the end of the game',
+                    description:
+                      'Total deaths the player had at the end of the game',
                     type: 'integer',
                   },
                   assists: {
-                    description: 'Total assists the player had at the end of the game',
+                    description:
+                      'Total assists the player had at the end of the game',
                     type: 'integer',
                   },
                   skill: {
-                    description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
+                    description:
+                      'Skill bracket assigned by Valve (Normal, High, Very High)',
                     type: 'integer',
                   },
                   leaver_status: {
-                    description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
+                    description:
+                      "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
                     type: 'integer',
                   },
                   party_size: {
@@ -1426,14 +1572,33 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/players/:account_id/matches',
         func: (req, res, cb) => {
           // Use passed fields as additional fields, if available
-          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'leaver_status', 'party_size'];
+          const additionalFields = req.query.project || [
+            'hero_id',
+            'start_time',
+            'duration',
+            'player_slot',
+            'radiant_win',
+            'game_mode',
+            'lobby_type',
+            'version',
+            'kills',
+            'deaths',
+            'assists',
+            'skill',
+            'leaver_status',
+            'party_size',
+          ];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(cache);
             }
-            return res.json(cache);
-          });
+          );
         },
       },
     },
@@ -1506,44 +1671,58 @@ You can find data that can be used to convert hero and ability IDs and other inf
             };
             heroes[heroId] = hero;
           });
-          req.queryObj.project = req.queryObj.project.concat('heroes', 'account_id', 'start_time', 'player_slot', 'radiant_win');
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            cache.forEach((m) => {
-              const { isRadiant } = utility;
-              const playerWin = isRadiant(m) === m.radiant_win;
-              const group = m.heroes || {};
-              Object.keys(group).forEach((key) => {
-                const tm = group[key];
-                const tmHero = tm.hero_id;
-                // don't count invalid heroes
-                if (tmHero in heroes) {
-                  if (isRadiant(tm) === isRadiant(m)) {
-                    if (tm.account_id === m.account_id) {
-                      heroes[tmHero].games += 1;
-                      heroes[tmHero].win += playerWin ? 1 : 0;
-                      if (m.start_time > heroes[tmHero].last_played) {
-                        heroes[tmHero].last_played = m.start_time;
+          req.queryObj.project = req.queryObj.project.concat(
+            'heroes',
+            'account_id',
+            'start_time',
+            'player_slot',
+            'radiant_win'
+          );
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
+              if (err) {
+                return cb(err);
+              }
+              cache.forEach((m) => {
+                const { isRadiant } = utility;
+                const playerWin = isRadiant(m) === m.radiant_win;
+                const group = m.heroes || {};
+                Object.keys(group).forEach((key) => {
+                  const tm = group[key];
+                  const tmHero = tm.hero_id;
+                  // don't count invalid heroes
+                  if (tmHero in heroes) {
+                    if (isRadiant(tm) === isRadiant(m)) {
+                      if (tm.account_id === m.account_id) {
+                        heroes[tmHero].games += 1;
+                        heroes[tmHero].win += playerWin ? 1 : 0;
+                        if (m.start_time > heroes[tmHero].last_played) {
+                          heroes[tmHero].last_played = m.start_time;
+                        }
+                      } else {
+                        heroes[tmHero].with_games += 1;
+                        heroes[tmHero].with_win += playerWin ? 1 : 0;
                       }
                     } else {
-                      heroes[tmHero].with_games += 1;
-                      heroes[tmHero].with_win += playerWin ? 1 : 0;
+                      heroes[tmHero].against_games += 1;
+                      heroes[tmHero].against_win += playerWin ? 1 : 0;
                     }
-                  } else {
-                    heroes[tmHero].against_games += 1;
-                    heroes[tmHero].against_win += playerWin ? 1 : 0;
                   }
-                }
+                });
               });
-            });
-            const result = Object.keys(heroes)
-              .map(k => heroes[k])
-              .filter(hero => !req.queryObj.having || hero.games >= Number(req.queryObj.having))
-              .sort((a, b) => b.games - a.games);
-            return sendDataWithCache(req, res, result, 'heroes');
-          });
+              const result = Object.keys(heroes)
+                .map((k) => heroes[k])
+                .filter(
+                  (hero) =>
+                    !req.queryObj.having ||
+                    hero.games >= Number(req.queryObj.having)
+                )
+                .sort((a, b) => b.games - a.games);
+              return sendDataWithCache(req, res, result, 'heroes');
+            }
+          );
         },
       },
     },
@@ -1551,9 +1730,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/peers',
         description: 'Players played with',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
@@ -1634,21 +1811,37 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/players/:account_id/peers',
         func: (req, res, cb) => {
-          req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win', 'gold_per_min', 'xp_per_min');
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            const teammates = countPeers(cache);
-            return queries.getPeers(db, teammates, {
-              account_id: req.params.account_id,
-            }, (err, result) => {
+          req.queryObj.project = req.queryObj.project.concat(
+            'heroes',
+            'start_time',
+            'player_slot',
+            'radiant_win',
+            'gold_per_min',
+            'xp_per_min'
+          );
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
-              return sendDataWithCache(req, res, result, 'peers');
-            });
-          });
+              const teammates = countPeers(cache);
+              return queries.getPeers(
+                db,
+                teammates,
+                {
+                  account_id: req.params.account_id,
+                },
+                (err, result) => {
+                  if (err) {
+                    return cb(err);
+                  }
+                  return sendDataWithCache(req, res, result, 'peers');
+                }
+              );
+            }
+          );
         },
       },
     },
@@ -1656,9 +1849,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/pros',
         description: 'Pro players played with',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
@@ -1793,21 +1984,35 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/players/:account_id/pros',
         func: (req, res, cb) => {
-          req.queryObj.project = req.queryObj.project.concat('heroes', 'start_time', 'player_slot', 'radiant_win');
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            const teammates = countPeers(cache);
-            return queries.getProPeers(db, teammates, {
-              account_id: req.params.account_id,
-            }, (err, result) => {
+          req.queryObj.project = req.queryObj.project.concat(
+            'heroes',
+            'start_time',
+            'player_slot',
+            'radiant_win'
+          );
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
-              return res.json(result);
-            });
-          });
+              const teammates = countPeers(cache);
+              return queries.getProPeers(
+                db,
+                teammates,
+                {
+                  account_id: req.params.account_id,
+                },
+                (err, result) => {
+                  if (err) {
+                    return cb(err);
+                  }
+                  return res.json(result);
+                }
+              );
+            }
+          );
         },
       },
     },
@@ -1815,9 +2020,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/totals',
         description: 'Totals in stats',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
@@ -1854,21 +2057,27 @@ You can find data that can be used to convert hero and ability IDs and other inf
               sum: 0,
             };
           });
-          req.queryObj.project = req.queryObj.project.concat(Object.keys(subkeys));
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            cache.forEach((m) => {
-              Object.keys(subkeys).forEach((key) => {
-                if (m[key] !== null && m[key] !== undefined) {
-                  result[key].n += 1;
-                  result[key].sum += Number(m[key]);
-                }
+          req.queryObj.project = req.queryObj.project.concat(
+            Object.keys(subkeys)
+          );
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
+              if (err) {
+                return cb(err);
+              }
+              cache.forEach((m) => {
+                Object.keys(subkeys).forEach((key) => {
+                  if (m[key] !== null && m[key] !== undefined) {
+                    result[key].n += 1;
+                    result[key].sum += Number(m[key]);
+                  }
+                });
               });
-            });
-            return res.json(Object.keys(result).map(key => result[key]));
-          });
+              return res.json(Object.keys(result).map((key) => result[key]));
+            }
+          );
         },
       },
     },
@@ -1876,9 +2085,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/counts',
         description: 'Counts in categories',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
@@ -1887,15 +2094,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
               type: 'object',
               properties: {
                 leaver_status: {
-                  description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
+                  description:
+                    "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
                   type: 'object',
                 },
                 game_mode: {
-                  description: 'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
+                  description:
+                    'Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json',
                   type: 'object',
                 },
                 lobby_type: {
-                  description: 'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
+                  description:
+                    'Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json',
                   type: 'object',
                 },
                 lane_role: {
@@ -1903,7 +2113,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: 'object',
                 },
                 region: {
-                  description: 'Integer corresponding to the region the game was played on',
+                  description:
+                    'Integer corresponding to the region the game was played on',
                   type: 'object',
                 },
                 patch: {
@@ -1920,27 +2131,33 @@ You can find data that can be used to convert hero and ability IDs and other inf
           Object.keys(countCats).forEach((key) => {
             result[key] = {};
           });
-          req.queryObj.project = req.queryObj.project.concat(Object.keys(countCats));
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            cache.forEach((m) => {
-              m.is_radiant = utility.isRadiant(m);
-              Object.keys(countCats).forEach((key) => {
-                if (!result[key][Math.floor(m[key])]) {
-                  result[key][Math.floor(m[key])] = {
-                    games: 0,
-                    win: 0,
-                  };
-                }
-                result[key][Math.floor(m[key])].games += 1;
-                const won = Number(m.radiant_win === utility.isRadiant(m));
-                result[key][Math.floor(m[key])].win += won;
+          req.queryObj.project = req.queryObj.project.concat(
+            Object.keys(countCats)
+          );
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
+              if (err) {
+                return cb(err);
+              }
+              cache.forEach((m) => {
+                m.is_radiant = utility.isRadiant(m);
+                Object.keys(countCats).forEach((key) => {
+                  if (!result[key][Math.floor(m[key])]) {
+                    result[key][Math.floor(m[key])] = {
+                      games: 0,
+                      win: 0,
+                    };
+                  }
+                  result[key][Math.floor(m[key])].games += 1;
+                  const won = Number(m.radiant_win === utility.isRadiant(m));
+                  result[key][Math.floor(m[key])].win += won;
+                });
               });
-            });
-            return res.json(result);
-          });
+              return res.json(result);
+            }
+          );
         },
       },
     },
@@ -1948,9 +2165,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/histograms',
         description: 'Distribution of matches in a single stat',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams.concat(params.fieldParam),
         responses: {
           200: {
@@ -1966,34 +2181,44 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
           const { field } = req.params;
-          req.queryObj.project = req.queryObj.project.concat('radiant_win', 'player_slot').concat([field].filter(f => subkeys[f]));
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            const buckets = 40;
-            // Find the maximum value to determine how large each bucket should be
-            const max = Math.max(...cache.map(m => m[field]));
-            // Round the bucket size up to the nearest integer
-            const bucketSize = Math.ceil((max + 1) / buckets);
-            const bucketArray = Array.from({
-              length: buckets,
-            }, (value, index) => ({
-              x: bucketSize * index,
-              games: 0,
-              win: 0,
-            }));
-            cache.forEach((m) => {
-              if (m[field] || m[field] === 0) {
-                const index = Math.floor(m[field] / bucketSize);
-                if (bucketArray[index]) {
-                  bucketArray[index].games += 1;
-                  bucketArray[index].win += utility.isRadiant(m) === m.radiant_win ? 1 : 0;
-                }
+          req.queryObj.project = req.queryObj.project
+            .concat('radiant_win', 'player_slot')
+            .concat([field].filter((f) => subkeys[f]));
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
+              if (err) {
+                return cb(err);
               }
-            });
-            return res.json(bucketArray);
-          });
+              const buckets = 40;
+              // Find the maximum value to determine how large each bucket should be
+              const max = Math.max(...cache.map((m) => m[field]));
+              // Round the bucket size up to the nearest integer
+              const bucketSize = Math.ceil((max + 1) / buckets);
+              const bucketArray = Array.from(
+                {
+                  length: buckets,
+                },
+                (value, index) => ({
+                  x: bucketSize * index,
+                  games: 0,
+                  win: 0,
+                })
+              );
+              cache.forEach((m) => {
+                if (m[field] || m[field] === 0) {
+                  const index = Math.floor(m[field] / bucketSize);
+                  if (bucketArray[index]) {
+                    bucketArray[index].games += 1;
+                    bucketArray[index].win +=
+                      utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+                  }
+                }
+              });
+              return res.json(bucketArray);
+            }
+          );
         },
       },
     },
@@ -2001,9 +2226,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/wardmap',
         description: 'Wards placed in matches played',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
@@ -2029,18 +2252,24 @@ You can find data that can be used to convert hero and ability IDs and other inf
             obs: {},
             sen: {},
           };
-          req.queryObj.project = req.queryObj.project.concat(Object.keys(result));
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            cache.forEach((m) => {
-              Object.keys(result).forEach((key) => {
-                utility.mergeObjects(result[key], m[key]);
+          req.queryObj.project = req.queryObj.project.concat(
+            Object.keys(result)
+          );
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
+              if (err) {
+                return cb(err);
+              }
+              cache.forEach((m) => {
+                Object.keys(result).forEach((key) => {
+                  utility.mergeObjects(result[key], m[key]);
+                });
               });
-            });
-            return res.json(result);
-          });
+              return res.json(result);
+            }
+          );
         },
       },
     },
@@ -2048,9 +2277,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/wordcloud',
         description: 'Words said/read in matches played',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
@@ -2076,18 +2303,24 @@ You can find data that can be used to convert hero and ability IDs and other inf
             my_word_counts: {},
             all_word_counts: {},
           };
-          req.queryObj.project = req.queryObj.project.concat(Object.keys(result));
-          queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
-            if (err) {
-              return cb(err);
-            }
-            cache.forEach((m) => {
-              Object.keys(result).forEach((key) => {
-                utility.mergeObjects(result[key], m[key]);
+          req.queryObj.project = req.queryObj.project.concat(
+            Object.keys(result)
+          );
+          queries.getPlayerMatches(
+            req.params.account_id,
+            req.queryObj,
+            (err, cache) => {
+              if (err) {
+                return cb(err);
+              }
+              cache.forEach((m) => {
+                Object.keys(result).forEach((key) => {
+                  utility.mergeObjects(result[key], m[key]);
+                });
               });
-            });
-            return res.json(result);
-          });
+              return res.json(result);
+            }
+          );
         },
       },
     },
@@ -2095,9 +2328,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/ratings',
         description: 'Player rating history',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: [params.accountIdParam],
         responses: {
           200: {
@@ -2147,9 +2378,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /players/{account_id}/rankings',
         description: 'Player hero rankings',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: [params.accountIdParam],
         responses: {
           200: {
@@ -2182,12 +2411,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/players/:account_id/rankings',
         func: (req, res, cb) => {
-          queries.getPlayerHeroRankings(req.params.account_id, (err, result) => {
-            if (err) {
-              return cb(err);
+          queries.getPlayerHeroRankings(
+            req.params.account_id,
+            (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
             }
-            return res.json(result);
-          });
+          );
         },
       },
     },
@@ -2195,9 +2427,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       post: {
         summary: 'POST /players/{account_id}/refresh',
         description: 'Refresh player match history',
-        tags: [
-          'players',
-        ],
+        tags: ['players'],
         parameters: [params.accountIdParam],
         responses: {
           200: {
@@ -2209,16 +2439,20 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/players/:account_id/refresh',
         func: (req, res, cb) => {
-          redis.rpush('fhQueue', JSON.stringify({
-            account_id: req.params.account_id || '1',
-          }), (err, length) => {
-            if (err) {
-              return cb(err);
+          redis.rpush(
+            'fhQueue',
+            JSON.stringify({
+              account_id: req.params.account_id || '1',
+            }),
+            (err, length) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json({
+                length,
+              });
             }
-            return res.json({
-              length,
-            });
-          });
+          );
         },
       },
     },
@@ -2237,7 +2471,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         func: (req, res, cb) => {
           db.select()
             .from('players')
-            .rightJoin('notable_players', 'players.account_id', 'notable_players.account_id')
+            .rightJoin(
+              'notable_players',
+              'players.account_id',
+              'notable_players.account_id'
+            )
             .orderBy('notable_players.account_id', 'asc')
             .asCallback((err, result) => {
               if (err) {
@@ -2253,9 +2491,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /proMatches',
         description: 'Get list of pro matches',
         tags: ['pro matches'],
-        parameters: [
-          params.lessThanMatchIdParam,
-        ],
+        parameters: [params.lessThanMatchIdParam],
         responses: {
           200: {
             description: 'Success',
@@ -2267,7 +2503,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/proMatches',
         func: (req, res, cb) => {
-          db.raw(`
+          db.raw(
+            `
           SELECT match_id, duration, start_time,
           radiant_team_id, radiant.name as radiant_name,
           dire_team_id, dire.name as dire_name,
@@ -2284,13 +2521,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
           WHERE match_id < ?
           ORDER BY match_id DESC
           LIMIT 100
-          `, [req.query.less_than_match_id || Number.MAX_SAFE_INTEGER])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+          `,
+            [req.query.less_than_match_id || Number.MAX_SAFE_INTEGER]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -2341,7 +2579,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/publicMatches',
         func: async (req, res, cb) => {
-          const currMax = (await db('public_matches').max('match_id').first()).max || 0;
+          const currMax =
+            (await db('public_matches').max('match_id').first()).max || 0;
           const lessThan = Number(req.query.less_than_match_id) || currMax;
           let moreThan = lessThan - 1000000;
           let order = '';
@@ -2353,7 +2592,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
             order = 'ORDER BY match_id DESC';
             moreThan = 0;
           }
-          db.raw(`
+          db.raw(
+            `
           WITH match_ids AS (SELECT match_id FROM public_matches
           WHERE TRUE
           AND match_id > ?
@@ -2370,13 +2610,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
           (SELECT match_id, string_agg(hero_id::text, ',') dire_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot > 127 GROUP BY match_id) dire_team
           USING(match_id)
           ${order}
-          `, [moreThan, lessThan])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+          `,
+            [moreThan, lessThan]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -2385,9 +2626,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /parsedMatches',
         description: 'Get list of parsed match IDs',
         tags: ['parsed matches'],
-        parameters: [
-          params.lessThanMatchIdParam,
-        ],
+        parameters: [params.lessThanMatchIdParam],
         responses: {
           200: {
             description: 'Success',
@@ -2407,20 +2646,23 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/parsedMatches',
         func: (req, res, cb) => {
-          const lessThan = req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
+          const lessThan =
+            req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
 
-          db.raw(`
+          db.raw(
+            `
           SELECT * FROM parsed_matches
           WHERE match_id < ?
           ORDER BY match_id DESC
           LIMIT 100
-          `, [lessThan])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+          `,
+            [lessThan]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -2429,13 +2671,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /explorer',
         description: 'Submit arbitrary SQL queries to the database',
         tags: ['explorer'],
-        parameters: [{
-          name: 'sql',
-          in: 'query',
-          description: 'The PostgreSQL query as percent-encoded string.',
-          required: false,
-          type: 'string',
-        }],
+        parameters: [
+          {
+            name: 'sql',
+            in: 'query',
+            description: 'The PostgreSQL query as percent-encoded string.',
+            required: false,
+            type: 'string',
+          },
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -2472,9 +2716,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /metadata',
         description: 'Site metadata',
-        tags: [
-          'metadata',
-        ],
+        tags: ['metadata'],
         responses: {
           200: {
             description: 'Success',
@@ -2518,9 +2760,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /distributions',
         description: 'Distributions of MMR data by bracket and country',
-        tags: [
-          'distributions',
-        ],
+        tags: ['distributions'],
         responses: {
           200: {
             description: 'Success',
@@ -2806,16 +3046,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /search',
         description: 'Search players by personaname.',
-        tags: [
-          'search',
+        tags: ['search'],
+        parameters: [
+          {
+            name: 'q',
+            in: 'query',
+            description: 'Search string',
+            required: true,
+            type: 'string',
+          },
         ],
-        parameters: [{
-          name: 'q',
-          in: 'query',
-          description: 'Search string',
-          required: true,
-          type: 'string',
-        }],
         responses: {
           200: {
             description: 'Success',
@@ -2855,7 +3095,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
             return res.status(400).json([]);
           }
 
-          if (req.query.es || utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)) {
+          if (
+            req.query.es ||
+            utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)
+          ) {
             return searchES(req.query, (err, result) => {
               if (err) {
                 return cb(err);
@@ -2876,16 +3119,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /rankings',
         description: 'Top players by hero',
-        tags: [
-          'rankings',
+        tags: ['rankings'],
+        parameters: [
+          {
+            name: 'hero_id',
+            in: 'query',
+            description: 'Hero ID',
+            required: true,
+            type: 'string',
+          },
         ],
-        parameters: [{
-          name: 'hero_id',
-          in: 'query',
-          description: 'Hero ID',
-          required: true,
-          type: 'string',
-        }],
         responses: {
           200: {
             description: 'Success',
@@ -2966,12 +3209,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/rankings',
         func: (req, res, cb) => {
-          queries.getHeroRankings(db, redis, req.query.hero_id, {}, (err, result) => {
-            if (err) {
-              return cb(err);
+          queries.getHeroRankings(
+            db,
+            redis,
+            req.query.hero_id,
+            {},
+            (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
             }
-            return res.json(result);
-          });
+          );
         },
       },
     },
@@ -2979,16 +3228,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
       get: {
         summary: 'GET /benchmarks',
         description: 'Benchmarks of average stat values for a hero',
-        tags: [
-          'benchmarks',
+        tags: ['benchmarks'],
+        parameters: [
+          {
+            name: 'hero_id',
+            in: 'query',
+            description: 'Hero ID',
+            required: true,
+            type: 'string',
+          },
         ],
-        parameters: [{
-          name: 'hero_id',
-          in: 'query',
-          description: 'Hero ID',
-          required: true,
-          type: 'string',
-        }],
         responses: {
           200: {
             description: 'Success',
@@ -3123,14 +3372,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/benchmarks',
         func: (req, res, cb) => {
-          queries.getHeroBenchmarks(db, redis, {
-            hero_id: req.query.hero_id,
-          }, (err, result) => {
-            if (err) {
-              return cb(err);
+          queries.getHeroBenchmarks(
+            db,
+            redis,
+            {
+              hero_id: req.query.hero_id,
+            },
+            (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
             }
-            return res.json(result);
-          });
+          );
         },
       },
     },
@@ -3196,13 +3450,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /request/{jobId}',
         description: 'Get parse request state',
         tags: ['request'],
-        parameters: [{
-          name: 'jobId',
-          in: 'path',
-          description: 'The job ID to query.',
-          required: true,
-          type: 'string',
-        }],
+        parameters: [
+          {
+            name: 'jobId',
+            in: 'path',
+            description: 'The job ID to query.',
+            required: true,
+            type: 'string',
+          },
+        ],
         route: () => '/request/:jobId',
         func: (req, res, cb) => {
           queue.getJob(req.params.jobId, (err, job) => {
@@ -3210,9 +3466,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
               return cb(err);
             }
             if (job) {
-              return res.json(Object.assign({}, job, {
-                jobId: job.id,
-              }));
+              return res.json(
+                Object.assign({}, job, {
+                  jobId: job.id,
+                })
+              );
             }
             return res.json(null);
           });
@@ -3232,12 +3490,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'POST /request/{match_id}',
         description: 'Submit a new parse request',
         tags: ['request'],
-        parameters: [{
-          name: 'match_id',
-          in: 'path',
-          required: true,
-          type: 'integer',
-        }],
+        parameters: [
+          {
+            name: 'match_id',
+            in: 'path',
+            required: true,
+            type: 'integer',
+          },
+        ],
         route: () => '/request/:match_id',
         func: (req, res) => {
           const matchId = req.params.match_id;
@@ -3256,22 +3516,29 @@ You can find data that can be used to convert hero and ability IDs and other inf
           }
           if (match && match.match_id) {
             // match id request, get data from API
-            return utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
-              if (err) {
-                // couldn't get data from api, non-retryable
-                return exitWithJob(JSON.stringify(err));
+            return utility.getData(
+              utility.generateJob('api_details', match).url,
+              (err, body) => {
+                if (err) {
+                  // couldn't get data from api, non-retryable
+                  return exitWithJob(JSON.stringify(err));
+                }
+                // Count this request
+                redisCount(redis, 'request');
+                // match details response
+                const match = body.result;
+                return queries.insertMatch(
+                  match,
+                  {
+                    type: 'api',
+                    attempts: 1,
+                    priority: 1,
+                    forceParse: true,
+                  },
+                  exitWithJob
+                );
               }
-              // Count this request
-              redisCount(redis, 'request');
-              // match details response
-              const match = body.result;
-              return queries.insertMatch(match, {
-                type: 'api',
-                attempts: 1,
-                priority: 1,
-                forceParse: true,
-              }, exitWithJob);
-            });
+            );
           }
           return exitWithJob('invalid input');
         },
@@ -3290,19 +3557,22 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /',
         description: 'Finds recent matches by heroes played',
         tags: ['findMatches'],
-        parameters: [{
-          name: 'teamA',
-          in: 'query',
-          description: 'Hero IDs on first team (array)',
-          required: false,
-          type: 'integer',
-        }, {
-          name: 'teamB',
-          in: 'query',
-          description: 'Hero IDs on second team (array)',
-          required: false,
-          type: 'integer',
-        }],
+        parameters: [
+          {
+            name: 'teamA',
+            in: 'query',
+            description: 'Hero IDs on first team (array)',
+            required: false,
+            type: 'integer',
+          },
+          {
+            name: 'teamB',
+            in: 'query',
+            description: 'Hero IDs on second team (array)',
+            required: false,
+            type: 'integer',
+          },
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -3335,13 +3605,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
             const teamA = inverted ? t1 : t0;
             const teamB = inverted ? t0 : t1;
 
-            return db.raw('select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10', [teamA, teamB, teamB, teamA]).asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              redis.setex(key, 60, JSON.stringify(result.rows));
-              return res.json(result.rows);
-            });
+            return db
+              .raw(
+                'select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10',
+                [teamA, teamB, teamB, teamA]
+              )
+              .asCallback((err, result) => {
+                if (err) {
+                  return cb(err);
+                }
+                redis.setex(key, 60, JSON.stringify(result.rows));
+                return res.json(result.rows);
+              });
           });
         },
       },
@@ -3584,7 +3859,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/heroes/:hero_id/matches',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(`SELECT
+          db.raw(
+            `SELECT
             matches.match_id,
             matches.start_time,
             matches.duration,
@@ -3603,13 +3879,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
             LEFT JOIN heroes on heroes.id = player_matches.hero_id
             WHERE player_matches.hero_id = ?
             ORDER BY matches.match_id DESC
-            LIMIT 100`, [heroId])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            LIMIT 100`,
+            [heroId]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -3647,7 +3924,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/heroes/:hero_id/matchups',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(`SELECT
+          db.raw(
+            `SELECT
             pm2.hero_id,
             count(player_matches.match_id) games_played,
             sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
@@ -3657,13 +3935,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
             WHERE player_matches.hero_id = ?
             AND matches.start_time > ?
             GROUP BY pm2.hero_id
-            ORDER BY games_played DESC`, [heroId, moment().subtract(1, 'year').format('X')])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            ORDER BY games_played DESC`,
+            [heroId, moment().subtract(1, 'year').format('X')]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -3682,7 +3961,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 type: 'object',
                 properties: {
                   duration_bin: {
-                    description: 'Lower bound of number of seconds the match lasted',
+                    description:
+                      'Lower bound of number of seconds the match lasted',
                     type: 'string',
                   },
                   games_played: {
@@ -3701,20 +3981,22 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/heroes/:hero_id/durations',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(`SELECT
+          db.raw(
+            `SELECT
             (matches.duration / 300 * 300) duration_bin,
             count(match_id) games_played,
             sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
             JOIN player_matches using(match_id)
             WHERE player_matches.hero_id = ?
-            GROUP BY (matches.duration / 300 * 300)`, [heroId])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            GROUP BY (matches.duration / 300 * 300)`,
+            [heroId]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -3736,7 +4018,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/heroes/:hero_id/players',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(`SELECT
+          db.raw(
+            `SELECT
             account_id,
             count(match_id) games_played,
             sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
@@ -3744,31 +4027,39 @@ You can find data that can be used to convert hero and ability IDs and other inf
             JOIN player_matches using(match_id)
             WHERE player_matches.hero_id = ?
             GROUP BY account_id
-            ORDER BY games_played DESC`, [heroId])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            ORDER BY games_played DESC`,
+            [heroId]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
     '/heroes/{hero_id}/itemPopularity': {
       get: {
         summary: 'GET /heroes/{hero_id}/itemPopularity',
-        description: 'Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games',
+        description:
+          'Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games',
         tags: ['heroes'],
         parameters: [params.heroIdPathParam],
         route: () => '/heroes/:hero_id/itemPopularity',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          queries.getHeroItemPopularity(db, redis, heroId, {}, (err, result) => {
-            if (err) {
-              return cb(err);
+          queries.getHeroItemPopularity(
+            db,
+            redis,
+            heroId,
+            {},
+            (err, result) => {
+              if (err) {
+                return cb(err);
+              }
+              return res.json(result);
             }
-            return res.json(result);
-          });
+          );
         },
         responses: {
           200: {
@@ -3787,7 +4078,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                 },
                 early_game_items: {
-                  description: 'Items bought in the first 10 min of the game, with cost at least 700',
+                  description:
+                    'Items bought in the first 10 min of the game, with cost at least 700',
                   type: 'object',
                   properties: {
                     item: {
@@ -3797,7 +4089,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                 },
                 mid_game_items: {
-                  description: 'Items bought between 10 and 25 min of the game, with cost at least 2000',
+                  description:
+                    'Items bought between 10 and 25 min of the game, with cost at least 2000',
                   type: 'object',
                   properties: {
                     item: {
@@ -3807,7 +4100,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                 },
                 late_game_items: {
-                  description: 'Items bought at least 25 min after game started, with cost at least 4000',
+                  description:
+                    'Items bought at least 25 min after game started, with cost at least 4000',
                   type: 'object',
                   properties: {
                     item: {
@@ -3860,15 +4154,17 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/leagues/:league_id',
         func: (req, res, cb) => {
-          db.raw(`SELECT leagues.*
+          db.raw(
+            `SELECT leagues.*
             FROM leagues
-            WHERE leagues.leagueid = ?`, [req.params.league_id])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows[0]);
-            });
+            WHERE leagues.leagueid = ?`,
+            [req.params.league_id]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows[0]);
+          });
         },
       },
     },
@@ -3886,15 +4182,17 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/leagues/:league_id/matches',
         func: (req, res, cb) => {
-          db.raw(`SELECT matches.*
+          db.raw(
+            `SELECT matches.*
             FROM matches
-            WHERE matches.leagueid = ?`, [req.params.league_id])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            WHERE matches.leagueid = ?`,
+            [req.params.league_id]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -3912,19 +4210,21 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/leagues/:league_id/teams',
         func: (req, res, cb) => {
-          db.raw(`SELECT team_rating.*, teams.*
+          db.raw(
+            `SELECT team_rating.*, teams.*
             FROM matches
             LEFT JOIN team_match using(match_id)
             LEFT JOIN teams using(team_id)
             LEFT JOIN team_rating using(team_id)
             WHERE matches.leagueid = ?
-            GROUP BY (teams.team_id, team_rating.team_id)`, [req.params.league_id])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            GROUP BY (teams.team_id, team_rating.team_id)`,
+            [req.params.league_id]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -3944,17 +4244,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/teams',
         func: (req, res, cb) => {
-          db.raw(`SELECT team_rating.*, teams.*
+          db.raw(
+            `SELECT team_rating.*, teams.*
             FROM teams
             LEFT JOIN team_rating using(team_id)
             ORDER BY rating desc NULLS LAST
-            LIMIT 1000`)
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            LIMIT 1000`
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -3972,16 +4273,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/teams/:team_id',
         func: (req, res, cb) => {
-          db.raw(`SELECT team_rating.*, teams.*
+          db.raw(
+            `SELECT team_rating.*, teams.*
             FROM teams
             LEFT JOIN team_rating using(team_id)
-            WHERE teams.team_id = ?`, [req.params.team_id])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows[0]);
-            });
+            WHERE teams.team_id = ?`,
+            [req.params.team_id]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows[0]);
+          });
         },
       },
     },
@@ -3999,7 +4302,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/teams/:team_id/matches',
         func: (req, res, cb) => {
-          db.raw(`
+          db.raw(
+            `
             SELECT team_match.match_id, radiant_win, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
             FROM team_match
             JOIN matches USING(match_id)
@@ -4008,13 +4312,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
             JOIN teams teams2 on tm2.team_id = teams2.team_id
             WHERE team_match.team_id = ?
             ORDER BY match_id DESC
-            `, [req.params.team_id])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            `,
+            [req.params.team_id]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -4056,7 +4361,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/teams/:team_id/players',
         func: (req, res, cb) => {
-          db.raw(`SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
+          db.raw(
+            `SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
             FROM matches
             JOIN team_match USING(match_id)
             JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
@@ -4064,13 +4370,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
             LEFT JOIN notable_players USING(account_id)
             WHERE teams.team_id = ?
             GROUP BY account_id, notable_players.name, notable_players.team_id, teams.team_id
-            ORDER BY games_played DESC`, [req.params.team_id])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            ORDER BY games_played DESC`,
+            [req.params.team_id]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -4108,7 +4415,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/teams/:team_id/heroes',
         func: (req, res, cb) => {
-          db.raw(`SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+          db.raw(
+            `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
             JOIN team_match USING(match_id)
             JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
@@ -4116,13 +4424,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
             LEFT JOIN heroes ON player_matches.hero_id = heroes.id
             WHERE teams.team_id = ?
             GROUP BY hero_id, localized_name
-            ORDER BY games_played DESC`, [req.params.team_id])
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result.rows);
-            });
+            ORDER BY games_played DESC`,
+            [req.params.team_id]
+          ).asCallback((err, result) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(result.rows);
+          });
         },
       },
     },
@@ -4131,13 +4440,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /replays',
         description: 'Get data to construct a replay URL with',
         tags: ['replays'],
-        parameters: [{
-          name: 'match_id',
-          in: 'query',
-          description: 'Match IDs (array)',
-          required: true,
-          type: 'integer',
-        }],
+        parameters: [
+          {
+            name: 'match_id',
+            in: 'query',
+            description: 'Match IDs (array)',
+            required: true,
+            type: 'integer',
+          },
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -4167,7 +4478,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         func: (req, res, cb) => {
           db.select(['match_id', 'cluster', 'replay_salt'])
             .from('match_gcdata')
-            .whereIn('match_id', [].concat(req.query.match_id || []).slice(0, 5))
+            .whereIn(
+              'match_id',
+              [].concat(req.query.match_id || []).slice(0, 5)
+            )
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -4204,13 +4518,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /records/{field}',
         description: 'Get top performances in a stat',
         tags: ['records'],
-        parameters: [{
-          name: 'field',
-          in: 'path',
-          description: 'Field name to query',
-          required: true,
-          type: 'string',
-        }],
+        parameters: [
+          {
+            name: 'field',
+            in: 'path',
+            description: 'Field name to query',
+            required: true,
+            type: 'string',
+          },
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -4242,18 +4558,26 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
         route: () => '/records/:field',
         func: (req, res, cb) => {
-          redis.zrevrange(`records:${req.params.field}`, 0, 99, 'WITHSCORES', (err, rows) => {
-            if (err) {
-              return cb(err);
+          redis.zrevrange(
+            `records:${req.params.field}`,
+            0,
+            99,
+            'WITHSCORES',
+            (err, rows) => {
+              if (err) {
+                return cb(err);
+              }
+              const entries = rows
+                .map((r, i) => ({
+                  match_id: r.split(':')[0],
+                  start_time: r.split(':')[1],
+                  hero_id: r.split(':')[2],
+                  score: rows[i + 1],
+                }))
+                .filter((r, i) => i % 2 === 0);
+              return res.json(entries);
             }
-            const entries = rows.map((r, i) => ({
-              match_id: r.split(':')[0],
-              start_time: r.split(':')[1],
-              hero_id: r.split(':')[2],
-              score: rows[i + 1],
-            })).filter((r, i) => i % 2 === 0);
-            return res.json(entries);
-          });
+          );
         },
       },
     },
@@ -4270,8 +4594,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               type: 'array',
               items: {
                 type: 'object',
-                properties: {
-                },
+                properties: {},
               },
             },
           },
@@ -4285,12 +4608,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
             if (!rows.length) {
               return res.json(rows);
             }
-            const keys = rows.map(r => `liveGame:${r}`);
+            const keys = rows.map((r) => `liveGame:${r}`);
             return redis.mget(keys, (err, rows) => {
               if (err) {
                 return cb(err);
               }
-              return res.json(rows.map(r => JSON.parse(r)));
+              return res.json(rows.map((r) => JSON.parse(r)));
             });
           });
         },
@@ -4301,14 +4624,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /scenarios/itemTimings',
         description: `Win rates for certain item timings on a hero for items that cost at least ${su.itemCost} gold`,
         tags: ['scenarios'],
-        parameters: [{
-          name: 'item',
-          in: 'query',
-          description: 'Filter by item name e.g. "spirit_vessel"',
-          required: false,
-          type: 'string',
-        },
-        params.heroIdParam,
+        parameters: [
+          {
+            name: 'item',
+            in: 'query',
+            description: 'Filter by item name e.g. "spirit_vessel"',
+            required: false,
+            type: 'string',
+          },
+          params.heroIdParam,
         ],
         responses: {
           200: {
@@ -4327,15 +4651,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'string',
                   },
                   time: {
-                    description: 'Ingame time in seconds before the item was purchased',
+                    description:
+                      'Ingame time in seconds before the item was purchased',
                     type: 'integer',
                   },
                   games: {
-                    description: 'The number of games where the hero bought this item before this time',
+                    description:
+                      'The number of games where the hero bought this item before this time',
                     type: 'string',
                   },
                   wins: {
-                    description: 'The number of games won where the hero bought this item before this time',
+                    description:
+                      'The number of games won where the hero bought this item before this time',
                     type: 'string',
                   },
                 },
@@ -4359,14 +4686,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /scenarios/laneRoles',
         description: 'Win rates for heroes in certain lane roles',
         tags: ['scenarios'],
-        parameters: [{
-          name: 'lane_role',
-          in: 'query',
-          description: 'Filter by lane role 1-4 (Safe, Mid, Off, Jungle)',
-          required: false,
-          type: 'string',
-        },
-        params.heroIdParam,
+        parameters: [
+          {
+            name: 'lane_role',
+            in: 'query',
+            description: 'Filter by lane role 1-4 (Safe, Mid, Off, Jungle)',
+            required: false,
+            type: 'string',
+          },
+          params.heroIdParam,
         ],
         responses: {
           200: {
@@ -4381,7 +4709,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   lane_role: {
-                    description: 'The hero\'s lane role',
+                    description: "The hero's lane role",
                     type: 'integer',
                   },
                   time: {
@@ -4389,11 +4717,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   games: {
-                    description: 'The number of games where the hero played in this lane role',
+                    description:
+                      'The number of games where the hero played in this lane role',
                     type: 'string',
                   },
                   wins: {
-                    description: 'The number of games won where the hero played in this lane role',
+                    description:
+                      'The number of games won where the hero played in this lane role',
                     type: 'string',
                   },
                 },
@@ -4417,13 +4747,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /scenarios/misc',
         description: 'Miscellaneous team scenarios',
         tags: ['scenarios'],
-        parameters: [{
-          name: 'scenario',
-          in: 'query',
-          description: su.teamScenariosQueryParams.toString(),
-          required: false,
-          type: 'string',
-        }],
+        parameters: [
+          {
+            name: 'scenario',
+            in: 'query',
+            description: su.teamScenariosQueryParams.toString(),
+            required: false,
+            type: 'string',
+          },
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -4433,11 +4765,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 type: 'object',
                 properties: {
                   scenario: {
-                    description: 'The scenario\'s name or description',
+                    description: "The scenario's name or description",
                     type: 'string',
                   },
                   is_radiant: {
-                    description: 'Boolean indicating whether Radiant executed this scenario',
+                    description:
+                      'Boolean indicating whether Radiant executed this scenario',
                     type: 'boolean',
                   },
                   region: {
@@ -4445,11 +4778,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type: 'integer',
                   },
                   games: {
-                    description: 'The number of games where this scenario occurred',
+                    description:
+                      'The number of games where this scenario occurred',
                     type: 'string',
                   },
                   wins: {
-                    description: 'The number of games won where this scenario occured',
+                    description:
+                      'The number of games won where this scenario occured',
                     type: 'string',
                   },
                 },
@@ -4518,15 +4853,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
     '/constants/{resource}': {
       get: {
         summary: 'GET /constants',
-        description: 'Get static game data mirrored from the dotaconstants repository.',
+        description:
+          'Get static game data mirrored from the dotaconstants repository.',
         tags: ['constants'],
-        parameters: [{
-          name: 'resource',
-          in: 'path',
-          description: 'Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)',
-          required: true,
-          type: 'string',
-        }],
+        parameters: [
+          {
+            name: 'resource',
+            in: 'path',
+            description:
+              'Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)',
+            required: true,
+            type: 'string',
+          },
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -4558,7 +4897,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
-                type: "string",
+                type: 'string',
               },
             },
           },

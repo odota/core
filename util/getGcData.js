@@ -22,9 +22,9 @@ function handleGcData(match, body, cb) {
     // player_slot: p.player_slot,
     party_id: Number(p.party_id),
     permanent_buffs: p.permanent_buffs,
-    party_size: body.match.players
-      .filter(matchPlayer => matchPlayer.party_id === p.party_id)
-      .length,
+    party_size: body.match.players.filter(
+      (matchPlayer) => matchPlayer.party_id === p.party_id
+    ).length,
     net_worth: p.net_worth,
   }));
   const matchToInsert = {
@@ -41,42 +41,69 @@ function handleGcData(match, body, cb) {
     series_id: body.match.series_id,
     series_type: body.match.series_type,
   };
-  return insertMatch(matchToInsert, {
-    type: 'gcdata',
-    skipParse: true,
-  }, (err) => {
-    if (err) {
-      return cb(err);
+  return insertMatch(
+    matchToInsert,
+    {
+      type: 'gcdata',
+      skipParse: true,
+    },
+    (err) => {
+      if (err) {
+        return cb(err);
+      }
+      // Persist GC data to database
+      return queries.upsert(
+        db,
+        'match_gcdata',
+        gcdata,
+        {
+          match_id: body.match.match_id,
+        },
+        (err) => {
+          cb(err, gcdata);
+        }
+      );
     }
-    // Persist GC data to database
-    return queries.upsert(db, 'match_gcdata', gcdata, {
-      match_id: body.match.match_id,
-    }, (err) => {
-      cb(err, gcdata);
-    });
-  });
+  );
 }
 
 function getGcDataFromRetriever(match, cb) {
   const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
-  let urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
-  return getData({ url: urls, noRetry: match.noRetry, timeout: 5000 }, (err, body, metadata) => {
-    if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
-      // non-retryable error
-      redis.lpush('nonRetryable', JSON.stringify({ matchId: match.match_id, body }));
-      redis.ltrim('nonRetryable', 0, 10000);
-      return cb(new Error('invalid body or error'));
-    }
-    // Count retriever calls
-    redisCount(redis, 'retriever');
-    redis.zincrby('retrieverCounts', 1, metadata.hostname);
-    redis.expireat('retrieverCounts', moment().startOf('hour').add(1, 'hour').format('X'));
+  let urls = retrieverArr.map(
+    (r) => `http://${r}?key=${secret}&match_id=${match.match_id}`
+  );
+  return getData(
+    { url: urls, noRetry: match.noRetry, timeout: 5000 },
+    (err, body, metadata) => {
+      if (
+        err ||
+        !body ||
+        !body.match ||
+        !body.match.replay_salt ||
+        !body.match.players
+      ) {
+        // non-retryable error
+        redis.lpush(
+          'nonRetryable',
+          JSON.stringify({ matchId: match.match_id, body })
+        );
+        redis.ltrim('nonRetryable', 0, 10000);
+        return cb(new Error('invalid body or error'));
+      }
+      // Count retriever calls
+      redisCount(redis, 'retriever');
+      redis.zincrby('retrieverCounts', 1, metadata.hostname);
+      redis.expireat(
+        'retrieverCounts',
+        moment().startOf('hour').add(1, 'hour').format('X')
+      );
 
-    // redis.setex(`gcdata:${match.match_id}`, 15 * 60, zlib.gzipSync(JSON.stringify(body)));
-    // TODO add discovered account_ids to database and fetch account data/rank medal
-    return handleGcData(match, body, cb);
-  });
+      // redis.setex(`gcdata:${match.match_id}`, 15 * 60, zlib.gzipSync(JSON.stringify(body)));
+      // TODO add discovered account_ids to database and fetch account data/rank medal
+      return handleGcData(match, body, cb);
+    }
+  );
 }
 
 module.exports = function getGcData(match, cb) {

@@ -28,7 +28,7 @@ function scanApi(seqNum) {
       return cb(err);
     }
     // Optionally throttle inserts to prevent overload
-    if ((match.match_id % 100) >= Number(config.SCANNER_PERCENT)) {
+    if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
       return finishMatch(null, cb);
     }
     // check if match was previously processed
@@ -38,16 +38,20 @@ function scanApi(seqNum) {
       }
       // don't insert this match if we already processed it recently
       if (!result) {
-        return insertMatch(match, {
-          type: 'api',
-          origin: 'scanner',
-        }, (err) => {
-          if (!err) {
-            // Save match_id in Redis to avoid duplicate inserts (persist even if process restarts)
-            redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
+        return insertMatch(
+          match,
+          {
+            type: 'api',
+            origin: 'scanner',
+          },
+          (err) => {
+            if (!err) {
+              // Save match_id in Redis to avoid duplicate inserts (persist even if process restarts)
+              redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
+            }
+            finishMatch(err, cb);
           }
-          finishMatch(err, cb);
-        });
+        );
       }
       return finishMatch(err, cb);
     });
@@ -57,30 +61,38 @@ function scanApi(seqNum) {
     const container = generateJob('api_sequence', {
       start_at_match_seq_num: matchSeqNum,
     });
-    getData({
-      url: container.url,
-      delay,
-    }, (err, data) => {
-      if (err) {
-        // On non-retryable error, increment match seq num by 1 and continue
-        if (err.result.status === 2) {
-           nextSeqNum += 1;
-           utility.redisCount(redis, 'skip_seq_num');
-           return cb();
-        } else {
-          return cb(err);
+    getData(
+      {
+        url: container.url,
+        delay,
+      },
+      (err, data) => {
+        if (err) {
+          // On non-retryable error, increment match seq num by 1 and continue
+          if (err.result.status === 2) {
+            nextSeqNum += 1;
+            utility.redisCount(redis, 'skip_seq_num');
+            return cb();
+          } else {
+            return cb(err);
+          }
         }
+        const resp =
+          data.result && data.result.matches ? data.result.matches : [];
+        if (resp.length) {
+          nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
+        }
+        if (resp.length < PAGE_SIZE) {
+          delayNextRequest = true;
+        }
+        console.log(
+          '[API] match_seq_num:%s, matches:%s',
+          matchSeqNum,
+          resp.length
+        );
+        return async.each(resp, processMatch, cb);
       }
-      const resp = data.result && data.result.matches ? data.result.matches : [];
-      if (resp.length) {
-        nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
-      }
-      if (resp.length < PAGE_SIZE) {
-        delayNextRequest = true;
-      }
-      console.log('[API] match_seq_num:%s, matches:%s', matchSeqNum, resp.length);
-      return async.each(resp, processMatch, cb);
-    });
+    );
   }
 
   function finishPageSet(err) {
@@ -101,7 +113,9 @@ function scanApi(seqNum) {
 if (config.START_SEQ_NUM) {
   redis.get('match_seq_num', (err, result) => {
     if (err || !result) {
-      throw new Error('failed to get match_seq_num from redis, waiting to retry');
+      throw new Error(
+        'failed to get match_seq_num from redis, waiting to retry'
+      );
     }
     const numResult = Number(result);
     scanApi(numResult);

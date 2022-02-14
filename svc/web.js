@@ -57,21 +57,26 @@ passport.deserializeUser((accountId, done) => {
     account_id: accountId,
   });
 });
-passport.use(new SteamStrategy({
-  providerURL: 'https://steamcommunity.com/openid',
-  returnURL: `${host}/return`,
-  realm: host,
-  apiKey,
-}, (identifier, profile, cb) => {
-  const player = profile._json;
-  player.last_login = new Date();
-  queries.insertPlayer(db, player, true, (err) => {
-    if (err) {
-      return cb(err);
+passport.use(
+  new SteamStrategy(
+    {
+      providerURL: 'https://steamcommunity.com/openid',
+      returnURL: `${host}/return`,
+      realm: host,
+      apiKey,
+    },
+    (identifier, profile, cb) => {
+      const player = profile._json;
+      player.last_login = new Date();
+      queries.insertPlayer(db, player, true, (err) => {
+        if (err) {
+          return cb(err);
+        }
+        return cb(err, player);
+      });
     }
-    return cb(err, player);
-  });
-}));
+  )
+);
 // Compression middleware
 app.use(compression());
 // Dota 2 images middleware (proxy to Dota 2 CDN to serve over https)
@@ -117,7 +122,10 @@ if (config.NODE_ENV === 'test') {
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
   //console.log('[REQ]', req.originalUrl);
-  const apiKey = (req.headers.authorization && req.headers.authorization.replace('Bearer ', '')) || req.query.api_key;
+  const apiKey =
+    (req.headers.authorization &&
+      req.headers.authorization.replace('Bearer ', '')) ||
+    req.query.api_key;
   if (config.ENABLE_API_LIMIT && apiKey) {
     redis.sismember('api_keys', apiKey, (err, resp) => {
       if (err) {
@@ -138,7 +146,10 @@ app.use((req, res, cb) => {
 
   let rateLimit = '';
   if (res.locals.isAPIRequest) {
-    const requestAPIKey = (req.headers.authorization && req.headers.authorization.replace('Bearer ', '')) || req.query.api_key;
+    const requestAPIKey =
+      (req.headers.authorization &&
+        req.headers.authorization.replace('Bearer ', '')) ||
+      req.query.api_key;
     res.locals.usageIdentifier = requestAPIKey;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
     // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
@@ -147,7 +158,8 @@ app.use((req, res, cb) => {
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
-  const multi = redis.multi()
+  const multi = redis
+    .multi()
     .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
 
@@ -166,7 +178,10 @@ app.use((req, res, cb) => {
       'X-IP-Address': ip,
     });
     if (!res.locals.isAPIRequest) {
-      res.set('X-Rate-Limit-Remaining-Month', config.API_FREE_LIMIT - Number(resp[2]));
+      res.set(
+        'X-Rate-Limit-Remaining-Month',
+        config.API_FREE_LIMIT - Number(resp[2])
+      );
     }
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       console.log('rate limit increment', resp);
@@ -176,7 +191,12 @@ app.use((req, res, cb) => {
         error: 'rate limit exceeded',
       });
     }
-    if (config.ENABLE_API_LIMIT && !whitelistedPaths.includes(req.path) && !res.locals.isAPIRequest && Number(resp[2]) >= config.API_FREE_LIMIT) {
+    if (
+      config.ENABLE_API_LIMIT &&
+      !whitelistedPaths.includes(req.path) &&
+      !res.locals.isAPIRequest &&
+      Number(resp[2]) >= config.API_FREE_LIMIT
+    ) {
       return res.status(429).json({
         error: 'monthly api limit exceeded',
       });
@@ -196,16 +216,22 @@ app.use((req, res, cb) => {
     }
 
     // When called from a middleware, the mount point is not included in req.path. See Express docs.
-    if (res.statusCode !== 500
-        && res.statusCode !== 429
-        && !whitelistedPaths.includes(req.baseUrl + (req.path === '/' ? '' : req.path))
-        && elapsed < 10000) {
+    if (
+      res.statusCode !== 500 &&
+      res.statusCode !== 429 &&
+      !whitelistedPaths.includes(
+        req.baseUrl + (req.path === '/' ? '' : req.path)
+      ) &&
+      elapsed < 10000
+    ) {
       const multi = redis.multi();
       if (res.locals.isAPIRequest) {
-        multi.hincrby('usage_count', res.locals.usageIdentifier, 1)
+        multi
+          .hincrby('usage_count', res.locals.usageIdentifier, 1)
           .expireat('usage_count', utility.getEndOfMonth());
       } else {
-        multi.zincrby('user_usage_count', 1, res.locals.usageIdentifier)
+        multi
+          .zincrby('user_usage_count', 1, res.locals.usageIdentifier)
           .expireat('user_usage_count', utility.getEndOfMonth());
       }
 
@@ -222,13 +248,20 @@ app.use((req, res, cb) => {
         redisCount(redis, 'api_hits_ui');
       }
       redis.zincrby('api_paths', 1, req.path.split('/')[1] || '');
-      redis.expireat('api_paths', moment().startOf('hour').add(1, 'hour').format('X'));
+      redis.expireat(
+        'api_paths',
+        moment().startOf('hour').add(1, 'hour').format('X')
+      );
     }
     if (req.user && req.user.account_id) {
       redis.zadd('visitors', moment().format('X'), req.user.account_id);
     }
     if (req.user && req.user.account_id) {
-      redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id);
+      redis.zadd(
+        'tracked',
+        moment().add(config.UNTRACK_DAYS, 'days').format('X'),
+        req.user.account_id
+      );
     }
     redis.lpush('load_times', elapsed);
     redis.ltrim('load_times', 0, 9999);
@@ -237,7 +270,11 @@ app.use((req, res, cb) => {
 });
 app.use((req, res, next) => {
   // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
-  if (req.method !== 'GET' && req.header('Origin') && req.header('Origin') !== config.UI_HOST) {
+  if (
+    req.method !== 'GET' &&
+    req.header('Origin') &&
+    req.header('Origin') !== config.UI_HOST
+  ) {
     // Make an exception for replay parse request
     if (req.method === 'POST' && req.path.startsWith('/api/request/')) {
       return next();
@@ -247,21 +284,28 @@ app.use((req, res, next) => {
   return next();
 });
 // CORS headers
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
-app.route('/login').get(passport.authenticate('steam', {
-  failureRedirect: '/api',
-}));
-app.route('/return').get(passport.authenticate('steam', {
-  failureRedirect: '/api',
-}), (req, res) => {
-  if (config.UI_HOST) {
-    return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
+app.route('/login').get(
+  passport.authenticate('steam', {
+    failureRedirect: '/api',
+  })
+);
+app.route('/return').get(
+  passport.authenticate('steam', {
+    failureRedirect: '/api',
+  }),
+  (req, res) => {
+    if (config.UI_HOST) {
+      return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
+    }
+    return res.redirect('/api');
   }
-  return res.redirect('/api');
-});
+);
 app.route('/logout').get((req, res) => {
   req.logout();
   req.session = null;
@@ -276,9 +320,11 @@ app.use('/webhooks', webhooks);
 app.options('/keys', cors());
 app.use('/keys', keys);
 // 404 route
-app.use((req, res) => res.status(404).json({
-  error: 'Not Found',
-}));
+app.use((req, res) =>
+  res.status(404).json({
+    error: 'Not Found',
+  })
+);
 // 500 route
 app.use((err, req, res, cb) => {
   console.log('[ERR]', req.originalUrl);
@@ -307,7 +353,9 @@ function gracefulShutdown() {
   });
   // if after
   setTimeout(() => {
-    console.error('Could not close connections in time, forcefully shutting down');
+    console.error(
+      'Could not close connections in time, forcefully shutting down'
+    );
     process.exit();
   }, 10 * 1000);
 }

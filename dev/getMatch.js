@@ -13,26 +13,33 @@ const job = generateJob('api_details', {
   match_id: matchId,
 });
 const { url } = job;
-getData({
-  url,
-  delay,
-}, (err, body) => {
-  if (err) {
-    throw err;
+getData(
+  {
+    url,
+    delay,
+  },
+  (err, body) => {
+    if (err) {
+      throw err;
+    }
+    if (body.result) {
+      const match = body.result;
+      insertMatch(
+        match,
+        {
+          skipCounts: true,
+          forceParse: true,
+          attempts: 1,
+        },
+        (err) => {
+          if (err) {
+            throw err;
+          }
+          process.exit(0);
+        }
+      );
+    } else {
+      throw body;
+    }
   }
-  if (body.result) {
-    const match = body.result;
-    insertMatch(match, {
-      skipCounts: true,
-      forceParse: true,
-      attempts: 1,
-    }, (err) => {
-      if (err) {
-        throw err;
-      }
-      process.exit(0);
-    });
-  } else {
-    throw body;
-  }
-});
+);

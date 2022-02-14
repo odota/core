@@ -16,11 +16,21 @@ function doItems(cb) {
     if (!body || !body.result || !body.result.items) {
       return cb();
     }
-    return async.eachSeries(body.result.items, (item, cb) => {
-      queries.upsert(db, 'items', item, {
-        id: item.id,
-      }, cb);
-    }, cb);
+    return async.eachSeries(
+      body.result.items,
+      (item, cb) => {
+        queries.upsert(
+          db,
+          'items',
+          item,
+          {
+            id: item.id,
+          },
+          cb
+        );
+      },
+      cb
+    );
   });
 }
 invokeInterval(doItems, 60 * 60 * 1000);

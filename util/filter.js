@@ -24,7 +24,7 @@ function filter(matches, filters) {
       return m.region === key;
     },
     date(m, key) {
-      return m.start_time > (curtime - (key * 86400));
+      return m.start_time > curtime - key * 86400;
     },
     lane_role(m, key) {
       return m.lane_role === key;
@@ -64,7 +64,10 @@ function filter(matches, filters) {
       return arr.every((k) => {
         let passed = false;
         Object.keys(m.heroes || {}).forEach((key) => {
-          if (m.heroes[key].account_id === k && isRadiant(m.heroes[key]) === isRadiant(m)) {
+          if (
+            m.heroes[key].account_id === k &&
+            isRadiant(m.heroes[key]) === isRadiant(m)
+          ) {
             passed = true;
           }
         });
@@ -75,7 +78,10 @@ function filter(matches, filters) {
       return arr.every((k) => {
         let passed = false;
         Object.keys(m.heroes || {}).forEach((key) => {
-          if (m.heroes[key].account_id === k && isRadiant(m.heroes[key]) !== isRadiant(m)) {
+          if (
+            m.heroes[key].account_id === k &&
+            isRadiant(m.heroes[key]) !== isRadiant(m)
+          ) {
             passed = true;
           }
         });
@@ -86,7 +92,10 @@ function filter(matches, filters) {
       return arr.every((k) => {
         let passed = false;
         Object.keys(m.heroes || {}).forEach((key) => {
-          if (m.heroes[key].hero_id === k && isRadiant(m.heroes[key]) === isRadiant(m)) {
+          if (
+            m.heroes[key].hero_id === k &&
+            isRadiant(m.heroes[key]) === isRadiant(m)
+          ) {
             passed = true;
           }
         });
@@ -97,7 +106,10 @@ function filter(matches, filters) {
       return arr.every((k) => {
         let passed = false;
         Object.keys(m.heroes || {}).forEach((key) => {
-          if (m.heroes[key].hero_id === k && isRadiant(m.heroes[key]) !== isRadiant(m)) {
+          if (
+            m.heroes[key].hero_id === k &&
+            isRadiant(m.heroes[key]) !== isRadiant(m)
+          ) {
             passed = true;
           }
         });
@@ -121,7 +133,8 @@ function filter(matches, filters) {
         // pass the first element, as well as the full array
         // check that it passes all filters
         // pass the player_match, the first element of array, and the array itself
-        include = include && conditions[key](matches[i], filters[key][0], filters[key]);
+        include =
+          include && conditions[key](matches[i], filters[key][0], filters[key]);
       }
     });
     // if we passed, push it

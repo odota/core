@@ -31,22 +31,36 @@ function runParse(match, job, cb) {
   }
   console.log(new Date(), url);
   cp.exec(
-    `curl --max-time 180 --fail ${url} | ${url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'} | curl -X POST -T - ${config.PARSER_HOST} | node processors/createParsedDataBlob.js ${match.match_id} ${Boolean(match.doLogParse)}`,
+    `curl --max-time 180 --fail ${url} | ${
+      url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
+    } | curl -X POST -T - ${
+      config.PARSER_HOST
+    } | node processors/createParsedDataBlob.js ${match.match_id} ${Boolean(
+      match.doLogParse
+    )}`,
     { shell: true, maxBuffer: 10 * 1024 * 1024 },
     (err, stdout) => {
       if (err) {
         return cb(err);
       }
       const result = Object.assign({}, JSON.parse(stdout), match);
-      return insertMatch(result, {
-        type: 'parsed',
-        skipParse: true,
-        doLogParse: match.doLogParse,
-        doScenarios: match.origin === 'scanner' && match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT,
-        doParsedBenchmarks: match.origin === 'scanner' && match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT,
-        doTellFeed: match.origin === 'scanner',
-      }, cb);
-    },
+      return insertMatch(
+        result,
+        {
+          type: 'parsed',
+          skipParse: true,
+          doLogParse: match.doLogParse,
+          doScenarios:
+            match.origin === 'scanner' &&
+            match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT,
+          doParsedBenchmarks:
+            match.origin === 'scanner' &&
+            match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT,
+          doTellFeed: match.origin === 'scanner',
+        },
+        cb
+      );
+    }
   );
 }
 
@@ -56,27 +70,38 @@ function parseProcessor(job, cb) {
     // Skip parses without game_mode that weren't from scanner (do this to clear queue of event matches)
     return cb();
   }
-  async.series({
-    getDataSource(cb) {
-      getGcData(match, (err, result) => {
-        if (err) {
+  async.series(
+    {
+      getDataSource(cb) {
+        getGcData(match, (err, result) => {
+          if (err) {
+            return cb(err);
+          }
+          match.url = buildReplayUrl(
+            result.match_id,
+            result.cluster,
+            result.replay_salt
+          );
           return cb(err);
-        }
-        match.url = buildReplayUrl(result.match_id, result.cluster, result.replay_salt);
-        return cb(err);
-      });
+        });
+      },
+      runParse(cb) {
+        runParse(match, job, cb);
+      },
     },
-    runParse(cb) {
-      runParse(match, job, cb);
-    },
-  }, (err) => {
-    if (err) {
-      console.error(err.stack || err);
-    } else {
-      console.log('completed parse of match %s', match.match_id);
+    (err) => {
+      if (err) {
+        console.error(err.stack || err);
+      } else {
+        console.log('completed parse of match %s', match.match_id);
+      }
+      return cb(err, match.match_id);
     }
-    return cb(err, match.match_id);
-  });
+  );
 }
 
-queue.runReliableQueue('parse', Number(config.PARSER_PARALLELISM) || numCPUs, parseProcessor);
+queue.runReliableQueue(
+  'parse',
+  Number(config.PARSER_PARALLELISM) || numCPUs,
+  parseProcessor
+);

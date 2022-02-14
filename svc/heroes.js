@@ -16,22 +16,35 @@ function doHeroes(cb) {
     if (!body || !body.result || !body.result.heroes) {
       return cb();
     }
-    return getData('https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json', (err, heroData) => {
-      if (err || !heroData) {
-        return cb();
+    return getData(
+      'https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json',
+      (err, heroData) => {
+        if (err || !heroData) {
+          return cb();
+        }
+        return async.eachSeries(
+          body.result.heroes,
+          (hero, cb) => {
+            const heroDataHero = heroData[hero.id] || {};
+            queries.upsert(
+              db,
+              'heroes',
+              Object.assign({}, hero, {
+                primary_attr: heroDataHero.primary_attr,
+                attack_type: heroDataHero.attack_type,
+                roles: heroDataHero.roles,
+                legs: heroDataHero.legs,
+              }),
+              {
+                id: hero.id,
+              },
+              cb
+            );
+          },
+          cb
+        );
       }
-      return async.eachSeries(body.result.heroes, (hero, cb) => {
-        const heroDataHero = heroData[hero.id] || {};
-        queries.upsert(db, 'heroes', Object.assign({}, hero, {
-          primary_attr: heroDataHero.primary_attr,
-          attack_type: heroDataHero.attack_type,
-          roles: heroDataHero.roles,
-          legs: heroDataHero.legs,
-        }), {
-          id: hero.id,
-        }, cb);
-      }, cb);
-    });
+    );
   });
 }
 invokeInterval(doHeroes, 60 * 60 * 1000);

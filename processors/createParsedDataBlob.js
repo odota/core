@@ -9,7 +9,6 @@ const processMetadata = require('../processors/processMetadata');
 const processExpand = require('../processors/processExpand');
 const processDraftTimings = require('../processors/processDraftTimings');
 
-
 function getParseSchema() {
   return {
     version: 21,

@@ -1,26 +1,27 @@
 # OpenDota webhook API
 
 ## Introduction
-OpenDota offers users the possibility to register webhooks, 
+
+OpenDota offers users the possibility to register webhooks,
 allowing you to get notified whenever a game gets detected and parsed.
 Each subscription has to specify one or multiple criteria the webhook
 is subscribing to. The available criteria are:
 
-* Player ID (Dota2 account ID)
-* League ID
-* Team ID
+- Player ID (Dota2 account ID)
+- League ID
+- Team ID
 
 You can subscribe to any combination of the above criteria and of course,
 multiple of the same ones. Each time a match is scanned or parsed that
 contains a player, league, team whose ID you've subscribed to, the result
-will get posted to your webhook. It has the same format a call to the 
+will get posted to your webhook. It has the same format a call to the
 `/matches` endpoint would get you, with an additional `origin` field
-indicating whether the match was scanned or parsed. 
+indicating whether the match was scanned or parsed.
 
 ## Webhook management endpoints
 
 In order to call any of the following endpoints, you must be authenticated.
-This means that you must have a valid Steam OpenID 2.0 session on the 
+This means that you must have a valid Steam OpenID 2.0 session on the
 `opendota.com` domain
 
 ### `/webhooks`

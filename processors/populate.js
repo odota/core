@@ -25,24 +25,27 @@ function populate(e, container, meta) {
       container.objectives.push(JSON.parse(JSON.stringify(e)));
       break;
     case 'ability_levels':
-      meta.ability_levels[e.unit] = Object.assign({}, {
-        [e.key]: e.level,
-      }, meta.ability_levels[e.unit]);
+      meta.ability_levels[e.unit] = Object.assign(
+        {},
+        {
+          [e.key]: e.level,
+        },
+        meta.ability_levels[e.unit]
+      );
       meta.ability_levels[e.unit][e.key] = e.level;
       break;
     default:
       if (!container.players[e.slot]) {
-      // couldn't associate with a player, probably attributed to a creep/tower/necro unit
-      // console.log(e);
+        // couldn't associate with a player, probably attributed to a creep/tower/necro unit
+        // console.log(e);
         return;
       }
       t = container.players[e.slot][e.type];
       if (typeof t === 'undefined') {
-      // container.players[0] doesn't have a type for this event
-      // console.log("no field in parsed_data.players for %s", e.type);
-
+        // container.players[0] doesn't have a type for this event
+        // console.log("no field in parsed_data.players for %s", e.type);
       } else if (e.posData) {
-      // fill 2d hash with x,y values
+        // fill 2d hash with x,y values
         const key = JSON.parse(e.key);
         const x = key[0];
         const y = key[1];
@@ -54,17 +57,21 @@ function populate(e, container, meta) {
         }
         t[x][y] += 1;
       } else if (e.max) {
-      // check if value is greater than what was stored in value prop
+        // check if value is greater than what was stored in value prop
         if (e.value > t.value) {
           container.players[e.slot][e.type] = e;
         }
       } else if (t.constructor === Array) {
-      // determine whether we want the value only (interval) or everything (log)
-      // either way this creates a new value so e can be mutated later
+        // determine whether we want the value only (interval) or everything (log)
+        // either way this creates a new value so e can be mutated later
         let arrEntry;
         if (e.interval) {
           arrEntry = e.value;
-        } else if (e.type === 'purchase_log' || e.type === 'kills_log' || e.type === 'runes_log') {
+        } else if (
+          e.type === 'purchase_log' ||
+          e.type === 'kills_log' ||
+          e.type === 'runes_log'
+        ) {
           arrEntry = {
             time: e.time,
             key: e.key,
@@ -78,10 +85,14 @@ function populate(e, container, meta) {
             };
           }
           if (e.type === 'kills_log' && e.tracked_death) {
-            arrEntry = Object.assign({}, {
-              tracked_death: e.tracked_death,
-              tracked_sourcename: e.tracked_sourcename,
-            }, arrEntry);
+            arrEntry = Object.assign(
+              {},
+              {
+                tracked_death: e.tracked_death,
+                tracked_sourcename: e.tracked_sourcename,
+              },
+              arrEntry
+            );
           }
         } else {
           arrEntry = JSON.parse(JSON.stringify(e));
@@ -111,7 +122,7 @@ function populate(e, container, meta) {
         }
         t[ability][target] += damage;
       } else if (typeof t === 'object') {
-      // add it to hash of counts
+        // add it to hash of counts
         e.value = e.value || 1;
         if (t[e.key]) {
           t[e.key] += e.value;
@@ -120,10 +131,10 @@ function populate(e, container, meta) {
         }
         performanceOthers(e, container, meta);
       } else if (typeof t === 'string') {
-      // string, used for steam id
+        // string, used for steam id
         container.players[e.slot][e.type] = e.key;
       } else {
-      // we must use the full reference since this is a primitive type
+        // we must use the full reference since this is a primitive type
         container.players[e.slot][e.type] = e.value;
       }
       break;

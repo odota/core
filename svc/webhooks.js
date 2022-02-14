@@ -23,10 +23,15 @@ function filterWebhook(webhook, match) {
   const t = teams.map(Number);
   const l = leagues.map(Number);
 
-  return (match.players.map(player => player.account_id).map(Number).some(id => p.includes(id)))
-    || (t.includes(Number(match.radiant_team_id)))
-    || (t.includes(Number(match.dire_team_id)))
-    || (l.includes(Number(match.leagueid)));
+  return (
+    match.players
+      .map((player) => player.account_id)
+      .map(Number)
+      .some((id) => p.includes(id)) ||
+    t.includes(Number(match.radiant_team_id)) ||
+    t.includes(Number(match.dire_team_id)) ||
+    l.includes(Number(match.leagueid))
+  );
 }
 
 const readFromFeed = async (seqNum) => {
@@ -43,8 +48,12 @@ const readFromFeed = async (seqNum) => {
       if (filterWebhook(webhook, match)) {
         redisCount(redisClient, 'webhook');
         request
-          .post(webhook.url, { json: true, body: match, timeout: config.WEBHOOK_TIMEOUT })
-          .on('error', err => console.log(`${webhook.url} - ${err.code}`));
+          .post(webhook.url, {
+            json: true,
+            body: match,
+            timeout: config.WEBHOOK_TIMEOUT,
+          })
+          .on('error', (err) => console.log(`${webhook.url} - ${err.code}`));
       }
     });
   });
@@ -56,8 +65,10 @@ const readFromFeed = async (seqNum) => {
 };
 
 asyncGet('webhooks:seqNum')
-  .then(seqNum => readFromFeed(seqNum))
+  .then((seqNum) => readFromFeed(seqNum))
   .catch((err) => {
-    console.log(`${err.code} - Could not find webhooks sequence number, starting from top`);
+    console.log(
+      `${err.code} - Could not find webhooks sequence number, starting from top`
+    );
     readFromFeed('$');
   });

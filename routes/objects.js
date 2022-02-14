@@ -2,7 +2,7 @@ const teamObject = {
   type: 'object',
   properties: {
     team_id: {
-      description: 'Team\'s identifier',
+      description: "Team's identifier",
       type: 'integer',
     },
     rating: {
@@ -22,7 +22,7 @@ const teamObject = {
       type: 'integer',
     },
     name: {
-      description: 'Team name, eg. \'Newbee\'',
+      description: "Team name, eg. 'Newbee'",
       type: 'string',
     },
     tag: {
@@ -47,19 +47,19 @@ const matchObject = {
       type: 'integer',
     },
     radiant_team_id: {
-      description: 'The Radiant\'s team_id',
+      description: "The Radiant's team_id",
       type: 'integer',
     },
     radiant_name: {
-      description: 'The Radiant\'s team name',
+      description: "The Radiant's team name",
       type: 'string',
     },
     dire_team_id: {
-      description: 'The Dire\'s team_id',
+      description: "The Dire's team_id",
       type: 'integer',
     },
     dire_name: {
-      description: 'The Dire\'s team name',
+      description: "The Dire's team name",
       type: 'string',
     },
     leagueid: {
@@ -104,25 +104,25 @@ const heroObject = {
       type: 'integer',
     },
     name: {
-      description: 'Dota hero command name, e.g. \'npc_dota_hero_antimage\'',
+      description: "Dota hero command name, e.g. 'npc_dota_hero_antimage'",
       type: 'string',
     },
     localized_name: {
-      description: 'Hero name, e.g. \'Anti-Mage\'',
+      description: "Hero name, e.g. 'Anti-Mage'",
       type: 'string',
     },
     primary_attr: {
-      description: 'Hero primary shorthand attribute name, e.g. \'agi\'',
+      description: "Hero primary shorthand attribute name, e.g. 'agi'",
       type: 'string',
     },
     attack_type: {
-      description: 'Hero attack type, either \'Melee\' or \'Ranged\'',
+      description: "Hero attack type, either 'Melee' or 'Ranged'",
       type: 'string',
     },
     roles: {
       type: 'array',
       items: {
-        description: 'A hero\'s role in the game',
+        description: "A hero's role in the game",
         type: 'string',
       },
     },
@@ -134,11 +134,11 @@ const playerObject = {
     type: 'object',
     properties: {
       account_id: {
-        description: 'Player\'s account identifier',
+        description: "Player's account identifier",
         type: 'integer',
       },
       steamid: {
-        description: 'Player\'s steam identifier',
+        description: "Player's steam identifier",
         type: 'string',
       },
       avatar: {
@@ -158,7 +158,7 @@ const playerObject = {
         type: 'string',
       },
       personaname: {
-        description: 'Player\'s Steam name',
+        description: "Player's Steam name",
         type: 'string',
       },
       last_login: {
@@ -167,7 +167,8 @@ const playerObject = {
         format: 'date-time',
       },
       full_history_time: {
-        description: 'Date and time of last request to refresh player\'s match history',
+        description:
+          "Date and time of last request to refresh player's match history",
         type: 'string',
         format: 'date-time',
       },
@@ -176,35 +177,35 @@ const playerObject = {
         type: 'integer',
       },
       fh_unavailable: {
-        description: 'Whether the refresh of player\' match history failed',
+        description: "Whether the refresh of player' match history failed",
         type: 'boolean',
       },
       loccountrycode: {
-        description: 'Player\'s country identifier, e.g. US',
+        description: "Player's country identifier, e.g. US",
         type: 'string',
       },
       name: {
-        description: 'Verified player name, e.g. \'Miracle-\'',
+        description: "Verified player name, e.g. 'Miracle-'",
         type: 'string',
       },
       country_code: {
-        description: 'Player\'s country code',
+        description: "Player's country code",
         type: 'string',
       },
       fantasy_role: {
-        description: 'Player\'s ingame role (core: 1 or support: 2)',
+        description: "Player's ingame role (core: 1 or support: 2)",
         type: 'integer',
       },
       team_id: {
-        description: 'Player\'s team identifier',
+        description: "Player's team identifier",
         type: 'integer',
       },
       team_name: {
-        description: 'Player\'s team name, e.g. \'Evil Geniuses\'',
+        description: "Player's team name, e.g. 'Evil Geniuses'",
         type: 'string',
       },
       team_tag: {
-        description: 'Player\'s team shorthand tag, e.g. \'EG\'',
+        description: "Player's team shorthand tag, e.g. 'EG'",
         type: 'string',
       },
       is_locked: {
@@ -252,5 +253,9 @@ const leagueObject = {
 };
 
 module.exports = {
-  matchObject, teamObject, heroObject, playerObject, leagueObject,
+  matchObject,
+  teamObject,
+  heroObject,
+  playerObject,
+  leagueObject,
 };

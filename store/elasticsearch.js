@@ -4,7 +4,6 @@
 const elasticsearch = require('@elastic/elasticsearch');
 const config = require('../config');
 
-
 console.log('connecting %s', config.ELASTICSEARCH_URL);
 const es = new elasticsearch.Client({
   node: 'http://' + config.ELASTICSEARCH_URL,

@@ -28,7 +28,7 @@ services:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - bootstrap.system_call_filter=false
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
       - discovery.type=single-node
     ulimits:
       memlock:
@@ -45,8 +45,8 @@ services:
     # Override this command with your script if existing does not fit your needs
     entrypoint: bash docker/main-launch.sh
     ports:
-      - "5000:5000"
-      - "5100:5100"
+      - '5000:5000'
+      - '5100:5100'
     environment:
       PARSER_HOST: http://odota-parser:5600
       POSTGRES_URL: postgresql://postgres:postgres@odota-postgres/yasp

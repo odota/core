@@ -42,7 +42,10 @@ function processTeamfights(entries, meta) {
       }
       intervalState[e.time][e.slot] = e;
       // check curr_teamfight status
-      if (currTeamfight && e.time - currTeamfight.last_death >= teamfightCooldown) {
+      if (
+        currTeamfight &&
+        e.time - currTeamfight.last_death >= teamfightCooldown
+      ) {
         // close it
         currTeamfight.end = e.time;
         // push a copy for post-processing
@@ -54,7 +57,7 @@ function processTeamfights(entries, meta) {
   }
   // fights that didnt end wont be pushed to teamfights array (endgame case)
   // filter only fights where 3+ heroes died
-  teamfights = teamfights.filter(tf => tf.deaths >= 3);
+  teamfights = teamfights.filter((tf) => tf.deaths >= 3);
   teamfights.forEach((tf) => {
     tf.players.forEach((p, ind) => {
       // record player's start/end xp for level change computation

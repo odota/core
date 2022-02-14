@@ -5,7 +5,8 @@ const compute = require('../util/compute');
 
 const args = process.argv.slice(2);
 const limit = Number(args[0]) || 1;
-const stream = db.select('chat')
+const stream = db
+  .select('chat')
   .from('matches')
   .where('version', '>', '0')
   .limit(limit)

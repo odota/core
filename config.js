@@ -80,7 +80,7 @@ const defaults = {
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
-  process.env[key] = (key in process.env) ? process.env[key] : defaults[key];
+  process.env[key] = key in process.env ? process.env[key] : defaults[key];
 });
 if (process.env.NODE_ENV === 'development') {
   // force PORT to null in development so we can run multiple web services without conflict

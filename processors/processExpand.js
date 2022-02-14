@@ -28,11 +28,13 @@ function processExpand(entries, meta) {
    * */
   function expand(e) {
     // set slot and player_slot
-    const slot = ('slot' in e) ? e.slot : meta.hero_to_slot[e.unit];
-    output.push(Object.assign({}, e, {
-      slot,
-      player_slot: meta.slot_to_playerslot[slot],
-    }));
+    const slot = 'slot' in e ? e.slot : meta.hero_to_slot[e.unit];
+    output.push(
+      Object.assign({}, e, {
+        slot,
+        player_slot: meta.slot_to_playerslot[slot],
+      })
+    );
   }
 
   // Tracks current aegis holder so we can ignore kills that pop aegis
@@ -47,11 +49,13 @@ function processExpand(entries, meta) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
       const inflictor = translate(e.inflictor);
-      expand(Object.assign({}, e, {
-        unit,
-        key,
-        type: 'damage',
-      }));
+      expand(
+        Object.assign({}, e, {
+          unit,
+          key,
+          type: 'damage',
+        })
+      );
       // check if this damage happened to a real hero
       if (e.targethero && !e.targetillusion) {
         // reverse
@@ -110,11 +114,17 @@ function processExpand(entries, meta) {
     },
     DOTA_COMBATLOG_HEAL(e) {
       // healing
-      expand(Object.assign(e, {}, {
-        unit: e.sourcename,
-        key: computeIllusionString(e.targetname, e.targetillusion),
-        type: 'healing',
-      }));
+      expand(
+        Object.assign(
+          e,
+          {},
+          {
+            unit: e.sourcename,
+            key: computeIllusionString(e.targetname, e.targetillusion),
+            type: 'healing',
+          }
+        )
+      );
     },
     DOTA_COMBATLOG_MODIFIER_ADD(e) {
       // gain buff/debuff
@@ -139,10 +149,12 @@ function processExpand(entries, meta) {
       const key = computeIllusionString(e.targetname, e.targetillusion);
 
       // If it is a building kill
-      if (e.targetname.indexOf('_tower') > -1
-          || e.targetname.indexOf('_rax_') > -1
-          || e.targetname.indexOf('_healers') > -1
-          || e.targetname.indexOf('_fort') > -1) {
+      if (
+        e.targetname.indexOf('_tower') > -1 ||
+        e.targetname.indexOf('_rax_') > -1 ||
+        e.targetname.indexOf('_healers') > -1 ||
+        e.targetname.indexOf('_fort') > -1
+      ) {
         expand({
           time: e.time,
           type: 'building_kill',
@@ -158,7 +170,8 @@ function processExpand(entries, meta) {
           // If the hero is meepo than the clones will also get killed
           aegisDeathTime = e.time;
           return;
-        } if (aegisDeathTime !== e.time) {
+        }
+        if (aegisDeathTime !== e.time) {
           // We are after the aegis death tick, so clear everything
           aegisDeathTime = null;
           aegisHolder = null;
@@ -192,13 +205,15 @@ function processExpand(entries, meta) {
         });
       }
 
-      expand(Object.assign({}, e, {
-        unit,
-        key,
-        type: 'killed',
-        // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
-        value: 1,
-      }));
+      expand(
+        Object.assign({}, e, {
+          unit,
+          key,
+          type: 'killed',
+          // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
+          value: 1,
+        })
+      );
     },
     DOTA_COMBATLOG_ABILITY(e) {
       // Value field is 1 or 2 for toggles
@@ -403,8 +418,7 @@ function processExpand(entries, meta) {
       // e.slot = e.player1;
       // player1 paused
     },
-    CHAT_MESSAGE_TOWER_KILL() {
-    },
+    CHAT_MESSAGE_TOWER_KILL() {},
     CHAT_MESSAGE_TOWER_DENY() {
       // tower (player/team)
       // player1 = slot of player who killed tower (-1 if nonplayer)
@@ -518,25 +532,24 @@ function processExpand(entries, meta) {
           'towers_killed',
           'roshans_killed',
           'observers_placed',
-        ]
-          .forEach((field) => {
-            let key;
-            let value;
-            if (field === 'life_state') {
-              key = e[field];
-              value = 1;
-            } else {
-              key = field;
-              value = e[field];
-            }
-            expand({
-              time: e.time,
-              slot: e.slot,
-              type: field,
-              key,
-              value,
-            });
+        ].forEach((field) => {
+          let key;
+          let value;
+          if (field === 'life_state') {
+            key = e[field];
+            value = 1;
+          } else {
+            key = field;
+            value = e[field];
+          }
+          expand({
+            time: e.time,
+            slot: e.slot,
+            type: field,
+            key,
+            value,
           });
+        });
         // if on minute, add to interval arrays
         if (e.time % 60 === 0) {
           expand({
@@ -588,32 +601,44 @@ function processExpand(entries, meta) {
       }
     },
     obs(e) {
-      expand(Object.assign({}, e, {
-        type: 'obs',
-        posData: true,
-      }));
-      expand(Object.assign({}, e, {
-        type: 'obs_log',
-      }));
+      expand(
+        Object.assign({}, e, {
+          type: 'obs',
+          posData: true,
+        })
+      );
+      expand(
+        Object.assign({}, e, {
+          type: 'obs_log',
+        })
+      );
     },
     sen(e) {
-      expand(Object.assign({}, e, {
-        type: 'sen',
-        posData: true,
-      }));
-      expand(Object.assign({}, e, {
-        type: 'sen_log',
-      }));
+      expand(
+        Object.assign({}, e, {
+          type: 'sen',
+          posData: true,
+        })
+      );
+      expand(
+        Object.assign({}, e, {
+          type: 'sen_log',
+        })
+      );
     },
     obs_left(e) {
-      expand(Object.assign({}, e, {
-        type: 'obs_left_log',
-      }));
+      expand(
+        Object.assign({}, e, {
+          type: 'obs_left_log',
+        })
+      );
     },
     sen_left(e) {
-      expand(Object.assign({}, e, {
-        type: 'sen_left_log',
-      }));
+      expand(
+        Object.assign({}, e, {
+          type: 'sen_left_log',
+        })
+      );
     },
     epilogue(e) {
       expand(e);

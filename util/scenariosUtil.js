@@ -5,9 +5,12 @@ const { playerWon } = utility;
 
 // all items that cost at least 1400
 const itemCost = 1400;
-const dotaItems = Object.keys(constants.items).map(k => [constants.items[k], k]).filter(x => x[0].cost >= itemCost).map(x => x[1]);
-const timings = [7.5, 10, 12, 15, 20, 25, 30].map(x => x * 60);
-const gameDurationBucket = [15, 30, 45, 60, 90].map(x => x * 60);
+const dotaItems = Object.keys(constants.items)
+  .map((k) => [constants.items[k], k])
+  .filter((x) => x[0].cost >= itemCost)
+  .map((x) => x[1]);
+const timings = [7.5, 10, 12, 15, 20, 25, 30].map((x) => x * 60);
+const gameDurationBucket = [15, 30, 45, 60, 90].map((x) => x * 60);
 
 const negativeWords = ['ff', 'report', 'gg', 'end', 'noob'];
 const positiveWords = ['gl', 'glhf', 'hf', 'good luck', 'have fun'];
@@ -20,27 +23,31 @@ const teamScenariosQueryParams = [
 ];
 
 function buildTeamScenario(scenario, isRadiant, match) {
-  return [{
-    scenario,
-    is_radiant: isRadiant,
-    region: match.region,
-    wins: match.radiant_win === isRadiant,
-  }];
+  return [
+    {
+      scenario,
+      is_radiant: isRadiant,
+      region: match.region,
+      wins: match.radiant_win === isRadiant,
+    },
+  ];
 }
 
 const scenarioChecks = {
   scenarios: [
-
     function itemTimings(match) {
       const rows = [];
       match.players.forEach((player) => {
         if (player.purchase_log) {
           player.purchase_log.forEach((item) => {
-            if (dotaItems.indexOf(item.key) !== -1 && item.time <= timings[timings.length - 1]) {
+            if (
+              dotaItems.indexOf(item.key) !== -1 &&
+              item.time <= timings[timings.length - 1]
+            ) {
               rows.push({
                 hero_id: player.hero_id,
                 item: item.key,
-                time: timings.find(x => x >= item.time),
+                time: timings.find((x) => x >= item.time),
                 wins: playerWon(player, match),
               });
             }
@@ -50,14 +57,17 @@ const scenarioChecks = {
       return rows;
     },
 
-    function laneRole(match) { // hero's lane role
+    function laneRole(match) {
+      // hero's lane role
       const rows = [];
       match.players.forEach((player) => {
-        if (match.duration <= gameDurationBucket[gameDurationBucket.length - 1]) {
+        if (
+          match.duration <= gameDurationBucket[gameDurationBucket.length - 1]
+        ) {
           rows.push({
             hero_id: player.hero_id,
             lane_role: player.lane_role,
-            time: gameDurationBucket.find(x => x >= match.duration),
+            time: gameDurationBucket.find((x) => x >= match.duration),
             wins: playerWon(player, match),
           });
         }
@@ -66,9 +76,10 @@ const scenarioChecks = {
     },
   ],
   team_scenarios: [
-
     function firstBlood(match) {
-      const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
+      const condition =
+        match.objectives &&
+        match.objectives.find((x) => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
       if (condition) {
         const isRadiant = condition.player_slot < 5;
         return buildTeamScenario('first_blood', isRadiant, match);
@@ -76,8 +87,13 @@ const scenarioChecks = {
       return [];
     },
 
-    function courierKill(match) { // team killed enemy courier at least once before the 3 min mark
-      const condition = match.objectives && match.objectives.find(x => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180);
+    function courierKill(match) {
+      // team killed enemy courier at least once before the 3 min mark
+      const condition =
+        match.objectives &&
+        match.objectives.find(
+          (x) => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180
+        );
       if (condition) {
         const isRadiant = condition.team === 3;
         return buildTeamScenario('courier_kill', isRadiant, match);
@@ -85,7 +101,8 @@ const scenarioChecks = {
       return [];
     },
 
-    function chat(match) { // negative/positive words in chat before minute 1
+    function chat(match) {
+      // negative/positive words in chat before minute 1
       const rows = [];
       let radiantNegative = false;
       let direNegative = false;
@@ -97,14 +114,22 @@ const scenarioChecks = {
           if (c.time >= 60) {
             break;
           }
-          if (negativeWords.some(word => RegExp(`\\b${word}\\b`, 'i').test(c.key))) {
+          if (
+            negativeWords.some((word) =>
+              RegExp(`\\b${word}\\b`, 'i').test(c.key)
+            )
+          ) {
             if (c.player_slot < 128) {
               radiantNegative = true;
             } else {
               direNegative = true;
             }
           }
-          if (positiveWords.some(word => RegExp(`\\b${word}\\b`, 'i').test(c.key))) {
+          if (
+            positiveWords.some((word) =>
+              RegExp(`\\b${word}\\b`, 'i').test(c.key)
+            )
+          ) {
             if (c.player_slot < 128) {
               radiantPositive = true;
             } else {
@@ -131,7 +156,13 @@ const scenarioChecks = {
 };
 
 // list of match object properties that are required for scenario checks.
-const matchProperties = ['players', 'objectives', 'duration', 'chat', 'radiant_win'];
+const matchProperties = [
+  'players',
+  'objectives',
+  'duration',
+  'chat',
+  'radiant_win',
+];
 
 const metadata = {
   itemCost,
@@ -144,7 +175,9 @@ const metadata = {
  * Make sure the match object has all required properties.
  * */
 function validateMatchProperties(match) {
-  return matchProperties.every(property => match[property] !== undefined && match[property] !== null);
+  return matchProperties.every(
+    (property) => match[property] !== undefined && match[property] !== null
+  );
 }
 
 module.exports = {

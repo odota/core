@@ -11,11 +11,21 @@ function doProPlayers(cb) {
     if (err) {
       return cb(err);
     }
-    return async.each(body.player_infos, (p, cb) => {
-      queries.upsert(db, 'notable_players', p, {
-        account_id: p.account_id,
-      }, cb);
-    }, cb);
+    return async.each(
+      body.player_infos,
+      (p, cb) => {
+        queries.upsert(
+          db,
+          'notable_players',
+          p,
+          {
+            account_id: p.account_id,
+          },
+          cb
+        );
+      },
+      cb
+    );
   });
 }
 invokeInterval(doProPlayers, 30 * 60 * 1000);

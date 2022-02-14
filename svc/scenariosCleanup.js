@@ -5,19 +5,38 @@ const utility = require('../util/utility');
 
 function clearScenariosTables(cb) {
   const currentWeek = utility.epochWeek();
-  async.parallel([
-    (cb) => {
-      db('team_scenarios').whereNull('epoch_week').orWhere('epoch_week', '<=', currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS).del()
-        .asCallback(cb);
-    },
-    (cb) => {
-      db('scenarios').whereNull('epoch_week').orWhere('epoch_week', '<=', currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS).del()
-        .asCallback(cb);
-    },
-    (cb) => {
-      db.raw('DELETE from public_matches where start_time < extract(epoch from now() - interval \'6 month\')::int').asCallback(cb);
-    },
-  ], cb);
+  async.parallel(
+    [
+      (cb) => {
+        db('team_scenarios')
+          .whereNull('epoch_week')
+          .orWhere(
+            'epoch_week',
+            '<=',
+            currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS
+          )
+          .del()
+          .asCallback(cb);
+      },
+      (cb) => {
+        db('scenarios')
+          .whereNull('epoch_week')
+          .orWhere(
+            'epoch_week',
+            '<=',
+            currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS
+          )
+          .del()
+          .asCallback(cb);
+      },
+      (cb) => {
+        db.raw(
+          "DELETE from public_matches where start_time < extract(epoch from now() - interval '6 month')::int"
+        ).asCallback(cb);
+      },
+    ],
+    cb
+  );
 }
 
 utility.invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 1);
