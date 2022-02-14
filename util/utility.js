@@ -213,7 +213,6 @@ function getData(url, cb) {
   }
   const parse = urllib.parse(u, true);
   const steamApi = parse.host === 'api.steampowered.com';
-  const stratzApi = parse.host === 'api.stratz.com';
   if (steamApi) {
     // choose an api key to use
     const apiKeys = config.STEAM_API_KEY.split(',');
@@ -245,11 +244,10 @@ function getData(url, cb) {
           && !body.game_list
           && !body.match
           && !body.data)
-        || (stratzApi && (!body || !body[0]))
       ) {
         // invalid response
         if (url.noRetry) {
-          return cb(err || 'invalid response');
+          return cb(err || 'invalid response', body);
         }
         console.error('[INVALID] status: %s, retrying: %s', res ? res.statusCode : '', target);
         // var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
@@ -262,14 +260,15 @@ function getData(url, cb) {
         if (body.result.status === 15
           || body.result.error === 'Practice matches are not available via GetMatchDetails'
           || body.result.error === 'No Match ID specified'
-          || body.result.error === 'Match ID not found') {
+          || body.result.error === 'Match ID not found'
+          || (body.result.status === 2 && body.result.statusDetail === 'Error retrieving match data.')) {
           // private match history or attempting to get practice match/invalid id, don't retry
           // non-retryable
           return cb(body);
-        } if (body.result.error || body.result.status === 2) {
+        } else if (body.result.error || body.result.status === 2) {
           // valid response, but invalid data, retry
           if (url.noRetry) {
-            return cb(err || 'invalid data');
+            return cb(err || 'invalid data', body);
           }
           console.error('invalid data, retrying: %s, %s', target, JSON.stringify(body));
           return getData(url, cb);

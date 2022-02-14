@@ -61,19 +61,7 @@ function getGcDataFromRetriever(match, cb) {
   const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
   let urls = retrieverArr.map(r => `http://${r}?key=${secret}&match_id=${match.match_id}`);
-  if (config.NODE_ENV !== 'test' && match.allowBackup && (Math.random() * 100) < Number(config.BACKUP_RETRIEVER_PERCENT)) {
-    urls = [`https://api.stratz.com/api/v1/match?matchId=${match.match_id}`];
-  }
   return getData({ url: urls, noRetry: match.noRetry, timeout: 5000 }, (err, body, metadata) => {
-    if (metadata && metadata.hostname === 'api.stratz.com') {
-      // handle backup urls (don't save to DB since no party/buffs data)
-      redisCount(redis, 'backup');
-      return cb(err, {
-        match_id: Number(match.match_id),
-        cluster: body[0].clusterId,
-        replay_salt: body[0].replaySalt,
-      });
-    }
     if (err || !body || !body.match || !body.match.replay_salt || !body.match.players) {
       // non-retryable error
       redis.lpush('nonRetryable', JSON.stringify({ matchId: match.match_id, body }));
