@@ -17,13 +17,11 @@ const { insertMatch } = queries;
 function handleGcData(match, body, cb) {
   // Persist parties and permanent buffs
   const players = body.match.players.map((p, i) => ({
-    // As of 2019-03-05 (Mars patch) the GC is returning incorrect player_slot values. Just use the index to determine player slot for now.
-    player_slot: i > 4 ? i + 123 : i,
-    // player_slot: p.player_slot,
-    party_id: Number(p.party_id),
+    player_slot: p.player_slot,
+    party_id: p.party_id?.low,
     permanent_buffs: p.permanent_buffs,
     party_size: body.match.players
-      .filter(matchPlayer => matchPlayer.party_id === p.party_id)
+      .filter(matchPlayer => matchPlayer.party_id === p.party_id?.low)
       .length,
     net_worth: p.net_worth,
   }));
