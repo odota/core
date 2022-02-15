@@ -48,7 +48,7 @@ function handleGcData(match, body, cb) {
     }
     // Persist GC data to database
     return queries.upsert(db, 'match_gcdata', gcdata, {
-      match_id: body.match.match_id,
+      match_id: match.match_id,
     }, (err) => {
       cb(err, gcdata);
     });
