@@ -21,7 +21,7 @@ function handleGcData(match, body, cb) {
     party_id: p.party_id?.low,
     permanent_buffs: p.permanent_buffs,
     party_size: body.match.players
-      .filter(matchPlayer => matchPlayer.party_id === p.party_id?.low)
+      .filter(matchPlayer => matchPlayer.party_id?.low === p.party_id?.low)
       .length,
     net_worth: p.net_worth,
   }));
