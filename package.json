@@ -33,7 +33,7 @@
     "cookie-session": "2.0.0-beta.3",
     "cors": "^2.8.5",
     "dota2": "github:odota/node-dota2",
-    "dotaconstants": "^7.7.0",
+    "dotaconstants": "^7.8.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "extend": "^3.0.2",
@@ -56,7 +56,7 @@
     "simple-vdf": "^1.1.1",
     "steam": "github:odota/node-steam-npm",
     "steam-resources": "github:odota/node-steam-resources",
-    "stripe": "^5.8.0",
+    "stripe": "^8.204.0",
     "supertest": "^4.0.2",
     "uuid": "^3.3.3"
   },
