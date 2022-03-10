@@ -261,7 +261,7 @@ function getData(url, cb) {
           || body.result.error === 'Practice matches are not available via GetMatchDetails'
           || body.result.error === 'No Match ID specified'
           || body.result.error === 'Match ID not found'
-          || (body.result.status === 2 && body.result.statusDetail === 'Error retrieving match data.' && Math.random() < 0.5)) {
+          || (body.result.status === 2 && body.result.statusDetail === 'Error retrieving match data.' && Math.random() < 0.3)) {
           // private match history or attempting to get practice match/invalid id, don't retry
           // non-retryable
           return cb(body);
