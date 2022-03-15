@@ -599,28 +599,6 @@ function insertPlayerRating(db, row, cb) {
   }, cb);
 }
 
-function insertMatchSkillCassandra(row, cb) {
-  cassandra.execute(
-    'UPDATE matches SET skill = ? WHERE match_id = ? IF EXISTS', [row.skill, row.match_id], { prepare: true },
-    (err) => {
-      if (err) {
-        return cb(err);
-      }
-      if (row.players) {
-        const filteredPlayers = row.players.filter(player => player.account_id
-          && player.account_id !== utility.getAnonymousAccountId());
-        return async.eachSeries(filteredPlayers, (player, cb) => {
-          cassandra.execute(
-            'UPDATE player_caches SET skill = ? WHERE account_id = ? AND match_id = ? IF EXISTS', [String(row.skill), String(player.account_id), String(row.match_id)], { prepare: true },
-            cb,
-          );
-        }, cb);
-      }
-      return cb();
-    },
-  );
-}
-
 function writeCache(accountId, cache, cb) {
   return async.each(cache.raw, (match, cb) => {
     cleanRowCassandra(cassandra, 'player_caches', match, (err, cleanedMatch) => {
@@ -1229,7 +1207,6 @@ module.exports = {
   bulkIndexPlayer,
   insertMatch,
   insertPlayerRating,
-  insertMatchSkillCassandra,
   getDistributions,
   getProPlayers,
   getHeroRankings,
