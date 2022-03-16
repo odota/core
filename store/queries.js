@@ -38,16 +38,14 @@ function doCleanRow(schema, row) {
 
 function cleanRowPostgres(db, table, row, cb) {
   if (columnInfo[table]) {
-    const result = doCleanRow(columnInfo[table], row);
-    return cb(null, result);
+    return cb(null, doCleanRow(columnInfo[table], row));
   }
   return db(table).columnInfo().asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
     columnInfo[table] = result;
-    const result = doCleanRow(columnInfo[table], row);
-    return cb(null, result);
+    return cb(null, doCleanRow(columnInfo[table], row));
   });
 }
 
