@@ -51,8 +51,7 @@ function cleanRowPostgres(db, table, row, cb) {
 
 async function cleanRowCassandra(cassandra, table, row) {
   if (cassandraColumnInfo[table]) {
-    const result = doCleanRow(cassandraColumnInfo[table], row);
-    return cb(null, result);
+    return doCleanRow(cassandraColumnInfo[table], row);
   }
   const result = await cassandra.execute(
     'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
@@ -1101,9 +1100,7 @@ function insertMatch(match, options, cb) {
     decideLogParse,
     updateMatchGcData,
     upsertMatch,
-    upsertMatchCassandra: async (cb) => {
-      await upsertMatchCassandra(cb);
-    },
+    upsertMatchCassandra,
     upsertParsedMatch,
     updatePlayerCaches,
     clearMatchCache,
