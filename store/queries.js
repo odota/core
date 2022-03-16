@@ -14,6 +14,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const { es, INDEX } = require('../store/elasticsearch');
 const cassandra = require('../store/cassandra');
+const scylla = require('../store/scylla');
 const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
 
@@ -25,49 +26,45 @@ const columnInfo = {};
 const cassandraColumnInfo = {};
 const { benchmarks } = benchmarksUtil;
 
-function doCleanRow(err, schema, row, cb) {
-  if (err) {
-    return cb(err);
-  }
+function doCleanRow(schema, row) {
   const obj = {};
   Object.keys(row).forEach((key) => {
     if (key in schema) {
       obj[key] = row[key];
     }
   });
-  return cb(err, obj);
+  return obj;
 }
 
 function cleanRowPostgres(db, table, row, cb) {
   if (columnInfo[table]) {
-    return doCleanRow(null, columnInfo[table], row, cb);
+    const result = doCleanRow(columnInfo[table], row);
+    return cb(null, result);
   }
   return db(table).columnInfo().asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
     columnInfo[table] = result;
-    return doCleanRow(err, columnInfo[table], row, cb);
+    const result = doCleanRow(columnInfo[table], row);
+    return cb(null, result);
   });
 }
 
-function cleanRowCassandra(cassandra, table, row, cb) {
+async function cleanRowCassandra(cassandra, table, row) {
   if (cassandraColumnInfo[table]) {
-    return doCleanRow(null, cassandraColumnInfo[table], row, cb);
+    const result = doCleanRow(cassandraColumnInfo[table], row);
+    return cb(null, result);
   }
-  return cassandra.execute(
-    'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?', [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
-    (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      cassandraColumnInfo[table] = {};
-      result.rows.forEach((r) => {
-        cassandraColumnInfo[table][r.column_name] = 1;
-      });
-      return doCleanRow(err, cassandraColumnInfo[table], row, cb);
-    },
+  const result = await cassandra.execute(
+    'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
+    [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table]
   );
+  cassandraColumnInfo[table] = {};
+  result.rows.forEach((r) => {
+    cassandraColumnInfo[table][r.column_name] = 1;
+  });
+  return doCleanRow(cassandraColumnInfo[table], row);
 }
 
 function getWebhooks(db) {
@@ -300,12 +297,9 @@ function getPlayerMatches(accountId, queryObj, cb) {
   if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
     return cb(null, []);
   }
+  const cdb = config.ENABLE_READ_SCYLLA ? scylla : cassandra;
   // call clean method to ensure we have column info cached
-  return cleanRowCassandra(cassandra, 'player_caches', {}, (err) => {
-    if (err) {
-      return cb(err);
-    }
-    // console.log(queryObj.project, cassandraColumnInfo.player_caches);
+  cleanRowCassandra(cdb, 'player_caches', {}).then(() => {
     const query = util.format(
       `
       SELECT %s FROM player_caches
@@ -316,7 +310,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
       queryObj.project.filter(f => cassandraColumnInfo.player_caches[f]).join(','),
     );
     const matches = [];
-    return cassandra.eachRow(
+    return cdb.eachRow(
       query, [accountId], {
         prepare: true,
         fetchSize: 5000,
@@ -600,22 +594,22 @@ function insertPlayerRating(db, row, cb) {
 }
 
 function writeCache(accountId, cache, cb) {
-  return async.each(cache.raw, (match, cb) => {
-    cleanRowCassandra(cassandra, 'player_caches', match, (err, cleanedMatch) => {
-      if (err) {
-        return cb(err);
-      }
-      const serializedMatch = serialize(cleanedMatch);
-      const query = util.format(
-        'INSERT INTO player_caches (%s) VALUES (%s)',
-        Object.keys(serializedMatch).join(','),
-        Object.keys(serializedMatch).map(() => '?').join(','),
-      );
-      const arr = Object.keys(serializedMatch).map(k => serializedMatch[k]);
-      return cassandra.execute(query, arr, {
-        prepare: true,
-      }, cb);
+  return async.each(cache.raw, async (match, cb) => {
+    const cleanedMatch = await cleanRowCassandra(cassandra, 'player_caches', match);
+    const serializedMatch = serialize(cleanedMatch);
+    const query = util.format(
+      'INSERT INTO player_caches (%s) VALUES (%s)',
+      Object.keys(serializedMatch).join(','),
+      Object.keys(serializedMatch).map(() => '?').join(','),
+    );
+    const arr = Object.keys(serializedMatch).map(k => serializedMatch[k]);
+    await cassandra.execute(query, arr, {
+      prepare: true,
     });
+    await scylla?.execute(query, arr, {
+      prepare: true,
+    });
+    cb();
   }, cb);
 }
 
@@ -912,55 +906,49 @@ function insertMatch(match, options, cb) {
     });
   }
 
-  function upsertMatchCassandra(cb) {
+  async function upsertMatchCassandra(cb) {
     // console.log('[INSERTMATCH] upserting into Cassandra');
-    return cleanRowCassandra(cassandra, 'matches', match, (err, match) => {
-      if (err) {
-        return cb(err);
-      }
-      const obj = serialize(match);
-      if (!Object.keys(obj).length) {
-        return cb(err);
-      }
-      const query = util.format(
-        'INSERT INTO matches (%s) VALUES (%s)',
-        Object.keys(obj).join(','),
-        Object.keys(obj).map(() => '?').join(','),
-      );
-      const arr = Object.keys(obj).map(k => ((obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k]));
-      return cassandra.execute(query, arr, {
-        prepare: true,
-      }, (err) => {
-        if (err) {
-          return cb(err);
-        }
-        return async.each(players || [], (pm, cb) => {
-          pm.match_id = match.match_id;
-          cleanRowCassandra(cassandra, 'player_matches', pm, (err, pm) => {
-            if (err) {
-              return cb(err);
-            }
-            const obj2 = serialize(pm);
-            if (!Object.keys(obj2).length) {
-              return cb(err);
-            }
-            const query2 = util.format(
-              'INSERT INTO player_matches (%s) VALUES (%s)',
-              Object.keys(obj2).join(','),
-              Object.keys(obj2).map(() => '?').join(','),
-            );
-            const arr2 = Object.keys(obj2).map(k => ((obj2[k] === 'true' || obj2[k] === 'false') ? JSON.parse(obj2[k]) : obj2[k]));
-            return cassandra.execute(query2, arr2, {
-              prepare: true,
-            }, cb);
-          });
-        }, cb);
-      });
+    const match2 = await cleanRowCassandra(cassandra, 'matches', match);
+    const obj = serialize(match2);
+    if (!Object.keys(obj).length) {
+      return cb(err);
+    }
+    const query = util.format(
+      'INSERT INTO matches (%s) VALUES (%s)',
+      Object.keys(obj).join(','),
+      Object.keys(obj).map(() => '?').join(','),
+    );
+    const arr = Object.keys(obj).map(k => ((obj[k] === 'true' || obj[k] === 'false') ? JSON.parse(obj[k]) : obj[k]));
+    await cassandra.execute(query, arr, {
+      prepare: true,
     });
+    await scylla?.execute(query, arr, {
+      prepare: true,
+    });
+    return async.each(players || [], async (pm, cb) => {
+      pm.match_id = match2.match_id;
+      const pm2 = await cleanRowCassandra(cassandra, 'player_matches', pm);
+      const obj2 = serialize(pm2);
+      if (!Object.keys(obj2).length) {
+        return cb(err);
+      }
+      const query2 = util.format(
+        'INSERT INTO player_matches (%s) VALUES (%s)',
+        Object.keys(obj2).join(','),
+        Object.keys(obj2).map(() => '?').join(','),
+      );
+      const arr2 = Object.keys(obj2).map(k => ((obj2[k] === 'true' || obj2[k] === 'false') ? JSON.parse(obj2[k]) : obj2[k]));
+      await cassandra.execute(query2, arr2, {
+        prepare: true,
+      });
+      await scylla?.execute(query2, arr2, {
+        prepare: true,
+      });
+      cb();
+    }, cb);
   }
 
   function updatePlayerCaches(cb) {
-    // console.log('[INSERTMATCH] upserting into Cassandra player_caches');
     const copy = createMatchCopy(match, players);
     return insertPlayerCache(copy, cb);
   }
@@ -1120,7 +1108,10 @@ function insertMatch(match, options, cb) {
     decideLogParse,
     updateMatchGcData,
     upsertMatch,
-    upsertMatchCassandra,
+    upsertMatchCassandra: async (cb) => {
+      await upsertMatchCassandra();
+      cb();
+    },
     upsertParsedMatch,
     updatePlayerCaches,
     clearMatchCache,

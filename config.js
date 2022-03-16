@@ -77,6 +77,8 @@ const defaults = {
   WEBHOOK_TIMEOUT: 1000, // Timeout in milliseconds when calling a webhook
   WEBHOOK_FEED_INTERVAL: 2000, // Delay in milliseconds between reads from the match feed for the webhook handler.
   TRACKED_ACCOUNT_URL: '', // URL where account IDs of tracked players can be found
+  SCYLLA_URL: '', // connection string for Scylla
+  ENABLE_READ_SCYLLA: '', // Enable reading ScyllaDB instead of Cassandra
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
