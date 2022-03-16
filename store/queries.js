@@ -1107,8 +1107,7 @@ function insertMatch(match, options, cb) {
     updateMatchGcData,
     upsertMatch,
     upsertMatchCassandra: async (cb) => {
-      await upsertMatchCassandra();
-      cb();
+      await upsertMatchCassandra(cb);
     },
     upsertParsedMatch,
     updatePlayerCaches,
