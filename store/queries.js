@@ -591,24 +591,21 @@ function insertPlayerRating(db, row, cb) {
   }, cb);
 }
 
-function writeCache(accountId, cache, cb) {
-  return async.each(cache.raw, async (match, cb) => {
-    const cleanedMatch = await cleanRowCassandra(cassandra, 'player_caches', match);
-    const serializedMatch = serialize(cleanedMatch);
-    const query = util.format(
-      'INSERT INTO player_caches (%s) VALUES (%s)',
-      Object.keys(serializedMatch).join(','),
-      Object.keys(serializedMatch).map(() => '?').join(','),
-    );
-    const arr = Object.keys(serializedMatch).map(k => serializedMatch[k]);
-    await cassandra.execute(query, arr, {
-      prepare: true,
-    });
-    await scylla?.execute(query, arr, {
-      prepare: true,
-    });
-    cb();
-  }, cb);
+async function writeCache(match) {
+  const cleanedMatch = await cleanRowCassandra(cassandra, 'player_caches', match);
+  const serializedMatch = serialize(cleanedMatch);
+  const query = util.format(
+    'INSERT INTO player_caches (%s) VALUES (%s)',
+    Object.keys(serializedMatch).join(','),
+    Object.keys(serializedMatch).map(() => '?').join(','),
+  );
+  const arr = Object.keys(serializedMatch).map(k => serializedMatch[k]);
+  await cassandra.execute(query, arr, {
+    prepare: true,
+  });
+  await scylla?.execute(query, arr, {
+    prepare: true,
+  });
 }
 
 function insertPlayerCache(match, cb) {
@@ -623,7 +620,7 @@ function insertPlayerCache(match, cb) {
       }
     });
   }
-  return async.eachSeries(players, (playerMatch, cb) => {
+  return async.eachSeries(players, async (playerMatch, cb) => {
     if (playerMatch.account_id && playerMatch.account_id !== utility.getAnonymousAccountId()) {
       // join player with match to form player_match
       Object.keys(match).forEach((key) => {
@@ -632,9 +629,8 @@ function insertPlayerCache(match, cb) {
         }
       });
       computeMatchData(playerMatch);
-      return writeCache(playerMatch.account_id, {
-        raw: [playerMatch],
-      }, cb);
+      await writeCache(playerMatch);
+      cb();
     }
     return cb();
   }, cb);
