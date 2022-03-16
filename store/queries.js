@@ -620,7 +620,7 @@ function insertPlayerCache(match, cb) {
       }
     });
   }
-  return async.eachSeries(players, async (playerMatch, cb) => {
+  return async.eachSeries(players, async (playerMatch) => {
     if (playerMatch.account_id && playerMatch.account_id !== utility.getAnonymousAccountId()) {
       // join player with match to form player_match
       Object.keys(match).forEach((key) => {
@@ -630,9 +630,8 @@ function insertPlayerCache(match, cb) {
       });
       computeMatchData(playerMatch);
       await writeCache(playerMatch);
-      cb();
     }
-    return cb();
+    return;
   }, cb);
 }
 
