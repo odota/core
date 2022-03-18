@@ -107,6 +107,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'MatchResponse',
               type: 'object',
               properties: {
                 match_id: {
@@ -981,6 +982,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'PlayersByRankResponse',
               type: 'object',
               properties: {
                 account_id: {
@@ -1013,6 +1015,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'PlayerResponse',
               type: 'object',
               properties: {
                 tracked_until: {
@@ -1167,6 +1170,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'PlayerWinLossResponse',
               type: 'object',
               properties: {
                 win: {
@@ -1218,6 +1222,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerRecentMatchesResponse',
                 description: 'match',
                 type: 'object',
                 properties: {
@@ -1364,6 +1369,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerMatchesResponse',
                 description: 'Object containing information on the match',
                 type: 'object',
                 properties: {
@@ -1449,6 +1455,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerHeroesResponse',
                 description: 'hero',
                 type: 'object',
                 properties: {
@@ -1561,6 +1568,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerPeersResponse',
                 type: 'object',
                 properties: {
                   account_id: {
@@ -1666,6 +1674,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerProsResponse',
                 type: 'object',
                 properties: {
                   account_id: {
@@ -1825,6 +1834,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerTotalsResponse',
                 type: 'object',
                 properties: {
                   field: {
@@ -1884,6 +1894,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'PlayerCountsResponse',
               type: 'object',
               properties: {
                 leaver_status: {
@@ -1958,6 +1969,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerHistogramsResponse',
                 type: 'object',
               },
             },
@@ -2009,6 +2021,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'PlayerWardMapResponse',
               type: 'object',
               properties: {
                 obs: {
@@ -2056,6 +2069,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'PlayerWordCloudResponse',
               type: 'object',
               properties: {
                 my_word_counts: {
@@ -2105,6 +2119,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerRatingsResponse',
                 type: 'object',
                 properties: {
                   account_id: {
@@ -2157,6 +2172,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PlayerRankingsResponse',
                 type: 'object',
                 properties: {
                   hero_id: {
@@ -2203,6 +2219,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'PlayerRefreshResponse',
               type: 'object',
             },
           },
@@ -2310,6 +2327,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'PublicMatchesResponse',
                 type: 'object',
                 properties: {
                   match_id: {
@@ -2394,6 +2412,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'ParsedMatchesResponse',
                 type: 'object',
                 properties: {
                   match_id: {
@@ -2440,6 +2459,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'ExplorerResponse',
               type: 'object',
             },
           },
@@ -2479,6 +2499,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'MetadataResponse',
               type: 'object',
               properties: {
                 banner: {
@@ -2525,6 +2546,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'DistributionsResponse',
               type: 'object',
               properties: {
                 ranks: {
@@ -2822,6 +2844,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'SearchResponse',
                 type: 'object',
                 properties: {
                   account_id: {
@@ -2890,6 +2913,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'RankingsResponse',
               type: 'object',
               properties: {
                 hero_id: {
@@ -2993,6 +3017,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'BenchmarksResponse',
               type: 'object',
               properties: {
                 hero_id: {
@@ -3143,6 +3168,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'StatusResponse',
               type: 'object',
             },
           },
@@ -3167,6 +3193,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'HealthResponse',
               type: 'object',
             },
           },
@@ -3221,6 +3248,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'RequestJobResponse',
               type: 'object',
             },
           },
@@ -3279,6 +3307,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'RequestMatchResponse',
               type: 'object',
             },
           },
@@ -3307,6 +3336,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'FindMatchesResponse',
               type: 'object',
             },
           },
@@ -3439,6 +3469,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'HeroStatsResponse',
                 type: 'object',
                 properties: {
                   id: {
@@ -3625,6 +3656,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'HeroMatchupsResponse',
                 type: 'object',
                 properties: {
                   hero_id: {
@@ -3679,6 +3711,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'HeroDurationsResponse',
                 type: 'object',
                 properties: {
                   duration_bin: {
@@ -3774,6 +3807,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'HeroItemPopularityResponse',
               type: 'object',
               properties: {
                 start_game_items: {
@@ -4028,6 +4062,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'TeamPlayersResponse',
               type: 'object',
               properties: {
                 account_id: {
@@ -4084,6 +4119,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: 'Success',
             schema: {
+              title: 'TeamHeroesResponse',
               type: 'object',
               properties: {
                 hero_id: {
@@ -4144,6 +4180,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'ReplaysResponse',
                 type: 'object',
                 properties: {
                   match_id: {
@@ -4217,6 +4254,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'RecordsResponse',
                 type: 'object',
                 properties: {
                   match_id: {
@@ -4269,6 +4307,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'LiveResponse',
                 type: 'object',
                 properties: {
                 },
@@ -4316,6 +4355,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'ScenarioItemTimingsResponse',
                 type: 'object',
                 properties: {
                   hero_id: {
@@ -4374,6 +4414,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'ScenarioLaneRolesResponse',
                 type: 'object',
                 properties: {
                   hero_id: {
@@ -4430,6 +4471,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'ScenarioMiscResponse',
                 type: 'object',
                 properties: {
                   scenario: {
@@ -4480,6 +4522,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'SchemaResponse',
                 type: 'object',
                 properties: {
                   table_name: {
@@ -4532,7 +4575,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description: 'Success',
             schema: {
               type: 'array',
-              items: {},
+              items: {
+                title: 'ConstantResourceResponse',
+              },
             },
           },
         },
@@ -4558,6 +4603,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: 'array',
               items: {
+                title: 'ConstantsResponse',
                 type: "string",
               },
             },
