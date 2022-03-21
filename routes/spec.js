@@ -1024,11 +1024,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 },
                 solo_competitive_rank: {
                   description: 'solo_competitive_rank',
-                  type: 'string',
+                  type: 'integer',
                 },
                 competitive_rank: {
                   description: 'competitive_rank',
-                  type: 'string',
+                  type: 'integer',
                 },
                 rank_tier: {
                   description: 'rank_tier',
