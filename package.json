@@ -42,7 +42,7 @@
     "JSONStream": "^1.3.5",
     "knex": "^0.21.12",
     "long": "^4.0.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.3",
     "nock": "^13.0.5",
     "passport": "^0.4.1",
     "passport-steam": "^1.0.12",
