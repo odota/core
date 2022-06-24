@@ -22,10 +22,8 @@ const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
 const app = express();
 const steamObj = {};
 const launch = new Date();
-const minUpTimeSeconds = 660;
-const maxUpTimeSeconds = 3600;
+const minUpTimeSeconds = 60;
 const timeoutMs = 1500;
-const successThreshold = 0.5;
 const accountsToUse = 5;
 const matchRequestLimit = 500;
 const port = config.PORT || config.RETRIEVER_PORT;
@@ -379,9 +377,7 @@ app.use((req, res, cb) => {
     matchRequestDelay + matchRequestDelayIncr,
   );
   const shouldRestart = (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds)
-    || getUptime() > maxUpTimeSeconds
     || (!allReady && getUptime() > minUpTimeSeconds)
-    || (matchSuccesses / matchRequests < successThreshold && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
