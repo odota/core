@@ -26,4 +26,5 @@ module.exports = {
   115074332: {}, // Sheemap
   94620402: {}, // lmmfranco
   193480093: {}, // angary
+  83615933: {}, // kshammer
 };

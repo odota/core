@@ -1,4 +1,5 @@
 const teamObject = {
+  title: 'TeamObjectResponse',
   type: 'object',
   properties: {
     team_id: {
@@ -32,6 +33,7 @@ const teamObject = {
   },
 };
 const matchObject = {
+  title: 'MatchObjectResponse',
   type: 'object',
   properties: {
     match_id: {
@@ -97,6 +99,7 @@ const matchObject = {
   },
 };
 const heroObject = {
+  title: 'HeroObjectResponse',
   type: 'object',
   properties: {
     id: {
@@ -131,6 +134,7 @@ const heroObject = {
 const playerObject = {
   type: 'array',
   items: {
+    title: 'PlayerObjectResponse',
     type: 'object',
     properties: {
       account_id: {
@@ -225,6 +229,7 @@ const playerObject = {
 const leagueObject = {
   type: 'array',
   items: {
+    title: 'LeagueObjectResponse',
     type: 'object',
     properties: {
       leagueid: {
