@@ -20,6 +20,7 @@ const redis = require('../store/redis');
 const utility = require('../util/utility');
 const config = require('../config');
 const bodyParser = require('body-parser');
+const stripe = require('stripe');
 
 const { redisCount } = utility;
 
@@ -281,10 +282,10 @@ app.post('/manageSub', async (req, res) => {
   if (!customer) {
     return res.status(400).json({ error: 'customer not found' });
   }
-  const session = await createSelfServicePortal(
-    customer.customer_id,
-    req.body?.return_url
-  );
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customer.customer_id,
+    return_url: req.body?.return_url,
+  });
   return res.json(session);
 });
 app.use('/api', api);
