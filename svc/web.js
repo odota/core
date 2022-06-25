@@ -19,6 +19,7 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const utility = require('../util/utility');
 const config = require('../config');
+const bodyParser = require('body-parser');
 
 const { redisCount } = utility;
 
@@ -227,9 +228,6 @@ app.use((req, res, cb) => {
     if (req.user && req.user.account_id) {
       redis.zadd('visitors', moment().format('X'), req.user.account_id);
     }
-    if (req.user && req.user.account_id) {
-      redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id);
-    }
     redis.lpush('load_times', elapsed);
     redis.ltrim('load_times', 0, 9999);
   });
@@ -251,6 +249,7 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
+app.use(bodyParser.json());
 app.route('/login').get(passport.authenticate('steam', {
   failureRedirect: '/api',
 }));
@@ -269,6 +268,24 @@ app.route('/logout').get((req, res) => {
     return res.redirect(config.UI_HOST);
   }
   return res.redirect('/api');
+});
+app.route('/subscribeSuccess').get((req, res) => {
+  // TODO look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
+  // TODO associate the customer id with the steam account ID (req.user.account_id)
+  // update subscriber table
+  // Send the user back to the subscribe page
+});
+app.post('/manageSub', async (req, res) => {
+  const result = await db.raw(`SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'`, [req.user.account_id]);
+  const customer = result?.rows?.[0];
+  if (!customer) {
+    return res.status(400).json({ error: 'customer not found' });
+  }
+  const session = await createSelfServicePortal(
+    customer.customer_id,
+    req.body?.return_url
+  );
+  return res.json(session);
 });
 app.use('/api', api);
 app.use('/webhooks', webhooks);

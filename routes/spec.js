@@ -1018,10 +1018,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
               title: 'PlayerResponse',
               type: 'object',
               properties: {
-                tracked_until: {
-                  description: 'tracked_until',
-                  type: 'string',
-                },
                 solo_competitive_rank: {
                   description: 'solo_competitive_rank',
                   type: 'integer',
@@ -1122,9 +1118,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 }
                 cb(err, playerData);
               });
-            },
-            tracked_until(cb) {
-              redis.zscore('tracked', accountId, cb);
             },
             solo_competitive_rank(cb) {
               db.first().from('solo_competitive_rank').where({ account_id: accountId }).asCallback((err, row) => {
@@ -2505,20 +2498,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 banner: {
                   description: 'banner',
                   type: 'object',
-                },
-                cheese: {
-                  description: 'cheese',
-                  type: 'object',
-                  properties: {
-                    cheese: {
-                      description: 'cheese',
-                      type: 'string',
-                    },
-                    goal: {
-                      description: 'goal',
-                      type: 'string',
-                    },
-                  },
                 },
               },
             },

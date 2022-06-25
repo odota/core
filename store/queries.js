@@ -1189,14 +1189,17 @@ function getMetadata(req, callback) {
     banner(cb) {
       redis.get('banner', cb);
     },
-    cheese(cb) {
-      redis.get('cheese_goal', (err, result) => cb(err, {
-        cheese: result,
-        goal: config.GOAL,
-      }));
-    },
     user(cb) {
       cb(null, req.user);
+    },
+    isSubscriber(cb) {
+      if (req.user) {
+        db.raw(`SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'`, [req.user.account_id]).asCallback((err, result) => {
+          cb(err, Boolean(result?.rows?.[0]));
+        });
+      } else {
+        cb(null, false);
+      }
     },
   }, callback);
 }
