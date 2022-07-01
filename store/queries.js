@@ -485,7 +485,7 @@ function getMatchRankTier(match, cb) {
     }
     // Remove undefined/null values
     const filt = result.filter(r => r);
-    const avg = Math.floor(filt.map(r => Number(r)).reduce((a, b) => a + b, 0) / filt.length);
+    const avg = Math.floor(filt.map(r => Number(r)).reduce((a, b) => a + b, 0) / filt.length) || null;
     return cb(err, avg, filt.length);
   });
 }
@@ -912,6 +912,16 @@ function insertMatch(match, options, cb) {
     });
   }
 
+  function getAverageRank(cb) {
+    if (options.origin === 'scanner') {
+      getMatchRankTier(match, (err, avg) => {
+        match.average_rank = avg || null;
+        return cb();
+      });
+    }
+    return cb();
+  }
+
   function upsertMatchCassandra(cb) {
     // console.log('[INSERTMATCH] upserting into Cassandra');
     return cleanRowCassandra(cassandra, 'matches', match, (err, match) => {
@@ -1120,6 +1130,7 @@ function insertMatch(match, options, cb) {
     decideLogParse,
     updateMatchGcData,
     upsertMatch,
+    getAverageRank,
     upsertMatchCassandra,
     upsertParsedMatch,
     updatePlayerCaches,
