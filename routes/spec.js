@@ -1269,25 +1269,29 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.',
                     type: 'integer',
                   },
+                  average_rank: {
+                    description: 'Average rank of players with public match data',
+                    type: 'integer',
+                  },
                   xp_per_min: {
                     description: 'Experience Per Minute obtained by the player',
                     type: 'integer',
                   },
                   gold_per_min: {
                     description: 'Average gold per minute of the player',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   hero_damage: {
                     description: 'Total hero damage to enemy heroes',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   hero_healing: {
                     description: 'Total healing of ally heroes',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   last_hits: {
                     description: 'Total last hits the player had at the end of the match',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   lane: {
                     description: 'Integer corresponding to which lane the player laned in for the match',
@@ -1333,6 +1337,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               'deaths',
               'assists',
               'skill',
+              'average_rank',
               'xp_per_min',
               'gold_per_min',
               'hero_damage',
