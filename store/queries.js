@@ -918,8 +918,9 @@ function insertMatch(match, options, cb) {
         match.average_rank = avg || null;
         return cb();
       });
+    } else {
+      cb();
     }
-    return cb();
   }
 
   function upsertMatchCassandra(cb) {
