@@ -3967,6 +3967,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: 'GET /teams',
         description: 'Get team data',
         tags: ['teams'],
+        parameters: [{
+          name: 'page',
+          in: 'query',
+          description: 'Page number, zero indexed. Each page returns up to 1000 entries.',
+          required: false,
+          type: 'integer',
+        }],
         responses: {
           200: {
             description: 'Success',
@@ -3982,7 +3989,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
             FROM teams
             LEFT JOIN team_rating using(team_id)
             ORDER BY rating desc NULLS LAST
-            LIMIT 1000`)
+            LIMIT 1000
+            OFFSET ?`, [(Number(req.params.page) || 0) * 1000])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
