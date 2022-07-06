@@ -191,7 +191,8 @@ CREATE TABLE IF NOT EXISTS player_caches (
   item_3 text,
   item_4 text,
   item_5 text,
-  item_neutral text
+  item_neutral text,
+  average_rank int,
 );
 
 ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };

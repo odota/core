@@ -1269,25 +1269,29 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.',
                     type: 'integer',
                   },
+                  average_rank: {
+                    description: 'Average rank of players with public match data',
+                    type: 'integer',
+                  },
                   xp_per_min: {
                     description: 'Experience Per Minute obtained by the player',
                     type: 'integer',
                   },
                   gold_per_min: {
                     description: 'Average gold per minute of the player',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   hero_damage: {
                     description: 'Total hero damage to enemy heroes',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   hero_healing: {
                     description: 'Total healing of ally heroes',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   last_hits: {
                     description: 'Total last hits the player had at the end of the match',
-                    type: 'integer'
+                    type: 'integer',
                   },
                   lane: {
                     description: 'Integer corresponding to which lane the player laned in for the match',
@@ -1333,6 +1337,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               'deaths',
               'assists',
               'skill',
+              'average_rank',
               'xp_per_min',
               'gold_per_min',
               'hero_damage',
@@ -1416,6 +1421,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: 'Skill bracket assigned by Valve (Normal, High, Very High)',
                     type: 'integer',
                   },
+                  average_rank: {
+                    description: 'Average rank of players with public match data',
+                    type: 'integer',
+                  },
                   leaver_status: {
                     description: 'Integer describing whether or not the player left the game. 0: didn\'t leave. 1: left safely. 2+: Abandoned',
                     type: 'integer',
@@ -1432,7 +1441,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         route: () => '/players/:account_id/matches',
         func: (req, res, cb) => {
           // Use passed fields as additional fields, if available
-          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'leaver_status', 'party_size'];
+          const additionalFields = req.query.project || ['hero_id', 'start_time', 'duration', 'player_slot', 'radiant_win', 'game_mode', 'lobby_type', 'version', 'kills', 'deaths', 'assists', 'skill', 'average_rank', 'leaver_status', 'party_size'];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {
             if (err) {
