@@ -270,7 +270,7 @@ app.route('/logout').get((req, res) => {
   }
   return res.redirect('/api');
 });
-app.route('/subscribeSuccess').get((req, res) => {
+app.route('/subscribeSuccess').get(async (req, res) => {
   if (!req.query.session_id) {
     return res.status(400).json({error: 'no session ID'});
   }
