@@ -3,7 +3,8 @@
  * */
 const db = require('../store/db');
 const utility = require('../util/utility');
-const stripe = require('stripe');
+const config = require('../config');
+const stripe = require('stripe')(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
 
 async function run(cb) {

@@ -20,7 +20,7 @@ const redis = require('../store/redis');
 const utility = require('../util/utility');
 const config = require('../config');
 const bodyParser = require('body-parser');
-const stripe = require('stripe');
+const stripe = require('stripe')(config.STRIPE_SECRET);
 
 const { redisCount } = utility;
 
@@ -271,10 +271,21 @@ app.route('/logout').get((req, res) => {
   return res.redirect('/api');
 });
 app.route('/subscribeSuccess').get((req, res) => {
-  // TODO look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
-  // TODO associate the customer id with the steam account ID (req.user.account_id)
-  // update subscriber table
+  if (!req.query.session_id) {
+    return res.status(400).json({error: 'no session ID'});
+  }
+  if (!req.user?.account_id) {
+    return res.status(400).json({error: 'no account ID'});
+  }
+  // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
+  const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+  const customer = await stripe.customers.retrieve(session.customer);
+  const accountId = req.user.account_id;
+  // associate the customer id with the steam account ID (req.user.account_id)
+  await db.raw('INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status', 
+  [accountId, customer.id, 'active']);
   // Send the user back to the subscribe page
+  return res.redirect(config.UI_HOST + '/subscribe');
 });
 app.post('/manageSub', async (req, res) => {
   const result = await db.raw(`SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'`, [req.user.account_id]);

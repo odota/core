@@ -1101,6 +1101,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       type: 'boolean',
                       default: false,
                     },
+                    is_subscriber: {
+                      description: 'Boolean indicating if the user subscribed to OpenDota',
+                      type: 'boolean',
+                      default: false,
+                    }
                   },
                 },
               },
@@ -1116,6 +1121,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 if (playerData !== null && playerData !== undefined) {
                   playerData.is_contributor = isContributor(accountId);
                 }
+                playerData.is_subscriber = Boolean(playerData.status);
                 cb(err, playerData);
               });
             },
@@ -1614,6 +1620,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                   is_contributor: {
                     description: 'is_contributor',
+                    type: 'boolean',
+                  },
+                  is_subscriber: {
+                    description: 'is_subscriber',
                     type: 'boolean',
                   },
                   last_login: {

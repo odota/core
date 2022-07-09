@@ -56,6 +56,8 @@ async function extendPlayerData(player, match) {
   computeMatchData(p);
   const row = await db.first().from('rank_tier').where({ account_id: p.account_id || null });
   p.rank_tier = row ? row.rating : null;
+  const subscriber = await db.first().from('subscriber').where({ account_id: p.account_id });
+  p.is_subscriber = Boolean(subscriber?.status);
   return Promise.resolve(p);
 }
 
