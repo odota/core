@@ -512,7 +512,7 @@ CREATE TABLE IF NOT EXISTS subscriber (
   PRIMARY KEY (account_id),
   account_id bigint,
   customer_id varchar(255),
-  status varchar(100),
+  status varchar(100)
 );
 
 DO $$
