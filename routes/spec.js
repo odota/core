@@ -1121,7 +1121,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 if (playerData !== null && playerData !== undefined) {
                   playerData.is_contributor = isContributor(accountId);
                 }
-                playerData.is_subscriber = Boolean(playerData.status);
+                playerData.is_subscriber = Boolean(playerData?.status);
                 cb(err, playerData);
               });
             },
