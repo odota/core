@@ -376,7 +376,7 @@ function getPlayerHeroRankings(accountId, cb) {
 
 function getPlayer(db, accountId, cb) {
   if (!Number.isNaN(Number(accountId))) {
-    db.first('players.account_id', 'personaname', 'name', 'plus', 'cheese', 'steamid', 'avatar', 'avatarmedium', 'avatarfull', 'profileurl', 'last_login', 'loccountrycode', 'subscriber.active')
+    db.first('players.account_id', 'personaname', 'name', 'plus', 'cheese', 'steamid', 'avatar', 'avatarmedium', 'avatarfull', 'profileurl', 'last_login', 'loccountrycode', 'subscriber.status')
       .from('players')
       .leftJoin('notable_players', 'players.account_id', 'notable_players.account_id')
       .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
