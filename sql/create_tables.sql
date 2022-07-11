@@ -508,6 +508,13 @@ CREATE TABLE IF NOT EXISTS parsed_matches (
   match_id bigint
 );
 
+CREATE TABLE IF NOT EXISTS subscriber (
+  PRIMARY KEY (account_id),
+  account_id bigint,
+  customer_id varchar(255),
+  status varchar(100)
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

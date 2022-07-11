@@ -19,6 +19,8 @@ const db = require('../store/db');
 const redis = require('../store/redis');
 const utility = require('../util/utility');
 const config = require('../config');
+const bodyParser = require('body-parser');
+const stripe = require('stripe')(config.STRIPE_SECRET);
 
 const { redisCount } = utility;
 
@@ -227,9 +229,6 @@ app.use((req, res, cb) => {
     if (req.user && req.user.account_id) {
       redis.zadd('visitors', moment().format('X'), req.user.account_id);
     }
-    if (req.user && req.user.account_id) {
-      redis.zadd('tracked', moment().add(config.UNTRACK_DAYS, 'days').format('X'), req.user.account_id);
-    }
     redis.lpush('load_times', elapsed);
     redis.ltrim('load_times', 0, 9999);
   });
@@ -251,6 +250,7 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
+app.use(bodyParser.json());
 app.route('/login').get(passport.authenticate('steam', {
   failureRedirect: '/api',
 }));
@@ -269,6 +269,35 @@ app.route('/logout').get((req, res) => {
     return res.redirect(config.UI_HOST);
   }
   return res.redirect('/api');
+});
+app.route('/subscribeSuccess').get(async (req, res) => {
+  if (!req.query.session_id) {
+    return res.status(400).json({error: 'no session ID'});
+  }
+  if (!req.user?.account_id) {
+    return res.status(400).json({error: 'no account ID'});
+  }
+  // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
+  const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+  const customer = await stripe.customers.retrieve(session.customer);
+  const accountId = req.user.account_id;
+  // associate the customer id with the steam account ID (req.user.account_id)
+  await db.raw('INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status', 
+  [accountId, customer.id, 'active']);
+  // Send the user back to the subscribe page
+  return res.redirect(config.UI_HOST + '/subscribe');
+});
+app.post('/manageSub', async (req, res) => {
+  const result = await db.raw(`SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'`, [req.user.account_id]);
+  const customer = result?.rows?.[0];
+  if (!customer) {
+    return res.status(400).json({ error: 'customer not found' });
+  }
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customer.customer_id,
+    return_url: req.body?.return_url,
+  });
+  return res.json(session);
 });
 app.use('/api', api);
 app.use('/webhooks', webhooks);

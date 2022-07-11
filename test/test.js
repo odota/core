@@ -310,7 +310,10 @@ describe('api', () => {
             }
             if (replacedPath.startsWith('/admin')) {
               assert.equal(res.statusCode, 403);
-            } else {
+            } else if (replacedPath.startsWith('/subscribeSuccess'))  {
+              assert.equal(res.statusCode, 400);
+            }
+            else {
               assert.equal(res.statusCode, 200);
             }
             return cb(err);

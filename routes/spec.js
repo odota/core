@@ -1018,10 +1018,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
               title: 'PlayerResponse',
               type: 'object',
               properties: {
-                tracked_until: {
-                  description: 'tracked_until',
-                  type: 'string',
-                },
                 solo_competitive_rank: {
                   description: 'solo_competitive_rank',
                   type: 'integer',
@@ -1105,6 +1101,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       type: 'boolean',
                       default: false,
                     },
+                    is_subscriber: {
+                      description: 'Boolean indicating if the user subscribed to OpenDota',
+                      type: 'boolean',
+                      default: false,
+                    }
                   },
                 },
               },
@@ -1119,12 +1120,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
               queries.getPlayer(db, accountId, (err, playerData) => {
                 if (playerData !== null && playerData !== undefined) {
                   playerData.is_contributor = isContributor(accountId);
+                  playerData.is_subscriber = Boolean(playerData?.status);
                 }
                 cb(err, playerData);
               });
-            },
-            tracked_until(cb) {
-              redis.zscore('tracked', accountId, cb);
             },
             solo_competitive_rank(cb) {
               db.first().from('solo_competitive_rank').where({ account_id: accountId }).asCallback((err, row) => {
@@ -1630,6 +1629,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                   is_contributor: {
                     description: 'is_contributor',
+                    type: 'boolean',
+                  },
+                  is_subscriber: {
+                    description: 'is_subscriber',
                     type: 'boolean',
                   },
                   last_login: {
@@ -2514,20 +2517,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 banner: {
                   description: 'banner',
                   type: 'object',
-                },
-                cheese: {
-                  description: 'cheese',
-                  type: 'object',
-                  properties: {
-                    cheese: {
-                      description: 'cheese',
-                      type: 'string',
-                    },
-                    goal: {
-                      description: 'goal',
-                      type: 'string',
-                    },
-                  },
                 },
               },
             },

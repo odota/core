@@ -376,9 +376,10 @@ function getPlayerHeroRankings(accountId, cb) {
 
 function getPlayer(db, accountId, cb) {
   if (!Number.isNaN(Number(accountId))) {
-    db.first('players.account_id', 'personaname', 'name', 'plus', 'cheese', 'steamid', 'avatar', 'avatarmedium', 'avatarfull', 'profileurl', 'last_login', 'loccountrycode')
+    db.first('players.account_id', 'personaname', 'name', 'plus', 'cheese', 'steamid', 'avatar', 'avatarmedium', 'avatarfull', 'profileurl', 'last_login', 'loccountrycode', 'subscriber.status')
       .from('players')
       .leftJoin('notable_players', 'players.account_id', 'notable_players.account_id')
+      .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
       .where({
         'players.account_id': Number(accountId),
       })
@@ -409,9 +410,10 @@ function getPeers(db, input, player, cb) {
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
   return async.each(teammatesArr, (t, cb) => {
-    db.first('players.account_id', 'personaname', 'name', 'avatar', 'avatarfull', 'last_login')
+    db.first('players.account_id', 'personaname', 'name', 'avatar', 'avatarfull', 'last_login', 'subscriber.status')
       .from('players')
       .leftJoin('notable_players', 'players.account_id', 'notable_players.account_id')
+      .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
       .where({
         'players.account_id': t.account_id,
       })
@@ -422,6 +424,7 @@ function getPeers(db, input, player, cb) {
         t.personaname = row.personaname;
         t.name = row.name;
         t.is_contributor = isContributor(t.account_id);
+        t.is_subscriber = Boolean(row.status);
         t.last_login = row.last_login;
         t.avatar = row.avatar;
         t.avatarfull = row.avatarfull;
@@ -1201,14 +1204,17 @@ function getMetadata(req, callback) {
     banner(cb) {
       redis.get('banner', cb);
     },
-    cheese(cb) {
-      redis.get('cheese_goal', (err, result) => cb(err, {
-        cheese: result,
-        goal: config.GOAL,
-      }));
-    },
     user(cb) {
       cb(null, req.user);
+    },
+    isSubscriber(cb) {
+      if (req.user) {
+        db.raw(`SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'`, [req.user.account_id]).asCallback((err, result) => {
+          cb(err, Boolean(result?.rows?.[0]));
+        });
+      } else {
+        cb(null, false);
+      }
     },
   }, callback);
 }
