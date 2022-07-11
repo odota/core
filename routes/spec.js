@@ -3988,7 +3988,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             LEFT JOIN team_rating using(team_id)
             ORDER BY rating desc NULLS LAST
             LIMIT 1000
-            OFFSET ?`, [(Number(req.params.page) || 0) * 1000])
+            OFFSET ?`, [(Number(req.query.page) || 0) * 1000])
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
