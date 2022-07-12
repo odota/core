@@ -18,7 +18,7 @@ const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
 
 const {
-  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor, countItemPopularity,
+  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor, countItemPopularity, averageMedal
 } = utility;
 const { computeMatchData } = compute;
 const columnInfo = {};
@@ -488,7 +488,7 @@ function getMatchRankTier(match, cb) {
     }
     // Remove undefined/null values
     const filt = result.filter(r => r);
-    const avg = Math.floor(filt.map(r => Number(r)).reduce((a, b) => a + b, 0) / filt.length) || null;
+    const avg = averageMedal(filt.map(r => Number(r))) || null;
     return cb(err, avg, filt.length);
   });
 }
