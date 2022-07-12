@@ -451,13 +451,8 @@ function average(data) {
  * Finds the average rank medal of input array
  * */
 function averageMedal(values) {
-  let medalSum = 0;
-  let starSum = 0;
-  values.forEach((value) => {
-    medalSum += Number(String(value)[0]);
-    starSum += value % 10;
-  });
-  const avgStars = (medalSum * 5 + starSum) / values.length;
+  const numStars = values.map(value => Number(String(value)[0]) * 5 + (value % 10));
+  const avgStars = numStars.reduce((a, b) => a + b, 0) / numStars.length;
   return Math.floor(avgStars / 5) * 10 + Math.round(avgStars % 5);
 }
 
