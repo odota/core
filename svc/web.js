@@ -288,6 +288,9 @@ app.route('/subscribeSuccess').get(async (req, res) => {
   return res.redirect(config.UI_HOST + '/subscribe');
 });
 app.post('/manageSub', async (req, res) => {
+  if (!req.user?.account_id) {
+    return res.status(400).json({error: 'no account ID'});
+  }
   const result = await db.raw(`SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'`, [req.user.account_id]);
   const customer = result?.rows?.[0];
   if (!customer) {
