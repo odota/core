@@ -287,7 +287,7 @@ app.route('/subscribeSuccess').get(async (req, res) => {
   // Send the user back to the subscribe page
   return res.redirect(config.UI_HOST + '/subscribe');
 });
-app.post('/manageSub', async (req, res) => {
+app.route('/manageSub').post(async (req, res) => {
   if (!req.user?.account_id) {
     return res.status(400).json({error: 'no account ID'});
   }
