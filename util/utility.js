@@ -457,8 +457,8 @@ function averageMedal(values) {
     medalSum += Number(String(value)[0]);
     starSum += value % 10;
   });
-  const len = values.length;
-  return Math.round(medalSum / len) * 10 + Math.round(starSum / len);
+  const avgStars = (medalSum * 5 + starSum) / values.length;
+  return Math.floor(avgStars / 5) * 10 + Math.round(avgStars % 5);
 }
 
 /**
