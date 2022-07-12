@@ -448,6 +448,20 @@ function average(data) {
 }
 
 /**
+ * Finds the average rank medal of input array
+ * */
+function averageMedal(values) {
+  let medalSum = 0;
+  let starSum = 0;
+  values.forEach((value) => {
+    medalSum += Number(String(value)[0]);
+    starSum += value % 10;
+  });
+  const len = values.length;
+  return Math.round(medalSum / len) * 10 + Math.round(starSum / len);
+}
+
+/**
  * Finds the standard deviation of the input array
  * */
 function stdDev(data) {
@@ -846,6 +860,7 @@ module.exports = {
   getStartOfBlockMinutes,
   getEndOfMonth,
   average,
+  averageMedal,
   stdDev,
   median,
   deserialize,
