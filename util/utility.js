@@ -453,7 +453,7 @@ function average(data) {
 function averageMedal(values) {
   const numStars = values.map(value => Number(String(value)[0]) * 5 + (value % 10));
   const avgStars = numStars.reduce((a, b) => a + b, 0) / numStars.length;
-  return Math.floor(avgStars / 5) * 10 + Math.round(avgStars % 5);
+  return Math.floor(avgStars / 5) * 10 + Math.max(1, Math.round(avgStars % 5));
 }
 
 /**
