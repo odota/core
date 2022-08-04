@@ -9,6 +9,7 @@ const express = require('express');
 const compression = require('compression');
 const cp = require('child_process');
 const config = require('../config');
+const os = require('os');
 
 const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
   /* eslint-disable global-require */
@@ -21,7 +22,6 @@ const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH ? {
 
 const app = express();
 const steamObj = {};
-const launch = new Date();
 const minUpTimeSeconds = 60;
 const timeoutMs = 1500;
 const accountsToUse = 5;
@@ -48,7 +48,11 @@ function selfDestruct() {
 }
 
 function getUptime() {
-  return (new Date() - launch) / 1000;
+  return process.uptime();
+}
+
+function getServerUptime() {
+  return os.uptime();
 }
 
 function genStats() {
@@ -58,6 +62,7 @@ function genStats() {
     profileRequests,
     profileSuccesses,
     uptime: getUptime(),
+    serverUptime: getServerUptime(),
     numReadyAccounts: Object.keys(steamObj).length,
     totalAccounts: users.length,
   };
