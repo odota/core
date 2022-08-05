@@ -63,6 +63,7 @@ function genStats() {
     profileSuccesses,
     uptime: getUptime(),
     serverUptime: getServerUptime(),
+    hostname: os.hostname(),
     numReadyAccounts: Object.keys(steamObj).length,
     totalAccounts: users.length,
   };
