@@ -47,7 +47,7 @@
     "passport": "^0.4.1",
     "passport-steam": "^1.0.12",
     "pg": "^8.2.1",
-    "pg-query-stream": "^3.1.1",
+    "pg-query-stream": "^4.2.3",
     "pm2": "^4.2.1",
     "protobufjs": "^5.0.3",
     "redis": "^2.8.0",
