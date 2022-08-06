@@ -296,7 +296,7 @@ function init() {
 
 function chooseLoginInfo() {
   if (config.STEAM_ACCOUNT_DATA) {
-    const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`, {maxBuffer: 2 * 1024 * 1024}).toString().split(/\r\n|\r|\n/g);
+    const accountData = cp.execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`, {maxBuffer: 8 * 1024 * 1024}).toString().split(/\r\n|\r|\n/g);
     const startIndex = Math.floor((Math.random() * (accountData.length - accountsToUse)));
     console.log('total registered accounts: %s, startIndex: %s', accountData.length, startIndex);
     const accountDataToUse = accountData.slice(startIndex, startIndex + accountsToUse);
