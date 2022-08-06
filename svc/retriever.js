@@ -25,9 +25,9 @@ const steamObj = {};
 const minUpTimeSeconds = 60;
 const timeoutMs = 1500;
 const accountsToUse = 9;
-const matchRequestLimit = 920;
+const matchRequestLimit = 950;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 500;
+const matchRequestDelay = 700;
 const matchRequestDelayStep = 10;
 
 let matchRequestDelayIncr = 0;
