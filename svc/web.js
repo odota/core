@@ -134,6 +134,7 @@ app.use((req, res, cb) => {
     cb();
   }
 });
+app.set('trust proxy', true);
 app.use((req, res, cb) => {
   const ip = req.ip;
   res.locals.ip = ip;
