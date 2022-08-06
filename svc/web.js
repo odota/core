@@ -7,7 +7,7 @@ const compression = require('compression');
 const session = require('cookie-session');
 const moment = require('moment');
 const express = require('express');
-const requestIp = require('request-ip');
+// const requestIp = require('request-ip');
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
@@ -97,7 +97,7 @@ app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 // Get client IP to use for rate limiting;
-app.use(requestIp.mw());
+// app.use(requestIp.mw());
 
 // Dummy User ID for testing
 if (config.NODE_ENV === 'test') {
@@ -135,7 +135,7 @@ app.use((req, res, cb) => {
   }
 });
 app.use((req, res, cb) => {
-  const ip = req.clientIp;
+  const ip = req.ip;
   res.locals.ip = ip;
 
   let rateLimit = '';
