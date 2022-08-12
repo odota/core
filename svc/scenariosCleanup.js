@@ -26,4 +26,4 @@ function clearScenariosTables(cb) {
   ], cb);
 }
 
-utility.invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 1);
+utility.invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 6);
