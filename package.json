@@ -56,7 +56,7 @@
     "steam": "github:odota/node-steam-npm",
     "steam-resources": "github:odota/node-steam-resources",
     "stripe": "^9.12.0",
-    "supertest": "^4.0.2",
+    "supertest": "^6.2.4",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
