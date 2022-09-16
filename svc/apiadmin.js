@@ -112,10 +112,8 @@ function updateStripeUsage(cursor, cb) {
               // - 1 so that it's within the same month
               // TODO(albert): We could break this out by day for the invoice
               // but we'd have to make changes to web.js and metrics
-              stripe.usageRecords.create({
+              stripe.subscriptionItems.createUsageRecord(e.items.data[0].id, {
                 quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
-                action: 'set',
-                subscription_item: e.items.data[0].id,
                 timestamp: e.current_period_end - 1,
               })
                 .then(() => console.log('[STRIPE] updated', e.id, usageCount))
