@@ -57,9 +57,14 @@ module.exports = {
   projectParam: {
     name: 'project',
     in: 'query',
-    description: 'Fields to project (array)',
+    description: 'Fields to include in the returned matches',
     required: false,
-    type: 'string',
+    type: 'array',
+    collectionFormat: 'multi',
+    items: {
+      type: 'enum',
+      enum: ['account_id','match_id','player_slot','heroes','radiant_win','start_time','duration','cluster','region','patch','lobby_type','game_mode','level','kills','deaths','assists','kda','last_hits','denies','hero_damage','tower_damage','hero_healing','gold_per_min','xp_per_min','hero_id','leaver_status','version','courier_kills','tower_kills','neutral_kills','lane','lane_role','is_roaming','obs','sen','item_uses','purchase_time','item_usage','item_win','purchase','multi_kills','kill_streaks','all_word_counts','my_word_counts','throw','comeback','stomp','loss','actions_per_min','purchase_ward_observer','purchase_ward_sentry','purchase_tpscroll','purchase_rapier','purchase_gem','pings','stuns','lane_efficiency_pct','skill','party_size','item_0','item_1','item_2','item_3','item_4','item_5','item_neutral']
+    }
   },
   winParam: {
     name: 'win',
