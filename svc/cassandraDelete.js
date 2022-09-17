@@ -3,7 +3,7 @@ const db = require('../store/db');
 
 async function start() {
     // Get the current max_match_id from postgres, subtract 200000000
-    let max = (await db.raw(`select max(match_id) from public_matches`))?.rows?.[0]?.match_id;
+    let max = (await db.raw(`select max(match_id) from public_matches`))?.rows?.[0]?.max;
     let limit = max - 200000000;
     console.log(limit);
     while(true) {
