@@ -41,6 +41,11 @@ function hasActiveKey(rows) {
   return getActiveKey(rows) !== null;
 }
 
+function hasToken(req) {
+  const { token } = req.body;
+  return token && token.id && token.email;
+}
+
 /**
  * Invariant: A Stripe subscription and an API key is a 1 to 1 mapping. canceled sub = deleted key and vice versa a single user can have multiple subs but only one active at a given time (others have is_canceled = true).
  */
@@ -171,16 +176,14 @@ keys
       res.sendStatus(200);
     });
   })
-  .use((req, res) => {
-    const { token } = req.body;
-    if (!token || !token.id || !token.email) {
+  .post(async (req, res) => {
+    // Creates key
+
+    if(!hasToken(req)) {
       return res.sendStatus(500).json({
         error: "Missing token",
       });
     }
-  })
-  .post(async (req, res) => {
-    // Creates key
 
     // Check if there is already an active subscription
     const rows = await db.from("api_keys").where({
@@ -253,7 +256,13 @@ keys
   })
   .put(async (req, res) => {
     // Updates billing
-
+    
+    if(!hasToken(req)) {
+      return res.sendStatus(500).json({
+        error: "Missing token",
+      });
+    }
+    
     const rows = await db
       .from("api_keys")
       .where({
