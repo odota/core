@@ -33,7 +33,7 @@ keys.use((req, res, next) => {
 function getActiveKey(rows) {
   const notCanceled = rows.filter(row => row.is_canceled != true);
 
-  return notCanceled.length > 0 ? not_canceled[0] : null;
+  return notCanceled.length > 0 ? notCanceled[0] : null;
 }
 
 // @param rows - query result from api_keys table
@@ -219,7 +219,7 @@ keys
     const apiKey = uuid();
 
     const sub = await stripe.subscriptions.create({
-      customer: customer.id,
+      customer: customer_id,
       items: [{ plan: stripeAPIPlan }],
       billing_cycle_anchor: moment().add(1, "month").startOf("month").unix(),
       metadata: {
@@ -231,7 +231,7 @@ keys
       `
         INSERT INTO api_keys (account_id, api_key, customer_id, subscription_id)
         VALUES (?, ?, ?, ?)
-        ON CONFLICT (account_id) DO UPDATE SET
+        ON CONFLICT (account_id, subscription_id) DO UPDATE SET
         api_key = ?, customer_id = ?, subscription_id = ?
       `,
       [

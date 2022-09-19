@@ -91,6 +91,10 @@ function updateStripeUsage(cursor, cb) {
   const options = {
     plan: config.STRIPE_API_PLAN,
     limit: 100,
+    // From the docs:
+    // By default, returns a list of subscriptions that have not been canceled.
+    // In order to list canceled subscriptions, specify status=canceled.
+    status: "all"
   };
 
   if (cursor) {
@@ -105,12 +109,12 @@ function updateStripeUsage(cursor, cb) {
         data,
         5,
         (e, cb2) => {
-          // Deactive any keys which failed to bill
+          // Deactivate any keys which failed to bill
           if (e.status === "canceled") {
-            console.log("CANCELD SUBSCRIPTION", e);
+            console.log("CANCELED SUBSCRIPTION", e);
             db.raw(
               `
-              UPDATE api_keys SET api_key = NULL WHERE subscription_id = ?
+              UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?
             `,
               [e.id],
             ).then(cb2, (err) => {
@@ -203,5 +207,5 @@ utility.invokeInterval((cb) => {
   });
 }, 5 * 60 * 1000); // Update every 5 min
 
-// invokeInterval(cb => storeUsageCounts(0, cb), 10 * 60 * 1000); // Every 10 minutes
-invokeInterval(cb => updateStripeUsage(0, cb), 60 * 1000); // Every 5 minutes
+invokeInterval(cb => storeUsageCounts(0, cb), 5 * 1000); // Every 10 minutes
+invokeInterval(cb => updateStripeUsage(0, cb), 5 * 1000); // Every 5 minutes

@@ -249,7 +249,7 @@ app.use((req, res, next) => {
 // CORS headers
 app.use(cors({
   origin: true,
-  credentials: true,
+  credentials: true
 }));
 app.use(bodyParser.json());
 app.route('/login').get(passport.authenticate('steam', {
@@ -306,6 +306,7 @@ app.route('/manageSub').post(async (req, res) => {
 app.use('/api', api);
 app.use('/webhooks', webhooks);
 // CORS Preflight for API keys
+// NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
 app.options('/keys', cors());
 app.use('/keys', keys);
 // 404 route
