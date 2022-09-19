@@ -13,6 +13,7 @@ async function run(cb) {
     for await (const sub of stripe.subscriptions.list({
       limit: 100,
       status: 'active',
+      price: 'price_1LE5NqCHN72mG1oKg2Y9pqXb',
     })) {
       result.push(sub);
     }
@@ -21,6 +22,7 @@ async function run(cb) {
     // Delete all status from subscribers
     await db.raw('UPDATE subscriber SET status = NULL');
     for (let i = 0; i < result.length; i++) {
+        const sub = result[i];
         // Mark list of subscribers as active
         await db.raw(`UPDATE subscriber SET status = ? WHERE customer_id = ?`, [sub.status, sub.customer]);
     }
