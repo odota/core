@@ -16,12 +16,13 @@ async function run(cb) {
     })) {
       result.push(sub);
     }
+    console.log(result.length, 'subs');
     await db.raw('BEGIN TRANSACTION');
     // Delete all status from subscribers
     await db.raw('UPDATE subscriber SET status = NULL');
     for (let i = 0; i < result.length; i++) {
         // Mark list of subscribers as active
-        await db.raw(`INSERT INTO subscriber(account_id, customer_id, status) VALUES(?, ?, ?) ON CONFLICT(customer_id) DO UPDATE SET account_id=EXCLUDED.account_id, customer_id=EXCLUDED.customer_id`, [account_id, customer_id, sub.status]);
+        await db.raw(`UPDATE subscriber SET status = ? WHERE customer_id = ?`, [sub.status, sub.customer]);
     }
     await db.raw('COMMIT');
 }
