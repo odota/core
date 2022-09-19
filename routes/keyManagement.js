@@ -148,6 +148,7 @@ keys
       })
       .andWhereNot("is_canceled", "=", true);
 
+    console.log("rows", rows, req.user.account_id);
     if (rows.length === 0) {
       return res.sendStatus(200);
     }

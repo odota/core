@@ -54,7 +54,7 @@ function storeUsageCounts(cursor, cb) {
                       "",
                       values[i + 1],
                       values[i + 1],
-                    ],
+                    ]
                   );
                 }
                 throw Error("No record found.");
@@ -81,106 +81,81 @@ function storeUsageCounts(cursor, cb) {
           }
 
           return cb();
-        },
+        }
       );
     }
   });
 }
 
-function updateStripeUsage(cursor, cb) {
+async function updateStripeUsage(cb) {
   const options = {
     plan: config.STRIPE_API_PLAN,
     limit: 100,
     // From the docs:
     // By default, returns a list of subscriptions that have not been canceled.
     // In order to list canceled subscriptions, specify status=canceled.
-    status: "all"
+    status: "all",
   };
 
-  if (cursor) {
-    options.starting_after = cursor;
-  }
+  try {
+    // https://stripe.com/docs/api/pagination/auto so we don't need to worry about cursors
+    for await (const sub of stripe.subscriptions.list(options)) {
+      // Deactivate any keys which failed to bill
+      if (sub.status === "canceled") {
+        console.log("CANCELED SUBSCRIPTION", sub.id);
+        await db.raw(
+          `
+                  UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?
+                `,
+          [sub.id]
+        );
+      }
 
-  stripe.subscriptions
-    .list(options)
-    .then((list) => {
-      const { data } = list;
-      async.eachLimit(
-        data,
-        5,
-        (e, cb2) => {
-          // Deactivate any keys which failed to bill
-          if (e.status === "canceled") {
-            console.log("CANCELED SUBSCRIPTION", e);
-            db.raw(
-              `
-              UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?
-            `,
-              [e.id],
-            ).then(cb2, (err) => {
-              console.log(err);
-              cb2();
-            });
-          }
+      const startTime = moment
+        .unix(sub.current_period_end - 1)
+        .startOf("month");
+      const endTime = moment.unix(sub.current_period_end - 1).endOf("month");
 
-          const startTime = moment
-            .unix(e.current_period_end - 1)
-            .startOf("month");
-          const endTime = moment.unix(e.current_period_end - 1).endOf("month");
-
-          db.raw(
-            `
-          SELECT
-            SUM(usage) as usage_count
-          FROM (
-            SELECT
-              api_key_usage.api_key,
-              api_key_usage.ip,
-              MAX(api_key_usage.usage_count) as usage
-            FROM api_key_usage, api_keys
-            WHERE
-              api_key_usage.account_id = api_keys.account_id
-              AND timestamp >= ?
-              AND timestamp <= ?
-              AND subscription_id = ?
-            GROUP BY api_key_usage.api_key, api_key_usage.ip
-          ) as t1
-        `,
-            [startTime.format("YYYY-MM-DD"), endTime.format("YYYY-MM-DD"), e.id],
-          ).asCallback((err, res) => {
-            if (err) {
-              cb2(err);
-            } else if (res.rows.length > 0 && res.rows[0].usage_count) {
-              const usageCount = res.rows[0].usage_count;
-              // Set usage to be the value at end of the billing period
-              // - 1 so that it's within the same month
-              // TODO(albert): We could break this out by day for the invoice
-              // but we'd have to make changes to web.js and metrics
-              stripe.subscriptionItems.createUsageRecord(e.items.data[0].id, {
-                quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
-                timestamp: e.current_period_end - 1,
-              })
-                .then(() => console.log('[STRIPE] updated', e.id, usageCount))
-                .then(cb2)
-                .catch(cb2);
-            } else {
-              // console.log(`No usage for ${e.id}`);
-              cb2();
-            }
-          });
-        },
-        (err) => {
-          if (err) {
-            cb(err);
-          } else if (list.has_more) {
-            updateStripeUsage(data[data.length - 1].id, cb);
-          } else {
-            cb();
-          }
-        },
+      const res = await db.raw(
+        `
+                SELECT
+                  SUM(usage) as usage_count
+                FROM (
+                  SELECT
+                    api_key_usage.api_key,
+                    api_key_usage.ip,
+                    MAX(api_key_usage.usage_count) as usage
+                  FROM api_key_usage, api_keys
+                  WHERE
+                    api_key_usage.account_id = api_keys.account_id
+                    AND timestamp >= ?
+                    AND timestamp <= ?
+                    AND subscription_id = ?
+                  GROUP BY api_key_usage.api_key, api_key_usage.ip
+                ) as t1
+              `,
+        [startTime.format("YYYY-MM-DD"), endTime.format("YYYY-MM-DD"), sub.id]
       );
-    })
-    .catch(err => console.log(err));
+
+      if (res.rows.length > 0 && res.rows[0].usage_count) {
+        const usageCount = res.rows[0].usage_count;
+        // Set usage to be the value at end of the billing period
+        // - 1 so that it's within the same month
+        // TODO(albert): We could break this out by day for the invoice
+        // but we'd have to make changes to web.js and metrics
+        await stripe.subscriptionItems.createUsageRecord(sub.items.data[0].id, {
+          quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
+          timestamp: sub.current_period_end - 1,
+        });
+        console.log("[STRIPE] updated", sub.id, usageCount);
+      } else {
+        // console.log(`No usage for ${e.id}`);
+      }
+    }
+    cb();
+  } catch (err) {
+    cb(err);
+  }
 }
 
 utility.invokeInterval((cb) => {
@@ -188,7 +163,7 @@ utility.invokeInterval((cb) => {
     if (err) {
       cb(err);
     } else if (rows.length > 0) {
-      const keys = rows.map(e => e.api_key);
+      const keys = rows.map((e) => e.api_key);
 
       redis
         .multi()
@@ -207,5 +182,5 @@ utility.invokeInterval((cb) => {
   });
 }, 5 * 60 * 1000); // Update every 5 min
 
-invokeInterval(cb => storeUsageCounts(0, cb), 5 * 1000); // Every 10 minutes
-invokeInterval(cb => updateStripeUsage(0, cb), 5 * 1000); // Every 5 minutes
+invokeInterval((cb) => storeUsageCounts(0, cb), 5 * 1000); // Every 10 minutes
+invokeInterval((cb) => updateStripeUsage(cb), 5 * 1000); // Every 5 minutes
