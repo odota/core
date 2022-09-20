@@ -99,14 +99,13 @@ function doHeroStats(cb) {
       Object.keys(result).forEach((key) => {
         result[key].rows.forEach((row) => {
           objectResponse[row.hero_id] = {
-            
             ...objectResponse[row.hero_id],
             ...(key === "publicHeroes"
               ? {
                   [`${row.rank_tier}_pick`]: row.pick,
                   [`${row.rank_tier}_win`]: row.win,
                 }
-              : row)
+              : row),
           };
         });
       });

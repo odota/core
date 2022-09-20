@@ -26,9 +26,8 @@ function populate(e, container, meta) {
       break;
     case "ability_levels":
       meta.ability_levels[e.unit] = {
-        
         [e.key]: e.level,
-        ...meta.ability_levels[e.unit]
+        ...meta.ability_levels[e.unit],
       };
       meta.ability_levels[e.unit][e.key] = e.level;
       break;
@@ -84,10 +83,9 @@ function populate(e, container, meta) {
           }
           if (e.type === "kills_log" && e.tracked_death) {
             arrEntry = {
-              
               tracked_death: e.tracked_death,
-                tracked_sourcename: e.tracked_sourcename,
-              ...arrEntry
+              tracked_sourcename: e.tracked_sourcename,
+              ...arrEntry,
             };
           }
         } else {

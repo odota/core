@@ -124,7 +124,7 @@ function upsertMatchSample(match, cb) {
             avg_rank_tier: avgRankTier || null,
             num_rank_tier: numRankTier || null,
           };
-          const newMatch = { ...match, ...matchMmrData};
+          const newMatch = { ...match, ...matchMmrData };
           return upsert(
             trx,
             "public_matches",
