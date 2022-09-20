@@ -10,7 +10,8 @@ const assert = require("assert");
 const supertest = require("supertest");
 const pg = require("pg");
 const fs = require("fs");
-const cassandraDriver = require("cassandra-driver");
+const cassandraDriver = require("cassandra-dr
+iver");
 const swaggerParser = require("@apidevtools/swagger-parser");
 const config = require("../config");
 const redis = require("../store/redis");

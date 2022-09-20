@@ -31,7 +31,7 @@ keys.use((req, res, next) => {
 
 // @param rows - query result from api_keys table
 function getActiveKey(rows) {
-  const notCanceled = rows.filter(row => row.is_canceled != true);
+  const notCanceled = rows.filter((row) => row.is_canceled != true);
 
   return notCanceled.length > 0 ? notCanceled[0] : null;
 }
@@ -59,43 +59,42 @@ keys
       .asCallback((err, results) => {
         if (err) {
           return next(err);
-        } 
-        
+        }
+
         const keyRecord = getActiveKey(results);
         if (keyRecord === null) {
           return res.json({});
         }
 
-          async.parallel(
-            {
-              customer: (cb) => {
+        async.parallel(
+          {
+            customer: (cb) => {
+              const toReturn = {
+                api_key: results[0].api_key,
+              };
 
+              stripe.customers
 
-                const toReturn = {
-                  api_key: results[0].api_key,
-                };
+                .retrieve(results[0].customer_id)
+                .then((customer) => {
+                  const source = customer.sources.data[0];
 
-                stripe.customers
-                  .retrieve(results[0].customer_id)
-                  .then((customer) => {
-                    const source = customer.sources.data[0];
+                  toReturn.credit_brand = source.brand;
+                  toReturn.credit_last4 = source.last4;
 
-                    toReturn.credit_brand = source.brand;
-                    toReturn.credit_last4 = source.last4;
-
-                    return stripe.subscriptions.retrieve(
-                      results[0].subscription_id
-                    );
-                  })
-                  .then((sub) => {
-                    toReturn.current_period_end = sub.current_period_end;
-                  })
-                  .then(() => cb(null, toReturn))
-                  .catch((err) => cb(err));
-              },
-              usage: (cb) => {
-                db.raw(
-                  `
+                  return stripe.subscriptions.retrieve(
+                    results[0].subscription_id
+                  );
+                })
+                .then((sub) => {
+                  toReturn.current_period_end = sub.current_period_end;
+                })
+                .then(() => cb(null, toReturn))
+                .catch((err) => cb(err));
+            },
+            usage: (cb) => {
+              db.raw(
+                `
                 SELECT
                   account_id,
                   month,
@@ -118,25 +117,24 @@ keys
                 GROUP BY account_id, month
                 ORDER BY month DESC
               `,
-                  [
-                    moment().subtract(5, "month").startOf("month"),
-                    moment().endOf("month"),
-                    req.user.account_id,
-                  ]
-                ).asCallback((err, results) =>
-                  cb(err, err ? null : results.rows)
-                );
-              },
+                [
+                  moment().subtract(5, "month").startOf("month"),
+                  moment().endOf("month"),
+                  req.user.account_id,
+                ]
+              ).asCallback((err, results) =>
+                cb(err, err ? null : results.rows)
+              );
             },
-            (err, results) => {
-              if (err) {
-                next(err);
-              } else {
-                res.json(results);
-              }
+          },
+          (err, results) => {
+            if (err) {
+              next(err);
+            } else {
+              res.json(results);
             }
-          );
-        
+          }
+        );
       });
   })
   .delete(async (req, res) => {
@@ -180,7 +178,7 @@ keys
   .post(async (req, res) => {
     // Creates key
 
-    if(!hasToken(req)) {
+    if (!hasToken(req)) {
       return res.sendStatus(500).json({
         error: "Missing token",
       });
@@ -257,13 +255,13 @@ keys
   })
   .put(async (req, res) => {
     // Updates billing
-    
-    if(!hasToken(req)) {
+
+    if (!hasToken(req)) {
       return res.sendStatus(500).json({
         error: "Missing token",
       });
     }
-    
+
     const rows = await db
       .from("api_keys")
       .where({

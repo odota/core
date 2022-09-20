@@ -441,6 +441,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
     return cassandra.eachRow(
       query,
       [accountId],
+
       {
         prepare: true,
         fetchSize: 5000,
@@ -675,11 +676,12 @@ function getMatchRankTier(match, cb) {
         return cb(err);
       }
 
-    // Remove undefined/null values
-    const filt = result.filter(r => r);
-    const avg = averageMedal(filt.map(r => Number(r))) || null;
-    return cb(err, avg, filt.length);
-  });
+      // Remove undefined/null values
+      const filt = result.filter((r) => r);
+      const avg = averageMedal(filt.map((r) => Number(r))) || null;
+      return cb(err, avg, filt.length);
+    }
+  );
 }
 
 function upsert(db, table, row, conflict, cb) {
@@ -972,6 +974,7 @@ async function updateTeamRankings(match, options) {
       ratingDiff1,
       win1,
       Number(!win1),
+
       match.start_time,
     ]);
     await db.raw(query, [
@@ -983,6 +986,7 @@ async function updateTeamRankings(match, options) {
       ratingDiff2,
       win2,
       Number(!win2),
+
       match.start_time,
     ]);
   }
@@ -1592,30 +1596,33 @@ function insertMatch(match, options, cb) {
       }
     );
   }
-  async.series({
-    preprocess,
-    tellFeed,
-    decideLogParse,
-    updateMatchGcData,
-    upsertMatch,
-    getAverageRank,
-    upsertMatchCassandra,
-    upsertParsedMatch,
-    updatePlayerCaches,
-    clearMatchCache,
-    clearPlayerCaches,
-    telemetry,
-    decideCounts,
-    decideScenarios,
-    decideParsedBenchmarks,
-    decideMmr,
-    decideProfile,
-    decideGcData,
-    decideMetaParse,
-    decideReplayParse,
-  }, (err, results) => {
-    cb(err, results.decideReplayParse);
-  });
+  async.series(
+    {
+      preprocess,
+      tellFeed,
+      decideLogParse,
+      updateMatchGcData,
+      upsertMatch,
+      getAverageRank,
+      upsertMatchCassandra,
+      upsertParsedMatch,
+      updatePlayerCaches,
+      clearMatchCache,
+      clearPlayerCaches,
+      telemetry,
+      decideCounts,
+      decideScenarios,
+      decideParsedBenchmarks,
+      decideMmr,
+      decideProfile,
+      decideGcData,
+      decideMetaParse,
+      decideReplayParse,
+    },
+    (err, results) => {
+      cb(err, results.decideReplayParse);
+    }
+  );
 }
 
 function getItemTimings(req, cb) {
