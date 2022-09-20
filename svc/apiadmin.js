@@ -80,8 +80,9 @@ function storeUsageCounts(cursor, cb) {
             return storeUsageCounts(cursor, cb);
           }
 
-          return cb();
-        }
+            return cb();
+          }
+      
       );
     }
   });

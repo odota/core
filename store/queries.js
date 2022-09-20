@@ -19,13 +19,20 @@ const benchmarksUtil = require("../util/benchmarksUtil");
 
 const {
   redisCount,
+ 
   convert64to32,
+ 
   serialize,
+ 
   deserialize,
+ 
   isRadiant,
+ 
   isContributor,
+ 
   countItemPopularity,
-  averageMedal,
+ 
+  averageMedal,,
 } = utility;
 const { computeMatchData } = compute;
 const columnInfo = {};
@@ -50,14 +57,16 @@ function cleanRowPostgres(db, table, row, cb) {
     return doCleanRow(null, columnInfo[table], row, cb);
   }
   return db(table)
+    
     .columnInfo()
+    
     .asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      columnInfo[table] = result;
-      return doCleanRow(err, columnInfo[table], row, cb);
-    });
+        if (err) {
+          return cb(err);
+        }
+        columnInfo[table] = result;
+        return doCleanRow(err, columnInfo[table], row, cb);
+      });
 }
 
 function cleanRowCassandra(cassandra, table, row, cb) {
@@ -204,9 +213,11 @@ function getDistributions(redis, cb) {
 
 function getProPlayers(db, redis, cb) {
   db.raw(
+    
     `
     SELECT * from notable_players
     `
+  
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);
@@ -261,6 +272,7 @@ function getLeaderboard(db, redis, key, n, cb) {
 
 function getHeroRankings(db, redis, heroId, options, cb) {
   db.raw(
+    
     `
   SELECT players.account_id, score, personaname, name, avatar, last_login, rating as rank_tier
   from hero_ranking
@@ -271,7 +283,9 @@ function getHeroRankings(db, redis, heroId, options, cb) {
   ORDER BY score DESC
   LIMIT 100
   `,
+   
     [heroId || 0]
+  
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);
@@ -286,6 +300,7 @@ function getHeroRankings(db, redis, heroId, options, cb) {
 
 function getHeroItemPopularity(db, redis, heroId, options, cb) {
   db.raw(
+    
     `
   SELECT purchase_log
   FROM player_matches
@@ -294,19 +309,23 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
   ORDER BY match_id DESC
   LIMIT 100
   `,
+   
     [heroId || 0]
+  
   ).asCallback((err, purchaseLogs) => {
     if (err) {
       return cb(err);
     }
 
     const items = purchaseLogs.rows
-      .flatMap((purchaseLog) => purchaseLog.purchase_log)
+      
+      .flatMap(((purchaseLog)) => purchaseLog.purchase_log)
+      
       .map((item) => {
-        const time = parseInt(item.time, 10);
-        const { cost, id } = constants.items[item.key];
-        return { cost, id, time };
-      });
+          const time = parseInt(item.time, 10);
+          const { cost, id } = constants.items[item.key];
+          return { cost, id, time };
+        });
 
     const startGameItems = countItemPopularity(
       items.filter((item) => item.time <= 0)
@@ -485,6 +504,7 @@ function getPlayerRatings(db, accountId, cb) {
 
 function getPlayerHeroRankings(accountId, cb) {
   db.raw(
+    
     `
   SELECT
   hero_id,
@@ -496,7 +516,9 @@ function getPlayerHeroRankings(accountId, cb) {
   GROUP BY hero_id, playerscore.score
   ORDER BY percent_rank desc
   `,
+   
     [accountId]
+  
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);
@@ -608,7 +630,9 @@ function getProPeers(db, input, player, cb) {
   }
   const teammates = input;
   return db
+    
     .raw(
+      
       `select *, notable_players.account_id
           FROM notable_players
           LEFT JOIN players
@@ -716,8 +740,11 @@ function insertPlayer(db, player, indexPlayer, cb) {
     player.account_id = Number(convert64to32(player.steamid));
   }
   if (
+    
     !player.account_id ||
+   
     player.account_id === utility.getAnonymousAccountId()
+  
   ) {
     return cb();
   }
@@ -1000,7 +1027,9 @@ function createMatchCopy(match, players) {
 
 function insertMatch(match, options, cb) {
   const players = match.players
+   
     ? JSON.parse(JSON.stringify(match.players))
+   
     : undefined;
   const abilityUpgrades = [];
   const savedAbilityLvls = {
@@ -1290,16 +1319,19 @@ function insertMatch(match, options, cb) {
       }
 
       async.series(
+        
         {
-          upsertMatch,
-          upsertPlayerMatches,
-          upsertPicksBans,
-          upsertMatchPatch,
-          upsertTeamMatch,
-          upsertTeamRankings,
-          upsertMatchLogs,
-        },
+            upsertMatch,
+            upsertPlayerMatches,
+            upsertPicksBans,
+            upsertMatchPatch,
+            upsertTeamMatch,
+            upsertTeamRankings,
+            upsertMatchLogs,
+          },
+       
         exit
+      
       );
     });
   }
@@ -1400,12 +1432,15 @@ function insertMatch(match, options, cb) {
     };
     if (types[options.type]) {
       redis.lpush(
+        
         types[options.type],
+       
         JSON.stringify({
-          match_id: match.match_id,
-          duration: match.duration,
-          start_time: match.start_time,
-        })
+            match_id: match.match_id,
+            duration: match.duration,
+            start_time: match.start_time,
+          })
+      
       );
       redis.ltrim(types[options.type], 0, 9);
     }
