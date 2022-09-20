@@ -43,7 +43,7 @@ function runParse(match, job, cb) {
       if (err) {
         return cb(err);
       }
-      const result = { ...JSON.parse(stdout), ...match};
+      const result = { ...JSON.parse(stdout), ...match };
       return insertMatch(
         result,
         {

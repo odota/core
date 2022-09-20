@@ -29,10 +29,7 @@ function processExpand(entries, meta) {
   function expand(e) {
     // set slot and player_slot
     const slot = "slot" in e ? e.slot : meta.hero_to_slot[e.unit];
-    output.push(
-      { ...e, slot,
-        player_slot: meta.slot_to_playerslot[slot],}
-    );
+    output.push({ ...e, slot, player_slot: meta.slot_to_playerslot[slot] });
   }
 
   // Tracks current aegis holder so we can ignore kills that pop aegis
@@ -47,11 +44,7 @@ function processExpand(entries, meta) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
       const inflictor = translate(e.inflictor);
-      expand(
-        { ...e, unit,
-          key,
-          type: "damage",}
-      );
+      expand({ ...e, unit, key, type: "damage" });
       // check if this damage happened to a real hero
       if (e.targethero && !e.targetillusion) {
         // reverse
@@ -201,13 +194,14 @@ function processExpand(entries, meta) {
         });
       }
 
-      expand(
-        { ...e, unit,
-          key,
-          type: "killed",
-          // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
-          value: 1,}
-      );
+      expand({
+        ...e,
+        unit,
+        key,
+        type: "killed",
+        // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
+        value: 1,
+      });
     },
     DOTA_COMBATLOG_ABILITY(e) {
       // Value field is 1 or 2 for toggles
@@ -373,7 +367,7 @@ function processExpand(entries, meta) {
     },
     actions(e) {
       // expand the actions
-      expand({ ...e, value: 1});
+      expand({ ...e, value: 1 });
     },
     CHAT_MESSAGE_RUNE_PICKUP(e) {
       expand({
@@ -595,32 +589,18 @@ function processExpand(entries, meta) {
       }
     },
     obs(e) {
-      expand(
-        { ...e, type: "obs",
-          posData: true,}
-      );
-      expand(
-        { ...e, type: "obs_log",}
-      );
+      expand({ ...e, type: "obs", posData: true });
+      expand({ ...e, type: "obs_log" });
     },
     sen(e) {
-      expand(
-        { ...e, type: "sen",
-          posData: true,}
-      );
-      expand(
-        { ...e, type: "sen_log",}
-      );
+      expand({ ...e, type: "sen", posData: true });
+      expand({ ...e, type: "sen_log" });
     },
     obs_left(e) {
-      expand(
-        { ...e, type: "obs_left_log",}
-      );
+      expand({ ...e, type: "obs_left_log" });
     },
     sen_left(e) {
-      expand(
-        { ...e, type: "sen_left_log",}
-      );
+      expand({ ...e, type: "sen_left_log" });
     },
     epilogue(e) {
       expand(e);

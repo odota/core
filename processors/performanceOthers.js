@@ -27,9 +27,8 @@ function greevilsGreed(e, container, meta) {
     }
 
     alchPlayer.performance_others = {
-      
       greevils_greed_gold: 0,
-      ...alchPlayer.performance_others
+      ...alchPlayer.performance_others,
     };
 
     alchPlayer.performance_others.greevils_greed_gold += goldBase + goldStack;
@@ -67,10 +66,9 @@ function track(e, container, meta) {
     }
 
     trackerPlayer.performance_others = {
-      
       tracked_deaths: 0,
-        track_gold: 0,
-      ...trackerPlayer.performance_others
+      track_gold: 0,
+      ...trackerPlayer.performance_others,
     };
 
     trackerPlayer.performance_others.tracked_deaths += 1;
