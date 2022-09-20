@@ -1,34 +1,34 @@
 version: 2
 updates:
-- package-ecosystem: npm
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  ignore:
-  - dependency-name: stripe
-    versions:
-    - 8.132.0
-    - 8.133.0
-    - 8.134.0
-    - 8.135.0
-    - 8.136.0
-    - 8.137.0
-    - 8.138.0
-    - 8.139.0
-    - 8.140.0
-    - 8.141.0
-    - 8.142.0
-    - 8.143.0
-    - 8.145.0
-  - dependency-name: redis
-    versions:
-    - 3.0.2
-    - 3.1.0
-    - 3.1.1
-  - dependency-name: pg-query-stream
-    versions:
-    - 4.0.0
-  - dependency-name: pg
-    versions:
-    - 8.5.1
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: stripe
+        versions:
+          - 8.132.0
+          - 8.133.0
+          - 8.134.0
+          - 8.135.0
+          - 8.136.0
+          - 8.137.0
+          - 8.138.0
+          - 8.139.0
+          - 8.140.0
+          - 8.141.0
+          - 8.142.0
+          - 8.143.0
+          - 8.145.0
+      - dependency-name: redis
+        versions:
+          - 3.0.2
+          - 3.1.0
+          - 3.1.1
+      - dependency-name: pg-query-stream
+        versions:
+          - 4.0.0
+      - dependency-name: pg
+        versions:
+          - 8.5.1

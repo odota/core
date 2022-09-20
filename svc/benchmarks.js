@@ -1,9 +1,9 @@
-const queue = require('../store/queue');
-const benchmarksUtil = require('../util/benchmarksUtil');
-const buildMatch = require('../store/buildMatch');
-const utility = require('../util/utility');
-const config = require('../config');
-const redis = require('../store/redis');
+const queue = require("../store/queue");
+const benchmarksUtil = require("../util/benchmarksUtil");
+const buildMatch = require("../store/buildMatch");
+const utility = require("../util/utility");
+const config = require("../config");
+const redis = require("../store/redis");
 
 const { benchmarks } = benchmarksUtil;
 
@@ -17,16 +17,26 @@ async function doParsedBenchmarks(matchID, cb) {
         if (p.hero_id) {
           Object.keys(benchmarks).forEach((key) => {
             const metric = benchmarks[key](match, p);
-            if (metric !== undefined && metric !== null && !Number.isNaN(Number(metric))) {
+            if (
+              metric !== undefined &&
+              metric !== null &&
+              !Number.isNaN(Number(metric))
+            ) {
               const rkey = [
-                'benchmarks',
-                utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+                "benchmarks",
+                utility.getStartOfBlockMinutes(
+                  config.BENCHMARK_RETENTION_MINUTES,
+                  0
+                ),
                 key,
                 p.hero_id,
-              ].join(':');
+              ].join(":");
               redis.zadd(rkey, metric, match.match_id);
               // expire at time two epochs later (after prev/current cycle)
-              const expiretime = utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 2);
+              const expiretime = utility.getStartOfBlockMinutes(
+                config.BENCHMARK_RETENTION_MINUTES,
+                2
+              );
               redis.expireat(rkey, expiretime);
             }
           });
@@ -40,4 +50,4 @@ async function doParsedBenchmarks(matchID, cb) {
   }
 }
 
-queue.runQueue('parsedBenchmarksQueue', 1, doParsedBenchmarks);
+queue.runQueue("parsedBenchmarksQueue", 1, doParsedBenchmarks);

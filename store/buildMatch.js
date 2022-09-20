@@ -1,45 +1,61 @@
 /**
  * Functions to build/cache match object
  * */
-const constants = require('dotaconstants');
-const { promisify } = require('util');
-const config = require('../config');
-const queries = require('./queries');
-const compute = require('../util/compute');
-const utility = require('../util/utility');
-const cassandra = require('../store/cassandra');
-const redis = require('../store/redis');
-const db = require('../store/db');
+const constants = require("dotaconstants");
+const { promisify } = require("util");
+const config = require("../config");
+const queries = require("./queries");
+const compute = require("../util/compute");
+const utility = require("../util/utility");
+const cassandra = require("../store/cassandra");
+const redis = require("../store/redis");
+const db = require("../store/db");
 
 const { computeMatchData } = compute;
 const { deserialize, buildReplayUrl, isContributor } = utility;
 const getRedisAsync = promisify(redis.get).bind(redis);
 
 async function getMatchData(matchId) {
-  const result = await cassandra.execute('SELECT * FROM matches where match_id = ?', [Number(matchId)], {
-    prepare: true,
-    fetchSize: 1,
-    autoPage: true,
-  });
-  const deserializedResult = result.rows.map(m => deserialize(m));
+  const result = await cassandra.execute(
+    "SELECT * FROM matches where match_id = ?",
+    [Number(matchId)],
+    {
+      prepare: true,
+      fetchSize: 1,
+      autoPage: true,
+    }
+  );
+  const deserializedResult = result.rows.map((m) => deserialize(m));
   return Promise.resolve(deserializedResult[0]);
 }
 
 async function getPlayerMatchData(matchId) {
-  const result = await cassandra.execute('SELECT * FROM player_matches where match_id = ?', [Number(matchId)], {
-    prepare: true,
-    fetchSize: 24,
-    autoPage: true,
-  });
-  const deserializedResult = result.rows.map(m => deserialize(m));
-  return Promise.all(deserializedResult.map(r => db.raw(`
+  const result = await cassandra.execute(
+    "SELECT * FROM player_matches where match_id = ?",
+    [Number(matchId)],
+    {
+      prepare: true,
+      fetchSize: 24,
+      autoPage: true,
+    }
+  );
+  const deserializedResult = result.rows.map((m) => deserialize(m));
+  return Promise.all(
+    deserializedResult.map((r) =>
+      db
+        .raw(
+          `
         SELECT personaname, name, last_login 
         FROM players
         LEFT JOIN notable_players
         ON players.account_id = notable_players.account_id
         WHERE players.account_id = ?
-      `, [r.account_id])
-    .then(names => ({ ...r, ...names.rows[0] }))));
+      `,
+          [r.account_id]
+        )
+        .then((names) => ({ ...r, ...names.rows[0] }))
+    )
+  );
 }
 
 async function extendPlayerData(player, match) {
@@ -54,32 +70,43 @@ async function extendPlayerData(player, match) {
     is_contributor: isContributor(player.account_id),
   };
   computeMatchData(p);
-  const row = await db.first().from('rank_tier').where({ account_id: p.account_id || null });
+  const row = await db
+    .first()
+    .from("rank_tier")
+    .where({ account_id: p.account_id || null });
   p.rank_tier = row ? row.rating : null;
-  const subscriber = await db.first().from('subscriber').where({ account_id: p.account_id || null });
+  const subscriber = await db
+    .first()
+    .from("subscriber")
+    .where({ account_id: p.account_id || null });
   p.is_subscriber = Boolean(subscriber?.status);
   return Promise.resolve(p);
 }
 
 async function prodataInfo(matchId) {
-  const result = await db.first(['radiant_team_id', 'dire_team_id', 'leagueid'])
-    .from('matches')
+  const result = await db
+    .first(["radiant_team_id", "dire_team_id", "leagueid"])
+    .from("matches")
     .where({
       match_id: matchId,
     });
   if (!result) {
     return Promise.resolve({});
   }
-  const leaguePromise = db.first().from('leagues').where({
+  const leaguePromise = db.first().from("leagues").where({
     leagueid: result.leagueid,
   });
-  const radiantTeamPromise = db.first().from('teams').where({
+  const radiantTeamPromise = db.first().from("teams").where({
     team_id: result.radiant_team_id,
   });
-  const direTeamPromise = db.first().from('teams').where({
+  const direTeamPromise = db.first().from("teams").where({
     team_id: result.dire_team_id,
   });
-  const [league, radiantTeam, direTeam] = await Promise.all([leaguePromise, radiantTeamPromise, direTeamPromise]);
+  const [league, radiantTeam, direTeam] = await Promise.all([
+    leaguePromise,
+    radiantTeamPromise,
+    direTeamPromise,
+  ]);
   return Promise.resolve({
     league,
     radiant_team: radiantTeam,
@@ -95,54 +122,81 @@ async function getMatch(matchId) {
   if (!match) {
     return Promise.resolve();
   }
-  utility.redisCount(redis, 'build_match');
+  utility.redisCount(redis, "build_match");
   let playersMatchData = [];
   try {
     playersMatchData = await getPlayerMatchData(matchId);
     if (playersMatchData.length === 0) {
-      throw new Error('no players found for match');
+      throw new Error("no players found for match");
     }
   } catch (e) {
     console.error(e);
-    if (e.message.startsWith('Server failure during read query') || e.message.startsWith('no players found') || e.message.startsWith('Unexpected') || e.message.includes('Attempt to access memory outside buffer bounds')) {
-      // Delete and request new 
-      await cassandra.execute('DELETE FROM player_matches where match_id = ?', [Number(matchId)], { prepare: true });
+    if (
+      e.message.startsWith("Server failure during read query") ||
+      e.message.startsWith("no players found") ||
+      e.message.startsWith("Unexpected") ||
+      e.message.includes("Attempt to access memory outside buffer bounds")
+    ) {
+      // Delete and request new
+      await cassandra.execute(
+        "DELETE FROM player_matches where match_id = ?",
+        [Number(matchId)],
+        { prepare: true }
+      );
       const match = {
         match_id: Number(matchId),
       };
       await new Promise((resolve, reject) => {
-      utility.getData(utility.generateJob('api_details', match).url, (err, body) => {
-        if (err) {
-          console.error(err);
-          return reject();
-        }
-        // match details response
-        const match = body.result;
-        return queries.insertMatch(match, {
-          type: 'api',
-          skipParse: true,
-        }, () => {
-          // Count for logging
-          utility.redisCount(redis, 'cassandra_repair');
-          resolve();
-        });
+        utility.getData(
+          utility.generateJob("api_details", match).url,
+          (err, body) => {
+            if (err) {
+              console.error(err);
+              return reject();
+            }
+            // match details response
+            const match = body.result;
+            return queries.insertMatch(
+              match,
+              {
+                type: "api",
+                skipParse: true,
+              },
+              () => {
+                // Count for logging
+                utility.redisCount(redis, "cassandra_repair");
+                resolve();
+              }
+            );
+          }
+        );
       });
-    });
-    playersMatchData = await getPlayerMatchData(matchId);
+      playersMatchData = await getPlayerMatchData(matchId);
     } else {
       throw e;
     }
   }
-  const playersPromise = Promise.all(playersMatchData.map(p => extendPlayerData(p, match)));
-  const gcdataPromise = db.first().from('match_gcdata').where({
+  const playersPromise = Promise.all(
+    playersMatchData.map((p) => extendPlayerData(p, match))
+  );
+  const gcdataPromise = db.first().from("match_gcdata").where({
     match_id: matchId,
   });
-  const cosmeticsPromise = Promise.all(Object.keys(match.cosmetics || {}).map(itemId => db.first().from('cosmetics').where({
-    item_id: itemId,
-  })));
+  const cosmeticsPromise = Promise.all(
+    Object.keys(match.cosmetics || {}).map((itemId) =>
+      db.first().from("cosmetics").where({
+        item_id: itemId,
+      })
+    )
+  );
   const prodataPromise = prodataInfo(matchId);
 
-  const [players, gcdata, prodata, cosmetics] = await Promise.all([playersPromise, gcdataPromise, prodataPromise, cosmeticsPromise]);
+  const [players, gcdata, prodata, cosmetics] = await Promise.all([
+    playersPromise,
+    gcdataPromise,
+    prodataPromise,
+    cosmeticsPromise,
+  ]);
 
   let matchResult = {
     ...match,
@@ -154,8 +208,13 @@ async function getMatch(matchId) {
   if (cosmetics) {
     const playersWithCosmetics = matchResult.players.map((p) => {
       const hero = constants.heroes[p.hero_id] || {};
-      const playerCosmetics = cosmetics.filter(Boolean).filter(c => match.cosmetics[c.item_id] === p.player_slot
-        && (!c.used_by_heroes || c.used_by_heroes === hero.name));
+      const playerCosmetics = cosmetics
+        .filter(Boolean)
+        .filter(
+          (c) =>
+            match.cosmetics[c.item_id] === p.player_slot &&
+            (!c.used_by_heroes || c.used_by_heroes === hero.name)
+        );
       return {
         ...p,
         cosmetics: playerCosmetics,
@@ -168,9 +227,15 @@ async function getMatch(matchId) {
   }
   computeMatchData(matchResult);
   if (matchResult.replay_salt) {
-    matchResult.replay_url = buildReplayUrl(matchResult.match_id, matchResult.cluster, matchResult.replay_salt);
+    matchResult.replay_url = buildReplayUrl(
+      matchResult.match_id,
+      matchResult.cluster,
+      matchResult.replay_salt
+    );
   }
-  const matchWithBenchmarks = await queries.getMatchBenchmarksPromisified(matchResult);
+  const matchWithBenchmarks = await queries.getMatchBenchmarksPromisified(
+    matchResult
+  );
   return Promise.resolve(matchWithBenchmarks);
 }
 

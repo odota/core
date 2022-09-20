@@ -1,5 +1,5 @@
-const input = 'areallyreallylongemailaddresss@gmail.com';
-const arr = input.split('@');
+const input = "areallyreallylongemailaddresss@gmail.com";
+const arr = input.split("@");
 const user = arr[0];
 let count = 0;
 const limit = 5000;
@@ -7,11 +7,11 @@ const limit = 5000;
 function permute(user, n) {
   if (n >= user.length || (limit && count > limit)) {
     arr[0] = user;
-    console.log(arr.join('@'));
+    console.log(arr.join("@"));
     count += 1;
     return;
   }
-  const diff = [user.substr(0, n), user.substr(n)].join('.');
+  const diff = [user.substr(0, n), user.substr(n)].join(".");
   // don't add a period
   permute(user, n + 1);
   // add a period

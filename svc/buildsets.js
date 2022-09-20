@@ -1,7 +1,7 @@
-const buildSets = require('../store/buildSets');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const utility = require('../util/utility');
+const buildSets = require("../store/buildSets");
+const redis = require("../store/redis");
+const db = require("../store/db");
+const utility = require("../util/utility");
 
 const { invokeInterval } = utility;
 
