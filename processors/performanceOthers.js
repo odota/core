@@ -26,13 +26,11 @@ function greevilsGreed(e, container, meta) {
         return;
     }
 
-    alchPlayer.performance_others = Object.assign(
-      {},
-      {
-        greevils_greed_gold: 0,
-      },
-      alchPlayer.performance_others
-    );
+    alchPlayer.performance_others = {
+      
+      greevils_greed_gold: 0,
+      ...alchPlayer.performance_others
+    };
 
     alchPlayer.performance_others.greevils_greed_gold += goldBase + goldStack;
   }
@@ -68,14 +66,12 @@ function track(e, container, meta) {
       gold += 250;
     }
 
-    trackerPlayer.performance_others = Object.assign(
-      {},
-      {
-        tracked_deaths: 0,
+    trackerPlayer.performance_others = {
+      
+      tracked_deaths: 0,
         track_gold: 0,
-      },
-      trackerPlayer.performance_others
-    );
+      ...trackerPlayer.performance_others
+    };
 
     trackerPlayer.performance_others.tracked_deaths += 1;
     trackerPlayer.performance_others.track_gold += gold;

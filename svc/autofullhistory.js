@@ -7,7 +7,7 @@ const redis = require("../store/redis");
 
 function getSummaries(cb) {
   db.raw(
-    `SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100) where last_match_time > (now() - interval '7 day')`
+    "SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100) where last_match_time > (now() - interval '7 day')"
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);

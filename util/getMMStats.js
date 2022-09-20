@@ -1,4 +1,4 @@
-const utility = require("../util/utility");
+const utility = require("./utility");
 const config = require("../config");
 
 const secret = config.RETRIEVER_SECRET;

@@ -8,8 +8,8 @@ const async = require("async");
 const express = require("express");
 const compression = require("compression");
 const cp = require("child_process");
-const config = require("../config");
 const os = require("os");
+const config = require("../config");
 
 const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH
   ? {

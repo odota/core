@@ -46,7 +46,10 @@ function updateHeroRankings(match, cb) {
         return db
           .select("score")
           .from("hero_ranking")
-          .where({ account_id: player.account_id, hero_id: player.hero_id })
+          .where({
+            account_id: player.account_id,
+            hero_id: player.hero_id,
+          })
           .asCallback((err, data1) => {
             if (err) {
               return cb(err);
@@ -121,7 +124,7 @@ function upsertMatchSample(match, cb) {
             avg_rank_tier: avgRankTier || null,
             num_rank_tier: numRankTier || null,
           };
-          const newMatch = Object.assign({}, match, matchMmrData);
+          const newMatch = { ...match, ...matchMmrData};
           return upsert(
             trx,
             "public_matches",

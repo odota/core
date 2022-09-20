@@ -30,10 +30,8 @@ function processExpand(entries, meta) {
     // set slot and player_slot
     const slot = "slot" in e ? e.slot : meta.hero_to_slot[e.unit];
     output.push(
-      Object.assign({}, e, {
-        slot,
-        player_slot: meta.slot_to_playerslot[slot],
-      })
+      { ...e, slot,
+        player_slot: meta.slot_to_playerslot[slot],}
     );
   }
 
@@ -50,11 +48,9 @@ function processExpand(entries, meta) {
       const key = computeIllusionString(e.targetname, e.targetillusion);
       const inflictor = translate(e.inflictor);
       expand(
-        Object.assign({}, e, {
-          unit,
+        { ...e, unit,
           key,
-          type: "damage",
-        })
+          type: "damage",}
       );
       // check if this damage happened to a real hero
       if (e.targethero && !e.targetillusion) {
@@ -206,13 +202,11 @@ function processExpand(entries, meta) {
       }
 
       expand(
-        Object.assign({}, e, {
-          unit,
+        { ...e, unit,
           key,
           type: "killed",
           // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
-          value: 1,
-        })
+          value: 1,}
       );
     },
     DOTA_COMBATLOG_ABILITY(e) {
@@ -379,7 +373,7 @@ function processExpand(entries, meta) {
     },
     actions(e) {
       // expand the actions
-      expand(Object.assign({}, e, { value: 1 }));
+      expand({ ...e, value: 1});
     },
     CHAT_MESSAGE_RUNE_PICKUP(e) {
       expand({
@@ -602,42 +596,30 @@ function processExpand(entries, meta) {
     },
     obs(e) {
       expand(
-        Object.assign({}, e, {
-          type: "obs",
-          posData: true,
-        })
+        { ...e, type: "obs",
+          posData: true,}
       );
       expand(
-        Object.assign({}, e, {
-          type: "obs_log",
-        })
+        { ...e, type: "obs_log",}
       );
     },
     sen(e) {
       expand(
-        Object.assign({}, e, {
-          type: "sen",
-          posData: true,
-        })
+        { ...e, type: "sen",
+          posData: true,}
       );
       expand(
-        Object.assign({}, e, {
-          type: "sen_log",
-        })
+        { ...e, type: "sen_log",}
       );
     },
     obs_left(e) {
       expand(
-        Object.assign({}, e, {
-          type: "obs_left_log",
-        })
+        { ...e, type: "obs_left_log",}
       );
     },
     sen_left(e) {
       expand(
-        Object.assign({}, e, {
-          type: "sen_left_log",
-        })
+        { ...e, type: "sen_left_log",}
       );
     },
     epilogue(e) {

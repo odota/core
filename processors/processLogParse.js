@@ -22,8 +22,7 @@ function processReduce(entries, meta) {
       return false;
     })
     .map((e) => {
-      const e2 = Object.assign({}, e, {
-        match_id: meta.match_id,
+      const e2 = { ...e, match_id: meta.match_id,
         attackername_slot:
           meta.slot_to_playerslot[meta.hero_to_slot[e.attackername]],
         targetname_slot:
@@ -34,8 +33,7 @@ function processReduce(entries, meta) {
           meta.slot_to_playerslot[meta.hero_to_slot[e.targetname]],
         player1_slot: meta.slot_to_playerslot[e.player1],
         player_slot: e.player_slot || meta.slot_to_playerslot[e.slot],
-        inflictor: translate(e.inflictor),
-      });
+        inflictor: translate(e.inflictor),};
       return e2;
     });
   /*

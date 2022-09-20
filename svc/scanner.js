@@ -73,9 +73,8 @@ function scanApi(seqNum) {
             nextSeqNum += 1;
             utility.redisCount(redis, "skip_seq_num");
             return cb();
-          } else {
-            return cb(err);
           }
+          return cb(err);
         }
         const resp =
           data.result && data.result.matches ? data.result.matches : [];

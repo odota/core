@@ -20,6 +20,10 @@
     "psql": "docker exec -it odota-postgres psql -U postgres -d yasp",
     "prettier": "prettier --write ."
   },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2
+  },
   "repository": {
     "type": "git",
     "url": "http://github.com/odota/core"
@@ -61,8 +65,9 @@
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",
-    "eslint": "^5.16.0",
-    "eslint-config-airbnb": "^17.1.0",
+    "eslint": "^7.0.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^8.2.1",
     "prettier": "^2.0.5"

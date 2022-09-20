@@ -1,4 +1,5 @@
 const cassandra = require("../store/cassandra");
+
 const myArgs = process.argv.slice(2);
 
 // 5000000000

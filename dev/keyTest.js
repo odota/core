@@ -2,7 +2,7 @@ const request = require("request");
 const async = require("async");
 const config = require("../config");
 
-let output = [];
+const output = [];
 
 async.eachSeries(
   config.STEAM_API_KEY.split(","),

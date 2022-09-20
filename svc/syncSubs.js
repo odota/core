@@ -5,6 +5,7 @@ const db = require("../store/db");
 const utility = require("../util/utility");
 const config = require("../config");
 const stripe = require("stripe")(config.STRIPE_SECRET);
+
 const { invokeInterval } = utility;
 
 async function run(cb) {
@@ -24,7 +25,7 @@ async function run(cb) {
   for (let i = 0; i < result.length; i++) {
     const sub = result[i];
     // Mark list of subscribers as active
-    await db.raw(`UPDATE subscriber SET status = ? WHERE customer_id = ?`, [
+    await db.raw("UPDATE subscriber SET status = ? WHERE customer_id = ?", [
       sub.status,
       sub.customer,
     ]);

@@ -1,13 +1,13 @@
 const { Console } = require("console");
 const readline = require("readline");
-const processAllPlayers = require("../processors/processAllPlayers");
-const processTeamfights = require("../processors/processTeamfights");
-const processLogParse = require("../processors/processLogParse");
+const processAllPlayers = require("./processAllPlayers");
+const processTeamfights = require("./processTeamfights");
+const processLogParse = require("./processLogParse");
 // const processUploadProps = require('../processors/processUploadProps');
-const processParsedData = require("../processors/processParsedData");
-const processMetadata = require("../processors/processMetadata");
-const processExpand = require("../processors/processExpand");
-const processDraftTimings = require("../processors/processDraftTimings");
+const processParsedData = require("./processParsedData");
+const processMetadata = require("./processMetadata");
+const processExpand = require("./processExpand");
+const processDraftTimings = require("./processDraftTimings");
 
 function getParseSchema() {
   return {
