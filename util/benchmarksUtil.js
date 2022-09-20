@@ -28,7 +28,6 @@ const benchmarks = {
   },
 };
 
-
 module.exports = {
   benchmarks,
 };

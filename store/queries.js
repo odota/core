@@ -18,7 +18,14 @@ const cacheFunctions = require("./cacheFunctions");
 const benchmarksUtil = require("../util/benchmarksUtil");
 
 const {
-  redisCount, convert64to32, serialize, deserialize, isRadiant, isContributor, countItemPopularity, averageMedal
+  redisCount,
+  convert64to32,
+  serialize,
+  deserialize,
+  isRadiant,
+  isContributor,
+  countItemPopularity,
+  averageMedal,
 } = utility;
 const { computeMatchData } = compute;
 const columnInfo = {};
@@ -499,10 +506,28 @@ function getPlayerHeroRankings(accountId, cb) {
 
 function getPlayer(db, accountId, cb) {
   if (!Number.isNaN(Number(accountId))) {
-    db.first('players.account_id', 'personaname', 'name', 'plus', 'cheese', 'steamid', 'avatar', 'avatarmedium', 'avatarfull', 'profileurl', 'last_login', 'loccountrycode', 'subscriber.status')
-      .from('players')
-      .leftJoin('notable_players', 'players.account_id', 'notable_players.account_id')
-      .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
+    db.first(
+      "players.account_id",
+      "personaname",
+      "name",
+      "plus",
+      "cheese",
+      "steamid",
+      "avatar",
+      "avatarmedium",
+      "avatarfull",
+      "profileurl",
+      "last_login",
+      "loccountrycode",
+      "subscriber.status"
+    )
+      .from("players")
+      .leftJoin(
+        "notable_players",
+        "players.account_id",
+        "notable_players.account_id"
+      )
+      .leftJoin("subscriber", "players.account_id", "subscriber.account_id")
       .where({
         "players.account_id": Number(accountId),
       })
@@ -534,30 +559,46 @@ function getPeers(db, input, player, cb) {
   teammatesArr.sort((a, b) => b.games - a.games);
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
-  return async.each(teammatesArr, (t, cb) => {
-    db.first('players.account_id', 'personaname', 'name', 'avatar', 'avatarfull', 'last_login', 'subscriber.status')
-      .from('players')
-      .leftJoin('notable_players', 'players.account_id', 'notable_players.account_id')
-      .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
-      .where({
-        'players.account_id': t.account_id,
-      })
-      .asCallback((err, row) => {
-        if (err || !row) {
+  return async.each(
+    teammatesArr,
+    (t, cb) => {
+      db.first(
+        "players.account_id",
+        "personaname",
+        "name",
+        "avatar",
+        "avatarfull",
+        "last_login",
+        "subscriber.status"
+      )
+        .from("players")
+        .leftJoin(
+          "notable_players",
+          "players.account_id",
+          "notable_players.account_id"
+        )
+        .leftJoin("subscriber", "players.account_id", "subscriber.account_id")
+        .where({
+          "players.account_id": t.account_id,
+        })
+        .asCallback((err, row) => {
+          if (err || !row) {
+            return cb(err);
+          }
+          t.personaname = row.personaname;
+          t.name = row.name;
+          t.is_contributor = isContributor(t.account_id);
+          t.is_subscriber = Boolean(row.status);
+          t.last_login = row.last_login;
+          t.avatar = row.avatar;
+          t.avatarfull = row.avatarfull;
           return cb(err);
-        }
-        t.personaname = row.personaname;
-        t.name = row.name;
-        t.is_contributor = isContributor(t.account_id);
-        t.is_subscriber = Boolean(row.status);
-        t.last_login = row.last_login;
-        t.avatar = row.avatar;
-        t.avatarfull = row.avatarfull;
-        return cb(err);
-      });
-  }, (err) => {
-    cb(err, teammatesArr);
-  });
+        });
+    },
+    (err) => {
+      cb(err, teammatesArr);
+    }
+  );
 }
 
 function getProPeers(db, input, player, cb) {
@@ -1004,8 +1045,17 @@ function insertMatch(match, options, cb) {
   }
 
   function tellFeed(cb) {
-    if (options.origin === 'scanner' || options.doTellFeed) {
-      redis.xadd('feed', 'maxlen', '~', '100', '*', 'data', JSON.stringify({ ...match, origin: options.origin }), cb);
+    if (options.origin === "scanner" || options.doTellFeed) {
+      redis.xadd(
+        "feed",
+        "maxlen",
+        "~",
+        "100",
+        "*",
+        "data",
+        JSON.stringify({ ...match, origin: options.origin }),
+        cb
+      );
     } else {
       cb();
     }
@@ -1242,7 +1292,7 @@ function insertMatch(match, options, cb) {
   }
 
   function getAverageRank(cb) {
-    if (options.origin === 'scanner') {
+    if (options.origin === "scanner") {
       getMatchRankTier(match, (err, avg) => {
         match.average_rank = avg || null;
         return cb();
@@ -1605,26 +1655,32 @@ function getTeamScenarios(req, cb) {
 }
 
 function getMetadata(req, callback) {
-  async.parallel({
-    scenarios(cb) {
-      cb(null, su.metadata);
+  async.parallel(
+    {
+      scenarios(cb) {
+        cb(null, su.metadata);
+      },
+      banner(cb) {
+        redis.get("banner", cb);
+      },
+      user(cb) {
+        cb(null, req.user);
+      },
+      isSubscriber(cb) {
+        if (req.user) {
+          db.raw(
+            `SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'`,
+            [req.user.account_id]
+          ).asCallback((err, result) => {
+            cb(err, Boolean(result?.rows?.[0]));
+          });
+        } else {
+          cb(null, false);
+        }
+      },
     },
-    banner(cb) {
-      redis.get('banner', cb);
-    },
-    user(cb) {
-      cb(null, req.user);
-    },
-    isSubscriber(cb) {
-      if (req.user) {
-        db.raw(`SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'`, [req.user.account_id]).asCallback((err, result) => {
-          cb(err, Boolean(result?.rows?.[0]));
-        });
-      } else {
-        cb(null, false);
-      }
-    },
-  }, callback);
+    callback
+  );
 }
 
 module.exports = {

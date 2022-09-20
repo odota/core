@@ -18,7 +18,7 @@
     "reparse": "cat matches.csv | xargs -n1 node dev/getMatch.js",
     "createAccounts": "node dev/createAccounts.js > accounts.log",
     "psql": "docker exec -it odota-postgres psql -U postgres -d yasp",
-    "prettier": "prettier --single-quote --write ."
+    "prettier": "prettier --write ."
   },
   "repository": {
     "type": "git",

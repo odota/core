@@ -6,7 +6,7 @@
           "type": "text",
           "analyzer": "username_analyzer"
         },
-        "avatarfull" : {
+        "avatarfull": {
           "type": "text"
         },
         "last_match_time": {
@@ -31,4 +31,4 @@
       }
     }
   }
-} 
+}

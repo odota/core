@@ -1,6 +1,6 @@
-const JSONStream = require('JSONStream');
-const db = require('../store/db');
-const queries = require('../store/queries');
+const JSONStream = require("JSONStream");
+const db = require("../store/db");
+const queries = require("../store/queries");
 
 const { insertMatchSkillCassandra } = queries;
 const args = process.argv.slice(2);
@@ -11,16 +11,19 @@ function done(err) {
   if (err) {
     console.error(err);
   }
-  console.log('done!');
+  console.log("done!");
   process.exit(Number(err));
 }
 
-const stream = db.select().from('match_skill').where('match_id', '>=', startId)
-  .orderBy('match_id', 'asc')
+const stream = db
+  .select()
+  .from("match_skill")
+  .where("match_id", ">=", startId)
+  .orderBy("match_id", "asc")
   .stream();
-stream.on('end', done);
+stream.on("end", done);
 stream.pipe(JSONStream.parse());
-stream.on('data', (m) => {
+stream.on("data", (m) => {
   stream.pause();
   insertMatchSkillCassandra(m, (err) => {
     if (err) {
