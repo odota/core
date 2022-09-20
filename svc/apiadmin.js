@@ -80,9 +80,8 @@ function storeUsageCounts(cursor, cb) {
             return storeUsageCounts(cursor, cb);
           }
 
-            return cb();
-          }
-      
+          return cb();
+        }
       );
     }
   });
@@ -94,7 +93,7 @@ async function updateStripeUsage(cb) {
     limit: 100,
     // From the docs:
     // By default, returns a list of subscriptions that have not been canceled.
-    // In order to list canceled subscriptions, specify status=canceled.
+    // In order to list canceled subscriptions, specify status=canceled. Use all for completeness.
     status: "all",
   };
 

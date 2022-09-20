@@ -195,15 +195,10 @@ app.use((req, res, cb) => {
       });
     }
     if (
-      
       config.ENABLE_API_LIMIT &&
-     
       !whitelistedPaths.includes(req.path) &&
-     
       !res.locals.isAPIRequest &&
-     
       Number(resp[2]) >= config.API_FREE_LIMIT
-    
     ) {
       return res.status(429).json({
         error: "monthly api limit exceeded",
@@ -340,11 +335,9 @@ app.route("/manageSub").post(async (req, res) => {
     return res.status(400).json({ error: "no account ID" });
   }
   const result = await db.raw(
-    
     `SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'`,
-   
+
     [req.user.account_id]
-  
   );
   const customer = result?.rows?.[0];
   if (!customer) {

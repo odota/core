@@ -10,8 +10,7 @@ const assert = require("assert");
 const supertest = require("supertest");
 const pg = require("pg");
 const fs = require("fs");
-const cassandraDriver = require("cassandra-dr
-iver");
+const cassandraDriver = require("cassandra-driver");
 const swaggerParser = require("@apidevtools/swagger-parser");
 const config = require("../config");
 const redis = require("../store/redis");
@@ -424,7 +423,7 @@ describe("api management", () => {
         this.previousSub = res[0] ? res[0].subscription_id : null;
         done();
       })
-      .catch(((err)) => done(err));
+      .catch((err) => done(err));
   });
 
   it("should get 403 when not logged in.", (done) => {
@@ -434,7 +433,7 @@ describe("api management", () => {
         assert.equal(res.statusCode, 403);
         return done();
       })
-      .catch(((err)) => done(err));
+      .catch((err) => done(err));
   });
 
   it("should not get fields for GET", (done) => {
@@ -445,7 +444,7 @@ describe("api management", () => {
         assert.deepStrictEqual(res.body, {});
         return done();
       })
-      .catch(((err)) => done(err));
+      .catch((err) => done(err));
   });
 
   it("should create api key", function testCreatingApiKey(done) {
@@ -484,7 +483,7 @@ describe("api management", () => {
             }
           });
       })
-      .catch(((err)) => done(err));
+      .catch((err) => done(err));
   });
 
   it("should not change key", function testPostDoesNotChangeKey(done) {
@@ -514,7 +513,7 @@ describe("api management", () => {
               })
               .then((res2) => {
                 if (res2.length === 0) {
-                  throw Error('No API record found');
+                  throw Error("No API record found");
                 }
                 assert.equal(res2[0].customer_id, this.previousCustomer);
                 assert.equal(res2[0].subscription_id, this.previousSub);
@@ -525,23 +524,21 @@ describe("api management", () => {
                       return done(err);
                     }
 
-                      assert.equal(res.statusCode, 200);
-                      assert.equal(
-                      
+                    assert.equal(res.statusCode, 200);
+                    assert.equal(
                       res.body.customer.credit_brand,
-                     
+
                       previousCredit
-                    
                     );
-                      assert.equal(res.body.customer.api_key, this.previousKey);
-                      return done();
-                    });
+                    assert.equal(res.body.customer.api_key, this.previousKey);
+                    return done();
+                  });
               })
-              .catch(((err)) => done(err));
+              .catch((err) => done(err));
           })
-          .catch(((err)) => done(err));
+          .catch((err) => done(err));
       })
-      .catch(((err)) => done(err));
+      .catch((err) => done(err));
   });
 
   it("should update payment but not change customer/sub", function tesPutOnlyChangesBilling(done) {
@@ -575,11 +572,11 @@ describe("api management", () => {
                 assert.equal(res2[0].subscription_id, this.previousSub);
                 return done();
               })
-              .catch(((err)) => done(err));
+              .catch((err) => done(err));
           })
-          .catch(((err)) => done(err));
+          .catch((err) => done(err));
       })
-      .catch(((err)) => done(err));
+      .catch((err) => done(err));
   });
   it("should delete key but not change customer/sub", function testDeleteOnlyModifiesKey(done) {
     this.timeout(5000);
@@ -613,9 +610,9 @@ describe("api management", () => {
                   return done();
                 });
               })
-              .catch(((err)) => done(err));
+              .catch((err) => done(err));
           })
-          .catch(((err)) => done(err));
+          .catch((err) => done(err));
       }
     });
   });
@@ -656,9 +653,9 @@ describe("api management", () => {
                 return done();
               });
           })
-          .catch(((err)) => done(err));
+          .catch((err) => done(err));
       })
-      .catch(((err)) => done(err));
+      .catch((err) => done(err));
   });
 });
 describe("api limits", () => {
@@ -686,20 +683,19 @@ describe("api limits", () => {
         `/api/metadata${key}`, // Login status
         `/keys${key}`, // API Key management
       ],
-     
+
       (i, cb) => {
         supertest(app)
-          
           .get(i)
-          
-          .end((err, res) => {
-              if (err) {
-                return cb(err);
-              }
 
-              assert.notEqual(res.statusCode, 429);
-              return cb();
-            });
+          .end((err, res) => {
+            if (err) {
+              return cb(err);
+            }
+
+            assert.notEqual(res.statusCode, 429);
+            return cb();
+          });
       },
       done
     );
@@ -717,14 +713,13 @@ describe("api limits", () => {
                 return cb(err);
               }
 
-                  assert.equal(res.statusCode, 200);
-                  return cb();
-                });
-          }, i * 300);
-        },
-     
+              assert.equal(res.statusCode, 200);
+              return cb();
+            });
+        }, i * 300);
+      },
+
       done
-    
     );
   }
 

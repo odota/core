@@ -73,15 +73,14 @@ keys
                 api_key: results[0].api_key,
               };
 
-                  stripe.customers
-                  
+              stripe.customers
 
                 .retrieve(results[0].customer_id)
-                    .then((customer) => {
-                      const source = customer.sources.data[0];
+                .then((customer) => {
+                  const source = customer.sources.data[0];
 
-                      toReturn.credit_brand = source.brand;
-                      toReturn.credit_last4 = source.last4;
+                  toReturn.credit_brand = source.brand;
+                  toReturn.credit_last4 = source.last4;
 
                   return stripe.subscriptions.retrieve(
                     results[0].subscription_id
