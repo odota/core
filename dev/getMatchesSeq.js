@@ -1,11 +1,11 @@
 /**
  * Load a range of matches by match_seq_num from the Steam API, without replay parsing
  * */
-const async = require('async');
-const cluster = require('cluster');
-const utility = require('../util/utility');
-const redis = require('../store/redis');
-const queries = require('../store/queries');
+const async = require("async");
+const cluster = require("cluster");
+const utility = require("../util/utility");
+const redis = require("../store/redis");
+const queries = require("../store/queries");
 
 const { generateJob, getData } = utility;
 const { insertMatch } = queries;
@@ -26,36 +26,47 @@ function getPage(matchSeqNum, bucket) {
   if (matchSeqNum > bucket + bucketSize || matchSeqNum > endSeqNum) {
     process.exit(0);
   }
-  const job = generateJob('api_sequence', {
+  const job = generateJob("api_sequence", {
     start_at_match_seq_num: matchSeqNum,
   });
   const { url } = job;
-  getData({
-    url,
-    delay,
-  }, (err, body) => {
-    if (err) {
-      throw err;
+  getData(
+    {
+      url,
+      delay,
+    },
+    (err, body) => {
+      if (err) {
+        throw err;
+      }
+      if (body.result) {
+        const { matches } = body.result;
+        async.each(
+          matches,
+          (match, cb) => {
+            insertMatch(
+              match,
+              {
+                skipCounts: true,
+                skipParse: true,
+              },
+              cb
+            );
+          },
+          (err) => {
+            if (err) {
+              throw err;
+            }
+            const nextSeqNum = matches[matches.length - 1].match_seq_num + 1;
+            redis.set(`complete_history:${bucket}`, nextSeqNum);
+            return getPage(nextSeqNum, bucket);
+          }
+        );
+      } else {
+        throw body;
+      }
     }
-    if (body.result) {
-      const { matches } = body.result;
-      async.each(matches, (match, cb) => {
-        insertMatch(match, {
-          skipCounts: true,
-          skipParse: true,
-        }, cb);
-      }, (err) => {
-        if (err) {
-          throw err;
-        }
-        const nextSeqNum = matches[matches.length - 1].match_seq_num + 1;
-        redis.set(`complete_history:${bucket}`, nextSeqNum);
-        return getPage(nextSeqNum, bucket);
-      });
-    } else {
-      throw body;
-    }
-  });
+  );
 }
 
 if (cluster.isMaster) {
@@ -65,11 +76,11 @@ if (cluster.isMaster) {
       BUCKET: i,
     });
   }
-  cluster.on('exit', (worker, code) => {
+  cluster.on("exit", (worker, code) => {
     if (code !== 0) {
-      throw new Error('worker died');
+      throw new Error("worker died");
     }
-    console.log('worker exited successfully');
+    console.log("worker exited successfully");
   });
 } else {
   const bucket = Number(process.env.BUCKET);

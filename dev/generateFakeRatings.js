@@ -1,5 +1,5 @@
-const async = require('async');
-const db = require('../store/db');
+const async = require("async");
+const db = require("../store/db");
 
 function randByCentralLimitTheorem() {
   let v = 0;
@@ -11,23 +11,29 @@ function randByCentralLimitTheorem() {
 
 function gaussianRandom(mean, std) {
   if (mean === undefined || std === undefined) {
-    throw new Error('Gaussian random needs 2 arguments (mean, standard deviation)');
+    throw new Error(
+      "Gaussian random needs 2 arguments (mean, standard deviation)"
+    );
   }
-  return (randByCentralLimitTheorem() * std) + mean;
+  return randByCentralLimitTheorem() * std + mean;
 }
 
-db.from('players').asCallback((err, players) => {
-  async.each(players, (p, cb) => {
-    const fake = {
-      match_id: p.account_id,
-      account_id: p.account_id,
-      solo_competitive_rank: Math.floor(gaussianRandom(4000, 1000)),
-      competitive_rank: p.account_id % 8000,
-      time: new Date(),
-    };
-    console.log(fake.account_id, fake.solo_competitive_rank);
-    db.insert(fake).into('player_ratings').asCallback(cb);
-  }, (err) => {
-    process.exit(Number(err));
-  });
+db.from("players").asCallback((err, players) => {
+  async.each(
+    players,
+    (p, cb) => {
+      const fake = {
+        match_id: p.account_id,
+        account_id: p.account_id,
+        solo_competitive_rank: Math.floor(gaussianRandom(4000, 1000)),
+        competitive_rank: p.account_id % 8000,
+        time: new Date(),
+      };
+      console.log(fake.account_id, fake.solo_competitive_rank);
+      db.insert(fake).into("player_ratings").asCallback(cb);
+    },
+    (err) => {
+      process.exit(Number(err));
+    }
+  );
 });

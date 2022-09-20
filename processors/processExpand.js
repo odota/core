@@ -3,10 +3,10 @@
  * Does not mutate the original string.
  * */
 function translate(input) {
-  if (input === 'dota_unknown') {
+  if (input === "dota_unknown") {
     return null;
   }
-  if (input && input.indexOf('item_') === 0) {
+  if (input && input.indexOf("item_") === 0) {
     return input.slice(5);
   }
   return input;
@@ -15,7 +15,7 @@ function translate(input) {
  * Prepends illusion_ to string if illusion
  * */
 function computeIllusionString(input, isIllusion) {
-  return (isIllusion ? 'illusion_' : '') + input;
+  return (isIllusion ? "illusion_" : "") + input;
 }
 
 /**
@@ -28,11 +28,13 @@ function processExpand(entries, meta) {
    * */
   function expand(e) {
     // set slot and player_slot
-    const slot = ('slot' in e) ? e.slot : meta.hero_to_slot[e.unit];
-    output.push(Object.assign({}, e, {
-      slot,
-      player_slot: meta.slot_to_playerslot[slot],
-    }));
+    const slot = "slot" in e ? e.slot : meta.hero_to_slot[e.unit];
+    output.push(
+      Object.assign({}, e, {
+        slot,
+        player_slot: meta.slot_to_playerslot[slot],
+      })
+    );
   }
 
   // Tracks current aegis holder so we can ignore kills that pop aegis
@@ -47,11 +49,13 @@ function processExpand(entries, meta) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
       const inflictor = translate(e.inflictor);
-      expand(Object.assign({}, e, {
-        unit,
-        key,
-        type: 'damage',
-      }));
+      expand(
+        Object.assign({}, e, {
+          unit,
+          key,
+          type: "damage",
+        })
+      );
       // check if this damage happened to a real hero
       if (e.targethero && !e.targetillusion) {
         // reverse
@@ -60,13 +64,13 @@ function processExpand(entries, meta) {
           value: e.value,
           unit: key,
           key: unit,
-          type: 'damage_taken',
+          type: "damage_taken",
         });
         expand({
           value: e.value,
           unit,
           key: [inflictor, translate(e.targetname)],
-          type: 'damage_targets',
+          type: "damage_targets",
         });
         // count a hit on a real hero with this inflictor
         expand({
@@ -74,7 +78,7 @@ function processExpand(entries, meta) {
           value: 1,
           unit,
           key: inflictor,
-          type: 'hero_hits',
+          type: "hero_hits",
         });
         // don't count self-damage for the following
         if (key !== unit) {
@@ -84,11 +88,11 @@ function processExpand(entries, meta) {
             value: e.value,
             unit,
             key: inflictor,
-            type: 'damage_inflictor',
+            type: "damage_inflictor",
           });
           // biggest hit on a hero
           expand({
-            type: 'max_hero_hit',
+            type: "max_hero_hit",
             time: e.time,
             max: true,
             inflictor,
@@ -96,11 +100,11 @@ function processExpand(entries, meta) {
             key,
             value: e.value,
           });
-          if (e.sourcename && e.sourcename.includes('npc_dota_hero_')) {
+          if (e.sourcename && e.sourcename.includes("npc_dota_hero_")) {
             expand({
               time: e.time,
               value: e.value,
-              type: 'damage_inflictor_received',
+              type: "damage_inflictor_received",
               unit: key,
               key: inflictor,
             });
@@ -110,11 +114,17 @@ function processExpand(entries, meta) {
     },
     DOTA_COMBATLOG_HEAL(e) {
       // healing
-      expand(Object.assign(e, {}, {
-        unit: e.sourcename,
-        key: computeIllusionString(e.targetname, e.targetillusion),
-        type: 'healing',
-      }));
+      expand(
+        Object.assign(
+          e,
+          {},
+          {
+            unit: e.sourcename,
+            key: computeIllusionString(e.targetname, e.targetillusion),
+            type: "healing",
+          }
+        )
+      );
     },
     DOTA_COMBATLOG_MODIFIER_ADD(e) {
       // gain buff/debuff
@@ -123,7 +133,7 @@ function processExpand(entries, meta) {
       // e.targetname // target of buff (possibly illusion)
 
       // Aegis expired
-      if (e.inflictor === 'modifier_aegis_regen') {
+      if (e.inflictor === "modifier_aegis_regen") {
         aegisHolder = null;
       }
     },
@@ -139,13 +149,15 @@ function processExpand(entries, meta) {
       const key = computeIllusionString(e.targetname, e.targetillusion);
 
       // If it is a building kill
-      if (e.targetname.indexOf('_tower') > -1
-          || e.targetname.indexOf('_rax_') > -1
-          || e.targetname.indexOf('_healers') > -1
-          || e.targetname.indexOf('_fort') > -1) {
+      if (
+        e.targetname.indexOf("_tower") > -1 ||
+        e.targetname.indexOf("_rax_") > -1 ||
+        e.targetname.indexOf("_healers") > -1 ||
+        e.targetname.indexOf("_fort") > -1
+      ) {
         expand({
           time: e.time,
-          type: 'building_kill',
+          type: "building_kill",
           unit,
           key,
         });
@@ -158,7 +170,8 @@ function processExpand(entries, meta) {
           // If the hero is meepo than the clones will also get killed
           aegisDeathTime = e.time;
           return;
-        } if (aegisDeathTime !== e.time) {
+        }
+        if (aegisDeathTime !== e.time) {
           // We are after the aegis death tick, so clear everything
           aegisDeathTime = null;
           aegisHolder = null;
@@ -181,24 +194,26 @@ function processExpand(entries, meta) {
           key,
           tracked_death: e.tracked_death,
           tracked_sourcename: e.tracked_sourcename,
-          type: 'kills_log',
+          type: "kills_log",
         });
         // reverse
         expand({
           time: e.time,
           unit: key,
           key: unit,
-          type: 'killed_by',
+          type: "killed_by",
         });
       }
 
-      expand(Object.assign({}, e, {
-        unit,
-        key,
-        type: 'killed',
-        // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
-        value: 1,
-      }));
+      expand(
+        Object.assign({}, e, {
+          unit,
+          key,
+          type: "killed",
+          // Dota Plus patch added a value field to this event type, but we want to always treat it as 1
+          value: 1,
+        })
+      );
     },
     DOTA_COMBATLOG_ABILITY(e) {
       // Value field is 1 or 2 for toggles
@@ -207,7 +222,7 @@ function processExpand(entries, meta) {
         time: e.time,
         unit: e.attackername,
         key: translate(e.inflictor),
-        type: 'ability_uses',
+        type: "ability_uses",
       });
       // target of ability
       if (e.targethero && !e.targetillusion) {
@@ -215,7 +230,7 @@ function processExpand(entries, meta) {
           time: e.time,
           unit: e.attackername,
           key: [translate(e.inflictor), translate(e.targetname)],
-          type: 'ability_targets',
+          type: "ability_targets",
         });
       }
     },
@@ -226,7 +241,7 @@ function processExpand(entries, meta) {
         unit: e.targetname,
         level: e.abilitylevel,
         key: translate(e.valuename),
-        type: 'ability_levels',
+        type: "ability_levels",
       });
     },
     DOTA_COMBATLOG_ITEM(e) {
@@ -235,7 +250,7 @@ function processExpand(entries, meta) {
         time: e.time,
         unit: e.attackername,
         key: translate(e.inflictor),
-        type: 'item_uses',
+        type: "item_uses",
       });
     },
     DOTA_COMBATLOG_LOCATION() {
@@ -248,7 +263,7 @@ function processExpand(entries, meta) {
         value: e.value,
         unit: e.targetname,
         key: e.gold_reason,
-        type: 'gold_reasons',
+        type: "gold_reasons",
       });
     },
     DOTA_COMBATLOG_GAME_STATE() {
@@ -261,7 +276,7 @@ function processExpand(entries, meta) {
         value: e.value,
         unit: e.targetname,
         key: e.xp_reason,
-        type: 'xp_reasons',
+        type: "xp_reasons",
       });
     },
     DOTA_COMBATLOG_PURCHASE(e) {
@@ -274,17 +289,17 @@ function processExpand(entries, meta) {
         unit,
         key,
         charges: e.charges,
-        type: 'purchase',
+        type: "purchase",
       });
       // don't include recipes in purchase logs
-      if (key.indexOf('recipe_') !== 0) {
+      if (key.indexOf("recipe_") !== 0) {
         expand({
           time: e.time,
           value: 1,
           unit,
           key,
           charges: e.charges,
-          type: 'purchase_log',
+          type: "purchase_log",
         });
       }
     },
@@ -293,7 +308,7 @@ function processExpand(entries, meta) {
       expand({
         time: e.time,
         slot: e.value,
-        type: 'buyback_log',
+        type: "buyback_log",
       });
     },
     DOTA_COMBATLOG_ABILITY_TRIGGER() {
@@ -320,7 +335,7 @@ function processExpand(entries, meta) {
         value: 1,
         unit: e.attackername,
         key: e.value,
-        type: 'multi_kills',
+        type: "multi_kills",
       });
     },
     DOTA_COMBATLOG_KILLSTREAK(e) {
@@ -332,7 +347,7 @@ function processExpand(entries, meta) {
         value: 1,
         unit: e.attackername,
         key: e.value,
-        type: 'kill_streaks',
+        type: "kill_streaks",
       });
     },
     DOTA_COMBATLOG_TEAM_BUILDING_KILL() {
@@ -357,7 +372,7 @@ function processExpand(entries, meta) {
       // we're not breaking pings into subtypes atm so just set key to 0 for now
       expand({
         time: e.time,
-        type: 'pings',
+        type: "pings",
         slot: e.slot,
         key: 0,
       });
@@ -370,7 +385,7 @@ function processExpand(entries, meta) {
       expand({
         time: e.time,
         value: 1,
-        type: 'runes',
+        type: "runes",
         slot: e.player1,
         key: String(e.value),
       });
@@ -378,7 +393,7 @@ function processExpand(entries, meta) {
         time: e.time,
         key: e.value,
         slot: e.player1,
-        type: 'runes_log',
+        type: "runes_log",
       });
     },
     CHAT_MESSAGE_RUNE_BOTTLE() {
@@ -403,8 +418,7 @@ function processExpand(entries, meta) {
       // e.slot = e.player1;
       // player1 paused
     },
-    CHAT_MESSAGE_TOWER_KILL() {
-    },
+    CHAT_MESSAGE_TOWER_KILL() {},
     CHAT_MESSAGE_TOWER_DENY() {
       // tower (player/team)
       // player1 = slot of player who killed tower (-1 if nonplayer)
@@ -421,17 +435,17 @@ function processExpand(entries, meta) {
     CHAT_MESSAGE_RECONNECT(e) {
       expand({
         time: e.time,
-        type: 'connection_log',
+        type: "connection_log",
         slot: e.player1,
-        event: 'reconnect',
+        event: "reconnect",
       });
     },
     CHAT_MESSAGE_DISCONNECT_WAIT_FOR_RECONNECT(e) {
       expand({
         time: e.time,
-        type: 'connection_log',
+        type: "connection_log",
         slot: e.player1,
-        event: 'disconnect',
+        event: "disconnect",
       });
     },
     CHAT_MESSAGE_FIRSTBLOOD(e) {
@@ -503,75 +517,74 @@ function processExpand(entries, meta) {
       if (e.time >= 0) {
         expand(e);
         [
-          'stuns',
-          'life_state',
-          'obs_placed',
-          'sen_placed',
-          'creeps_stacked',
-          'camps_stacked',
-          'rune_pickups',
-          'randomed',
-          'repicked',
-          'pred_vict',
-          'firstblood_claimed',
-          'teamfight_participation',
-          'towers_killed',
-          'roshans_killed',
-          'observers_placed',
-        ]
-          .forEach((field) => {
-            let key;
-            let value;
-            if (field === 'life_state') {
-              key = e[field];
-              value = 1;
-            } else {
-              key = field;
-              value = e[field];
-            }
-            expand({
-              time: e.time,
-              slot: e.slot,
-              type: field,
-              key,
-              value,
-            });
+          "stuns",
+          "life_state",
+          "obs_placed",
+          "sen_placed",
+          "creeps_stacked",
+          "camps_stacked",
+          "rune_pickups",
+          "randomed",
+          "repicked",
+          "pred_vict",
+          "firstblood_claimed",
+          "teamfight_participation",
+          "towers_killed",
+          "roshans_killed",
+          "observers_placed",
+        ].forEach((field) => {
+          let key;
+          let value;
+          if (field === "life_state") {
+            key = e[field];
+            value = 1;
+          } else {
+            key = field;
+            value = e[field];
+          }
+          expand({
+            time: e.time,
+            slot: e.slot,
+            type: field,
+            key,
+            value,
           });
+        });
         // if on minute, add to interval arrays
         if (e.time % 60 === 0) {
           expand({
             time: e.time,
             slot: e.slot,
             interval: true,
-            type: 'times',
+            type: "times",
             value: e.time,
           });
           expand({
             time: e.time,
             slot: e.slot,
             interval: true,
-            type: 'gold_t',
+            type: "gold_t",
             value: e.gold,
           });
           expand({
             time: e.time,
             slot: e.slot,
             interval: true,
-            type: 'xp_t',
+            type: "xp_t",
             value: e.xp,
           });
           expand({
             time: e.time,
             slot: e.slot,
             interval: true,
-            type: 'lh_t',
+            type: "lh_t",
             value: e.lh,
           });
           expand({
             time: e.time,
             slot: e.slot,
             interval: true,
-            type: 'dn_t',
+            type: "dn_t",
             value: e.denies,
           });
         }
@@ -581,39 +594,51 @@ function processExpand(entries, meta) {
         expand({
           time: e.time,
           slot: e.slot,
-          type: 'lane_pos',
+          type: "lane_pos",
           key: JSON.stringify([e.x, e.y]),
           posData: true,
         });
       }
     },
     obs(e) {
-      expand(Object.assign({}, e, {
-        type: 'obs',
-        posData: true,
-      }));
-      expand(Object.assign({}, e, {
-        type: 'obs_log',
-      }));
+      expand(
+        Object.assign({}, e, {
+          type: "obs",
+          posData: true,
+        })
+      );
+      expand(
+        Object.assign({}, e, {
+          type: "obs_log",
+        })
+      );
     },
     sen(e) {
-      expand(Object.assign({}, e, {
-        type: 'sen',
-        posData: true,
-      }));
-      expand(Object.assign({}, e, {
-        type: 'sen_log',
-      }));
+      expand(
+        Object.assign({}, e, {
+          type: "sen",
+          posData: true,
+        })
+      );
+      expand(
+        Object.assign({}, e, {
+          type: "sen_log",
+        })
+      );
     },
     obs_left(e) {
-      expand(Object.assign({}, e, {
-        type: 'obs_left_log',
-      }));
+      expand(
+        Object.assign({}, e, {
+          type: "obs_left_log",
+        })
+      );
     },
     sen_left(e) {
-      expand(Object.assign({}, e, {
-        type: 'sen_left_log',
-      }));
+      expand(
+        Object.assign({}, e, {
+          type: "sen_left_log",
+        })
+      );
     },
     epilogue(e) {
       expand(e);

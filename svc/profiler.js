@@ -1,21 +1,23 @@
 /**
  * Worker to fetch updated player profiles
  * */
-const async = require('async');
-const queries = require('../store/queries');
-const db = require('../store/db');
+const async = require("async");
+const queries = require("../store/queries");
+const db = require("../store/db");
 // const redis = require('../store/redis');
-const utility = require('../util/utility');
+const utility = require("../util/utility");
 
 const { insertPlayer, bulkIndexPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;
 
 function getSummaries(cb) {
-  db.raw('SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)').asCallback((err, result) => {
+  db.raw(
+    "SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)"
+  ).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
-    const container = generateJob('api_summaries', {
+    const container = generateJob("api_summaries", {
       players: result.rows,
     });
     // Request rank_tier data for these players
@@ -31,7 +33,7 @@ function getSummaries(cb) {
         return cb(JSON.stringify(err));
       }
 
-      const results = body.response.players.filter(player => player.steamid);
+      const results = body.response.players.filter((player) => player.steamid);
 
       const bulkUpdate = results.reduce((acc, player) => {
         acc.push(
@@ -46,7 +48,7 @@ function getSummaries(cb) {
               avatarfull: player.avatarfull,
             },
             doc_as_upsert: true,
-          },
+          }
         );
 
         return acc;
@@ -59,9 +61,13 @@ function getSummaries(cb) {
       });
 
       // player summaries response
-      return async.each(results, (player, cb) => {
-        insertPlayer(db, player, false, cb);
-      }, cb);
+      return async.each(
+        results,
+        (player, cb) => {
+          insertPlayer(db, player, false, cb);
+        },
+        cb
+      );
     });
   });
 }

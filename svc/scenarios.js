@@ -1,16 +1,18 @@
-const async = require('async');
-const util = require('util');
-const queue = require('../store/queue');
-const buildMatch = require('../store/buildMatch');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const su = require('../util/scenariosUtil');
+const async = require("async");
+const util = require("util");
+const queue = require("../store/queue");
+const buildMatch = require("../store/buildMatch");
+const db = require("../store/db");
+const utility = require("../util/utility");
+const su = require("../util/scenariosUtil");
 
 async function processScenarios(matchID, cb) {
   try {
     const match = await buildMatch(matchID);
     if (!su.validateMatchProperties(match)) {
-      console.error(`Skipping scenario checks for match ${matchID}. Invalid match object.`);
+      console.error(
+        `Skipping scenario checks for match ${matchID}. Invalid match object.`
+      );
       return cb();
     }
     const currentWeek = utility.epochWeek();
@@ -20,19 +22,24 @@ async function processScenarios(matchID, cb) {
         async.eachSeries(rows, (row, cb) => {
           row = Object.assign(row, {
             epoch_week: currentWeek,
-            wins: row.wins ? '1' : '0',
+            wins: row.wins ? "1" : "0",
           });
-          const values = Object.keys(row).map(() => '?');
+          const values = Object.keys(row).map(() => "?");
           const query = util.format(
-            'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
+            "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1",
             table,
-            Object.keys(row).join(','),
-            values.join(','),
-            Object.keys(row).filter(column => column !== 'wins').join(','),
+            Object.keys(row).join(","),
+            values.join(","),
+            Object.keys(row)
+              .filter((column) => column !== "wins")
+              .join(","),
             table,
-            table,
+            table
           );
-          db.raw(query, Object.keys(row).map(key => row[key])).asCallback(cb);
+          db.raw(
+            query,
+            Object.keys(row).map((key) => row[key])
+          ).asCallback(cb);
         });
       });
     });
@@ -42,4 +49,4 @@ async function processScenarios(matchID, cb) {
   }
 }
 
-queue.runQueue('scenariosQueue', 1, processScenarios);
+queue.runQueue("scenariosQueue", 1, processScenarios);
