@@ -143,15 +143,17 @@ keys
       .from("api_keys")
       .where({
         account_id: req.user.account_id,
-      })
-      .andWhereNot("is_canceled", "=", true);
+      });
 
     console.log("rows", rows, req.user.account_id);
-    if (rows.length === 0) {
+
+    const keyRecord = getActiveKey(rows);
+
+    if (keyRecord === null) {
       return res.sendStatus(200);
     }
 
-    const { subscription_id } = rows[0];
+    const { subscription_id } = keyRecord;
 
     // Immediately bill the customer for any unpaid usage
     await stripe.subscriptions.del(subscription_id, { invoice_now: true });
