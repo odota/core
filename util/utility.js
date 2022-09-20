@@ -296,7 +296,8 @@ function getData(url, cb) {
             // private match history or attempting to get practice match/invalid id, don't retry
             // non-retryable
             return cb(body);
-          } else if (body.result.error || body.result.status === 2) {
+          }
+          if (body.result.error || body.result.status === 2) {
             // valid response, but invalid data, retry
             if (url.noRetry) {
               return cb(err || "invalid data", body);

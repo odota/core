@@ -35,7 +35,7 @@ function doLiveGames(cb) {
                     player.account_id.toString()
                 );
                 if (proPlayer) {
-                  match.players[i] = Object.assign({}, player, proPlayer);
+                  match.players[i] = { ...player, ...proPlayer};
                   // addToRedis = true;
                 }
               });

@@ -25,13 +25,11 @@ function populate(e, container, meta) {
       container.objectives.push(JSON.parse(JSON.stringify(e)));
       break;
     case "ability_levels":
-      meta.ability_levels[e.unit] = Object.assign(
-        {},
-        {
-          [e.key]: e.level,
-        },
-        meta.ability_levels[e.unit]
-      );
+      meta.ability_levels[e.unit] = {
+        
+        [e.key]: e.level,
+        ...meta.ability_levels[e.unit]
+      };
       meta.ability_levels[e.unit][e.key] = e.level;
       break;
     default:
@@ -85,14 +83,12 @@ function populate(e, container, meta) {
             };
           }
           if (e.type === "kills_log" && e.tracked_death) {
-            arrEntry = Object.assign(
-              {},
-              {
-                tracked_death: e.tracked_death,
+            arrEntry = {
+              
+              tracked_death: e.tracked_death,
                 tracked_sourcename: e.tracked_sourcename,
-              },
-              arrEntry
-            );
+              ...arrEntry
+            };
           }
         } else {
           arrEntry = JSON.parse(JSON.stringify(e));

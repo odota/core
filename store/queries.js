@@ -793,7 +793,10 @@ function insertPlayerRating(db, row, cb) {
           upsert(
             db,
             "solo_competitive_rank",
-            { account_id: row.account_id, rating: row.solo_competitive_rank },
+            {
+              account_id: row.account_id,
+              rating: row.solo_competitive_rank,
+            },
             { account_id: row.account_id },
             cb
           );
@@ -806,7 +809,10 @@ function insertPlayerRating(db, row, cb) {
           upsert(
             db,
             "competitive_rank",
-            { account_id: row.account_id, rating: row.competitive_rank },
+            {
+              account_id: row.account_id,
+              rating: row.competitive_rank,
+            },
             { account_id: row.account_id },
             cb
           );
@@ -832,7 +838,10 @@ function insertPlayerRating(db, row, cb) {
           upsert(
             db,
             "leaderboard_rank",
-            { account_id: row.account_id, rating: row.leaderboard_rank },
+            {
+              account_id: row.account_id,
+              rating: row.leaderboard_rank,
+            },
             { account_id: row.account_id },
             cb
           );

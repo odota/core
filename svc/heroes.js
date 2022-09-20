@@ -29,12 +29,10 @@ function doHeroes(cb) {
             queries.upsert(
               db,
               "heroes",
-              Object.assign({}, hero, {
-                primary_attr: heroDataHero.primary_attr,
+              { ...hero, primary_attr: heroDataHero.primary_attr,
                 attack_type: heroDataHero.attack_type,
                 roles: heroDataHero.roles,
-                legs: heroDataHero.legs,
-              }),
+                legs: heroDataHero.legs,},
               {
                 id: hero.id,
               },
