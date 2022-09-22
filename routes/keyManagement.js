@@ -36,9 +36,9 @@ function getActiveKey(rows) {
   return notCanceled.length > 0 ? notCanceled[0] : null;
 }
 
-// @param rows - query result from api_keys table
-function hasActiveKey(rows) {
-  return getActiveKey(rows) !== null;
+// @param getActiveKeyResult - result from getActiveKey
+function hasActiveKey(getActiveKeyResult) {
+  return getActiveKeyResult !== null;
 }
 
 function hasToken(req) {
@@ -51,50 +51,51 @@ function hasToken(req) {
  */
 keys
   .route("/")
+  .all(async (req, res, next) => {
+    const rows = await db.from("api_keys").where({
+      account_id: req.user.account_id,
+    });
+
+    res.locals.keyRecord = getActiveKey(rows);
+
+    next();
+  })
   .get((req, res, next) => {
-    db.from("api_keys")
-      .where({
-        account_id: req.user.account_id,
-      })
-      .asCallback((err, results) => {
-        if (err) {
-          return next(err);
-        }
+    const { keyRecord } = res.locals;
 
-        const keyRecord = getActiveKey(results);
-        if (keyRecord === null) {
-          return res.json({});
-        }
+    if (!hasActiveKey(keyRecord)) {
+      return res.json({});
+    }
 
-        async.parallel(
-          {
-            customer: (cb) => {
-              const toReturn = {
-                api_key: results[0].api_key,
-              };
+    const { api_key, customer_id, subscription_id} = keyRecord;
 
-              stripe.customers
+    async.parallel(
+      {
+        customer: (cb) => {
+          const toReturn = {
+            api_key
+          };
 
-                .retrieve(results[0].customer_id)
-                .then((customer) => {
-                  const source = customer.sources.data[0];
+          stripe.customers
 
-                  toReturn.credit_brand = source.brand;
-                  toReturn.credit_last4 = source.last4;
+            .retrieve(customer_id)
+            .then((customer) => {
+              const source = customer.sources.data[0];
 
-                  return stripe.subscriptions.retrieve(
-                    results[0].subscription_id
-                  );
-                })
-                .then((sub) => {
-                  toReturn.current_period_end = sub.current_period_end;
-                })
-                .then(() => cb(null, toReturn))
-                .catch((err) => cb(err));
-            },
-            usage: (cb) => {
-              db.raw(
-                `
+              toReturn.credit_brand = source.brand;
+              toReturn.credit_last4 = source.last4;
+
+              return stripe.subscriptions.retrieve(subscription_id);
+            })
+            .then((sub) => {
+              toReturn.current_period_end = sub.current_period_end;
+            })
+            .then(() => cb(null, toReturn))
+            .catch((err) => cb(err));
+        },
+        usage: (cb) => {
+          db.raw(
+            `
                 SELECT
                   account_id,
                   month,
@@ -117,39 +118,28 @@ keys
                 GROUP BY account_id, month
                 ORDER BY month DESC
               `,
-                [
-                  moment().subtract(5, "month").startOf("month"),
-                  moment().endOf("month"),
-                  req.user.account_id,
-                ]
-              ).asCallback((err, results) =>
-                cb(err, err ? null : results.rows)
-              );
-            },
-          },
-          (err, results) => {
-            if (err) {
-              next(err);
-            } else {
-              res.json(results);
-            }
-          }
-        );
-      });
+            [
+              moment().subtract(5, "month").startOf("month"),
+              moment().endOf("month"),
+              req.user.account_id,
+            ]
+          ).asCallback((err, results) => cb(err, err ? null : results.rows));
+        },
+      },
+      (err, results) => {
+        if (err) {
+          next(err);
+        } else {
+          res.json(results);
+        }
+      }
+    );
   })
   .delete(async (req, res) => {
     // Deletes the key and subscription.
-    const rows = await db
-      .from("api_keys")
-      .where({
-        account_id: req.user.account_id,
-      });
+    const { keyRecord } = res.locals;
 
-    console.log("rows", rows, req.user.account_id);
-
-    const keyRecord = getActiveKey(rows);
-
-    if (keyRecord === null) {
+    if (!hasActiveKey(keyRecord)) {
       return res.sendStatus(200);
     }
 
@@ -186,16 +176,17 @@ keys
       });
     }
 
-    // Check if there is already an active subscription
-    const rows = await db.from("api_keys").where({
-      account_id: req.user.account_id,
-    });
-
+    const { keyRecord } = res.locals;
     const { token } = req.body;
 
     let customer_id;
+
+    if (hasActiveKey(keyRecord)) {
+      console.log("Active key exists for", req.user.account_id);
+      return res.sendStatus(200);
+    }
     // New customer -> create customer first
-    if (rows.length === 0) {
+    else if (keyRecord === null) {
       const customer = await stripe.customers.create({
         source: token.id,
         email: token.email,
@@ -204,13 +195,9 @@ keys
         },
       });
       customer_id = customer.id;
-    } else {
-      // Existing customer -> must have no active keys
-      if (hasActiveKey(rows)) {
-        console.log("Active key exists for", req.user.account_id);
-        return res.sendStatus(200);
-      }
-
+    }
+    // update previous customer
+    else {
       customer_id = rows[0].customer_id;
       await stripe.customers.update(rows[0].customer_id, {
         email: token.email,
@@ -264,18 +251,13 @@ keys
       });
     }
 
-    const rows = await db
-      .from("api_keys")
-      .where({
-        account_id: req.user.account_id,
-      })
-      .andWhereNot("is_canceled", "=", true);
+    const { keyRecord } = res.locals;
 
-    if (rows.length < 1) {
+    if (!hasActiveKey(keyRecord)) {
       throw Error("No record to update.");
     }
 
-    const { customer_id, subscription_id } = rows[0];
+    const { customer_id, subscription_id } = keyRecord;
     const {
       token: { email, id },
     } = req.body;

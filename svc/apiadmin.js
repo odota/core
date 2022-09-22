@@ -30,7 +30,7 @@ function storeUsageCounts(cursor, cb) {
             cb2();
           } else if (config.ENABLE_API_LIMIT) {
             const split = e;
-            console.log("Updating usage for", e, "usage", values[i + 1]);
+            // console.log("Updating usage for", e, "usage", values[i + 1]);
             let apiRecord;
             db.from("api_keys")
               .where({
@@ -96,19 +96,22 @@ async function updateStripeUsage(cb) {
     // In order to list canceled subscriptions, specify status=canceled. Use all for completeness.
     status: "all",
   };
-
+  let num = 0;
   try {
     // https://stripe.com/docs/api/pagination/auto so we don't need to worry about cursors
     for await (const sub of stripe.subscriptions.list(options)) {
+      num++;
       // Deactivate any keys which failed to bill
       if (sub.status === "canceled") {
-        console.log("CANCELED SUBSCRIPTION", sub.id);
+        console.log("updateStripeUsage CANCELED SUBSCRIPTION", sub.id);
         await db.raw(
           `
                   UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?
                 `,
           [sub.id]
         );
+
+        continue;
       }
 
       const startTime = moment
@@ -145,26 +148,30 @@ async function updateStripeUsage(cb) {
         // but we'd have to make changes to web.js and metrics
         await stripe.subscriptionItems.createUsageRecord(sub.items.data[0].id, {
           quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
+          action: 'set',
           timestamp: sub.current_period_end - 1,
         });
-        console.log("[STRIPE] updated", sub.id, usageCount);
+        console.log("updateStripeUsage updated", sub.id, usageCount, Math.ceil(usageCount / config.API_BILLING_UNIT));
       } else {
-        // console.log(`No usage for ${e.id}`);
+        // console.log(`updateStripeUsage No usage for ${sub.id}`);
       }
-    }
+    } 
+    console.log(`updateStripeUsage processed ${num} records`);
     cb();
   } catch (err) {
+    console.error(err);
     cb(err);
   }
 }
 
-utility.invokeInterval((cb) => {
+invokeInterval(function updateAPIKeysInRedis(cb) {
   queries.getAPIKeys(db, (err, rows) => {
+
     if (err) {
       cb(err);
     } else if (rows.length > 0) {
       const keys = rows.map((e) => e.api_key);
-
+      console.log("getApikeys", rows.length, keys);
       redis
         .multi()
         .del("api_keys")
@@ -180,7 +187,7 @@ utility.invokeInterval((cb) => {
       cb();
     }
   });
-}, 5 * 60 * 1000); // Update every 5 min
+}, 5 * 1000); // Update every 5 min
 
-invokeInterval((cb) => storeUsageCounts(0, cb), 5 * 1000); // Every 10 minutes
-invokeInterval((cb) => updateStripeUsage(cb), 5 * 1000); // Every 5 minutes
+invokeInterval(function runStoreUsageCounts(cb){storeUsageCounts(0, cb);}, 5 * 1000); // Every 10 minutes
+invokeInterval(updateStripeUsage, 5 * 1000); // Every 5 minutes

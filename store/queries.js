@@ -95,7 +95,7 @@ function getWebhooks(db) {
 function getAPIKeys(db, cb) {
   db.raw(
     `
-    SELECT api_key from api_keys WHERE api_key is not null AND is_canceled != false
+    SELECT api_key FROM api_keys WHERE api_key IS NOT NULL AND is_canceled IS NOT TRUE
     `
   ).asCallback((err, result) => {
     if (err) {
