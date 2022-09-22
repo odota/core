@@ -140,6 +140,7 @@ function updateStripeUsage(cursor, cb) {
               stripe.subscriptionItems
                 .createUsageRecord(e.items.data[0].id, {
                   quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
+                  action: 'set',
                   timestamp: e.current_period_end - 1,
                 })
                 .then(() => console.log("[STRIPE] updated", e.id, usageCount))
