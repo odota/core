@@ -480,11 +480,20 @@ function processExpand(entries, meta) {
       });
     },
     CHAT_MESSAGE_COURIER_LOST(e) {
-      // player1 = team that lost courier? (2/3)
+      // For backwards compatability - when teams only had one courier player1 would be the team
+      let team;
+      if (e.player2 === undefined) {
+        team = e.player1;
+      } else {
+        // 2 is radiant and 3 dire
+        team = (e.player1 < 5) ? 2 : 3;
+      }
       expand({
         time: e.time,
         type: e.type,
-        team: e.player1,
+        killer: e.player1,
+        owner: e.player2,
+        team,
       });
     },
     CHAT_MESSAGE_HERO_NOMINATED_BAN() {
