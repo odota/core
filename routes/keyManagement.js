@@ -46,6 +46,16 @@ function hasToken(req) {
   return token && token.id && token.email;
 }
 
+async function getOpenInvoices(customerId) {
+  const invoices = await stripe.invoices.list({
+    customer: customerId,
+    limit: 100,
+    status: 'open'
+  });
+
+  return invoices.data;
+}
+
 /**
  * Invariant: A Stripe subscription and an API key is a 1 to 1 mapping. canceled sub = deleted key and vice versa a single user can have multiple subs but only one active at a given time (others have is_canceled = true).
  */
@@ -57,27 +67,30 @@ keys
     });
 
     res.locals.keyRecord = getActiveKey(rows);
+    res.locals.allKeyRecords = rows;
 
     next();
   })
   .get((req, res, next) => {
-    const { keyRecord } = res.locals;
+    const { keyRecord, allKeyRecords } = res.locals;
 
-    if (!hasActiveKey(keyRecord)) {
+    if (!hasActiveKey(keyRecord) && allKeyRecords.length === 0) {
       return res.json({});
     }
-
-    const { api_key, customer_id, subscription_id} = keyRecord;
 
     async.parallel(
       {
         customer: (cb) => {
+          if(!keyRecord) {
+            return cb();
+          }
+
+          const { api_key, customer_id, subscription_id} = keyRecord;
           const toReturn = {
             api_key
           };
 
           stripe.customers
-
             .retrieve(customer_id)
             .then((customer) => {
               const source = customer.sources.data[0];
@@ -92,6 +105,19 @@ keys
             })
             .then(() => cb(null, toReturn))
             .catch((err) => cb(err));
+        },
+        openInvoices: (cb) => {
+          if(allKeyRecords.length === 0) {
+            return cb();
+          }
+
+          customer_id = allKeyRecords[0].customer_id;
+
+          getOpenInvoices(customer_id).then(invoices =>{
+            console.log(invoices);
+          return cb(null,invoices);
+          });
+
         },
         usage: (cb) => {
           db.raw(
@@ -143,7 +169,7 @@ keys
       return res.sendStatus(200);
     }
 
-    const { subscription_id } = keyRecord;
+    const { api_key, subscription_id } = keyRecord;
 
     // Immediately bill the customer for any unpaid usage
     await stripe.subscriptions.del(subscription_id, { invoice_now: true });
@@ -159,7 +185,7 @@ keys
       });
 
     // Force the key to be disabled
-    redis.srem("api_keys", rows[0].api_key, (err) => {
+    redis.srem("api_keys", api_key, (err) => {
       if (err) {
         throw err;
       }
@@ -171,12 +197,12 @@ keys
     // Creates key
 
     if (!hasToken(req)) {
-      return res.sendStatus(500).json({
+      return res.status(500).json({
         error: "Missing token",
       });
     }
 
-    const { keyRecord } = res.locals;
+    const { keyRecord, allKeyRecords } = res.locals;
     const { token } = req.body;
 
     let customer_id;
@@ -185,23 +211,42 @@ keys
       console.log("Active key exists for", req.user.account_id);
       return res.sendStatus(200);
     }
-    // New customer -> create customer first
-    else if (keyRecord === null) {
-      const customer = await stripe.customers.create({
-        source: token.id,
-        email: token.email,
-        metadata: {
-          account_id: req.user.account_id,
-        },
-      });
-      customer_id = customer.id;
+    // returning customer
+    else if(allKeyRecords.length > 0) {
+      customer_id = allKeyRecords[0].customer_id;
+
+      const invoices = await getOpenInvoices(customer_id);
+
+      if (invoices.length > 0) {
+        console.log("Open invoices exist for", req.user.account_id, "customer", customer_id);
+        return res.sendStatus(200);
+      }
+
+      try {
+        await stripe.customers.update(customer_id, {
+          email: token.email,
+          source: token.id,
+        });
+      } catch (err) {
+        // probably insufficient funds
+        return res.status(402).json(err);
+      }
     }
-    // update previous customer
-    else {
-      customer_id = rows[0].customer_id;
-      await stripe.customers.update(rows[0].customer_id, {
-        email: token.email,
-      });
+    // New customer -> create customer first
+    else  {
+      try {
+        const customer = await stripe.customers.create({
+          source: token.id,
+          email: token.email,
+          metadata: {
+            account_id: req.user.account_id,
+          },
+        });
+        customer_id = customer.id;
+      } catch  (err) {
+        // probably insufficient funds
+        return res.status(402).json(err);
+      }
     }
 
     const apiKey = uuid();
@@ -246,7 +291,7 @@ keys
     // Updates billing
 
     if (!hasToken(req)) {
-      return res.sendStatus(500).json({
+      return res.status(400).json({
         error: "Missing token",
       });
     }
