@@ -480,19 +480,28 @@ function processExpand(entries, meta) {
       });
     },
     CHAT_MESSAGE_COURIER_LOST(e) {
-      // For backwards compatability - when teams only had one courier player1 would be the team
       let team;
+      let killer;
+      // For backwards compatability - when teams only had one courier player1 would be the team of killed courier
       if (e.player2 === undefined) {
         team = e.player1;
+        killer = null;
       } else {
         // 2 is radiant and 3 dire
-        team = (e.player1 < 5) ? 2 : 3;
+        team = e.player2;
+        if (e.player1 > -1) {
+          // 128 - 5 slot for dire killers
+          killer = (team === 3 ? 0 : 123) + e.player1;
+        }
+        if (e.player1 === -1) {
+          killer = -1;
+        }
       }
       expand({
         time: e.time,
         type: e.type,
-        killer: e.player1,
-        owner: e.player2,
+        value: e.value,
+        killer,
         team,
       });
     },
