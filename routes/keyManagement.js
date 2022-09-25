@@ -115,6 +115,7 @@ keys
 
           getOpenInvoices(customer_id).then(invoices => {
             const processed = invoices.map(i => ({
+              id: i.id,
               amountDue: i.amount_due,
               paymentLink: i.hosted_invoice_url,
               created: i.created
@@ -224,7 +225,7 @@ keys
 
       if (invoices.length > 0) {
         console.log("Open invoices exist for", req.user.account_id, "customer", customer_id);
-        return res.sendStatus(402);
+        return res.status(402).json({error: "Open invoice"});
       }
 
       try {

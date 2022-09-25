@@ -8,6 +8,7 @@ const async = require("async");
 const nock = require("nock");
 const assert = require("assert");
 const supertest = require("supertest");
+const stripeLib = require("stripe");
 const pg = require("pg");
 const fs = require("fs");
 const cassandraDriver = require("cassandra-driver");
@@ -231,6 +232,7 @@ before(function setup(done) {
         app = require("../svc/web");
         queries = require("../store/queries");
         buildMatch = require("../store/buildMatch");
+        
         require("../svc/parser");
         cb();
       },
@@ -418,9 +420,10 @@ describe("api management", () => {
         account_id: 1,
       })
       .then((res) => {
-        this.previousKey = res[0] ? res[0].api_key : null;
-        this.previousCustomer = res[0] ? res[0].customer_id : null;
-        this.previousSub = res[0] ? res[0].subscription_id : null;
+        this.previousKey = res[0]?.api_key;
+        this.previousCustomer = res[0]?.customer_id;
+        this.previousSub = res[0]?.subscription_id;
+        this.previousIsCanceled = res[0]?.is_canceled;
         done();
       })
       .catch((err) => done(err));
@@ -469,6 +472,8 @@ describe("api management", () => {
               assert.equal(res.statusCode, 200);
               assert.equal(res.body.customer.credit_brand, "Visa");
               assert.notEqual(res.body.customer.api_key, null);
+              assert.equal(Array.isArray(res.body.openInvoices), true);
+              assert.equal(Array.isArray(res.body.usage), true);
               redis.sismember(
                 "api_keys",
                 res.body.customer.api_key,
@@ -486,7 +491,7 @@ describe("api management", () => {
       .catch((err) => done(err));
   });
 
-  it("should not change key", function testPostDoesNotChangeKey(done) {
+  it("post should not change key", function testPostDoesNotChangeKey(done) {
     this.timeout(5000);
     supertest(app)
       .get("/keys?loggedin=1")
@@ -541,7 +546,7 @@ describe("api management", () => {
       .catch((err) => done(err));
   });
 
-  it("should update payment but not change customer/sub", function tesPutOnlyChangesBilling(done) {
+  it("put should update payment but not change customer/sub", function testPutOnlyChangesBilling(done) {
     this.timeout(5000);
     supertest(app)
       .put("/keys?loggedin=1")
@@ -578,9 +583,10 @@ describe("api management", () => {
       })
       .catch((err) => done(err));
   });
-  it("should delete key but not change customer/sub", function testDeleteOnlyModifiesKey(done) {
+  it("delete should set is_deleted and remove from redis but not change other db fields", function testDeleteOnlyModifiesKey(done) {
     this.timeout(5000);
     assert.notEqual(this.previousKey, null);
+    assert.equal(this.previousIsCanceled, undefined);
     redis.sismember("api_keys", this.previousKey, (err, resp) => {
       if (err) {
         done(err);
@@ -596,12 +602,13 @@ describe("api management", () => {
                 account_id: 1,
               })
               .then((res2) => {
-                if (res.length === 0) {
+                if (res2.length === 0) {
                   throw Error("No API record found");
                 }
-                assert.equal(res2[0].api_key, null);
+                assert.equal(res2[0].api_key, this.previousKey);
                 assert.equal(res2[0].customer_id, this.previousCustomer);
                 assert.equal(res2[0].subscription_id, this.previousSub);
+                assert.equal(res2[0].is_canceled, true);
                 redis.sismember("api_keys", this.previousKey, (err, resp) => {
                   if (err) {
                     return done(err);
@@ -617,7 +624,7 @@ describe("api management", () => {
     });
   });
 
-  it("should get new key but not change customer/sub", function testGettingNewKeyOnlyModifiesKey(done) {
+  it("should get new key with new sub but not change customer", function testGettingNewKey(done) {
     this.timeout(5000);
     supertest(app)
       .post("/keys?loggedin=1")
@@ -632,14 +639,15 @@ describe("api management", () => {
 
         db.from("api_keys")
           .where({
-            account_id: 1,
+            account_id: 1, 
+            is_canceled: null
           })
           .then((res2) => {
-            if (res.length === 0) {
+            if (res2.length === 0) {
               throw Error("No API record found");
             }
             assert.equal(res2[0].customer_id, this.previousCustomer);
-            assert.equal(res2[0].subscription_id, this.previousSub);
+            assert.notEqual(res2[0].subscription_id, this.previousSub);
             supertest(app)
               .get("/keys?loggedin=1")
               .end((err, res) => {
@@ -650,12 +658,70 @@ describe("api management", () => {
                 assert.equal(res.statusCode, 200);
                 assert.equal(res.body.customer.credit_brand, "Discover");
                 assert.notEqual(res.body.customer.api_key, null);
+                assert.notEqual(res.body.customer.api_key, this.previousKey);
                 return done();
               });
           })
           .catch((err) => done(err));
       })
       .catch((err) => done(err));
+  });
+  it("should fail to create key if open invoice", function openInvoice(done) {
+    this.timeout(5000);
+    // delete the key first
+    supertest(app)
+    .delete("/keys?loggedin=1")
+    .then(async (res) => {
+      assert.equal(res.statusCode, 200);
+      const stripe = stripeLib(config.STRIPE_SECRET);
+ 
+      await stripe.invoiceItems.create({
+        customer: this.previousCustomer,
+        price: 'price_1Lm1siCHN72mG1oKkk3Jh1JT', // test $123 one time
+      });
+
+      const invoice = await stripe.invoices.create({
+        customer: this.previousCustomer
+      });
+
+      await stripe.invoices.finalizeInvoice(
+        invoice.id
+      );
+
+      supertest(app)
+      .post("/keys?loggedin=1")
+      .send({
+        token: {
+          id: "tok_discover",
+          email: "test@test.com",
+        },
+      }).then(res => {
+        assert.equal(res.statusCode, 402);
+        assert.equal(res.body.error, 'Open invoice');
+
+        supertest(app)
+          .get("/keys?loggedin=1")
+          .end((err, res) => {
+            if (err) {
+              return done(err);
+            }
+
+            assert.equal(res.statusCode, 200);
+            assert.equal(res.body.customer, null);
+            assert.equal(res.body.openInvoices[0].id, invoice.id);
+            assert.equal(res.body.openInvoices[0].amountDue, 12300);
+            db.from("api_keys")
+              .where({
+                account_id: 1,
+                is_canceled: null
+              }).then(res => {
+                assert.equal(res.length, 0)
+                return done();
+              })
+            });
+      })
+    })
+    .catch((err) => done(err));
   });
 });
 describe("api limits", () => {
