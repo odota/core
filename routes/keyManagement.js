@@ -95,8 +95,8 @@ keys
             .then((customer) => {
               const source = customer.sources.data[0];
 
-              toReturn.credit_brand = source.brand;
-              toReturn.credit_last4 = source.last4;
+              toReturn.credit_brand = source?.brand;
+              toReturn.credit_last4 = source?.last4;
 
               return stripe.subscriptions.retrieve(subscription_id);
             })
@@ -113,9 +113,14 @@ keys
 
           customer_id = allKeyRecords[0].customer_id;
 
-          getOpenInvoices(customer_id).then(invoices =>{
-            console.log(invoices);
-          return cb(null,invoices);
+          getOpenInvoices(customer_id).then(invoices => {
+            const processed = invoices.map(i => ({
+              amountDue: i.amount_due,
+              paymentLink: i.hosted_invoice_url,
+              created: i.created
+            }));
+
+          return cb(null,processed);
           });
 
         },
@@ -219,7 +224,7 @@ keys
 
       if (invoices.length > 0) {
         console.log("Open invoices exist for", req.user.account_id, "customer", customer_id);
-        return res.sendStatus(200);
+        return res.sendStatus(402);
       }
 
       try {
