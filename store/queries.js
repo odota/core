@@ -19,12 +19,19 @@ const benchmarksUtil = require("../util/benchmarksUtil");
 
 const {
   redisCount,
+
   convert64to32,
+
   serialize,
+
   deserialize,
+
   isRadiant,
+
   isContributor,
+
   countItemPopularity,
+
   averageMedal,
 } = utility;
 const { computeMatchData } = compute;
@@ -51,6 +58,7 @@ function cleanRowPostgres(db, table, row, cb) {
   }
   return db(table)
     .columnInfo()
+
     .asCallback((err, result) => {
       if (err) {
         return cb(err);
@@ -87,7 +95,7 @@ function getWebhooks(db) {
 function getAPIKeys(db, cb) {
   db.raw(
     `
-    SELECT api_key from api_keys WHERE api_key is not null
+    SELECT api_key FROM api_keys WHERE api_key IS NOT NULL AND is_canceled IS NOT TRUE
     `
   ).asCallback((err, result) => {
     if (err) {
@@ -271,6 +279,7 @@ function getHeroRankings(db, redis, heroId, options, cb) {
   ORDER BY score DESC
   LIMIT 100
   `,
+
     [heroId || 0]
   ).asCallback((err, result) => {
     if (err) {
@@ -294,6 +303,7 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
   ORDER BY match_id DESC
   LIMIT 100
   `,
+
     [heroId || 0]
   ).asCallback((err, purchaseLogs) => {
     if (err) {
@@ -301,7 +311,9 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
     }
 
     const items = purchaseLogs.rows
+
       .flatMap((purchaseLog) => purchaseLog.purchase_log)
+
       .map((item) => {
         const time = parseInt(item.time, 10);
         const { cost, id } = constants.items[item.key];
@@ -441,6 +453,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
     return cassandra.eachRow(
       query,
       [accountId],
+
       {
         prepare: true,
         fetchSize: 5000,
@@ -495,6 +508,7 @@ function getPlayerHeroRankings(accountId, cb) {
   GROUP BY hero_id, playerscore.score
   ORDER BY percent_rank desc
   `,
+
     [accountId]
   ).asCallback((err, result) => {
     if (err) {
@@ -607,6 +621,7 @@ function getProPeers(db, input, player, cb) {
   }
   const teammates = input;
   return db
+
     .raw(
       `select *, notable_players.account_id
           FROM notable_players
@@ -674,6 +689,7 @@ function getMatchRankTier(match, cb) {
       if (err) {
         return cb(err);
       }
+
       // Remove undefined/null values
       const filt = result.filter((r) => r);
       const avg = averageMedal(filt.map((r) => Number(r))) || null;
@@ -972,6 +988,7 @@ async function updateTeamRankings(match, options) {
       ratingDiff1,
       win1,
       Number(!win1),
+
       match.start_time,
     ]);
     await db.raw(query, [
@@ -983,6 +1000,7 @@ async function updateTeamRankings(match, options) {
       ratingDiff2,
       win2,
       Number(!win2),
+
       match.start_time,
     ]);
   }
@@ -1295,6 +1313,7 @@ function insertMatch(match, options, cb) {
           upsertTeamRankings,
           upsertMatchLogs,
         },
+
         exit
       );
     });
@@ -1397,6 +1416,7 @@ function insertMatch(match, options, cb) {
     if (types[options.type]) {
       redis.lpush(
         types[options.type],
+
         JSON.stringify({
           match_id: match.match_id,
           duration: match.duration,

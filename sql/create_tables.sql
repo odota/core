@@ -200,18 +200,19 @@ CREATE TABLE IF NOT EXISTS webhooks (
 CREATE INDEX IF NOT EXISTS webhooks_account_id_idx on webhooks(account_id);
 
 CREATE TABLE IF NOT EXISTS api_keys (
-  PRIMARY KEY(account_id),
-  account_id bigint UNIQUE,
+  PRIMARY KEY(account_id, subscription_id),
+  account_id bigint NOT NULL,
   api_key uuid UNIQUE,
   customer_id text NOT NULL,
-  subscription_id text NOT NULL
+  subscription_id text NOT NULL UNIQUE,
+  is_canceled boolean
 );
 
 CREATE TABLE IF NOT EXISTS api_key_usage (
   PRIMARY KEY(account_id, api_key, ip, timestamp),
-  account_id bigint REFERENCES api_keys(account_id),
+  account_id bigint,
   customer_id text,
-  api_key uuid,
+  api_key uuid REFERENCES api_keys(api_key),
   usage_count bigint,
   ip text,
   timestamp timestamp default current_timestamp

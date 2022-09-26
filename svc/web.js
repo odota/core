@@ -123,7 +123,7 @@ if (config.NODE_ENV === "test") {
 
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
-  //console.log('[REQ]', req.originalUrl);
+  // console.log('[REQ]', req.originalUrl);
   const apiKey =
     (req.headers.authorization &&
       req.headers.authorization.replace("Bearer ", "")) ||
@@ -336,6 +336,7 @@ app.route("/manageSub").post(async (req, res) => {
   }
   const result = await db.raw(
     `SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'`,
+
     [req.user.account_id]
   );
   const customer = result?.rows?.[0];
@@ -351,6 +352,7 @@ app.route("/manageSub").post(async (req, res) => {
 app.use("/api", api);
 app.use("/webhooks", webhooks);
 // CORS Preflight for API keys
+// NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
 app.options("/keys", cors());
 app.use("/keys", keys);
 // 404 route
