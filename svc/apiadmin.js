@@ -187,7 +187,7 @@ invokeInterval(function updateAPIKeysInRedis(cb) {
       cb();
     }
   });
-}, 5 * 1000); // Update every 5 min
+}, 5 * 60 * 1000); // Update every 5 min
 
-invokeInterval(function runStoreUsageCounts(cb){storeUsageCounts(0, cb);}, 5 * 1000); // Every 10 minutes
-invokeInterval(updateStripeUsage, 5 * 1000); // Every 5 minutes
+invokeInterval(function runStoreUsageCounts(cb){storeUsageCounts(0, cb);}, 10 * 60 * 1000); // Every 10 minutes
+invokeInterval(updateStripeUsage, 5 * 60 * 1000); // Every 5 minutes
