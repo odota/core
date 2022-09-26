@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",
-    "eslint": "^7.0.0",
+    "eslint": "^8.24.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.20.2",
