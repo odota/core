@@ -102,6 +102,7 @@ async function updateStripeUsage(cb) {
     for await (const sub of stripe.subscriptions.list(options)) {
       num++;
       // Deactivate any keys which failed to bill
+      // updateAPIKeysInRedis deletes the keys so just do that there
       if (sub.status === "canceled") {
         console.log("updateStripeUsage CANCELED SUBSCRIPTION", sub.id);
         await db.raw(
