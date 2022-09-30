@@ -490,8 +490,7 @@ function processExpand(entries, meta) {
         // 2 is radiant and 3 dire
         team = e.player2;
         if (e.player1 > -1) {
-          // 128 - 5 slot for dire killers
-          killer = (team === 3 ? 0 : 123) + e.player1;
+          killer = meta.slot_to_playerslot[e.player1];
         }
         if (e.player1 === -1) {
           killer = -1;
