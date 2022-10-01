@@ -480,11 +480,28 @@ function processExpand(entries, meta) {
       });
     },
     CHAT_MESSAGE_COURIER_LOST(e) {
-      // player1 = team that lost courier? (2/3)
+      let team;
+      let killer;
+      // For backwards compatability - when teams only had one courier player1 would be the team of killed courier
+      if (e.player2 === undefined) {
+        team = e.player1;
+        killer = null;
+      } else {
+        // 2 is radiant and 3 dire
+        team = e.player2;
+        if (e.player1 > -1) {
+          killer = meta.slot_to_playerslot[e.player1];
+        }
+        if (e.player1 === -1) {
+          killer = -1;
+        }
+      }
       expand({
         time: e.time,
         type: e.type,
-        team: e.player1,
+        value: e.value,
+        killer,
+        team,
       });
     },
     CHAT_MESSAGE_HERO_NOMINATED_BAN() {
