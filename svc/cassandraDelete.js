@@ -27,19 +27,19 @@ async function start() {
         
         // Convert to signed bigint
         const randomBigint = BigInt.asIntN(64, genRandomNumber(8, 10));
-        let result = await cassandra.execute(`select match_id, player_slot, stuns, token(match_id) from player_matches where token(match_id) >= ? and player_slot = 1 limit 100 ALLOW FILTERING;`, [randomBigint.toString()], {
+        let result = await cassandra.execute(`select match_id, player_slot, stuns, token(match_id) from player_matches where token(match_id) >= ? and player_slot = 1 limit 200 ALLOW FILTERING;`, [randomBigint.toString()], {
             prepare: true,
-            fetchSize: 100,
+            fetchSize: 200,
             autoPage: true,
           });
         
         // Put the ones that don't have parsed data into an array
         let ids = result.rows.filter(result => result.stuns == null && result.match_id < limit).map(result => result.match_id);
-        console.log(ids.length, 'out of', result.rows.length, 'to delete, ex:', ids[0].toString());
+        console.log(ids.length, 'out of', result.rows.length, 'to delete, ex:', ids?.[0].toString());
 
         await Promise.all(ids.map(id => cassandra.execute(`DELETE from player_matches where match_id = ?`, [id], {
             prepare: true,
-            fetchSize: 100,
+            fetchSize: 200,
             autoPage: true,
         })
         ));
