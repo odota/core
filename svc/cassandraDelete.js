@@ -35,7 +35,7 @@ async function start() {
         
         // Put the ones that don't have parsed data into an array
         let ids = result.rows.filter(result => result.stuns == null && result.match_id < limit).map(result => result.match_id);
-        console.log(ids.length, 'out of', result.rows.length, 'to delete, ex:', ids?.[0].toString());
+        console.log(ids.length, 'out of', result.rows.length, 'to delete, ex:', ids[0]?.toString());
 
         await Promise.all(ids.map(id => cassandra.execute(`DELETE from player_matches where match_id = ?`, [id], {
             prepare: true,
