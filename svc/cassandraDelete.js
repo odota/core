@@ -27,9 +27,9 @@ async function start() {
         
         // Convert to signed bigint
         const randomBigint = BigInt.asIntN(64, genRandomNumber(8, 10));
-        let result = await cassandra.execute(`select match_id, player_slot, stuns, token(match_id) from player_matches where token(match_id) >= ? and player_slot = 1 limit 200 ALLOW FILTERING;`, [randomBigint.toString()], {
+        let result = await cassandra.execute(`select match_id, player_slot, stuns, token(match_id) from player_matches where token(match_id) >= ? and player_slot = 1 limit 300 ALLOW FILTERING;`, [randomBigint.toString()], {
             prepare: true,
-            fetchSize: 200,
+            fetchSize: 300,
             autoPage: true,
           });
         
@@ -39,7 +39,7 @@ async function start() {
 
         await Promise.all(ids.map(id => cassandra.execute(`DELETE from player_matches where match_id = ?`, [id], {
             prepare: true,
-            fetchSize: 200,
+            fetchSize: 300,
             autoPage: true,
         })
         ));
