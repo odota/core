@@ -4345,14 +4345,44 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: matchObject,
+            schema: {
+              title: 'TeamMatchObjectResponse',
+              type: 'object',
+              properties: {
+                match_id: matchObject.properties.match_id,
+                radiant: matchObject.properties.radiant,
+                radiant_win: matchObject.properties.radiant_win,
+                radiant_score: matchObject.properties.radiant_score,
+                dire_score: matchObject.properties.dire_score,
+                duration: matchObject.properties.duration,
+                start_time: matchObject.properties.start_time,
+                leagueid: matchObject.properties.leagueid,
+                league_name: matchObject.properties.league_name,
+                cluster: {
+                  description: "cluster",
+                  type: "integer",
+                },
+                opposing_team_id: {
+                  description: "Opposing team identifier",
+                  type: "integer",
+                },
+                opposing_team_name: {
+                  description: "Opposing team name, e.g. 'Evil Geniuses'",
+                  type: "string",
+                },
+                opposing_team_logo: {
+                  description: "Opposing team logo url",
+                  type: "string",
+                },
+              },
+            },
           },
         },
         route: () => "/teams/:team_id/matches",
         func: (req, res, cb) => {
           db.raw(
             `
-            SELECT team_match.match_id, radiant_win, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
+            SELECT team_match.match_id, radiant_win, radiant_score, dire_score, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
             FROM team_match
             JOIN matches USING(match_id)
             JOIN leagues USING(leagueid)
