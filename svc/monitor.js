@@ -70,7 +70,7 @@ function seqNumDelay(cb) {
       const metric = currSeqNum - num;
       return cb(err, {
         metric,
-        threshold: 10000,
+        threshold: 50000,
       });
     });
   });
