@@ -38,7 +38,7 @@
     "cors": "^2.8.5",
     "dota2": "github:odota/node-dota2",
     "dotaconstants": "^7.15.0",
-    "dotenv": "^8.2.0",
+    "dotenv": "^16.0.3",
     "express": "^4.17.1",
     "extend": "^3.0.2",
     "http-proxy": "^1.18.1",
