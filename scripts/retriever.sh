@@ -10,7 +10,7 @@ sudo docker start retriever
 # Setup
 while true
 do
-sudo docker run -d --name=retriever --net=host --restart=always --log-opt max-size=1g -e RETRIEVER_PORT=80 -e PROVIDER=gce -e ROLE=retriever odota/core:latest sh -c "npm start" && break
+sudo docker run -d --name=retriever --net=host --restart=always --log-opt max-size=1g -e RETRIEVER_PORT=80 -e PROVIDER=gce -e ROLE=retriever howardc93/core:latest sh -c "npm start" && break
 sleep 5
 done
 
