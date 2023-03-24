@@ -14,7 +14,7 @@
     "name": "api_key",
     "in": "header"
   },
-  "logo_url": "https://github.com/odota/core/.well-known/logo-preview.jpeg",
+  "logo_url": "https://github.com/odota/web/blob/master/public/assets/images/logo.png",
   "contact_email": "api@opendota.com",
   "legal_info_url": "https://github.com/odota"
 }
