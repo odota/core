@@ -7,12 +7,10 @@
   "api": {
     "type": "openapi",
     "url": "https://github.com/odota/core/.well-known/openapi.yaml",
-    "is_user_authenticated": true
+    "is_user_authenticated": false
   },
   "auth": {
-    "type": "apiKey",
-    "name": "api_key",
-    "in": "header"
+    "type": "none"
   },
   "logo_url": "https://github.com/odota/web/blob/master/public/assets/images/logo.png",
   "contact_email": "api@opendota.com",
