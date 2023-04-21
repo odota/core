@@ -4,27 +4,9 @@ function greevilsGreed(e, container, meta) {
     const alchSlot = meta.hero_to_slot[alchName];
     const alchPlayer = container.players[alchSlot];
 
-    const ggLvl = meta.ability_levels[alchName].alchemist_goblins_greed;
-
     const goldBase = 3;
     let goldStack = e.greevils_greed_stack * 3;
-
-    switch (ggLvl) {
-      case 1:
-        goldStack = Math.min(goldStack, 15);
-        break;
-      case 2:
-        goldStack = Math.min(goldStack, 18);
-        break;
-      case 3:
-        goldStack = Math.min(goldStack, 21);
-        break;
-      case 4:
-        goldStack = Math.min(goldStack, 24);
-        break;
-      default:
-        return;
-    }
+    goldStack = Math.min(goldStack, 18); 
 
     alchPlayer.performance_others = {
       greevils_greed_gold: 0,
