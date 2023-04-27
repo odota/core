@@ -1191,18 +1191,22 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 solo_competitive_rank: {
                   description: "solo_competitive_rank",
                   type: "integer",
+                  nullable: true,
                 },
                 competitive_rank: {
                   description: "competitive_rank",
                   type: "integer",
+                  nullable: true,
                 },
                 rank_tier: {
                   description: "rank_tier",
                   type: "number",
+                  nullable: true,
                 },
                 leaderboard_rank: {
                   description: "leaderboard_rank",
                   type: "number",
+                  nullable: true,
                 },
                 mmr_estimate: {
                   description: "mmr_estimate",
@@ -1211,6 +1215,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     estimate: {
                       description: "estimate",
                       type: "number",
+                      nullable: true,
                     },
                   },
                 },
@@ -2449,10 +2454,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   solo_competitive_rank: {
                     description: "solo_competitive_rank",
                     type: "integer",
+                    nullable: true,
                   },
                   competitive_rank: {
                     description: "competitive_rank",
                     type: "integer",
+                    nullable: true,
                   },
                   time: {
                     description: "time",
@@ -2832,6 +2839,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 banner: {
                   description: "banner",
                   type: "object",
+                  nullable: true,
                 },
               },
             },
