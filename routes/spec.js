@@ -2022,6 +2022,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   steamid: {
                     description: "steamid",
                     type: "string",
+                    nullable: true,
                   },
                   avatar: {
                     description: "avatar",
@@ -3290,6 +3291,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     steamid: {
                       description: "steamid",
                       type: "string",
+                      nullable: true,
                     },
                     avatar: {
                       description: "avatar",
