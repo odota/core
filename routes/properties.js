@@ -7,6 +7,7 @@ module.exports = {
     description:
       "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
     type: "integer",
+    nullable: true,
   },
   duration: {
     description: "Duration of the game in seconds",
