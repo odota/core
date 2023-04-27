@@ -3594,14 +3594,28 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Hero IDs on first team (array)",
             required: false,
-            type: "integer",
+            style: "form",
+            explode: false,
+            schema: {
+              type: "array",
+              items: {
+                type: "integer"
+              }
+            }
           },
           {
             name: "teamB",
             in: "query",
             description: "Hero IDs on second team (array)",
             required: false,
-            type: "integer",
+            style: "form",
+            explode: false,
+            schema: {
+              type: "array",
+              items: {
+                type: "integer"
+              }
+            }
           },
         ],
         responses: {
@@ -3609,9 +3623,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description: "Success",
             schema: {
               title: "FindMatchesResponse",
-              type: "object",
-            },
-          },
+              type: "array",
+              items: {
+                type: "object"
+              }
+            }
         },
         route: () => "/findMatches",
         func: (req, res, cb) => {
