@@ -2003,6 +2003,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   locked_until: {
                     description: "locked_until",
                     type: "integer",
+                    nullable: true,
                   },
                   steamid: {
                     description: "steamid",
