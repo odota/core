@@ -815,6 +815,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         description: "Time of player's last login",
                         type: "string",
                         format: "date-time",
+                        nullable: true,
                       },
                       radiant_win: properties.radiant_win,
                       start_time: {
