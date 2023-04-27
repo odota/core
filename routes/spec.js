@@ -806,6 +806,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       personaname: {
                         description: "personaname",
                         type: "string",
+                        nullable: true,
                       },
                       name: {
                         description: "name",
@@ -1234,6 +1235,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     personaname: {
                       description: "personaname",
                       type: "string",
+                      nullable: true,
                     },
                     name: {
                       description: "name",
@@ -1247,26 +1249,32 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     cheese: {
                       description: "cheese",
                       type: "integer",
+                      nullable: true,
                     },
                     steamid: {
                       description: "steamid",
                       type: "string",
+                      nullable: true,
                     },
                     avatar: {
                       description: "avatar",
                       type: "string",
+                      nullable: true,
                     },
                     avatarmedium: {
                       description: "avatarmedium",
                       type: "string",
+                      nullable: true,
                     },
                     avatarfull: {
                       description: "avatarfull",
                       type: "string",
+                      nullable: true,
                     },
                     profileurl: {
                       description: "profileurl",
                       type: "string",
+                      nullable: true,
                     },
                     last_login: {
                       description: "last_login",
@@ -1276,6 +1284,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     loccountrycode: {
                       description: "loccountrycode",
                       type: "string",
+                      nullable: true,
                     },
                     is_contributor: {
                       description:
@@ -1882,6 +1891,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   personaname: {
                     description: "personaname",
                     type: "string",
+                    nullable: true,
                   },
                   name: {
                     description: "name",
@@ -1903,10 +1913,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   avatar: {
                     description: "avatar",
                     type: "string",
+                    nullable: true,
                   },
                   avatarfull: {
                     description: "avatarfull",
                     type: "string",
+                    nullable: true,
                   },
                 },
               },
@@ -1987,10 +1999,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   team_name: {
                     description: "team_name",
                     type: "string",
+                    nullable: true,
                   },
                   team_tag: {
                     description: "team_tag",
                     type: "string",
+                    nullable: true,
                   },
                   is_locked: {
                     description: "is_locked",
@@ -2012,18 +2026,22 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   avatar: {
                     description: "avatar",
                     type: "string",
+                    nullable: true,
                   },
                   avatarmedium: {
                     description: "avatarmedium",
                     type: "string",
+                    nullable: true,
                   },
                   avatarfull: {
                     description: "avatarfull",
                     type: "string",
+                    nullable: true,
                   },
                   profileurl: {
                     description: "profileurl",
                     type: "string",
+                    nullable: true,
                   },
                   last_login: {
                     description: "last_login",
@@ -2035,22 +2053,27 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: "full_history_time",
                     type: "string",
                     format: "date-time",
+                    nullable: true,
                   },
                   cheese: {
                     description: "cheese",
                     type: "integer",
+                    nullable: true,
                   },
                   fh_unavailable: {
                     description: "fh_unavailable",
                     type: "boolean",
+                    nullable: true,
                   },
                   loccountrycode: {
                     description: "loccountrycode",
                     type: "string",
+                    nullable: true,
                   },
                   last_played: {
                     description: "last_played",
                     type: "integer",
+                    nullable: true,
                   },
                   win: {
                     description: "win",
@@ -3076,6 +3099,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           loccountrycode: {
                             description: "loccountrycode",
                             type: "string",
+                            nullable: true,
                           },
                           count: {
                             description: "count",
@@ -3180,10 +3204,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   avatarfull: {
                     description: "avatarfull",
                     type: "string",
+                    nullable: true,
                   },
                   personaname: {
                     description: "personaname",
                     type: "string",
+                    nullable: true,
                   },
                   last_match_time: {
                     description: "last_match_time. May not be present or null.",
@@ -3268,22 +3294,27 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     avatar: {
                       description: "avatar",
                       type: "string",
+                      nullable: true,
                     },
                     avatarmedium: {
                       description: "avatarmedium",
                       type: "string",
+                      nullable: true,
                     },
                     avatarfull: {
                       description: "avatarfull",
                       type: "string",
+                      nullable: true,
                     },
                     profileurl: {
                       description: "profileurl",
                       type: "string",
+                      nullable: true,
                     },
                     personaname: {
                       description: "personaname",
                       type: "string",
+                      nullable: true,
                     },
                     last_login: {
                       description: "last_login",
@@ -3299,18 +3330,22 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     cheese: {
                       description: "cheese",
                       type: "integer",
+                      nullable: true,
                     },
                     fh_unavailable: {
                       description: "fh_unavailable",
                       type: "boolean",
+                      nullable: true,
                     },
                     loccountrycode: {
                       description: "loccountrycode",
                       type: "string",
+                      nullable: true,
                     },
                     rank_tier: {
                       description: "rank_tier",
                       type: "integer",
+                      nullable: true,
                     },
                   },
                 },
@@ -4471,6 +4506,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 opposing_team_name: {
                   description: "Opposing team name, e.g. 'Evil Geniuses'",
                   type: "string",
+                  nullable: true,
                 },
                 opposing_team_logo: {
                   description: "Opposing team logo url",
