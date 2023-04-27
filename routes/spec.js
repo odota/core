@@ -994,7 +994,50 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         description: "cosmetics",
                         type: "array",
                         items: {
-                          type: "integer",
+                          type: "object",
+                          properties: {
+                            item_id: {
+                              type: "integer",
+                            },
+                            name: {
+                              type: "string",
+                            },
+                            prefab: {
+                              type: "string",
+                            },
+                            creation_date: {
+                              type: "string",
+                              format: "date-time",
+                              nullable: true
+                            },
+                            image_inventory: {
+                              type: "string",
+                              nullable: true,
+                            },
+                            image_path: {
+                              type: "string",
+                              nullable: true,
+                            },
+                            item_description: {
+                              type: "string",
+                              nullable: true,
+                            },
+                            item_name: {
+                              type: "string",
+                            },
+                            item_rarity: {
+                              type: "string",
+                              nullable: true,
+                            },
+                            item_type_name: {
+                              type: "string",
+                              nullable: true,
+                            },
+                            used_by_heroes: {
+                              type: "string",
+                              nullable: true,
+                            }
+                          }
                         },
                       },
                       benchmarks: {
