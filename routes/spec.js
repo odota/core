@@ -243,12 +243,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 },
                 objectives: {
                   description: "objectives",
-                  type: "object",
+                  type: "array",
+                  items: {
+                    type: "object",
+                  }
                 },
                 picks_bans: {
                   description:
                     "Object containing information on the draft. Each pick/ban contains a boolean relating to whether the choice is a pick or a ban, the hero ID, the team the picked or banned it, and the order.",
-                  type: "object",
+                    type: "array",
+                    items: {
+                      type: "object",
+                    }
                 },
                 positive_votes: {
                   description:
@@ -258,7 +264,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 radiant_gold_adv: {
                   description:
                     "Array of the Radiant gold advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their gold disadvantage. ",
-                  type: "object",
+                  type: "array",
+                  items: {
+                    type: "number",
+                  }
                 },
                 radiant_score: {
                   description:
@@ -269,7 +278,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 radiant_xp_adv: {
                   description:
                     "Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ",
-                  type: "object",
+                  type: "array",
+                  items: {
+                    type: "number",
+                  }
                 },
                 start_time: {
                   description: "The Unix timestamp at which the game started",
