@@ -3599,7 +3599,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: "array",
               items: {
-                type: "integer"
+                type: "integer",
               }
             }
           },
@@ -3613,7 +3613,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               type: "array",
               items: {
-                type: "integer"
+                type: "integer",
               }
             }
           },
@@ -3625,7 +3625,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               title: "FindMatchesResponse",
               type: "array",
               items: {
-                type: "object"
+                type: "object",
               }
             }
         },
