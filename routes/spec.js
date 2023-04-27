@@ -289,7 +289,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 },
                 teamfights: {
                   description: "teamfights",
-                  type: "object",
+                  type: "array",
+                  items:{
+                    type:"array",
+                    items:{
+                      type:"object",
+                    }
+                  }
                 },
                 tower_status_dire: {
                   description:
