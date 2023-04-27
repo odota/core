@@ -1170,6 +1170,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Indicates if we were unable to fetch full history for this player due to privacy settings",
                     type: "boolean",
+                    nullable: true,
                   },
                 },
               }
