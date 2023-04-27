@@ -1271,6 +1271,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     last_login: {
                       description: "last_login",
                       type: "string",
+                      nullable: true,
                     },
                     loccountrycode: {
                       description: "loccountrycode",
@@ -1897,6 +1898,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   last_login: {
                     description: "last_login",
                     type: "string",
+                    nullable: true,
                   },
                   avatar: {
                     description: "avatar",
@@ -2026,6 +2028,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description: "last_login",
                     type: "string",
                     format: "date-time",
+                    nullable: true,
                   },
                   full_history_time: {
                     description: "full_history_time",
@@ -3285,6 +3288,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       description: "last_login",
                       type: "string",
                       format: "date-time",
+                      nullable: true,
                     },
                     full_history_time: {
                       description: "full_history_time",
