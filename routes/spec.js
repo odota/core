@@ -3628,6 +3628,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 type: "object",
               }
             }
+          }
         },
         route: () => "/findMatches",
         func: (req, res, cb) => {
