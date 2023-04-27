@@ -381,7 +381,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       additional_units: {
                         description:
                           "Object containing information on additional units the player had under their control",
-                        type: "object",
+                          type: "array",
+                          items:{
+                            type: "object",
+                          },
+                          nullable: true,
                       },
                       assists: {
                         description: "Number of assists the player had",
