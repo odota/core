@@ -2856,7 +2856,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           dataTypeModifier: {
                             description: "dataTypeModifier",
-                            type: "string",
+                            type: "integer",
                           },
                           format: {
                             description: "format",
@@ -2946,7 +2946,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           dataTypeModifier: {
                             description: "dataTypeModifier",
-                            type: "string",
+                            type: "integer",
                           },
                           format: {
                             description: "format",
