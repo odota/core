@@ -988,7 +988,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       purchase_tpscroll: {
                         description:
                           "Total number of TP scrolls purchased by the player",
-                        type: "object",
+                          type: "integer",
                       },
                       actions_per_min: {
                         description: "Actions per minute",
