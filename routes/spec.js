@@ -100,7 +100,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
   },
   host: "api.opendota.com",
   basePath: "/api",
-  produces: ["application/json"],
+  produces: ["application/json; charset=utf-8"],
   paths: {
     "/matches/{match_id}": {
       get: {
