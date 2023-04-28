@@ -66,7 +66,7 @@ function sendDataWithCache(req, res, data, key) {
         account_id: req.params.account_id,
       },
       JSON.stringify(data),
-      () => {}
+      () => { }
     );
   }
   return res.json(data);
@@ -293,10 +293,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 teamfights: {
                   description: "teamfights",
                   type: "array",
-                  items:{
-                    type:"array",
-                    items:{
-                      type:"object",
+                  items: {
+                    type: "array",
+                    items: {
+                      type: "object",
                     },
                   },
                 },
@@ -391,7 +391,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         description:
                           "Object containing information on additional units the player had under their control",
                         type: "array",
-                        items:{
+                        items: {
                           type: "object",
                         },
                         nullable: true,
