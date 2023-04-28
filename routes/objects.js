@@ -240,14 +240,17 @@ const leagueObject = {
       ticket: {
         description: "ticket",
         type: "string",
+        nullable: "true",
       },
       banner: {
         description: "banner",
         type: "string",
+        nullable: "true",
       },
       tier: {
         description: "tier",
         type: "string",
+        nullable: "true",
       },
       name: {
         description: "name",
