@@ -2191,7 +2191,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                   sum: {
                     description: "sum",
-                    type: "integer",
+                    type: "number",
                   },
                 },
               },
