@@ -249,7 +249,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: "array",
                   items: {
                     type: "object",
-                  }
+                  },
                 },
                 picks_bans: {
                   description:
@@ -257,7 +257,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: "array",
                   items: {
                     type: "object",
-                  }
+                  },
                 },
                 positive_votes: {
                   description:
@@ -270,7 +270,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: "array",
                   items: {
                     type: "number",
-                  }
+                  },
                 },
                 radiant_score: {
                   description:
@@ -284,7 +284,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   type: "array",
                   items: {
                     type: "number",
-                  }
+                  },
                 },
                 start_time: {
                   description: "The Unix timestamp at which the game started",
@@ -297,8 +297,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     type:"array",
                     items:{
                       type:"object",
-                    }
-                  }
+                    },
+                  },
                 },
                 tower_status_dire: {
                   description:
@@ -390,11 +390,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       additional_units: {
                         description:
                           "Object containing information on additional units the player had under their control",
-                          type: "array",
-                          items:{
-                            type: "object",
-                          },
-                          nullable: true,
+                        type: "array",
+                        items:{
+                          type: "object",
+                        },
+                        nullable: true,
                       },
                       assists: {
                         description: "Number of assists the player had",
@@ -1023,7 +1023,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                             creation_date: {
                               type: "string",
                               format: "date-time",
-                              nullable: true
+                              nullable: true,
                             },
                             image_inventory: {
                               type: "string",
@@ -1051,9 +1051,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
                             used_by_heroes: {
                               type: "string",
                               nullable: true,
-                            }
-                          }
-                        }
+                            },
+                          },
+                        },
                       },
                       benchmarks: {
                         description:
@@ -1174,7 +1174,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     nullable: true,
                   },
                 },
-              }
+              },
             },
           },
         },
@@ -3725,8 +3725,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
               type: "array",
               items: {
                 type: "integer",
-              }
-            }
+              },
+            },
           },
           {
             name: "teamB",
@@ -3739,8 +3739,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
               type: "array",
               items: {
                 type: "integer",
-              }
-            }
+              },
+            },
           },
         ],
         responses: {
@@ -3751,9 +3751,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
               type: "array",
               items: {
                 type: "object",
-              }
-            }
-          }
+              },
+            },
+          },
         },
         route: () => "/findMatches",
         func: (req, res, cb) => {
