@@ -811,6 +811,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       name: {
                         description: "name",
                         type: "string",
+                        nullable: true,
                       },
                       last_login: {
                         description: "Time of player's last login",
@@ -1240,6 +1241,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     name: {
                       description: "name",
                       type: "string",
+                      nullable: true,
                     },
                     plus: {
                       description:
@@ -1634,6 +1636,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   version: {
                     description: "version",
                     type: "integer",
+                    nullable: true,
                   },
                   kills: {
                     description:
@@ -1654,11 +1657,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Skill bracket assigned by Valve (Normal, High, Very High)",
                     type: "integer",
+                    nullable: true,
                   },
                   average_rank: {
                     description:
                       "Average rank of players with public match data",
                     type: "integer",
+                    nullable: true,
                   },
                   leaver_status: {
                     description:
@@ -1668,6 +1673,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   party_size: {
                     description: "Size of the player's party",
                     type: "integer",
+                    nullable: true,
                   },
                 },
               },
@@ -1896,6 +1902,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   name: {
                     description: "name",
                     type: "string",
+                    nullable: true,
                   },
                   is_contributor: {
                     description: "is_contributor",
@@ -2103,10 +2110,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   with_gpm_sum: {
                     description: "with_gpm_sum",
                     type: "integer",
+                    nullable: true,
                   },
                   with_xpm_sum: {
                     description: "with_xpm_sum",
                     type: "integer",
+                    nullable: true,
                   },
                 },
               },
