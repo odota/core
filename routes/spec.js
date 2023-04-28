@@ -5100,10 +5100,29 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: "Success",
             schema: {
-              type: "object",
-              additionalProperties: {
-                title: "ConstantResourceResponse",
-              },
+              oneOf: [
+                {
+                  type: "object",
+                  additionalProperties: {
+                    title: "ConstantResourceResponse",
+                  },
+                },
+                {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: {
+                      title: "ConstantResourceResponse",
+                    },
+                  },
+                },
+                {
+                  type: "array",
+                  items: {
+                    type: "integer",
+                  },
+                },
+              ],
             },
           },
         },
