@@ -2,6 +2,7 @@ module.exports = {
   radiant_win: {
     description: "Boolean indicating whether Radiant won the match",
     type: "boolean",
+    nullable: true,
   },
   player_slot: {
     description:
