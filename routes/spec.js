@@ -4762,19 +4762,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 properties: {
                   match_id: {
                     description: "match_id",
-                    type: "integer",
+                    type: "string",
                   },
                   start_time: {
                     description: "start_time",
-                    type: "integer",
+                    type: "string",
                   },
                   hero_id: {
                     description: "The ID value of the hero played",
-                    type: "integer",
+                    type: "string",
                   },
                   score: {
                     description: "score",
-                    type: "number",
+                    type: "string",
                   },
                 },
               },
