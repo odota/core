@@ -5121,6 +5121,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             schema: {
               oneOf: [
                 {
+                  type: "null",
+                },
+                {
                   type: "object",
                   additionalProperties: {
                     title: "ConstantResourceResponse",
