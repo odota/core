@@ -958,15 +958,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         description:
                           "Integer referring to which lane the hero laned in",
                         type: "integer",
+                        nullable: true,
                       },
                       lane_role: {
                         description: "lane_role",
                         type: "integer",
+                        nullable: true,
                       },
                       is_roaming: {
                         description:
                           "Boolean referring to whether or not the player roamed",
                         type: "boolean",
+                        nullable: true,
                       },
                       purchase_time: {
                         description:
@@ -1468,6 +1471,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   version: {
                     description: "version",
                     type: "integer",
+                    nullable: true,
                   },
                   kills: {
                     description:
@@ -1488,11 +1492,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.",
                     type: "integer",
+                    nullable: true,
                   },
                   average_rank: {
                     description:
                       "Average rank of players with public match data",
                     type: "integer",
+                    nullable: true,
                   },
                   xp_per_min: {
                     description: "Experience Per Minute obtained by the player",
@@ -1519,15 +1525,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Integer corresponding to which lane the player laned in for the match",
                     type: "integer",
+                    nullable: true,
                   },
                   lane_role: {
                     description: "lane_role",
                     type: "integer",
+                    nullable: true,
                   },
                   is_roaming: {
                     description:
                       "Boolean describing whether or not the player roamed",
                     type: "boolean",
+                    nullable: true,
                   },
                   cluster: {
                     description: "cluster",
@@ -1542,6 +1551,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Size of the players party. If not in a party, will return 1.",
                     type: "integer",
+                    nullable: true,
                   },
                 },
               },
