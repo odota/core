@@ -100,7 +100,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
   },
   host: "api.opendota.com",
   basePath: "/api",
-  produces: ["application/json; charset=utf-8"],
+  produces: ["application/json"],
   paths: {
     "/matches/{match_id}": {
       get: {
@@ -164,9 +164,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 cosmetics: {
                   description: "cosmetics",
                   type: "object",
-                  additionalProperties: {
-                    type: "integer",
-                  },
                 },
                 dire_score: {
                   description:
@@ -246,18 +243,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 },
                 objectives: {
                   description: "objectives",
-                  type: "array",
-                  items: {
-                    type: "object",
-                  },
+                  type: "object",
                 },
                 picks_bans: {
                   description:
                     "Object containing information on the draft. Each pick/ban contains a boolean relating to whether the choice is a pick or a ban, the hero ID, the team the picked or banned it, and the order.",
-                  type: "array",
-                  items: {
-                    type: "object",
-                  },
+                  type: "object",
                 },
                 positive_votes: {
                   description:
@@ -267,10 +258,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 radiant_gold_adv: {
                   description:
                     "Array of the Radiant gold advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their gold disadvantage. ",
-                  type: "array",
-                  items: {
-                    type: "number",
-                  },
+                  type: "object",
                 },
                 radiant_score: {
                   description:
@@ -281,10 +269,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 radiant_xp_adv: {
                   description:
                     "Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ",
-                  type: "array",
-                  items: {
-                    type: "number",
-                  },
+                  type: "object",
                 },
                 start_time: {
                   description: "The Unix timestamp at which the game started",
@@ -292,13 +277,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 },
                 teamfights: {
                   description: "teamfights",
-                  type: "array",
-                  items:{
-                    type:"array",
-                    items:{
-                      type:"object",
-                    },
-                  },
+                  type: "object",
                 },
                 tower_status_dire: {
                   description:
@@ -390,11 +369,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       additional_units: {
                         description:
                           "Object containing information on additional units the player had under their control",
-                        type: "array",
-                        items:{
-                          type: "object",
-                        },
-                        nullable: true,
+                        type: "object",
                       },
                       assists: {
                         description: "Number of assists the player had",
@@ -806,18 +781,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       personaname: {
                         description: "personaname",
                         type: "string",
-                        nullable: true,
                       },
                       name: {
                         description: "name",
                         type: "string",
-                        nullable: true,
                       },
                       last_login: {
                         description: "Time of player's last login",
                         type: "string",
                         format: "date-time",
-                        nullable: true,
                       },
                       radiant_win: properties.radiant_win,
                       start_time: {
@@ -958,18 +930,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         description:
                           "Integer referring to which lane the hero laned in",
                         type: "integer",
-                        nullable: true,
                       },
                       lane_role: {
                         description: "lane_role",
                         type: "integer",
-                        nullable: true,
                       },
                       is_roaming: {
                         description:
                           "Boolean referring to whether or not the player roamed",
                         type: "boolean",
-                        nullable: true,
                       },
                       purchase_time: {
                         description:
@@ -994,7 +963,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                       purchase_tpscroll: {
                         description:
                           "Total number of TP scrolls purchased by the player",
-                        type: "integer",
+                        type: "object",
                       },
                       actions_per_min: {
                         description: "Actions per minute",
@@ -1013,50 +982,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                         description: "cosmetics",
                         type: "array",
                         items: {
-                          type: "object",
-                          properties: {
-                            item_id: {
-                              type: "integer",
-                            },
-                            name: {
-                              type: "string",
-                            },
-                            prefab: {
-                              type: "string",
-                            },
-                            creation_date: {
-                              type: "string",
-                              format: "date-time",
-                              nullable: true,
-                            },
-                            image_inventory: {
-                              type: "string",
-                              nullable: true,
-                            },
-                            image_path: {
-                              type: "string",
-                              nullable: true,
-                            },
-                            item_description: {
-                              type: "string",
-                              nullable: true,
-                            },
-                            item_name: {
-                              type: "string",
-                            },
-                            item_rarity: {
-                              type: "string",
-                              nullable: true,
-                            },
-                            item_type_name: {
-                              type: "string",
-                              nullable: true,
-                            },
-                            used_by_heroes: {
-                              type: "string",
-                              nullable: true,
-                            },
-                          },
+                          type: "integer",
                         },
                       },
                       benchmarks: {
@@ -1158,25 +1084,21 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description: "Success",
             schema: {
               title: "PlayersByRankResponse",
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  account_id: {
-                    description: "account_id",
-                    type: "number",
-                  },
-                  rank_tier: {
-                    description:
-                      "Integer indicating the rank/medal of the player",
-                    type: "number",
-                  },
-                  fh_unavailable: {
-                    description:
-                      "Indicates if we were unable to fetch full history for this player due to privacy settings",
-                    type: "boolean",
-                    nullable: true,
-                  },
+              type: "object",
+              properties: {
+                account_id: {
+                  description: "account_id",
+                  type: "number",
+                },
+                rank_tier: {
+                  description:
+                    "Integer indicating the rank/medal of the player",
+                  type: "number",
+                },
+                fh_unavailable: {
+                  description:
+                    "Indicates if we were unable to fetch full history for this player due to privacy settings",
+                  type: "boolean",
                 },
               },
             },
@@ -1200,22 +1122,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 solo_competitive_rank: {
                   description: "solo_competitive_rank",
                   type: "integer",
-                  nullable: true,
                 },
                 competitive_rank: {
                   description: "competitive_rank",
                   type: "integer",
-                  nullable: true,
                 },
                 rank_tier: {
                   description: "rank_tier",
                   type: "number",
-                  nullable: true,
                 },
                 leaderboard_rank: {
                   description: "leaderboard_rank",
                   type: "number",
-                  nullable: true,
                 },
                 mmr_estimate: {
                   description: "mmr_estimate",
@@ -1224,7 +1142,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     estimate: {
                       description: "estimate",
                       type: "number",
-                      nullable: true,
                     },
                   },
                 },
@@ -1239,12 +1156,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     personaname: {
                       description: "personaname",
                       type: "string",
-                      nullable: true,
                     },
                     name: {
                       description: "name",
                       type: "string",
-                      nullable: true,
                     },
                     plus: {
                       description:
@@ -1254,42 +1169,34 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     cheese: {
                       description: "cheese",
                       type: "integer",
-                      nullable: true,
                     },
                     steamid: {
                       description: "steamid",
                       type: "string",
-                      nullable: true,
                     },
                     avatar: {
                       description: "avatar",
                       type: "string",
-                      nullable: true,
                     },
                     avatarmedium: {
                       description: "avatarmedium",
                       type: "string",
-                      nullable: true,
                     },
                     avatarfull: {
                       description: "avatarfull",
                       type: "string",
-                      nullable: true,
                     },
                     profileurl: {
                       description: "profileurl",
                       type: "string",
-                      nullable: true,
                     },
                     last_login: {
                       description: "last_login",
                       type: "string",
-                      nullable: true,
                     },
                     loccountrycode: {
                       description: "loccountrycode",
                       type: "string",
-                      nullable: true,
                     },
                     is_contributor: {
                       description:
@@ -1471,7 +1378,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   version: {
                     description: "version",
                     type: "integer",
-                    nullable: true,
                   },
                   kills: {
                     description:
@@ -1492,13 +1398,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.",
                     type: "integer",
-                    nullable: true,
                   },
                   average_rank: {
                     description:
                       "Average rank of players with public match data",
                     type: "integer",
-                    nullable: true,
                   },
                   xp_per_min: {
                     description: "Experience Per Minute obtained by the player",
@@ -1525,18 +1429,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Integer corresponding to which lane the player laned in for the match",
                     type: "integer",
-                    nullable: true,
                   },
                   lane_role: {
                     description: "lane_role",
                     type: "integer",
-                    nullable: true,
                   },
                   is_roaming: {
                     description:
                       "Boolean describing whether or not the player roamed",
                     type: "boolean",
-                    nullable: true,
                   },
                   cluster: {
                     description: "cluster",
@@ -1551,7 +1452,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Size of the players party. If not in a party, will return 1.",
                     type: "integer",
-                    nullable: true,
                   },
                 },
               },
@@ -1646,7 +1546,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   version: {
                     description: "version",
                     type: "integer",
-                    nullable: true,
                   },
                   kills: {
                     description:
@@ -1667,13 +1566,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     description:
                       "Skill bracket assigned by Valve (Normal, High, Very High)",
                     type: "integer",
-                    nullable: true,
                   },
                   average_rank: {
                     description:
                       "Average rank of players with public match data",
                     type: "integer",
-                    nullable: true,
                   },
                   leaver_status: {
                     description:
@@ -1683,7 +1580,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   party_size: {
                     description: "Size of the player's party",
                     type: "integer",
-                    nullable: true,
                   },
                 },
               },
@@ -1907,12 +1803,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   personaname: {
                     description: "personaname",
                     type: "string",
-                    nullable: true,
                   },
                   name: {
                     description: "name",
                     type: "string",
-                    nullable: true,
                   },
                   is_contributor: {
                     description: "is_contributor",
@@ -1925,17 +1819,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   last_login: {
                     description: "last_login",
                     type: "string",
-                    nullable: true,
                   },
                   avatar: {
                     description: "avatar",
                     type: "string",
-                    nullable: true,
                   },
                   avatarfull: {
                     description: "avatarfull",
                     type: "string",
-                    nullable: true,
                   },
                 },
               },
@@ -2016,12 +1907,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   team_name: {
                     description: "team_name",
                     type: "string",
-                    nullable: true,
                   },
                   team_tag: {
                     description: "team_tag",
                     type: "string",
-                    nullable: true,
                   },
                   is_locked: {
                     description: "is_locked",
@@ -2034,64 +1923,52 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   locked_until: {
                     description: "locked_until",
                     type: "integer",
-                    nullable: true,
                   },
                   steamid: {
                     description: "steamid",
                     type: "string",
-                    nullable: true,
                   },
                   avatar: {
                     description: "avatar",
                     type: "string",
-                    nullable: true,
                   },
                   avatarmedium: {
                     description: "avatarmedium",
                     type: "string",
-                    nullable: true,
                   },
                   avatarfull: {
                     description: "avatarfull",
                     type: "string",
-                    nullable: true,
                   },
                   profileurl: {
                     description: "profileurl",
                     type: "string",
-                    nullable: true,
                   },
                   last_login: {
                     description: "last_login",
                     type: "string",
                     format: "date-time",
-                    nullable: true,
                   },
                   full_history_time: {
                     description: "full_history_time",
                     type: "string",
                     format: "date-time",
-                    nullable: true,
                   },
                   cheese: {
                     description: "cheese",
                     type: "integer",
-                    nullable: true,
                   },
                   fh_unavailable: {
                     description: "fh_unavailable",
                     type: "boolean",
-                    nullable: true,
                   },
                   loccountrycode: {
                     description: "loccountrycode",
                     type: "string",
-                    nullable: true,
                   },
                   last_played: {
                     description: "last_played",
                     type: "integer",
-                    nullable: true,
                   },
                   win: {
                     description: "win",
@@ -2120,12 +1997,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   with_gpm_sum: {
                     description: "with_gpm_sum",
                     type: "integer",
-                    nullable: true,
                   },
                   with_xpm_sum: {
                     description: "with_xpm_sum",
                     type: "integer",
-                    nullable: true,
                   },
                 },
               },
@@ -2191,7 +2066,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   },
                   sum: {
                     description: "sum",
-                    type: "number",
+                    type: "integer",
                   },
                 },
               },
@@ -2505,7 +2380,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   solo_competitive_rank: {
                     description: "solo_competitive_rank",
                     type: "integer",
-                    nullable: true,
                   },
                   competitive_rank: {
                     description: "competitive_rank",
@@ -2548,7 +2422,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 properties: {
                   hero_id: {
                     description: "The ID value of the hero played",
-                    type: "integer",
+                    type: "string",
                   },
                   score: {
                     description: "hero_score",
@@ -2889,7 +2763,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 banner: {
                   description: "banner",
                   type: "object",
-                  nullable: true,
                 },
               },
             },
@@ -2983,7 +2856,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           dataTypeModifier: {
                             description: "dataTypeModifier",
-                            type: "integer",
+                            type: "string",
                           },
                           format: {
                             description: "format",
@@ -3073,7 +2946,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           dataTypeModifier: {
                             description: "dataTypeModifier",
-                            type: "integer",
+                            type: "string",
                           },
                           format: {
                             description: "format",
@@ -3119,7 +2992,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           loccountrycode: {
                             description: "loccountrycode",
                             type: "string",
-                            nullable: true,
                           },
                           count: {
                             description: "count",
@@ -3224,12 +3096,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   avatarfull: {
                     description: "avatarfull",
                     type: "string",
-                    nullable: true,
                   },
                   personaname: {
                     description: "personaname",
                     type: "string",
-                    nullable: true,
                   },
                   last_match_time: {
                     description: "last_match_time. May not be present or null.",
@@ -3297,79 +3167,65 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 },
                 rankings: {
                   description: "rankings",
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      account_id: {
-                        description: "account_id",
-                        type: "integer",
-                      },
-                      score: {
-                        description: "score",
-                        type: "number",
-                      },
-                      steamid: {
-                        description: "steamid",
-                        type: "string",
-                        nullable: true,
-                      },
-                      avatar: {
-                        description: "avatar",
-                        type: "string",
-                        nullable: true,
-                      },
-                      avatarmedium: {
-                        description: "avatarmedium",
-                        type: "string",
-                        nullable: true,
-                      },
-                      avatarfull: {
-                        description: "avatarfull",
-                        type: "string",
-                        nullable: true,
-                      },
-                      profileurl: {
-                        description: "profileurl",
-                        type: "string",
-                        nullable: true,
-                      },
-                      personaname: {
-                        description: "personaname",
-                        type: "string",
-                        nullable: true,
-                      },
-                      last_login: {
-                        description: "last_login",
-                        type: "string",
-                        format: "date-time",
-                        nullable: true,
-                      },
-                      full_history_time: {
-                        description: "full_history_time",
-                        type: "string",
-                        format: "date-time",
-                      },
-                      cheese: {
-                        description: "cheese",
-                        type: "integer",
-                        nullable: true,
-                      },
-                      fh_unavailable: {
-                        description: "fh_unavailable",
-                        type: "boolean",
-                        nullable: true,
-                      },
-                      loccountrycode: {
-                        description: "loccountrycode",
-                        type: "string",
-                        nullable: true,
-                      },
-                      rank_tier: {
-                        description: "rank_tier",
-                        type: "integer",
-                        nullable: true,
-                      },
+                  type: "object",
+                  properties: {
+                    account_id: {
+                      description: "account_id",
+                      type: "integer",
+                    },
+                    score: {
+                      description: "score",
+                      type: "string",
+                    },
+                    steamid: {
+                      description: "steamid",
+                      type: "string",
+                    },
+                    avatar: {
+                      description: "avatar",
+                      type: "string",
+                    },
+                    avatarmedium: {
+                      description: "avatarmedium",
+                      type: "string",
+                    },
+                    avatarfull: {
+                      description: "avatarfull",
+                      type: "string",
+                    },
+                    profileurl: {
+                      description: "profileurl",
+                      type: "string",
+                    },
+                    personaname: {
+                      description: "personaname",
+                      type: "string",
+                    },
+                    last_login: {
+                      description: "last_login",
+                      type: "string",
+                      format: "date-time",
+                    },
+                    full_history_time: {
+                      description: "full_history_time",
+                      type: "string",
+                      format: "date-time",
+                    },
+                    cheese: {
+                      description: "cheese",
+                      type: "integer",
+                    },
+                    fh_unavailable: {
+                      description: "fh_unavailable",
+                      type: "boolean",
+                    },
+                    loccountrycode: {
+                      description: "loccountrycode",
+                      type: "string",
+                    },
+                    rank_tier: {
+                      description: "rank_tier",
+                      type: "integer",
                     },
                   },
                 },
@@ -3434,7 +3290,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           value: {
                             description: "value",
-                            type: "number",
+                            type: "integer",
                           },
                         },
                       },
@@ -3450,7 +3306,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           value: {
                             description: "value",
-                            type: "number",
+                            type: "integer",
                           },
                         },
                       },
@@ -3466,7 +3322,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           value: {
                             description: "value",
-                            type: "number",
+                            type: "integer",
                           },
                         },
                       },
@@ -3482,7 +3338,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           value: {
                             description: "value",
-                            type: "number",
+                            type: "integer",
                           },
                         },
                       },
@@ -3498,7 +3354,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           value: {
                             description: "value",
-                            type: "number",
+                            type: "integer",
                           },
                         },
                       },
@@ -3514,7 +3370,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                           },
                           value: {
                             description: "value",
-                            type: "number",
+                            type: "integer",
                           },
                         },
                       },
@@ -3738,28 +3594,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Hero IDs on first team (array)",
             required: false,
-            style: "form",
-            explode: false,
-            schema: {
-              type: "array",
-              items: {
-                type: "integer",
-              },
-            },
+            type: "integer",
           },
           {
             name: "teamB",
             in: "query",
             description: "Hero IDs on second team (array)",
             required: false,
-            style: "form",
-            explode: false,
-            schema: {
-              type: "array",
-              items: {
-                type: "integer",
-              },
-            },
+            type: "integer",
           },
         ],
         responses: {
@@ -3767,10 +3609,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description: "Success",
             schema: {
               title: "FindMatchesResponse",
-              type: "array",
-              items: {
-                type: "object",
-              },
+              type: "object",
             },
           },
         },
@@ -4530,7 +4369,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 opposing_team_name: {
                   description: "Opposing team name, e.g. 'Evil Geniuses'",
                   type: "string",
-                  nullable: true,
                 },
                 opposing_team_logo: {
                   description: "Opposing team logo url",
@@ -4781,19 +4619,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 properties: {
                   match_id: {
                     description: "match_id",
-                    type: "string",
+                    type: "integer",
                   },
                   start_time: {
                     description: "start_time",
-                    type: "string",
+                    type: "integer",
                   },
                   hero_id: {
                     description: "The ID value of the hero played",
-                    type: "string",
+                    type: "integer",
                   },
                   score: {
                     description: "score",
-                    type: "string",
+                    type: "number",
                   },
                 },
               },
@@ -5119,29 +4957,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
           200: {
             description: "Success",
             schema: {
-              oneOf: [
-                {
-                  type: "object",
-                  additionalProperties: {
-                    title: "ConstantResourceResponse",
-                  },
-                },
-                {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    additionalProperties: {
-                      title: "ConstantResourceResponse",
-                    },
-                  },
-                },
-                {
-                  type: "array",
-                  items: {
-                    type: "integer",
-                  },
-                },
-              ],
+              type: "array",
+              items: {
+                title: "ConstantResourceResponse",
+              },
             },
           },
         },
