@@ -1,3 +1,5 @@
+const su = require("../util/scenariosUtil");
+
 module.exports = {
   matchIdParam: {
     name: "match_id",
@@ -243,5 +245,14 @@ module.exports = {
     description: "Only fetch data required for match overview page",
     required: false,
     type: "integer",
+  },
+  scenarioParam: {
+    name: "scenario",
+    in: "query",
+    description: su.teamScenariosQueryParams.toString(),
+    required: false,
+    schema: {
+      type: "string",
+    },
   },
 };
