@@ -23,14 +23,6 @@ const params = require("./params");
 const properties = require("./properties");
 const responses = require("./responses");
 
-const {
-  teamObject,
-  matchObject,
-  heroObject,
-  playerObject,
-  leagueObject,
-} = require("./objects");
-
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
 
@@ -63,8 +55,10 @@ const playerParamNames = [
 
 const playerParams = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
-})),
+}));
+
   ...responses,
+
 const securitySchemes = {
   api_key: {
     type: "apiKey",
@@ -76,7 +70,7 @@ const securitySchemes = {
         `,
     in: "query",
   },
-}
+};
 
 const spec = {
   openapi: "3.1.0",
@@ -99,6 +93,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
   components: {
     securitySchemes: securitySchemes,
     parameters: parameters,
+  },
   paths: {
     "/matches/{match_id}": {
       get: {
@@ -1211,7 +1206,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "The PostgreSQL query as percent-encoded string.",
             required: false,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
@@ -1318,7 +1315,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Search string",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
@@ -1373,7 +1372,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Hero ID",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
@@ -1416,7 +1417,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Hero ID",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
@@ -1518,7 +1521,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "path",
             description: "The job ID to query.",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
@@ -2149,7 +2154,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description:
               "Page number, zero indexed. Each page returns up to 1000 entries.",
             required: false,
-            type: "integer",
+            schema: {
+              type: "integer",
+            },
           },
         ],
         responses: {
@@ -2399,7 +2406,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "path",
             description: "Field name to query",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
@@ -2488,7 +2497,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
     "/scenarios/itemTimings": {
       get: {
         summary: "GET /scenarios/itemTimings",
-        description: `Win rates for certain item timings on a hero for items that cost at least ${su.itemCost} gold`,
+        description:
+          "Win rates for certain item timings on a hero for items that cost at least 1400 gold",
         tags: ["scenarios"],
         parameters: [
           {
@@ -2496,9 +2506,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: 'Filter by item name e.g. "spirit_vessel"',
             required: false,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
-          params.heroIdParam,
         ],
         responses: {
           200: {
@@ -2537,9 +2548,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Filter by lane role 1-4 (Safe, Mid, Off, Jungle)",
             required: false,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
-          params.heroIdParam,
         ],
         responses: {
           200: {
@@ -2578,7 +2590,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: su.teamScenariosQueryParams.toString(),
             required: false,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
@@ -2657,7 +2671,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description:
               "Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
