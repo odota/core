@@ -1005,7 +1005,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: playerObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerObjectResponse`,
+                  },
+                },
+              },
+            },
           },
         },
         route: () => "/proPlayers",
@@ -2588,9 +2597,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: playerObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "array", //todo: Why double array?
+                    items: {
+                      $ref: `#/components/schemas/PlayerObjectResponse`,
+                    },
+                  },
+                },
+              },
             },
           },
         },
