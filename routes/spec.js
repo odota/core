@@ -2584,34 +2584,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ScenarioMiscResponse",
-                type: "object",
-                properties: {
-                  scenario: {
-                    description: "The scenario's name or description",
-                    type: "string",
-                  },
-                  is_radiant: {
-                    description:
-                      "Boolean indicating whether Radiant executed this scenario",
-                    type: "boolean",
-                  },
-                  region: {
-                    description: "Region the game was played in",
-                    type: "integer",
-                  },
-                  games: {
-                    description:
-                      "The number of games where this scenario occurred",
-                    type: "string",
-                  },
-                  wins: {
-                    description:
-                      "The number of games won where this scenario occured",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/ScenarioMiscResponse`,
                   },
                 },
               },
