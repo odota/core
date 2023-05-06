@@ -1073,7 +1073,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /proMatches",
         description: "Get list of pro matches",
         tags: ["pro matches"],
-        parameters: [params.lessThanMatchIdParam],
+        parameters: [
+          {
+            $ref: "#/components/parameters/lessThanMatchIdParam",
+          },
+        ],
         responses: {
           200: {
             description: "Success",
@@ -1126,9 +1130,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description: "Get list of randomly sampled public matches",
         tags: ["public matches"],
         parameters: [
-          params.mmrAscendingParam,
-          params.mmrDescendingParam,
-          params.lessThanMatchIdParam,
+          { $ref: "#/components/parameters/mmrAscendingParam" },
+          { $ref: "#/components/parameters/mmrDescendingParam" },
+          { $ref: "#/components/parameters/lessThanMatchIdParam" },
         ],
         responses: {
           200: {
@@ -1194,7 +1198,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /parsedMatches",
         description: "Get list of parsed match IDs",
         tags: ["parsed matches"],
-        parameters: [params.lessThanMatchIdParam],
+        parameters: [{ $ref: "#/components/parameters/lessThanMatchIdParam" }],
         responses: {
           200: {
             description: "Success",
@@ -1599,14 +1603,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "POST /request/{match_id}",
         description: "Submit a new parse request",
         tags: ["request"],
-        parameters: [
-          {
-            name: "match_id",
-            in: "path",
-            required: true,
-            type: "integer",
-          },
-        ],
+        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
         responses: {
           200: {
             description: "Success",
@@ -1815,7 +1812,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /heroes/{hero_id}/matches",
         description: "Get recent matches with a hero",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -1870,7 +1867,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /heroes/{hero_id}/matchups",
         description: "Get results against other heroes for a hero",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -1916,7 +1913,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /heroes/{hero_id}/durations",
         description: "Get hero performance over a range of match durations",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -1959,7 +1956,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /heroes/{hero_id}/players",
         description: "Get players who have played this hero",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -2007,6 +2004,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description:
           "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
         tags: ["heroes"],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -2075,7 +2073,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /leagues/{league_id}",
         description: "Get data for a league",
         tags: ["leagues"],
-        parameters: [params.leagueIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -2112,7 +2110,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /leagues/{league_id}/matches",
         description: "Get matches for a team",
         tags: ["leagues"],
-        parameters: [params.leagueIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -2146,7 +2144,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /leagues/{league_id}/teams",
         description: "Get teams for a league",
         tags: ["leagues"],
-        parameters: [params.leagueIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -2391,15 +2389,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /replays",
         description: "Get data to construct a replay URL with",
         tags: ["replays"],
-        parameters: [
-          {
-            name: "match_id",
-            in: "query",
-            description: "Match IDs (array)",
-            required: true,
-            type: "integer",
-          },
-        ],
+        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
         responses: {
           200: {
             description: "Success",
