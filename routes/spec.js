@@ -180,102 +180,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerResponse",
-              type: "object",
-              properties: {
-                solo_competitive_rank: {
-                  description: "solo_competitive_rank",
-                  type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: "#/components/schemas/PlayersResponse",
                 },
-                competitive_rank: {
-                  description: "competitive_rank",
-                  type: "integer",
-                },
-                rank_tier: {
-                  description: "rank_tier",
-                  type: "number",
-                },
-                leaderboard_rank: {
-                  description: "leaderboard_rank",
-                  type: "number",
-                },
-                mmr_estimate: {
-                  description: "mmr_estimate",
-                  type: "object",
-                  properties: {
-                    estimate: {
-                      description: "estimate",
-                      type: "number",
-                    },
-                  },
-                },
-                profile: {
-                  description: "profile",
-                  type: "object",
-                  properties: {
-                    account_id: {
-                      description: "account_id",
-                      type: "integer",
-                    },
-                    personaname: {
-                      description: "personaname",
-                      type: "string",
-                    },
-                    name: {
-                      description: "name",
-                      type: "string",
-                    },
-                    plus: {
-                      description:
-                        "Boolean indicating status of current Dota Plus subscription",
-                      type: "boolean",
-                    },
-                    cheese: {
-                      description: "cheese",
-                      type: "integer",
-                    },
-                    steamid: {
-                      description: "steamid",
-                      type: "string",
-                    },
-                    avatar: {
-                      description: "avatar",
-                      type: "string",
-                    },
-                    avatarmedium: {
-                      description: "avatarmedium",
-                      type: "string",
-                    },
-                    avatarfull: {
-                      description: "avatarfull",
-                      type: "string",
-                    },
-                    profileurl: {
-                      description: "profileurl",
-                      type: "string",
-                    },
-                    last_login: {
-                      description: "last_login",
-                      type: "string",
-                    },
-                    loccountrycode: {
-                      description: "loccountrycode",
-                      type: "string",
-                    },
-                    is_contributor: {
-                      description:
-                        "Boolean indicating if the user contributed to the development of OpenDota",
-                      type: "boolean",
-                      default: false,
-                    },
-                    is_subscriber: {
-                      description:
-                        "Boolean indicating if the user subscribed to OpenDota",
-                      type: "boolean",
-                      default: false,
-                    },
-                  },
                 },
               },
             },
