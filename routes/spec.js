@@ -33,6 +33,12 @@ const {
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
+
+const parameters = Object.values(params).reduce((acc, param) => {
+  acc[param.name] = param;
+  return acc;
+}, {});
+
 const playerParamNames = [
   "accountIdParam",
   "limitParam",
@@ -92,6 +98,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
   ],
   components: {
     securitySchemes: securitySchemes,
+    parameters: parameters,
   paths: {
     "/matches/{match_id}": {
       get: {
