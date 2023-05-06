@@ -178,7 +178,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}",
         description: "Player data",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [
+          {
+            $ref: "#/components/parameters/accountIdParam",
+          },
+        ],
         responses: {
           200: {
             description: "Success",
@@ -306,7 +310,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/recentMatches",
         description: "Recent matches played",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [
+          {
+            $ref: "#/components/parameters/accountIdParam",
+          },
+        ],
         responses: {
           200: {
             description: "Success",
@@ -899,7 +907,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/ratings",
         description: "Player rating history",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [
+          {
+            $ref: "#/components/parameters/accountIdParam",
+          },
+        ],
         responses: {
           200: {
             description: "Success",
@@ -931,7 +943,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/rankings",
         description: "Player hero rankings",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [
+          {
+            $ref: "#/components/parameters/accountIdParam",
+          },
+        ],
         responses: {
           200: {
             description: "Success",
@@ -966,7 +982,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "POST /players/{account_id}/refresh",
         description: "Refresh player match history",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [
+          {
+            $ref: "#/components/parameters/accountIdParam",
+          },
+        ],
         responses: {
           200: {
             description: "Success",
