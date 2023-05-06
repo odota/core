@@ -1005,9 +1005,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerRefreshResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "PlayerRefreshResponse",
+                  type: "object",
+                },
+              },
             },
           },
         },
@@ -1259,9 +1263,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "ExplorerResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "ExplorerResponse",
+                  type: "object",
+                },
+              },
             },
           },
         },
@@ -1964,20 +1972,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "StatusResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "StatusResponse",
+                  type: "object",
+                },
+              },
             },
           },
-        },
-        route: () => "/status",
-        func: (req, res, cb) => {
-          buildStatus(db, redis, (err, status) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(status);
-          });
         },
       },
     },
@@ -1989,9 +1992,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "HealthResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "HealthResponse",
+                  type: "object",
+                },
+              },
             },
           },
         },
@@ -2029,6 +2036,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
             type: "string",
           },
         ],
+        responses: {
+          200: {
+            description: "Success",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "RequestJobResponse",
+                  type: "object",
+                },
+              },
+            },
+          },
+        },
         route: () => "/request/:jobId",
         func: (req, res, cb) => {
           queue.getJob(req.params.jobId, (err, job) => {
@@ -2045,15 +2065,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
             return res.json(null);
           });
         },
-        responses: {
-          200: {
-            description: "Success",
-            schema: {
-              title: "RequestJobResponse",
-              type: "object",
-            },
-          },
-        },
       },
     },
     "/request/{match_id}": {
@@ -2069,6 +2080,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
             type: "integer",
           },
         ],
+        responses: {
+          200: {
+            description: "Success",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "RequestMatchResponse",
+                  type: "object",
+                },
+              },
+            },
+          },
+        },
         route: () => "/request/:match_id",
         func: (req, res) => {
           const matchId = req.params.match_id;
@@ -2113,15 +2137,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
           }
           return exitWithJob("invalid input");
         },
-        responses: {
-          200: {
-            description: "Success",
-            schema: {
-              title: "RequestMatchResponse",
-              type: "object",
-            },
-          },
-        },
       },
     },
     "/findMatches": {
@@ -2148,9 +2163,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "FindMatchesResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "FindMatchesResponse",
+                  type: "array",
+                  items: {
+                    type: "object",
+                  },
+                },
+              },
             },
           },
         },
@@ -3191,12 +3213,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "LiveResponse",
-                type: "object",
-                properties: {},
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    title: "LiveResponse",
+                    type: "object",
+                    properties: {},
+                  },
+                },
               },
             },
           },
@@ -3502,11 +3528,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ConstantsResponse",
-                type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    title: "ConstantsResponse",
+                    type: "string",
+                  },
+                },
               },
             },
           },
