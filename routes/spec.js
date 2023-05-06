@@ -24,7 +24,7 @@ const responses = require("./responses");
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
 
-const parameters = Object.values(params).reduce((acc, param) => {
+const parameters = Object.entries(params).reduce((acc, [key, param]) => {
   acc[key] = param;
   return acc;
 }, {});
