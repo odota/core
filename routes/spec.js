@@ -2907,34 +2907,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: 'TeamMatchObjectResponse',
-              type: 'object',
-              properties: {
-                match_id: matchObject.properties.match_id,
-                radiant: matchObject.properties.radiant,
-                radiant_win: matchObject.properties.radiant_win,
-                radiant_score: matchObject.properties.radiant_score,
-                dire_score: matchObject.properties.dire_score,
-                duration: matchObject.properties.duration,
-                start_time: matchObject.properties.start_time,
-                leagueid: matchObject.properties.leagueid,
-                league_name: matchObject.properties.league_name,
-                cluster: {
-                  description: "cluster",
-                  type: "integer",
-                },
-                opposing_team_id: {
-                  description: "Opposing team identifier",
-                  type: "integer",
-                },
-                opposing_team_name: {
-                  description: "Opposing team name, e.g. 'Evil Geniuses'",
-                  type: "string",
-                },
-                opposing_team_logo: {
-                  description: "Opposing team logo url",
-                  type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/TeamMatchObjectResponse`,
                 },
               },
             },

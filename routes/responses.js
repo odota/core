@@ -1849,4 +1849,64 @@ module.exports = {
       },
     },
   },
+  TeamMatchObjectResponse: {
+    title: "TeamMatchObjectResponse",
+    type: "object",
+    properties: {
+      match_id: {
+        description: "Used to identify individual matches, e.g. 3703866531",
+        type: "integer",
+      },
+      radiant: {
+        description: "Whether the team/player/hero was on Radiant",
+        type: "boolean",
+      },
+      radiant_win: {
+        description: "Whether or not the Radiant won the match",
+        type: "boolean",
+      },
+      radiant_score: {
+        description:
+          "Number of kills the Radiant team had when the match ended",
+        type: "integer",
+      },
+      dire_score: {
+        description: "Number of kills the Dire team had when the match ended",
+        type: "integer",
+      },
+      duration: {
+        description: "Length of the match",
+        type: "integer",
+      },
+      start_time: {
+        description: "Unix timestamp of when the match began",
+        type: "integer",
+      },
+      leagueid: {
+        description: "Identifier for the league the match took place in",
+        type: "integer",
+      },
+      league_name: {
+        description: "Name of league the match took place in",
+        type: "string",
+      },
+      cluster: {
+        description: "cluster",
+        type: "integer",
+      },
+      opposing_team_id: {
+        description: "Opposing team identifier",
+        type: "integer",
+      },
+      opposing_team_name: {
+        description: "Opposing team name, e.g. 'Evil Geniuses'",
+        type: "string",
+        nullable: true,
+      },
+      opposing_team_logo: {
+        description: "Opposing team logo url",
+        type: "string",
+      },
+    },
+  },
 };
