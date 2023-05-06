@@ -360,7 +360,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               if (err) {
                 return cb(err);
               }
-              return res.json(cache.filter((match) => match.duration));
+              return cacheFunctions.sendDataWithCache(req, res, result, "wl");
             }
           );
         },
