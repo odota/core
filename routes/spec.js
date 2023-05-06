@@ -57,7 +57,9 @@ const playerParams = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
 }));
 
+const schemas = {
   ...responses,
+};
 
 const securitySchemes = {
   api_key: {
@@ -92,6 +94,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
   ],
   components: {
     securitySchemes: securitySchemes,
+    schemas: schemas,
     parameters: parameters,
   },
   paths: {
