@@ -369,7 +369,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description: "Matches played",
         tags: ["players"],
         parameters: [
-          playerParams,
+          ...playerParams,
           {
             $ref: `#/components/parameters/projectParam`,
           },
@@ -743,7 +743,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description: "Distribution of matches in a single stat",
         tags: ["players"],
         parameters: [
-          playerParams,
+          ...playerParams,
           {
             $ref: `#/components/parameters/fieldParam`,
           },
