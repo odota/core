@@ -85,22 +85,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
 `,
     version: packageJson.version,
   },
-  securityDefinitions: {
-    api_key: {
-      type: "apiKey",
-      name: "api_key",
-      description: `Use an API key to remove monthly call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
-
-      Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
-      
-      API key can also be sent using the authorization header "Authorization: Bearer YOUR-API-KEY"
-      `,
-      in: "query",
+  servers: [
+    {
+      url: "https://api.opendota.com/api",
     },
-  },
-  host: "api.opendota.com",
-  basePath: "/api",
-  produces: ["application/json"],
+  ],
   paths: {
     "/matches/{match_id}": {
       get: {
