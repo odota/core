@@ -2892,4 +2892,26 @@ module.exports = {
       },
     },
   },
+  RecordsResponse: {
+    title: "RecordsResponse",
+    type: "object",
+    properties: {
+      match_id: {
+        description: "match_id",
+        type: "string",
+      },
+      start_time: {
+        description: "start_time",
+        type: "string",
+      },
+      hero_id: {
+        description: "The ID value of the hero played",
+        type: "string",
+      },
+      score: {
+        description: "score",
+        type: "string",
+      },
+    },
+  },
 };

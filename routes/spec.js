@@ -2405,27 +2405,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "RecordsResponse",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
-                  },
-                  start_time: {
-                    description: "start_time",
-                    type: "integer",
-                  },
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "integer",
-                  },
-                  score: {
-                    description: "score",
-                    type: "number",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/RecordsResponse`,
                   },
                 },
               },
