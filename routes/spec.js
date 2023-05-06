@@ -32,28 +32,31 @@ const {
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
-const playerParams = [
-  params.accountIdParam,
-  params.limitParam,
-  params.offsetParam,
-  params.winParam,
-  params.patchParam,
-  params.gameModeParam,
-  params.lobbyTypeParam,
-  params.regionParam,
-  params.dateParam,
-  params.laneRoleParam,
-  params.heroIdParam,
-  params.isRadiantParam,
-  params.includedAccountIdParam,
-  params.excludedAccountIdParam,
-  params.withHeroIdParam,
-  params.againstHeroIdParam,
-  params.significantParam,
-  params.havingParam,
-  params.sortParam,
+const playerParamNames = [
+  "accountIdParam",
+  "limitParam",
+  "offsetParam",
+  "winParam",
+  "patchParam",
+  "gameModeParam",
+  "lobbyTypeParam",
+  "regionParam",
+  "dateParam",
+  "laneRoleParam",
+  "heroIdParam",
+  "isRadiantParam",
+  "includedAccountIdParam",
+  "excludedAccountIdParam",
+  "withHeroIdParam",
+  "againstHeroIdParam",
+  "significantParam",
+  "havingParam",
+  "sortParam",
 ];
 
+const playerParams = playerParamNames.map((paramName) => ({
+  $ref: `#/components/parameters/${paramName}`,
+})),
 const securitySchemes = {
   api_key: {
     type: "apiKey",
