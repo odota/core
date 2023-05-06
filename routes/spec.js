@@ -382,7 +382,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/matches",
         description: "Matches played",
         tags: ["players"],
-        parameters: playerParams.concat(params.projectParam),
+        parameters: [
+          playerParams,
+          {
+            $ref: `#/components/parameters/projectParam`,
+          },
+        ],
         responses: {
           200: {
             description: "Success",
@@ -751,7 +756,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/histograms",
         description: "Distribution of matches in a single stat",
         tags: ["players"],
-        parameters: playerParams.concat(params.fieldParam),
+        parameters: [
+          playerParams,
+          {
+            $ref: `#/components/parameters/fieldParam`,
+          },
+        ],
         responses: {
           200: {
             description: "Success",
