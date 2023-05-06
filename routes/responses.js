@@ -2383,4 +2383,32 @@ module.exports = {
       },
     },
   },
+  SearchResponse: {
+    title: "SearchResponse",
+    type: "object",
+    properties: {
+      account_id: {
+        description: "account_id",
+        type: "integer",
+      },
+      avatarfull: {
+        description: "avatarfull",
+        type: "string",
+        nullable: true,
+      },
+      personaname: {
+        description: "personaname",
+        type: "string",
+        nullable: true,
+      },
+      last_match_time: {
+        description: "last_match_time. May not be present or null.",
+        type: "string",
+      },
+      similarity: {
+        description: "similarity",
+        type: "number",
+      },
+    },
+  },
 };

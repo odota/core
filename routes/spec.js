@@ -1324,31 +1324,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "SearchResponse",
-                type: "object",
-                properties: {
-                  account_id: {
-                    description: "account_id",
-                    type: "integer",
-                  },
-                  avatarfull: {
-                    description: "avatarfull",
-                    type: "string",
-                  },
-                  personaname: {
-                    description: "personaname",
-                    type: "string",
-                  },
-                  last_match_time: {
-                    description: "last_match_time. May not be present or null.",
-                    type: "string",
-                  },
-                  similarity: {
-                    description: "similarity",
-                    type: "number",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/SearchResponse`,
                   },
                 },
               },
