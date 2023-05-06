@@ -1259,13 +1259,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "MetadataResponse",
-              type: "object",
-              properties: {
-                banner: {
-                  description: "banner",
-                  type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/MetadataResponse`,
                 },
               },
             },
