@@ -2061,4 +2061,38 @@ module.exports = {
       },
     },
   },
+  PublicMatchesResponse: {
+    title: "PublicMatchesResponse",
+    type: "object",
+    properties: {
+      match_id: {
+        description: "match_id",
+        type: "integer",
+      },
+      match_seq_num: {
+        description: "match_seq_num",
+        type: "integer",
+      },
+      radiant_win: {
+        description: "Boolean indicating whether Radiant won the match",
+        type: "boolean",
+      },
+      start_time: {
+        description: "start_time",
+        type: "integer",
+      },
+      duration: {
+        description: "Duration of the game in seconds",
+        type: "integer",
+      },
+      radiant_team: {
+        description: "radiant_team",
+        type: "string",
+      },
+      dire_team: {
+        description: "dire_team",
+        type: "string",
+      },
+    },
+  },
 };

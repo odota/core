@@ -1101,33 +1101,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PublicMatchesResponse",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
-                  },
-                  match_seq_num: {
-                    description: "match_seq_num",
-                    type: "integer",
-                  },
-                  radiant_win: properties.radiant_win,
-                  start_time: {
-                    description: "start_time",
-                    type: "integer",
-                  },
-                  duration: properties.duration,
-                  radiant_team: {
-                    description: "radiant_team",
-                    type: "string",
-                  },
-                  dire_team: {
-                    description: "dire_team",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PublicMatchesResponse`,
                   },
                 },
               },
