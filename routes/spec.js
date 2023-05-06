@@ -1965,7 +1965,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description:
           "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        responses: {
+          200: {
+            description: "Success",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/HeroItemPopularityResponse`,
+                },
+              },
+            },
+          },
+        },
         route: () => "/heroes/:hero_id/itemPopularity",
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
