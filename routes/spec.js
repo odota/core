@@ -3110,28 +3110,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
               }
               return res.json(result);
             });
-          /*
-          async.map(
-            [].concat(req.query.match_id || []).slice(0, 5),
-            (matchId, cb) => getGcData({
-              match_id: matchId,
-              noRetry: true,
-              allowBackup: true,
-            }, (err, result) => {
-              if (err) {
-                // Don't log this to avoid filling the output
-              }
-              return cb(null, result);
-            }),
-            (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              const final = result.filter(Boolean);
-              return res.json(final);
-            },
-          );
-          */
         },
       },
     },
@@ -3539,100 +3517,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
       },
     },
-    /*
-    '/feed': {
-      get: {
-        summary: 'GET /feed',
-        description: 'Get streaming feed of latest matches as newline-delimited JSON',
-        tags: ['feed'],
-        parameters: [
-          {
-            name: 'seq_num',
-            in: 'query',
-            description: 'Return only matches after this sequence number. If not provided, returns a stream starting at the current time.',
-            required: false,
-            type: 'number',
-          },
-          {
-            name: 'game_mode',
-            in: 'query',
-            description: 'Filter to only matches in this game mode',
-            required: false,
-            type: 'number',
-          },
-          {
-            name: 'leagueid',
-            in: 'query',
-            description: 'Filter to only matches in this league',
-            required: false,
-            type: 'number',
-          },
-          {
-            name: 'included_account_id',
-            in: 'query',
-            description: 'Filter to only matches with this account_id participating',
-            required: false,
-            type: 'number',
-          },
-        ],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'array',
-              items: matchObject,
-            },
-          },
-        },
-        route: () => '/feed',
-        func: (req, res, cb) => {
-          if (config.NODE_ENV !== 'development' && !res.locals.isAPIRequest) {
-            return res.status(403).json({ error: 'API key required' });
-          }
-          if (!req.query) {
-            return res.status(400).json({ error: 'No query string detected' });
-          }
-          if (!req.query.game_mode && !req.query.leagueid && !req.query.included_account_id) {
-            return res.status(400).json({ error: 'A filter parameter is required' });
-          }
-          // TODO don't allow arrays of parameters
-          const keepAlive = setInterval(() => res.write('\n'), 5000);
-          req.on('end', () => {
-            clearTimeout(keepAlive);
-          });
-          const readFromStream = (seqNum) => {
-            redis.xread('block', '0', 'COUNT', '10', 'STREAMS', 'feed', seqNum, (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              let nextSeqNum = '$';
-              result[0][1].forEach((dataArray) => {
-                const dataMatch = JSON.parse(dataArray[1]['1']);
-                const filters = {
-                  game_mode: [Number(req.query.game_mode)],
-                  leagueid: [Number(req.query.leagueid)],
-                  included_account_id: [Number(req.query.included_account_id)],
-                };
-                // console.log(filter([dataMatch], filters).length);
-                if (filter([dataMatch], filters).length) {
-                  const dataSeqNum = dataArray[0];
-                  nextSeqNum = dataSeqNum;
-                  // This is an array of 2 elements where the first is the sequence number and the second is the stream key-value pairs
-                  // Put the sequence number in the match object so client can know where they're at
-                  const final = { ...dataMatch, seq_num: dataSeqNum };
-                  res.write(`${JSON.stringify(final)}\n`);
-                  res.flush();
-                  redisCount(redis, 'feed');
-                }
-              });
-              return readFromStream(nextSeqNum);
-            });
-          };
-          return readFromStream(req.query.seq_num || '$');
-        },
-      },
-    },
-    */
   },
 };
 module.exports = spec;
