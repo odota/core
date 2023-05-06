@@ -2247,7 +2247,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /teams/{team_id}",
         description: "Get data for a team",
         tags: ["teams"],
-        parameters: [params.teamIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -2282,7 +2282,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /teams/{team_id}/matches",
         description: "Get matches for a team",
         tags: ["teams"],
-        parameters: [params.teamIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -2323,7 +2323,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /teams/{team_id}/players",
         description: "Get players who have played for a team",
         tags: ["teams"],
-        parameters: [params.teamIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
             description: "Success",
@@ -2363,7 +2363,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /teams/{team_id}/heroes",
         description: "Get heroes for a team",
         tags: ["teams"],
-        parameters: [params.teamIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
             description: "Success",
