@@ -807,17 +807,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerWardMapResponse",
-              type: "object",
-              properties: {
-                obs: {
-                  description: "obs",
-                  type: "object",
-                },
-                sen: {
-                  description: "sen",
-                  type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/PlayerWardMapResponse`,
                 },
               },
             },
