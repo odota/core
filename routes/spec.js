@@ -933,27 +933,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerRankingsResponse",
-                type: "object",
-                properties: {
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "string",
-                  },
-                  score: {
-                    description: "hero_score",
-                    type: "number",
-                  },
-                  percent_rank: {
-                    description: "percent_rank",
-                    type: "number",
-                  },
-                  card: {
-                    description: "numeric_rank",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/PlayerRankingsResponse",
                   },
                 },
               },

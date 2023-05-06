@@ -1726,4 +1726,26 @@ module.exports = {
       },
     },
   },
+  PlayerRankingsResponse: {
+    title: "PlayerRankingsResponse",
+    type: "object",
+    properties: {
+      hero_id: {
+        description: "The ID value of the hero played",
+        type: "integer",
+      },
+      score: {
+        description: "hero_score",
+        type: "number",
+      },
+      percent_rank: {
+        description: "percent_rank",
+        type: "number",
+      },
+      card: {
+        description: "numeric_rank",
+        type: "integer",
+      },
+    },
+  },
 };
