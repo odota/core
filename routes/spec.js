@@ -376,75 +376,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerMatchesResponse",
-                description: "Object containing information on the match",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "Match ID",
-                    type: "integer",
-                  },
-                  player_slot: properties.player_slot,
-                  radiant_win: properties.radiant_win,
-                  duration: properties.duration,
-                  game_mode: {
-                    description:
-                      "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
-                    type: "integer",
-                  },
-                  lobby_type: {
-                    description:
-                      "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
-                    type: "integer",
-                  },
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "integer",
-                  },
-                  start_time: {
-                    description: "Time the game started in seconds since 1970",
-                    type: "integer",
-                  },
-                  version: {
-                    description: "version",
-                    type: "integer",
-                  },
-                  kills: {
-                    description:
-                      "Total kills the player had at the end of the game",
-                    type: "integer",
-                  },
-                  deaths: {
-                    description:
-                      "Total deaths the player had at the end of the game",
-                    type: "integer",
-                  },
-                  assists: {
-                    description:
-                      "Total assists the player had at the end of the game",
-                    type: "integer",
-                  },
-                  skill: {
-                    description:
-                      "Skill bracket assigned by Valve (Normal, High, Very High)",
-                    type: "integer",
-                  },
-                  average_rank: {
-                    description:
-                      "Average rank of players with public match data",
-                    type: "integer",
-                  },
-                  leaver_status: {
-                    description:
-                      "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
-                    type: "integer",
-                  },
-                  party_size: {
-                    description: "Size of the player's party",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerMatchesResponse`,
                   },
                 },
               },
