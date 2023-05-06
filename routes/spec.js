@@ -901,31 +901,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerRatingsResponse",
-                type: "object",
-                properties: {
-                  account_id: {
-                    description: "account_id",
-                    type: "integer",
-                  },
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
-                  },
-                  solo_competitive_rank: {
-                    description: "solo_competitive_rank",
-                    type: "integer",
-                  },
-                  competitive_rank: {
-                    description: "competitive_rank",
-                    type: "integer",
-                  },
-                  time: {
-                    description: "time",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerRatingsResponse`,
                   },
                 },
               },

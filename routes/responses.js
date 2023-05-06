@@ -1699,4 +1699,31 @@ module.exports = {
       },
     },
   },
+  PlayerRatingsResponse: {
+    title: "PlayerRatingsResponse",
+    type: "object",
+    properties: {
+      account_id: {
+        description: "account_id",
+        type: "integer",
+      },
+      match_id: {
+        description: "match_id",
+        type: "integer",
+      },
+      solo_competitive_rank: {
+        description: "solo_competitive_rank",
+        type: "integer",
+        nullable: true,
+      },
+      competitive_rank: {
+        description: "competitive_rank",
+        type: "integer",
+      },
+      time: {
+        description: "time",
+        type: "integer",
+      },
+    },
+  },
 };
