@@ -138,6 +138,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description: "Players ordered by rank/medal tier",
         tags: ["playersByRank"],
         parameters: [],
+        responses: {
+          200: {
+            description: "Success",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: "#/components/schemas/PlayersByRankResponse",
+                },
+              },
+            },
+          },
+        },
         route: () => "/playersByRank",
         func: (req, res, cb) => {
           db.raw(
@@ -156,31 +168,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
             }
             return res.json(result.rows);
           });
-        },
-        responses: {
-          200: {
-            description: "Success",
-            schema: {
-              title: "PlayersByRankResponse",
-              type: "object",
-              properties: {
-                account_id: {
-                  description: "account_id",
-                  type: "number",
-                },
-                rank_tier: {
-                  description:
-                    "Integer indicating the rank/medal of the player",
-                  type: "number",
-                },
-                fh_unavailable: {
-                  description:
-                    "Indicates if we were unable to fetch full history for this player due to privacy settings",
-                  type: "boolean",
-                },
-              },
-            },
-          },
         },
       },
     },
