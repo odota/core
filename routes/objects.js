@@ -1,36 +1,3 @@
-const heroObject = {
-  title: "HeroObjectResponse",
-  type: "object",
-  properties: {
-    id: {
-      description: "Numeric identifier for the hero object",
-      type: "integer",
-    },
-    name: {
-      description: "Dota hero command name, e.g. 'npc_dota_hero_antimage'",
-      type: "string",
-    },
-    localized_name: {
-      description: "Hero name, e.g. 'Anti-Mage'",
-      type: "string",
-    },
-    primary_attr: {
-      description: "Hero primary shorthand attribute name, e.g. 'agi'",
-      type: "string",
-    },
-    attack_type: {
-      description: "Hero attack type, either 'Melee' or 'Ranged'",
-      type: "string",
-    },
-    roles: {
-      type: "array",
-      items: {
-        description: "A hero's role in the game",
-        type: "string",
-      },
-    },
-  },
-};
 const playerObject = {
   type: "array",
   items: {
