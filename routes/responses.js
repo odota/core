@@ -2874,4 +2874,22 @@ module.exports = {
       },
     },
   },
+  ReplaysResponse: {
+    title: "ReplaysResponse",
+    type: "object",
+    properties: {
+      match_id: {
+        description: "match_id",
+        type: "integer",
+      },
+      cluster: {
+        description: "cluster",
+        type: "integer",
+      },
+      replay_salt: {
+        description: "replay_salt",
+        type: "integer",
+      },
+    },
+  },
 };

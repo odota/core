@@ -2359,23 +2359,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ReplaysResponse",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
-                  },
-                  cluster: {
-                    description: "cluster",
-                    type: "integer",
-                  },
-                  replay_salt: {
-                    description: "replay_salt",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/ReplaysResponse`,
                   },
                 },
               },
