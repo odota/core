@@ -2599,17 +2599,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /scenarios/misc",
         description: "Miscellaneous team scenarios",
         tags: ["scenarios"],
-        parameters: [
-          {
-            name: "scenario",
-            in: "query",
-            description: su.teamScenariosQueryParams.toString(),
-            required: false,
-            schema: {
-              type: "string",
-            },
-          },
-        ],
+        parameters: [{ $ref: "#/components/parameters/scenarioParam" }],
         responses: {
           200: {
             description: "Success",
