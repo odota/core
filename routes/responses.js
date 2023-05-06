@@ -1296,8 +1296,7 @@ module.exports = {
         type: "integer",
       },
       radiant_win: {
-        description:
-          "Boolean indicating whether Radiant won the match",
+        description: "Boolean indicating whether Radiant won the match",
         type: "boolean",
       },
       duration: {
@@ -1319,8 +1318,7 @@ module.exports = {
         type: "integer",
       },
       start_time: {
-        description:
-          "Time the game started in seconds since 1970",
+        description: "Time the game started in seconds since 1970",
         type: "integer",
       },
       version: {
@@ -1329,18 +1327,15 @@ module.exports = {
         nullable: true,
       },
       kills: {
-        description:
-          "Total kills the player had at the end of the game",
+        description: "Total kills the player had at the end of the game",
         type: "integer",
       },
       deaths: {
-        description:
-          "Total deaths the player had at the end of the game",
+        description: "Total deaths the player had at the end of the game",
         type: "integer",
       },
       assists: {
-        description:
-          "Total assists the player had at the end of the game",
+        description: "Total assists the player had at the end of the game",
         type: "integer",
       },
       skill: {
@@ -1350,8 +1345,7 @@ module.exports = {
         nullable: true,
       },
       average_rank: {
-        description:
-          "Average rank of players with public match data",
+        description: "Average rank of players with public match data",
         type: "integer",
         nullable: true,
       },
@@ -1366,5 +1360,5 @@ module.exports = {
         nullable: true,
       },
     },
-},
+  },
 };
