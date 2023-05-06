@@ -2826,4 +2826,30 @@ module.exports = {
       },
     },
   },
+  TeamPlayersResponse: {
+    title: "TeamPlayersResponse",
+    type: "object",
+    properties: {
+      account_id: {
+        description: "The player account ID",
+        type: "string",
+      },
+      name: {
+        description: "The player name",
+        type: "string",
+      },
+      games_played: {
+        description: "Number of games played",
+        type: "integer",
+      },
+      wins: {
+        description: "Number of wins",
+        type: "integer",
+      },
+      is_current_team_member: {
+        description: "If this player is on the current roster",
+        type: "boolean",
+      },
+    },
+  },
 };
