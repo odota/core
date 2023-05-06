@@ -2523,6 +2523,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               type: "string",
             },
           },
+          { $ref: "#/components/parameters/heroIdParam" },
         ],
         responses: {
           200: {
@@ -2565,6 +2566,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               type: "string",
             },
           },
+          { $ref: "#/components/parameters/heroIdParam" },
         ],
         responses: {
           200: {
