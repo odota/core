@@ -73,7 +73,7 @@ function sendDataWithCache(req, res, data, key) {
 }
 
 const spec = {
-  swagger: "2.0",
+  openapi: "3.1.0",
   info: {
     title: "OpenDota API",
     description: `# Introduction
