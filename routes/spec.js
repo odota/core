@@ -103,11 +103,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /matches/{match_id}",
         description: "Match data",
         tags: ["matches"],
-        parameters: [
-          {
-            $ref: "#/components/parameters/matchIdParam",
-          },
-        ],
+        parameters: [{$ref: "#/components/parameters/matchIdParam"}],
         responses: {
           200: {
             description: "Success",
@@ -178,11 +174,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}",
         description: "Player data",
         tags: ["players"],
-        parameters: [
-          {
-            $ref: "#/components/parameters/accountIdParam",
-          },
-        ],
+        parameters: [{  $ref: "#/components/parameters/accountIdParam"}],
         responses: {
           200: {
             description: "Success",
@@ -310,11 +302,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/recentMatches",
         description: "Recent matches played",
         tags: ["players"],
-        parameters: [
-          {
-            $ref: "#/components/parameters/accountIdParam",
-          },
-        ],
+        parameters: [{$ref: "#/components/parameters/accountIdParam"}],
         responses: {
           200: {
             description: "Success",
@@ -917,11 +905,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/ratings",
         description: "Player rating history",
         tags: ["players"],
-        parameters: [
-          {
-            $ref: "#/components/parameters/accountIdParam",
-          },
-        ],
+        parameters: [ { $ref: "#/components/parameters/accountIdParam",}],
         responses: {
           200: {
             description: "Success",
@@ -953,11 +937,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/rankings",
         description: "Player hero rankings",
         tags: ["players"],
-        parameters: [
-          {
-            $ref: "#/components/parameters/accountIdParam",
-          },
-        ],
+        parameters: [ { $ref: "#/components/parameters/accountIdParam"}],
         responses: {
           200: {
             description: "Success",
@@ -992,11 +972,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "POST /players/{account_id}/refresh",
         description: "Refresh player match history",
         tags: ["players"],
-        parameters: [
-          {
-            $ref: "#/components/parameters/accountIdParam",
-          },
-        ],
+        parameters: [{$ref: "#/components/parameters/accountIdParam",}],
         responses: {
           200: {
             description: "Success",
@@ -1073,11 +1049,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /proMatches",
         description: "Get list of pro matches",
         tags: ["pro matches"],
-        parameters: [
-          {
-            $ref: "#/components/parameters/lessThanMatchIdParam",
-          },
-        ],
+        parameters: [ {$ref: "#/components/parameters/lessThanMatchIdParam",}],
         responses: {
           200: {
             description: "Success",
