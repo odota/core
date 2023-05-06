@@ -2852,4 +2852,26 @@ module.exports = {
       },
     },
   },
+  TeamHeroesResponse: {
+    title: "TeamHeroesResponse",
+    type: "object",
+    properties: {
+      hero_id: {
+        description: "The hero ID",
+        type: "integer",
+      },
+      name: {
+        description: "The hero name",
+        type: "string",
+      },
+      games_played: {
+        description: "Number of games played",
+        type: "integer",
+      },
+      wins: {
+        description: "Number of wins",
+        type: "integer",
+      },
+    },
+  },
 };
