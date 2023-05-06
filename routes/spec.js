@@ -1701,59 +1701,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
       },
     },
-    /*
-    '/matchups': {
-      get: {
-        summary: 'GET /',
-        description: 'Get hero matchups (teammates and opponents)',
-        tags: ['matchups'],
-        parameters: [{
-          name: 't0',
-          in: 'query',
-          description: 'Hero 0 ID',
-          required: false,
-          type: 'integer',
-        }, {
-          name: 't1',
-          in: 'query',
-          description: 'Hero 1 ID',
-          required: false,
-          type: 'integer',
-        }],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'object',
-            },
-          },
-        },
-        route: () => '/matchups',
-        func: (req, res, cb) => {
-          // accept as input two arrays of up to 5
-          const t0 = [].concat(req.query.t0 || []).slice(0, 5);
-          const t1 = [].concat(req.query.t1 || []).slice(0, 5);
-          // return wins of each team
-          async.parallel({
-            t0(cb) {
-              redis.hget('matchups', utility.matchupToString(t0, t1, true), cb);
-            },
-            t1(cb) {
-              redis.hget('matchups', utility.matchupToString(t0, t1, false), cb);
-            },
-          }, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json({
-              t0: Number(result.t0) || 0,
-              t1: Number(result.t1) || 0,
-            });
-          });
-        },
-      },
-    },
-    */
     "/heroes": {
       get: {
         summary: "GET /heroes",
