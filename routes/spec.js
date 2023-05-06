@@ -1744,119 +1744,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "HeroStatsResponse",
-                type: "object",
-                properties: {
-                  id: {
-                    description: "id",
-                    type: "integer",
-                  },
-                  name: {
-                    description: "name",
-                    type: "string",
-                  },
-                  localized_name: {
-                    description: "localized_name",
-                    type: "string",
-                  },
-                  img: {
-                    description: "img",
-                    type: "string",
-                  },
-                  icon: {
-                    description: "icon",
-                    type: "string",
-                  },
-                  pro_win: {
-                    description: "pro_win",
-                    type: "integer",
-                  },
-                  pro_pick: {
-                    description: "pro_pick",
-                    type: "integer",
-                  },
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "integer",
-                  },
-                  pro_ban: {
-                    description: "pro_ban",
-                    type: "integer",
-                  },
-                  "1_pick": {
-                    description: "Herald picks",
-                    type: "integer",
-                  },
-                  "1_win": {
-                    description: "Herald wins",
-                    type: "integer",
-                  },
-                  "2_pick": {
-                    description: "Guardian picks",
-                    type: "integer",
-                  },
-                  "2_win": {
-                    description: "Guardian wins",
-                    type: "integer",
-                  },
-                  "3_pick": {
-                    description: "Crusader picks",
-                    type: "integer",
-                  },
-                  "3_win": {
-                    description: "Crusader wins",
-                    type: "integer",
-                  },
-                  "4_pick": {
-                    description: "Archon picks",
-                    type: "integer",
-                  },
-                  "4_win": {
-                    description: "Archon wins",
-                    type: "integer",
-                  },
-                  "5_pick": {
-                    description: "Legend picks",
-                    type: "integer",
-                  },
-                  "5_win": {
-                    description: "Legend wins",
-                    type: "integer",
-                  },
-                  "6_pick": {
-                    description: "Ancient picks",
-                    type: "integer",
-                  },
-                  "6_win": {
-                    description: "Ancient wins",
-                    type: "integer",
-                  },
-                  "7_pick": {
-                    description: "Divine picks",
-                    type: "integer",
-                  },
-                  "7_win": {
-                    description: "Divine wins",
-                    type: "integer",
-                  },
-                  "8_pick": {
-                    description: "Immortal picks",
-                    type: "integer",
-                  },
-                  "8_win": {
-                    description: "Immortal wins",
-                    type: "integer",
-                  },
-                  turbo_pick: {
-                    description: "Picks in Turbo mode this month",
-                    type: "integer",
-                  },
-                  turbo_win: {
-                    description: "Wins in Turbo mode this month",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/HeroStatsResponse`,
                   },
                 },
               },
