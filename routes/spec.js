@@ -323,6 +323,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             },
           },
         },
+        route: () => "/players/:account_id/recentMatches",
         func: (req, res, cb) => {
           queries.getPlayerMatches(
             req.params.account_id,
