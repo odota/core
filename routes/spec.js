@@ -2663,10 +2663,35 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ConstantResourceResponse",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  nullable: true,
+                  oneOf: [
+                    {
+                      type: "object",
+                      additionalProperties: {
+                        title: "ConstantResourceResponse",
+                      },
+                    },
+                    {
+                      type: "array",
+                      items: {
+                        oneOf: [
+                          {
+                            type: "object",
+                            additionalProperties: {
+                              title: "ConstantResourceResponse",
+                            },
+                          },
+                          {
+                            type: "integer",
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
               },
             },
           },
