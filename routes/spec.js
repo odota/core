@@ -1036,9 +1036,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: matchObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/MatchObjectResponse`,
+                  },
+                },
+              },
             },
           },
         },
@@ -2409,9 +2415,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: matchObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/MatchObjectResponse`,
+                  },
+                },
+              },
             },
           },
         },
@@ -2739,7 +2751,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: matchObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/MatchObjectResponse`,
+                },
+              },
+            },
           },
         },
         route: () => "/leagues/:league_id/matches",
