@@ -856,17 +856,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerWordCloudResponse",
-              type: "object",
-              properties: {
-                my_word_counts: {
-                  description: "my_word_counts",
-                  type: "object",
-                },
-                all_word_counts: {
-                  description: "all_word_counts",
-                  type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/PlayerWordCloudResponse`,
                 },
               },
             },
