@@ -2095,4 +2095,14 @@ module.exports = {
       },
     },
   },
+  ParsedMatchesResponse: {
+    title: "ParsedMatchesResponse",
+    type: "object",
+    properties: {
+      match_id: {
+        description: "match_id",
+        type: "integer",
+      },
+    },
+  },
 };
