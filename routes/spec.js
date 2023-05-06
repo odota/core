@@ -1379,77 +1379,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "RankingsResponse",
-              type: "object",
-              properties: {
-                hero_id: {
-                  description: "The ID value of the hero played",
-                  type: "integer",
-                },
-                rankings: {
-                  description: "rankings",
-                  type: "object",
-                  properties: {
-                    account_id: {
-                      description: "account_id",
-                      type: "integer",
-                    },
-                    score: {
-                      description: "score",
-                      type: "string",
-                    },
-                    steamid: {
-                      description: "steamid",
-                      type: "string",
-                    },
-                    avatar: {
-                      description: "avatar",
-                      type: "string",
-                    },
-                    avatarmedium: {
-                      description: "avatarmedium",
-                      type: "string",
-                    },
-                    avatarfull: {
-                      description: "avatarfull",
-                      type: "string",
-                    },
-                    profileurl: {
-                      description: "profileurl",
-                      type: "string",
-                    },
-                    personaname: {
-                      description: "personaname",
-                      type: "string",
-                    },
-                    last_login: {
-                      description: "last_login",
-                      type: "string",
-                      format: "date-time",
-                    },
-                    full_history_time: {
-                      description: "full_history_time",
-                      type: "string",
-                      format: "date-time",
-                    },
-                    cheese: {
-                      description: "cheese",
-                      type: "integer",
-                    },
-                    fh_unavailable: {
-                      description: "fh_unavailable",
-                      type: "boolean",
-                    },
-                    loccountrycode: {
-                      description: "loccountrycode",
-                      type: "string",
-                    },
-                    rank_tier: {
-                      description: "rank_tier",
-                      type: "integer",
-                    },
-                  },
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/RankingsResponse`,
                 },
               },
             },
