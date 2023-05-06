@@ -1878,24 +1878,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "HeroDurationsResponse",
-                type: "object",
-                properties: {
-                  duration_bin: {
-                    description:
-                      "Lower bound of number of seconds the match lasted",
-                    type: "string",
-                  },
-                  games_played: {
-                    description: "Number of games played",
-                    type: "integer",
-                  },
-                  wins: {
-                    description: "Number of wins",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/HeroDurationsResponse`,
                   },
                 },
               },
