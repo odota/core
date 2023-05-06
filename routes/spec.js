@@ -2544,33 +2544,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ScenarioLaneRolesResponse",
-                type: "object",
-                properties: {
-                  hero_id: {
-                    description: "Hero ID",
-                    type: "integer",
-                  },
-                  lane_role: {
-                    description: "The hero's lane role",
-                    type: "integer",
-                  },
-                  time: {
-                    description: "Maximum game length in seconds",
-                    type: "integer",
-                  },
-                  games: {
-                    description:
-                      "The number of games where the hero played in this lane role",
-                    type: "string",
-                  },
-                  wins: {
-                    description:
-                      "The number of games won where the hero played in this lane role",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/ScenarioLaneRolesResponse`,
                   },
                 },
               },
