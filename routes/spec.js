@@ -308,123 +308,21 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerRecentMatchesResponse",
-                description: "match",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "Match ID",
-                    type: "integer",
-                  },
-                  player_slot: properties.player_slot,
-                  radiant_win: properties.radiant_win,
-                  duration: properties.duration,
-                  game_mode: {
-                    description:
-                      "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
-                    type: "integer",
-                  },
-                  lobby_type: {
-                    description:
-                      "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
-                    type: "integer",
-                  },
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "integer",
-                  },
-                  start_time: {
-                    description:
-                      "Start time of the match in seconds elapsed since 1970",
-                    type: "integer",
-                  },
-                  version: {
-                    description: "version",
-                    type: "integer",
-                  },
-                  kills: {
-                    description:
-                      "Total kills the player had at the end of the match",
-                    type: "integer",
-                  },
-                  deaths: {
-                    description:
-                      "Total deaths the player had at the end of the match",
-                    type: "integer",
-                  },
-                  assists: {
-                    description:
-                      "Total assists the player had at the end of the match",
-                    type: "integer",
-                  },
-                  skill: {
-                    description:
-                      "Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.",
-                    type: "integer",
-                  },
-                  average_rank: {
-                    description:
-                      "Average rank of players with public match data",
-                    type: "integer",
-                  },
-                  xp_per_min: {
-                    description: "Experience Per Minute obtained by the player",
-                    type: "integer",
-                  },
-                  gold_per_min: {
-                    description: "Average gold per minute of the player",
-                    type: "integer",
-                  },
-                  hero_damage: {
-                    description: "Total hero damage to enemy heroes",
-                    type: "integer",
-                  },
-                  hero_healing: {
-                    description: "Total healing of ally heroes",
-                    type: "integer",
-                  },
-                  last_hits: {
-                    description:
-                      "Total last hits the player had at the end of the match",
-                    type: "integer",
-                  },
-                  lane: {
-                    description:
-                      "Integer corresponding to which lane the player laned in for the match",
-                    type: "integer",
-                  },
-                  lane_role: {
-                    description: "lane_role",
-                    type: "integer",
-                  },
-                  is_roaming: {
-                    description:
-                      "Boolean describing whether or not the player roamed",
-                    type: "boolean",
-                  },
-                  cluster: {
-                    description: "cluster",
-                    type: "integer",
-                  },
-                  leaver_status: {
-                    description:
-                      "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
-                    type: "integer",
-                  },
-                  party_size: {
-                    description:
-                      "Size of the players party. If not in a party, will return 1.",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    items: {
+                      $ref: "#/components/schemas/PlayerRecentMatchesResponse",
+                    },
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/recentMatches",
         func: (req, res, cb) => {
           queries.getPlayerMatches(
             req.params.account_id,
