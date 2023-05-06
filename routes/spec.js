@@ -103,7 +103,11 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /matches/{match_id}",
         description: "Match data",
         tags: ["matches"],
-        parameters: [params.matchIdParam],
+        parameters: [
+          {
+            $ref: "#/components/parameters/matchIdParam",
+          },
+        ],
         responses: {
           200: {
             description: "Success",
