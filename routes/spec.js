@@ -21,6 +21,7 @@ const packageJson = require("../package.json");
 const cacheFunctions = require("../store/cacheFunctions");
 const params = require("./params");
 const properties = require("./properties");
+const responses = require("./responses");
 
 const {
   teamObject,
@@ -57,6 +58,7 @@ const playerParamNames = [
 const playerParams = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
 })),
+  ...responses,
 const securitySchemes = {
   api_key: {
     type: "apiKey",
