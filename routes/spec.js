@@ -261,50 +261,43 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerWinLossResponse",
-              type: "object",
-              properties: {
-                win: {
-                  description: "Number of wins",
-                  type: "integer",
-                },
-                lose: {
-                  description: "Number of loses",
-                  type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/PlayerWinLossResponse`,
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/wl",
-        func: (req, res, cb) => {
-          const result = {
-            win: 0,
-            lose: 0,
-          };
-          req.queryObj.project = req.queryObj.project.concat(
-            "player_slot",
-            "radiant_win"
-          );
-          queries.getPlayerMatches(
-            req.params.account_id,
-            req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              cache.forEach((m) => {
-                if (utility.isRadiant(m) === m.radiant_win) {
-                  result.win += 1;
-                } else {
-                  result.lose += 1;
-                }
-              });
-              return sendDataWithCache(req, res, result, "wl");
+      },
+      route: () => "/players/:account_id/wl",
+      func: (req, res, cb) => {
+        const result = {
+          win: 0,
+          lose: 0,
+        };
+        req.queryObj.project = req.queryObj.project.concat(
+          "player_slot",
+          "radiant_win"
+        );
+        queries.getPlayerMatches(
+          req.params.account_id,
+          req.queryObj,
+          (err, cache) => {
+            if (err) {
+              return cb(err);
             }
-          );
-        },
+            cache.forEach((m) => {
+              if (utility.isRadiant(m) === m.radiant_win) {
+                result.win += 1;
+              } else {
+                result.lose += 1;
+              }
+            });
+            return sendDataWithCache(req, res, result, "wl");
+          }
+        );
       },
     },
     "/players/{account_id}/recentMatches": {
