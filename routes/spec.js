@@ -636,23 +636,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerTotalsResponse",
-                type: "object",
-                properties: {
-                  field: {
-                    description: "field",
-                    type: "string",
-                  },
-                  n: {
-                    description: "number",
-                    type: "integer",
-                  },
-                  sum: {
-                    description: "sum",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerTotalsResponse`,
                   },
                 },
               },
