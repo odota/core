@@ -2741,4 +2741,22 @@ module.exports = {
       },
     },
   },
+  HeroMatchupsResponse: {
+    title: "HeroMatchupsResponse",
+    type: "object",
+    properties: {
+      hero_id: {
+        description: "Numeric identifier for the hero object",
+        type: "integer",
+      },
+      games_played: {
+        description: "Number of games played",
+        type: "integer",
+      },
+      wins: {
+        description: "Number of games won",
+        type: "integer",
+      },
+    },
+  },
 };

@@ -1832,23 +1832,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "HeroMatchupsResponse",
-                type: "object",
-                properties: {
-                  hero_id: {
-                    description: "Numeric identifier for the hero object",
-                    type: "integer",
-                  },
-                  games_played: {
-                    description: "Number of games played",
-                    type: "integer",
-                  },
-                  wins: {
-                    description: "Number of games won",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/HeroMatchupsResponse`,
                   },
                 },
               },
