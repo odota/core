@@ -1386,7 +1386,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description: "Hero ID",
             required: true,
             schema: {
-              type: "string",
+              type: "string", //todo: String for hero id?
             },
           },
         ],
@@ -1431,7 +1431,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description: "Hero ID",
             required: true,
             schema: {
-              type: "string",
+              type: "string", // todo: String for hero id?
             },
           },
         ],
