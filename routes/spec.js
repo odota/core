@@ -279,9 +279,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
-              console.log("getPlayerMatches callback executed");
               if (err) {
-                console.error("Error in getPlayerMatches:", err);
                 return cb(err);
               }
               cache.forEach((m) => {
@@ -291,7 +289,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   result.lose += 1;
                 }
               });
-              console.log("Sending data with cache:", result);
               return cacheFunctions.sendDataWithCache(req, res, result, "wl");
             }
           );
