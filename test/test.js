@@ -169,7 +169,7 @@ before(function setup(done) {
                   if (err) {
                     console.warn(err);
                     cb();
-                  } else if (exists) {
+                  } else if (exists.body) {
                     es.indices.delete(
                       {
                         index: "dota-test",
