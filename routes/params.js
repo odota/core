@@ -322,9 +322,7 @@ module.exports = {
     description: su.teamScenariosQueryParams.toString(),
     required: false,
     schema: {
-      schema: {
-        type: "string",
-      },
+      type: "string",
     },
   },
 };
