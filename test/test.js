@@ -375,6 +375,7 @@ describe("api", () => {
           return cb(err);
         }
         const spec = res.body;
+        console.log('API spec response:', res.body);
         return async.eachSeries(
           Object.keys(spec.paths),
           (path, cb) => {
