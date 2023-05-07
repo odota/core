@@ -289,7 +289,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   result.lose += 1;
                 }
               });
-              return sendDataWithCache(req, res, result, "wl");
+              return cacheFunctions.sendDataWithCache(req, res, result, "wl");
             }
           );
         },
@@ -510,7 +510,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     hero.games >= Number(req.queryObj.having)
                 )
                 .sort((a, b) => b.games - a.games);
-              return sendDataWithCache(req, res, result, "heroes");
+              return cacheFunctions.sendDataWithCache(
+                req,
+                res,
+                result,
+                "heroes"
+              );
             }
           );
         },
@@ -565,7 +570,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   if (err) {
                     return cb(err);
                   }
-                  return sendDataWithCache(req, res, result, "peers");
+                  return cacheFunctions.sendDataWithCache(
+                    req,
+                    res,
+                    result,
+                    "peers"
+                  );
                 }
               );
             }
