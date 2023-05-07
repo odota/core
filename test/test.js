@@ -164,6 +164,7 @@ before(function setup(done) {
               es.indices.delete(
                 {
                   index: "dota-test", // explicitly name the index to avoid embarrassing errors.
+                  ignore: [404], // Ignore 'index_not_found_exception' error
                 },
                 (err) => {
                   if (err) {
