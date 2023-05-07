@@ -174,12 +174,19 @@ before(function setup(done) {
               );
             },
             (cb) => {
-              es.indices.create(
-                {
-                  index: "dota-test",
-                },
-                cb
-              );
+              setTimeout(() => {
+                es.indices.create(
+                  {
+                    index: "dota-test",
+                  },
+                  (err) => {
+                    if (err) {
+                      console.warn(err);
+                    }
+                    cb();
+                  }
+                );
+              }, 1000); // Adding a delay of 1 second (1000 ms) before creating the index
             },
             (cb) => {
               es.indices.close(
