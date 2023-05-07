@@ -200,7 +200,10 @@ api.get("/", (req, res) => {
 Object.keys(spec.paths).forEach((path) => {
   Object.keys(spec.paths[path]).forEach((verb) => {
     const { route, func } = spec.paths[path][verb];
-    api[verb](route(), func);
+    // Use the 'route' function to get the route path if it's available; otherwise, transform the OpenAPI path to the Express format.
+    const routePath = route
+      ? route()
+      : path.replace(/{/g, ":").replace(/}/g, "");
   });
 });
 
