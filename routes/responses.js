@@ -149,10 +149,29 @@ module.exports = {
       },
       picks_bans: {
         description:
-          "Object containing information on the draft. Each pick/ban contains a boolean relating to whether the choice is a pick or a ban, the hero ID, the team the picked or banned it, and the order.",
+          "Array containing information on the draft. Each item contains a boolean relating to whether the choice is a pick or a ban, the hero ID, the team the picked or banned it, and the order.",
         type: "array",
         items: {
           type: "object",
+          properties: {
+            is_pick: {
+              description:
+                "Boolean indicating whether the choice is a pick or a ban",
+              type: "boolean",
+            },
+            hero_id: {
+              description: "The hero ID",
+              type: "integer",
+            },
+            team: {
+              description: "The team that picked or banned the hero",
+              type: "integer",
+            },
+            order: {
+              description: "The order of the pick or ban",
+              type: "integer",
+            },
+          },
         },
       },
       positive_votes: {
