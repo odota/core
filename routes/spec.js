@@ -357,7 +357,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               if (err) {
                 return cb(err);
               }
-              return cacheFunctions.sendDataWithCache(req, res, result, "wl");
+              return res.json(cache.filter((match) => match.duration));
             }
           );
         },
