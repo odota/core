@@ -204,6 +204,15 @@ Object.keys(spec.paths).forEach((path) => {
     const routePath = route
       ? route()
       : path.replace(/{/g, ":").replace(/}/g, "");
+    // Check if the callback function is defined before adding the route..
+    if (typeof func === "function") {
+      api[verb](routePath, func);
+    } else {
+      // If the function is missing, log a warning message with the problematic route path and verb
+      console.warn(
+        `Missing callback function for route ${routePath} using ${verb.toUpperCase()}`
+      );
+    }
   });
 });
 
