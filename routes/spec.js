@@ -1481,6 +1481,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
             },
           },
         },
+        route: () => "/status",
+        func: (req, res, cb) => {
+          buildStatus(db, redis, (err, status) => {
+            if (err) {
+              return cb(err);
+            }
+            return res.json(status);
+          });
+        },
       },
     },
     "/health": {
