@@ -3,8 +3,8 @@ const constants = require("dotaconstants");
 const moment = require("moment");
 const { Client } = require("pg");
 const config = require("../config");
-// const crypto = require('crypto');
-// const uuidV4 = require('uuid/v4');
+// const crypto = require("crypto");
+// const uuidV4 = require("uuid/v4");
 const queue = require("../store/queue");
 const queries = require("../store/queries");
 const search = require("../store/search");
@@ -12,68 +12,68 @@ const searchES = require("../store/searchES");
 const buildMatch = require("../store/buildMatch");
 const buildStatus = require("../store/buildStatus");
 const playerFields = require("./playerFields.json");
-// const getGcData = require('../util/getGcData');
+// const getGcData = require("../util/getGcData");
 const utility = require("../util/utility");
-const su = require("../util/scenariosUtil");
 const db = require("../store/db");
 const redis = require("../store/redis");
 const packageJson = require("../package.json");
 const cacheFunctions = require("../store/cacheFunctions");
 const params = require("./params");
-const properties = require("./properties");
-
-const {
-  teamObject,
-  matchObject,
-  heroObject,
-  playerObject,
-  leagueObject,
-} = require("./objects");
+const responses = require("./responses");
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
-const playerParams = [
-  params.accountIdParam,
-  params.limitParam,
-  params.offsetParam,
-  params.winParam,
-  params.patchParam,
-  params.gameModeParam,
-  params.lobbyTypeParam,
-  params.regionParam,
-  params.dateParam,
-  params.laneRoleParam,
-  params.heroIdParam,
-  params.isRadiantParam,
-  params.includedAccountIdParam,
-  params.excludedAccountIdParam,
-  params.withHeroIdParam,
-  params.againstHeroIdParam,
-  params.significantParam,
-  params.havingParam,
-  params.sortParam,
+
+const parameters = Object.entries(params).reduce((acc, [key, param]) => {
+  acc[key] = param;
+  return acc;
+}, {});
+
+const playerParamNames = [
+  "accountIdParam",
+  "limitParam",
+  "offsetParam",
+  "winParam",
+  "patchParam",
+  "gameModeParam",
+  "lobbyTypeParam",
+  "regionParam",
+  "dateParam",
+  "laneRoleParam",
+  "heroIdParam",
+  "isRadiantParam",
+  "includedAccountIdParam",
+  "excludedAccountIdParam",
+  "withHeroIdParam",
+  "againstHeroIdParam",
+  "significantParam",
+  "havingParam",
+  "sortParam",
 ];
 
-function sendDataWithCache(req, res, data, key) {
-  if (
-    config.ENABLE_PLAYER_CACHE &&
-    req.originalQuery &&
-    !Object.keys(req.originalQuery).length
-  ) {
-    cacheFunctions.write(
-      {
-        key,
-        account_id: req.params.account_id,
-      },
-      JSON.stringify(data),
-      () => {}
-    );
-  }
-  return res.json(data);
-}
+const playerParams = playerParamNames.map((paramName) => ({
+  $ref: `#/components/parameters/${paramName}`,
+}));
+
+const schemas = {
+  ...responses,
+};
+
+const securitySchemes = {
+  api_key: {
+    type: "apiKey",
+    name: "api_key",
+    description: `Use an API key to remove monthly call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
+        Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
+        
+        API key can also be sent using the authorization header "Authorization: Bearer YOUR-API-KEY"
+        `,
+    in: "query",
+  },
+};
 
 const spec = {
-  swagger: "2.0",
+  openapi: "3.0.3",
   info: {
     title: "OpenDota API",
     description: `# Introduction
@@ -85,956 +85,30 @@ You can find data that can be used to convert hero and ability IDs and other inf
 `,
     version: packageJson.version,
   },
-  securityDefinitions: {
-    api_key: {
-      type: "apiKey",
-      name: "api_key",
-      description: `Use an API key to remove monthly call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
-
-      Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
-      
-      API key can also be sent using the authorization header "Authorization: Bearer YOUR-API-KEY"
-      `,
-      in: "query",
+  servers: [
+    {
+      url: "https://api.opendota.com/api",
     },
+  ],
+  components: {
+    securitySchemes: securitySchemes,
+    schemas: schemas,
+    parameters: parameters,
   },
-  host: "api.opendota.com",
-  basePath: "/api",
-  produces: ["application/json"],
   paths: {
     "/matches/{match_id}": {
       get: {
         summary: "GET /matches/{match_id}",
         description: "Match data",
         tags: ["matches"],
-        parameters: [params.matchIdParam],
+        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "MatchResponse",
-              type: "object",
-              properties: {
-                match_id: {
-                  description: "The ID number of the match assigned by Valve",
-                  type: "integer",
-                },
-                barracks_status_dire: {
-                  description:
-                    "Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.",
-                  type: "integer",
-                },
-                barracks_status_radiant: {
-                  description:
-                    "Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.",
-                  type: "integer",
-                },
-                chat: {
-                  description:
-                    "Array containing information on the chat of the game",
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      time: {
-                        description:
-                          "Time in seconds at which the message was said",
-                        type: "integer",
-                      },
-                      unit: {
-                        description: "Name of the player who sent the message",
-                        type: "string",
-                      },
-                      key: {
-                        description: "The message the player sent",
-                        type: "string",
-                      },
-                      slot: {
-                        description: "slot",
-                        type: "integer",
-                      },
-                      player_slot: properties.player_slot,
-                    },
-                  },
-                },
-                cluster: {
-                  description: "cluster",
-                  type: "integer",
-                },
-                cosmetics: {
-                  description: "cosmetics",
-                  type: "object",
-                },
-                dire_score: {
-                  description:
-                    "Final score for Dire (number of kills on Radiant)",
-                  type: "integer",
-                },
-                draft_timings: {
-                  description: "draft_timings",
-                  type: "array",
-                  items: {
-                    description: "draft_stage",
-                    type: "object",
-                    properties: {
-                      order: {
-                        description: "order",
-                        type: "integer",
-                      },
-                      pick: {
-                        description: "pick",
-                        type: "boolean",
-                      },
-                      active_team: {
-                        description: "active_team",
-                        type: "integer",
-                      },
-                      hero_id: {
-                        description: "The ID value of the hero played",
-                        type: "integer",
-                      },
-                      player_slot: properties.player_slot,
-                      extra_time: {
-                        description: "extra_time",
-                        type: "integer",
-                      },
-                      total_time_taken: {
-                        description: "total_time_taken",
-                        type: "integer",
-                      },
-                    },
-                  },
-                },
-                duration: properties.duration,
-                engine: {
-                  description: "engine",
-                  type: "integer",
-                },
-                first_blood_time: {
-                  description: "Time in seconds at which first blood occurred",
-                  type: "integer",
-                },
-                game_mode: {
-                  description:
-                    "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
-                  type: "integer",
-                },
-                human_players: {
-                  description: "Number of human players in the game",
-                  type: "integer",
-                },
-                leagueid: {
-                  description: "leagueid",
-                  type: "integer",
-                },
-                lobby_type: {
-                  description:
-                    "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
-                  type: "integer",
-                },
-                match_seq_num: {
-                  description: "match_seq_num",
-                  type: "integer",
-                },
-                negative_votes: {
-                  description:
-                    "Number of negative votes the replay received in the in-game client",
-                  type: "integer",
-                },
-                objectives: {
-                  description: "objectives",
-                  type: "object",
-                },
-                picks_bans: {
-                  description:
-                    "Object containing information on the draft. Each pick/ban contains a boolean relating to whether the choice is a pick or a ban, the hero ID, the team the picked or banned it, and the order.",
-                  type: "object",
-                },
-                positive_votes: {
-                  description:
-                    "Number of positive votes the replay received in the in-game client",
-                  type: "integer",
-                },
-                radiant_gold_adv: {
-                  description:
-                    "Array of the Radiant gold advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their gold disadvantage. ",
-                  type: "object",
-                },
-                radiant_score: {
-                  description:
-                    "Final score for Radiant (number of kills on Radiant)",
-                  type: "integer",
-                },
-                radiant_win: properties.radiant_win,
-                radiant_xp_adv: {
-                  description:
-                    "Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ",
-                  type: "object",
-                },
-                start_time: {
-                  description: "The Unix timestamp at which the game started",
-                  type: "integer",
-                },
-                teamfights: {
-                  description: "teamfights",
-                  type: "object",
-                },
-                tower_status_dire: {
-                  description:
-                    "Bitmask. An integer that represents a binary of which Dire towers are still standing.",
-                  type: "integer",
-                },
-                tower_status_radiant: {
-                  description:
-                    "Bitmask. An integer that represents a binary of which Radiant towers are still standing.",
-                  type: "integer",
-                },
-                version: {
-                  description: "Parse version, used internally by OpenDota",
-                  type: "integer",
-                },
-                replay_salt: {
-                  description: "replay_salt",
-                  type: "integer",
-                },
-                series_id: {
-                  description: "series_id",
-                  type: "integer",
-                },
-                series_type: {
-                  description: "series_type",
-                  type: "integer",
-                },
-                radiant_team: {
-                  description: "radiant_team",
-                  type: "object",
-                },
-                dire_team: {
-                  description: "dire_team",
-                  type: "object",
-                },
-                league: {
-                  description: "league",
-                  type: "object",
-                },
-                skill: {
-                  description:
-                    "Skill bracket assigned by Valve (Normal, High, Very High)",
-                  type: "integer",
-                },
-                players: {
-                  description: "Array of information on individual players",
-                  type: "array",
-                  items: {
-                    description: "player",
-                    type: "object",
-                    properties: {
-                      match_id: {
-                        description: "Match ID",
-                        type: "integer",
-                      },
-                      player_slot: properties.player_slot,
-                      ability_upgrades_arr: {
-                        description:
-                          "An array describing how abilities were upgraded",
-                        type: "array",
-                        items: {
-                          type: "integer",
-                        },
-                      },
-                      ability_uses: {
-                        description:
-                          "Object containing information on how many times the played used their abilities",
-                        type: "object",
-                      },
-                      ability_targets: {
-                        description:
-                          "Object containing information on who the player used their abilities on",
-                        type: "object",
-                      },
-                      damage_targets: {
-                        description:
-                          "Object containing information on how and how much damage the player dealt to other heroes",
-                        type: "object",
-                      },
-                      account_id: {
-                        description: "account_id",
-                        type: "integer",
-                      },
-                      actions: {
-                        description:
-                          "Object containing information on how many and what type of actions the player issued to their hero",
-                        type: "object",
-                      },
-                      additional_units: {
-                        description:
-                          "Object containing information on additional units the player had under their control",
-                        type: "object",
-                      },
-                      assists: {
-                        description: "Number of assists the player had",
-                        type: "integer",
-                      },
-                      backpack_0: {
-                        description: "Item in backpack slot 0",
-                        type: "integer",
-                      },
-                      backpack_1: {
-                        description: "Item in backpack slot 1",
-                        type: "integer",
-                      },
-                      backpack_2: {
-                        description: "Item in backpack slot 2",
-                        type: "integer",
-                      },
-                      buyback_log: {
-                        description:
-                          "Array containing information about buybacks",
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            time: {
-                              description:
-                                "Time in seconds the buyback occurred",
-                              type: "integer",
-                            },
-                            slot: {
-                              description: "slot",
-                              type: "integer",
-                            },
-                            player_slot: properties.player_slot,
-                          },
-                        },
-                      },
-                      camps_stacked: {
-                        description: "Number of camps stacked",
-                        type: "integer",
-                      },
-                      connection_log: {
-                        description:
-                          "Array containing information about the player's disconnections and reconnections",
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            time: {
-                              description:
-                                "Game time in seconds the event ocurred",
-                              type: "integer",
-                            },
-                            event: {
-                              description: "Event that occurred",
-                              type: "string",
-                            },
-                            player_slot: properties.player_slot,
-                          },
-                        },
-                      },
-                      creeps_stacked: {
-                        description: "Number of creeps stacked",
-                        type: "integer",
-                      },
-                      damage: {
-                        description:
-                          "Object containing information about damage dealt by the player to different units",
-                        type: "object",
-                      },
-                      damage_inflictor: {
-                        description:
-                          "Object containing information about about the sources of this player's damage to heroes",
-                        type: "object",
-                      },
-                      damage_inflictor_received: {
-                        description:
-                          "Object containing information about the sources of damage received by this player from heroes",
-                        type: "object",
-                      },
-                      damage_taken: {
-                        description:
-                          "Object containing information about from whom the player took damage",
-                        type: "object",
-                      },
-                      deaths: {
-                        description: "Number of deaths",
-                        type: "integer",
-                      },
-                      denies: {
-                        description: "Number of denies",
-                        type: "integer",
-                      },
-                      dn_t: {
-                        description:
-                          "Array containing number of denies at different times of the match",
-                        type: "array",
-                        items: {
-                          type: "integer",
-                        },
-                      },
-                      gold: {
-                        description: "Gold at the end of the game",
-                        type: "integer",
-                      },
-                      gold_per_min: {
-                        description: "Gold Per Minute obtained by this player",
-                        type: "integer",
-                      },
-                      gold_reasons: {
-                        description:
-                          "Object containing information on how the player gainined gold over the course of the match",
-                        type: "object",
-                      },
-                      gold_spent: {
-                        description: "How much gold the player spent",
-                        type: "integer",
-                      },
-                      gold_t: {
-                        description:
-                          "Array containing total gold at different times of the match",
-                        type: "array",
-                        items: {
-                          type: "integer",
-                        },
-                      },
-                      hero_damage: {
-                        description: "Hero Damage Dealt",
-                        type: "integer",
-                      },
-                      hero_healing: {
-                        description: "Hero Healing Done",
-                        type: "integer",
-                      },
-                      hero_hits: {
-                        description:
-                          "Object containing information on how many ticks of damages the hero inflicted with different spells and damage inflictors",
-                        type: "object",
-                      },
-                      hero_id: {
-                        description: "The ID value of the hero played",
-                        type: "integer",
-                      },
-                      item_0: {
-                        description: "Item in the player's first slot",
-                        type: "integer",
-                      },
-                      item_1: {
-                        description: "Item in the player's second slot",
-                        type: "integer",
-                      },
-                      item_2: {
-                        description: "Item in the player's third slot",
-                        type: "integer",
-                      },
-                      item_3: {
-                        description: "Item in the player's fourth slot",
-                        type: "integer",
-                      },
-                      item_4: {
-                        description: "Item in the player's fifth slot",
-                        type: "integer",
-                      },
-                      item_5: {
-                        description: "Item in the player's sixth slot",
-                        type: "integer",
-                      },
-                      item_uses: {
-                        description:
-                          "Object containing information about how many times a player used items",
-                        type: "object",
-                      },
-                      kill_streaks: {
-                        description:
-                          "Object containing information about the player's killstreaks",
-                        type: "object",
-                      },
-                      killed: {
-                        description:
-                          "Object containing information about what units the player killed",
-                        type: "object",
-                      },
-                      killed_by: {
-                        description:
-                          "Object containing information about who killed the player",
-                        type: "object",
-                      },
-                      kills: {
-                        description: "Number of kills",
-                        type: "integer",
-                      },
-                      kills_log: {
-                        description:
-                          "Array containing information on which hero the player killed at what time",
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            time: {
-                              description:
-                                "Time in seconds the player killed the hero",
-                              type: "integer",
-                            },
-                            key: {
-                              description: "Hero killed",
-                              type: "string",
-                            },
-                          },
-                        },
-                      },
-                      lane_pos: {
-                        description:
-                          "Object containing information on lane position",
-                        type: "object",
-                      },
-                      last_hits: {
-                        description: "Number of last hits",
-                        type: "integer",
-                      },
-                      leaver_status: {
-                        description:
-                          "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
-                        type: "integer",
-                      },
-                      level: {
-                        description: "Level at the end of the game",
-                        type: "integer",
-                      },
-                      lh_t: {
-                        description:
-                          "Array describing last hits at each minute in the game",
-                        type: "array",
-                        items: {
-                          type: "integer",
-                        },
-                      },
-                      life_state: {
-                        description: "life_state",
-                        type: "object",
-                      },
-                      max_hero_hit: {
-                        description:
-                          "Object with information on the highest damage instance the player inflicted",
-                        type: "object",
-                      },
-                      multi_kills: {
-                        description:
-                          "Object with information on the number of the number of multikills the player had",
-                        type: "object",
-                      },
-                      obs: {
-                        description:
-                          "Object with information on where the player placed observer wards. The location takes the form (outer number, inner number) and are from ~64-192.",
-                        type: "object",
-                      },
-                      obs_left_log: {
-                        description: "obs_left_log",
-                        type: "array",
-                        items: {
-                          type: "object",
-                        },
-                      },
-                      obs_log: {
-                        description:
-                          "Object containing information on when and where the player placed observer wards",
-                        type: "array",
-                        items: {
-                          type: "object",
-                        },
-                      },
-                      obs_placed: {
-                        description: "Total number of observer wards placed",
-                        type: "integer",
-                      },
-                      party_id: {
-                        description: "party_id",
-                        type: "integer",
-                      },
-                      permanent_buffs: {
-                        description:
-                          "Array describing permanent buffs the player had at the end of the game. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/permanent_buffs.json",
-                        type: "array",
-                        items: {
-                          type: "object",
-                        },
-                      },
-                      pings: {
-                        description: "Total number of pings",
-                        type: "integer",
-                      },
-                      purchase: {
-                        description:
-                          "Object containing information on the items the player purchased",
-                        type: "object",
-                      },
-                      purchase_log: {
-                        description:
-                          "Object containing information on when items were purchased",
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            time: {
-                              description:
-                                "Time in seconds the item was bought",
-                              type: "integer",
-                            },
-                            key: {
-                              description: "String item ID",
-                              type: "string",
-                            },
-                            charges: {
-                              description: "Integer amount of charges",
-                              type: "integer",
-                            },
-                          },
-                        },
-                      },
-                      rune_pickups: {
-                        description: "Number of runes picked up",
-                        type: "integer",
-                      },
-                      runes: {
-                        description:
-                          "Object with information about which runes the player picked up",
-                        type: "object",
-                        additionalProperties: {
-                          type: "integer",
-                        },
-                      },
-                      runes_log: {
-                        description:
-                          "Array with information on when runes were picked up",
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            time: {
-                              description: "Time in seconds rune picked up",
-                              type: "integer",
-                            },
-                            key: {
-                              description: "key",
-                              type: "integer",
-                            },
-                          },
-                        },
-                      },
-                      sen: {
-                        description:
-                          "Object with information on where sentries were placed. The location takes the form (outer number, inner number) and are from ~64-192.",
-                        type: "object",
-                      },
-                      sen_left_log: {
-                        description:
-                          "Array containing information on when and where the player placed sentries",
-                        type: "array",
-                        items: {
-                          type: "object",
-                        },
-                      },
-                      sen_log: {
-                        description:
-                          "Array with information on when and where sentries were placed by the player",
-                        type: "array",
-                        items: {
-                          type: "object",
-                        },
-                      },
-                      sen_placed: {
-                        description:
-                          "How many sentries were placed by the player",
-                        type: "integer",
-                      },
-                      stuns: {
-                        description:
-                          "Total stun duration of all stuns by the player",
-                        type: "number",
-                      },
-                      times: {
-                        description:
-                          "Time in seconds corresponding to the time of entries of other arrays in the match.",
-                        type: "array",
-                        items: {
-                          type: "integer",
-                        },
-                      },
-                      tower_damage: {
-                        description: "Total tower damage done by the player",
-                        type: "integer",
-                      },
-                      xp_per_min: {
-                        description:
-                          "Experience Per Minute obtained by the player",
-                        type: "integer",
-                      },
-                      xp_reasons: {
-                        description:
-                          "Object containing information on the sources of this player's experience",
-                        type: "object",
-                      },
-                      xp_t: {
-                        description: "Experience at each minute of the game",
-                        type: "array",
-                        items: {
-                          type: "integer",
-                        },
-                      },
-                      personaname: {
-                        description: "personaname",
-                        type: "string",
-                      },
-                      name: {
-                        description: "name",
-                        type: "string",
-                      },
-                      last_login: {
-                        description: "Time of player's last login",
-                        type: "string",
-                        format: "date-time",
-                      },
-                      radiant_win: properties.radiant_win,
-                      start_time: {
-                        description:
-                          "Start time of the match in seconds since 1970",
-                        type: "integer",
-                      },
-                      duration: properties.duration,
-                      cluster: {
-                        description: "cluster",
-                        type: "integer",
-                      },
-                      lobby_type: {
-                        description:
-                          "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
-                        type: "integer",
-                      },
-                      game_mode: {
-                        description:
-                          "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
-                        type: "integer",
-                      },
-                      patch: {
-                        description:
-                          "Integer representing the patch the game was played on",
-                        type: "integer",
-                      },
-                      region: {
-                        description:
-                          "Integer corresponding to the region the game was played on",
-                        type: "integer",
-                      },
-                      isRadiant: {
-                        description:
-                          "Boolean for whether or not the player is on Radiant",
-                        type: "boolean",
-                      },
-                      win: {
-                        description:
-                          "Binary integer representing whether or not the player won",
-                        type: "integer",
-                      },
-                      lose: {
-                        description:
-                          "Binary integer representing whether or not the player lost",
-                        type: "integer",
-                      },
-                      total_gold: {
-                        description: "Total gold at the end of the game",
-                        type: "integer",
-                      },
-                      total_xp: {
-                        description: "Total experience at the end of the game",
-                        type: "integer",
-                      },
-                      kills_per_min: {
-                        description: "Number of kills per minute",
-                        type: "number",
-                      },
-                      kda: {
-                        description: "kda",
-                        type: "number",
-                      },
-                      abandons: {
-                        description: "abandons",
-                        type: "integer",
-                      },
-                      neutral_kills: {
-                        description: "Total number of neutral creeps killed",
-                        type: "integer",
-                      },
-                      tower_kills: {
-                        description:
-                          "Total number of tower kills the player had",
-                        type: "integer",
-                      },
-                      courier_kills: {
-                        description:
-                          "Total number of courier kills the player had",
-                        type: "integer",
-                      },
-                      lane_kills: {
-                        description:
-                          "Total number of lane creeps killed by the player",
-                        type: "integer",
-                      },
-                      hero_kills: {
-                        description:
-                          "Total number of heroes killed by the player",
-                        type: "integer",
-                      },
-                      observer_kills: {
-                        description:
-                          "Total number of observer wards killed by the player",
-                        type: "integer",
-                      },
-                      sentry_kills: {
-                        description:
-                          "Total number of sentry wards killed by the player",
-                        type: "integer",
-                      },
-                      roshan_kills: {
-                        description:
-                          "Total number of roshan kills (last hit on roshan) the player had",
-                        type: "integer",
-                      },
-                      necronomicon_kills: {
-                        description:
-                          "Total number of Necronomicon creeps killed by the player",
-                        type: "integer",
-                      },
-                      ancient_kills: {
-                        description:
-                          "Total number of Ancient creeps killed by the player",
-                        type: "integer",
-                      },
-                      buyback_count: {
-                        description: "Total number of buyback the player used",
-                        type: "integer",
-                      },
-                      observer_uses: {
-                        description: "Number of observer wards used",
-                        type: "integer",
-                      },
-                      sentry_uses: {
-                        description: "Number of sentry wards used",
-                        type: "integer",
-                      },
-                      lane_efficiency: {
-                        description: "lane_efficiency",
-                        type: "number",
-                      },
-                      lane_efficiency_pct: {
-                        description: "lane_efficiency_pct",
-                        type: "number",
-                      },
-                      lane: {
-                        description:
-                          "Integer referring to which lane the hero laned in",
-                        type: "integer",
-                      },
-                      lane_role: {
-                        description: "lane_role",
-                        type: "integer",
-                      },
-                      is_roaming: {
-                        description:
-                          "Boolean referring to whether or not the player roamed",
-                        type: "boolean",
-                      },
-                      purchase_time: {
-                        description:
-                          "Object with information on when the player last purchased an item",
-                        type: "object",
-                      },
-                      first_purchase_time: {
-                        description:
-                          "Object with information on when the player first puchased an item",
-                        type: "object",
-                      },
-                      item_win: {
-                        description:
-                          "Object with information on whether or not the item won",
-                        type: "object",
-                      },
-                      item_usage: {
-                        description:
-                          "Object containing binary integers the tell whether the item was purchased by the player (note: this is always 1)",
-                        type: "object",
-                      },
-                      purchase_tpscroll: {
-                        description:
-                          "Total number of TP scrolls purchased by the player",
-                        type: "object",
-                      },
-                      actions_per_min: {
-                        description: "Actions per minute",
-                        type: "integer",
-                      },
-                      life_state_dead: {
-                        description: "life_state_dead",
-                        type: "integer",
-                      },
-                      rank_tier: {
-                        description:
-                          "The rank tier of the player. Tens place indicates rank, ones place indicates stars.",
-                        type: "integer",
-                      },
-                      cosmetics: {
-                        description: "cosmetics",
-                        type: "array",
-                        items: {
-                          type: "integer",
-                        },
-                      },
-                      benchmarks: {
-                        description:
-                          "Object containing information on certain benchmarks like GPM, XPM, KDA, tower damage, etc",
-                        type: "object",
-                      },
-                    },
-                  },
-                },
-                patch: {
-                  description:
-                    "Information on the patch version the game is played on",
-                  type: "integer",
-                },
-                region: {
-                  description:
-                    "Integer corresponding to the region the game was played on",
-                  type: "integer",
-                },
-                all_word_counts: {
-                  description:
-                    "Word counts of the all chat messages in the player's games",
-                  type: "object",
-                },
-                my_word_counts: {
-                  description: "Word counts of the player's all chat messages",
-                  type: "object",
-                },
-                throw: {
-                  description:
-                    "Maximum gold advantage of the player's team if they lost the match",
-                  type: "integer",
-                },
-                comeback: {
-                  description:
-                    "Maximum gold disadvantage of the player's team if they won the match",
-                  type: "integer",
-                },
-                loss: {
-                  description:
-                    "Maximum gold disadvantage of the player's team if they lost the match",
-                  type: "integer",
-                },
-                win: {
-                  description:
-                    "Maximum gold advantage of the player's team if they won the match",
-                  type: "integer",
-                },
-                replay_url: {
-                  description: "replay_url",
-                  type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: "#/components/schemas/MatchResponse",
                 },
               },
             },
@@ -1060,6 +134,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description: "Players ordered by rank/medal tier",
         tags: ["playersByRank"],
         parameters: [],
+        responses: {
+          200: {
+            description: "Success",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: "#/components/schemas/PlayersByRankResponse",
+                },
+              },
+            },
+          },
+        },
         route: () => "/playersByRank",
         func: (req, res, cb) => {
           db.raw(
@@ -1079,31 +165,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
             return res.json(result.rows);
           });
         },
-        responses: {
-          200: {
-            description: "Success",
-            schema: {
-              title: "PlayersByRankResponse",
-              type: "object",
-              properties: {
-                account_id: {
-                  description: "account_id",
-                  type: "number",
-                },
-                rank_tier: {
-                  description:
-                    "Integer indicating the rank/medal of the player",
-                  type: "number",
-                },
-                fh_unavailable: {
-                  description:
-                    "Indicates if we were unable to fetch full history for this player due to privacy settings",
-                  type: "boolean",
-                },
-              },
-            },
-          },
-        },
       },
     },
     "/players/{account_id}": {
@@ -1111,106 +172,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}",
         description: "Player data",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerResponse",
-              type: "object",
-              properties: {
-                solo_competitive_rank: {
-                  description: "solo_competitive_rank",
-                  type: "integer",
-                },
-                competitive_rank: {
-                  description: "competitive_rank",
-                  type: "integer",
-                },
-                rank_tier: {
-                  description: "rank_tier",
-                  type: "number",
-                },
-                leaderboard_rank: {
-                  description: "leaderboard_rank",
-                  type: "number",
-                },
-                mmr_estimate: {
-                  description: "mmr_estimate",
-                  type: "object",
-                  properties: {
-                    estimate: {
-                      description: "estimate",
-                      type: "number",
-                    },
-                  },
-                },
-                profile: {
-                  description: "profile",
-                  type: "object",
-                  properties: {
-                    account_id: {
-                      description: "account_id",
-                      type: "integer",
-                    },
-                    personaname: {
-                      description: "personaname",
-                      type: "string",
-                    },
-                    name: {
-                      description: "name",
-                      type: "string",
-                    },
-                    plus: {
-                      description:
-                        "Boolean indicating status of current Dota Plus subscription",
-                      type: "boolean",
-                    },
-                    cheese: {
-                      description: "cheese",
-                      type: "integer",
-                    },
-                    steamid: {
-                      description: "steamid",
-                      type: "string",
-                    },
-                    avatar: {
-                      description: "avatar",
-                      type: "string",
-                    },
-                    avatarmedium: {
-                      description: "avatarmedium",
-                      type: "string",
-                    },
-                    avatarfull: {
-                      description: "avatarfull",
-                      type: "string",
-                    },
-                    profileurl: {
-                      description: "profileurl",
-                      type: "string",
-                    },
-                    last_login: {
-                      description: "last_login",
-                      type: "string",
-                    },
-                    loccountrycode: {
-                      description: "loccountrycode",
-                      type: "string",
-                    },
-                    is_contributor: {
-                      description:
-                        "Boolean indicating if the user contributed to the development of OpenDota",
-                      type: "boolean",
-                      default: false,
-                    },
-                    is_subscriber: {
-                      description:
-                        "Boolean indicating if the user subscribed to OpenDota",
-                      type: "boolean",
-                      default: false,
-                    },
-                  },
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: "#/components/schemas/PlayersResponse",
                 },
               },
             },
@@ -1287,17 +256,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerWinLossResponse",
-              type: "object",
-              properties: {
-                win: {
-                  description: "Number of wins",
-                  type: "integer",
-                },
-                lose: {
-                  description: "Number of loses",
-                  type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/PlayerWinLossResponse`,
                 },
               },
             },
@@ -1327,7 +289,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   result.lose += 1;
                 }
               });
-              return sendDataWithCache(req, res, result, "wl");
+              return cacheFunctions.sendDataWithCache(req, res, result, "wl");
             }
           );
         },
@@ -1338,120 +300,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/recentMatches",
         description: "Recent matches played",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerRecentMatchesResponse",
-                description: "match",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "Match ID",
-                    type: "integer",
-                  },
-                  player_slot: properties.player_slot,
-                  radiant_win: properties.radiant_win,
-                  duration: properties.duration,
-                  game_mode: {
-                    description:
-                      "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
-                    type: "integer",
-                  },
-                  lobby_type: {
-                    description:
-                      "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
-                    type: "integer",
-                  },
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "integer",
-                  },
-                  start_time: {
-                    description:
-                      "Start time of the match in seconds elapsed since 1970",
-                    type: "integer",
-                  },
-                  version: {
-                    description: "version",
-                    type: "integer",
-                  },
-                  kills: {
-                    description:
-                      "Total kills the player had at the end of the match",
-                    type: "integer",
-                  },
-                  deaths: {
-                    description:
-                      "Total deaths the player had at the end of the match",
-                    type: "integer",
-                  },
-                  assists: {
-                    description:
-                      "Total assists the player had at the end of the match",
-                    type: "integer",
-                  },
-                  skill: {
-                    description:
-                      "Skill bracket assigned by Valve (Normal, High, Very High). If the skill is unknown, will return null.",
-                    type: "integer",
-                  },
-                  average_rank: {
-                    description:
-                      "Average rank of players with public match data",
-                    type: "integer",
-                  },
-                  xp_per_min: {
-                    description: "Experience Per Minute obtained by the player",
-                    type: "integer",
-                  },
-                  gold_per_min: {
-                    description: "Average gold per minute of the player",
-                    type: "integer",
-                  },
-                  hero_damage: {
-                    description: "Total hero damage to enemy heroes",
-                    type: "integer",
-                  },
-                  hero_healing: {
-                    description: "Total healing of ally heroes",
-                    type: "integer",
-                  },
-                  last_hits: {
-                    description:
-                      "Total last hits the player had at the end of the match",
-                    type: "integer",
-                  },
-                  lane: {
-                    description:
-                      "Integer corresponding to which lane the player laned in for the match",
-                    type: "integer",
-                  },
-                  lane_role: {
-                    description: "lane_role",
-                    type: "integer",
-                  },
-                  is_roaming: {
-                    description:
-                      "Boolean describing whether or not the player roamed",
-                    type: "boolean",
-                  },
-                  cluster: {
-                    description: "cluster",
-                    type: "integer",
-                  },
-                  leaver_status: {
-                    description:
-                      "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
-                    type: "integer",
-                  },
-                  party_size: {
-                    description:
-                      "Size of the players party. If not in a party, will return 1.",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    items: {
+                      $ref: "#/components/schemas/PlayerRecentMatchesResponse",
+                    },
                   },
                 },
               },
@@ -1507,79 +368,21 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/matches",
         description: "Matches played",
         tags: ["players"],
-        parameters: playerParams.concat(params.projectParam),
+        parameters: [
+          ...playerParams,
+          {
+            $ref: `#/components/parameters/projectParam`,
+          },
+        ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerMatchesResponse",
-                description: "Object containing information on the match",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "Match ID",
-                    type: "integer",
-                  },
-                  player_slot: properties.player_slot,
-                  radiant_win: properties.radiant_win,
-                  duration: properties.duration,
-                  game_mode: {
-                    description:
-                      "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
-                    type: "integer",
-                  },
-                  lobby_type: {
-                    description:
-                      "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
-                    type: "integer",
-                  },
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "integer",
-                  },
-                  start_time: {
-                    description: "Time the game started in seconds since 1970",
-                    type: "integer",
-                  },
-                  version: {
-                    description: "version",
-                    type: "integer",
-                  },
-                  kills: {
-                    description:
-                      "Total kills the player had at the end of the game",
-                    type: "integer",
-                  },
-                  deaths: {
-                    description:
-                      "Total deaths the player had at the end of the game",
-                    type: "integer",
-                  },
-                  assists: {
-                    description:
-                      "Total assists the player had at the end of the game",
-                    type: "integer",
-                  },
-                  skill: {
-                    description:
-                      "Skill bracket assigned by Valve (Normal, High, Very High)",
-                    type: "integer",
-                  },
-                  average_rank: {
-                    description:
-                      "Average rank of players with public match data",
-                    type: "integer",
-                  },
-                  leaver_status: {
-                    description:
-                      "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
-                    type: "integer",
-                  },
-                  party_size: {
-                    description: "Size of the player's party",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerMatchesResponse`,
                   },
                 },
               },
@@ -1629,44 +432,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerHeroesResponse",
-                description: "hero",
-                type: "object",
-                properties: {
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "string",
-                  },
-                  last_played: {
-                    description: "last_played",
-                    type: "integer",
-                  },
-                  games: {
-                    description: "games",
-                    type: "integer",
-                  },
-                  win: {
-                    description: "win",
-                    type: "integer",
-                  },
-                  with_games: {
-                    description: "with_games",
-                    type: "integer",
-                  },
-                  with_win: {
-                    description: "with_win",
-                    type: "integer",
-                  },
-                  against_games: {
-                    description: "against_games",
-                    type: "integer",
-                  },
-                  against_win: {
-                    description: "against_win",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerHeroesResponse`,
                   },
                 },
               },
@@ -1739,7 +510,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                     hero.games >= Number(req.queryObj.having)
                 )
                 .sort((a, b) => b.games - a.games);
-              return sendDataWithCache(req, res, result, "heroes");
+              return cacheFunctions.sendDataWithCache(
+                req,
+                res,
+                result,
+                "heroes"
+              );
             }
           );
         },
@@ -1754,79 +530,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerPeersResponse",
-                type: "object",
-                properties: {
-                  account_id: {
-                    description: "account_id",
-                    type: "integer",
-                  },
-                  last_played: {
-                    description: "last_played",
-                    type: "integer",
-                  },
-                  win: {
-                    description: "win",
-                    type: "integer",
-                  },
-                  games: {
-                    description: "games",
-                    type: "integer",
-                  },
-                  with_win: {
-                    description: "with_win",
-                    type: "integer",
-                  },
-                  with_games: {
-                    description: "with_games",
-                    type: "integer",
-                  },
-                  against_win: {
-                    description: "against_win",
-                    type: "integer",
-                  },
-                  against_games: {
-                    description: "against_games",
-                    type: "integer",
-                  },
-                  with_gpm_sum: {
-                    description: "with_gpm_sum",
-                    type: "integer",
-                  },
-                  with_xpm_sum: {
-                    description: "with_xpm_sum",
-                    type: "integer",
-                  },
-                  personaname: {
-                    description: "personaname",
-                    type: "string",
-                  },
-                  name: {
-                    description: "name",
-                    type: "string",
-                  },
-                  is_contributor: {
-                    description: "is_contributor",
-                    type: "boolean",
-                  },
-                  is_subscriber: {
-                    description: "is_subscriber",
-                    type: "boolean",
-                  },
-                  last_login: {
-                    description: "last_login",
-                    type: "string",
-                  },
-                  avatar: {
-                    description: "avatar",
-                    type: "string",
-                  },
-                  avatarfull: {
-                    description: "avatarfull",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerPeersResponse`,
                   },
                 },
               },
@@ -1861,7 +570,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
                   if (err) {
                     return cb(err);
                   }
-                  return sendDataWithCache(req, res, result, "peers");
+                  return cacheFunctions.sendDataWithCache(
+                    req,
+                    res,
+                    result,
+                    "peers"
+                  );
                 }
               );
             }
@@ -1878,129 +592,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerProsResponse",
-                type: "object",
-                properties: {
-                  account_id: {
-                    description: "account_id",
-                    type: "integer",
-                  },
-                  name: {
-                    description: "name",
-                    type: "string",
-                  },
-                  country_code: {
-                    description: "country_code",
-                    type: "string",
-                  },
-                  fantasy_role: {
-                    description: "fantasy_role",
-                    type: "integer",
-                  },
-                  team_id: {
-                    description: "team_id",
-                    type: "integer",
-                  },
-                  team_name: {
-                    description: "team_name",
-                    type: "string",
-                  },
-                  team_tag: {
-                    description: "team_tag",
-                    type: "string",
-                  },
-                  is_locked: {
-                    description: "is_locked",
-                    type: "boolean",
-                  },
-                  is_pro: {
-                    description: "is_pro",
-                    type: "boolean",
-                  },
-                  locked_until: {
-                    description: "locked_until",
-                    type: "integer",
-                  },
-                  steamid: {
-                    description: "steamid",
-                    type: "string",
-                  },
-                  avatar: {
-                    description: "avatar",
-                    type: "string",
-                  },
-                  avatarmedium: {
-                    description: "avatarmedium",
-                    type: "string",
-                  },
-                  avatarfull: {
-                    description: "avatarfull",
-                    type: "string",
-                  },
-                  profileurl: {
-                    description: "profileurl",
-                    type: "string",
-                  },
-                  last_login: {
-                    description: "last_login",
-                    type: "string",
-                    format: "date-time",
-                  },
-                  full_history_time: {
-                    description: "full_history_time",
-                    type: "string",
-                    format: "date-time",
-                  },
-                  cheese: {
-                    description: "cheese",
-                    type: "integer",
-                  },
-                  fh_unavailable: {
-                    description: "fh_unavailable",
-                    type: "boolean",
-                  },
-                  loccountrycode: {
-                    description: "loccountrycode",
-                    type: "string",
-                  },
-                  last_played: {
-                    description: "last_played",
-                    type: "integer",
-                  },
-                  win: {
-                    description: "win",
-                    type: "integer",
-                  },
-                  games: {
-                    description: "games",
-                    type: "integer",
-                  },
-                  with_win: {
-                    description: "with_win",
-                    type: "integer",
-                  },
-                  with_games: {
-                    description: "with_games",
-                    type: "integer",
-                  },
-                  against_win: {
-                    description: "against_win",
-                    type: "integer",
-                  },
-                  against_games: {
-                    description: "against_games",
-                    type: "integer",
-                  },
-                  with_gpm_sum: {
-                    description: "with_gpm_sum",
-                    type: "integer",
-                  },
-                  with_xpm_sum: {
-                    description: "with_xpm_sum",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerProsResponse`,
                   },
                 },
               },
@@ -2050,23 +647,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerTotalsResponse",
-                type: "object",
-                properties: {
-                  field: {
-                    description: "field",
-                    type: "string",
-                  },
-                  n: {
-                    description: "number",
-                    type: "integer",
-                  },
-                  sum: {
-                    description: "sum",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerTotalsResponse`,
                   },
                 },
               },
@@ -2116,37 +702,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerCountsResponse",
-              type: "object",
-              properties: {
-                leaver_status: {
-                  description:
-                    "Integer describing whether or not the player left the game. 0: didn't leave. 1: left safely. 2+: Abandoned",
-                  type: "object",
-                },
-                game_mode: {
-                  description:
-                    "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
-                  type: "object",
-                },
-                lobby_type: {
-                  description:
-                    "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
-                  type: "object",
-                },
-                lane_role: {
-                  description: "lane_role",
-                  type: "object",
-                },
-                region: {
-                  description:
-                    "Integer corresponding to the region the game was played on",
-                  type: "object",
-                },
-                patch: {
-                  description: "patch",
-                  type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: "#/components/schemas/PlayerCountsResponse",
                 },
               },
             },
@@ -2193,15 +752,24 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/histograms",
         description: "Distribution of matches in a single stat",
         tags: ["players"],
-        parameters: playerParams.concat(params.fieldParam),
+        parameters: [
+          ...playerParams,
+          {
+            $ref: `#/components/parameters/fieldParam`,
+          },
+        ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerHistogramsResponse",
-                type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    title: "PlayerHistogramsResponse",
+                    type: "object",
+                  },
+                },
               },
             },
           },
@@ -2259,17 +827,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerWardMapResponse",
-              type: "object",
-              properties: {
-                obs: {
-                  description: "obs",
-                  type: "object",
-                },
-                sen: {
-                  description: "sen",
-                  type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/PlayerWardMapResponse`,
                 },
               },
             },
@@ -2311,17 +872,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerWordCloudResponse",
-              type: "object",
-              properties: {
-                my_word_counts: {
-                  description: "my_word_counts",
-                  type: "object",
-                },
-                all_word_counts: {
-                  description: "all_word_counts",
-                  type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/PlayerWordCloudResponse`,
                 },
               },
             },
@@ -2359,35 +913,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/ratings",
         description: "Player rating history",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerRatingsResponse",
-                type: "object",
-                properties: {
-                  account_id: {
-                    description: "account_id",
-                    type: "integer",
-                  },
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
-                  },
-                  solo_competitive_rank: {
-                    description: "solo_competitive_rank",
-                    type: "integer",
-                  },
-                  competitive_rank: {
-                    description: "competitive_rank",
-                    type: "integer",
-                  },
-                  time: {
-                    description: "time",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerRatingsResponse`,
                   },
                 },
               },
@@ -2410,31 +945,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /players/{account_id}/rankings",
         description: "Player hero rankings",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PlayerRankingsResponse",
-                type: "object",
-                properties: {
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "string",
-                  },
-                  score: {
-                    description: "hero_score",
-                    type: "number",
-                  },
-                  percent_rank: {
-                    description: "percent_rank",
-                    type: "number",
-                  },
-                  card: {
-                    description: "numeric_rank",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/PlayerRankingsResponse",
                   },
                 },
               },
@@ -2460,13 +980,17 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "POST /players/{account_id}/refresh",
         description: "Refresh player match history",
         tags: ["players"],
-        parameters: [params.accountIdParam],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "PlayerRefreshResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "PlayerRefreshResponse",
+                  type: "object",
+                },
+              },
             },
           },
         },
@@ -2497,7 +1021,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: playerObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PlayerObjectResponse`,
+                  },
+                },
+              },
+            },
           },
         },
         route: () => "/proPlayers",
@@ -2524,13 +1057,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /proMatches",
         description: "Get list of pro matches",
         tags: ["pro matches"],
-        parameters: [params.lessThanMatchIdParam],
+        parameters: [{ $ref: "#/components/parameters/lessThanMatchIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: matchObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/MatchObjectResponse`,
+                  },
+                },
+              },
             },
           },
         },
@@ -2571,40 +1110,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description: "Get list of randomly sampled public matches",
         tags: ["public matches"],
         parameters: [
-          params.mmrAscendingParam,
-          params.mmrDescendingParam,
-          params.lessThanMatchIdParam,
+          { $ref: "#/components/parameters/mmrAscendingParam" },
+          { $ref: "#/components/parameters/mmrDescendingParam" },
+          { $ref: "#/components/parameters/lessThanMatchIdParam" },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "PublicMatchesResponse",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
-                  },
-                  match_seq_num: {
-                    description: "match_seq_num",
-                    type: "integer",
-                  },
-                  radiant_win: properties.radiant_win,
-                  start_time: {
-                    description: "start_time",
-                    type: "integer",
-                  },
-                  duration: properties.duration,
-                  radiant_team: {
-                    description: "radiant_team",
-                    type: "string",
-                  },
-                  dire_team: {
-                    description: "dire_team",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/PublicMatchesResponse`,
                   },
                 },
               },
@@ -2660,19 +1178,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /parsedMatches",
         description: "Get list of parsed match IDs",
         tags: ["parsed matches"],
-        parameters: [params.lessThanMatchIdParam],
+        parameters: [{ $ref: "#/components/parameters/lessThanMatchIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ParsedMatchesResponse",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/ParsedMatchesResponse`,
                   },
                 },
               },
@@ -2712,15 +1227,21 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "The PostgreSQL query as percent-encoded string.",
             required: false,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "ExplorerResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "ExplorerResponse",
+                  type: "object",
+                },
+              },
             },
           },
         },
@@ -2756,13 +1277,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "MetadataResponse",
-              type: "object",
-              properties: {
-                banner: {
-                  description: "banner",
-                  type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/MetadataResponse`,
                 },
               },
             },
@@ -2787,269 +1305,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "DistributionsResponse",
-              type: "object",
-              properties: {
-                ranks: {
-                  description: "ranks",
-                  type: "object",
-                  properties: {
-                    commmand: {
-                      description: "command",
-                      type: "string",
-                    },
-                    rowCount: {
-                      description: "rowCount",
-                      type: "integer",
-                    },
-                    rows: {
-                      description: "rows",
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          bin: {
-                            description: "bin",
-                            type: "integer",
-                          },
-                          bin_name: {
-                            description: "bin_name",
-                            type: "integer",
-                          },
-                          count: {
-                            description: "count",
-                            type: "integer",
-                          },
-                          cumulative_sum: {
-                            description: "cumulative_sum",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                    fields: {
-                      description: "fields",
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            description: "name",
-                            type: "string",
-                          },
-                          tableID: {
-                            description: "tableID",
-                            type: "integer",
-                          },
-                          columnID: {
-                            description: "columnID",
-                            type: "integer",
-                          },
-                          dataTypeID: {
-                            description: "dataTypeID",
-                            type: "integer",
-                          },
-                          dataTypeSize: {
-                            description: "dataTypeSize",
-                            type: "integer",
-                          },
-                          dataTypeModifier: {
-                            description: "dataTypeModifier",
-                            type: "string",
-                          },
-                          format: {
-                            description: "format",
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                    rowAsArray: {
-                      description: "rowAsArray",
-                      type: "boolean",
-                    },
-                    sum: {
-                      description: "sum",
-                      type: "object",
-                      properties: {
-                        count: {
-                          description: "count",
-                          type: "integer",
-                        },
-                      },
-                    },
-                  },
-                },
-                mmr: {
-                  description: "mmr",
-                  type: "object",
-                  properties: {
-                    commmand: {
-                      description: "command",
-                      type: "string",
-                    },
-                    rowCount: {
-                      description: "rowCount",
-                      type: "integer",
-                    },
-                    rows: {
-                      description: "rows",
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          bin: {
-                            description: "bin",
-                            type: "integer",
-                          },
-                          bin_name: {
-                            description: "bin_name",
-                            type: "integer",
-                          },
-                          count: {
-                            description: "count",
-                            type: "integer",
-                          },
-                          cumulative_sum: {
-                            description: "cumulative_sum",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                    fields: {
-                      description: "fields",
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            description: "name",
-                            type: "string",
-                          },
-                          tableID: {
-                            description: "tableID",
-                            type: "integer",
-                          },
-                          columnID: {
-                            description: "columnID",
-                            type: "integer",
-                          },
-                          dataTypeID: {
-                            description: "dataTypeID",
-                            type: "integer",
-                          },
-                          dataTypeSize: {
-                            description: "dataTypeSize",
-                            type: "integer",
-                          },
-                          dataTypeModifier: {
-                            description: "dataTypeModifier",
-                            type: "string",
-                          },
-                          format: {
-                            description: "format",
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                    rowAsArray: {
-                      description: "rowAsArray",
-                      type: "boolean",
-                    },
-                    sum: {
-                      description: "sum",
-                      type: "object",
-                      properties: {
-                        count: {
-                          description: "count",
-                          type: "integer",
-                        },
-                      },
-                    },
-                  },
-                },
-                country_mmr: {
-                  description: "country_mmr",
-                  type: "object",
-                  properties: {
-                    commmand: {
-                      description: "command",
-                      type: "string",
-                    },
-                    rowCount: {
-                      description: "rowCount",
-                      type: "integer",
-                    },
-                    rows: {
-                      description: "rows",
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          loccountrycode: {
-                            description: "loccountrycode",
-                            type: "string",
-                          },
-                          count: {
-                            description: "count",
-                            type: "integer",
-                          },
-                          avg: {
-                            description: "avg",
-                            type: "string",
-                          },
-                          common: {
-                            description: "common",
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                    fields: {
-                      description: "fields",
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            description: "name",
-                            type: "string",
-                          },
-                          tableID: {
-                            description: "tableID",
-                            type: "integer",
-                          },
-                          columnID: {
-                            description: "columnID",
-                            type: "integer",
-                          },
-                          dataTypeID: {
-                            description: "dataTypeID",
-                            type: "integer",
-                          },
-                          dataTypeSize: {
-                            description: "dataTypeSize",
-                            type: "integer",
-                          },
-                          dataTypeModifier: {
-                            description: "dataTypeModifier",
-                            type: "integer",
-                          },
-                          format: {
-                            description: "format",
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                    rowAsArray: {
-                      description: "rowAsArray",
-                      type: "boolean",
-                    },
-                  },
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/DistributionsResponse`,
                 },
               },
             },
@@ -3077,37 +1336,20 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Search string",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "SearchResponse",
-                type: "object",
-                properties: {
-                  account_id: {
-                    description: "account_id",
-                    type: "integer",
-                  },
-                  avatarfull: {
-                    description: "avatarfull",
-                    type: "string",
-                  },
-                  personaname: {
-                    description: "personaname",
-                    type: "string",
-                  },
-                  last_match_time: {
-                    description: "last_match_time. May not be present or null.",
-                    type: "string",
-                  },
-                  similarity: {
-                    description: "similarity",
-                    type: "number",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/SearchResponse`,
                   },
                 },
               },
@@ -3151,83 +1393,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Hero ID",
             required: true,
-            type: "string",
+            schema: {
+              type: "string", //todo: String for hero id?
+            },
           },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "RankingsResponse",
-              type: "object",
-              properties: {
-                hero_id: {
-                  description: "The ID value of the hero played",
-                  type: "integer",
-                },
-                rankings: {
-                  description: "rankings",
-                  type: "object",
-                  properties: {
-                    account_id: {
-                      description: "account_id",
-                      type: "integer",
-                    },
-                    score: {
-                      description: "score",
-                      type: "string",
-                    },
-                    steamid: {
-                      description: "steamid",
-                      type: "string",
-                    },
-                    avatar: {
-                      description: "avatar",
-                      type: "string",
-                    },
-                    avatarmedium: {
-                      description: "avatarmedium",
-                      type: "string",
-                    },
-                    avatarfull: {
-                      description: "avatarfull",
-                      type: "string",
-                    },
-                    profileurl: {
-                      description: "profileurl",
-                      type: "string",
-                    },
-                    personaname: {
-                      description: "personaname",
-                      type: "string",
-                    },
-                    last_login: {
-                      description: "last_login",
-                      type: "string",
-                      format: "date-time",
-                    },
-                    full_history_time: {
-                      description: "full_history_time",
-                      type: "string",
-                      format: "date-time",
-                    },
-                    cheese: {
-                      description: "cheese",
-                      type: "integer",
-                    },
-                    fh_unavailable: {
-                      description: "fh_unavailable",
-                      type: "boolean",
-                    },
-                    loccountrycode: {
-                      description: "loccountrycode",
-                      type: "string",
-                    },
-                    rank_tier: {
-                      description: "rank_tier",
-                      type: "integer",
-                    },
-                  },
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/RankingsResponse`,
                 },
               },
             },
@@ -3261,137 +1438,18 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Hero ID",
             required: true,
-            type: "string",
+            schema: {
+              type: "string", // todo: String for hero id?
+            },
           },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "BenchmarksResponse",
-              type: "object",
-              properties: {
-                hero_id: {
-                  description: "The ID value of the hero played",
-                  type: "integer",
-                },
-                result: {
-                  description: "result",
-                  type: "object",
-                  properties: {
-                    gold_per_min: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          percentile: {
-                            description: "percentile",
-                            type: "number",
-                          },
-                          value: {
-                            description: "value",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                    xp_per_min: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          percentile: {
-                            description: "percentile",
-                            type: "number",
-                          },
-                          value: {
-                            description: "value",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                    kills_per_min: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          percentile: {
-                            description: "percentile",
-                            type: "number",
-                          },
-                          value: {
-                            description: "value",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                    last_hits_per_min: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          percentile: {
-                            description: "percentile",
-                            type: "number",
-                          },
-                          value: {
-                            description: "value",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                    hero_damage_per_min: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          percentile: {
-                            description: "percentile",
-                            type: "number",
-                          },
-                          value: {
-                            description: "value",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                    hero_healing_per_min: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          percentile: {
-                            description: "percentile",
-                            type: "number",
-                          },
-                          value: {
-                            description: "value",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                    tower_damage: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          percentile: {
-                            description: "percentile",
-                            type: "number",
-                          },
-                          value: {
-                            description: "value",
-                            type: "integer",
-                          },
-                        },
-                      },
-                    },
-                  },
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/BenchmarksResponse`,
                 },
               },
             },
@@ -3423,9 +1481,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "StatusResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "StatusResponse",
+                  type: "object",
+                },
+              },
             },
           },
         },
@@ -3448,9 +1510,13 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "HealthResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "HealthResponse",
+                  type: "object",
+                },
+              },
             },
           },
         },
@@ -3485,9 +1551,24 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "path",
             description: "The job ID to query.",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
+        responses: {
+          200: {
+            description: "Success",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "RequestJobResponse",
+                  type: "object",
+                },
+              },
+            },
+          },
+        },
         route: () => "/request/:jobId",
         func: (req, res, cb) => {
           queue.getJob(req.params.jobId, (err, job) => {
@@ -3504,15 +1585,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
             return res.json(null);
           });
         },
-        responses: {
-          200: {
-            description: "Success",
-            schema: {
-              title: "RequestJobResponse",
-              type: "object",
-            },
-          },
-        },
       },
     },
     "/request/{match_id}": {
@@ -3520,14 +1592,20 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "POST /request/{match_id}",
         description: "Submit a new parse request",
         tags: ["request"],
-        parameters: [
-          {
-            name: "match_id",
-            in: "path",
-            required: true,
-            type: "integer",
+        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
+        responses: {
+          200: {
+            description: "Success",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "RequestMatchResponse",
+                  type: "object",
+                },
+              },
+            },
           },
-        ],
+        },
         route: () => "/request/:match_id",
         func: (req, res) => {
           const matchId = req.params.match_id;
@@ -3572,15 +1650,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
           }
           return exitWithJob("invalid input");
         },
-        responses: {
-          200: {
-            description: "Success",
-            schema: {
-              title: "RequestMatchResponse",
-              type: "object",
-            },
-          },
-        },
       },
     },
     "/findMatches": {
@@ -3594,22 +1663,43 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Hero IDs on first team (array)",
             required: false,
-            type: "integer",
+            style: "form",
+            explode: false,
+            schema: {
+              type: "array",
+              items: {
+                type: "integer",
+              },
+            },
           },
           {
             name: "teamB",
             in: "query",
             description: "Hero IDs on second team (array)",
             required: false,
-            type: "integer",
+            style: "form",
+            explode: false,
+            schema: {
+              type: "array",
+              items: {
+                type: "integer",
+              },
+            },
           },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "FindMatchesResponse",
-              type: "object",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  title: "FindMatchesResponse",
+                  type: "array",
+                  items: {
+                    type: "object",
+                  },
+                },
+              },
             },
           },
         },
@@ -3653,59 +1743,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
       },
     },
-    /*
-    '/matchups': {
-      get: {
-        summary: 'GET /',
-        description: 'Get hero matchups (teammates and opponents)',
-        tags: ['matchups'],
-        parameters: [{
-          name: 't0',
-          in: 'query',
-          description: 'Hero 0 ID',
-          required: false,
-          type: 'integer',
-        }, {
-          name: 't1',
-          in: 'query',
-          description: 'Hero 1 ID',
-          required: false,
-          type: 'integer',
-        }],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'object',
-            },
-          },
-        },
-        route: () => '/matchups',
-        func: (req, res, cb) => {
-          // accept as input two arrays of up to 5
-          const t0 = [].concat(req.query.t0 || []).slice(0, 5);
-          const t1 = [].concat(req.query.t1 || []).slice(0, 5);
-          // return wins of each team
-          async.parallel({
-            t0(cb) {
-              redis.hget('matchups', utility.matchupToString(t0, t1, true), cb);
-            },
-            t1(cb) {
-              redis.hget('matchups', utility.matchupToString(t0, t1, false), cb);
-            },
-          }, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json({
-              t0: Number(result.t0) || 0,
-              t1: Number(result.t1) || 0,
-            });
-          });
-        },
-      },
-    },
-    */
     "/heroes": {
       get: {
         summary: "GET /heroes",
@@ -3714,9 +1751,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: heroObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/HeroObjectResponse`,
+                  },
+                },
+              },
             },
           },
         },
@@ -3743,119 +1786,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "HeroStatsResponse",
-                type: "object",
-                properties: {
-                  id: {
-                    description: "id",
-                    type: "integer",
-                  },
-                  name: {
-                    description: "name",
-                    type: "string",
-                  },
-                  localized_name: {
-                    description: "localized_name",
-                    type: "string",
-                  },
-                  img: {
-                    description: "img",
-                    type: "string",
-                  },
-                  icon: {
-                    description: "icon",
-                    type: "string",
-                  },
-                  pro_win: {
-                    description: "pro_win",
-                    type: "integer",
-                  },
-                  pro_pick: {
-                    description: "pro_pick",
-                    type: "integer",
-                  },
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "integer",
-                  },
-                  pro_ban: {
-                    description: "pro_ban",
-                    type: "integer",
-                  },
-                  "1_pick": {
-                    description: "Herald picks",
-                    type: "integer",
-                  },
-                  "1_win": {
-                    description: "Herald wins",
-                    type: "integer",
-                  },
-                  "2_pick": {
-                    description: "Guardian picks",
-                    type: "integer",
-                  },
-                  "2_win": {
-                    description: "Guardian wins",
-                    type: "integer",
-                  },
-                  "3_pick": {
-                    description: "Crusader picks",
-                    type: "integer",
-                  },
-                  "3_win": {
-                    description: "Crusader wins",
-                    type: "integer",
-                  },
-                  "4_pick": {
-                    description: "Archon picks",
-                    type: "integer",
-                  },
-                  "4_win": {
-                    description: "Archon wins",
-                    type: "integer",
-                  },
-                  "5_pick": {
-                    description: "Legend picks",
-                    type: "integer",
-                  },
-                  "5_win": {
-                    description: "Legend wins",
-                    type: "integer",
-                  },
-                  "6_pick": {
-                    description: "Ancient picks",
-                    type: "integer",
-                  },
-                  "6_win": {
-                    description: "Ancient wins",
-                    type: "integer",
-                  },
-                  "7_pick": {
-                    description: "Divine picks",
-                    type: "integer",
-                  },
-                  "7_win": {
-                    description: "Divine wins",
-                    type: "integer",
-                  },
-                  "8_pick": {
-                    description: "Immortal picks",
-                    type: "integer",
-                  },
-                  "8_win": {
-                    description: "Immortal wins",
-                    type: "integer",
-                  },
-                  turbo_pick: {
-                    description: "Picks in Turbo mode this month",
-                    type: "integer",
-                  },
-                  turbo_win: {
-                    description: "Wins in Turbo mode this month",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/HeroStatsResponse`,
                   },
                 },
               },
@@ -3879,13 +1815,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /heroes/{hero_id}/matches",
         description: "Get recent matches with a hero",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: matchObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/MatchObjectResponse`,
+                  },
+                },
+              },
             },
           },
         },
@@ -3928,27 +1870,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /heroes/{hero_id}/matchups",
         description: "Get results against other heroes for a hero",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "HeroMatchupsResponse",
-                type: "object",
-                properties: {
-                  hero_id: {
-                    description: "Numeric identifier for the hero object",
-                    type: "integer",
-                  },
-                  games_played: {
-                    description: "Number of games played",
-                    type: "integer",
-                  },
-                  wins: {
-                    description: "Number of games won",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/HeroMatchupsResponse`,
                   },
                 },
               },
@@ -3985,28 +1916,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /heroes/{hero_id}/durations",
         description: "Get hero performance over a range of match durations",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "HeroDurationsResponse",
-                type: "object",
-                properties: {
-                  duration_bin: {
-                    description:
-                      "Lower bound of number of seconds the match lasted",
-                    type: "string",
-                  },
-                  games_played: {
-                    description: "Number of games played",
-                    type: "integer",
-                  },
-                  wins: {
-                    description: "Number of wins",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/HeroDurationsResponse`,
                   },
                 },
               },
@@ -4040,13 +1959,22 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /heroes/{hero_id}/players",
         description: "Get players who have played this hero",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: playerObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "array", //todo: Why double array?
+                    items: {
+                      $ref: `#/components/schemas/PlayerObjectResponse`,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -4079,7 +2007,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
         description:
           "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
         tags: ["heroes"],
-        parameters: [params.heroIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
+        responses: {
+          200: {
+            description: "Success",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/HeroItemPopularityResponse`,
+                },
+              },
+            },
+          },
+        },
         route: () => "/heroes/:hero_id/itemPopularity",
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
@@ -4096,60 +2036,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
             }
           );
         },
-        responses: {
-          200: {
-            description: "Success",
-            schema: {
-              title: "HeroItemPopularityResponse",
-              type: "object",
-              properties: {
-                start_game_items: {
-                  description: "Items bought before game started",
-                  type: "object",
-                  properties: {
-                    item: {
-                      description: "Number of item bought",
-                      type: "integer",
-                    },
-                  },
-                },
-                early_game_items: {
-                  description:
-                    "Items bought in the first 10 min of the game, with cost at least 700",
-                  type: "object",
-                  properties: {
-                    item: {
-                      description: "Number of item bought",
-                      type: "integer",
-                    },
-                  },
-                },
-                mid_game_items: {
-                  description:
-                    "Items bought between 10 and 25 min of the game, with cost at least 2000",
-                  type: "object",
-                  properties: {
-                    item: {
-                      description: "Number of item bought",
-                      type: "integer",
-                    },
-                  },
-                },
-                late_game_items: {
-                  description:
-                    "Items bought at least 25 min after game started, with cost at least 4000",
-                  type: "object",
-                  properties: {
-                    item: {
-                      description: "Number of item bought",
-                      type: "integer",
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
       },
     },
     "/leagues": {
@@ -4160,7 +2046,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: leagueObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/LeagueObjectResponse`,
+                  },
+                },
+              },
+            },
           },
         },
         route: () => "/leagues",
@@ -4181,11 +2076,20 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /leagues/{league_id}",
         description: "Get data for a league",
         tags: ["leagues"],
-        parameters: [params.leagueIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: leagueObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/LeagueObjectResponse`,
+                  },
+                },
+              },
+            },
           },
         },
         route: () => "/leagues/:league_id",
@@ -4209,11 +2113,17 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /leagues/{league_id}/matches",
         description: "Get matches for a team",
         tags: ["leagues"],
-        parameters: [params.leagueIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: matchObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/MatchObjectResponse`,
+                },
+              },
+            },
           },
         },
         route: () => "/leagues/:league_id/matches",
@@ -4237,11 +2147,17 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /leagues/{league_id}/teams",
         description: "Get teams for a league",
         tags: ["leagues"],
-        parameters: [params.leagueIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: teamObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: "#/components/schemas/TeamObjectResponse",
+                },
+              },
+            },
           },
         },
         route: () => "/leagues/:league_id/teams",
@@ -4276,15 +2192,23 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description:
               "Page number, zero indexed. Each page returns up to 1000 entries.",
             required: false,
-            type: "integer",
+            schema: {
+              type: "integer",
+            },
           },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: teamObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/TeamObjectResponse",
+                  },
+                },
+              },
             },
           },
         },
@@ -4312,11 +2236,17 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /teams/{team_id}",
         description: "Get data for a team",
         tags: ["teams"],
-        parameters: [params.teamIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: teamObject,
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: "#/components/schemas/TeamObjectResponse",
+                },
+              },
+            },
           },
         },
         route: () => "/teams/:team_id",
@@ -4341,38 +2271,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /teams/{team_id}/matches",
         description: "Get matches for a team",
         tags: ["teams"],
-        parameters: [params.teamIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: 'TeamMatchObjectResponse',
-              type: 'object',
-              properties: {
-                match_id: matchObject.properties.match_id,
-                radiant: matchObject.properties.radiant,
-                radiant_win: matchObject.properties.radiant_win,
-                radiant_score: matchObject.properties.radiant_score,
-                dire_score: matchObject.properties.dire_score,
-                duration: matchObject.properties.duration,
-                start_time: matchObject.properties.start_time,
-                leagueid: matchObject.properties.leagueid,
-                league_name: matchObject.properties.league_name,
-                cluster: {
-                  description: "cluster",
-                  type: "integer",
-                },
-                opposing_team_id: {
-                  description: "Opposing team identifier",
-                  type: "integer",
-                },
-                opposing_team_name: {
-                  description: "Opposing team name, e.g. 'Evil Geniuses'",
-                  type: "string",
-                },
-                opposing_team_logo: {
-                  description: "Opposing team logo url",
-                  type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/TeamMatchObjectResponse`,
                 },
               },
             },
@@ -4406,33 +2312,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /teams/{team_id}/players",
         description: "Get players who have played for a team",
         tags: ["teams"],
-        parameters: [params.teamIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "TeamPlayersResponse",
-              type: "object",
-              properties: {
-                account_id: {
-                  description: "The player account ID",
-                  type: "string",
-                },
-                name: {
-                  description: "The player name",
-                  type: "string",
-                },
-                games_played: {
-                  description: "Number of games played",
-                  type: "integer",
-                },
-                wins: {
-                  description: "Number of wins",
-                  type: "integer",
-                },
-                is_current_team_member: {
-                  description: "If this player is on the current roster",
-                  type: "boolean",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/TeamPlayersResponse`,
                 },
               },
             },
@@ -4465,29 +2352,14 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /teams/{team_id}/heroes",
         description: "Get heroes for a team",
         tags: ["teams"],
-        parameters: [params.teamIdPathParam],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              title: "TeamHeroesResponse",
-              type: "object",
-              properties: {
-                hero_id: {
-                  description: "The hero ID",
-                  type: "integer",
-                },
-                name: {
-                  description: "The hero name",
-                  type: "string",
-                },
-                games_played: {
-                  description: "Number of games played",
-                  type: "integer",
-                },
-                wins: {
-                  description: "Number of wins",
-                  type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  $ref: `#/components/schemas/TeamHeroesResponse`,
                 },
               },
             },
@@ -4520,35 +2392,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /replays",
         description: "Get data to construct a replay URL with",
         tags: ["replays"],
-        parameters: [
-          {
-            name: "match_id",
-            in: "query",
-            description: "Match IDs (array)",
-            required: true,
-            type: "integer",
-          },
-        ],
+        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ReplaysResponse",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
-                  },
-                  cluster: {
-                    description: "cluster",
-                    type: "integer",
-                  },
-                  replay_salt: {
-                    description: "replay_salt",
-                    type: "integer",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/ReplaysResponse`,
                   },
                 },
               },
@@ -4569,28 +2422,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
               }
               return res.json(result);
             });
-          /*
-          async.map(
-            [].concat(req.query.match_id || []).slice(0, 5),
-            (matchId, cb) => getGcData({
-              match_id: matchId,
-              noRetry: true,
-              allowBackup: true,
-            }, (err, result) => {
-              if (err) {
-                // Don't log this to avoid filling the output
-              }
-              return cb(null, result);
-            }),
-            (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              const final = result.filter(Boolean);
-              return res.json(final);
-            },
-          );
-          */
         },
       },
     },
@@ -4605,33 +2436,20 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "path",
             description: "Field name to query",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "RecordsResponse",
-                type: "object",
-                properties: {
-                  match_id: {
-                    description: "match_id",
-                    type: "integer",
-                  },
-                  start_time: {
-                    description: "start_time",
-                    type: "integer",
-                  },
-                  hero_id: {
-                    description: "The ID value of the hero played",
-                    type: "integer",
-                  },
-                  score: {
-                    description: "score",
-                    type: "number",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/RecordsResponse`,
                   },
                 },
               },
@@ -4672,12 +2490,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "LiveResponse",
-                type: "object",
-                properties: {},
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    title: "LiveResponse",
+                    type: "object",
+                    properties: {},
+                  },
+                },
               },
             },
           },
@@ -4705,7 +2527,8 @@ You can find data that can be used to convert hero and ability IDs and other inf
     "/scenarios/itemTimings": {
       get: {
         summary: "GET /scenarios/itemTimings",
-        description: `Win rates for certain item timings on a hero for items that cost at least ${su.itemCost} gold`,
+        description:
+          "Win rates for certain item timings on a hero for items that cost at least 1400 gold",
         tags: ["scenarios"],
         parameters: [
           {
@@ -4713,41 +2536,21 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: 'Filter by item name e.g. "spirit_vessel"',
             required: false,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
-          params.heroIdParam,
+          { $ref: "#/components/parameters/heroIdParam" },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ScenarioItemTimingsResponse",
-                type: "object",
-                properties: {
-                  hero_id: {
-                    description: "Hero ID",
-                    type: "integer",
-                  },
-                  item: {
-                    description: "Purchased item",
-                    type: "string",
-                  },
-                  time: {
-                    description:
-                      "Ingame time in seconds before the item was purchased",
-                    type: "integer",
-                  },
-                  games: {
-                    description:
-                      "The number of games where the hero bought this item before this time",
-                    type: "string",
-                  },
-                  wins: {
-                    description:
-                      "The number of games won where the hero bought this item before this time",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/ScenarioItemTimingsResponse`,
                   },
                 },
               },
@@ -4776,40 +2579,21 @@ You can find data that can be used to convert hero and ability IDs and other inf
             in: "query",
             description: "Filter by lane role 1-4 (Safe, Mid, Off, Jungle)",
             required: false,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
-          params.heroIdParam,
+          { $ref: "#/components/parameters/heroIdParam" },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ScenarioLaneRolesResponse",
-                type: "object",
-                properties: {
-                  hero_id: {
-                    description: "Hero ID",
-                    type: "integer",
-                  },
-                  lane_role: {
-                    description: "The hero's lane role",
-                    type: "integer",
-                  },
-                  time: {
-                    description: "Maximum game length in seconds",
-                    type: "integer",
-                  },
-                  games: {
-                    description:
-                      "The number of games where the hero played in this lane role",
-                    type: "string",
-                  },
-                  wins: {
-                    description:
-                      "The number of games won where the hero played in this lane role",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/ScenarioLaneRolesResponse`,
                   },
                 },
               },
@@ -4832,46 +2616,16 @@ You can find data that can be used to convert hero and ability IDs and other inf
         summary: "GET /scenarios/misc",
         description: "Miscellaneous team scenarios",
         tags: ["scenarios"],
-        parameters: [
-          {
-            name: "scenario",
-            in: "query",
-            description: su.teamScenariosQueryParams.toString(),
-            required: false,
-            type: "string",
-          },
-        ],
+        parameters: [{ $ref: "#/components/parameters/scenarioParam" }],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ScenarioMiscResponse",
-                type: "object",
-                properties: {
-                  scenario: {
-                    description: "The scenario's name or description",
-                    type: "string",
-                  },
-                  is_radiant: {
-                    description:
-                      "Boolean indicating whether Radiant executed this scenario",
-                    type: "boolean",
-                  },
-                  region: {
-                    description: "Region the game was played in",
-                    type: "integer",
-                  },
-                  games: {
-                    description:
-                      "The number of games where this scenario occurred",
-                    type: "string",
-                  },
-                  wins: {
-                    description:
-                      "The number of games won where this scenario occured",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/ScenarioMiscResponse`,
                   },
                 },
               },
@@ -4898,23 +2652,12 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "SchemaResponse",
-                type: "object",
-                properties: {
-                  table_name: {
-                    description: "table_name",
-                    type: "string",
-                  },
-                  column_name: {
-                    description: "column_name",
-                    type: "string",
-                  },
-                  data_type: {
-                    description: "data_type",
-                    type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: `#/components/schemas/SchemaResponse`,
                   },
                 },
               },
@@ -4950,16 +2693,43 @@ You can find data that can be used to convert hero and ability IDs and other inf
             description:
               "Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)",
             required: true,
-            type: "string",
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ConstantResourceResponse",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  nullable: true,
+                  oneOf: [
+                    {
+                      type: "object",
+                      additionalProperties: {
+                        title: "ConstantResourceResponse",
+                      },
+                    },
+                    {
+                      type: "array",
+                      items: {
+                        oneOf: [
+                          {
+                            type: "object",
+                            additionalProperties: {
+                              title: "ConstantResourceResponse",
+                            },
+                          },
+                          {
+                            type: "integer",
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
               },
             },
           },
@@ -4983,11 +2753,15 @@ You can find data that can be used to convert hero and ability IDs and other inf
         responses: {
           200: {
             description: "Success",
-            schema: {
-              type: "array",
-              items: {
-                title: "ConstantsResponse",
-                type: "string",
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "array",
+                  items: {
+                    title: "ConstantsResponse",
+                    type: "string",
+                  },
+                },
               },
             },
           },
@@ -4998,100 +2772,6 @@ You can find data that can be used to convert hero and ability IDs and other inf
         },
       },
     },
-    /*
-    '/feed': {
-      get: {
-        summary: 'GET /feed',
-        description: 'Get streaming feed of latest matches as newline-delimited JSON',
-        tags: ['feed'],
-        parameters: [
-          {
-            name: 'seq_num',
-            in: 'query',
-            description: 'Return only matches after this sequence number. If not provided, returns a stream starting at the current time.',
-            required: false,
-            type: 'number',
-          },
-          {
-            name: 'game_mode',
-            in: 'query',
-            description: 'Filter to only matches in this game mode',
-            required: false,
-            type: 'number',
-          },
-          {
-            name: 'leagueid',
-            in: 'query',
-            description: 'Filter to only matches in this league',
-            required: false,
-            type: 'number',
-          },
-          {
-            name: 'included_account_id',
-            in: 'query',
-            description: 'Filter to only matches with this account_id participating',
-            required: false,
-            type: 'number',
-          },
-        ],
-        responses: {
-          200: {
-            description: 'Success',
-            schema: {
-              type: 'array',
-              items: matchObject,
-            },
-          },
-        },
-        route: () => '/feed',
-        func: (req, res, cb) => {
-          if (config.NODE_ENV !== 'development' && !res.locals.isAPIRequest) {
-            return res.status(403).json({ error: 'API key required' });
-          }
-          if (!req.query) {
-            return res.status(400).json({ error: 'No query string detected' });
-          }
-          if (!req.query.game_mode && !req.query.leagueid && !req.query.included_account_id) {
-            return res.status(400).json({ error: 'A filter parameter is required' });
-          }
-          // TODO don't allow arrays of parameters
-          const keepAlive = setInterval(() => res.write('\n'), 5000);
-          req.on('end', () => {
-            clearTimeout(keepAlive);
-          });
-          const readFromStream = (seqNum) => {
-            redis.xread('block', '0', 'COUNT', '10', 'STREAMS', 'feed', seqNum, (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              let nextSeqNum = '$';
-              result[0][1].forEach((dataArray) => {
-                const dataMatch = JSON.parse(dataArray[1]['1']);
-                const filters = {
-                  game_mode: [Number(req.query.game_mode)],
-                  leagueid: [Number(req.query.leagueid)],
-                  included_account_id: [Number(req.query.included_account_id)],
-                };
-                // console.log(filter([dataMatch], filters).length);
-                if (filter([dataMatch], filters).length) {
-                  const dataSeqNum = dataArray[0];
-                  nextSeqNum = dataSeqNum;
-                  // This is an array of 2 elements where the first is the sequence number and the second is the stream key-value pairs
-                  // Put the sequence number in the match object so client can know where they're at
-                  const final = { ...dataMatch, seq_num: dataSeqNum };
-                  res.write(`${JSON.stringify(final)}\n`);
-                  res.flush();
-                  redisCount(redis, 'feed');
-                }
-              });
-              return readFromStream(nextSeqNum);
-            });
-          };
-          return readFromStream(req.query.seq_num || '$');
-        },
-      },
-    },
-    */
   },
 };
 module.exports = spec;

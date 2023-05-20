@@ -472,7 +472,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
         if (queryObj.sort) {
           matches.sort((a, b) => b[queryObj.sort] - a[queryObj.sort]);
         }
-        const offset = matches.slice(queryObj.offset);
+        const offset = matches.slice(queryObj.offset || 0);
         const result = offset.slice(0, queryObj.limit || offset.length);
         return cb(err, result);
       }

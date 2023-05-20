@@ -200,7 +200,19 @@ api.get("/", (req, res) => {
 Object.keys(spec.paths).forEach((path) => {
   Object.keys(spec.paths[path]).forEach((verb) => {
     const { route, func } = spec.paths[path][verb];
-    api[verb](route(), func);
+    // Use the 'route' function to get the route path if it's available; otherwise, transform the OpenAPI path to the Express format.
+    const routePath = route
+      ? route()
+      : path.replace(/{/g, ":").replace(/}/g, "");
+    // Check if the callback function is defined before adding the route..
+    if (typeof func === "function") {
+      api[verb](routePath, func);
+    } else {
+      // If the function is missing, log a warning message with the problematic route path and verb
+      console.warn(
+        `Missing callback function for route ${routePath} using ${verb.toUpperCase()}`
+      );
+    }
   });
 });
 

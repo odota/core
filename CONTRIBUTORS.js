@@ -27,4 +27,5 @@ module.exports = {
   94620402: {}, // lmmfranco
   193480093: {}, // angary
   83615933: {}, // kshammer
+  52369498: {}, // ff137
 };

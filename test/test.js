@@ -161,15 +161,29 @@ before(function setup(done) {
         async.series(
           [
             (cb) => {
-              es.indices.delete(
+              es.indices.exists(
                 {
-                  index: "dota-test", // explicitly name the index to avoid embarrassing errors.
+                  index: "dota-test", // Check if index already exists, in which case, delete it
                 },
-                (err) => {
+                (err, exists) => {
                   if (err) {
                     console.warn(err);
+                    cb();
+                  } else if (exists.body) {
+                    es.indices.delete(
+                      {
+                        index: "dota-test",
+                      },
+                      (err) => {
+                        if (err) {
+                          console.warn(err);
+                        }
+                        cb();
+                      }
+                    );
+                  } else {
+                    cb();
                   }
-                  cb();
                 }
               );
             },
