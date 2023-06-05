@@ -249,7 +249,12 @@ function init() {
       client.Dota2 = new Dota2.Dota2Client(client, false);
       client.Dota2.on("ready", () => {
         console.log("acct %s ready", i);
-        cb();
+        // As of 2023-06-04 seeing some double ready which crashes the process
+        try {
+          cb();
+        } catch (e) {
+          console.warn(e);
+        }
       });
       client.on("connected", () => {
         console.log("[STEAM] Trying to log on with %s,%s", user, pass);
