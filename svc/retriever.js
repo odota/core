@@ -498,7 +498,7 @@ if (advancedAuth) {
 }
 app.use((req, res, cb) => {
   console.log(
-    "numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, path: %s",
+    "numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s",
     Object.keys(steamObj).length,
     matchSuccesses,
     matchRequests,
@@ -506,7 +506,7 @@ app.use((req, res, cb) => {
     profileRequests,
     getUptime(),
     matchRequestDelay + matchRequestDelayIncr,
-    req.path,
+    req.query,
   );
   const shouldRestart =
     (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds) ||
