@@ -26,10 +26,10 @@ const app = express();
 const steamObj = {};
 const minUpTimeSeconds = 60;
 const timeoutMs = 1500;
-const accountsToUse = 9;
-const matchRequestLimit = 950;
+const accountsToUse = 8;
+const matchRequestLimit = 1020;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 700;
+const matchRequestDelay = 600;
 const matchRequestDelayStep = 3;
 
 let matchRequestDelayIncr = 0;
