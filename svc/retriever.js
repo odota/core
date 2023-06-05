@@ -180,7 +180,7 @@ function getMMStats(idx, cb) {
 function getPlayerProfile(idx, accountId, cb) {
   accountId = Number(accountId);
   const { Dota2 } = steamObj[idx];
-  console.log("requesting player profile %s", accountId);
+  // console.log("requesting player profile %s", accountId);
   profileRequests += 1;
   Dota2.requestProfileCard(accountId, (err, profileData) => {
     /*
@@ -213,6 +213,7 @@ function getPlayerProfile(idx, accountId, cb) {
 function getGcMatchData(idx, matchId, cb) {
   const { Dota2 } = steamObj[idx];
   matchRequests += 1;
+  const start = Date.now();
   const timeout = setTimeout(() => {
     matchRequestDelayIncr += matchRequestDelayStep;
   }, timeoutMs);
@@ -223,9 +224,10 @@ function getGcMatchData(idx, matchId, cb) {
       return cb(null, { result: { status: matchData.result } });
     }
     matchSuccesses += 1;
+    const end = Date.now();
     // Reset delay on success
     matchRequestDelayIncr = 0;
-    console.log("received match %s", matchId);
+    console.log("received match %s in %sms", matchId, end - start);
     clearTimeout(timeout);
     return cb(err, matchData);
   });
@@ -496,14 +498,15 @@ if (advancedAuth) {
 }
 app.use((req, res, cb) => {
   console.log(
-    "numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s",
+    "numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, path: %s",
     Object.keys(steamObj).length,
     matchSuccesses,
     matchRequests,
     profileSuccesses,
     profileRequests,
     getUptime(),
-    matchRequestDelay + matchRequestDelayIncr
+    matchRequestDelay + matchRequestDelayIncr,
+    req.path,
   );
   const shouldRestart =
     (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds) ||
