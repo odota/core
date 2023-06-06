@@ -24,10 +24,10 @@ const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH
 
 const app = express();
 const steamObj = {};
-const minUpTimeSeconds = 60;
+const minUpTimeSeconds = 120;
 const timeoutMs = 1500;
-const accountsToUse = 6;
-const matchRequestLimit = 970;
+const accountsToUse = 5;
+const matchRequestLimit = 950;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 500;
 const matchRequestDelayStep = 3;
