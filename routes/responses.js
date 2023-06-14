@@ -261,10 +261,7 @@ module.exports = {
                 "Object containing information on how and how much damage the player dealt to other heroes",
               type: "object",
             },
-            account_id: {
-              description: "account_id",
-              type: "integer",
-            },
+            account_id: commonProperties.account_id,
             actions: {
               description:
                 "Object containing information on how many and what type of actions the player issued to their hero",
@@ -977,10 +974,7 @@ module.exports = {
     items: {
       type: "object",
       properties: {
-        account_id: {
-          description: "account_id",
-          type: "number",
-        },
+        account_id: commonProperties.account_id,
         rank_tier: {
           description: "Integer indicating the rank/medal of the player",
           type: "number",
@@ -1033,10 +1027,7 @@ module.exports = {
         description: "profile",
         type: "object",
         properties: {
-          account_id: {
-            description: "account_id",
-            type: "integer",
-          },
+          account_id: commonProperties.account_id,
           personaname: {
             description: "personaname",
             type: "string",
@@ -1325,10 +1316,7 @@ module.exports = {
     title: "PlayerPeersResponse",
     type: "object",
     properties: {
-      account_id: {
-        description: "account_id",
-        type: "integer",
-      },
+      account_id: commonProperties.account_id,
       last_played: {
         description: "last_played",
         type: "integer",
@@ -1404,10 +1392,7 @@ module.exports = {
     title: "PlayerProsResponse",
     type: "object",
     properties: {
-      account_id: {
-        description: "account_id",
-        type: "integer",
-      },
+      account_id: commonProperties.account_id,
       name: {
         description: "name",
         type: "string",
@@ -1624,10 +1609,7 @@ module.exports = {
     title: "PlayerRatingsResponse",
     type: "object",
     properties: {
-      account_id: {
-        description: "account_id",
-        type: "integer",
-      },
+      account_id: commonProperties.account_id,
       match_id: commonProperties.match_id,
       solo_competitive_rank: {
         description: "solo_competitive_rank",
@@ -1823,10 +1805,7 @@ module.exports = {
     title: "PlayerObjectResponse",
     type: "object",
     properties: {
-      account_id: {
-        description: "Player's account identifier",
-        type: "integer",
-      },
+      account_id: commonProperties.account_id,
       steamid: {
         description: "Player's steam identifier",
         type: "string",
@@ -2249,10 +2228,7 @@ module.exports = {
     title: "SearchResponse",
     type: "object",
     properties: {
-      account_id: {
-        description: "account_id",
-        type: "integer",
-      },
+      account_id: commonProperties.account_id,
       avatarfull: {
         description: "avatarfull",
         type: "string",
@@ -2284,10 +2260,7 @@ module.exports = {
         items: {
           type: "object",
           properties: {
-            account_id: {
-              description: "account_id",
-              type: "integer",
-            },
+            account_id: commonProperties.account_id,
             score: {
               description: "Score",
               type: "number",
@@ -2680,10 +2653,7 @@ module.exports = {
     title: "TeamPlayersResponse",
     type: "object",
     properties: {
-      account_id: {
-        description: "The player account ID",
-        type: "string",
-      },
+      account_id: commonProperties.account_id,
       name: {
         description: "The player name",
         type: "string",
