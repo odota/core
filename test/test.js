@@ -246,7 +246,7 @@ before(function setup(done) {
         app = require("../svc/web");
         queries = require("../store/queries");
         buildMatch = require("../store/buildMatch");
-        
+
         require("../svc/parser");
         cb();
       },
@@ -653,8 +653,8 @@ describe("api management", () => {
 
         db.from("api_keys")
           .where({
-            account_id: 1, 
-            is_canceled: null
+            account_id: 1,
+            is_canceled: null,
           })
           .then((res2) => {
             if (res2.length === 0) {
@@ -684,58 +684,58 @@ describe("api management", () => {
     this.timeout(5000);
     // delete the key first
     supertest(app)
-    .delete("/keys?loggedin=1")
-    .then(async (res) => {
-      assert.equal(res.statusCode, 200);
-      const stripe = stripeLib(config.STRIPE_SECRET);
- 
-      await stripe.invoiceItems.create({
-        customer: this.previousCustomer,
-        price: 'price_1Lm1siCHN72mG1oKkk3Jh1JT', // test $123 one time
-      });
+      .delete("/keys?loggedin=1")
+      .then(async (res) => {
+        assert.equal(res.statusCode, 200);
+        const stripe = stripeLib(config.STRIPE_SECRET);
 
-      const invoice = await stripe.invoices.create({
-        customer: this.previousCustomer
-      });
+        await stripe.invoiceItems.create({
+          customer: this.previousCustomer,
+          price: "price_1Lm1siCHN72mG1oKkk3Jh1JT", // test $123 one time
+        });
 
-      await stripe.invoices.finalizeInvoice(
-        invoice.id
-      );
+        const invoice = await stripe.invoices.create({
+          customer: this.previousCustomer,
+        });
 
-      supertest(app)
-      .post("/keys?loggedin=1")
-      .send({
-        token: {
-          id: "tok_discover",
-          email: "test@test.com",
-        },
-      }).then(res => {
-        assert.equal(res.statusCode, 402);
-        assert.equal(res.body.error, 'Open invoice');
+        await stripe.invoices.finalizeInvoice(invoice.id);
 
         supertest(app)
-          .get("/keys?loggedin=1")
-          .end((err, res) => {
-            if (err) {
-              return done(err);
-            }
+          .post("/keys?loggedin=1")
+          .send({
+            token: {
+              id: "tok_discover",
+              email: "test@test.com",
+            },
+          })
+          .then((res) => {
+            assert.equal(res.statusCode, 402);
+            assert.equal(res.body.error, "Open invoice");
 
-            assert.equal(res.statusCode, 200);
-            assert.equal(res.body.customer, null);
-            assert.equal(res.body.openInvoices[0].id, invoice.id);
-            assert.equal(res.body.openInvoices[0].amountDue, 12300);
-            db.from("api_keys")
-              .where({
-                account_id: 1,
-                is_canceled: null
-              }).then(res => {
-                assert.equal(res.length, 0)
-                return done();
-              })
-            });
+            supertest(app)
+              .get("/keys?loggedin=1")
+              .end((err, res) => {
+                if (err) {
+                  return done(err);
+                }
+
+                assert.equal(res.statusCode, 200);
+                assert.equal(res.body.customer, null);
+                assert.equal(res.body.openInvoices[0].id, invoice.id);
+                assert.equal(res.body.openInvoices[0].amountDue, 12300);
+                db.from("api_keys")
+                  .where({
+                    account_id: 1,
+                    is_canceled: null,
+                  })
+                  .then((res) => {
+                    assert.equal(res.length, 0);
+                    return done();
+                  });
+              });
+          });
       })
-    })
-    .catch((err) => done(err));
+      .catch((err) => done(err));
   });
 });
 describe("api limits", () => {
