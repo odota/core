@@ -1736,14 +1736,8 @@ module.exports = {
     title: "HeroObjectResponse",
     type: "object",
     properties: {
-      id: {
-        description: "Numeric identifier for the hero object",
-        type: "integer",
-      },
-      name: {
-        description: "Dota hero command name, e.g. 'npc_dota_hero_antimage'",
-        type: "string",
-      },
+      id: commonProperties.hero_id,
+      name: commonProperties.hero_command_name,
       localized_name: commonProperties.hero_name,
       primary_attr: {
         description: "Hero primary shorthand attribute name, e.g. 'agi'",
@@ -2395,18 +2389,9 @@ module.exports = {
     title: "HeroStatsResponse",
     type: "object",
     properties: {
-      id: {
-        description: "id",
-        type: "integer",
-      },
-      name: {
-        description: "name",
-        type: "string",
-      },
-      localized_name: {
-        description: "localized_name",
-        type: "string",
-      },
+      id: commonProperties.hero_id,
+      name: commonProperties.hero_command_name,
+      localized_name: commonProperties.hero_name,
       img: {
         description: "img",
         type: "string",
