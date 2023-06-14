@@ -76,10 +76,7 @@ module.exports = {
               description: "active_team",
               type: "integer",
             },
-            hero_id: {
-              description: "The ID value of the hero played",
-              type: "integer",
-            },
+            hero_id: commonProperties.hero_id,
             player_slot: commonProperties.player_slot,
             extra_time: {
               description: "extra_time",
@@ -147,10 +144,7 @@ module.exports = {
                 "Boolean indicating whether the choice is a pick or a ban",
               type: "boolean",
             },
-            hero_id: {
-              description: "The hero ID",
-              type: "integer",
-            },
+            hero_id: commonProperties.hero_id,
             team: {
               description: "The team that picked or banned the hero",
               type: "integer",
@@ -426,10 +420,7 @@ module.exports = {
                 "Object containing information on how many ticks of damages the hero inflicted with different spells and damage inflictors",
               type: "object",
             },
-            hero_id: {
-              description: "The ID value of the hero played",
-              type: "integer",
-            },
+            hero_id: commonProperties.hero_id,
             item_0: {
               description: "Item in the player's first slot",
               type: "integer",
@@ -1156,10 +1147,7 @@ module.exports = {
           "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
         type: "integer",
       },
-      hero_id: {
-        description: "The ID value of the hero played",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       start_time: commonProperties.start_time,
       version: {
         description: "version",
@@ -1261,10 +1249,7 @@ module.exports = {
           "Integer corresponding to lobby type of match. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/lobby_type.json",
         type: "integer",
       },
-      hero_id: {
-        description: "The ID value of the hero played",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       start_time: commonProperties.start_time,
       version: {
         description: "version",
@@ -1311,10 +1296,7 @@ module.exports = {
     description: "hero",
     type: "object",
     properties: {
-      hero_id: {
-        description: "The ID value of the hero played",
-        type: "string",
-      },
+      hero_id: commonProperties.hero_id,
       last_played: {
         description: "last_played",
         type: "integer",
@@ -1672,10 +1654,7 @@ module.exports = {
     title: "PlayerRankingsResponse",
     type: "object",
     properties: {
-      hero_id: {
-        description: "The ID value of the hero played",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       score: {
         description: "hero_score",
         type: "number",
@@ -2318,10 +2297,7 @@ module.exports = {
     title: "RankingsResponse",
     type: "object",
     properties: {
-      hero_id: {
-        description: "The ID value of the hero played",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       rankings: {
         description: "rankings",
         type: "array",
@@ -2406,10 +2382,7 @@ module.exports = {
     title: "BenchmarksResponse",
     type: "object",
     properties: {
-      hero_id: {
-        description: "The ID value of the hero played",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       result: {
         description: "result",
         type: "object",
@@ -2562,10 +2535,7 @@ module.exports = {
         description: "pro_pick",
         type: "integer",
       },
-      hero_id: {
-        description: "The ID value of the hero played",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       pro_ban: {
         description: "pro_ban",
         type: "integer",
@@ -2648,10 +2618,7 @@ module.exports = {
     title: "HeroMatchupsResponse",
     type: "object",
     properties: {
-      hero_id: {
-        description: "Numeric identifier for the hero object",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       games_played: {
         description: "Number of games played",
         type: "integer",
@@ -2759,10 +2726,7 @@ module.exports = {
     title: "TeamHeroesResponse",
     type: "object",
     properties: {
-      hero_id: {
-        description: "The hero ID",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       name: {
         description: "The hero name",
         type: "string",
@@ -2798,10 +2762,7 @@ module.exports = {
     properties: {
       match_id: commonProperties.match_id,
       start_time: commonProperties.start_time,
-      hero_id: {
-        description: "The ID value of the hero played",
-        type: "string",
-      },
+      hero_id: commonProperties.hero_id,
       score: {
         description: "score",
         type: "string",
@@ -2812,10 +2773,7 @@ module.exports = {
     title: "ScenarioItemTimingsResponse",
     type: "object",
     properties: {
-      hero_id: {
-        description: "Hero ID",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       item: {
         description: "Purchased item",
         type: "string",
@@ -2840,10 +2798,7 @@ module.exports = {
     title: "ScenarioLaneRolesResponse",
     type: "object",
     properties: {
-      hero_id: {
-        description: "Hero ID",
-        type: "integer",
-      },
+      hero_id: commonProperties.hero_id,
       lane_role: {
         description: "The hero's lane role",
         type: "integer",
