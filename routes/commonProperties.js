@@ -65,4 +65,8 @@ module.exports = {
     type: "string",
     nullable: true,
   },
+  field_name: {
+    description: "Field name",
+    type: "string",
+  },
 };
