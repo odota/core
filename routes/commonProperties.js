@@ -60,4 +60,9 @@ module.exports = {
     type: "string",
     example: "ASUS ROG DreamLeague Season 4",
   },
+  general_name: {
+    description: "name",
+    type: "string",
+    nullable: true,
+  },
 };
