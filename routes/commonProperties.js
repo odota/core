@@ -35,4 +35,8 @@ module.exports = {
     description: "Number of kills the Radiant team had when the match ended",
     type: "integer",
   },
+  account_id: {
+    description: "The player account ID",
+    type: "string",
+  },
 };
