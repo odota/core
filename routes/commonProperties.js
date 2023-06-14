@@ -55,4 +55,9 @@ module.exports = {
     type: "string",
     example: "Newbee",
   },
+  league_name: {
+    description: "League name",
+    type: "string",
+    example: "ASUS ROG DreamLeague Season 4",
+  },
 };
