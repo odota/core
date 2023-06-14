@@ -1780,10 +1780,7 @@ module.exports = {
         description: "Dota hero command name, e.g. 'npc_dota_hero_antimage'",
         type: "string",
       },
-      localized_name: {
-        description: "Hero name, e.g. 'Anti-Mage'",
-        type: "string",
-      },
+      localized_name: commonProperties.hero_name,
       primary_attr: {
         description: "Hero primary shorthand attribute name, e.g. 'agi'",
         type: "string",
@@ -2677,10 +2674,7 @@ module.exports = {
     type: "object",
     properties: {
       hero_id: commonProperties.hero_id,
-      name: {
-        description: "The hero name",
-        type: "string",
-      },
+      name: commonProperties.hero_name,
       games_played: {
         description: "Number of games played",
         type: "integer",
