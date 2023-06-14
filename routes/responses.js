@@ -41,11 +41,7 @@ module.exports = {
               description: "slot",
               type: "integer",
             },
-            player_slot: {
-              description:
-                "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
-              type: "integer",
-            },
+            player_slot: commonProperties.player_slot
           },
         },
       },
@@ -87,11 +83,7 @@ module.exports = {
               description: "The ID value of the hero played",
               type: "integer",
             },
-            player_slot: {
-              description:
-                "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
-              type: "integer",
-            },
+            player_slot: commonProperties.player_slot,
             extra_time: {
               description: "extra_time",
               type: "integer",
@@ -270,11 +262,7 @@ module.exports = {
               description: "Match ID",
               type: "integer",
             },
-            player_slot: {
-              description:
-                "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
-              type: "integer",
-            },
+            player_slot: commonProperties.player_slot,
             ability_upgrades_arr: {
               description: "An array describing how abilities were upgraded",
               type: "array",
@@ -345,11 +333,7 @@ module.exports = {
                     description: "slot",
                     type: "integer",
                   },
-                  player_slot: {
-                    description:
-                      "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
-                    type: "integer",
-                  },
+                  player_slot: commonProperties.player_slot,
                 },
               },
             },
@@ -372,11 +356,7 @@ module.exports = {
                     description: "Event that occurred",
                     type: "string",
                   },
-                  player_slot: {
-                    description:
-                      "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
-                    type: "integer",
-                  },
+                  player_slot: commonProperties.player_slot,
                 },
               },
             },
@@ -1184,11 +1164,7 @@ module.exports = {
         description: "Match ID",
         type: "integer",
       },
-      player_slot: {
-        description:
-          "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
-        type: "integer",
-      },
+      player_slot: commonProperties.player_slot,
       radiant_win: commonProperties.radiant_win,
       duration: {
         description: "Duration of the game in seconds",
@@ -1302,11 +1278,7 @@ module.exports = {
         description: "Match ID",
         type: "integer",
       },
-      player_slot: {
-        description:
-          "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
-        type: "integer",
-      },
+      player_slot: commonProperties.player_slot,
       radiant_win: commonProperties.radiant_win,
       duration: {
         description: "Duration of the game in seconds",
