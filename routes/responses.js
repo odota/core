@@ -672,11 +672,7 @@ module.exports = {
               },
             },
             personaname: commonProperties.persona_name,
-            name: {
-              description: "name",
-              type: "string",
-              nullable: true,
-            },
+            name: commonProperties.general_name,
             last_login: {
               description: "Time of player's last login",
               type: "string",
@@ -871,9 +867,7 @@ module.exports = {
                   item_id: {
                     type: "integer",
                   },
-                  name: {
-                    type: "string",
-                  },
+                  name: commonProperties.general_name,
                   prefab: {
                     type: "string",
                   },
@@ -1025,11 +1019,7 @@ module.exports = {
         properties: {
           account_id: commonProperties.account_id,
           personaname: commonProperties.persona_name,
-          name: {
-            description: "name",
-            type: "string",
-            nullable: true,
-          },
+          name: commonProperties.general_name,
           plus: {
             description:
               "Boolean indicating status of current Dota Plus subscription",
@@ -1346,11 +1336,7 @@ module.exports = {
         type: "integer",
       },
       personaname: commonProperties.persona_name,
-      name: {
-        description: "name",
-        type: "string",
-        nullable: true,
-      },
+      name: commonProperties.general_name,
       is_contributor: {
         description: "is_contributor",
         type: "boolean",
@@ -1381,10 +1367,7 @@ module.exports = {
     type: "object",
     properties: {
       account_id: commonProperties.account_id,
-      name: {
-        description: "name",
-        type: "string",
-      },
+      name: commonProperties.general_name,
       country_code: {
         description: "country_code",
         type: "string",
@@ -2625,10 +2608,7 @@ module.exports = {
     type: "object",
     properties: {
       account_id: commonProperties.account_id,
-      name: {
-        description: "The player name",
-        type: "string",
-      },
+      name: commonProperties.general_name,
       games_played: {
         description: "Number of games played",
         type: "integer",
