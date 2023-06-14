@@ -5,10 +5,7 @@ module.exports = {
     title: "MatchResponse",
     type: "object",
     properties: {
-      match_id: {
-        description: "The ID number of the match assigned by Valve",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
       barracks_status_dire: {
         description:
           "Bitmask. An integer that represents a binary of which barracks are still standing. 63 would mean all barracks still stand at the end of the game.",
@@ -255,10 +252,7 @@ module.exports = {
           description: "player",
           type: "object",
           properties: {
-            match_id: {
-              description: "Match ID",
-              type: "integer",
-            },
+            match_id: commonProperties.match_id,
             player_slot: commonProperties.player_slot,
             ability_upgrades_arr: {
               description: "An array describing how abilities were upgraded",
@@ -1154,10 +1148,7 @@ module.exports = {
     description: "match",
     type: "object",
     properties: {
-      match_id: {
-        description: "Match ID",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
       player_slot: commonProperties.player_slot,
       radiant_win: commonProperties.radiant_win,
       duration: commonProperties.duration,
@@ -1265,10 +1256,7 @@ module.exports = {
     description: "Object containing information on the match",
     type: "object",
     properties: {
-      match_id: {
-        description: "Match ID",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
       player_slot: commonProperties.player_slot,
       radiant_win: commonProperties.radiant_win,
       duration: commonProperties.duration,
@@ -1676,10 +1664,7 @@ module.exports = {
         description: "account_id",
         type: "integer",
       },
-      match_id: {
-        description: "match_id",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
       solo_competitive_rank: {
         description: "solo_competitive_rank",
         type: "integer",
@@ -1755,10 +1740,7 @@ module.exports = {
     title: "MatchObjectResponse",
     type: "object",
     properties: {
-      match_id: {
-        description: "Used to identify individual matches, e.g. 3703866531",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
       duration: commonProperties.duration,
       start_time: {
         description: "Unix timestamp of when the match began",
@@ -1816,10 +1798,7 @@ module.exports = {
     title: "TeamMatchObjectResponse",
     type: "object",
     properties: {
-      match_id: {
-        description: "Used to identify individual matches, e.g. 3703866531",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
       radiant: {
         description: "Whether the team/player/hero was on Radiant",
         type: "boolean",
@@ -2022,10 +2001,7 @@ module.exports = {
     title: "PublicMatchesResponse",
     type: "object",
     properties: {
-      match_id: {
-        description: "match_id",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
       match_seq_num: {
         description: "match_seq_num",
         type: "integer",
@@ -2050,10 +2026,7 @@ module.exports = {
     title: "ParsedMatchesResponse",
     type: "object",
     properties: {
-      match_id: {
-        description: "match_id",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
     },
   },
   MetadataResponse: {
@@ -2829,10 +2802,7 @@ module.exports = {
     title: "ReplaysResponse",
     type: "object",
     properties: {
-      match_id: {
-        description: "match_id",
-        type: "integer",
-      },
+      match_id: commonProperties.match_id,
       cluster: {
         description: "cluster",
         type: "integer",
@@ -2847,10 +2817,7 @@ module.exports = {
     title: "RecordsResponse",
     type: "object",
     properties: {
-      match_id: {
-        description: "match_id",
-        type: "string",
-      },
+      match_id: commonProperties.match_id,
       start_time: {
         description: "start_time",
         type: "string",
