@@ -50,4 +50,9 @@ module.exports = {
     nullable: true,
     example: "420 booty wizard",
   },
+  team_name: {
+    description: "Team name",
+    type: "string",
+    example: "Newbee",
+  },
 };
