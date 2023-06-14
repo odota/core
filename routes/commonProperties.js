@@ -27,4 +27,12 @@ module.exports = {
     description: "The Unix timestamp at which the game started",
     type: "integer",
   },
+  dire_score: {
+    description: "Number of kills the Dire team had when the match ended",
+    type: "integer",
+  },
+  radiant_score: {
+    description: "Number of kills the Radiant team had when the match ended",
+    type: "integer",
+  },
 };
