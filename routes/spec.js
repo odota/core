@@ -19,7 +19,7 @@ const redis = require("../store/redis");
 const packageJson = require("../package.json");
 const cacheFunctions = require("../store/cacheFunctions");
 const params = require("./params");
-const responses = require("./responses");
+const responses = require("./responses/importResponses");
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
