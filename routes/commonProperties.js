@@ -1,4 +1,9 @@
 module.exports = {
+  match_id: {
+    description: "The ID number of the match assigned by Valve",
+    type: "integer",
+    example: 3703866531
+  },
   radiant_win: {
     description: "Boolean indicating whether Radiant won the match",
     type: "boolean",
