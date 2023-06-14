@@ -2408,7 +2408,7 @@ module.exports = {
         description: "pro_pick",
         type: "integer",
       },
-      hero_id: commonProperties.hero_id,
+      hero_id: commonProperties.hero_id, //TODO: Duplicate
       pro_ban: {
         description: "pro_ban",
         type: "integer",
