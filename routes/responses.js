@@ -53,10 +53,7 @@ module.exports = {
           type: "integer",
         },
       },
-      dire_score: {
-        description: "Final score for Dire (number of kills on Radiant)",
-        type: "integer",
-      },
+      dire_score: commonProperties.dire_score,
       draft_timings: {
         description: "draft_timings",
         type: "array",
@@ -169,10 +166,7 @@ module.exports = {
           type: "number",
         },
       },
-      radiant_score: {
-        description: "Final score for Radiant (number of kills on Radiant)",
-        type: "integer",
-      },
+      radiant_score: commonProperties.radiant_score,
       radiant_win: commonProperties.radiant_win,
       radiant_xp_adv: {
         description:
@@ -1742,15 +1736,8 @@ module.exports = {
         description: "Type of series the match was",
         type: "integer",
       },
-      radiant_score: {
-        description:
-          "Number of kills the Radiant team had when the match ended",
-        type: "integer",
-      },
-      dire_score: {
-        description: "Number of kills the Dire team had when the match ended",
-        type: "integer",
-      },
+      radiant_score: commonProperties.radiant_score,
+      dire_score: commonProperties.dire_score,
       radiant_win: commonProperties.radiant_win,
       radiant: {
         description: "Whether the team/player/hero was on Radiant",
@@ -1768,15 +1755,8 @@ module.exports = {
         type: "boolean",
       },
       radiant_win: commonProperties.radiant_win,
-      radiant_score: {
-        description:
-          "Number of kills the Radiant team had when the match ended",
-        type: "integer",
-      },
-      dire_score: {
-        description: "Number of kills the Dire team had when the match ended",
-        type: "integer",
-      },
+      radiant_score: commonProperties.radiant_score,
+      dire_score: commonProperties.dire_score,
       duration: commonProperties.duration,
       start_time: commonProperties.start_time,
       leagueid: {
