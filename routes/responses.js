@@ -193,10 +193,7 @@ module.exports = {
         description: "Final score for Radiant (number of kills on Radiant)",
         type: "integer",
       },
-      radiant_win: {
-        description: "Boolean indicating whether Radiant won the match",
-        type: "boolean",
-      },
+      radiant_win: commonProperties.radiant_win,
       radiant_xp_adv: {
         description:
           "Array of the Radiant experience advantage at each minute in the game. A negative number means that Radiant is behind, and thus it is their experience disadvantage. ",
@@ -740,10 +737,7 @@ module.exports = {
               format: "date-time",
               nullable: true,
             },
-            radiant_win: {
-              description: "Boolean indicating whether Radiant won the match",
-              type: "boolean",
-            },
+            radiant_win: commonProperties.radiant_win,
             start_time: {
               description: "Start time of the match in seconds since 1970",
               type: "integer",
@@ -1195,10 +1189,7 @@ module.exports = {
           "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
         type: "integer",
       },
-      radiant_win: {
-        description: "Boolean indicating whether Radiant won the match",
-        type: "boolean",
-      },
+      radiant_win: commonProperties.radiant_win,
       duration: {
         description: "Duration of the game in seconds",
         type: "integer",
@@ -1316,10 +1307,7 @@ module.exports = {
           "Which slot the player is in. 0-127 are Radiant, 128-255 are Dire",
         type: "integer",
       },
-      radiant_win: {
-        description: "Boolean indicating whether Radiant won the match",
-        type: "boolean",
-      },
+      radiant_win: commonProperties.radiant_win,
       duration: {
         description: "Duration of the game in seconds",
         type: "integer",
@@ -1860,10 +1848,7 @@ module.exports = {
         description: "Number of kills the Dire team had when the match ended",
         type: "integer",
       },
-      radiant_win: {
-        description: "Whether or not the Radiant won the match",
-        type: "boolean",
-      },
+      radiant_win: commonProperties.radiant_win,
       radiant: {
         description: "Whether the team/player/hero was on Radiant",
         type: "boolean",
@@ -1882,10 +1867,7 @@ module.exports = {
         description: "Whether the team/player/hero was on Radiant",
         type: "boolean",
       },
-      radiant_win: {
-        description: "Whether or not the Radiant won the match",
-        type: "boolean",
-      },
+      radiant_win: commonProperties.radiant_win,
       radiant_score: {
         description:
           "Number of kills the Radiant team had when the match ended",
@@ -2094,10 +2076,7 @@ module.exports = {
         description: "match_seq_num",
         type: "integer",
       },
-      radiant_win: {
-        description: "Boolean indicating whether Radiant won the match",
-        type: "boolean",
-      },
+      radiant_win: commonProperties.radiant_win,
       start_time: {
         description: "start_time",
         type: "integer",
