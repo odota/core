@@ -95,10 +95,7 @@ module.exports = {
           },
         },
       },
-      duration: {
-        description: "Duration of the game in seconds",
-        type: "integer",
-      },
+      duration: commonProperties.duration,
       engine: {
         description: "engine",
         type: "integer",
@@ -722,10 +719,7 @@ module.exports = {
               description: "Start time of the match in seconds since 1970",
               type: "integer",
             },
-            duration: {
-              description: "Duration of the game in seconds",
-              type: "integer",
-            },
+            duration: commonProperties.duration,
             cluster: {
               description: "cluster",
               type: "integer",
@@ -1166,10 +1160,7 @@ module.exports = {
       },
       player_slot: commonProperties.player_slot,
       radiant_win: commonProperties.radiant_win,
-      duration: {
-        description: "Duration of the game in seconds",
-        type: "integer",
-      },
+      duration: commonProperties.duration,
       game_mode: {
         description:
           "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
@@ -1280,10 +1271,7 @@ module.exports = {
       },
       player_slot: commonProperties.player_slot,
       radiant_win: commonProperties.radiant_win,
-      duration: {
-        description: "Duration of the game in seconds",
-        type: "integer",
-      },
+      duration: commonProperties.duration,
       game_mode: {
         description:
           "Integer corresponding to game mode played. List of constants can be found here: https://github.com/odota/dotaconstants/blob/master/json/game_mode.json",
@@ -1771,10 +1759,7 @@ module.exports = {
         description: "Used to identify individual matches, e.g. 3703866531",
         type: "integer",
       },
-      duration: {
-        description: "Length of the match",
-        type: "integer",
-      },
+      duration: commonProperties.duration,
       start_time: {
         description: "Unix timestamp of when the match began",
         type: "integer",
@@ -1849,10 +1834,7 @@ module.exports = {
         description: "Number of kills the Dire team had when the match ended",
         type: "integer",
       },
-      duration: {
-        description: "Length of the match",
-        type: "integer",
-      },
+      duration: commonProperties.duration,
       start_time: {
         description: "Unix timestamp of when the match began",
         type: "integer",
@@ -2053,10 +2035,7 @@ module.exports = {
         description: "start_time",
         type: "integer",
       },
-      duration: {
-        description: "Duration of the game in seconds",
-        type: "integer",
-      },
+      duration: commonProperties.duration,
       radiant_team: {
         description: "radiant_team",
         type: "string",
