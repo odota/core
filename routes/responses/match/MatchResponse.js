@@ -1,3 +1,5 @@
+const commonProperties = require("../../commonProperties");
+
 module.exports = {
   MatchResponse: {
     title: "MatchResponse",
