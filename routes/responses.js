@@ -188,10 +188,7 @@ module.exports = {
           type: "number",
         },
       },
-      start_time: {
-        description: "The Unix timestamp at which the game started",
-        type: "integer",
-      },
+      start_time: commonProperties.start_time,
       teamfights: {
         description: "teamfights",
         type: "array",
@@ -709,10 +706,7 @@ module.exports = {
               nullable: true,
             },
             radiant_win: commonProperties.radiant_win,
-            start_time: {
-              description: "Start time of the match in seconds since 1970",
-              type: "integer",
-            },
+            start_time: commonProperties.start_time,
             duration: commonProperties.duration,
             cluster: {
               description: "cluster",
@@ -1166,10 +1160,7 @@ module.exports = {
         description: "The ID value of the hero played",
         type: "integer",
       },
-      start_time: {
-        description: "Start time of the match in seconds elapsed since 1970",
-        type: "integer",
-      },
+      start_time: commonProperties.start_time,
       version: {
         description: "version",
         type: "integer",
@@ -1274,10 +1265,7 @@ module.exports = {
         description: "The ID value of the hero played",
         type: "integer",
       },
-      start_time: {
-        description: "Time the game started in seconds since 1970",
-        type: "integer",
-      },
+      start_time: commonProperties.start_time,
       version: {
         description: "version",
         type: "integer",
@@ -1742,10 +1730,7 @@ module.exports = {
     properties: {
       match_id: commonProperties.match_id,
       duration: commonProperties.duration,
-      start_time: {
-        description: "Unix timestamp of when the match began",
-        type: "integer",
-      },
+      start_time: commonProperties.start_time,
       radiant_team_id: {
         description: "The Radiant's team_id",
         type: "integer",
@@ -1814,10 +1799,7 @@ module.exports = {
         type: "integer",
       },
       duration: commonProperties.duration,
-      start_time: {
-        description: "Unix timestamp of when the match began",
-        type: "integer",
-      },
+      start_time: commonProperties.start_time,
       leagueid: {
         description: "Identifier for the league the match took place in",
         type: "integer",
@@ -2007,10 +1989,7 @@ module.exports = {
         type: "integer",
       },
       radiant_win: commonProperties.radiant_win,
-      start_time: {
-        description: "start_time",
-        type: "integer",
-      },
+      start_time: commonProperties.start_time,
       duration: commonProperties.duration,
       radiant_team: {
         description: "radiant_team",
@@ -2818,10 +2797,7 @@ module.exports = {
     type: "object",
     properties: {
       match_id: commonProperties.match_id,
-      start_time: {
-        description: "start_time",
-        type: "string",
-      },
+      start_time: commonProperties.start_time,
       hero_id: {
         description: "The ID value of the hero played",
         type: "string",
