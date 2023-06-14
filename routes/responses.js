@@ -671,11 +671,7 @@ module.exports = {
                 type: "integer",
               },
             },
-            personaname: {
-              description: "personaname",
-              type: "string",
-              nullable: true,
-            },
+            personaname: commonProperties.persona_name,
             name: {
               description: "name",
               type: "string",
@@ -1028,11 +1024,7 @@ module.exports = {
         type: "object",
         properties: {
           account_id: commonProperties.account_id,
-          personaname: {
-            description: "personaname",
-            type: "string",
-            nullable: true,
-          },
+          personaname: commonProperties.persona_name,
           name: {
             description: "name",
             type: "string",
@@ -1353,11 +1345,7 @@ module.exports = {
         description: "with_xpm_sum",
         type: "integer",
       },
-      personaname: {
-        description: "personaname",
-        type: "string",
-        nullable: true,
-      },
+      personaname: commonProperties.persona_name,
       name: {
         description: "name",
         type: "string",
@@ -1823,10 +1811,7 @@ module.exports = {
         description: "Steam profile URL",
         type: "string",
       },
-      personaname: {
-        description: "Player's Steam name",
-        type: "string",
-      },
+      personaname: commonProperties.persona_name,
       last_login: {
         description: "Date and time of last login to OpenDota",
         type: "string",
@@ -2231,11 +2216,7 @@ module.exports = {
         type: "string",
         nullable: true,
       },
-      personaname: {
-        description: "personaname",
-        type: "string",
-        nullable: true,
-      },
+      personaname: commonProperties.persona_name,
       last_match_time: {
         description: "last_match_time. May not be present or null.",
         type: "string",
@@ -2287,11 +2268,7 @@ module.exports = {
               type: "string",
               nullable: true,
             },
-            personaname: {
-              description: "personaname",
-              type: "string",
-              nullable: true,
-            },
+            personaname: commonProperties.persona_name,
             last_login: {
               description: "last_login",
               type: "string",
