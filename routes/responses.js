@@ -1380,11 +1380,7 @@ module.exports = {
         description: "team_id",
         type: "integer",
       },
-      team_name: {
-        description: "team_name",
-        type: "string",
-        nullable: true,
-      },
+      team_name: commonProperties.team_name,
       team_tag: {
         description: "team_tag",
         type: "string",
@@ -1640,10 +1636,7 @@ module.exports = {
         description: "The Unix timestamp of the last match played by this team",
         type: "integer",
       },
-      name: {
-        description: "Team name, eg. 'Newbee'",
-        type: "string",
-      },
+      name: commonProperties.team_name,
       tag: {
         description: "The team tag/abbreviation",
         type: "string",
@@ -1834,10 +1827,7 @@ module.exports = {
         description: "Player's team identifier",
         type: "integer",
       },
-      team_name: {
-        description: "Player's team name, e.g. 'Evil Geniuses'",
-        type: "string",
-      },
+      team_name: commonProperties.team_name,
       team_tag: {
         description: "Player's team shorthand tag, e.g. 'EG'",
         type: "string",
