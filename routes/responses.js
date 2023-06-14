@@ -1650,7 +1650,7 @@ module.exports = {
     properties: {
       hero_id: commonProperties.hero_id,
       score: {
-        description: "hero_score",
+        description: "Hero score",
         type: "number",
       },
       percent_rank: {
@@ -2289,7 +2289,7 @@ module.exports = {
               type: "integer",
             },
             score: {
-              description: "score",
+              description: "Score",
               type: "number",
             },
             steamid: {
@@ -2744,8 +2744,8 @@ module.exports = {
       start_time: commonProperties.start_time,
       hero_id: commonProperties.hero_id,
       score: {
-        description: "score",
-        type: "string",
+        description: "Record score",
+        type: "integer",
       },
     },
   },
