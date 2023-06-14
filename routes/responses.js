@@ -1893,10 +1893,7 @@ module.exports = {
         description: "tier",
         type: "string",
       },
-      name: {
-        description: "name",
-        type: "string",
-      },
+      name: commonProperties.league_name,
     },
   },
   PublicMatchesResponse: {
