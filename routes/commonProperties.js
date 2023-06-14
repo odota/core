@@ -1,4 +1,8 @@
 module.exports = {
+  hero_id: {
+    description: "The ID value of the hero played",
+    type: "integer",
+  },
   match_id: {
     description: "The ID number of the match assigned by Valve",
     type: "integer",
