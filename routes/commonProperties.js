@@ -19,4 +19,8 @@ module.exports = {
     description: "Duration of the game in seconds",
     type: "integer",
   },
+  start_time: {
+    description: "The Unix timestamp at which the game started",
+    type: "integer",
+  },
 };
