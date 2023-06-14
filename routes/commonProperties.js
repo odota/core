@@ -42,6 +42,11 @@ module.exports = {
   hero_name: {
     description: "Hero name",
     type: "string",
-    example: "Anti-Mage"
+    example: "Anti-Mage",
+  },
+  persona_name: {
+    description: "Player's Steam name",
+    type: "string",
+    nullable: true,
   },
 };
