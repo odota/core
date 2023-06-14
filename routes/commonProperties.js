@@ -39,4 +39,9 @@ module.exports = {
     description: "The player account ID",
     type: "string",
   },
+  hero_name: {
+    description: "Hero name",
+    type: "string",
+    example: "Anti-Mage"
+  },
 };
