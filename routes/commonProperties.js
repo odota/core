@@ -44,6 +44,11 @@ module.exports = {
     type: "string",
     example: "Anti-Mage",
   },
+  hero_command_name: {
+    description: "Dota hero command name",
+    type: "string",
+    example: "npc_dota_hero_antimage",
+  },
   persona_name: {
     description: "Player's Steam name",
     type: "string",
