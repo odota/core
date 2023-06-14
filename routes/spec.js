@@ -2468,12 +2468,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 return cb(err);
               }
               const entries = rows
-                .map((r, i) => ({
-                  match_id: r.split(":")[0],
-                  start_time: r.split(":")[1],
-                  hero_id: r.split(":")[2],
-                  score: rows[i + 1],
-                }))
+                .map((r, i) => {
+                  const match_id = parseInt(r.split(":")[0]);
+                  const start_time = parseInt(r.split(":")[1]);
+                  const hero_id = parseInt(r.split(":")[2]);
+                  const score = parseInt(rows[i + 1]);
+
+                  return {
+                    match_id: Number.isNaN(match_id) ? null : match_id,
+                    start_time: Number.isNaN(start_time) ? null : start_time,
+                    hero_id: Number.isNaN(hero_id) ? null : hero_id,
+                    score: Number.isNaN(score) ? null : score,
+                  };
+                })
                 .filter((r, i) => i % 2 === 0);
               return res.json(entries);
             }
