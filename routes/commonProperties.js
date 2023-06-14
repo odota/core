@@ -59,6 +59,7 @@ module.exports = {
     description: "Team name",
     type: "string",
     example: "Newbee",
+    nullable: true,
   },
   league_name: {
     description: "League name",
