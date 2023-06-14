@@ -61,4 +61,4 @@ function doLiveGames(cb) {
       });
     });
 }
-invokeInterval(doLiveGames, 60 * 1000);
+setInterval(doLiveGames, 60 * 1000);
