@@ -1956,10 +1956,7 @@ module.exports = {
             items: {
               type: "object",
               properties: {
-                name: {
-                  description: "name",
-                  type: "string",
-                },
+                name: commonProperties.field_name,
                 tableID: {
                   description: "tableID",
                   type: "integer",
@@ -2046,10 +2043,7 @@ module.exports = {
             items: {
               type: "object",
               properties: {
-                name: {
-                  description: "name",
-                  type: "string",
-                },
+                name: commonProperties.field_name,
                 tableID: {
                   description: "tableID",
                   type: "integer",
@@ -2137,10 +2131,7 @@ module.exports = {
             items: {
               type: "object",
               properties: {
-                name: {
-                  description: "name",
-                  type: "string",
-                },
+                name: commonProperties.field_name,
                 tableID: {
                   description: "tableID",
                   type: "integer",
