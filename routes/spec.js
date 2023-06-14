@@ -55,9 +55,10 @@ const playerParams = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
 }));
 
-const schemas = {
-  ...responses,
-};
+const schemas = Object.values(responses).reduce(
+  (acc, category) => ({ ...acc, ...category }),
+  {}
+);
 
 const securitySchemes = {
   api_key: {
