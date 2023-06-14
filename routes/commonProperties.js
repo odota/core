@@ -48,5 +48,6 @@ module.exports = {
     description: "Player's Steam name",
     type: "string",
     nullable: true,
+    example: "420 booty wizard",
   },
 };
