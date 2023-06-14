@@ -1,3 +1,5 @@
+const commonProperties = require("../../commonProperties");
+
 module.exports = {
   TeamPlayersResponse: {
     title: "TeamPlayersResponse",
