@@ -449,8 +449,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
           const heroes = {};
           // prefill heroes with every hero
           Object.keys(constants.heroes).forEach((heroId) => {
+            hero_id_int = parseInt(heroId);
             const hero = {
-              hero_id: heroId,
+              hero_id: hero_id_int,
               last_played: 0,
               games: 0,
               win: 0,
@@ -459,7 +460,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               against_games: 0,
               against_win: 0,
             };
-            heroes[heroId] = hero;
+            heroes[hero_id_int] = hero;
           });
           req.queryObj.project = req.queryObj.project.concat(
             "heroes",
