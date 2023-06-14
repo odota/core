@@ -1,4 +1,4 @@
-const commonProperties = require('./commonProperties');
+const commonProperties = require("./commonProperties");
 
 module.exports = {
   MatchResponse: {
@@ -38,7 +38,7 @@ module.exports = {
               description: "slot",
               type: "integer",
             },
-            player_slot: commonProperties.player_slot
+            player_slot: commonProperties.player_slot,
           },
         },
       },
