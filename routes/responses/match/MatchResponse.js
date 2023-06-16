@@ -181,6 +181,8 @@ module.exports = {
         description: "teamfights",
         type: "array",
         items: {
+          type: "object",
+        },
         nullable: true,
       },
       tower_status_dire: {
