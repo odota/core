@@ -181,11 +181,7 @@ module.exports = {
         description: "teamfights",
         type: "array",
         items: {
-          type: "array",
-          items: {
-            type: "object",
-          },
-        },
+        nullable: true,
       },
       tower_status_dire: {
         description:
@@ -229,6 +225,7 @@ module.exports = {
         description:
           "Skill bracket assigned by Valve (Normal, High, Very High)",
         type: "integer",
+        nullable: true,
       },
       players: {
         description: "Array of information on individual players",
