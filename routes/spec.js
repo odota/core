@@ -18,8 +18,8 @@ const db = require("../store/db");
 const redis = require("../store/redis");
 const packageJson = require("../package.json");
 const cacheFunctions = require("../store/cacheFunctions");
-const params = require("./params");
-const responses = require("./responses/importResponses");
+const params = require("./properties/requests/commonProperties");
+const responses = require("./responseSchemas/importResponses");
 const generateOperationId = require("./generateOperationId");
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
