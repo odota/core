@@ -1,4 +1,4 @@
-const commonProperties = require("../../commonProperties");
+const commonProperties = require("../../properties/commonProperties");
 
 module.exports = {
   TeamObjectResponse: {
