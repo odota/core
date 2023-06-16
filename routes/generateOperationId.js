@@ -1,9 +1,7 @@
 /*This function will create operation IDs in the format:
- "get_players_matches_by_account_id" for the path:
- "/players/{account_id}/matches". 
- 
- It replaces all path parameters with "by_{parameter}" 
- and joins all segments of the path with underscores.*/
+`get_players_by_account_id` for the path: "/players/{account_id}"
+`get_players_by_account_id_select_matches` for the path: "/players/{account_id}/matches". 
+*/
 
 function generateOperationId(method, path) {
   // Split the path into segments
@@ -18,6 +16,12 @@ function generateOperationId(method, path) {
   const segmentsWithParametersReplaced = pathSegments.map((segment) =>
     segment.replace(/{(.*?)}/g, "by_$1")
   );
+
+  // If there are 3 elements in the path, prefix the last one with "select_"
+  if (segmentsWithParametersReplaced.length === 3) {
+    segmentsWithParametersReplaced[2] =
+      "select_" + segmentsWithParametersReplaced[2];
+  }
 
   // Join all segments with underscores
   const pathWithUnderscores = segmentsWithParametersReplaced.join("_");
