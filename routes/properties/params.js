@@ -1,4 +1,4 @@
-const su = require("../util/scenariosUtil");
+const su = require("../../util/scenariosUtil");
 
 module.exports = {
   matchIdParam: {
