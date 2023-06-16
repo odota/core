@@ -1841,140 +1841,6 @@
           }
         }
       },
-      "PlayersByRankResponse": {
-        "title": "PlayersByRankResponse",
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "account_id": {
-              "description": "The player account ID",
-              "type": "string"
-            },
-            "rank_tier": {
-              "description": "Integer indicating the rank/medal of the player",
-              "type": "number"
-            },
-            "fh_unavailable": {
-              "description": "Indicates if we were unable to fetch full history for this player due to privacy settings",
-              "type": "boolean",
-              "nullable": true
-            }
-          }
-        }
-      },
-      "PlayersResponse": {
-        "title": "PlayerResponse",
-        "type": "object",
-        "properties": {
-          "solo_competitive_rank": {
-            "description": "solo_competitive_rank",
-            "type": "integer",
-            "nullable": true
-          },
-          "competitive_rank": {
-            "description": "competitive_rank",
-            "type": "integer",
-            "nullable": true
-          },
-          "rank_tier": {
-            "description": "rank_tier",
-            "type": "number",
-            "nullable": true
-          },
-          "leaderboard_rank": {
-            "description": "leaderboard_rank",
-            "type": "number",
-            "nullable": true
-          },
-          "mmr_estimate": {
-            "description": "mmr_estimate",
-            "type": "object",
-            "properties": {
-              "estimate": {
-                "description": "estimate",
-                "type": "number",
-                "nullable": true
-              }
-            }
-          },
-          "profile": {
-            "description": "profile",
-            "type": "object",
-            "properties": {
-              "account_id": {
-                "description": "The player account ID",
-                "type": "string"
-              },
-              "personaname": {
-                "description": "Player's Steam name",
-                "type": "string",
-                "nullable": true,
-                "example": "420 booty wizard"
-              },
-              "name": {
-                "description": "name",
-                "type": "string",
-                "nullable": true
-              },
-              "plus": {
-                "description": "Boolean indicating status of current Dota Plus subscription",
-                "type": "boolean"
-              },
-              "cheese": {
-                "description": "cheese",
-                "type": "integer",
-                "nullable": true
-              },
-              "steamid": {
-                "description": "steamid",
-                "type": "string",
-                "nullable": true
-              },
-              "avatar": {
-                "description": "avatar",
-                "type": "string",
-                "nullable": true
-              },
-              "avatarmedium": {
-                "description": "avatarmedium",
-                "type": "string",
-                "nullable": true
-              },
-              "avatarfull": {
-                "description": "avatarfull",
-                "type": "string",
-                "nullable": true
-              },
-              "profileurl": {
-                "description": "profileurl",
-                "type": "string",
-                "nullable": true
-              },
-              "last_login": {
-                "description": "last_login",
-                "type": "string",
-                "nullable": true
-              },
-              "loccountrycode": {
-                "description": "loccountrycode",
-                "type": "string",
-                "nullable": true
-              },
-              "is_contributor": {
-                "description": "Boolean indicating if the user contributed to the development of OpenDota",
-                "type": "boolean",
-                "default": false
-              },
-              "is_subscriber": {
-                "description": "Boolean indicating if the user subscribed to OpenDota",
-                "type": "boolean",
-                "default": false
-              }
-            }
-          }
-        }
-      },
       "RankingsResponse": {
         "title": "RankingsResponse",
         "type": "object",
@@ -2920,6 +2786,140 @@
           "all_word_counts": {
             "description": "all_word_counts",
             "type": "object"
+          }
+        }
+      },
+      "PlayersByRankResponse": {
+        "title": "PlayersByRankResponse",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "account_id": {
+              "description": "The player account ID",
+              "type": "string"
+            },
+            "rank_tier": {
+              "description": "Integer indicating the rank/medal of the player",
+              "type": "number"
+            },
+            "fh_unavailable": {
+              "description": "Indicates if we were unable to fetch full history for this player due to privacy settings",
+              "type": "boolean",
+              "nullable": true
+            }
+          }
+        }
+      },
+      "PlayersResponse": {
+        "title": "PlayerResponse",
+        "type": "object",
+        "properties": {
+          "solo_competitive_rank": {
+            "description": "solo_competitive_rank",
+            "type": "integer",
+            "nullable": true
+          },
+          "competitive_rank": {
+            "description": "competitive_rank",
+            "type": "integer",
+            "nullable": true
+          },
+          "rank_tier": {
+            "description": "rank_tier",
+            "type": "number",
+            "nullable": true
+          },
+          "leaderboard_rank": {
+            "description": "leaderboard_rank",
+            "type": "number",
+            "nullable": true
+          },
+          "mmr_estimate": {
+            "description": "mmr_estimate",
+            "type": "object",
+            "properties": {
+              "estimate": {
+                "description": "estimate",
+                "type": "number",
+                "nullable": true
+              }
+            }
+          },
+          "profile": {
+            "description": "profile",
+            "type": "object",
+            "properties": {
+              "account_id": {
+                "description": "The player account ID",
+                "type": "string"
+              },
+              "personaname": {
+                "description": "Player's Steam name",
+                "type": "string",
+                "nullable": true,
+                "example": "420 booty wizard"
+              },
+              "name": {
+                "description": "name",
+                "type": "string",
+                "nullable": true
+              },
+              "plus": {
+                "description": "Boolean indicating status of current Dota Plus subscription",
+                "type": "boolean"
+              },
+              "cheese": {
+                "description": "cheese",
+                "type": "integer",
+                "nullable": true
+              },
+              "steamid": {
+                "description": "steamid",
+                "type": "string",
+                "nullable": true
+              },
+              "avatar": {
+                "description": "avatar",
+                "type": "string",
+                "nullable": true
+              },
+              "avatarmedium": {
+                "description": "avatarmedium",
+                "type": "string",
+                "nullable": true
+              },
+              "avatarfull": {
+                "description": "avatarfull",
+                "type": "string",
+                "nullable": true
+              },
+              "profileurl": {
+                "description": "profileurl",
+                "type": "string",
+                "nullable": true
+              },
+              "last_login": {
+                "description": "last_login",
+                "type": "string",
+                "nullable": true
+              },
+              "loccountrycode": {
+                "description": "loccountrycode",
+                "type": "string",
+                "nullable": true
+              },
+              "is_contributor": {
+                "description": "Boolean indicating if the user contributed to the development of OpenDota",
+                "type": "boolean",
+                "default": false
+              },
+              "is_subscriber": {
+                "description": "Boolean indicating if the user subscribed to OpenDota",
+                "type": "boolean",
+                "default": false
+              }
+            }
           }
         }
       },
