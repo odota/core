@@ -1,4 +1,4 @@
-const commonProperties = require("../../properties/commonProperties");
+const commonProperties = require("../../properties/responses/commonProperties");
 
 module.exports = {
   MatchResponse: {
