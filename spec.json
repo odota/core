@@ -648,11 +648,9 @@
             "description": "teamfights",
             "type": "array",
             "items": {
-              "type": "array",
-              "items": {
-                "type": "object"
-              }
-            }
+              "type": "object"
+            },
+            "nullable": true
           },
           "tower_status_dire": {
             "description": "Bitmask. An integer that represents a binary of which Dire towers are still standing.",
@@ -692,7 +690,8 @@
           },
           "skill": {
             "description": "Skill bracket assigned by Valve (Normal, High, Very High)",
-            "type": "integer"
+            "type": "integer",
+            "nullable": true
           },
           "players": {
             "description": "Array of information on individual players",
@@ -732,7 +731,7 @@
                 },
                 "account_id": {
                   "description": "The player account ID",
-                  "type": "string"
+                  "type": "integer"
                 },
                 "actions": {
                   "description": "Object containing information on how many and what type of actions the player issued to their hero",
