@@ -37,7 +37,7 @@ module.exports = {
   },
   account_id: {
     description: "The player account ID",
-    type: "string",
+    type: "integer",
   },
   hero_name: {
     description: "Hero name",
