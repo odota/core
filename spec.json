@@ -3447,6 +3447,7 @@
   "paths": {
     "/matches/{match_id}": {
       "get": {
+        "operationId": "get_matches_by_match_id",
         "summary": "GET /matches/{match_id}",
         "description": "Match data",
         "tags": ["matches"],
@@ -3471,6 +3472,7 @@
     },
     "/playersByRank": {
       "get": {
+        "operationId": "get_players_by_rank",
         "summary": "GET /playersByRank",
         "description": "Players ordered by rank/medal tier",
         "tags": ["playersByRank"],
@@ -3491,6 +3493,7 @@
     },
     "/players/{account_id}": {
       "get": {
+        "operationId": "get_players_by_account_id",
         "summary": "GET /players/{account_id}",
         "description": "Player data",
         "tags": ["players"],
@@ -3515,6 +3518,7 @@
     },
     "/players/{account_id}/wl": {
       "get": {
+        "operationId": "get_players_by_account_id_wl",
         "summary": "GET /players/{account_id}/wl",
         "description": "Win/Loss count",
         "tags": ["players"],
@@ -3593,6 +3597,7 @@
     },
     "/players/{account_id}/recentMatches": {
       "get": {
+        "operationId": "get_players_by_account_id_recent_matches",
         "summary": "GET /players/{account_id}/recentMatches",
         "description": "Recent matches played",
         "tags": ["players"],
@@ -3623,6 +3628,7 @@
     },
     "/players/{account_id}/matches": {
       "get": {
+        "operationId": "get_players_by_account_id_matches",
         "summary": "GET /players/{account_id}/matches",
         "description": "Matches played",
         "tags": ["players"],
@@ -3707,6 +3713,7 @@
     },
     "/players/{account_id}/heroes": {
       "get": {
+        "operationId": "get_players_by_account_id_heroes",
         "summary": "GET /players/{account_id}/heroes",
         "description": "Heroes played",
         "tags": ["players"],
@@ -3788,6 +3795,7 @@
     },
     "/players/{account_id}/peers": {
       "get": {
+        "operationId": "get_players_by_account_id_peers",
         "summary": "GET /players/{account_id}/peers",
         "description": "Players played with",
         "tags": ["players"],
@@ -3869,6 +3877,7 @@
     },
     "/players/{account_id}/pros": {
       "get": {
+        "operationId": "get_players_by_account_id_pros",
         "summary": "GET /players/{account_id}/pros",
         "description": "Pro players played with",
         "tags": ["players"],
@@ -3950,6 +3959,7 @@
     },
     "/players/{account_id}/totals": {
       "get": {
+        "operationId": "get_players_by_account_id_totals",
         "summary": "GET /players/{account_id}/totals",
         "description": "Totals in stats",
         "tags": ["players"],
@@ -4031,6 +4041,7 @@
     },
     "/players/{account_id}/counts": {
       "get": {
+        "operationId": "get_players_by_account_id_counts",
         "summary": "GET /players/{account_id}/counts",
         "description": "Counts in categories",
         "tags": ["players"],
@@ -4109,6 +4120,7 @@
     },
     "/players/{account_id}/histograms/{field}": {
       "get": {
+        "operationId": "get_players_by_account_id_histograms_by_field",
         "summary": "GET /players/{account_id}/histograms",
         "description": "Distribution of matches in a single stat",
         "tags": ["players"],
@@ -4194,6 +4206,7 @@
     },
     "/players/{account_id}/wardmap": {
       "get": {
+        "operationId": "get_players_by_account_id_wardmap",
         "summary": "GET /players/{account_id}/wardmap",
         "description": "Wards placed in matches played",
         "tags": ["players"],
@@ -4272,6 +4285,7 @@
     },
     "/players/{account_id}/wordcloud": {
       "get": {
+        "operationId": "get_players_by_account_id_wordcloud",
         "summary": "GET /players/{account_id}/wordcloud",
         "description": "Words said/read in matches played",
         "tags": ["players"],
@@ -4350,6 +4364,7 @@
     },
     "/players/{account_id}/ratings": {
       "get": {
+        "operationId": "get_players_by_account_id_ratings",
         "summary": "GET /players/{account_id}/ratings",
         "description": "Player rating history",
         "tags": ["players"],
@@ -4377,6 +4392,7 @@
     },
     "/players/{account_id}/rankings": {
       "get": {
+        "operationId": "get_players_by_account_id_rankings",
         "summary": "GET /players/{account_id}/rankings",
         "description": "Player hero rankings",
         "tags": ["players"],
@@ -4429,6 +4445,7 @@
     },
     "/proPlayers": {
       "get": {
+        "operationId": "get_pro_players",
         "summary": "GET /proPlayers",
         "description": "Get list of pro players",
         "tags": ["pro players"],
@@ -4451,6 +4468,7 @@
     },
     "/proMatches": {
       "get": {
+        "operationId": "get_pro_matches",
         "summary": "GET /proMatches",
         "description": "Get list of pro matches",
         "tags": ["pro matches"],
@@ -4478,6 +4496,7 @@
     },
     "/publicMatches": {
       "get": {
+        "operationId": "get_public_matches",
         "summary": "GET /publicMatches",
         "description": "Get list of randomly sampled public matches",
         "tags": ["public matches"],
@@ -4511,6 +4530,7 @@
     },
     "/parsedMatches": {
       "get": {
+        "operationId": "get_parsed_matches",
         "summary": "GET /parsedMatches",
         "description": "Get list of parsed match IDs",
         "tags": ["parsed matches"],
@@ -4538,6 +4558,7 @@
     },
     "/explorer": {
       "get": {
+        "operationId": "get_explorer",
         "summary": "GET /explorer",
         "description": "Submit arbitrary SQL queries to the database",
         "tags": ["explorer"],
@@ -4569,6 +4590,7 @@
     },
     "/metadata": {
       "get": {
+        "operationId": "get_metadata",
         "summary": "GET /metadata",
         "description": "Site metadata",
         "tags": ["metadata"],
@@ -4588,6 +4610,7 @@
     },
     "/distributions": {
       "get": {
+        "operationId": "get_distributions",
         "summary": "GET /distributions",
         "description": "Distributions of MMR data by bracket and country",
         "tags": ["distributions"],
@@ -4607,6 +4630,7 @@
     },
     "/search": {
       "get": {
+        "operationId": "get_search",
         "summary": "GET /search",
         "description": "Search players by personaname.",
         "tags": ["search"],
@@ -4640,6 +4664,7 @@
     },
     "/rankings": {
       "get": {
+        "operationId": "get_rankings",
         "summary": "GET /rankings",
         "description": "Top players by hero",
         "tags": ["rankings"],
@@ -4670,6 +4695,7 @@
     },
     "/benchmarks": {
       "get": {
+        "operationId": "get_benchmarks",
         "summary": "GET /benchmarks",
         "description": "Benchmarks of average stat values for a hero",
         "tags": ["benchmarks"],
@@ -4700,6 +4726,7 @@
     },
     "/status": {
       "get": {
+        "operationId": "get_status",
         "summary": "GET /status",
         "description": "Get current service statistics",
         "tags": ["status"],
@@ -4720,6 +4747,7 @@
     },
     "/health": {
       "get": {
+        "operationId": "get_health",
         "summary": "GET /health",
         "description": "Get service health data",
         "tags": ["health"],
@@ -4740,6 +4768,7 @@
     },
     "/request/{jobId}": {
       "get": {
+        "operationId": "get_request_by_job_id",
         "summary": "GET /request/{jobId}",
         "description": "Get parse request state",
         "tags": ["request"],
@@ -4796,6 +4825,7 @@
     },
     "/findMatches": {
       "get": {
+        "operationId": "get_find_matches",
         "summary": "GET /",
         "description": "Finds recent matches by heroes played",
         "tags": ["findMatches"],
@@ -4849,6 +4879,7 @@
     },
     "/heroes": {
       "get": {
+        "operationId": "get_heroes",
         "summary": "GET /heroes",
         "description": "Get hero data",
         "tags": ["heroes"],
@@ -4871,6 +4902,7 @@
     },
     "/heroStats": {
       "get": {
+        "operationId": "get_hero_stats",
         "summary": "GET /heroStats",
         "description": "Get stats about hero performance in recent matches",
         "tags": ["hero stats"],
@@ -4894,6 +4926,7 @@
     },
     "/heroes/{hero_id}/matches": {
       "get": {
+        "operationId": "get_heroes_by_hero_id_matches",
         "summary": "GET /heroes/{hero_id}/matches",
         "description": "Get recent matches with a hero",
         "tags": ["heroes"],
@@ -4921,6 +4954,7 @@
     },
     "/heroes/{hero_id}/matchups": {
       "get": {
+        "operationId": "get_heroes_by_hero_id_matchups",
         "summary": "GET /heroes/{hero_id}/matchups",
         "description": "Get results against other heroes for a hero",
         "tags": ["heroes"],
@@ -4948,6 +4982,7 @@
     },
     "/heroes/{hero_id}/durations": {
       "get": {
+        "operationId": "get_heroes_by_hero_id_durations",
         "summary": "GET /heroes/{hero_id}/durations",
         "description": "Get hero performance over a range of match durations",
         "tags": ["heroes"],
@@ -4975,6 +5010,7 @@
     },
     "/heroes/{hero_id}/players": {
       "get": {
+        "operationId": "get_heroes_by_hero_id_players",
         "summary": "GET /heroes/{hero_id}/players",
         "description": "Get players who have played this hero",
         "tags": ["heroes"],
@@ -5005,6 +5041,7 @@
     },
     "/heroes/{hero_id}/itemPopularity": {
       "get": {
+        "operationId": "get_heroes_by_hero_id_item_popularity",
         "summary": "GET /heroes/{hero_id}/itemPopularity",
         "description": "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
         "tags": ["heroes"],
@@ -5029,6 +5066,7 @@
     },
     "/leagues": {
       "get": {
+        "operationId": "get_leagues",
         "summary": "GET /leagues",
         "description": "Get league data",
         "tags": ["leagues"],
@@ -5051,6 +5089,7 @@
     },
     "/leagues/{league_id}": {
       "get": {
+        "operationId": "get_leagues_by_league_id",
         "summary": "GET /leagues/{league_id}",
         "description": "Get data for a league",
         "tags": ["leagues"],
@@ -5078,6 +5117,7 @@
     },
     "/leagues/{league_id}/matches": {
       "get": {
+        "operationId": "get_leagues_by_league_id_matches",
         "summary": "GET /leagues/{league_id}/matches",
         "description": "Get matches for a team",
         "tags": ["leagues"],
@@ -5102,6 +5142,7 @@
     },
     "/leagues/{league_id}/teams": {
       "get": {
+        "operationId": "get_leagues_by_league_id_teams",
         "summary": "GET /leagues/{league_id}/teams",
         "description": "Get teams for a league",
         "tags": ["leagues"],
@@ -5126,6 +5167,7 @@
     },
     "/teams": {
       "get": {
+        "operationId": "get_teams",
         "summary": "GET /teams",
         "description": "Get team data",
         "tags": ["teams"],
@@ -5159,6 +5201,7 @@
     },
     "/teams/{team_id}": {
       "get": {
+        "operationId": "get_teams_by_team_id",
         "summary": "GET /teams/{team_id}",
         "description": "Get data for a team",
         "tags": ["teams"],
@@ -5183,6 +5226,7 @@
     },
     "/teams/{team_id}/matches": {
       "get": {
+        "operationId": "get_teams_by_team_id_matches",
         "summary": "GET /teams/{team_id}/matches",
         "description": "Get matches for a team",
         "tags": ["teams"],
@@ -5207,6 +5251,7 @@
     },
     "/teams/{team_id}/players": {
       "get": {
+        "operationId": "get_teams_by_team_id_players",
         "summary": "GET /teams/{team_id}/players",
         "description": "Get players who have played for a team",
         "tags": ["teams"],
@@ -5231,6 +5276,7 @@
     },
     "/teams/{team_id}/heroes": {
       "get": {
+        "operationId": "get_teams_by_team_id_heroes",
         "summary": "GET /teams/{team_id}/heroes",
         "description": "Get heroes for a team",
         "tags": ["teams"],
@@ -5255,6 +5301,7 @@
     },
     "/replays": {
       "get": {
+        "operationId": "get_replays",
         "summary": "GET /replays",
         "description": "Get data to construct a replay URL with",
         "tags": ["replays"],
@@ -5282,6 +5329,7 @@
     },
     "/records/{field}": {
       "get": {
+        "operationId": "get_records_by_field",
         "summary": "GET /records/{field}",
         "description": "Get top performances in a stat",
         "tags": ["records"],
@@ -5315,6 +5363,7 @@
     },
     "/live": {
       "get": {
+        "operationId": "get_live",
         "summary": "GET /live",
         "description": "Get top currently ongoing live games",
         "tags": ["live"],
@@ -5340,6 +5389,7 @@
     },
     "/scenarios/itemTimings": {
       "get": {
+        "operationId": "get_scenarios_item_timings",
         "summary": "GET /scenarios/itemTimings",
         "description": "Win rates for certain item timings on a hero for items that cost at least 1400 gold",
         "tags": ["scenarios"],
@@ -5376,6 +5426,7 @@
     },
     "/scenarios/laneRoles": {
       "get": {
+        "operationId": "get_scenarios_lane_roles",
         "summary": "GET /scenarios/laneRoles",
         "description": "Win rates for heroes in certain lane roles",
         "tags": ["scenarios"],
@@ -5412,6 +5463,7 @@
     },
     "/scenarios/misc": {
       "get": {
+        "operationId": "get_scenarios_misc",
         "summary": "GET /scenarios/misc",
         "description": "Miscellaneous team scenarios",
         "tags": ["scenarios"],
@@ -5439,6 +5491,7 @@
     },
     "/schema": {
       "get": {
+        "operationId": "get_schema",
         "summary": "GET /schema",
         "description": "Get database schema",
         "tags": ["schema"],
@@ -5462,6 +5515,7 @@
     },
     "/constants/{resource}": {
       "get": {
+        "operationId": "get_constants_by_resource",
         "summary": "GET /constants",
         "description": "Get static game data mirrored from the dotaconstants repository.",
         "tags": ["constants"],
@@ -5516,6 +5570,7 @@
     },
     "/constants": {
       "get": {
+        "operationId": "get_constants",
         "summary": "GET /constants",
         "description": "Gets an array of available resources.",
         "tags": ["constants"],
