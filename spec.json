@@ -1856,7 +1856,7 @@
               "properties": {
                 "account_id": {
                   "description": "The player account ID",
-                  "type": "string"
+                  "type": "integer"
                 },
                 "score": {
                   "description": "Score",
@@ -2073,7 +2073,7 @@
         "properties": {
           "account_id": {
             "description": "The player account ID",
-            "type": "string"
+            "type": "integer"
           },
           "avatarfull": {
             "description": "avatarfull",
@@ -2249,7 +2249,7 @@
         "properties": {
           "account_id": {
             "description": "The player account ID",
-            "type": "string"
+            "type": "integer"
           },
           "steamid": {
             "description": "Player's steam identifier",
@@ -2345,7 +2345,7 @@
         "properties": {
           "account_id": {
             "description": "The player account ID",
-            "type": "string"
+            "type": "integer"
           },
           "last_played": {
             "description": "last_played",
@@ -2425,7 +2425,7 @@
         "properties": {
           "account_id": {
             "description": "The player account ID",
-            "type": "string"
+            "type": "integer"
           },
           "name": {
             "description": "name",
@@ -2589,7 +2589,7 @@
         "properties": {
           "account_id": {
             "description": "The player account ID",
-            "type": "string"
+            "type": "integer"
           },
           "match_id": {
             "description": "The ID number of the match assigned by Valve",
@@ -2796,7 +2796,7 @@
           "properties": {
             "account_id": {
               "description": "The player account ID",
-              "type": "string"
+              "type": "integer"
             },
             "rank_tier": {
               "description": "Integer indicating the rank/medal of the player",
@@ -2851,7 +2851,7 @@
             "properties": {
               "account_id": {
                 "description": "The player account ID",
-                "type": "string"
+                "type": "integer"
               },
               "personaname": {
                 "description": "Player's Steam name",
@@ -3095,7 +3095,7 @@
         "properties": {
           "account_id": {
             "description": "The player account ID",
-            "type": "string"
+            "type": "integer"
           },
           "name": {
             "description": "name",
