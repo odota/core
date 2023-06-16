@@ -3517,7 +3517,7 @@
     },
     "/players/{account_id}/wl": {
       "get": {
-        "operationId": "get_players_by_account_id_wl",
+        "operationId": "get_players_by_account_id_select_wl",
         "summary": "GET /players/{account_id}/wl",
         "description": "Win/Loss count",
         "tags": ["players"],
@@ -3596,7 +3596,7 @@
     },
     "/players/{account_id}/recentMatches": {
       "get": {
-        "operationId": "get_players_by_account_id_recent_matches",
+        "operationId": "get_players_by_account_id_select_recent_matches",
         "summary": "GET /players/{account_id}/recentMatches",
         "description": "Recent matches played",
         "tags": ["players"],
@@ -3627,7 +3627,7 @@
     },
     "/players/{account_id}/matches": {
       "get": {
-        "operationId": "get_players_by_account_id_matches",
+        "operationId": "get_players_by_account_id_select_matches",
         "summary": "GET /players/{account_id}/matches",
         "description": "Matches played",
         "tags": ["players"],
@@ -3712,7 +3712,7 @@
     },
     "/players/{account_id}/heroes": {
       "get": {
-        "operationId": "get_players_by_account_id_heroes",
+        "operationId": "get_players_by_account_id_select_heroes",
         "summary": "GET /players/{account_id}/heroes",
         "description": "Heroes played",
         "tags": ["players"],
@@ -3794,7 +3794,7 @@
     },
     "/players/{account_id}/peers": {
       "get": {
-        "operationId": "get_players_by_account_id_peers",
+        "operationId": "get_players_by_account_id_select_peers",
         "summary": "GET /players/{account_id}/peers",
         "description": "Players played with",
         "tags": ["players"],
@@ -3876,7 +3876,7 @@
     },
     "/players/{account_id}/pros": {
       "get": {
-        "operationId": "get_players_by_account_id_pros",
+        "operationId": "get_players_by_account_id_select_pros",
         "summary": "GET /players/{account_id}/pros",
         "description": "Pro players played with",
         "tags": ["players"],
@@ -3958,7 +3958,7 @@
     },
     "/players/{account_id}/totals": {
       "get": {
-        "operationId": "get_players_by_account_id_totals",
+        "operationId": "get_players_by_account_id_select_totals",
         "summary": "GET /players/{account_id}/totals",
         "description": "Totals in stats",
         "tags": ["players"],
@@ -4040,7 +4040,7 @@
     },
     "/players/{account_id}/counts": {
       "get": {
-        "operationId": "get_players_by_account_id_counts",
+        "operationId": "get_players_by_account_id_select_counts",
         "summary": "GET /players/{account_id}/counts",
         "description": "Counts in categories",
         "tags": ["players"],
@@ -4205,7 +4205,7 @@
     },
     "/players/{account_id}/wardmap": {
       "get": {
-        "operationId": "get_players_by_account_id_wardmap",
+        "operationId": "get_players_by_account_id_select_wardmap",
         "summary": "GET /players/{account_id}/wardmap",
         "description": "Wards placed in matches played",
         "tags": ["players"],
@@ -4284,7 +4284,7 @@
     },
     "/players/{account_id}/wordcloud": {
       "get": {
-        "operationId": "get_players_by_account_id_wordcloud",
+        "operationId": "get_players_by_account_id_select_wordcloud",
         "summary": "GET /players/{account_id}/wordcloud",
         "description": "Words said/read in matches played",
         "tags": ["players"],
@@ -4363,7 +4363,7 @@
     },
     "/players/{account_id}/ratings": {
       "get": {
-        "operationId": "get_players_by_account_id_ratings",
+        "operationId": "get_players_by_account_id_select_ratings",
         "summary": "GET /players/{account_id}/ratings",
         "description": "Player rating history",
         "tags": ["players"],
@@ -4391,7 +4391,7 @@
     },
     "/players/{account_id}/rankings": {
       "get": {
-        "operationId": "get_players_by_account_id_rankings",
+        "operationId": "get_players_by_account_id_select_rankings",
         "summary": "GET /players/{account_id}/rankings",
         "description": "Player hero rankings",
         "tags": ["players"],
@@ -4925,7 +4925,7 @@
     },
     "/heroes/{hero_id}/matches": {
       "get": {
-        "operationId": "get_heroes_by_hero_id_matches",
+        "operationId": "get_heroes_by_hero_id_select_matches",
         "summary": "GET /heroes/{hero_id}/matches",
         "description": "Get recent matches with a hero",
         "tags": ["heroes"],
@@ -4953,7 +4953,7 @@
     },
     "/heroes/{hero_id}/matchups": {
       "get": {
-        "operationId": "get_heroes_by_hero_id_matchups",
+        "operationId": "get_heroes_by_hero_id_select_matchups",
         "summary": "GET /heroes/{hero_id}/matchups",
         "description": "Get results against other heroes for a hero",
         "tags": ["heroes"],
@@ -4981,7 +4981,7 @@
     },
     "/heroes/{hero_id}/durations": {
       "get": {
-        "operationId": "get_heroes_by_hero_id_durations",
+        "operationId": "get_heroes_by_hero_id_select_durations",
         "summary": "GET /heroes/{hero_id}/durations",
         "description": "Get hero performance over a range of match durations",
         "tags": ["heroes"],
@@ -5009,7 +5009,7 @@
     },
     "/heroes/{hero_id}/players": {
       "get": {
-        "operationId": "get_heroes_by_hero_id_players",
+        "operationId": "get_heroes_by_hero_id_select_players",
         "summary": "GET /heroes/{hero_id}/players",
         "description": "Get players who have played this hero",
         "tags": ["heroes"],
@@ -5040,7 +5040,7 @@
     },
     "/heroes/{hero_id}/itemPopularity": {
       "get": {
-        "operationId": "get_heroes_by_hero_id_item_popularity",
+        "operationId": "get_heroes_by_hero_id_select_item_popularity",
         "summary": "GET /heroes/{hero_id}/itemPopularity",
         "description": "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
         "tags": ["heroes"],
@@ -5116,7 +5116,7 @@
     },
     "/leagues/{league_id}/matches": {
       "get": {
-        "operationId": "get_leagues_by_league_id_matches",
+        "operationId": "get_leagues_by_league_id_select_matches",
         "summary": "GET /leagues/{league_id}/matches",
         "description": "Get matches for a team",
         "tags": ["leagues"],
@@ -5141,7 +5141,7 @@
     },
     "/leagues/{league_id}/teams": {
       "get": {
-        "operationId": "get_leagues_by_league_id_teams",
+        "operationId": "get_leagues_by_league_id_select_teams",
         "summary": "GET /leagues/{league_id}/teams",
         "description": "Get teams for a league",
         "tags": ["leagues"],
@@ -5225,7 +5225,7 @@
     },
     "/teams/{team_id}/matches": {
       "get": {
-        "operationId": "get_teams_by_team_id_matches",
+        "operationId": "get_teams_by_team_id_select_matches",
         "summary": "GET /teams/{team_id}/matches",
         "description": "Get matches for a team",
         "tags": ["teams"],
@@ -5250,7 +5250,7 @@
     },
     "/teams/{team_id}/players": {
       "get": {
-        "operationId": "get_teams_by_team_id_players",
+        "operationId": "get_teams_by_team_id_select_players",
         "summary": "GET /teams/{team_id}/players",
         "description": "Get players who have played for a team",
         "tags": ["teams"],
@@ -5275,7 +5275,7 @@
     },
     "/teams/{team_id}/heroes": {
       "get": {
-        "operationId": "get_teams_by_team_id_heroes",
+        "operationId": "get_teams_by_team_id_select_heroes",
         "summary": "GET /teams/{team_id}/heroes",
         "description": "Get heroes for a team",
         "tags": ["teams"],
