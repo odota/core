@@ -1407,6 +1407,53 @@
           }
         }
       },
+      "ParsedMatchesResponse": {
+        "title": "ParsedMatchesResponse",
+        "type": "object",
+        "properties": {
+          "match_id": {
+            "description": "The ID number of the match assigned by Valve",
+            "type": "integer",
+            "example": 3703866531
+          }
+        }
+      },
+      "PublicMatchesResponse": {
+        "title": "PublicMatchesResponse",
+        "type": "object",
+        "properties": {
+          "match_id": {
+            "description": "The ID number of the match assigned by Valve",
+            "type": "integer",
+            "example": 3703866531
+          },
+          "match_seq_num": {
+            "description": "match_seq_num",
+            "type": "integer"
+          },
+          "radiant_win": {
+            "description": "Boolean indicating whether Radiant won the match",
+            "type": "boolean",
+            "nullable": true
+          },
+          "start_time": {
+            "description": "The Unix timestamp at which the game started",
+            "type": "integer"
+          },
+          "duration": {
+            "description": "Duration of the game in seconds",
+            "type": "integer"
+          },
+          "radiant_team": {
+            "description": "radiant_team",
+            "type": "string"
+          },
+          "dire_team": {
+            "description": "dire_team",
+            "type": "string"
+          }
+        }
+      },
       "BenchmarksResponse": {
         "title": "BenchmarksResponse",
         "type": "object",
@@ -2919,53 +2966,6 @@
                 "default": false
               }
             }
-          }
-        }
-      },
-      "ParsedMatchesResponse": {
-        "title": "ParsedMatchesResponse",
-        "type": "object",
-        "properties": {
-          "match_id": {
-            "description": "The ID number of the match assigned by Valve",
-            "type": "integer",
-            "example": 3703866531
-          }
-        }
-      },
-      "PublicMatchesResponse": {
-        "title": "PublicMatchesResponse",
-        "type": "object",
-        "properties": {
-          "match_id": {
-            "description": "The ID number of the match assigned by Valve",
-            "type": "integer",
-            "example": 3703866531
-          },
-          "match_seq_num": {
-            "description": "match_seq_num",
-            "type": "integer"
-          },
-          "radiant_win": {
-            "description": "Boolean indicating whether Radiant won the match",
-            "type": "boolean",
-            "nullable": true
-          },
-          "start_time": {
-            "description": "The Unix timestamp at which the game started",
-            "type": "integer"
-          },
-          "duration": {
-            "description": "Duration of the game in seconds",
-            "type": "integer"
-          },
-          "radiant_team": {
-            "description": "radiant_team",
-            "type": "string"
-          },
-          "dire_team": {
-            "description": "dire_team",
-            "type": "string"
           }
         }
       },
