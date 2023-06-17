@@ -25,10 +25,10 @@ const generateOperationId = require("./generateOperationId");
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
 
-const parameters = Object.entries(params).reduce((acc, [key, param]) => {
-  acc[key] = param;
-  return acc;
-}, {});
+const parameters = Object.values(params).reduce(
+  (acc, category) => ({ ...acc, ...category }),
+  {}
+);
 
 const playerParamNames = [
   "accountIdParam",
