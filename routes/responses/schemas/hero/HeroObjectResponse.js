@@ -24,5 +24,6 @@ module.exports = {
         },
       },
     },
+    required: ["id"],
   },
 };
