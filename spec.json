@@ -135,7 +135,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "required": ["id"]
       },
       "HeroStatsResponse": {
         "title": "HeroStatsResponse",
