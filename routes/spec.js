@@ -1182,9 +1182,9 @@ const spec = {
           let moreThan = lessThan - 1000000;
           let order = "";
           if (req.query.mmr_ascending) {
-            order = "ORDER BY avg_rank_tier ASC NULLS LAST";
+            order = "ORDER BY avg_mmr ASC NULLS LAST";
           } else if (req.query.mmr_descending) {
-            order = "ORDER BY avg_rank_tier DESC NULLS LAST";
+            order = "ORDER BY avg_mmr DESC NULLS LAST";
           } else {
             order = "ORDER BY match_id DESC";
             moreThan = 0;
