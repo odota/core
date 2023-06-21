@@ -8,6 +8,15 @@ module.exports = {
     },
   },
   // for /publicMatches:
+  lessThanMatchIdParam: {
+    name: "less_than_match_id",
+    in: "query",
+    description: "Get matches with a match ID lower than this value",
+    required: false,
+    schema: {
+      type: "integer",
+    },
+  },
   mmrAscendingParam: {
     name: "mmr_ascending",
     in: "query",
@@ -21,15 +30,6 @@ module.exports = {
     name: "mmr_descending",
     in: "query",
     description: "Order by MMR descending",
-    required: false,
-    schema: {
-      type: "integer",
-    },
-  },
-  lessThanMatchIdParam: {
-    name: "less_than_match_id",
-    in: "query",
-    description: "Get matches with a match ID lower than this value",
     required: false,
     schema: {
       type: "integer",
