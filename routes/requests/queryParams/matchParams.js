@@ -20,7 +20,8 @@ module.exports = {
   minRankParam: {
     name: "min_rank",
     in: "query",
-    description: "Minimum MMR for the matches",
+    description:
+      "Minimum rank for the matches. Ranks are represented by integers (10-15: Herald, 20-25: Guardian, 30-35: Crusader, 40-45: Archon, 50-55: Legend, 60-65: Ancient, 70-75: Divine, 80-85: Immortal). Each increment represents an additional star.",
     required: false,
     schema: {
       type: "integer",
@@ -29,7 +30,8 @@ module.exports = {
   maxRankParam: {
     name: "max_rank",
     in: "query",
-    description: "Maximum MMR for the matches",
+    description:
+      "Maximum rank for the matches. Ranks are represented by integers (10-15: Herald, 20-25: Guardian, 30-35: Crusader, 40-45: Archon, 50-55: Legend, 60-65: Ancient, 70-75: Divine, 80-85: Immortal). Each increment represents an additional star.",
     required: false,
     schema: {
       type: "integer",
