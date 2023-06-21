@@ -1154,8 +1154,8 @@ const spec = {
         tags: ["public matches"],
         parameters: [
           { $ref: "#/components/parameters/lessThanMatchIdParam" },
-          { $ref: "#/components/parameters/minMmrParam" },
-          { $ref: "#/components/parameters/maxMmrParam" },
+          { $ref: "#/components/parameters/minRankParam" },
+          { $ref: "#/components/parameters/maxRankParam" },
           { $ref: "#/components/parameters/mmrAscendingParam" },
           { $ref: "#/components/parameters/mmrDescendingParam" },
         ],
@@ -1189,10 +1189,10 @@ const spec = {
             order = "ORDER BY match_id DESC";
             moreThan = 0;
           }
-          let minMmr = req.query.min_mmr
+          let minRank = req.query.min_rank
             ? `AND avg_mmr >= ${req.query.min_mmr}`
             : "";
-          let maxMmr = req.query.max_mmr
+          let maxRank = req.query.max_rank
             ? `AND avg_mmr <= ${req.query.max_mmr}`
             : "";
 
@@ -1202,8 +1202,8 @@ const spec = {
           WHERE TRUE
           AND match_id > ?
           AND match_id < ?
-          ${minMmr}
-          ${maxMmr}
+          ${minRank}
+          ${maxRank}
           ${order}
           LIMIT 100)
           SELECT * FROM

@@ -17,8 +17,8 @@ module.exports = {
       type: "integer",
     },
   },
-  minMmrParam: {
-    name: "min_mmr",
+  minRankParam: {
+    name: "min_rank",
     in: "query",
     description: "Minimum MMR for the matches",
     required: false,
@@ -26,8 +26,8 @@ module.exports = {
       type: "integer",
     },
   },
-  maxMmrParam: {
-    name: "max_mmr",
+  maxRankParam: {
+    name: "max_rank",
     in: "query",
     description: "Maximum MMR for the matches",
     required: false,
