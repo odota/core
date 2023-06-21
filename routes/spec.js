@@ -1153,6 +1153,7 @@ const spec = {
         description: "Get list of randomly sampled public matches",
         tags: ["public matches"],
         parameters: [
+          { $ref: "#/components/parameters/lessThanMatchIdParam" },
           { $ref: "#/components/parameters/mmrAscendingParam" },
           { $ref: "#/components/parameters/mmrDescendingParam" },
           { $ref: "#/components/parameters/lessThanMatchIdParam" },
