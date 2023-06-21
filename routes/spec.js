@@ -1182,18 +1182,18 @@ const spec = {
           let moreThan = lessThan - 1000000;
           let order = "";
           if (req.query.mmr_ascending) {
-            order = "ORDER BY avg_mmr ASC NULLS LAST";
+            order = "ORDER BY avg_rank_tier ASC NULLS LAST";
           } else if (req.query.mmr_descending) {
-            order = "ORDER BY avg_mmr DESC NULLS LAST";
+            order = "ORDER BY avg_rank_tier DESC NULLS LAST";
           } else {
             order = "ORDER BY match_id DESC";
             moreThan = 0;
           }
           let minRank = req.query.min_rank
-            ? `AND avg_mmr >= ${req.query.min_mmr}`
+            ? `AND avg_rank_tier >= ${req.query.min_rank}`
             : "";
           let maxRank = req.query.max_rank
-            ? `AND avg_mmr <= ${req.query.max_mmr}`
+            ? `AND avg_rank_tier <= ${req.query.max_rank}`
             : "";
 
           db.raw(
