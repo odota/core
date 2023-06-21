@@ -1189,12 +1189,21 @@ const spec = {
             order = "ORDER BY match_id DESC";
             moreThan = 0;
           }
+          let minMmr = req.query.min_mmr
+            ? `AND avg_mmr >= ${req.query.min_mmr}`
+            : "";
+          let maxMmr = req.query.max_mmr
+            ? `AND avg_mmr <= ${req.query.max_mmr}`
+            : "";
+
           db.raw(
             `
           WITH match_ids AS (SELECT match_id FROM public_matches
           WHERE TRUE
           AND match_id > ?
           AND match_id < ?
+          ${minMmr}
+          ${maxMmr}
           ${order}
           LIMIT 100)
           SELECT * FROM
