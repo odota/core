@@ -18,16 +18,17 @@ const db = require("../store/db");
 const redis = require("../store/redis");
 const packageJson = require("../package.json");
 const cacheFunctions = require("../store/cacheFunctions");
-const params = require("./params");
-const responses = require("./responses");
+const params = require("./requests/importParams");
+const responses = require("./responses/schemas/importResponseSchemas");
+const generateOperationId = require("./generateOperationId");
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
 
-const parameters = Object.entries(params).reduce((acc, [key, param]) => {
-  acc[key] = param;
-  return acc;
-}, {});
+const parameters = Object.values(params).reduce(
+  (acc, category) => ({ ...acc, ...category }),
+  {}
+);
 
 const playerParamNames = [
   "accountIdParam",
@@ -55,9 +56,10 @@ const playerParams = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
 }));
 
-const schemas = {
-  ...responses,
-};
+const schemas = Object.values(responses).reduce(
+  (acc, category) => ({ ...acc, ...category }),
+  {}
+);
 
 const securitySchemes = {
   api_key: {
@@ -77,12 +79,12 @@ const spec = {
   info: {
     title: "OpenDota API",
     description: `# Introduction
-The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.
-
-You can find data that can be used to convert hero and ability IDs and other information provided by the API from the [dotaconstants](https://github.com/odota/dotaconstants) repository.
-
-**Beginning 2018-04-22, the OpenDota API is limited to 50,000 free calls per month and 60 requests/minute** We offer a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.
-`,
+    The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.
+    
+    You can find data that can be used to convert hero and ability IDs and other information provided by the API from the [dotaconstants](https://github.com/odota/dotaconstants) repository.
+    
+    The OpenDota API offers 50,000 free calls per month and a rate limit of 60 requests/minute. We also offer a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.
+    `,
     version: packageJson.version,
   },
   servers: [
@@ -98,6 +100,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
   paths: {
     "/matches/{match_id}": {
       get: {
+        operationId: generateOperationId("get", "/matches/{match_id}"),
         summary: "GET /matches/{match_id}",
         description: "Match data",
         tags: ["matches"],
@@ -130,6 +133,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/playersByRank": {
       get: {
+        operationId: generateOperationId("get", "/playersByRank"),
         summary: "GET /playersByRank",
         description: "Players ordered by rank/medal tier",
         tags: ["playersByRank"],
@@ -169,6 +173,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}": {
       get: {
+        operationId: generateOperationId("get", "/players/{account_id}"),
         summary: "GET /players/{account_id}",
         description: "Player data",
         tags: ["players"],
@@ -249,6 +254,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/wl": {
       get: {
+        operationId: generateOperationId("get", "/players/{account_id}/wl"),
         summary: "GET /players/{account_id}/wl",
         description: "Win/Loss count",
         tags: ["players"],
@@ -297,6 +303,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/recentMatches": {
       get: {
+        operationId: generateOperationId(
+          "get",
+          "/players/{account_id}/recentMatches"
+        ),
         summary: "GET /players/{account_id}/recentMatches",
         description: "Recent matches played",
         tags: ["players"],
@@ -365,6 +375,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/matches": {
       get: {
+        operationId: generateOperationId(
+          "get",
+          "/players/{account_id}/matches"
+        ),
         summary: "GET /players/{account_id}/matches",
         description: "Matches played",
         tags: ["players"],
@@ -425,6 +439,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/heroes": {
       get: {
+        operationId: generateOperationId("get", "/players/{account_id}/heroes"),
         summary: "GET /players/{account_id}/heroes",
         description: "Heroes played",
         tags: ["players"],
@@ -449,8 +464,9 @@ You can find data that can be used to convert hero and ability IDs and other inf
           const heroes = {};
           // prefill heroes with every hero
           Object.keys(constants.heroes).forEach((heroId) => {
+            hero_id_int = parseInt(heroId);
             const hero = {
-              hero_id: heroId,
+              hero_id: hero_id_int,
               last_played: 0,
               games: 0,
               win: 0,
@@ -459,7 +475,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
               against_games: 0,
               against_win: 0,
             };
-            heroes[heroId] = hero;
+            heroes[hero_id_int] = hero;
           });
           req.queryObj.project = req.queryObj.project.concat(
             "heroes",
@@ -523,6 +539,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/peers": {
       get: {
+        operationId: generateOperationId("get", "/players/{account_id}/peers"),
         summary: "GET /players/{account_id}/peers",
         description: "Players played with",
         tags: ["players"],
@@ -585,6 +602,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/pros": {
       get: {
+        operationId: generateOperationId("get", "/players/{account_id}/pros"),
         summary: "GET /players/{account_id}/pros",
         description: "Pro players played with",
         tags: ["players"],
@@ -640,6 +658,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/totals": {
       get: {
+        operationId: generateOperationId("get", "/players/{account_id}/totals"),
         summary: "GET /players/{account_id}/totals",
         description: "Totals in stats",
         tags: ["players"],
@@ -695,6 +714,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/counts": {
       get: {
+        operationId: generateOperationId("get", "/players/{account_id}/counts"),
         summary: "GET /players/{account_id}/counts",
         description: "Counts in categories",
         tags: ["players"],
@@ -749,6 +769,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/histograms/{field}": {
       get: {
+        operationId: generateOperationId(
+          "get",
+          "/players/{account_id}/histograms/{field}"
+        ),
         summary: "GET /players/{account_id}/histograms",
         description: "Distribution of matches in a single stat",
         tags: ["players"],
@@ -820,6 +844,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/wardmap": {
       get: {
+        operationId: generateOperationId(
+          "get",
+          "/players/{account_id}/wardmap"
+        ),
         summary: "GET /players/{account_id}/wardmap",
         description: "Wards placed in matches played",
         tags: ["players"],
@@ -865,6 +893,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/wordcloud": {
       get: {
+        operationId: generateOperationId(
+          "get",
+          "/players/{account_id}/wordcloud"
+        ),
         summary: "GET /players/{account_id}/wordcloud",
         description: "Words said/read in matches played",
         tags: ["players"],
@@ -910,6 +942,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/ratings": {
       get: {
+        operationId: generateOperationId(
+          "get",
+          "/players/{account_id}/ratings"
+        ),
         summary: "GET /players/{account_id}/ratings",
         description: "Player rating history",
         tags: ["players"],
@@ -942,6 +978,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/players/{account_id}/rankings": {
       get: {
+        operationId: generateOperationId(
+          "get",
+          "/players/{account_id}/rankings"
+        ),
         summary: "GET /players/{account_id}/rankings",
         description: "Player hero rankings",
         tags: ["players"],
@@ -1015,6 +1055,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/proPlayers": {
       get: {
+        operationId: generateOperationId("get", "/proPlayers"),
         summary: "GET /proPlayers",
         description: "Get list of pro players",
         tags: ["pro players"],
@@ -1054,6 +1095,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/proMatches": {
       get: {
+        operationId: generateOperationId("get", "/proMatches"),
         summary: "GET /proMatches",
         description: "Get list of pro matches",
         tags: ["pro matches"],
@@ -1106,6 +1148,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/publicMatches": {
       get: {
+        operationId: generateOperationId("get", "/publicMatches"),
         summary: "GET /publicMatches",
         description: "Get list of randomly sampled public matches",
         tags: ["public matches"],
@@ -1175,6 +1218,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/parsedMatches": {
       get: {
+        operationId: generateOperationId("get", "/parsedMatches"),
         summary: "GET /parsedMatches",
         description: "Get list of parsed match IDs",
         tags: ["parsed matches"],
@@ -1218,6 +1262,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/explorer": {
       get: {
+        operationId: generateOperationId("get", "/explorer"),
         summary: "GET /explorer",
         description: "Submit arbitrary SQL queries to the database",
         tags: ["explorer"],
@@ -1271,6 +1316,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/metadata": {
       get: {
+        operationId: generateOperationId("get", "/metadata"),
         summary: "GET /metadata",
         description: "Site metadata",
         tags: ["metadata"],
@@ -1299,6 +1345,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/distributions": {
       get: {
+        operationId: generateOperationId("get", "/distributions"),
         summary: "GET /distributions",
         description: "Distributions of MMR data by bracket and country",
         tags: ["distributions"],
@@ -1327,6 +1374,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/search": {
       get: {
+        operationId: generateOperationId("get", "/search"),
         summary: "GET /search",
         description: "Search players by personaname.",
         tags: ["search"],
@@ -1384,6 +1432,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/rankings": {
       get: {
+        operationId: generateOperationId("get", "/rankings"),
         summary: "GET /rankings",
         description: "Top players by hero",
         tags: ["rankings"],
@@ -1429,6 +1478,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/benchmarks": {
       get: {
+        operationId: generateOperationId("get", "/benchmarks"),
         summary: "GET /benchmarks",
         description: "Benchmarks of average stat values for a hero",
         tags: ["benchmarks"],
@@ -1475,6 +1525,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/status": {
       get: {
+        operationId: generateOperationId("get", "/status"),
         summary: "GET /status",
         description: "Get current service statistics",
         tags: ["status"],
@@ -1504,6 +1555,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/health": {
       get: {
+        operationId: generateOperationId("get", "/health"),
         summary: "GET /health",
         description: "Get service health data",
         tags: ["health"],
@@ -1542,6 +1594,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/request/{jobId}": {
       get: {
+        operationId: generateOperationId("get", "/request/{jobId}"),
         summary: "GET /request/{jobId}",
         description: "Get parse request state",
         tags: ["request"],
@@ -1654,6 +1707,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/findMatches": {
       get: {
+        operationId: generateOperationId("get", "/findMatches"),
         summary: "GET /",
         description: "Finds recent matches by heroes played",
         tags: ["findMatches"],
@@ -1745,6 +1799,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/heroes": {
       get: {
+        operationId: generateOperationId("get", "/heroes"),
         summary: "GET /heroes",
         description: "Get hero data",
         tags: ["heroes"],
@@ -1779,6 +1834,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/heroStats": {
       get: {
+        operationId: generateOperationId("get", "/heroStats"),
         summary: "GET /heroStats",
         description: "Get stats about hero performance in recent matches",
         tags: ["hero stats"],
@@ -1812,6 +1868,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/heroes/{hero_id}/matches": {
       get: {
+        operationId: generateOperationId("get", "/heroes/{hero_id}/matches"),
         summary: "GET /heroes/{hero_id}/matches",
         description: "Get recent matches with a hero",
         tags: ["heroes"],
@@ -1867,6 +1924,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/heroes/{hero_id}/matchups": {
       get: {
+        operationId: generateOperationId("get", "/heroes/{hero_id}/matchups"),
         summary: "GET /heroes/{hero_id}/matchups",
         description: "Get results against other heroes for a hero",
         tags: ["heroes"],
@@ -1913,6 +1971,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/heroes/{hero_id}/durations": {
       get: {
+        operationId: generateOperationId("get", "/heroes/{hero_id}/durations"),
         summary: "GET /heroes/{hero_id}/durations",
         description: "Get hero performance over a range of match durations",
         tags: ["heroes"],
@@ -1956,6 +2015,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/heroes/{hero_id}/players": {
       get: {
+        operationId: generateOperationId("get", "/heroes/{hero_id}/players"),
         summary: "GET /heroes/{hero_id}/players",
         description: "Get players who have played this hero",
         tags: ["heroes"],
@@ -2003,6 +2063,10 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/heroes/{hero_id}/itemPopularity": {
       get: {
+        operationId: generateOperationId(
+          "get",
+          "/heroes/{hero_id}/itemPopularity"
+        ),
         summary: "GET /heroes/{hero_id}/itemPopularity",
         description:
           "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
@@ -2040,6 +2104,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/leagues": {
       get: {
+        operationId: generateOperationId("get", "/leagues"),
         summary: "GET /leagues",
         description: "Get league data",
         tags: ["leagues"],
@@ -2073,6 +2138,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/leagues/{league_id}": {
       get: {
+        operationId: generateOperationId("get", "/leagues/{league_id}"),
         summary: "GET /leagues/{league_id}",
         description: "Get data for a league",
         tags: ["leagues"],
@@ -2110,6 +2176,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/leagues/{league_id}/matches": {
       get: {
+        operationId: generateOperationId("get", "/leagues/{league_id}/matches"),
         summary: "GET /leagues/{league_id}/matches",
         description: "Get matches for a team",
         tags: ["leagues"],
@@ -2144,6 +2211,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/leagues/{league_id}/teams": {
       get: {
+        operationId: generateOperationId("get", "/leagues/{league_id}/teams"),
         summary: "GET /leagues/{league_id}/teams",
         description: "Get teams for a league",
         tags: ["leagues"],
@@ -2182,6 +2250,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/teams": {
       get: {
+        operationId: generateOperationId("get", "/teams"),
         summary: "GET /teams",
         description: "Get team data",
         tags: ["teams"],
@@ -2233,6 +2302,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/teams/{team_id}": {
       get: {
+        operationId: generateOperationId("get", "/teams/{team_id}"),
         summary: "GET /teams/{team_id}",
         description: "Get data for a team",
         tags: ["teams"],
@@ -2268,6 +2338,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/teams/{team_id}/matches": {
       get: {
+        operationId: generateOperationId("get", "/teams/{team_id}/matches"),
         summary: "GET /teams/{team_id}/matches",
         description: "Get matches for a team",
         tags: ["teams"],
@@ -2309,6 +2380,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/teams/{team_id}/players": {
       get: {
+        operationId: generateOperationId("get", "/teams/{team_id}/players"),
         summary: "GET /teams/{team_id}/players",
         description: "Get players who have played for a team",
         tags: ["teams"],
@@ -2349,6 +2421,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/teams/{team_id}/heroes": {
       get: {
+        operationId: generateOperationId("get", "/teams/{team_id}/heroes"),
         summary: "GET /teams/{team_id}/heroes",
         description: "Get heroes for a team",
         tags: ["teams"],
@@ -2389,6 +2462,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/replays": {
       get: {
+        operationId: generateOperationId("get", "/replays"),
         summary: "GET /replays",
         description: "Get data to construct a replay URL with",
         tags: ["replays"],
@@ -2427,6 +2501,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/records/{field}": {
       get: {
+        operationId: generateOperationId("get", "/records/{field}"),
         summary: "GET /records/{field}",
         description: "Get top performances in a stat",
         tags: ["records"],
@@ -2468,12 +2543,19 @@ You can find data that can be used to convert hero and ability IDs and other inf
                 return cb(err);
               }
               const entries = rows
-                .map((r, i) => ({
-                  match_id: r.split(":")[0],
-                  start_time: r.split(":")[1],
-                  hero_id: r.split(":")[2],
-                  score: rows[i + 1],
-                }))
+                .map((r, i) => {
+                  const match_id = parseInt(r.split(":")[0]);
+                  const start_time = parseInt(r.split(":")[1]);
+                  const hero_id = parseInt(r.split(":")[2]);
+                  const score = parseInt(rows[i + 1]);
+
+                  return {
+                    match_id: Number.isNaN(match_id) ? null : match_id,
+                    start_time: Number.isNaN(start_time) ? null : start_time,
+                    hero_id: Number.isNaN(hero_id) ? null : hero_id,
+                    score: Number.isNaN(score) ? null : score,
+                  };
+                })
                 .filter((r, i) => i % 2 === 0);
               return res.json(entries);
             }
@@ -2483,6 +2565,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/live": {
       get: {
+        operationId: generateOperationId("get", "/live"),
         summary: "GET /live",
         description: "Get top currently ongoing live games",
         tags: ["live"],
@@ -2526,6 +2609,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/scenarios/itemTimings": {
       get: {
+        operationId: generateOperationId("get", "/scenarios/itemTimings"),
         summary: "GET /scenarios/itemTimings",
         description:
           "Win rates for certain item timings on a hero for items that cost at least 1400 gold",
@@ -2570,6 +2654,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/scenarios/laneRoles": {
       get: {
+        operationId: generateOperationId("get", "/scenarios/laneRoles"),
         summary: "GET /scenarios/laneRoles",
         description: "Win rates for heroes in certain lane roles",
         tags: ["scenarios"],
@@ -2613,6 +2698,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/scenarios/misc": {
       get: {
+        operationId: generateOperationId("get", "/scenarios/misc"),
         summary: "GET /scenarios/misc",
         description: "Miscellaneous team scenarios",
         tags: ["scenarios"],
@@ -2645,6 +2731,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/schema": {
       get: {
+        operationId: generateOperationId("get", "/schema"),
         summary: "GET /schema",
         description: "Get database schema",
         tags: ["schema"],
@@ -2682,6 +2769,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/constants/{resource}": {
       get: {
+        operationId: generateOperationId("get", "/constants/{resource}"),
         summary: "GET /constants",
         description:
           "Get static game data mirrored from the dotaconstants repository.",
@@ -2746,6 +2834,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
     },
     "/constants": {
       get: {
+        operationId: generateOperationId("get", "/constants"),
         summary: "GET /constants",
         description: "Gets an array of available resources.",
         tags: ["constants"],
