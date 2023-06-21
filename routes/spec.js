@@ -1154,9 +1154,10 @@ const spec = {
         tags: ["public matches"],
         parameters: [
           { $ref: "#/components/parameters/lessThanMatchIdParam" },
+          { $ref: "#/components/parameters/minMmrParam" },
+          { $ref: "#/components/parameters/maxMmrParam" },
           { $ref: "#/components/parameters/mmrAscendingParam" },
           { $ref: "#/components/parameters/mmrDescendingParam" },
-          { $ref: "#/components/parameters/lessThanMatchIdParam" },
         ],
         responses: {
           200: {
