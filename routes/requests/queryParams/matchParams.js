@@ -17,6 +17,24 @@ module.exports = {
       type: "integer",
     },
   },
+  minMmrParam: {
+    name: "min_mmr",
+    in: "query",
+    description: "Minimum MMR for the matches",
+    required: false,
+    schema: {
+      type: "integer",
+    },
+  },
+  maxMmrParam: {
+    name: "max_mmr",
+    in: "query",
+    description: "Maximum MMR for the matches",
+    required: false,
+    schema: {
+      type: "integer",
+    },
+  },
   mmrAscendingParam: {
     name: "mmr_ascending",
     in: "query",
