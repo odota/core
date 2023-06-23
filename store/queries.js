@@ -330,7 +330,7 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
     const midGameItems = countItemPopularity(
       items.filter(
         (item) =>
-          item.time >= 60 * 10 && item.time < 60 * 25 && item.cost > 2000
+          item.time >= 60 * 10 && item.time < 60 * 25 && item.cost >= 1200
       )
     );
     const lateGameItems = countItemPopularity(
