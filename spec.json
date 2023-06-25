@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "OpenDota API",
-    "description": "# Introduction\n    The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.\n    \n    You can find data that can be used to convert hero and ability IDs and other information provided by the API from the [dotaconstants](https://github.com/odota/dotaconstants) repository.\n    \n    The OpenDota API offers 50,000 free calls per month and a rate limit of 60 requests/minute. We also offer a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.\n    ",
-    "version": "21.0.0"
+    "description": "# Introduction\nThe OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.\n\nYou can find data that can be used to convert hero and ability IDs and other information provided by the API from the [dotaconstants](https://github.com/odota/dotaconstants) repository.\n\nThe OpenDota API offers 50,000 free calls per month and a rate limit of 60 requests/minute. We also offer a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.\n    ",
+    "version": "21.0.1"
   },
   "servers": [
     {
@@ -3145,6 +3145,33 @@
           "type": "integer"
         }
       },
+      "lessThanMatchIdParam": {
+        "name": "less_than_match_id",
+        "in": "query",
+        "description": "Get matches with a match ID lower than this value",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "minRankParam": {
+        "name": "min_rank",
+        "in": "query",
+        "description": "Minimum rank for the matches. Ranks are represented by integers (10-15: Herald, 20-25: Guardian, 30-35: Crusader, 40-45: Archon, 50-55: Legend, 60-65: Ancient, 70-75: Divine, 80-85: Immortal). Each increment represents an additional star.",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "maxRankParam": {
+        "name": "max_rank",
+        "in": "query",
+        "description": "Maximum rank for the matches. Ranks are represented by integers (10-15: Herald, 20-25: Guardian, 30-35: Crusader, 40-45: Archon, 50-55: Legend, 60-65: Ancient, 70-75: Divine, 80-85: Immortal). Each increment represents an additional star.",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
       "mmrAscendingParam": {
         "name": "mmr_ascending",
         "in": "query",
@@ -3158,15 +3185,6 @@
         "name": "mmr_descending",
         "in": "query",
         "description": "Order by MMR descending",
-        "required": false,
-        "schema": {
-          "type": "integer"
-        }
-      },
-      "lessThanMatchIdParam": {
-        "name": "less_than_match_id",
-        "in": "query",
-        "description": "Get matches with a match ID lower than this value",
         "required": false,
         "schema": {
           "type": "integer"
@@ -4439,13 +4457,19 @@
         "tags": ["public matches"],
         "parameters": [
           {
+            "$ref": "#/components/parameters/lessThanMatchIdParam"
+          },
+          {
+            "$ref": "#/components/parameters/minRankParam"
+          },
+          {
+            "$ref": "#/components/parameters/maxRankParam"
+          },
+          {
             "$ref": "#/components/parameters/mmrAscendingParam"
           },
           {
             "$ref": "#/components/parameters/mmrDescendingParam"
-          },
-          {
-            "$ref": "#/components/parameters/lessThanMatchIdParam"
           }
         ],
         "responses": {
