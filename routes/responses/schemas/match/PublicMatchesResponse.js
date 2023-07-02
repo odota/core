@@ -13,6 +13,27 @@ module.exports = {
       radiant_win: commonProperties.radiant_win,
       start_time: commonProperties.start_time,
       duration: commonProperties.duration,
+      avg_mmr: {
+        type: "integer",
+      },
+      num_mmr: {
+        type: "integer",
+      },
+      lobby_type: {
+        type: "integer",
+      },
+      game_mode: {
+        type: "integer",
+      },
+      avg_rank_tier: {
+        type: "integer",
+      },
+      num_rank_tier: {
+        type: "integer",
+      },
+      cluster: {
+        type: "integer",
+      },
       radiant_team: {
         description: "radiant_team",
         type: "string",
