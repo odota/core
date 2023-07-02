@@ -1445,6 +1445,27 @@
             "description": "Duration of the game in seconds",
             "type": "integer"
           },
+          "avg_mmr": {
+            "type": "integer"
+          },
+          "num_mmr": {
+            "type": "integer"
+          },
+          "lobby_type": {
+            "type": "integer"
+          },
+          "game_mode": {
+            "type": "integer"
+          },
+          "avg_rank_tier": {
+            "type": "integer"
+          },
+          "num_rank_tier": {
+            "type": "integer"
+          },
+          "cluster": {
+            "type": "integer"
+          },
           "radiant_team": {
             "description": "radiant_team",
             "type": "string"
