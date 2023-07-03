@@ -312,9 +312,9 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
 
     const items = purchaseLogs.rows
       .flatMap((purchaseLog) => purchaseLog.purchase_log)
-      .filter((item) => item !== null && item.key !== null)
+      .filter((item) => item && item.key && item.time)
       .map((item) => {
-        const time = item.time ? parseInt(item.time, 10) : 0;
+        const time = parseInt(item.time, 10);
         const { cost, id } = constants.items[item.key];
         return { cost, id, time };
       });
