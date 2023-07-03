@@ -311,9 +311,8 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
     }
 
     const items = purchaseLogs.rows
-
       .flatMap((purchaseLog) => purchaseLog.purchase_log)
-
+      .filter((item) => item && item.key && item.time)
       .map((item) => {
         const time = parseInt(item.time, 10);
         const { cost, id } = constants.items[item.key];
@@ -321,21 +320,21 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
       });
 
     const startGameItems = countItemPopularity(
-      items.filter((item) => item.time <= 0)
+      items.filter((item) => item.time <= 0 && item.cost <= 600)
     );
     const earlyGameItems = countItemPopularity(
       items.filter(
-        (item) => item.time > 0 && item.time < 60 * 10 && item.cost > 700
+        (item) => item.time > 0 && item.time < 60 * 10 && item.cost >= 500
       )
     );
     const midGameItems = countItemPopularity(
       items.filter(
         (item) =>
-          item.time >= 60 * 10 && item.time < 60 * 25 && item.cost > 2000
+          item.time >= 60 * 10 && item.time < 60 * 25 && item.cost >= 1000
       )
     );
     const lateGameItems = countItemPopularity(
-      items.filter((item) => item.time >= 60 * 25 && item.cost > 4000)
+      items.filter((item) => item.time >= 60 * 25 && item.cost >= 2000)
     );
 
     return cb(null, {
