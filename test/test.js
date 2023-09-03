@@ -713,27 +713,26 @@ describe("api management", () => {
             assert.equal(res.body.error, "Open invoice");
 
             supertest(app)
-            .get("/keys?loggedin=1")
-            .end((err, res) => {
-              if (err) {
-                return done(err);
-              }
+              .get("/keys?loggedin=1")
+              .end((err, res) => {
+                if (err) {
+                  return done(err);
+                }
 
-              assert.equal(res.statusCode, 200);
-              assert.equal(res.body.customer, null);
-              assert.equal(res.body.openInvoices[0].id, invoice.id);
-              assert.equal(res.body.openInvoices[0].amountDue, 12300);
-              return db.from("api_keys")
-                .where({
-                  account_id: 1,
-                  is_canceled: null,
-                })
-                .then((res) => {
-                  assert.equal(res.length, 0);
-                  return done();
-                })
-                .catch((err) => done(err));
-            });
+                assert.equal(res.statusCode, 200);
+                assert.equal(res.body.customer, null);
+                assert.equal(res.body.openInvoices[0].id, invoice.id);
+                assert.equal(res.body.openInvoices[0].amountDue, 12300);
+                db.from("api_keys")
+                  .where({
+                    account_id: 1,
+                    is_canceled: null,
+                  })
+                  .then((res) => {
+                    assert.equal(res.length, 0);
+                    return done();
+                  });
+              });
           });
       })
       .catch((err) => done(err));

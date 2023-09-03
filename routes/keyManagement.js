@@ -86,20 +86,20 @@ keys
             return cb();
           }
 
-          const { apiKey, customerId, subscriptionId} = keyRecord;
+          const { api_key, customer_id, subscription_id} = keyRecord;
           const toReturn = {
-            apiKey
+            api_key
           };
 
           stripe.customers
-            .retrieve(customerId)
+            .retrieve(customer_id)
             .then((customer) => {
               const source = customer.sources.data[0];
 
               toReturn.credit_brand = source?.brand;
               toReturn.credit_last4 = source?.last4;
 
-              return stripe.subscriptions.retrieve(subscriptionId);
+              return stripe.subscriptions.retrieve(subscription_id);
             })
             .then((sub) => {
               toReturn.current_period_end = sub.current_period_end;
@@ -112,9 +112,9 @@ keys
             return cb();
           }
 
-          const customerId = allKeyRecords[0].customer_id;
+          customer_id = allKeyRecords[0].customer_id;
 
-          getOpenInvoices(customerId).then(invoices => {
+          getOpenInvoices(customer_id).then(invoices => {
             const processed = invoices.map(i => ({
               id: i.id,
               amountDue: i.amount_due,
@@ -176,23 +176,23 @@ keys
       return res.sendStatus(200);
     }
 
-    const { apiKey, subscriptionId } = keyRecord;
+    const { api_key, subscription_id } = keyRecord;
 
     // Immediately bill the customer for any unpaid usage
-    await stripe.subscriptions.del(subscriptionId, { invoice_now: true });
+    await stripe.subscriptions.del(subscription_id, { invoice_now: true });
 
     await db
       .from("api_keys")
       .where({
         account_id: req.user.account_id,
-        subscriptionId,
+        subscription_id,
       })
       .update({
         is_canceled: true,
       });
 
     // Force the key to be disabled
-    redis.srem("api_keys", apiKey, (err) => {
+    redis.srem("api_keys", api_key, (err) => {
       if (err) {
         throw err;
       }
@@ -212,7 +212,7 @@ keys
     const { keyRecord, allKeyRecords } = res.locals;
     const { token } = req.body;
 
-    let customerId;
+    let customer_id;
 
     if (hasActiveKey(keyRecord)) {
       console.log("Active key exists for", req.user.account_id);
@@ -220,17 +220,17 @@ keys
     }
     // returning customer
     if(allKeyRecords.length > 0) {
-      customerId = allKeyRecords[0].customer_id;
+      customer_id = allKeyRecords[0].customer_id;
 
-      const invoices = await getOpenInvoices(customerId);
+      const invoices = await getOpenInvoices(customer_id);
 
       if (invoices.length > 0) {
-        console.log("Open invoices exist for", req.user.account_id, "customer", customerId);
+        console.log("Open invoices exist for", req.user.account_id, "customer", customer_id);
         return res.status(402).json({error: "Open invoice"});
       }
 
       try {
-        await stripe.customers.update(customerId, {
+        await stripe.customers.update(customer_id, {
           email: token.email,
           source: token.id,
         });
@@ -249,7 +249,7 @@ keys
             account_id: req.user.account_id,
           },
         });
-        customerId = customer.id;
+        customer_id = customer.id;
       } catch  (err) {
         // probably insufficient funds
         return res.status(402).json(err);
@@ -259,7 +259,7 @@ keys
     const apiKey = uuid();
 
     const sub = await stripe.subscriptions.create({
-      customer: customerId,
+      customer: customer_id,
       items: [{ plan: stripeAPIPlan }],
       billing_cycle_anchor: moment().add(1, "month").startOf("month").unix(),
       metadata: {
@@ -309,16 +309,16 @@ keys
       throw Error("No record to update.");
     }
 
-    const { customerId, subscriptionId } = keyRecord;
+    const { customer_id, subscription_id } = keyRecord;
     const {
       token: { email, id },
     } = req.body;
 
-    await stripe.customers.update(customerId, {
+    await stripe.customers.update(customer_id, {
       email,
     });
 
-    await stripe.subscriptions.update(subscriptionId, {
+    await stripe.subscriptions.update(subscription_id, {
       source: id,
     });
 
