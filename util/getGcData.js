@@ -4,7 +4,7 @@
  * */
 const moment = require("moment");
 const zlib = require("zlib");
-const utility = require("../util/utility");
+const utility = require("./utility");
 const config = require("../config");
 const queries = require("../store/queries");
 const db = require("../store/db");
@@ -70,7 +70,7 @@ redis.del("nonRetryable");
 function getGcDataFromRetriever(match, cb) {
   const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
-  let urls = retrieverArr.map(
+  const urls = retrieverArr.map(
     (r) => `http://${r}?key=${secret}&match_id=${match.match_id}`
   );
   return getData(
@@ -112,7 +112,7 @@ module.exports = function getGcData(match, cb) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return cb(new Error("invalid match_id"));
   }
-  //return getGcDataFromRetriever(match, cb);
+  // return getGcDataFromRetriever(match, cb);
   return redis.get(Buffer.from(`gcdata:${match.match_id}`), (err, body) => {
     if (err) {
       return cb(err);

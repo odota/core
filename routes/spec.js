@@ -93,9 +93,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
     },
   ],
   components: {
-    securitySchemes: securitySchemes,
-    schemas: schemas,
-    parameters: parameters,
+    securitySchemes,
+    schemas,
+    parameters,
   },
   paths: {
     "/matches/{match_id}": {
@@ -265,7 +265,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/PlayerWinLossResponse`,
+                  $ref: "#/components/schemas/PlayerWinLossResponse",
                 },
               },
             },
@@ -385,7 +385,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         parameters: [
           ...playerParams,
           {
-            $ref: `#/components/parameters/projectParam`,
+            $ref: "#/components/parameters/projectParam",
           },
         ],
         responses: {
@@ -396,7 +396,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/PlayerMatchesResponse`,
+                    $ref: "#/components/schemas/PlayerMatchesResponse",
                   },
                 },
               },
@@ -452,7 +452,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/PlayerHeroesResponse`,
+                    $ref: "#/components/schemas/PlayerHeroesResponse",
                   },
                 },
               },
@@ -552,7 +552,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/PlayerPeersResponse`,
+                    $ref: "#/components/schemas/PlayerPeersResponse",
                   },
                 },
               },
@@ -615,7 +615,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/PlayerProsResponse`,
+                    $ref: "#/components/schemas/PlayerProsResponse",
                   },
                 },
               },
@@ -671,7 +671,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/PlayerTotalsResponse`,
+                    $ref: "#/components/schemas/PlayerTotalsResponse",
                   },
                 },
               },
@@ -779,7 +779,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         parameters: [
           ...playerParams,
           {
-            $ref: `#/components/parameters/fieldParam`,
+            $ref: "#/components/parameters/fieldParam",
           },
         ],
         responses: {
@@ -858,7 +858,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/PlayerWardMapResponse`,
+                  $ref: "#/components/schemas/PlayerWardMapResponse",
                 },
               },
             },
@@ -907,7 +907,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/PlayerWordCloudResponse`,
+                  $ref: "#/components/schemas/PlayerWordCloudResponse",
                 },
               },
             },
@@ -958,7 +958,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/PlayerRatingsResponse`,
+                    $ref: "#/components/schemas/PlayerRatingsResponse",
                   },
                 },
               },
@@ -1067,7 +1067,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/PlayerObjectResponse`,
+                    $ref: "#/components/schemas/PlayerObjectResponse",
                   },
                 },
               },
@@ -1108,7 +1108,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/MatchObjectResponse`,
+                    $ref: "#/components/schemas/MatchObjectResponse",
                   },
                 },
               },
@@ -1167,7 +1167,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/PublicMatchesResponse`,
+                    $ref: "#/components/schemas/PublicMatchesResponse",
                   },
                 },
               },
@@ -1189,10 +1189,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             order = "ORDER BY match_id DESC";
             moreThan = 0;
           }
-          let minRank = req.query.min_rank
+          const minRank = req.query.min_rank
             ? `AND avg_rank_tier >= ${req.query.min_rank}`
             : "";
-          let maxRank = req.query.max_rank
+          const maxRank = req.query.max_rank
             ? `AND avg_rank_tier <= ${req.query.max_rank}`
             : "";
 
@@ -1242,7 +1242,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/ParsedMatchesResponse`,
+                    $ref: "#/components/schemas/ParsedMatchesResponse",
                   },
                 },
               },
@@ -1318,9 +1318,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             err = e;
           }
           client.end();
-          const final = Object.assign({}, result, {
-            err: err && err.toString(),
-          });
+          const final = { ...result, err: err && err.toString(),};
           return res.status(err ? 400 : 200).json(final);
         },
       },
@@ -1337,7 +1335,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/MetadataResponse`,
+                  $ref: "#/components/schemas/MetadataResponse",
                 },
               },
             },
@@ -1366,7 +1364,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/DistributionsResponse`,
+                  $ref: "#/components/schemas/DistributionsResponse",
                 },
               },
             },
@@ -1408,7 +1406,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/SearchResponse`,
+                    $ref: "#/components/schemas/SearchResponse",
                   },
                 },
               },
@@ -1454,7 +1452,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             description: "Hero ID",
             required: true,
             schema: {
-              type: "string", //todo: String for hero id?
+              type: "string", // todo: String for hero id?
             },
           },
         ],
@@ -1464,7 +1462,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/RankingsResponse`,
+                  $ref: "#/components/schemas/RankingsResponse",
                 },
               },
             },
@@ -1510,7 +1508,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/BenchmarksResponse`,
+                  $ref: "#/components/schemas/BenchmarksResponse",
                 },
               },
             },
@@ -1641,9 +1639,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             }
             if (job) {
               return res.json(
-                Object.assign({}, job, {
-                  jobId: job.id,
-                })
+                { ...job, jobId: job.id,}
               );
             }
             return res.json(null);
@@ -1822,7 +1818,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/HeroObjectResponse`,
+                    $ref: "#/components/schemas/HeroObjectResponse",
                   },
                 },
               },
@@ -1858,7 +1854,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/HeroStatsResponse`,
+                    $ref: "#/components/schemas/HeroStatsResponse",
                   },
                 },
               },
@@ -1892,7 +1888,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/MatchObjectResponse`,
+                    $ref: "#/components/schemas/MatchObjectResponse",
                   },
                 },
               },
@@ -1948,7 +1944,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/HeroMatchupsResponse`,
+                    $ref: "#/components/schemas/HeroMatchupsResponse",
                   },
                 },
               },
@@ -1995,7 +1991,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/HeroDurationsResponse`,
+                    $ref: "#/components/schemas/HeroDurationsResponse",
                   },
                 },
               },
@@ -2039,9 +2035,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    type: "array", //todo: Why double array?
+                    type: "array", // todo: Why double array?
                     items: {
-                      $ref: `#/components/schemas/PlayerObjectResponse`,
+                      $ref: "#/components/schemas/PlayerObjectResponse",
                     },
                   },
                 },
@@ -2089,7 +2085,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/HeroItemPopularityResponse`,
+                  $ref: "#/components/schemas/HeroItemPopularityResponse",
                 },
               },
             },
@@ -2127,7 +2123,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/LeagueObjectResponse`,
+                    $ref: "#/components/schemas/LeagueObjectResponse",
                   },
                 },
               },
@@ -2162,7 +2158,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/LeagueObjectResponse`,
+                    $ref: "#/components/schemas/LeagueObjectResponse",
                   },
                 },
               },
@@ -2198,7 +2194,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/MatchObjectResponse`,
+                  $ref: "#/components/schemas/MatchObjectResponse",
                 },
               },
             },
@@ -2360,7 +2356,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/TeamMatchObjectResponse`,
+                  $ref: "#/components/schemas/TeamMatchObjectResponse",
                 },
               },
             },
@@ -2402,7 +2398,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/TeamPlayersResponse`,
+                  $ref: "#/components/schemas/TeamPlayersResponse",
                 },
               },
             },
@@ -2443,7 +2439,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             content: {
               "application/json; charset=utf-8": {
                 schema: {
-                  $ref: `#/components/schemas/TeamHeroesResponse`,
+                  $ref: "#/components/schemas/TeamHeroesResponse",
                 },
               },
             },
@@ -2486,7 +2482,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/ReplaysResponse`,
+                    $ref: "#/components/schemas/ReplaysResponse",
                   },
                 },
               },
@@ -2535,7 +2531,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/RecordsResponse`,
+                    $ref: "#/components/schemas/RecordsResponse",
                   },
                 },
               },
@@ -2629,7 +2625,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           {
             name: "item",
             in: "query",
-            description: 'Filter by item name e.g. "spirit_vessel"',
+            description: "Filter by item name e.g. \"spirit_vessel\"",
             required: false,
             schema: {
               type: "string",
@@ -2645,7 +2641,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/ScenarioItemTimingsResponse`,
+                    $ref: "#/components/schemas/ScenarioItemTimingsResponse",
                   },
                 },
               },
@@ -2689,7 +2685,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/ScenarioLaneRolesResponse`,
+                    $ref: "#/components/schemas/ScenarioLaneRolesResponse",
                   },
                 },
               },
@@ -2722,7 +2718,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/ScenarioMiscResponse`,
+                    $ref: "#/components/schemas/ScenarioMiscResponse",
                   },
                 },
               },
@@ -2755,7 +2751,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: "array",
                   items: {
-                    $ref: `#/components/schemas/SchemaResponse`,
+                    $ref: "#/components/schemas/SchemaResponse",
                   },
                 },
               },

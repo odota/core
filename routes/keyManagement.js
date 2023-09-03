@@ -50,7 +50,7 @@ async function getOpenInvoices(customerId) {
   const invoices = await stripe.invoices.list({
     customer: customerId,
     limit: 100,
-    status: 'open'
+    status: "open"
   });
 
   return invoices.data;
@@ -218,7 +218,7 @@ keys
       return res.sendStatus(200);
     }
     // returning customer
-    else if(allKeyRecords.length > 0) {
+    if(allKeyRecords.length > 0) {
       customer_id = allKeyRecords[0].customer_id;
 
       const invoices = await getOpenInvoices(customer_id);

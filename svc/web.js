@@ -11,6 +11,8 @@ const express = require("express");
 const passport = require("passport");
 const SteamStrategy = require("passport-steam").Strategy;
 const cors = require("cors");
+const bodyParser = require("body-parser");
+const stripe = require("stripe")(config.STRIPE_SECRET);
 const keys = require("../routes/keyManagement");
 const webhooks = require("../routes/webhookManagement");
 const api = require("../routes/api");
@@ -19,8 +21,6 @@ const db = require("../store/db");
 const redis = require("../store/redis");
 const utility = require("../util/utility");
 const config = require("../config");
-const bodyParser = require("body-parser");
-const stripe = require("stripe")(config.STRIPE_SECRET);
 
 const { redisCount } = utility;
 
@@ -144,7 +144,7 @@ app.use((req, res, cb) => {
 });
 app.set("trust proxy", true);
 app.use((req, res, cb) => {
-  const ip = req.ip;
+  const {ip} = req;
   res.locals.ip = ip;
 
   let rateLimit = "";
@@ -328,14 +328,14 @@ app.route("/subscribeSuccess").get(async (req, res) => {
     [accountId, customer.id, "active"]
   );
   // Send the user back to the subscribe page
-  return res.redirect(config.UI_HOST + "/subscribe");
+  return res.redirect(`${config.UI_HOST  }/subscribe`);
 });
 app.route("/manageSub").post(async (req, res) => {
   if (!req.user?.account_id) {
     return res.status(400).json({ error: "no account ID" });
   }
   const result = await db.raw(
-    `SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'`,
+    "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
 
     [req.user.account_id]
   );

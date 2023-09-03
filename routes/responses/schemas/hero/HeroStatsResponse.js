@@ -131,7 +131,7 @@ module.exports = {
         description: "night_vision",
         type: "integer",
       },
-      hero_id: commonProperties.hero_id, //TODO: Duplicate
+      hero_id: commonProperties.hero_id, // TODO: Duplicate
       turbo_picks: {
         description: "Picks in Turbo mode this month",
         type: "integer",
@@ -216,7 +216,7 @@ module.exports = {
         description: "Immortal wins",
         type: "integer",
       },
-      //TODO: Should the following remain in the response?
+      // TODO: Should the following remain in the response?
       null_pick: {
         description: "null_pick",
         type: "integer",
