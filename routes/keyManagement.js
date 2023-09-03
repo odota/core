@@ -89,7 +89,7 @@ keys
             return cb();
           }
 
-          const { api_key, customer_id, subscription_id} = keyRecord;
+          const { api_key, customer_id, subscription_id } = keyRecord;
           const toReturn = {
             api_key
           };
@@ -115,7 +115,7 @@ keys
             return cb();
           }
 
-          customer_id = allKeyRecords[0].customer_id;
+          const { customer_id } = allKeyRecords[0];
 
           getOpenInvoices(customer_id).then(invoices => {
             const processed = invoices.map(i => ({
