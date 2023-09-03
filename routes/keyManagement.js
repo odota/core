@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+/* eslint-disable consistent-return */
 const express = require("express");
 const uuid = require("uuid/v4");
 const bodyParser = require("body-parser");
@@ -31,6 +33,7 @@ keys.use((req, res, next) => {
 
 // @param rows - query result from api_keys table
 function getActiveKey(rows) {
+  // eslint-disable-next-line eqeqeq
   const notCanceled = rows.filter((row) => row.is_canceled != true);
 
   return notCanceled.length > 0 ? notCanceled[0] : null;

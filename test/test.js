@@ -714,6 +714,7 @@ describe("api management", () => {
 
             supertest(app)
               .get("/keys?loggedin=1")
+              // eslint-disable-next-line consistent-return
               .end((err, res) => {
                 if (err) {
                   return done(err);

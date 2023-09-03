@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 const crypto = require("crypto");
 const cassandra = require("../store/cassandra");
 const db = require("../store/db");
@@ -10,6 +11,7 @@ async function start() {
     // Get the current max_match_id from postgres, subtract 200000000
     const max = (await db.raw("select max(match_id) from public_matches"))?.rows?.[0]?.max;
     const limit = max - 200000000;
+    // eslint-disable-next-line no-constant-condition
     while(true) {
         try {
         // let threshold = Math.floor(Math.random() * limit);
