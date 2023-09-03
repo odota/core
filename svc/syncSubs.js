@@ -9,7 +9,7 @@ const stripe = require("stripe")(config.STRIPE_SECRET);
 
 const { invokeInterval } = utility;
 
-async function run(cb) {
+async function run() {
   // Get list of current subscribers
   const result = [];
   for await (const sub of stripe.subscriptions.list({
