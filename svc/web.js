@@ -12,6 +12,8 @@ const passport = require("passport");
 const SteamStrategy = require("passport-steam").Strategy;
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const config = require("../config");
+// eslint-disable-next-line import/order
 const stripe = require("stripe")(config.STRIPE_SECRET);
 const keys = require("../routes/keyManagement");
 const webhooks = require("../routes/webhookManagement");
@@ -20,7 +22,6 @@ const queries = require("../store/queries");
 const db = require("../store/db");
 const redis = require("../store/redis");
 const utility = require("../util/utility");
-const config = require("../config");
 
 const { redisCount } = utility;
 
