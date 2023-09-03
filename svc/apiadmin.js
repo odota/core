@@ -99,8 +99,9 @@ async function updateStripeUsage(cb) {
   let num = 0;
   try {
     // https://stripe.com/docs/api/pagination/auto so we don't need to worry about cursors
-    for await (const sub of stripe.subscriptions.list(options)) {
-      num++;
+    const subscriptions = await stripe.subscriptions.list(options).autoPagingToArray({limit: 100});
+    await Promise.all(subscriptions.map(async (sub) => {
+      num+=1;
       // Deactivate any keys which failed to bill
       // updateAPIKeysInRedis deletes the keys so just do that there
       if (sub.status === "canceled") {
@@ -111,15 +112,14 @@ async function updateStripeUsage(cb) {
                 `,
           [sub.id]
         );
-
-        continue;
+        return;
       }
-
+  
       const startTime = moment
         .unix(sub.current_period_end - 1)
         .startOf("month");
       const endTime = moment.unix(sub.current_period_end - 1).endOf("month");
-
+  
       const res = await db.raw(
         `
                 SELECT
@@ -140,7 +140,7 @@ async function updateStripeUsage(cb) {
               `,
         [startTime.format("YYYY-MM-DD"), endTime.format("YYYY-MM-DD"), sub.id]
       );
-
+  
       if (res.rows.length > 0 && res.rows[0].usage_count) {
         const usageCount = res.rows[0].usage_count;
         // Set usage to be the value at end of the billing period
@@ -156,7 +156,7 @@ async function updateStripeUsage(cb) {
       } else {
         // console.log(`updateStripeUsage No usage for ${sub.id}`);
       }
-    } 
+    }));
     console.log(`updateStripeUsage processed ${num} records`);
     cb();
   } catch (err) {
