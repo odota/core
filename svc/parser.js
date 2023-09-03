@@ -98,6 +98,7 @@ function parseProcessor(job, cb) {
       return cb(err, match.match_id);
     }
   );
+  return null;
 }
 
 queue.runReliableQueue(
