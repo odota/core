@@ -464,9 +464,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           const heroes = {};
           // prefill heroes with every hero
           Object.keys(constants.heroes).forEach((heroId) => {
-            hero_id_int = parseInt(heroId);
+            const heroIdInt = parseInt(heroId);
             const hero = {
-              hero_id: hero_id_int,
+              hero_id: heroIdInt,
               last_played: 0,
               games: 0,
               win: 0,
@@ -475,7 +475,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               against_games: 0,
               against_win: 0,
             };
-            heroes[hero_id_int] = hero;
+            heroes[heroIdInt] = hero;
           });
           req.queryObj.project = req.queryObj.project.concat(
             "heroes",
@@ -2551,15 +2551,15 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               const entries = rows
                 .map((r, i) => {
-                  const match_id = parseInt(r.split(":")[0]);
-                  const start_time = parseInt(r.split(":")[1]);
-                  const hero_id = parseInt(r.split(":")[2]);
+                  const matchId = parseInt(r.split(":")[0]);
+                  const startTime = parseInt(r.split(":")[1]);
+                  const heroId = parseInt(r.split(":")[2]);
                   const score = parseInt(rows[i + 1]);
 
                   return {
-                    match_id: Number.isNaN(match_id) ? null : match_id,
-                    start_time: Number.isNaN(start_time) ? null : start_time,
-                    hero_id: Number.isNaN(hero_id) ? null : hero_id,
+                    match_id: Number.isNaN(matchId) ? null : matchId,
+                    start_time: Number.isNaN(startTime) ? null : startTime,
+                    hero_id: Number.isNaN(heroId) ? null : heroId,
                     score: Number.isNaN(score) ? null : score,
                   };
                 })
