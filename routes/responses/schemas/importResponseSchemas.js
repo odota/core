@@ -15,6 +15,7 @@ function importAll(directory) {
     } else if (path.extname(item) === ".js" && itemPath !== __filename) {
       // If the item is a JS file and not the current file, import it
       const fileName = path.basename(item, ".js");
+      // eslint-disable-next-line import/no-dynamic-require, global-require
       files[fileName] = require(itemPath);
     }
   });
