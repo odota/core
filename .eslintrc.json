@@ -1,5 +1,8 @@
 {
   "extends": ["airbnb/base", "prettier"],
+  "parserOptions": {
+    "ecmaVersion": 2021
+  },
   "rules": {
     "max-len": [
       "error",
