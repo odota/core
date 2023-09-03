@@ -57,7 +57,8 @@ async function getOpenInvoices(customerId) {
 }
 
 /**
- * Invariant: A Stripe subscription and an API key is a 1 to 1 mapping. canceled sub = deleted key and vice versa a single user can have multiple subs but only one active at a given time (others have is_canceled = true).
+ * Invariant: A Stripe subscription and an API key is a 1 to 1 mapping.
+ * canceled sub = deleted key and vice versa a single user can have multiple subs but only one active at a given time (others have is_canceled = true).
  */
 keys
   .route("/")
