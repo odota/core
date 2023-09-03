@@ -3,10 +3,7 @@ const JSONbig = require("json-bigint");
 const request = require("request");
 const redis = require("../store/redis");
 const db = require("../store/db");
-const utility = require("../util/utility");
 const config = require("../config");
-
-const { invokeInterval } = utility;
 
 function doLiveGames(cb) {
   // Get the list of pro players

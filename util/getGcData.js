@@ -16,7 +16,7 @@ const { insertMatch } = queries;
 
 function handleGcData(match, body, cb) {
   // Persist parties and permanent buffs
-  const players = body.match.players.map((p, i) => ({
+  const players = body.match.players.map((p) => ({
     player_slot: p.player_slot,
     party_id: p.party_id?.low,
     permanent_buffs: p.permanent_buffs,

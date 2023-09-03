@@ -1,5 +1,3 @@
-const commonProperties = require("../../properties/commonProperties");
-
 module.exports = {
   PlayerCountsResponse: {
     title: "PlayerCountsResponse",

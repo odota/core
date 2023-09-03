@@ -3,7 +3,6 @@
  * */
 const async = require("async");
 const urllib = require("url");
-const constants = require("dotaconstants");
 const config = require("../config");
 const { redisCount, getData, generateJob } = require("../util/utility");
 const db = require("../store/db");
