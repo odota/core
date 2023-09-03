@@ -8,27 +8,42 @@ const test = async () => {
   let noResult = 0;
   let error = 0;
   const query = "SELECT match_id FROM player_matches WHERE match_id = ?";
-  for (let i = Number(myArgs[0]); i < Number(myArgs[1]); i++) {
-    try {
-      const result = await cassandra.execute(query, [i], {
+  const promises = [];
+
+  for (let i = Number(myArgs[0]); i < Number(myArgs[1]); i+=1) {
+    promises.push(
+      cassandra.execute(query, [i], {
         prepare: true,
         fetchSize: 24,
         autoPage: true,
-      });
-      // console.log(result.rows);
-      if (result.rows[0] != null) {
-        ok += 1;
-      } else {
-        noResult += 1;
-      }
-    } catch (e) {
-      console.error(i);
-      console.error(e.message);
-      error += 1;
-      // Remediate by deleting and requesting
-      // await cassandra.execute(`DELETE from player_matches where match_id = ?`, [ i ]);
-    }
+      })
+      .then(result => {
+        if (result.rows[0] != null) {
+          return "ok";
+        } 
+          return "noResult";
+        
+      })
+      .catch(e => {
+        console.error(i);
+        console.error(e.message);
+        return "error";
+      })
+    );
   }
+
+  const results = await Promise.all(promises);
+
+  results.forEach(result => {
+    if (result === "ok") {
+      ok += 1;
+    } else if (result === "noResult") {
+      noResult += 1;
+    } else if (result === "error") {
+      error += 1;
+    }
+  });
+
   console.log("ok: %s, noResult: %s, error: %s", ok, noResult, error);
 };
 
