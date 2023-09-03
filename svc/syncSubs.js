@@ -4,6 +4,7 @@
 const db = require("../store/db");
 const utility = require("../util/utility");
 const config = require("../config");
+// eslint-disable-next-line import/order
 const stripe = require("stripe")(config.STRIPE_SECRET);
 
 const { invokeInterval } = utility;
