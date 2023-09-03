@@ -464,7 +464,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           const heroes = {};
           // prefill heroes with every hero
           Object.keys(constants.heroes).forEach((heroId) => {
-            const heroIdInt = parseInt(heroId);
+            const heroIdInt = parseInt(heroId, 10);
             const hero = {
               hero_id: heroIdInt,
               last_played: 0,
@@ -2551,10 +2551,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               const entries = rows
                 .map((r, i) => {
-                  const matchId = parseInt(r.split(":")[0]);
-                  const startTime = parseInt(r.split(":")[1]);
-                  const heroId = parseInt(r.split(":")[2]);
-                  const score = parseInt(rows[i + 1]);
+                  const matchId = parseInt(r.split(":")[0], 10);
+                  const startTime = parseInt(r.split(":")[1], 10);
+                  const heroId = parseInt(r.split(":")[2], 10);
+                  const score = parseInt(rows[i + 1], 10);
 
                   return {
                     match_id: Number.isNaN(matchId) ? null : matchId,
