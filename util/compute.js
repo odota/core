@@ -71,7 +71,7 @@ function computeMatchData(pm) {
     pm.deaths !== undefined &&
     pm.assists !== undefined
   ) {
-    pm.kda = Math.floor((pm.kills + pm.assists) / (pm.deaths + 1));
+    pm.kda = Number(((pm.kills + pm.assists) / (pm.deaths + 1)).toFixed(2));
   }
   if (pm.leaver_status !== undefined) {
     pm.abandons = Number(pm.leaver_status >= 2);
