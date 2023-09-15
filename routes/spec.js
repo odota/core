@@ -1690,13 +1690,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/constants/:resource?",
-        func: (req, res, cb) => {
-          const { resource } = req.params;
-          if (resource in constants) {
-            return res.json(constants[resource]);
-          }
-          return cb();
-        },
+        func: databaseHandler.getConstantsByResource,
       },
     },
     "/constants": {
@@ -1723,9 +1717,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/constants",
-        func: (req, res) => {
-          return res.json(Object.keys(constants));
-        },
+        func: databaseHandler.getConstants,
       },
     },
   },

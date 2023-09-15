@@ -71,6 +71,18 @@ function getReplayData(req, res, cb) {
     });
 }
 
+function getConstants(req, res) {
+  return res.json(Object.keys(constants));
+}
+
+function getConstantsByResource(req, res, cb) {
+  const { resource } = req.params;
+  if (resource in constants) {
+    return res.json(constants[resource]);
+  }
+  return cb();
+}
+
 function getRecordsByField(req, res, cb) {
   redis.zrevrange(`records:${req.params.field}`, 0, 99, "WITHSCORES", (err, rows) => {
     if (err) {
@@ -177,6 +189,8 @@ function getHealth(req, res, cb) {
 
 module.exports = {
   explorer,
+  getConstants,
+  getConstantsByResource,
   getSchema,
   getHealth,
   getMmrDistributions,
