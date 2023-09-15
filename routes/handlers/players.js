@@ -440,6 +440,31 @@ async function getPlayersByAccountIdHistogramsByField(req, res, cb) {
   );
 }
 
+async function getPlayersByAccountIdWardMap(req, res, cb) {
+  const result = {
+    obs: {},
+    sen: {},
+  };
+  req.queryObj.project = req.queryObj.project.concat(
+    Object.keys(result)
+  );
+  queries.getPlayerMatches(
+    req.params.account_id,
+    req.queryObj,
+    (err, cache) => {
+      if (err) {
+        return cb(err);
+      }
+      cache.forEach((m) => {
+        Object.keys(result).forEach((key) => {
+          utility.mergeObjects(result[key], m[key]);
+        });
+      });
+      return res.json(result);
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
