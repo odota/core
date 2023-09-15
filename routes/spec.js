@@ -628,56 +628,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/publicMatches",
-        func: async (req, res, cb) => {
-          const currMax =
-            (await db("public_matches").max("match_id").first()).max || 0;
-          const lessThan = Number(req.query.less_than_match_id) || currMax;
-          let moreThan = lessThan - 1000000;
-          let order = "";
-          if (req.query.mmr_ascending) {
-            order = "ORDER BY avg_rank_tier ASC NULLS LAST";
-          } else if (req.query.mmr_descending) {
-            order = "ORDER BY avg_rank_tier DESC NULLS LAST";
-          } else {
-            order = "ORDER BY match_id DESC";
-            moreThan = 0;
-          }
-          let minRank = req.query.min_rank
-            ? `AND avg_rank_tier >= ${req.query.min_rank}`
-            : "";
-          let maxRank = req.query.max_rank
-            ? `AND avg_rank_tier <= ${req.query.max_rank}`
-            : "";
-
-          db.raw(
-            `
-          WITH match_ids AS (SELECT match_id FROM public_matches
-          WHERE TRUE
-          AND match_id > ?
-          AND match_id < ?
-          ${minRank}
-          ${maxRank}
-          ${order}
-          LIMIT 100)
-          SELECT * FROM
-          (SELECT * FROM public_matches
-          WHERE match_id IN (SELECT match_id FROM match_ids)) matches
-          JOIN
-          (SELECT match_id, string_agg(hero_id::text, ',') radiant_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot <= 127 GROUP BY match_id) radiant_team
-          USING(match_id)
-          JOIN
-          (SELECT match_id, string_agg(hero_id::text, ',') dire_team FROM public_player_matches WHERE match_id IN (SELECT match_id FROM match_ids) AND player_slot > 127 GROUP BY match_id) dire_team
-          USING(match_id)
-          ${order}
-          `,
-            [moreThan, lessThan]
-          ).asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
-        },
+        func: matchesHandler.getPublicMatches,
       },
     },
     "/parsedMatches": {
