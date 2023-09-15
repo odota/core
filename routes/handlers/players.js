@@ -332,6 +332,38 @@ async function getPlayersByAccountIdPros(req, res, cb) {
   );
 }
 
+async function getPlayersByAccountIdTotals(req, res, cb) {
+  const result = {};
+  Object.keys(subkeys).forEach((key) => {
+    result[key] = {
+      field: key,
+      n: 0,
+      sum: 0,
+    };
+  });
+  req.queryObj.project = req.queryObj.project.concat(
+    Object.keys(subkeys)
+  );
+  queries.getPlayerMatches(
+    req.params.account_id,
+    req.queryObj,
+    (err, cache) => {
+      if (err) {
+        return cb(err);
+      }
+      cache.forEach((m) => {
+        Object.keys(subkeys).forEach((key) => {
+          if (m[key] !== null && m[key] !== undefined) {
+            result[key].n += 1;
+            result[key].sum += Number(m[key]);
+          }
+        });
+      });
+      return res.json(Object.keys(result).map((key) => result[key]));
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
