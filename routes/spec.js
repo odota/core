@@ -19,6 +19,7 @@ const responses = require("./responses/schemas/importResponseSchemas");
 const generateOperationId = require("./generateOperationId");
 const matchesHandler = require("./handlers/matches")
 const playersHandler = require("./handlers/players");
+const heroesHandler = require("./handlers/heroes");
 
 const { redisCount, matchupToString } = utility;
 
@@ -857,20 +858,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/rankings",
-        func: (req, res, cb) => {
-          queries.getHeroRankings(
-            db,
-            redis,
-            req.query.hero_id,
-            {},
-            (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            }
-          );
-        },
+        func: heroesHandler.getHeroRankings,
       },
     },
     "/benchmarks": {
