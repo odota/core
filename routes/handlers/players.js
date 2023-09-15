@@ -511,6 +511,23 @@ async function getPlayersByAccountIdRankings(req, res, cb) {
   );
 }
 
+async function getPlayersByAccountIdRefresh(req, res, cb) {
+  redis.rpush(
+    "fhQueue",
+    JSON.stringify({
+      account_id: req.params.account_id || "1",
+    }),
+    (err, length) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json({
+        length,
+      });
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
