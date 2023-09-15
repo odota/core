@@ -499,6 +499,18 @@ async function getPlayersByAccountIdRatings(req, res, cb) {
   });
 }
 
+async function getPlayersByAccountIdRankings(req, res, cb) {
+  queries.getPlayerHeroRankings(
+    req.params.account_id,
+    (err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
