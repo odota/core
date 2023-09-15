@@ -1504,20 +1504,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/replays",
-        func: (req, res, cb) => {
-          db.select(["match_id", "cluster", "replay_salt"])
-            .from("match_gcdata")
-            .whereIn(
-              "match_id",
-              [].concat(req.query.match_id || []).slice(0, 5)
-            )
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
-        },
+        func: databaseHandler.getReplayData,
       },
     },
     "/records/{field}": {

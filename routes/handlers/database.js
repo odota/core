@@ -57,6 +57,18 @@ function getBuildStatus(req, res, cb) {
   });
 }
 
+function getReplayData(req, res, cb) {
+  db.select(["match_id", "cluster", "replay_salt"])
+    .from("match_gcdata")
+    .whereIn("match_id", [].concat(req.query.match_id || []).slice(0, 5))
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    });
+}
+
 function getRecordsByField(req, res, cb) {
   redis.zrevrange(`records:${req.params.field}`, 0, 99, "WITHSCORES", (err, rows) => {
     if (err) {
@@ -86,5 +98,6 @@ module.exports = {
   getSchema,
   getMmrDistributions,
   getBuildStatus,
+  getReplayData,
   getRecordsByField,
 };
