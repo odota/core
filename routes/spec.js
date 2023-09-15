@@ -1609,23 +1609,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/live",
-        func: (req, res, cb) => {
-          redis.zrangebyscore("liveGames", "-inf", "inf", (err, rows) => {
-            if (err) {
-              return cb(err);
-            }
-            if (!rows.length) {
-              return res.json(rows);
-            }
-            const keys = rows.map((r) => `liveGame:${r}`);
-            return redis.mget(keys, (err, rows) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(rows.map((r) => JSON.parse(r)));
-            });
-          });
-        },
+        func: matchesHandler.getLiveMatches,
       },
     },
     "/scenarios/itemTimings": {

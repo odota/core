@@ -150,10 +150,29 @@ function findMatches(req, res, cb) {
   });
 }
 
+function getLiveMatches(req, res, cb) {
+  redis.zrangebyscore("liveGames", "-inf", "inf", (err, rows) => {
+    if (err) {
+      return cb(err);
+    }
+    if (!rows.length) {
+      return res.json(rows);
+    }
+    const keys = rows.map((r) => `liveGame:${r}`);
+    return redis.mget(keys, (err, rows) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(rows.map((r) => JSON.parse(r)));
+    });
+  });
+}
+
 module.exports = {
   getMatchById,
   getProMatches,
   getPublicMatches,
   getParsedMatches,
   findMatches,
+  getLiveMatches,
 };
