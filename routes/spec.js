@@ -1121,43 +1121,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/findMatches",
-        func: (req, res, cb) => {
-          // accept as input two arrays of up to 5
-          const t0 = [].concat(req.query.teamA || []).slice(0, 5);
-          const t1 = [].concat(req.query.teamB || []).slice(0, 5);
-
-          // Construct key for redis
-          const key = `combos:${matchupToString(t0, t1, true)}`;
-          redis.get(key, (err, reply) => {
-            if (err) {
-              return cb(err);
-            }
-            if (reply) {
-              return res.end(reply);
-            }
-            // Determine which comes first
-            // const rcg = groupToString(t0);
-            // const dcg = groupToString(t1);
-
-            // const inverted = rcg > dcg;
-            const inverted = false;
-            const teamA = inverted ? t1 : t0;
-            const teamB = inverted ? t0 : t1;
-
-            return db
-              .raw(
-                "select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10",
-                [teamA, teamB, teamB, teamA]
-              )
-              .asCallback((err, result) => {
-                if (err) {
-                  return cb(err);
-                }
-                redis.setex(key, 60, JSON.stringify(result.rows));
-                return res.json(result.rows);
-              });
-          });
-        },
+        func: matchesHandler.findMatches,
       },
     },
     "/heroes": {
