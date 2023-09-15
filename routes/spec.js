@@ -1,8 +1,5 @@
 const constants = require("dotaconstants");
-const queue = require("../store/queue");
 const queries = require("../store/queries");
-const utility = require("../util/utility");
-const db = require("../store/db");
 const redis = require("../store/redis");
 const packageJson = require("../package.json");
 const params = require("./requests/importParams");
@@ -14,8 +11,6 @@ const matchesHandler = require("./handlers/matches")
 const playersHandler = require("./handlers/players");
 const heroesHandler = require("./handlers/heroes");
 const teamsHandler = require("./handlers/teams");
-
-const { redisCount, matchupToString } = utility;
 
 const parameters = Object.values(params).reduce(
   (acc, category) => ({ ...acc, ...category }),
@@ -932,21 +927,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/request/:jobId",
-        func: (req, res, cb) => {
-          queue.getJob(req.params.jobId, (err, job) => {
-            if (err) {
-              return cb(err);
-            }
-            if (job) {
-              return res.json(
-                Object.assign({}, job, {
-                  jobId: job.id,
-                })
-              );
-            }
-            return res.json(null);
-          });
-        },
+        func: databaseHandler.getRequestState,
       },
     },
     "/request/{match_id}": {
@@ -969,49 +950,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/request/:match_id",
-        func: (req, res) => {
-          const matchId = req.params.match_id;
-          const match = {
-            match_id: Number(matchId),
-          };
-          function exitWithJob(err, parseJob) {
-            if (err) {
-              console.error(err);
-            }
-            res.status(err ? 400 : 200).json({
-              job: {
-                jobId: parseJob && parseJob.id,
-              },
-            });
-          }
-          if (match && match.match_id) {
-            // match id request, get data from API
-            return utility.getData(
-              utility.generateJob("api_details", match).url,
-              (err, body) => {
-                if (err) {
-                  // couldn't get data from api, non-retryable
-                  return exitWithJob(JSON.stringify(err));
-                }
-                // Count this request
-                redisCount(redis, "request");
-                // match details response
-                const match = body.result;
-                return queries.insertMatch(
-                  match,
-                  {
-                    type: "api",
-                    attempts: 1,
-                    priority: 1,
-                    forceParse: true,
-                  },
-                  exitWithJob
-                );
-              }
-            );
-          }
-          return exitWithJob("invalid input");
-        },
+        func: databaseHandler.requestParse,
       },
     },
     "/findMatches": {

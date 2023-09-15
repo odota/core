@@ -3,7 +3,9 @@ const buildStatus = require("../../store/buildStatus");
 const config = require("../../config");
 const db = require("../../store/db");
 const queries = require("../../store/queries");
+const queue = require("../../store/queue");
 const redis = require("../../store/redis");
+const utility = require("../../util/utility");
 
 async function explorer(req, res) {
   // TODO handle NQL (@nicholashh query language)
@@ -93,6 +95,59 @@ function getRecordsByField(req, res, cb) {
   });
 }
 
+function getRequestState(req, res, cb) {
+  queue.getJob(req.params.jobId, (err, job) => {
+    if (err) {
+      return cb(err);
+    }
+    if (job) {
+      return res.json({ ...job, jobId: job.id });
+    }
+    return res.json(null);
+  });
+}
+
+function requestParse(req, res) {
+  const matchId = req.params.match_id;
+  const match = {
+    match_id: Number(matchId),
+  };
+  function exitWithJob(err, parseJob) {
+    if (err) {
+      console.error(err);
+    }
+    res.status(err ? 400 : 200).json({
+      job: {
+        jobId: parseJob && parseJob.id,
+      },
+    });
+  }
+  if (match && match.match_id) {
+    // match id request, get data from API
+    return utility.getData(utility.generateJob("api_details", match).url, (err, body) => {
+      if (err) {
+        // couldn't get data from api, non-retryable
+        return exitWithJob(JSON.stringify(err));
+      }
+      // Count this request
+      utility.redisCount(redis, "request");
+      // match details response
+      const match = body.result;
+      return queries.insertMatch(
+        match,
+        {
+          type: "api",
+          attempts: 1,
+          priority: 1,
+          forceParse: true,
+        },
+        exitWithJob
+      );
+    });
+  }
+  return exitWithJob("invalid input");
+}
+
 module.exports = {
   explorer,
   getSchema,
@@ -100,4 +155,6 @@ module.exports = {
   getBuildStatus,
   getReplayData,
   getRecordsByField,
+  getRequestState,
+  requestParse,
 };
