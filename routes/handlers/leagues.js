@@ -25,7 +25,22 @@ function getLeaguesById(req, res, cb) {
   });
 }
 
+function getMatchesByLeagueId(req, res, cb) {
+  db.raw(
+    `SELECT matches.*
+      FROM matches
+      WHERE matches.leagueid = ?`,
+    [req.params.league_id]
+  ).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
 module.exports = {
   getLeagues,
   getLeaguesById,
+  getMatchesByLeagueId,
 };
