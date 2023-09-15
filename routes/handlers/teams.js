@@ -17,6 +17,22 @@ function getTeamsData(req, res, cb) {
   });
 }
 
+function getTeamById(req, res, cb) {
+  db.raw(
+    `SELECT team_rating.*, teams.*
+      FROM teams
+      LEFT JOIN team_rating using(team_id)
+      WHERE teams.team_id = ?`,
+    [req.params.team_id]
+  ).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows[0]);
+  });
+}
+
 module.exports = {
   getTeamsData,
+  getTeamById,
 };
