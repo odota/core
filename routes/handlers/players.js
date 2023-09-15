@@ -364,6 +364,40 @@ async function getPlayersByAccountIdTotals(req, res, cb) {
   );
 }
 
+async function getPlayersByAccountIdCounts(req, res, cb) {
+  const result = {};
+  Object.keys(countCats).forEach((key) => {
+    result[key] = {};
+  });
+  req.queryObj.project = req.queryObj.project.concat(
+    Object.keys(countCats)
+  );
+  queries.getPlayerMatches(
+    req.params.account_id,
+    req.queryObj,
+    (err, cache) => {
+      if (err) {
+        return cb(err);
+      }
+      cache.forEach((m) => {
+        m.is_radiant = utility.isRadiant(m);
+        Object.keys(countCats).forEach((key) => {
+          if (!result[key][Math.floor(m[key])]) {
+            result[key][Math.floor(m[key])] = {
+              games: 0,
+              win: 0,
+            };
+          }
+          result[key][Math.floor(m[key])].games += 1;
+          const won = Number(m.radiant_win === utility.isRadiant(m));
+          result[key][Math.floor(m[key])].win += won;
+        });
+      });
+      return res.json(result);
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
