@@ -1,5 +1,6 @@
 const { Client } = require("pg");
 const config = require("../../config");
+const db = require("../../store/db");
 
 async function explorer(req, res) {
   // TODO handle NQL (@nicholashh query language)
@@ -21,6 +22,21 @@ async function explorer(req, res) {
   return res.status(err ? 400 : 200).json(final);
 }
 
+function getSchema(req, res, cb) {
+  db.select(["table_name", "column_name", "data_type"])
+    .from("information_schema.columns")
+    .where({
+      table_schema: "public",
+    })
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    });
+}
+
 module.exports = {
   explorer,
+  getSchema,
 };

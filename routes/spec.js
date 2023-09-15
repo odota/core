@@ -1791,19 +1791,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/schema",
-        func: (req, res, cb) => {
-          db.select(["table_name", "column_name", "data_type"])
-            .from("information_schema.columns")
-            .where({
-              table_schema: "public",
-            })
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
-        },
+        func: databaseHandler.getSchema,
       },
     },
     "/constants/{resource}": {
