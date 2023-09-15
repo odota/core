@@ -490,6 +490,15 @@ async function getPlayersByAccountIdWordCloud(req, res, cb) {
   );
 }
 
+async function getPlayersByAccountIdRatings(req, res, cb) {
+  queries.getPlayerRatings(db, req.params.account_id, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result);
+  });
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
