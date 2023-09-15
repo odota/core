@@ -1521,14 +1521,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/scenarios/itemTimings",
-        func: (req, res, cb) => {
-          queries.getItemTimings(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
-        },
+        func: databaseHandler.getItemTimings,
       },
     },
     "/scenarios/laneRoles": {
@@ -1565,14 +1558,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/scenarios/laneRoles",
-        func: (req, res, cb) => {
-          queries.getLaneRoles(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
-        },
+        func: databaseHandler.getLaneRoles,
       },
     },
     "/scenarios/misc": {
@@ -1598,14 +1584,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/scenarios/misc",
-        func: (req, res, cb) => {
-          queries.getTeamScenarios(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
-        },
+        func: databaseHandler.getTeamScenarios,
       },
     },
     "/schema": {

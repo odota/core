@@ -1,3 +1,4 @@
+const constants = require("dotaconstants");
 const { Client } = require("pg");
 const buildStatus = require("../../store/buildStatus");
 const config = require("../../config");
@@ -187,6 +188,33 @@ function getHealth(req, res, cb) {
   });
 }
 
+function getItemTimings(req, res, cb) {
+  queries.getItemTimings(req, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
+function getLaneRoles(req, res, cb) {
+  queries.getLaneRoles(req, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
+function getTeamScenarios(req, res, cb) {
+  queries.getTeamScenarios(req, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
 module.exports = {
   explorer,
   getConstants,
@@ -199,5 +227,8 @@ module.exports = {
   getReplayData,
   getRecordsByField,
   getRequestState,
+  getItemTimings,
+  getLaneRoles,
+  getTeamScenarios,
   requestParse,
 };
