@@ -1265,26 +1265,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/heroes/:hero_id/players",
-        func: (req, res, cb) => {
-          const heroId = req.params.hero_id;
-          db.raw(
-            `SELECT
-            account_id,
-            count(match_id) games_played,
-            sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
-            FROM matches
-            JOIN player_matches using(match_id)
-            WHERE player_matches.hero_id = ?
-            GROUP BY account_id
-            ORDER BY games_played DESC`,
-            [heroId]
-          ).asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
-        },
+        func: heroesHandler.getPlayersByHeroId,
       },
     },
     "/heroes/{hero_id}/itemPopularity": {
