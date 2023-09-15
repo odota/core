@@ -29,7 +29,7 @@ async function getPlayersByRank(req, res, cb) {
   }
 }
 
-async function getPlayersByAccountId(req, res, cb) {
+function getPlayersByAccountId(req, res, cb) {
   const accountId = Number(req.params.account_id);
   async.parallel(
     {
@@ -89,7 +89,7 @@ async function getPlayersByAccountId(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdWl(req, res, cb) {
+function getPlayersByAccountIdWl(req, res, cb) {
   const result = {
     win: 0,
     lose: 0,
@@ -117,7 +117,7 @@ async function getPlayersByAccountIdWl(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdRecentMatches(req, res, cb) {
+function getPlayersByAccountIdRecentMatches(req, res, cb) {
   queries.getPlayerMatches(
     req.params.account_id,
     {
@@ -159,7 +159,7 @@ async function getPlayersByAccountIdRecentMatches(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdMatches(req, res, cb) {
+function getPlayersByAccountIdMatches(req, res, cb) {
   // Use passed fields as additional fields, if available
   const additionalFields = req.query.project || [
     "hero_id",
@@ -191,7 +191,7 @@ async function getPlayersByAccountIdMatches(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdHeroes(req, res, cb) {
+function getPlayersByAccountIdHeroes(req, res, cb) {
   const heroes = {};
   // prefill heroes with every hero
   Object.keys(constants.heroes).forEach((heroId) => {
@@ -267,7 +267,7 @@ async function getPlayersByAccountIdHeroes(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdPeers(req, res, cb) {
+function getPlayersByAccountIdPeers(req, res, cb) {
   req.queryObj.project = req.queryObj.project.concat(
     "heroes",
     "start_time",
@@ -306,7 +306,7 @@ async function getPlayersByAccountIdPeers(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdPros(req, res, cb) {
+function getPlayersByAccountIdPros(req, res, cb) {
   req.queryObj.project = req.queryObj.project.concat(
     "heroes",
     "start_time",
@@ -338,7 +338,7 @@ async function getPlayersByAccountIdPros(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdTotals(req, res, cb) {
+function getPlayersByAccountIdTotals(req, res, cb) {
   const result = {};
   Object.keys(subkeys).forEach((key) => {
     result[key] = {
@@ -370,7 +370,7 @@ async function getPlayersByAccountIdTotals(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdCounts(req, res, cb) {
+function getPlayersByAccountIdCounts(req, res, cb) {
   const result = {};
   Object.keys(countCats).forEach((key) => {
     result[key] = {};
@@ -404,7 +404,7 @@ async function getPlayersByAccountIdCounts(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdHistogramsByField(req, res, cb) {
+function getPlayersByAccountIdHistogramsByField(req, res, cb) {
   const { field } = req.params;
   req.queryObj.project = req.queryObj.project
     .concat("radiant_win", "player_slot")
@@ -446,7 +446,7 @@ async function getPlayersByAccountIdHistogramsByField(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdWardMap(req, res, cb) {
+function getPlayersByAccountIdWardMap(req, res, cb) {
   const result = {
     obs: {},
     sen: {},
@@ -471,7 +471,7 @@ async function getPlayersByAccountIdWardMap(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdWordCloud(req, res, cb) {
+function getPlayersByAccountIdWordCloud(req, res, cb) {
   const result = {
     my_word_counts: {},
     all_word_counts: {},
@@ -496,7 +496,7 @@ async function getPlayersByAccountIdWordCloud(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdRatings(req, res, cb) {
+function getPlayersByAccountIdRatings(req, res, cb) {
   queries.getPlayerRatings(db, req.params.account_id, (err, result) => {
     if (err) {
       return cb(err);
@@ -505,7 +505,7 @@ async function getPlayersByAccountIdRatings(req, res, cb) {
   });
 }
 
-async function getPlayersByAccountIdRankings(req, res, cb) {
+function getPlayersByAccountIdRankings(req, res, cb) {
   queries.getPlayerHeroRankings(
     req.params.account_id,
     (err, result) => {
@@ -517,7 +517,7 @@ async function getPlayersByAccountIdRankings(req, res, cb) {
   );
 }
 
-async function getPlayersByAccountIdRefresh(req, res, cb) {
+function getPlayersByAccountIdRefresh(req, res, cb) {
   redis.rpush(
     "fhQueue",
     JSON.stringify({
@@ -534,7 +534,7 @@ async function getPlayersByAccountIdRefresh(req, res, cb) {
   );
 }
 
-async function getProPlayers(req, res, cb) {
+function getProPlayers(req, res, cb) {
   db.select()
     .from("players")
     .rightJoin(
