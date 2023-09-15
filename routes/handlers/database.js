@@ -148,11 +148,21 @@ function requestParse(req, res) {
   return exitWithJob("invalid input");
 }
 
+function getMetadata(req, res, cb) {
+  queries.getMetadata(req, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result);
+  });
+}
+
 module.exports = {
   explorer,
   getSchema,
   getMmrDistributions,
   getBuildStatus,
+  getMetadata,
   getReplayData,
   getRecordsByField,
   getRequestState,
