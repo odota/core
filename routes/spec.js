@@ -415,47 +415,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/players/:account_id/histograms/:field",
-        func: (req, res, cb) => {
-          const { field } = req.params;
-          req.queryObj.project = req.queryObj.project
-            .concat("radiant_win", "player_slot")
-            .concat([field].filter((f) => subkeys[f]));
-          queries.getPlayerMatches(
-            req.params.account_id,
-            req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              const buckets = 40;
-              // Find the maximum value to determine how large each bucket should be
-              const max = Math.max(...cache.map((m) => m[field]));
-              // Round the bucket size up to the nearest integer
-              const bucketSize = Math.ceil((max + 1) / buckets);
-              const bucketArray = Array.from(
-                {
-                  length: buckets,
-                },
-                (value, index) => ({
-                  x: bucketSize * index,
-                  games: 0,
-                  win: 0,
-                })
-              );
-              cache.forEach((m) => {
-                if (m[field] || m[field] === 0) {
-                  const index = Math.floor(m[field] / bucketSize);
-                  if (bucketArray[index]) {
-                    bucketArray[index].games += 1;
-                    bucketArray[index].win +=
-                      utility.isRadiant(m) === m.radiant_win ? 1 : 0;
-                  }
-                }
-              });
-              return res.json(bucketArray);
-            }
-          );
-        },
+        func: playersHandler.getPlayersByAccountIdHistogramsByField,
       },
     },
     "/players/{account_id}/wardmap": {
