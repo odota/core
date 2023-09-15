@@ -27,7 +27,20 @@ function getHeroRankings(req, res, cb) {
   });
 }
 
+function getHeroData(req, res, cb) {
+  db.select()
+    .from("heroes")
+    .orderBy("id", "asc")
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    });
+}
+
 module.exports = {
   getHeroBenchmarks,
   getHeroRankings,
+  getHeroData,
 };
