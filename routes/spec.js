@@ -1553,35 +1553,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/records/:field",
-        func: (req, res, cb) => {
-          redis.zrevrange(
-            `records:${req.params.field}`,
-            0,
-            99,
-            "WITHSCORES",
-            (err, rows) => {
-              if (err) {
-                return cb(err);
-              }
-              const entries = rows
-                .map((r, i) => {
-                  const match_id = parseInt(r.split(":")[0]);
-                  const start_time = parseInt(r.split(":")[1]);
-                  const hero_id = parseInt(r.split(":")[2]);
-                  const score = parseInt(rows[i + 1]);
-
-                  return {
-                    match_id: Number.isNaN(match_id) ? null : match_id,
-                    start_time: Number.isNaN(start_time) ? null : start_time,
-                    hero_id: Number.isNaN(hero_id) ? null : hero_id,
-                    score: Number.isNaN(score) ? null : score,
-                  };
-                })
-                .filter((r, i) => i % 2 === 0);
-              return res.json(entries);
-            }
-          );
-        },
+        func: databaseHandler.getRecordsByField,
       },
     },
     "/live": {

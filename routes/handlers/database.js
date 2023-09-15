@@ -57,9 +57,34 @@ function getBuildStatus(req, res, cb) {
   });
 }
 
+function getRecordsByField(req, res, cb) {
+  redis.zrevrange(`records:${req.params.field}`, 0, 99, "WITHSCORES", (err, rows) => {
+    if (err) {
+      return cb(err);
+    }
+    const entries = rows
+      .map((r, i) => {
+        const matchId = parseInt(r.split(":")[0], 10);
+        const startTime = parseInt(r.split(":")[1], 10);
+        const heroId = parseInt(r.split(":")[2], 10);
+        const score = parseInt(rows[i + 1], 10);
+
+        return {
+          match_id: Number.isNaN(matchId) ? null : matchId,
+          start_time: Number.isNaN(startTime) ? null : startTime,
+          hero_id: Number.isNaN(heroId) ? null : heroId,
+          score: Number.isNaN(score) ? null : score,
+        };
+      })
+      .filter((r, i) => i % 2 === 0);
+    return res.json(entries);
+  });
+}
+
 module.exports = {
   explorer,
   getSchema,
   getMmrDistributions,
   getBuildStatus,
+  getRecordsByField,
 };
