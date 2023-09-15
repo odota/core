@@ -45,8 +45,7 @@ function getProMatches(req, res, cb) {
 }
 
 async function getPublicMatches(req, res, cb) {
-  const currMax =
-    (await db("public_matches").max("match_id").first()).max || 0;
+  const currMax = (await db("public_matches").max("match_id").first()).max || 0;
   const lessThan = Number(req.query.less_than_match_id) || currMax;
   let moreThan = lessThan - 1000000;
   let order = "";
@@ -58,12 +57,8 @@ async function getPublicMatches(req, res, cb) {
     order = "ORDER BY match_id DESC";
     moreThan = 0;
   }
-  const minRank = req.query.min_rank
-    ? `AND avg_rank_tier >= ${req.query.min_rank}`
-    : "";
-  const maxRank = req.query.max_rank
-    ? `AND avg_rank_tier <= ${req.query.max_rank}`
-    : "";
+  const minRank = req.query.min_rank ? `AND avg_rank_tier >= ${req.query.min_rank}` : "";
+  const maxRank = req.query.max_rank ? `AND avg_rank_tier <= ${req.query.max_rank}` : "";
 
   db.raw(
     `
@@ -96,8 +91,7 @@ async function getPublicMatches(req, res, cb) {
 }
 
 function getParsedMatches(req, res, cb) {
-  const lessThan =
-    req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
+  const lessThan = req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
 
   db.raw(
     `

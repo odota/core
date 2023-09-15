@@ -1,34 +1,22 @@
 const db = require("../../store/db");
 
-function getTeamsData(req, res, cb) {
+function getHeroesByTeamId(req, res, cb) {
   db.raw(
-    `SELECT team_rating.*, teams.*
-      FROM teams
-      LEFT JOIN team_rating using(team_id)
-      ORDER BY rating desc NULLS LAST
-      LIMIT 1000
-      OFFSET ?`,
-    [(Number(req.query.page) || 0) * 1000]
-  ).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return res.json(result.rows);
-  });
-}
-
-function getTeamById(req, res, cb) {
-  db.raw(
-    `SELECT team_rating.*, teams.*
-      FROM teams
-      LEFT JOIN team_rating using(team_id)
-      WHERE teams.team_id = ?`,
+    `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+      FROM matches
+      JOIN team_match USING(match_id)
+      JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
+      JOIN teams USING(team_id)
+      LEFT JOIN heroes ON player_matches.hero_id = heroes.id
+      WHERE teams.team_id = ?
+      GROUP BY hero_id, localized_name
+      ORDER BY games_played DESC`,
     [req.params.team_id]
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
-    return res.json(result.rows[0]);
+    return res.json(result.rows);
   });
 }
 
@@ -73,18 +61,15 @@ function getPlayersByTeamId(req, res, cb) {
   });
 }
 
-function getHeroesByTeamId(req, res, cb) {
+function getTeamsData(req, res, cb) {
   db.raw(
-    `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
-      FROM matches
-      JOIN team_match USING(match_id)
-      JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
-      JOIN teams USING(team_id)
-      LEFT JOIN heroes ON player_matches.hero_id = heroes.id
-      WHERE teams.team_id = ?
-      GROUP BY hero_id, localized_name
-      ORDER BY games_played DESC`,
-    [req.params.team_id]
+    `SELECT team_rating.*, teams.*
+      FROM teams
+      LEFT JOIN team_rating using(team_id)
+      ORDER BY rating desc NULLS LAST
+      LIMIT 1000
+      OFFSET ?`,
+    [(Number(req.query.page) || 0) * 1000]
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);
@@ -93,10 +78,25 @@ function getHeroesByTeamId(req, res, cb) {
   });
 }
 
+function getTeamById(req, res, cb) {
+  db.raw(
+    `SELECT team_rating.*, teams.*
+      FROM teams
+      LEFT JOIN team_rating using(team_id)
+      WHERE teams.team_id = ?`,
+    [req.params.team_id]
+  ).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows[0]);
+  });
+}
+
 module.exports = {
-  getTeamsData,
-  getTeamById,
+  getHeroesByTeamId,
   getMatchesByTeamId,
   getPlayersByTeamId,
-  getHeroesByTeamId,
+  getTeamsData,
+  getTeamById,
 };

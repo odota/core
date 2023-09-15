@@ -185,9 +185,9 @@ function getPlayersByAccountIdHeroes(req, res, cb) {
   const heroes = {};
   // prefill heroes with every hero
   Object.keys(constants.heroes).forEach((heroId) => {
-    hero_id_int = parseInt(heroId);
+    const heroIdInt = parseInt(heroId, 10);
     const hero = {
-      hero_id: hero_id_int,
+      hero_id: heroIdInt,
       last_played: 0,
       games: 0,
       win: 0,
@@ -196,7 +196,7 @@ function getPlayersByAccountIdHeroes(req, res, cb) {
       against_games: 0,
       against_win: 0,
     };
-    heroes[hero_id_int] = hero;
+    heroes[heroIdInt] = hero;
   });
   req.queryObj.project = req.queryObj.project.concat("heroes", "account_id", "start_time", "player_slot", "radiant_win");
   queries.getPlayerMatches(req.params.account_id, req.queryObj, (err, cache) => {

@@ -28,29 +28,6 @@ async function explorer(req, res) {
   return res.status(err ? 400 : 200).json(final);
 }
 
-function getSchema(req, res, cb) {
-  db.select(["table_name", "column_name", "data_type"])
-    .from("information_schema.columns")
-    .where({
-      table_schema: "public",
-    })
-    .asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return res.json(result);
-    });
-}
-
-function getMmrDistributions(req, res, cb) {
-  queries.getDistributions(redis, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return res.json(result);
-  });
-}
-
 function getBuildStatus(req, res, cb) {
   buildStatus(db, redis, (err, status) => {
     if (err) {
@@ -58,18 +35,6 @@ function getBuildStatus(req, res, cb) {
     }
     return res.json(status);
   });
-}
-
-function getReplayData(req, res, cb) {
-  db.select(["match_id", "cluster", "replay_salt"])
-    .from("match_gcdata")
-    .whereIn("match_id", [].concat(req.query.match_id || []).slice(0, 5))
-    .asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return res.json(result);
-    });
 }
 
 function getConstants(req, res) {
@@ -82,6 +47,60 @@ function getConstantsByResource(req, res, cb) {
     return res.json(constants[resource]);
   }
   return cb();
+}
+
+function getHealth(req, res, cb) {
+  redis.hgetall("health", (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    const response = result || {};
+    Object.keys(response).forEach((key) => {
+      response[key] = JSON.parse(response[key]);
+    });
+    if (!req.params.metric) {
+      return res.json(response);
+    }
+    const single = response[req.params.metric];
+    const healthy = single.metric < single.threshold;
+    return res.status(healthy ? 200 : 500).json(single);
+  });
+}
+
+function getItemTimings(req, res, cb) {
+  queries.getItemTimings(req, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
+function getLaneRoles(req, res, cb) {
+  queries.getLaneRoles(req, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
+function getMetadata(req, res, cb) {
+  queries.getMetadata(req, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result);
+  });
+}
+
+function getMmrDistributions(req, res, cb) {
+  queries.getDistributions(redis, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result);
+  });
 }
 
 function getRecordsByField(req, res, cb) {
@@ -108,6 +127,18 @@ function getRecordsByField(req, res, cb) {
   });
 }
 
+function getReplayData(req, res, cb) {
+  db.select(["match_id", "cluster", "replay_salt"])
+    .from("match_gcdata")
+    .whereIn("match_id", [].concat(req.query.match_id || []).slice(0, 5))
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    });
+}
+
 function getRequestState(req, res, cb) {
   queue.getJob(req.params.jobId, (err, job) => {
     if (err) {
@@ -117,6 +148,29 @@ function getRequestState(req, res, cb) {
       return res.json({ ...job, jobId: job.id });
     }
     return res.json(null);
+  });
+}
+
+function getSchema(req, res, cb) {
+  db.select(["table_name", "column_name", "data_type"])
+    .from("information_schema.columns")
+    .where({
+      table_schema: "public",
+    })
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    });
+}
+
+function getTeamScenarios(req, res, cb) {
+  queries.getTeamScenarios(req, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
   });
 }
 
@@ -161,74 +215,20 @@ function requestParse(req, res) {
   return exitWithJob("invalid input");
 }
 
-function getMetadata(req, res, cb) {
-  queries.getMetadata(req, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return res.json(result);
-  });
-}
-
-function getHealth(req, res, cb) {
-  redis.hgetall("health", (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    const response = result || {};
-    Object.keys(response).forEach((key) => {
-      response[key] = JSON.parse(response[key]);
-    });
-    if (!req.params.metric) {
-      return res.json(response);
-    }
-    const single = response[req.params.metric];
-    const healthy = single.metric < single.threshold;
-    return res.status(healthy ? 200 : 500).json(single);
-  });
-}
-
-function getItemTimings(req, res, cb) {
-  queries.getItemTimings(req, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return res.json(result.rows);
-  });
-}
-
-function getLaneRoles(req, res, cb) {
-  queries.getLaneRoles(req, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return res.json(result.rows);
-  });
-}
-
-function getTeamScenarios(req, res, cb) {
-  queries.getTeamScenarios(req, (err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return res.json(result.rows);
-  });
-}
-
 module.exports = {
   explorer,
+  getBuildStatus,
   getConstants,
   getConstantsByResource,
-  getSchema,
   getHealth,
-  getMmrDistributions,
-  getBuildStatus,
-  getMetadata,
-  getReplayData,
-  getRecordsByField,
-  getRequestState,
   getItemTimings,
   getLaneRoles,
+  getMetadata,
+  getMmrDistributions,
+  getRecordsByField,
+  getReplayData,
+  getRequestState,
+  getSchema,
   getTeamScenarios,
   requestParse,
 };

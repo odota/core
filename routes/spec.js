@@ -1,14 +1,12 @@
-const constants = require("dotaconstants");
-const redis = require("../store/redis");
 const packageJson = require("../package.json");
 const params = require("./requests/importParams");
 const responses = require("./responses/schemas/importResponseSchemas");
 const generateOperationId = require("./generateOperationId");
 const databaseHandler = require("./handlers/database")
+const heroesHandler = require("./handlers/heroes");
 const leaguesHandler = require("./handlers/leagues")
 const matchesHandler = require("./handlers/matches")
 const playersHandler = require("./handlers/players");
-const heroesHandler = require("./handlers/heroes");
 const teamsHandler = require("./handlers/teams");
 
 const parameters = Object.values(params).reduce(
