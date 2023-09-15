@@ -39,8 +39,19 @@ function getHeroData(req, res, cb) {
     });
 }
 
+function getHeroStats(req, res, cb) {
+  // fetch from cached redis value
+  redis.get("heroStats", (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(JSON.parse(result));
+  });
+}
+
 module.exports = {
   getHeroBenchmarks,
   getHeroRankings,
   getHeroData,
+  getHeroStats,
 };
