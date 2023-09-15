@@ -5,8 +5,6 @@ const config = require("../config");
 // const uuidV4 = require("uuid/v4");
 const queue = require("../store/queue");
 const queries = require("../store/queries");
-const search = require("../store/search");
-const searchES = require("../store/searchES");
 const buildStatus = require("../store/buildStatus");
 // const getGcData = require("../util/getGcData");
 const utility = require("../util/utility");
@@ -19,6 +17,7 @@ const generateOperationId = require("./generateOperationId");
 const matchesHandler = require("./handlers/matches")
 const playersHandler = require("./handlers/players");
 const heroesHandler = require("./handlers/heroes");
+const teamsHandler = require("./handlers/teams");
 
 const { redisCount, matchupToString } = utility;
 
@@ -1474,22 +1473,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/teams",
-        func: (req, res, cb) => {
-          db.raw(
-            `SELECT team_rating.*, teams.*
-            FROM teams
-            LEFT JOIN team_rating using(team_id)
-            ORDER BY rating desc NULLS LAST
-            LIMIT 1000
-            OFFSET ?`,
-            [(Number(req.query.page) || 0) * 1000]
-          ).asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
-        },
+        func: teamsHandler.getTeamsData,
       },
     },
     "/teams/{team_id}": {
