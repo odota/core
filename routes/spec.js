@@ -9,7 +9,6 @@ const queue = require("../store/queue");
 const queries = require("../store/queries");
 const search = require("../store/search");
 const searchES = require("../store/searchES");
-const buildMatch = require("../store/buildMatch");
 const buildStatus = require("../store/buildStatus");
 const playerFields = require("./playerFields.json");
 // const getGcData = require("../util/getGcData");
@@ -21,6 +20,7 @@ const cacheFunctions = require("../store/cacheFunctions");
 const params = require("./requests/importParams");
 const responses = require("./responses/schemas/importResponseSchemas");
 const generateOperationId = require("./generateOperationId");
+const matchesHandler = require('./handlers/matches')
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
@@ -118,17 +118,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/matches/:match_id/:info?",
-        func: async (req, res, cb) => {
-          try {
-            const match = await buildMatch(req.params.match_id, req.query);
-            if (!match) {
-              return cb();
-            }
-            return res.json(match);
-          } catch (err) {
-            return cb(err);
-          }
-        },
+        func: matchesHandler.getMatchById,
       },
     },
     "/playersByRank": {
