@@ -185,6 +185,82 @@ async function getPlayersByAccountIdMatches(req, res, cb) {
   );
 }
 
+async function getPlayersByAccountIdHeroes(req, res, cb) {
+  const heroes = {};
+  // prefill heroes with every hero
+  Object.keys(constants.heroes).forEach((heroId) => {
+    hero_id_int = parseInt(heroId);
+    const hero = {
+      hero_id: hero_id_int,
+      last_played: 0,
+      games: 0,
+      win: 0,
+      with_games: 0,
+      with_win: 0,
+      against_games: 0,
+      against_win: 0,
+    };
+    heroes[hero_id_int] = hero;
+  });
+  req.queryObj.project = req.queryObj.project.concat(
+    "heroes",
+    "account_id",
+    "start_time",
+    "player_slot",
+    "radiant_win"
+  );
+  queries.getPlayerMatches(
+    req.params.account_id,
+    req.queryObj,
+    (err, cache) => {
+      if (err) {
+        return cb(err);
+      }
+      cache.forEach((m) => {
+        const { isRadiant } = utility;
+        const playerWin = isRadiant(m) === m.radiant_win;
+        const group = m.heroes || {};
+        Object.keys(group).forEach((key) => {
+          const tm = group[key];
+          const tmHero = tm.hero_id;
+          // don't count invalid heroes
+          if (tmHero in heroes) {
+            if (isRadiant(tm) === isRadiant(m)) {
+              if (tm.account_id === m.account_id) {
+                heroes[tmHero].games += 1;
+                heroes[tmHero].win += playerWin ? 1 : 0;
+                if (m.start_time > heroes[tmHero].last_played) {
+                  heroes[tmHero].last_played = m.start_time;
+                }
+              } else {
+                heroes[tmHero].with_games += 1;
+                heroes[tmHero].with_win += playerWin ? 1 : 0;
+              }
+            } else {
+              heroes[tmHero].against_games += 1;
+              heroes[tmHero].against_win += playerWin ? 1 : 0;
+            }
+          }
+        });
+      });
+      const result = Object.keys(heroes)
+        .map((k) => heroes[k])
+        .filter(
+          (hero) =>
+            !req.queryObj.having ||
+            hero.games >= Number(req.queryObj.having)
+        )
+        .sort((a, b) => b.games - a.games);
+      return cacheFunctions.sendDataWithCache(
+        req,
+        res,
+        result,
+        "heroes"
+      );
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
