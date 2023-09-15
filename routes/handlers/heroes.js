@@ -1,3 +1,4 @@
+const moment = require("moment");
 const db = require("../../store/db");
 const queries = require("../../store/queries");
 const redis = require("../../store/redis");
@@ -81,10 +82,34 @@ function getRecentMatchesByHeroId(req, res, cb) {
   });
 }
 
+function getMatchupsByHeroId(req, res, cb) {
+  const heroId = req.params.hero_id;
+  db.raw(
+    `SELECT
+    pm2.hero_id,
+    count(player_matches.match_id) games_played,
+    sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+    FROM matches
+    JOIN player_matches using(match_id)
+    JOIN player_matches pm2 on player_matches.match_id = pm2.match_id AND (player_matches.player_slot < 128) != (pm2.player_slot < 128)
+    WHERE player_matches.hero_id = ?
+    AND matches.start_time > ?
+    GROUP BY pm2.hero_id
+    ORDER BY games_played DESC`,
+    [heroId, moment().subtract(1, "year").format("X")]
+  ).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
 module.exports = {
   getHeroBenchmarks,
   getHeroRankings,
   getHeroData,
   getHeroStats,
   getRecentMatchesByHeroId,
+  getMatchupsByHeroId,
 };
