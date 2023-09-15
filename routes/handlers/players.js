@@ -551,6 +551,27 @@ function getProPlayers(req, res, cb) {
     });
 }
 
+function searchPlayers(req, res, cb) {
+  if (!req.query.q) {
+    return res.status(400).json([]);
+  }
+
+  if (req.query.es || utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)) {
+    return searchES(req.query, (err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    });
+  }
+  return search(req.query, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result);
+  });
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
@@ -569,4 +590,5 @@ module.exports = {
   getPlayersByAccountIdRankings,
   getPlayersByAccountIdRefresh,
   getProPlayers,
+  searchPlayers,
 };
