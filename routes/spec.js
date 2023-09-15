@@ -1,5 +1,4 @@
 const constants = require("dotaconstants");
-const moment = require("moment");
 const { Client } = require("pg");
 const config = require("../config");
 // const crypto = require("crypto");
@@ -1292,21 +1291,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/heroes/:hero_id/itemPopularity",
-        func: (req, res, cb) => {
-          const heroId = req.params.hero_id;
-          queries.getHeroItemPopularity(
-            db,
-            redis,
-            heroId,
-            {},
-            (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            }
-          );
-        },
+        func: heroesHandler.getItemPopularityByHeroId,
       },
     },
     "/leagues": {

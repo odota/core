@@ -146,6 +146,16 @@ function getPlayersByHeroId(req, res, cb) {
   });
 }
 
+function getItemPopularityByHeroId(req, res, cb) {
+  const heroId = req.params.hero_id;
+  queries.getHeroItemPopularity(db, redis, heroId, {}, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result);
+  });
+}
+
 module.exports = {
   getHeroBenchmarks,
   getHeroRankings,
@@ -155,4 +165,5 @@ module.exports = {
   getMatchupsByHeroId,
   getMatchDurationsByHeroId,
   getPlayersByHeroId,
+  getItemPopularityByHeroId,
 };
