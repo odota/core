@@ -1,6 +1,4 @@
 const constants = require("dotaconstants");
-const { Client } = require("pg");
-const config = require("../config");
 // const crypto = require("crypto");
 // const uuidV4 = require("uuid/v4");
 const queue = require("../store/queue");
@@ -14,6 +12,7 @@ const packageJson = require("../package.json");
 const params = require("./requests/importParams");
 const responses = require("./responses/schemas/importResponseSchemas");
 const generateOperationId = require("./generateOperationId");
+const databaseHandler = require("./handlers/database")
 const matchesHandler = require("./handlers/matches")
 const playersHandler = require("./handlers/players");
 const heroesHandler = require("./handlers/heroes");
@@ -687,27 +686,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/explorer",
-        func: async (req, res) => {
-          // TODO handle NQL (@nicholashh query language)
-          const input = req.query.sql;
-          const client = new Client({
-            connectionString: config.READONLY_POSTGRES_URL,
-            statement_timeout: 10000,
-          });
-          client.connect();
-          let result = null;
-          let err = null;
-          try {
-            result = await client.query(input);
-          } catch (e) {
-            err = e;
-          }
-          client.end();
-          const final = Object.assign({}, result, {
-            err: err && err.toString(),
-          });
-          return res.status(err ? 400 : 200).json(final);
-        },
+        func: databaseHandler.explorer,
       },
     },
     "/metadata": {
