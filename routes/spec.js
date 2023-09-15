@@ -1,10 +1,6 @@
 const constants = require("dotaconstants");
-// const crypto = require("crypto");
-// const uuidV4 = require("uuid/v4");
 const queue = require("../store/queue");
 const queries = require("../store/queries");
-const buildStatus = require("../store/buildStatus");
-// const getGcData = require("../util/getGcData");
 const utility = require("../util/utility");
 const db = require("../store/db");
 const redis = require("../store/redis");
@@ -863,14 +859,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/status",
-        func: (req, res, cb) => {
-          buildStatus(db, redis, (err, status) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(status);
-          });
-        },
+        func: databaseHandler.getBuildStatus,
       },
     },
     "/health": {

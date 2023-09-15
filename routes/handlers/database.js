@@ -1,4 +1,5 @@
 const { Client } = require("pg");
+const buildStatus = require("../../store/buildStatus");
 const config = require("../../config");
 const db = require("../../store/db");
 const queries = require("../../store/queries");
@@ -47,8 +48,18 @@ function getMmrDistributions(req, res, cb) {
   });
 }
 
+function getBuildStatus(req, res, cb) {
+  buildStatus(db, redis, (err, status) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(status);
+  });
+}
+
 module.exports = {
   explorer,
   getSchema,
   getMmrDistributions,
+  getBuildStatus,
 };
