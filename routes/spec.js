@@ -9,21 +9,18 @@ const queries = require("../store/queries");
 const search = require("../store/search");
 const searchES = require("../store/searchES");
 const buildStatus = require("../store/buildStatus");
-const playerFields = require("./playerFields.json");
 // const getGcData = require("../util/getGcData");
 const utility = require("../util/utility");
 const db = require("../store/db");
 const redis = require("../store/redis");
 const packageJson = require("../package.json");
-const cacheFunctions = require("../store/cacheFunctions");
 const params = require("./requests/importParams");
 const responses = require("./responses/schemas/importResponseSchemas");
 const generateOperationId = require("./generateOperationId");
 const matchesHandler = require("./handlers/matches")
 const playersHandler = require("./handlers/players");
 
-const { redisCount, countPeers, matchupToString } = utility;
-const { subkeys, countCats } = playerFields;
+const { redisCount, matchupToString } = utility;
 
 const parameters = Object.values(params).reduce(
   (acc, category) => ({ ...acc, ...category }),
