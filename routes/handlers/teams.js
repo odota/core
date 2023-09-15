@@ -73,9 +73,30 @@ function getPlayersByTeamId(req, res, cb) {
   });
 }
 
+function getHeroesByTeamId(req, res, cb) {
+  db.raw(
+    `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+      FROM matches
+      JOIN team_match USING(match_id)
+      JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
+      JOIN teams USING(team_id)
+      LEFT JOIN heroes ON player_matches.hero_id = heroes.id
+      WHERE teams.team_id = ?
+      GROUP BY hero_id, localized_name
+      ORDER BY games_played DESC`,
+    [req.params.team_id]
+  ).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
 module.exports = {
   getTeamsData,
   getTeamById,
   getMatchesByTeamId,
   getPlayersByTeamId,
+  getHeroesByTeamId,
 };
