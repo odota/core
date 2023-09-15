@@ -187,33 +187,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/players/:account_id/wl",
-        func: (req, res, cb) => {
-          const result = {
-            win: 0,
-            lose: 0,
-          };
-          req.queryObj.project = req.queryObj.project.concat(
-            "player_slot",
-            "radiant_win"
-          );
-          queries.getPlayerMatches(
-            req.params.account_id,
-            req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              cache.forEach((m) => {
-                if (utility.isRadiant(m) === m.radiant_win) {
-                  result.win += 1;
-                } else {
-                  result.lose += 1;
-                }
-              });
-              return cacheFunctions.sendDataWithCache(req, res, result, "wl");
-            }
-          );
-        },
+        func: playersHandler.getPlayersByAccountIdWl,
       },
     },
     "/players/{account_id}/recentMatches": {

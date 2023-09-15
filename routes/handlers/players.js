@@ -1,4 +1,5 @@
 const async = require("async");
+const cacheFunctions = require("../../store/cacheFunctions");
 const db = require("../../store/db");
 const queries = require("../../store/queries");
 const utility = require("../../util/utility");
@@ -82,7 +83,36 @@ async function getPlayersByAccountId(req, res, cb) {
     );
 }
 
+async function getPlayersByAccountIdWl(req, res, cb) {
+  const result = {
+    win: 0,
+    lose: 0,
+  };
+  req.queryObj.project = req.queryObj.project.concat(
+    "player_slot",
+    "radiant_win"
+  );
+  queries.getPlayerMatches(
+    req.params.account_id,
+    req.queryObj,
+    (err, cache) => {
+      if (err) {
+        return cb(err);
+      }
+      cache.forEach((m) => {
+        if (utility.isRadiant(m) === m.radiant_win) {
+          result.win += 1;
+        } else {
+          result.lose += 1;
+        }
+      });
+      return cacheFunctions.sendDataWithCache(req, res, result, "wl");
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
+  getPlayersByAccountIdWl,
 };
