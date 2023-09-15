@@ -1,5 +1,4 @@
 const constants = require("dotaconstants");
-const queries = require("../store/queries");
 const redis = require("../store/redis");
 const packageJson = require("../package.json");
 const params = require("./requests/importParams");
@@ -870,23 +869,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/health/:metric?",
-        func: (req, res, cb) => {
-          redis.hgetall("health", (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            const response = result || {};
-            Object.keys(response).forEach((key) => {
-              response[key] = JSON.parse(response[key]);
-            });
-            if (!req.params.metric) {
-              return res.json(response);
-            }
-            const single = response[req.params.metric];
-            const healthy = single.metric < single.threshold;
-            return res.status(healthy ? 200 : 500).json(single);
-          });
-        },
+        func: databaseHandler.getHealth,
       },
     },
     "/request/{jobId}": {

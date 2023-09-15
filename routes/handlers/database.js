@@ -157,9 +157,28 @@ function getMetadata(req, res, cb) {
   });
 }
 
+function getHealth(req, res, cb) {
+  redis.hgetall("health", (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    const response = result || {};
+    Object.keys(response).forEach((key) => {
+      response[key] = JSON.parse(response[key]);
+    });
+    if (!req.params.metric) {
+      return res.json(response);
+    }
+    const single = response[req.params.metric];
+    const healthy = single.metric < single.threshold;
+    return res.status(healthy ? 200 : 500).json(single);
+  });
+}
+
 module.exports = {
   explorer,
   getSchema,
+  getHealth,
   getMmrDistributions,
   getBuildStatus,
   getMetadata,
