@@ -573,22 +573,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/proPlayers",
-        func: (req, res, cb) => {
-          db.select()
-            .from("players")
-            .rightJoin(
-              "notable_players",
-              "players.account_id",
-              "notable_players.account_id"
-            )
-            .orderBy("notable_players.account_id", "asc")
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
-        },
+        func: playersHandler.getProPlayers,
       },
     },
     "/proMatches": {

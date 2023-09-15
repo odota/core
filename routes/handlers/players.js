@@ -528,6 +528,23 @@ async function getPlayersByAccountIdRefresh(req, res, cb) {
   );
 }
 
+async function getProPlayers(req, res, cb) {
+  db.select()
+    .from("players")
+    .rightJoin(
+      "notable_players",
+      "players.account_id",
+      "notable_players.account_id"
+    )
+    .orderBy("notable_players.account_id", "asc")
+    .asCallback((err, result) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(result);
+    });
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
