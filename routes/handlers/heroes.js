@@ -105,6 +105,26 @@ function getMatchupsByHeroId(req, res, cb) {
   });
 }
 
+function getMatchDurationsByHeroId(req, res, cb) {
+  const heroId = req.params.hero_id;
+  db.raw(
+    `SELECT
+    (matches.duration / 300 * 300) duration_bin,
+    count(match_id) games_played,
+    sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
+    FROM matches
+    JOIN player_matches using(match_id)
+    WHERE player_matches.hero_id = ?
+    GROUP BY (matches.duration / 300 * 300)`,
+    [heroId]
+  ).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result.rows);
+  });
+}
+
 module.exports = {
   getHeroBenchmarks,
   getHeroRankings,
@@ -112,4 +132,5 @@ module.exports = {
   getHeroStats,
   getRecentMatchesByHeroId,
   getMatchupsByHeroId,
+  getMatchDurationsByHeroId,
 };
