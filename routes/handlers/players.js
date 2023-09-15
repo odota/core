@@ -153,6 +153,38 @@ async function getPlayersByAccountIdRecentMatches(req, res, cb) {
   );
 }
 
+async function getPlayersByAccountIdMatches(req, res, cb) {
+  // Use passed fields as additional fields, if available
+  const additionalFields = req.query.project || [
+    "hero_id",
+    "start_time",
+    "duration",
+    "player_slot",
+    "radiant_win",
+    "game_mode",
+    "lobby_type",
+    "version",
+    "kills",
+    "deaths",
+    "assists",
+    "skill",
+    "average_rank",
+    "leaver_status",
+    "party_size",
+  ];
+  req.queryObj.project = req.queryObj.project.concat(additionalFields);
+  queries.getPlayerMatches(
+    req.params.account_id,
+    req.queryObj,
+    (err, cache) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(cache);
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
