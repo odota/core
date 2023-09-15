@@ -261,6 +261,45 @@ async function getPlayersByAccountIdHeroes(req, res, cb) {
   );
 }
 
+async function getPlayersByAccountIdPeers(req, res, cb) {
+  req.queryObj.project = req.queryObj.project.concat(
+    "heroes",
+    "start_time",
+    "player_slot",
+    "radiant_win",
+    "gold_per_min",
+    "xp_per_min"
+  );
+  queries.getPlayerMatches(
+    req.params.account_id,
+    req.queryObj,
+    (err, cache) => {
+      if (err) {
+        return cb(err);
+      }
+      const teammates = utility.countPeers(cache);
+      return queries.getPeers(
+        db,
+        teammates,
+        {
+          account_id: req.params.account_id,
+        },
+        (err, result) => {
+          if (err) {
+            return cb(err);
+          }
+          return cacheFunctions.sendDataWithCache(
+            req,
+            res,
+            result,
+            "peers"
+          );
+        }
+      );
+    }
+  );
+}
+
 module.exports = {
   getPlayersByRank,
   getPlayersByAccountId,
