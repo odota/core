@@ -1,6 +1,8 @@
 const { Client } = require("pg");
 const config = require("../../config");
 const db = require("../../store/db");
+const queries = require("../../store/queries");
+const redis = require("../../store/redis");
 
 async function explorer(req, res) {
   // TODO handle NQL (@nicholashh query language)
@@ -36,7 +38,17 @@ function getSchema(req, res, cb) {
     });
 }
 
+function getMmrDistributions(req, res, cb) {
+  queries.getDistributions(redis, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(result);
+  });
+}
+
 module.exports = {
   explorer,
   getSchema,
+  getMmrDistributions,
 };
