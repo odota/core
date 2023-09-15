@@ -1519,26 +1519,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/teams/:team_id/matches",
-        func: (req, res, cb) => {
-          db.raw(
-            `
-            SELECT team_match.match_id, radiant_win, radiant_score, dire_score, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
-            FROM team_match
-            JOIN matches USING(match_id)
-            JOIN leagues USING(leagueid)
-            JOIN team_match tm2 on team_match.match_id = tm2.match_id and team_match.team_id != tm2.team_id
-            JOIN teams teams2 on tm2.team_id = teams2.team_id
-            WHERE team_match.team_id = ?
-            ORDER BY match_id DESC
-            `,
-            [req.params.team_id]
-          ).asCallback((err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
-        },
+        func: teamsHandler.getMatchesByTeamId,
       },
     },
     "/teams/{team_id}/players": {
