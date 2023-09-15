@@ -13,6 +13,7 @@ const params = require("./requests/importParams");
 const responses = require("./responses/schemas/importResponseSchemas");
 const generateOperationId = require("./generateOperationId");
 const databaseHandler = require("./handlers/database")
+const leaguesHandler = require("./handlers/leagues")
 const matchesHandler = require("./handlers/matches")
 const playersHandler = require("./handlers/players");
 const heroesHandler = require("./handlers/heroes");
@@ -1294,16 +1295,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => "/leagues",
-        func: (req, res, cb) => {
-          db.select()
-            .from("leagues")
-            .asCallback((err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
-        },
+        func: leaguesHandler.getLeagues,
       },
     },
     "/leagues/{league_id}": {
