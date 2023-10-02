@@ -26,8 +26,8 @@ const app = express();
 const steamObj = {};
 const minUpTimeSeconds = 120;
 const timeoutMs = 1500;
-const accountsToUse = 3;
-const matchRequestLimit = 550;
+const accountsToUse = 2;
+const matchRequestLimit = 350;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 400;
 const matchRequestDelayStep = 3;
@@ -401,19 +401,26 @@ function init() {
     */
     },
     () => {
-      allReady = true;
+      if (Object.keys(steamObj).length === 0) {
+        chooseLoginInfo();
+        init();
+      } else {
+        allReady = true;
+      }
     }
   );
 }
 
+if (config.STEAM_ACCOUNT_DATA) {
+  const accountData = cp
+    .execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`, {
+      maxBuffer: 8 * 1024 * 1024,
+    })
+    .toString()
+    .split(/\r\n|\r|\n/g);
+}
+
 function chooseLoginInfo() {
-  if (config.STEAM_ACCOUNT_DATA) {
-    const accountData = cp
-      .execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`, {
-        maxBuffer: 8 * 1024 * 1024,
-      })
-      .toString()
-      .split(/\r\n|\r|\n/g);
     const startIndex = Math.floor(
       Math.random() * (accountData.length - accountsToUse)
     );
