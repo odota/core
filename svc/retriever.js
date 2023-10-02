@@ -26,8 +26,8 @@ const app = express();
 const steamObj = {};
 const minUpTimeSeconds = 120;
 const timeoutMs = 1500;
-const accountsToUse = 5;
-const matchRequestLimit = 950;
+const accountsToUse = 3;
+const matchRequestLimit = 550;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 400;
 const matchRequestDelayStep = 3;
@@ -290,7 +290,8 @@ function init() {
         if (logOnResp.eresult !== Steam.EResult.OK) {
           // try logging on again
           console.error(logOnResp);
-          client.steamUser.logOn(logOnDetails);
+          // client.steamUser.logOn(logOnDetails);
+          cb();
           return;
         }
 
