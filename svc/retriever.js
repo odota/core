@@ -411,8 +411,9 @@ function init() {
   );
 }
 
+let accountData = [];
 if (config.STEAM_ACCOUNT_DATA) {
-  const accountData = cp
+  accountData = cp
     .execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`, {
       maxBuffer: 8 * 1024 * 1024,
     })
