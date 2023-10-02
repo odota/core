@@ -421,6 +421,7 @@ if (config.STEAM_ACCOUNT_DATA) {
 }
 
 function chooseLoginInfo() {
+  if (config.STEAM_ACCOUNT_DATA) {
     const startIndex = Math.floor(
       Math.random() * (accountData.length - accountsToUse)
     );
