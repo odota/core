@@ -127,6 +127,7 @@ Steam.servers = [
 ];
 
 function selfDestruct() {
+  console.log('shutting down');
   process.exit(0);
 }
 
