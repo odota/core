@@ -247,7 +247,7 @@ function init() {
       };
 
       client.steamUser = new Steam.SteamUser(client);
-      client.steamFriends = new Steam.SteamFriends(client);
+      // client.steamFriends = new Steam.SteamFriends(client);
       client.logOnDetails = logOnDetails;
       client.Dota2 = new Dota2.Dota2Client(client, false);
       client.Dota2.on("ready", () => {
@@ -297,7 +297,7 @@ function init() {
 
         if (client && client.steamID) {
           console.log("[STEAM] Logged on %s", client.steamID);
-          client.steamFriends.setPersonaName(client.steamID.toString());
+          // client.steamFriends.setPersonaName(client.steamID.toString());
           steamObj[client.steamID] = client;
           client.Dota2.launch();
         }
