@@ -29,10 +29,10 @@ const timeoutMs = 5000;
 // maybe 200 per account?
 const accountsToUse = 3;
 // maybe can do 1000 per IP now?
-const matchRequestLimit = 600;
+const matchRequestLimit = 650;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 500;
-const matchRequestDelayStep = 50;
+const matchRequestDelayStep = 10;
 
 let matchRequestDelayIncr = 0;
 let lastRequestTime;
