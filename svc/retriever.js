@@ -288,6 +288,7 @@ function init() {
           // give up
           // cb();
           // try again with new account
+          client.connect();
           const logOnDetails = chooseLoginInfo();
           console.log("[STEAM] Trying to log on with %s", JSON.stringify(logOnDetails));
           client.steamUser.logOn(logOnDetails);
