@@ -27,12 +27,12 @@ const steamObj = {};
 const minUpTimeSeconds = 600;
 const timeoutMs = 5000;
 // maybe 200 per account?
-const accountsToUse = 3;
+const accountsToUse = 4;
 // maybe can do 1000 per IP now?
-const matchRequestLimit = 650;
+const matchRequestLimit = 900;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 500;
-const matchRequestDelayStep = 10;
+const matchRequestDelay = 700;
+const matchRequestDelayStep = 4;
 
 let matchRequestDelayIncr = 0;
 let lastRequestTime;
