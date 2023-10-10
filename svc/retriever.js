@@ -236,19 +236,11 @@ function getGcMatchData(idx, matchId, cb) {
 
 function init() {
   async.each(
-    Array.from(new Array(users.length), (v, i) => i),
+    Array.from(new Array(Math.min(accountsToUse, users.length)), (v, i) => i),
     (i, cb) => {
       const client = new Steam.SteamClient();
-      const user = users[i];
-      const pass = passes[i];
-      const logOnDetails = {
-        account_name: user,
-        password: pass,
-      };
-
       client.steamUser = new Steam.SteamUser(client);
       // client.steamFriends = new Steam.SteamFriends(client);
-      client.logOnDetails = logOnDetails;
       client.Dota2 = new Dota2.Dota2Client(client, false);
       client.Dota2.on("ready", () => {
         console.log("acct %s ready", i);
@@ -260,10 +252,12 @@ function init() {
         }
       });
       client.on("connected", () => {
-        console.log("[STEAM] Trying to log on with %s,%s", user, pass);
+        const logOnDetails = chooseLoginInfo();
+        console.log("[STEAM] Trying to log on with %s", JSON.stringify(logOnDetails));
         client.steamUser.logOn(logOnDetails);
       });
       client.on("logOnResponse", (logOnResp) => {
+        /*
         if (advancedAuth) {
           delete client.logOnDetails.two_factor_code;
           delete client.logOnDetails.auth_code;
@@ -287,11 +281,16 @@ function init() {
             return;
           }
         }
+        */
 
         if (logOnResp.eresult !== Steam.EResult.OK) {
           console.error(logOnResp);
-          cb();
-          // client.steamUser.logOn(logOnDetails);
+          // give up
+          // cb();
+          // try again with new account
+          const logOnDetails = chooseLoginInfo();
+          console.log("[STEAM] Trying to log on with %s", JSON.stringify(logOnDetails));
+          client.steamUser.logOn(logOnDetails);
           return;
         }
 
@@ -302,6 +301,7 @@ function init() {
           client.Dota2.launch();
         }
       });
+      /*
       client.steamUser.on("updateMachineAuth", (machineAuth, callback) => {
         console.log("[STEAM] Got UpdateMachineAuth for %s", user);
 
@@ -350,6 +350,7 @@ function init() {
           });
         }
       });
+      */
       client.on("error", (err) => {
         console.error(err);
         if (
@@ -364,7 +365,7 @@ function init() {
           // client.connect();
         }
       });
-
+      /*
       if (advancedAuth) {
         advancedAuth.redis.hgetall(getSentryHashKey(user), (err, sentries) => {
           if (sentries) {
@@ -390,8 +391,8 @@ function init() {
       } else {
         client.connect();
       }
-
-      /*
+    */
+    /*
     client.on('loggedOff', () => {
       console.log('relogging');
       setTimeout(()=> {
@@ -401,12 +402,7 @@ function init() {
     */
     },
     () => {
-      if (Object.keys(steamObj).length === 0) {
-        chooseLoginInfo();
-        init();
-      } else {
-        allReady = true;
-      }
+      allReady = true;
     }
   );
 }
@@ -419,28 +415,18 @@ if (config.STEAM_ACCOUNT_DATA) {
     })
     .toString()
     .split(/\r\n|\r|\n/g);
+  users = accountData.map((a) => a.split("\t")[0]);
+  passes = accountData.map((a) => a.split("\t")[1]);
 }
 
 function chooseLoginInfo() {
-  if (config.STEAM_ACCOUNT_DATA) {
-    const startIndex = Math.floor(
-      Math.random() * (accountData.length - accountsToUse)
-    );
-    console.log(
-      "total registered accounts: %s, startIndex: %s",
-      accountData.length,
-      startIndex
-    );
-    const accountDataToUse = accountData.slice(
-      startIndex,
-      startIndex + accountsToUse
-    );
-    users = accountDataToUse.map((a) => a.split("\t")[0]);
-    passes = accountDataToUse.map((a) => a.split("\t")[1]);
-  }
+  const startIndex = Math.floor(Math.random() * users.length);
+  return {
+    account_name: users[startIndex],
+    password: passes[startIndex],
+  };
 }
 
-chooseLoginInfo();
 init();
 
 app.use(compression());
