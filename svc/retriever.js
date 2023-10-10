@@ -26,7 +26,7 @@ const app = express();
 const steamObj = {};
 const minUpTimeSeconds = 600;
 const timeoutMs = 1500;
-const accountsToUse = 3;
+const accountsToUse = 2;
 const matchRequestLimit = 950;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 400;
@@ -287,11 +287,8 @@ function init() {
           console.error(logOnResp);
           // give up
           // cb();
-          // try again with new account
+          // try again
           client.connect();
-          const logOnDetails = chooseLoginInfo();
-          console.log("[STEAM] Trying to log on with %s", JSON.stringify(logOnDetails));
-          client.steamUser.logOn(logOnDetails);
           return;
         }
 
