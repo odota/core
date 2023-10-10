@@ -98,7 +98,7 @@ function getGcDataFromRetriever(match, cb) {
 
       redis.setex(
         `gcdata:${match.match_id}`,
-        60 * 60,
+        60 * 60 * 24,
         zlib.gzipSync(JSON.stringify(body))
       );
       // TODO add discovered account_ids to database and fetch account data/rank medal
