@@ -26,9 +26,10 @@ const app = express();
 const steamObj = {};
 const minUpTimeSeconds = 600;
 const timeoutMs = 5000;
-const accountsToUse = 5;
+// maybe 200 per account?
+const accountsToUse = 3;
 // maybe can do 1000 per IP now?
-const matchRequestLimit = 550;
+const matchRequestLimit = 600;
 const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 500;
 const matchRequestDelayStep = 50;
