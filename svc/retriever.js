@@ -365,6 +365,7 @@ function init() {
           // client.connect();
         }
       });
+      client.connect();
       /*
       if (advancedAuth) {
         advancedAuth.redis.hgetall(getSentryHashKey(user), (err, sentries) => {
