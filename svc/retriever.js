@@ -24,7 +24,7 @@ const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH
 
 const app = express();
 const steamObj = {};
-const minUpTimeSeconds = 600;
+const minUpTimeSeconds = 300;
 const timeoutMs = 5000;
 // maybe 200 per account?
 const accountsToUse = 3;
@@ -510,6 +510,7 @@ app.use((req, res, cb) => {
     req.query,
   );
   const shouldRestart =
+    (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
     (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds) ||
     (!allReady && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== "development") {
