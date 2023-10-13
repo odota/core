@@ -1593,7 +1593,7 @@ function insertMatch(match, options, cb) {
               },
             },
             {
-              priority: options.priority,
+              priority: match.leagueid ? -1 : options.priority,
               attempts: options.attempts || 15,
             },
             cb
