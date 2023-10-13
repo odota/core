@@ -510,7 +510,7 @@ app.use((req, res, cb) => {
     req.query,
   );
   const shouldRestart =
-    (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
+    // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
     (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds) ||
     (!allReady && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== "development") {
