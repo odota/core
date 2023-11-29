@@ -114,13 +114,50 @@ async function prodataInfo(matchId) {
   });
 }
 
+async function backfill(matchId) {
+  const match = {
+    match_id: Number(matchId),
+  };
+  await new Promise((resolve, reject) => {
+    utility.getData(
+      utility.generateJob("api_details", match).url,
+      (err, body) => {
+        if (err) {
+          console.error(err);
+          return reject();
+        }
+        // match details response
+        const match = body.result;
+        return queries.insertMatch(
+          match,
+          {
+            type: "api",
+            skipParse: true,
+          },
+          () => {
+            // Count for logging
+            utility.redisCount(redis, "cassandra_repair");
+            resolve();
+          }
+        );
+      }
+    );
+  });
+}
+
 async function getMatch(matchId) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return Promise.resolve();
   }
-  const match = await getMatchData(matchId);
+  let match = await getMatchData(matchId);
   if (!match) {
-    return Promise.resolve();
+    // if we don't have it, try backfilling it from Steam API and then check again
+    await backfill(matchId);
+    match = await getMatchData(matchId);
+    if (!match) {
+      // Still don't have it
+      return Promise.resolve();
+    }
   }
   utility.redisCount(redis, "build_match");
   let playersMatchData = [];
@@ -132,45 +169,17 @@ async function getMatch(matchId) {
   } catch (e) {
     console.error(e);
     if (
-      e.message.startsWith("Server failure during read query") ||
       e.message.startsWith("no players found") ||
       e.message.startsWith("Unexpected") ||
       e.message.includes("Attempt to access memory outside buffer bounds")
     ) {
-      // Delete and request new
+      // Delete corrupted data and backfill
       await cassandra.execute(
         "DELETE FROM player_matches where match_id = ?",
         [Number(matchId)],
         { prepare: true }
       );
-      const match = {
-        match_id: Number(matchId),
-      };
-      await new Promise((resolve, reject) => {
-        utility.getData(
-          utility.generateJob("api_details", match).url,
-          (err, body) => {
-            if (err) {
-              console.error(err);
-              return reject();
-            }
-            // match details response
-            const match = body.result;
-            return queries.insertMatch(
-              match,
-              {
-                type: "api",
-                skipParse: true,
-              },
-              () => {
-                // Count for logging
-                utility.redisCount(redis, "cassandra_repair");
-                resolve();
-              }
-            );
-          }
-        );
-      });
+      await backfill(matchId);
       playersMatchData = await getPlayerMatchData(matchId);
     } else {
       throw e;
