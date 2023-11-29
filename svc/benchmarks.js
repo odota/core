@@ -7,7 +7,7 @@ const redis = require("../store/redis");
 
 const { benchmarks } = benchmarksUtil;
 
-async function doParsedBenchmarks(matchID, cb) {
+async function doBenchmarks(matchID, cb) {
   try {
     const match = await buildMatch(matchID);
     if (match.players && utility.isSignificant(match)) {
@@ -50,4 +50,4 @@ async function doParsedBenchmarks(matchID, cb) {
   }
 }
 
-queue.runQueue("parsedBenchmarksQueue", 1, doParsedBenchmarks);
+queue.runQueue("parsedBenchmarksQueue", 1, doBenchmarks);

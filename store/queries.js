@@ -1070,23 +1070,6 @@ function insertMatch(match, options, cb) {
     cb();
   }
 
-  function tellFeed(cb) {
-    if (options.origin === "scanner" || options.doTellFeed) {
-      redis.xadd(
-        "feed",
-        "maxlen",
-        "~",
-        "100",
-        "*",
-        "data",
-        JSON.stringify({ ...match, origin: options.origin }),
-        cb
-      );
-    } else {
-      cb();
-    }
-  }
-
   function decideLogParse(cb) {
     if (match.leagueid) {
       db.select("leagueid")
@@ -1464,14 +1447,15 @@ function insertMatch(match, options, cb) {
   }
 
   function decideScenarios(cb) {
-    if (options.doScenarios) {
+    if (options.type === 'parsed' &&
+    match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT) {
       return redis.rpush("scenariosQueue", match.match_id, cb);
     }
     return cb();
   }
 
-  function decideParsedBenchmarks(cb) {
-    if (options.doParsedBenchmarks) {
+  function decideBenchmarks(cb) {
+    if (options.origin === "scanner" && match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT) {
       return redis.rpush("parsedBenchmarksQueue", match.match_id, cb);
     }
     return cb();
@@ -1606,7 +1590,6 @@ function insertMatch(match, options, cb) {
   async.series(
     {
       preprocess,
-      tellFeed,
       decideLogParse,
       updateMatchGcData,
       upsertMatch,
@@ -1619,7 +1602,7 @@ function insertMatch(match, options, cb) {
       telemetry,
       decideCounts,
       decideScenarios,
-      decideParsedBenchmarks,
+      decideBenchmarks,
       decideMmr,
       decideProfile,
       decideGcData,
