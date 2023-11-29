@@ -40,7 +40,7 @@ async function start() {
         ));
 
         const parsedIds = result.rows.filter(result => result.version != null).map(result => result.match_id);
-        await Promise.all(parsedIds.map(id => db.raw(`INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING`, [id])));
+        await Promise.all(parsedIds.map(id => db.raw(`INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING`, [Number(id)])));
     } catch(e) {
         console.log(e);
     }
