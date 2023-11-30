@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node index",
     "test": "NODE_ENV=test mocha --exit",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "build": "npm install",
     "lint": "eslint . --ext .js,.jsx --ignore-path .gitignore",
     "lintfix": "eslint . --ext .js,.jsx --ignore-path .gitignore --fix",
@@ -65,14 +64,11 @@
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",
-    "eslint": "^7.0.0",
+    "eslint": "^8.54.0",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.20.2",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-import": "^2.29.0",
     "mocha": "^8.2.1",
-    "prettier": "^2.0.5"
-  },
-  "engines": {
-    "node": "16"
+    "prettier": "^3.1.0"
   }
 }
