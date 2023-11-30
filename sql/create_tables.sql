@@ -354,7 +354,7 @@ CREATE TABLE IF NOT EXISTS team_match(
 CREATE TABLE IF NOT EXISTS match_gcdata(
   match_id bigint PRIMARY KEY,
   cluster int,
-  replay_salt int,
+  replay_salt int
 );
 
 CREATE TABLE IF NOT EXISTS items(
