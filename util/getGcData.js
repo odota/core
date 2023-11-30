@@ -22,7 +22,7 @@ async function getGcDataFromRetriever(match, cb) {
   );
   return getData(
     { url: urls, noRetry: match.noRetry, timeout: 5000 },
-    async (err, body, metadata) => {
+    async (err, body) => {
       if (
         err ||
         !body ||
@@ -37,7 +37,7 @@ async function getGcDataFromRetriever(match, cb) {
       }
       // Count retriever calls
       redisCount(redis, "retriever");
-      redis.zincrby("retrieverCounts", 1, metadata.hostname);
+      redis.zincrby("retrieverCounts", 1, 'retriever');
       redis.expireat(
         "retrieverCounts",
         moment().startOf("hour").add(1, "hour").format("X")

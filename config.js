@@ -44,7 +44,6 @@ const defaults = {
   COOKIE_DOMAIN: "", // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
   UNTRACK_DAYS: 30, // The number of days a user is tracked for after every visit
   GOAL: 5, // The cheese goal
-  MMSTATS_DATA_INTERVAL: 3, // minutes between requests for MMStats data
   DEFAULT_DELAY: 1000, // delay between API requests
   SCANNER_DELAY: 2000, // delay for scanner API requests (stricter rate limit)
   MMR_PARALLELISM: 10, // Number of simultaneous MMR requests to make (per retriever)

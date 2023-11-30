@@ -166,20 +166,6 @@ function getSentryHashKey(user) {
   return Buffer.from(`retriever:sentry:${user}`);
 }
 
-function getMMStats(idx, cb) {
-  steamObj[idx].Dota2.requestMatchmakingStats();
-  steamObj[idx].Dota2.once(
-    "matchmakingStatsData",
-    (waitTimes, searchingPlayers, disabledGroups) => {
-      if (disabledGroups) {
-        cb(null, disabledGroups.legacy_searching_players_by_group_source2);
-      } else {
-        cb("error mmstats");
-      }
-    }
-  );
-}
-
 function getPlayerProfile(idx, accountId, cb) {
   accountId = Number(accountId);
   const { Dota2 } = steamObj[idx];
@@ -527,12 +513,6 @@ app.use((req, res, cb) => {
 app.get("/", (req, res, cb) => {
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor(Math.random() * keys.length)];
-  if (req.query.mmstats) {
-    return getMMStats(rKey, (err, data) => {
-      res.locals.data = data;
-      return cb(err);
-    });
-  }
   if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();

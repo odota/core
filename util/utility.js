@@ -310,9 +310,7 @@ function getData(url, cb) {
             return getData(url, cb);
           }
         }
-        return cb(null, body, {
-          hostname: parse.host,
-        });
+        return cb(null, body);
       }
     );
   }, delay);
