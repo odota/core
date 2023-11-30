@@ -120,14 +120,6 @@ function generateJob(type, payload) {
         payload,
       };
     },
-    api_skill() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetMatchHistory/v0001/?key=${apiKey}&start_at_match_id=${payload.start_at_match_id}&skill=${payload.skill}&hero_id=${payload.hero_id}&min_players=10`,
-        title: [type, payload.skill].join(),
-        type: "api",
-        payload,
-      };
-    },
     api_live() {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
