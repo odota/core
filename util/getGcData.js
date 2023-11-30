@@ -98,6 +98,7 @@ module.exports = async function getGcData(match, cb) {
   const gcdata = saved.rows[0];
   if (gcdata) {
     console.log('found cached gcdata for %s', matchId);
+    redisCount(redis, "cached_gcdata");
     return cb(null, gcdata);
   }
   getGcDataFromRetriever(match, cb);

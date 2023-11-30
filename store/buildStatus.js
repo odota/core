@@ -41,14 +41,20 @@ module.exports = function buildStatus(db, redis, cb) {
       retriever_players_last_day(cb) {
         utility.getRedisCountDay(redis, "retriever_player", cb);
       },
-      backup_retriever_last_day(cb) {
-        utility.getRedisCountDay(redis, "backup", cb);
-      },
+      // backup_retriever_last_day(cb) {
+      //   utility.getRedisCountDay(redis, "backup", cb);
+      // },
       parsed_matches_last_day(cb) {
         utility.getRedisCountDay(redis, "parser", cb);
       },
+      cached_gcdata_last_day(cb) {
+        utility.getRedisCountDay(redis, "cached_gcdata", cb);
+      },
       requests_last_day(cb) {
         utility.getRedisCountDay(redis, "request", cb);
+      },
+      requests_api_key_last_day(cb) {
+        utility.getRedisCountDay(redis, "request_api_key", cb);
       },
       cassandra_repair_last_day(cb) {
         utility.getRedisCountDay(redis, "cassandra_repair", cb);
