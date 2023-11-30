@@ -243,69 +243,6 @@ CREATE TABLE IF NOT EXISTS notable_players (
   locked_until integer
 );
 
-CREATE TABLE IF NOT EXISTS match_logs (
-  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
-  time int,
-  type varchar(100),
-  team smallint,
-  unit varchar(100),
-  key varchar(1000),
-  value int,
-  slot smallint,
-  player_slot smallint,
-  player1 int,
-  player2 int,
-  attackerhero boolean,
-  targethero boolean,
-  attackerillusion boolean,
-  targetillusion boolean,
-  inflictor varchar(100),
-  gold_reason smallint,
-  xp_reason smallint,
-  attackername varchar(100),
-  targetname varchar(100),
-  sourcename varchar(100),
-  targetsourcename varchar(100),
-  valuename varchar(100),
-  gold int,
-  lh int,
-  xp int,
-  x smallint,
-  y smallint,
-  z smallint,
-  entityleft boolean,
-  ehandle int,
-  stuns real,
-  hero_id smallint,
-  life_state smallint,
-  level smallint,
-  kills smallint,
-  deaths smallint,
-  assists smallint,
-  denies smallint,
-  attackername_slot smallint,
-  targetname_slot smallint,
-  sourcename_slot smallint,
-  targetsourcename_slot smallint,
-  player1_slot smallint,
-  obs_placed int,
-  sen_placed int,
-  creeps_stacked int,
-  camps_stacked int,
-  rune_pickups int
-);
-CREATE INDEX IF NOT EXISTS match_logs_match_id_idx ON match_logs(match_id);
-CREATE INDEX IF NOT EXISTS match_logs_match_id_player_slot_idx ON match_logs(match_id, player_slot) WHERE player_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS match_logs_match_id_player1_slot_idx ON match_logs(match_id, player1_slot) WHERE player1_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS match_logs_match_id_attackername_slot_idx ON match_logs(match_id, attackername_slot) WHERE attackername_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS match_logs_match_id_targetname_slot_idx ON match_logs(match_id, targetname_slot) WHERE targetname_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS match_logs_match_id_sourcename_slot_idx ON match_logs(match_id, sourcename_slot) WHERE sourcename_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS match_logs_match_id_targetsourcename_slot_idx ON match_logs(match_id, targetsourcename_slot) WHERE targetsourcename_slot IS NOT NULL;
-CREATE INDEX IF NOT EXISTS match_logs_match_id_valuename_idx ON match_logs(match_id, valuename) WHERE valuename IS NOT NULL;
-CREATE INDEX IF NOT EXISTS match_logs_match_id_type_idx ON match_logs(match_id, type);
-CREATE INDEX IF NOT EXISTS match_logs_valuename_idx ON match_logs(valuename) WHERE valuename IS NOT NULL;
-CREATE INDEX IF NOT EXISTS match_logs_type_idx ON match_logs(type);
-
 CREATE TABLE IF NOT EXISTS picks_bans(
   match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
   is_pick boolean,
@@ -526,7 +463,6 @@ BEGIN
         GRANT SELECT ON team_match TO readonly;
         GRANT SELECT ON match_patch TO readonly;
         GRANT SELECT ON picks_bans TO readonly;
-        GRANT SELECT ON match_logs TO readonly;
         GRANT SELECT ON notable_players TO readonly;
         GRANT SELECT ON public_matches TO readonly;
         GRANT SELECT ON public_player_matches TO readonly;

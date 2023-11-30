@@ -398,7 +398,7 @@ function isSignificant(match) {
 /**
  * Determines if a match is a pro match
  * */
-function isProMatch(match, leagueids) {
+function isProMatch(match) {
   return Boolean(
     isSignificant(match) &&
       match.leagueid &&
@@ -409,8 +409,7 @@ function isProMatch(match, leagueids) {
       match.players &&
       match.players.every((player) => player.level > 1) &&
       match.players.every((player) => player.xp_per_min > 0) &&
-      match.players.every((player) => player.hero_id > 0) &&
-      leagueids.includes(match.leagueid)
+      match.players.every((player) => player.hero_id > 0)
   );
 }
 

@@ -35,9 +35,7 @@ function runParse(match, job, cb) {
       url && url.slice(-3) === "bz2" ? "bunzip2" : "cat"
     } | curl -X POST -T - ${
       config.PARSER_HOST
-    } | node processors/createParsedDataBlob.js ${match.match_id} ${Boolean(
-      match.doLogParse
-    )}`,
+    } | node processors/createParsedDataBlob.js ${match.match_id}`,
     { shell: true, maxBuffer: 10 * 1024 * 1024 },
     (err, stdout) => {
       if (err) {
@@ -49,7 +47,6 @@ function runParse(match, job, cb) {
         {
           type: "parsed",
           skipParse: true,
-          doLogParse: match.doLogParse,
         },
         cb
       );

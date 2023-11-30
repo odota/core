@@ -1064,30 +1064,7 @@ function insertMatch(match, options, cb) {
     cb();
   }
 
-  function decideLogParse(cb) {
-    if (match.leagueid) {
-      db.select("leagueid")
-        .from("leagues")
-        .where("tier", "premium")
-        .orWhere("tier", "professional")
-        .asCallback((err, leagueids) => {
-          if (err) {
-            return cb(err);
-          }
-          options.doLogParse =
-            options.doLogParse ||
-            utility.isProMatch(
-              match,
-              leagueids.map((l) => l.leagueid)
-            );
-          return cb(err);
-        });
-    } else {
-      cb();
-    }
-  }
-
-  function updateMatchGcData(cb) {
+  function updateMatchSeriesType(cb) {
     if (options.type === "gcdata") {
       db.raw(
         "UPDATE matches SET series_id = ?, series_type = ? WHERE match_id = ?",
@@ -1115,9 +1092,12 @@ function insertMatch(match, options, cb) {
     return cb();
   }
 
-  function upsertMatch(cb) {
-    if (!options.doLogParse) {
-      // Skip this if not a pro match (doLogParse true) and not inserting gcdata (series_id/type)
+  async function upsertMatchPostgres(cb) {
+    // Check if leagueid is premium/professional
+    const result = match.leagueid && await db.raw(`select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`, [match.leagueid]);
+    const pass = result?.rows?.length > 0 && utility.isProMatch(match);
+    if (!pass) {
+      // Skip this if not a pro match
       return cb();
     }
     // console.log('[INSERTMATCH] upserting into Postgres');
@@ -1243,32 +1223,6 @@ function insertMatch(match, options, cb) {
         return updateTeamRankings(match, options).then(cb).catch(cb);
       }
 
-      function upsertMatchLogs(cb) {
-        if (!match.logs) {
-          return cb();
-        }
-        return trx
-          .raw("DELETE FROM match_logs WHERE match_id = ?", [match.match_id])
-          .asCallback((err) => {
-            if (err) {
-              return cb(err);
-            }
-            return async.eachLimit(
-              match.logs,
-              10,
-              (e, cb) => {
-                cleanRowPostgres(db, "match_logs", e, (err, cleanedRow) => {
-                  if (err) {
-                    return cb(err);
-                  }
-                  return trx("match_logs").insert(cleanedRow).asCallback(cb);
-                });
-              },
-              cb
-            );
-          });
-      }
-
       function exit(err) {
         if (err) {
           console.error(err);
@@ -1287,7 +1241,6 @@ function insertMatch(match, options, cb) {
           upsertMatchPatch,
           upsertTeamMatch,
           upsertTeamRankings,
-          upsertMatchLogs,
         },
 
         exit
@@ -1555,8 +1508,7 @@ function insertMatch(match, options, cb) {
         if (err) {
           return cb(err);
         }
-        const { doLogParse } = options;
-        const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
+        const doParse = hasTrackedPlayer || options.forceParse;
         if (doParse) {
           let priority = options.priority;
           if (match.leagueid) {
@@ -1576,7 +1528,6 @@ function insertMatch(match, options, cb) {
                 duration: match.duration,
                 replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
-                doLogParse,
                 ability_upgrades: abilityUpgrades,
                 allowBackup: options.allowBackup,
                 origin: options.origin,
@@ -1596,9 +1547,8 @@ function insertMatch(match, options, cb) {
   async.series(
     {
       preprocess,
-      decideLogParse,
-      updateMatchGcData,
-      upsertMatch,
+      updateMatchSeriesType,
+      upsertMatchPostgres: (cb) => upsertMatchPostgres(cb),
       getAverageRank,
       upsertMatchCassandra,
       upsertParsedMatch,

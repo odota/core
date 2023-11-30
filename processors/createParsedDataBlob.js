@@ -2,7 +2,6 @@ const { Console } = require("console");
 const readline = require("readline");
 const processAllPlayers = require("./processAllPlayers");
 const processTeamfights = require("./processTeamfights");
-const processLogParse = require("./processLogParse");
 // const processUploadProps = require('../processors/processUploadProps');
 const processParsedData = require("./processParsedData");
 const processMetadata = require("./processMetadata");
@@ -82,7 +81,7 @@ function getParseSchema() {
   };
 }
 
-function createParsedDataBlob(entries, matchId, doLogParse) {
+function createParsedDataBlob(entries, matchId) {
   const logConsole = new Console(process.stderr);
 
   logConsole.time("metadata");
@@ -113,19 +112,12 @@ function createParsedDataBlob(entries, matchId, doLogParse) {
   parsedData.radiant_gold_adv = ap.radiant_gold_adv;
   parsedData.radiant_xp_adv = ap.radiant_xp_adv;
 
-  logConsole.time("doLogParse");
-  if (doLogParse) {
-    parsedData.logs = processLogParse(entries, meta);
-  }
-  logConsole.timeEnd("doLogParse");
-
   return parsedData;
 }
 
 const entries = [];
 let complete = false;
 const matchId = process.argv[2];
-const doLogParse = Boolean(process.argv[3]);
 const parseStream = readline.createInterface({
   input: process.stdin,
 });
@@ -138,7 +130,7 @@ parseStream.on("line", (e) => {
 });
 parseStream.on("close", () => {
   if (complete) {
-    const parsedData = createParsedDataBlob(entries, matchId, doLogParse);
+    const parsedData = createParsedDataBlob(entries, matchId);
     process.stdout.write(JSON.stringify(parsedData), null, (err) => {
       process.exit(Number(err));
     });
