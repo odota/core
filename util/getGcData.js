@@ -3,12 +3,12 @@
  * Calls back with an object containing the GC data
  * */
 const moment = require("moment");
-const utility = require("../util/utility");
+const { promisify } = require("util");
+const utility = require("./utility");
 const config = require("../config");
 const queries = require("../store/queries");
 const db = require("../store/db");
 const redis = require("../store/redis");
-const { promisify } = require("util");
 
 const secret = config.RETRIEVER_SECRET;
 const { getData, redisCount } = utility;
@@ -17,7 +17,7 @@ const { insertMatch } = queries;
 async function getGcDataFromRetriever(match, cb) {
   const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
-  let urls = retrieverArr.map(
+  const urls = retrieverArr.map(
     (r) => `http://${r}?key=${secret}&match_id=${match.match_id}`
   );
   return getData(
@@ -37,7 +37,7 @@ async function getGcDataFromRetriever(match, cb) {
       }
       // Count retriever calls
       redisCount(redis, "retriever");
-      redis.zincrby("retrieverCounts", 1, 'retriever');
+      redis.zincrby("retrieverCounts", 1, "retriever");
       redis.expireat(
         "retrieverCounts",
         moment().startOf("hour").add(1, "hour").format("X")
@@ -89,7 +89,7 @@ module.exports = async function getGcData(match, cb) {
   }
   // Check if we have it in DB already
   const saved = await db.raw(
-    `select match_id, cluster, replay_salt from match_gcdata where match_id = ?`,
+    "select match_id, cluster, replay_salt from match_gcdata where match_id = ?",
     [match.match_id]
   );
   const gcdata = saved.rows[0];

@@ -423,9 +423,9 @@ app.use(compression());
 app.get("/healthz", (req, res, cb) => {
   if (!allReady) {
     return cb("not ready");
-  } else {
+  } 
     return res.end("ok");
-  }
+  
 });
 app.use((req, res, cb) => {
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {

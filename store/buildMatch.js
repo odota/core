@@ -7,9 +7,9 @@ const config = require("../config");
 const queries = require("./queries");
 const compute = require("../util/compute");
 const utility = require("../util/utility");
-const cassandra = require("../store/cassandra");
-const redis = require("../store/redis");
-const db = require("../store/db");
+const cassandra = require("./cassandra");
+const redis = require("./redis");
+const db = require("./db");
 
 const { computeMatchData } = compute;
 const { deserialize, buildReplayUrl, isContributor } = utility;

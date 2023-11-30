@@ -10,15 +10,15 @@ let haveRows = 0;
 
 async function start() {
   // Get the current max_match_id from postgres, subtract 200000000
-  let max = (await db.raw(`select max(match_id) from public_matches`))
+  const max = (await db.raw("select max(match_id) from public_matches"))
     ?.rows?.[0]?.max;
-  let limit = max - 200000000;
+  const limit = max - 200000000;
   while (true) {
     // Test a random match ID
     const rand = randomInteger(1, limit);
 
-    let result = await cassandra.execute(
-      `select match_id, player_slot, stuns from player_matches where match_id = ?`,
+    const result = await cassandra.execute(
+      "select match_id, player_slot, stuns from player_matches where match_id = ?",
       [rand.toString()],
       {
         prepare: true,

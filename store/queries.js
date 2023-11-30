@@ -10,10 +10,10 @@ const queue = require("./queue");
 const su = require("../util/scenariosUtil");
 const filter = require("../util/filter");
 const compute = require("../util/compute");
-const db = require("../store/db");
-const redis = require("../store/redis");
-const { es, INDEX } = require("../store/elasticsearch");
-const cassandra = require("../store/cassandra");
+const db = require("./db");
+const redis = require("./redis");
+const { es, INDEX } = require("./elasticsearch");
+const cassandra = require("./cassandra");
 const cacheFunctions = require("./cacheFunctions");
 const benchmarksUtil = require("../util/benchmarksUtil");
 
@@ -629,7 +629,7 @@ function getProPeers(db, input, player, cb) {
         return cb(err);
       }
       const arr = result.rows
-        .map((r) => Object.assign({}, r, teammates[r.account_id]))
+        .map((r) => ({ ...r, ...teammates[r.account_id]}))
         .filter((r) => r.account_id !== player.account_id && r.games)
         .sort((a, b) => b.games - a.games);
       return cb(err, arr);
@@ -1054,9 +1054,7 @@ function insertMatch(match, options, cb) {
           p.ability_upgrades.forEach((au) => {
             if (au.ability in savedAbilityLvls) {
               abilityLvls[au.ability] = (abilityLvls[au.ability] || 0) + 1;
-              const abilityUpgrade = Object.assign({}, au, {
-                level: abilityLvls[au.ability],
-              });
+              const abilityUpgrade = { ...au, level: abilityLvls[au.ability],};
               abilityUpgrades.push(abilityUpgrade);
             }
           });
@@ -1677,7 +1675,7 @@ function getMetadata(req, callback) {
       isSubscriber(cb) {
         if (req.user) {
           db.raw(
-            `SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'`,
+            "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
             [req.user.account_id]
           ).asCallback((err, result) => {
             cb(err, Boolean(result?.rows?.[0]));

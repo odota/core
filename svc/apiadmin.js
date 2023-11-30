@@ -170,7 +170,7 @@ async function updateStripeUsage(cb) {
   }
 }
 
-invokeInterval(function updateAPIKeysInRedis(cb) {
+invokeInterval((cb) => {
   queries.getAPIKeys(db, (err, rows) => {
     if (err) {
       cb(err);
@@ -194,7 +194,7 @@ invokeInterval(function updateAPIKeysInRedis(cb) {
   });
 }, 5 * 60 * 1000); // Update every 5 min
 
-invokeInterval(function runStoreUsageCounts(cb) {
+invokeInterval((cb) => {
   storeUsageCounts(0, cb);
 }, 10 * 60 * 1000); // Every 10 minutes
 invokeInterval(updateStripeUsage, 5 * 60 * 1000); // Every 5 minutes
