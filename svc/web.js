@@ -12,7 +12,7 @@ const passport = require("passport");
 const SteamStrategy = require("passport-steam").Strategy;
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const stripe = require("stripe")(config.STRIPE_SECRET);
+const stripeLib = require("stripe");
 const keys = require("../routes/keyManagement");
 const api = require("../routes/api");
 const queries = require("../store/queries");
@@ -21,6 +21,7 @@ const redis = require("../store/redis");
 const utility = require("../util/utility");
 const config = require("../config");
 
+const stripe = stripeLib(config.STRIPE_SECRET);
 const { redisCount } = utility;
 
 const app = express();
