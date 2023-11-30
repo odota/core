@@ -1558,6 +1558,13 @@ function insertMatch(match, options, cb) {
         const { doLogParse } = options;
         const doParse = hasTrackedPlayer || options.forceParse || doLogParse;
         if (doParse) {
+          let priority = options.priority;
+          if (match.leagueid) {
+            priority = -1;
+          }
+          if (hasTrackedPlayer) {
+            priority = -2;
+          }
           return queue.addJob(
             "parse",
             {
@@ -1576,8 +1583,7 @@ function insertMatch(match, options, cb) {
               },
             },
             {
-              priority:
-                match.leagueid || hasTrackedPlayer ? -1 : options.priority,
+              priority,
               attempts: options.attempts || 15,
             },
             cb
