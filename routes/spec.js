@@ -12,7 +12,6 @@ const searchES = require("../store/searchES");
 const buildMatch = require("../store/buildMatch");
 const buildStatus = require("../store/buildStatus");
 const playerFields = require("./playerFields.json");
-// const getGcData = require("../util/getGcData");
 const utility = require("../util/utility");
 const db = require("../store/db");
 const redis = require("../store/redis");

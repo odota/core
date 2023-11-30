@@ -355,8 +355,6 @@ CREATE TABLE IF NOT EXISTS match_gcdata(
   match_id bigint PRIMARY KEY,
   cluster int,
   replay_salt int,
-  series_id int,
-  series_type int
 );
 
 CREATE TABLE IF NOT EXISTS items(
