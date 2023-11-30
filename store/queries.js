@@ -88,10 +88,6 @@ function cleanRowCassandra(cassandra, table, row, cb) {
   );
 }
 
-function getWebhooks(db) {
-  return db.select("url", "subscriptions").from("webhooks").stream();
-}
-
 function getAPIKeys(db, cb) {
   db.raw(
     `
@@ -1711,7 +1707,6 @@ module.exports = {
   getMmrEstimate,
   getPeers,
   getProPeers,
-  getWebhooks,
   getAPIKeys,
   getItemTimings,
   getLaneRoles,

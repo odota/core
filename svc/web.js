@@ -12,7 +12,6 @@ const passport = require("passport");
 const SteamStrategy = require("passport-steam").Strategy;
 const cors = require("cors");
 const keys = require("../routes/keyManagement");
-const webhooks = require("../routes/webhookManagement");
 const api = require("../routes/api");
 const queries = require("../store/queries");
 const db = require("../store/db");
@@ -42,7 +41,6 @@ const whitelistedPaths = [
   "/return",
   "/api/admin/apiMetrics", // Admin metrics
   "/keys", // API Key management
-  "/webhooks", // Webhook management
 ];
 
 const pathCosts = {
@@ -350,7 +348,6 @@ app.route("/manageSub").post(async (req, res) => {
   return res.json(session);
 });
 app.use("/api", api);
-app.use("/webhooks", webhooks);
 // CORS Preflight for API keys
 // NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
 app.options("/keys", cors());

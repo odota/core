@@ -74,8 +74,6 @@ const defaults = {
   STRIPE_SECRET: "rk_test_gRqwhv4xqv0a1olp8kk8fZ94", // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: "plan_CgLthOgwrDgz2K", // plan id for stripe metering
   ES_SEARCH_PERCENT: 0, // % of users to roll out elasticsearch to
-  WEBHOOK_TIMEOUT: 1000, // Timeout in milliseconds when calling a webhook
-  WEBHOOK_FEED_INTERVAL: 2000, // Delay in milliseconds between reads from the match feed for the webhook handler.
   TRACKED_ACCOUNT_URL: "", // URL where account IDs of tracked players can be found
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value

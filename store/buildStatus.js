@@ -65,12 +65,6 @@ module.exports = function buildStatus(db, redis, cb) {
       skip_seq_num_last_day(cb) {
         utility.getRedisCountDay(redis, "skip_seq_num", cb);
       },
-      webhooks_last_day(cb) {
-        utility.getRedisCountDay(redis, "webhook", cb);
-      },
-      feed_last_day(cb) {
-        utility.getRedisCountDay(redis, "feed", cb);
-      },
       api_hits_last_day(cb) {
         utility.getRedisCountDay(redis, "api_hits", cb);
       },
