@@ -6,7 +6,7 @@ function greevilsGreed(e, container, meta) {
 
     const goldBase = 3;
     let goldStack = e.greevils_greed_stack * 3;
-    goldStack = Math.min(goldStack, 18); 
+    goldStack = Math.min(goldStack, 18);
 
     alchPlayer.performance_others = {
       greevils_greed_gold: 0,

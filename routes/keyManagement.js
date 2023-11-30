@@ -50,7 +50,7 @@ async function getOpenInvoices(customerId) {
   const invoices = await stripe.invoices.list({
     customer: customerId,
     limit: 100,
-    status: 'open'
+    status: "open",
   });
 
   return invoices.data;
@@ -81,13 +81,13 @@ keys
     async.parallel(
       {
         customer: (cb) => {
-          if(!keyRecord) {
+          if (!keyRecord) {
             return cb();
           }
 
-          const { api_key, customer_id, subscription_id} = keyRecord;
+          const { api_key, customer_id, subscription_id } = keyRecord;
           const toReturn = {
-            api_key
+            api_key,
           };
 
           stripe.customers
@@ -107,23 +107,22 @@ keys
             .catch((err) => cb(err));
         },
         openInvoices: (cb) => {
-          if(allKeyRecords.length === 0) {
+          if (allKeyRecords.length === 0) {
             return cb();
           }
 
           customer_id = allKeyRecords[0].customer_id;
 
-          getOpenInvoices(customer_id).then(invoices => {
-            const processed = invoices.map(i => ({
+          getOpenInvoices(customer_id).then((invoices) => {
+            const processed = invoices.map((i) => ({
               id: i.id,
               amountDue: i.amount_due,
               paymentLink: i.hosted_invoice_url,
-              created: i.created
+              created: i.created,
             }));
 
-          return cb(null,processed);
+            return cb(null, processed);
           });
-
         },
         usage: (cb) => {
           db.raw(
@@ -218,14 +217,19 @@ keys
       return res.sendStatus(200);
     }
     // returning customer
-    else if(allKeyRecords.length > 0) {
+    else if (allKeyRecords.length > 0) {
       customer_id = allKeyRecords[0].customer_id;
 
       const invoices = await getOpenInvoices(customer_id);
 
       if (invoices.length > 0) {
-        console.log("Open invoices exist for", req.user.account_id, "customer", customer_id);
-        return res.status(402).json({error: "Open invoice"});
+        console.log(
+          "Open invoices exist for",
+          req.user.account_id,
+          "customer",
+          customer_id
+        );
+        return res.status(402).json({ error: "Open invoice" });
       }
 
       try {
@@ -239,7 +243,7 @@ keys
       }
     }
     // New customer -> create customer first
-    else  {
+    else {
       try {
         const customer = await stripe.customers.create({
           source: token.id,
@@ -249,7 +253,7 @@ keys
           },
         });
         customer_id = customer.id;
-      } catch  (err) {
+      } catch (err) {
         // probably insufficient funds
         return res.status(402).json(err);
       }

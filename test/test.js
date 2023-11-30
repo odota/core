@@ -398,7 +398,7 @@ describe("api", () => {
               (verb, cb) => {
                 if (
                   path.indexOf("/explorer") === 0 ||
-                  path.indexOf("/request") === 0 ||
+                  path.indexOf("/request") === 0
                 ) {
                   return cb(err);
                 }

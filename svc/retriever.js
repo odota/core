@@ -129,7 +129,7 @@ Steam.servers = [
 ];
 
 function selfDestruct() {
-  console.log('shutting down');
+  console.log("shutting down");
   process.exit(0);
 }
 
@@ -255,7 +255,10 @@ function init() {
       });
       client.on("connected", () => {
         const logOnDetails = chooseLoginInfo();
-        console.log("[STEAM] Trying to log on with %s", JSON.stringify(logOnDetails));
+        console.log(
+          "[STEAM] Trying to log on with %s",
+          JSON.stringify(logOnDetails)
+        );
         client.steamUser.logOn(logOnDetails);
       });
       client.on("logOnResponse", (logOnResp) => {
@@ -393,7 +396,7 @@ function init() {
         client.connect();
       }
     */
-    /*
+      /*
     client.on('loggedOff', () => {
       console.log('relogging');
       setTimeout(()=> {
@@ -507,7 +510,7 @@ app.use((req, res, cb) => {
     profileRequests,
     getUptime(),
     matchRequestDelay + matchRequestDelayIncr,
-    req.query,
+    req.query
   );
   const shouldRestart =
     // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||

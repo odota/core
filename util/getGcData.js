@@ -8,7 +8,7 @@ const config = require("../config");
 const queries = require("../store/queries");
 const db = require("../store/db");
 const redis = require("../store/redis");
-const { promisify }  = require('util');
+const { promisify } = require("util");
 
 const secret = config.RETRIEVER_SECRET;
 const { getData, redisCount } = utility;
@@ -44,44 +44,38 @@ async function getGcDataFromRetriever(match, cb) {
       );
       // TODO add discovered account_ids to database and fetch account data/rank medal
       try {
-      const players = body.match.players.map((p, i) => ({
-        player_slot: p.player_slot,
-        party_id: p.party_id?.low,
-        permanent_buffs: p.permanent_buffs,
-        party_size: body.match.players.filter(
-          (matchPlayer) => matchPlayer.party_id?.low === p.party_id?.low
-        ).length,
-        net_worth: p.net_worth,
-      }));
-      const matchToInsert = {
-        match_id: match.match_id,
-        pgroup: match.pgroup,
-        players,
-        series_id: body.match.series_id,
-        series_type: body.match.series_type,
-      };
-      const gcdata = {
-        match_id: Number(match.match_id),
-        cluster: body.match.cluster,
-        replay_salt: body.match.replay_salt,
-      };
-      // Put extra fields in matches/player_matches
-      await promisify(insertMatch)(
-        matchToInsert,
-        {
+        const players = body.match.players.map((p, i) => ({
+          player_slot: p.player_slot,
+          party_id: p.party_id?.low,
+          permanent_buffs: p.permanent_buffs,
+          party_size: body.match.players.filter(
+            (matchPlayer) => matchPlayer.party_id?.low === p.party_id?.low
+          ).length,
+          net_worth: p.net_worth,
+        }));
+        const matchToInsert = {
+          match_id: match.match_id,
+          pgroup: match.pgroup,
+          players,
+          series_id: body.match.series_id,
+          series_type: body.match.series_type,
+        };
+        const gcdata = {
+          match_id: Number(match.match_id),
+          cluster: body.match.cluster,
+          replay_salt: body.match.replay_salt,
+        };
+        // Put extra fields in matches/player_matches
+        await promisify(insertMatch)(matchToInsert, {
           type: "gcdata",
           skipParse: true,
         });
-      // Persist GC data to database
-      await promisify(queries.upsert)(
-        db,
-        "match_gcdata",
-        gcdata,
-        {
+        // Persist GC data to database
+        await promisify(queries.upsert)(db, "match_gcdata", gcdata, {
           match_id: match.match_id,
         });
-      cb(null, gcdata);
-      } catch(e) {
+        cb(null, gcdata);
+      } catch (e) {
         cb(e);
       }
     }
@@ -94,10 +88,13 @@ module.exports = async function getGcData(match, cb) {
     return cb(new Error("invalid match_id"));
   }
   // Check if we have it in DB already
-  const saved = await db.raw(`select match_id, cluster, replay_salt from match_gcdata where match_id = ?`, [match.match_id]);
+  const saved = await db.raw(
+    `select match_id, cluster, replay_salt from match_gcdata where match_id = ?`,
+    [match.match_id]
+  );
   const gcdata = saved.rows[0];
   if (gcdata) {
-    console.log('found cached gcdata for %s', matchId);
+    console.log("found cached gcdata for %s", matchId);
     redisCount(redis, "cached_gcdata");
     return cb(null, gcdata);
   }

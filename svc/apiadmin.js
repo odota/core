@@ -149,14 +149,19 @@ async function updateStripeUsage(cb) {
         // but we'd have to make changes to web.js and metrics
         await stripe.subscriptionItems.createUsageRecord(sub.items.data[0].id, {
           quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
-          action: 'set',
+          action: "set",
           timestamp: sub.current_period_end - 1,
         });
-        console.log("updateStripeUsage updated", sub.id, usageCount, Math.ceil(usageCount / config.API_BILLING_UNIT));
+        console.log(
+          "updateStripeUsage updated",
+          sub.id,
+          usageCount,
+          Math.ceil(usageCount / config.API_BILLING_UNIT)
+        );
       } else {
         // console.log(`updateStripeUsage No usage for ${sub.id}`);
       }
-    } 
+    }
     console.log(`updateStripeUsage processed ${num} records`);
     cb();
   } catch (err) {
@@ -167,7 +172,6 @@ async function updateStripeUsage(cb) {
 
 invokeInterval(function updateAPIKeysInRedis(cb) {
   queries.getAPIKeys(db, (err, rows) => {
-
     if (err) {
       cb(err);
     } else if (rows.length > 0) {
@@ -190,5 +194,7 @@ invokeInterval(function updateAPIKeysInRedis(cb) {
   });
 }, 5 * 60 * 1000); // Update every 5 min
 
-invokeInterval(function runStoreUsageCounts(cb){storeUsageCounts(0, cb);}, 10 * 60 * 1000); // Every 10 minutes
+invokeInterval(function runStoreUsageCounts(cb) {
+  storeUsageCounts(0, cb);
+}, 10 * 60 * 1000); // Every 10 minutes
 invokeInterval(updateStripeUsage, 5 * 60 * 1000); // Every 5 minutes

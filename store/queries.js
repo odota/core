@@ -1443,15 +1443,20 @@ function insertMatch(match, options, cb) {
   }
 
   function decideScenarios(cb) {
-    if (options.type === 'parsed' &&
-    match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT) {
+    if (
+      options.type === "parsed" &&
+      match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
+    ) {
       return redis.rpush("scenariosQueue", match.match_id, cb);
     }
     return cb();
   }
 
   function decideBenchmarks(cb) {
-    if (options.origin === "scanner" && match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT) {
+    if (
+      options.origin === "scanner" &&
+      match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT
+    ) {
       return redis.rpush("parsedBenchmarksQueue", match.match_id, cb);
     }
     return cb();
@@ -1573,7 +1578,8 @@ function insertMatch(match, options, cb) {
               },
             },
             {
-              priority: (match.leagueid || hasTrackedPlayer) ? -1 : options.priority,
+              priority:
+                match.leagueid || hasTrackedPlayer ? -1 : options.priority,
               attempts: options.attempts || 15,
             },
             cb
