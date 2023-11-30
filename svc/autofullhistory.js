@@ -35,7 +35,7 @@ function start() {
     if (err) {
       throw err;
     }
-    return setTimeout(start, 10000);
+    return setTimeout(start, 30000);
   });
 }
 
