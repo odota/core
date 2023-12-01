@@ -37,6 +37,7 @@ function processMatch(matchId, cb) {
           return cb();
         }
         const match = body.result;
+        try {
         await insertMatchPromise(match, {
           type: 'api',
           origin: 'scanner',
@@ -46,6 +47,9 @@ function processMatch(matchId, cb) {
         // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
         redis.setex(`scanner_insert:${match.match_id}`, 3600 * 24 * 30, 1);
         cb();
+      } catch(e) {
+        cb(e);
+      }
       }
     );
   });

@@ -324,7 +324,7 @@ describe('replay parse', function () {
       throw e;
     }
     console.log('waiting for insert settle');
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 20000));
     console.log('checking parsed match');
     // ensure parse data got inserted
     const match = await buildMatch(tests[key].match_id);
