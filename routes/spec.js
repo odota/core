@@ -1672,8 +1672,11 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           function exitWithJob(err, parseJob) {
             if (err) {
               console.error(err);
+              return res.status(400).json({
+                error: err,
+              });
             }
-            res.status(err ? 400 : 200).json({
+            return res.status(200).json({
               job: {
                 jobId: parseJob && parseJob.id,
               },
