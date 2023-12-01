@@ -1,11 +1,11 @@
 /**
  * File managing configuration for the application
  * */
-const dotenv = require('dotenv');
-const fs = require('fs');
+import { config } from 'dotenv';
+import { existsSync } from 'fs';
 
-if (fs.existsSync('.env')) {
-  dotenv.config();
+if (existsSync('.env')) {
+  config();
 }
 
 const defaults = {
@@ -97,4 +97,4 @@ if (process.env.NODE_ENV === 'test') {
   process.env.PARSER_PORT = 5201;
 }
 // now processes can use either process.env or config
-module.exports = process.env;
+export default process.env;

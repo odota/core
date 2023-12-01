@@ -1,10 +1,6 @@
-const config = require('../config');
-const { gzipSync, gunzipSync } = require('zlib');
-const {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-} = require('@aws-sdk/client-s3');
+import config from '../config.js';
+import { gzipSync, gunzipSync } from 'zlib';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 
 const client = config.MATCH_ARCHIVE_S3_ENDPOINT
   ? new S3Client({
@@ -79,7 +75,7 @@ async function archivePut(key, blob) {
   }
 }
 
-module.exports = {
+export default {
   archiveGet,
   archivePut,
 };

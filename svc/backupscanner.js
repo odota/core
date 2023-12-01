@@ -1,13 +1,13 @@
-const async = require('async');
-const utility = require('../util/utility');
-const redis = require('../store/redis');
-const queries = require('../store/queries');
-const config = require('../config');
+import { eachLimit } from 'async';
+import utility from '../util/utility.js';
+import queries from '../store/queries.js';
+import { STEAM_API_KEY, STEAM_API_HOST } from '../config.js';
+import redis from '../store/redis.js';
 
 const { generateJob, getData } = utility;
 const { insertMatchPromise } = queries;
-const apiKeys = config.STEAM_API_KEY.split(',');
-const apiHosts = config.STEAM_API_HOST.split(',');
+const apiKeys = STEAM_API_KEY.split(',');
+const apiHosts = STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);
 const delay = 1000;
 
@@ -80,7 +80,7 @@ function processPlayer(accountId, cb) {
         const matches = body.result.matches
           .filter((m) => m.match_seq_num > Number(res))
           .map((m) => m.match_id);
-        return async.eachLimit(matches, 1, processMatch, cb);
+        return eachLimit(matches, 1, processMatch, cb);
       });
     }
   );
@@ -96,7 +96,7 @@ function start(err) {
       if (err) {
         throw err;
       }
-      async.eachLimit(ids, parallelism, processPlayer, start);
+      eachLimit(ids, parallelism, processPlayer, start);
     });
   }, 1000);
 }

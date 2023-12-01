@@ -1,14 +1,14 @@
 /**
  * Worker that monitors health metrics and saves results
  * */
-const request = require('request');
-const config = require('../config');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const cassandra = require('../store/cassandra');
-const utility = require('../util/utility');
+import request from 'request';
+import { STEAM_API_KEY } from '../config.js';
+import { hset, expire, get, llen, info, server_info } from '../store/redis.js';
+import { raw } from '../store/db.js';
+import { execute } from '../store/cassandra.js';
+import { getData, generateJob } from '../util/utility.js';
 
-const apiKey = config.STEAM_API_KEY.split(',')[0];
+const apiKey = STEAM_API_KEY.split(',')[0];
 
 function invokeInterval(func) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
@@ -24,8 +24,8 @@ function invokeInterval(func) {
         threshold: 0,
       };
       final.timestamp = Math.floor(new Date() / 1000);
-      redis.hset('health', func.name, JSON.stringify(final));
-      redis.expire('health', 900);
+      hset('health', func.name, JSON.stringify(final));
+      expire('health', 900);
       console.timeEnd(func.name);
       setTimeout(invoker, final && final.delay ? final.delay : 10000);
     });
@@ -56,13 +56,13 @@ function steamApi(cb) {
 }
 
 function seqNumDelay(cb) {
-  utility.getData(utility.generateJob('api_history', {}).url, (err, body) => {
+  getData(generateJob('api_history', {}).url, (err, body) => {
     if (err) {
       return cb('failed to get current sequence number');
     }
     // get match_seq_num, compare with real seqnum
     const currSeqNum = body.result.matches[0].match_seq_num;
-    return redis.get('match_seq_num', (err, num) => {
+    return get('match_seq_num', (err, num) => {
       if (err) {
         return cb(err);
       }
@@ -77,7 +77,7 @@ function seqNumDelay(cb) {
 }
 
 function parseDelay(cb) {
-  db.raw("select count(*) from queue where type = 'parse'").asCallback(
+  raw("select count(*) from queue where type = 'parse'").asCallback(
     (err, result) => {
       if (err) {
         return cb(err);
@@ -91,7 +91,7 @@ function parseDelay(cb) {
 }
 
 function gcDelay(cb) {
-  redis.llen('gcQueue', (err, result) => {
+  llen('gcQueue', (err, result) => {
     if (err) {
       return cb(err);
     }
@@ -103,7 +103,7 @@ function gcDelay(cb) {
 }
 
 function postgresUsage(cb) {
-  db.raw("select pg_database_size('yasp')").asCallback((err, result) => {
+  raw("select pg_database_size('yasp')").asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
@@ -115,7 +115,7 @@ function postgresUsage(cb) {
 }
 
 function cassandraUsage(cb) {
-  cassandra.execute(
+  execute(
     "select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = 'yasp'",
     (err, result) => {
       if (err) {
@@ -134,13 +134,13 @@ function cassandraUsage(cb) {
 }
 
 function redisUsage(cb) {
-  redis.info((err) => {
+  info((err) => {
     if (err) {
       return cb(err);
     }
     // console.log(info);
     return cb(err, {
-      metric: Number(redis.server_info.used_memory),
+      metric: Number(server_info.used_memory),
       threshold: 4 * 10 ** 9,
     });
   });

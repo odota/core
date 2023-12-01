@@ -4,16 +4,15 @@
  * The endpoint usually takes around 2 seconds to return data
  * Therefore each IP should generally avoid requesting more than once every 10 seconds
  * */
-const async = require('async');
-const utility = require('../util/utility');
-const config = require('../config');
-const redis = require('../store/redis');
-const queries = require('../store/queries');
+import { each } from 'async';
+import utility, { redisCount } from '../util/utility.js';
+import { SCANNER_DELAY, SCANNER_PERCENT, START_SEQ_NUM, NODE_ENV } from '../config.js';
+import queries, { insertMatchPromise } from '../store/queries.js';
+import redis from '../store/redis.js';
 
-const { insertMatch } = queries;
 const { getData, generateJob } = utility;
 // const api_hosts = config.STEAM_API_HOST.split(',');
-const delay = Number(config.SCANNER_DELAY);
+const delay = Number(SCANNER_DELAY);
 const PAGE_SIZE = 100;
 
 function scanApi(seqNum) {
@@ -28,7 +27,7 @@ function scanApi(seqNum) {
       return cb(err);
     }
     // Optionally throttle inserts to prevent overload
-    if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
+    if (match.match_id % 100 >= Number(SCANNER_PERCENT)) {
       return finishMatch(null, cb);
     }
     // check if match was previously processed
@@ -41,7 +40,7 @@ function scanApi(seqNum) {
         // don't insert this match if we already processed it recently
         if (!result) {
           try {
-            await queries.insertMatchPromise(match, {
+            await insertMatchPromise(match, {
               type: 'api',
               origin: 'scanner',
             });
@@ -71,7 +70,7 @@ function scanApi(seqNum) {
           // On non-retryable error, increment match seq num by 1 and continue
           if (err.result.status === 2) {
             nextSeqNum += 1;
-            utility.redisCount(redis, 'skip_seq_num');
+            redisCount(redis, 'skip_seq_num');
             return cb();
           }
           return cb(err);
@@ -89,7 +88,7 @@ function scanApi(seqNum) {
           matchSeqNum,
           resp.length
         );
-        return async.each(resp, processMatch, cb);
+        return each(resp, processMatch, cb);
       }
     );
   }
@@ -109,7 +108,7 @@ function scanApi(seqNum) {
 
   processPage(seqNum, finishPageSet);
 }
-if (config.START_SEQ_NUM) {
+if (START_SEQ_NUM) {
   redis.get('match_seq_num', (err, result) => {
     if (err || !result) {
       throw new Error(
@@ -119,7 +118,7 @@ if (config.START_SEQ_NUM) {
     const numResult = Number(result);
     scanApi(numResult);
   });
-} else if (config.NODE_ENV !== 'production') {
+} else if (NODE_ENV !== 'production') {
   // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
   const container = generateJob('api_history', {});
   getData(container.url, (err, data) => {

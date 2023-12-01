@@ -34,4 +34,4 @@ function generateOperationId(method, path) {
   return `${method}_${snakeCaseBase}`;
 }
 
-module.exports = generateOperationId;
+export default generateOperationId;

@@ -1,31 +1,31 @@
-const async = require('async');
-const util = require('util');
-const queue = require('../store/queue');
-const buildMatch = require('../store/buildMatch');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const su = require('../util/scenariosUtil');
+import { eachSeries } from 'async';
+import { format } from 'util';
+import { runQueue } from '../store/queue.js';
+import buildMatch from '../store/buildMatch.js';
+import { raw } from '../store/db.js';
+import { epochWeek } from '../util/utility.js';
+import { validateMatchProperties, scenarioChecks } from '../util/scenariosUtil.js';
 
 async function processScenarios(matchID, cb) {
   try {
     const match = await buildMatch(matchID);
-    if (!su.validateMatchProperties(match)) {
+    if (!validateMatchProperties(match)) {
       console.error(
         `Skipping scenario checks for match ${matchID}. Invalid match object.`
       );
       return cb();
     }
-    const currentWeek = utility.epochWeek();
-    Object.keys(su.scenarioChecks).forEach((table) => {
-      su.scenarioChecks[table].forEach((scenarioCheck) => {
+    const currentWeek = epochWeek();
+    Object.keys(scenarioChecks).forEach((table) => {
+      scenarioChecks[table].forEach((scenarioCheck) => {
         const rows = scenarioCheck(match);
-        async.eachSeries(rows, (row, cb) => {
+        eachSeries(rows, (row, cb) => {
           row = Object.assign(row, {
             epoch_week: currentWeek,
             wins: row.wins ? '1' : '0',
           });
           const values = Object.keys(row).map(() => '?');
-          const query = util.format(
+          const query = format(
             'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
             table,
             Object.keys(row).join(','),
@@ -36,7 +36,7 @@ async function processScenarios(matchID, cb) {
             table,
             table
           );
-          db.raw(
+          raw(
             query,
             Object.keys(row).map((key) => row[key])
           ).asCallback(cb);
@@ -49,4 +49,4 @@ async function processScenarios(matchID, cb) {
   }
 }
 
-queue.runQueue('scenariosQueue', 1, processScenarios);
+runQueue('scenariosQueue', 1, processScenarios);

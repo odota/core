@@ -2,16 +2,18 @@
  * Provides utility functions.
  * All functions should have external dependencies (DB, etc.) passed as parameters
  * */
-const constants = require('dotaconstants');
-const request = require('request');
-const Long = require('long');
-const urllib = require('url');
-const uuidV4 = require('uuid/v4');
-const moment = require('moment');
-const crypto = require('crypto');
-const laneMappings = require('./laneMappings');
-const config = require('../config');
-const contributors = require('../CONTRIBUTORS');
+import constants from 'dotaconstants';
+import request from 'request';
+import Long from 'long';
+import { parse as _parse, format } from 'url';
+import {v4 as uuidV4} from 'uuid';
+import moment from 'moment';
+import { createHash } from 'crypto';
+import laneMappings from './laneMappings.js';
+import config from '../config.js';
+import contributors from '../CONTRIBUTORS.js';
+
+const { game_mode, lobby_type, patch } = constants;
 
 /**
  * Tokenizes an input string.
@@ -221,7 +223,7 @@ function getData(url, cb) {
   } else {
     u = url;
   }
-  const parse = urllib.parse(u, true);
+  const parse = _parse(u, true);
   const steamApi = parse.host === 'api.steampowered.com';
   if (steamApi) {
     // choose an api key to use
@@ -232,7 +234,7 @@ function getData(url, cb) {
     const apiHosts = config.STEAM_API_HOST.split(',');
     parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
   }
-  const target = urllib.format(parse);
+  const target = format(parse);
   console.log('%s - getData: %s', new Date(), target);
   return setTimeout(() => {
     request(
@@ -385,10 +387,10 @@ function mode(array) {
  * */
 function isSignificant(match) {
   return Boolean(
-    constants.game_mode[match.game_mode] &&
-      constants.game_mode[match.game_mode].balanced &&
-      constants.lobby_type[match.lobby_type] &&
-      constants.lobby_type[match.lobby_type].balanced &&
+    game_mode[match.game_mode] &&
+      game_mode[match.game_mode].balanced &&
+      lobby_type[match.lobby_type] &&
+      lobby_type[match.lobby_type].balanced &&
       match.radiant_win !== undefined &&
       match.duration > 360 &&
       (match.players || []).every((player) => (player.gold_per_min || 0) < 2500)
@@ -524,8 +526,8 @@ function median(data) {
 function getPatchIndex(startTime) {
   const date = new Date(startTime * 1000);
   let i;
-  for (i = 1; i < constants.patch.length; i += 1) {
-    const pd = new Date(constants.patch[i].date);
+  for (i = 1; i < patch.length; i += 1) {
+    const pd = new Date(patch[i].date);
     // stop when patch date is past the start time
     if (pd > date) {
       break;
@@ -807,7 +809,7 @@ function getRetrieverArr(useGcDataArr) {
   const output = [];
   const arr = input.split(',');
   arr.forEach((element) => {
-    const parsedUrl = urllib.parse(`http://${element}`, true);
+    const parsedUrl = _parse(`http://${element}`, true);
     for (let i = 0; i < (parsedUrl.query.size || 1); i += 1) {
       output.push(parsedUrl.host);
     }
@@ -872,11 +874,11 @@ function cleanItemSchema(input) {
 
 function checkIfInExperiment(ip, mod) {
   return (
-    crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
+    createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );
 }
 
-module.exports = {
+export default {
   tokenize,
   generateJob,
   getData,

@@ -1,16 +1,16 @@
-const queue = require('../store/queue');
-const benchmarksUtil = require('../util/benchmarksUtil');
-const buildMatch = require('../store/buildMatch');
-const utility = require('../util/utility');
-const config = require('../config');
-const redis = require('../store/redis');
+import { runQueue } from '../store/queue.js';
+import benchmarksUtil from '../util/benchmarksUtil.js';
+import buildMatch from '../store/buildMatch.js';
+import { isSignificant, getStartOfBlockMinutes } from '../util/utility.js';
+import { BENCHMARK_RETENTION_MINUTES } from '../config.js';
+import redis from '../store/redis.js';
 
 const { benchmarks } = benchmarksUtil;
 
 async function doBenchmarks(matchID, cb) {
   try {
     const match = await buildMatch(matchID);
-    if (match.players && utility.isSignificant(match)) {
+    if (match.players && isSignificant(match)) {
       for (let i = 0; i < match.players.length; i += 1) {
         const p = match.players[i];
         // only do if all players have heroes
@@ -24,8 +24,8 @@ async function doBenchmarks(matchID, cb) {
             ) {
               const rkey = [
                 'benchmarks',
-                utility.getStartOfBlockMinutes(
-                  config.BENCHMARK_RETENTION_MINUTES,
+                getStartOfBlockMinutes(
+                  BENCHMARK_RETENTION_MINUTES,
                   0
                 ),
                 key,
@@ -33,8 +33,8 @@ async function doBenchmarks(matchID, cb) {
               ].join(':');
               redis.zadd(rkey, metric, match.match_id);
               // expire at time two epochs later (after prev/current cycle)
-              const expiretime = utility.getStartOfBlockMinutes(
-                config.BENCHMARK_RETENTION_MINUTES,
+              const expiretime = getStartOfBlockMinutes(
+                BENCHMARK_RETENTION_MINUTES,
                 2
               );
               redis.expireat(rkey, expiretime);
@@ -50,4 +50,4 @@ async function doBenchmarks(matchID, cb) {
   }
 }
 
-queue.runQueue('parsedBenchmarksQueue', 1, doBenchmarks);
+runQueue('parsedBenchmarksQueue', 1, doBenchmarks);

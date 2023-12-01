@@ -1,29 +1,29 @@
-const async = require('async');
-const JSONbig = require('json-bigint');
-const request = require('request');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const config = require('../config');
+import { eachSeries } from 'async';
+import { parse } from 'json-bigint';
+import { get } from 'request';
+import { select } from '../store/db.js';
+import utility from '../util/utility.js';
+import { STEAM_API_KEY } from '../config.js';
+import redis from '../store/redis.js';
 
 const { invokeInterval } = utility;
 
 function doLiveGames(cb) {
   // Get the list of pro players
-  db.select()
+  select()
     .from('notable_players')
     .asCallback((err, proPlayers) => {
       // Get the list of live games
-      const apiKeys = config.STEAM_API_KEY.split(',');
+      const apiKeys = STEAM_API_KEY.split(',');
       const liveGamesUrl = `https://api.steampowered.com/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKeys[0]}&partner=0`;
-      request.get(liveGamesUrl, (err, resp, body) => {
+      get(liveGamesUrl, (err, resp, body) => {
         if (err) {
           return cb(err);
         }
-        const json = JSONbig.parse(body);
+        const json = parse(body);
         // If a match contains a pro player
         // add their name to the match object, save it to redis zset, keyed by server_steam_id
-        return async.eachSeries(
+        return eachSeries(
           json.game_list,
           (match, cb) => {
             // let addToRedis = false;

@@ -1,12 +1,12 @@
 /**
  * Function to sync subs between Stripe and DB
  * */
-const db = require('../store/db');
-const utility = require('../util/utility');
-const config = require('../config');
-const stripeLib = require('stripe');
+import { raw } from '../store/db.js';
+import utility from '../util/utility.js';
+import { STRIPE_SECRET } from '../config.js';
+import stripeLib from 'stripe';
 
-const stripe = stripeLib(config.STRIPE_SECRET);
+const stripe = stripeLib(STRIPE_SECRET);
 s;
 const { invokeInterval } = utility;
 
@@ -21,18 +21,18 @@ async function run(cb) {
     result.push(sub);
   }
   console.log(result.length, 'subs');
-  await db.raw('BEGIN TRANSACTION');
+  await raw('BEGIN TRANSACTION');
   // Delete all status from subscribers
-  await db.raw('UPDATE subscriber SET status = NULL');
+  await raw('UPDATE subscriber SET status = NULL');
   for (let i = 0; i < result.length; i++) {
     const sub = result[i];
     // Mark list of subscribers as active
-    await db.raw('UPDATE subscriber SET status = ? WHERE customer_id = ?', [
+    await raw('UPDATE subscriber SET status = ? WHERE customer_id = ?', [
       sub.status,
       sub.customer,
     ]);
   }
-  await db.raw('COMMIT');
+  await raw('COMMIT');
 }
 
 invokeInterval(run, 60 * 1000);

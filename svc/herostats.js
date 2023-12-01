@@ -1,19 +1,19 @@
-const constants = require('dotaconstants');
-const moment = require('moment');
-const async = require('async');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const utility = require('../util/utility');
+import { heroes } from 'dotaconstants';
+import moment from 'moment';
+import { parallel } from 'async';
+import { raw } from '../store/db.js';
+import utility from '../util/utility.js';
+import redis from '../store/redis.js';
 
 const { invokeInterval } = utility;
 
 function doHeroStats(cb) {
   const minTime = moment().subtract(30, 'day').format('X');
   const maxTime = moment().format('X');
-  async.parallel(
+  parallel(
     {
       publicHeroes(cb) {
-        db.raw(
+        raw(
           `
               SELECT
               floor(avg_rank_tier / 10) as rank_tier,
@@ -37,7 +37,7 @@ function doHeroStats(cb) {
         ).asCallback(cb);
       },
       proHeroes(cb) {
-        db.raw(
+        raw(
           `
               SELECT 
               sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
@@ -56,7 +56,7 @@ function doHeroStats(cb) {
         ).asCallback(cb);
       },
       proBans(cb) {
-        db.raw(
+        raw(
           `
               SELECT 
               count(hero_id) as pro_ban,
@@ -95,7 +95,7 @@ function doHeroStats(cb) {
         return cb(err);
       }
       // Build object keyed by hero_id for each result array
-      const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
+      const objectResponse = JSON.parse(JSON.stringify(heroes));
       Object.keys(result).forEach((key) => {
         result[key].rows.forEach((row) => {
           objectResponse[row.hero_id] = {

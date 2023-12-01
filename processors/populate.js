@@ -1,4 +1,4 @@
-const performanceOthers = require('./performanceOthers');
+import performanceOthers from './performanceOthers.js';
 
 function populate(e, container, meta) {
   let t;
@@ -134,4 +134,4 @@ function populate(e, container, meta) {
       break;
   }
 }
-module.exports = populate;
+export default populate;

@@ -1,24 +1,24 @@
-const express = require('express');
-const moment = require('moment');
-const async = require('async');
-const playerFields = require('./playerFields.json');
-const filterDeps = require('../util/filterDeps');
-const config = require('../config');
-const spec = require('./spec');
-const cacheFunctions = require('../store/cacheFunctions');
-const db = require('../store/db');
-const redis = require('../store/redis');
+import { Router } from 'express';
+import moment from 'moment';
+import { parallel } from 'async';
+import playerFields from './playerFields.json';
+import filterDeps from '../util/filterDeps.js';
+import { ADMIN_ACCOUNT_IDS } from '../config.js';
+import spec, { paths } from './spec.js';
+import { read } from '../store/cacheFunctions.js';
+import { raw } from '../store/db.js';
+import { zrevrange, zcard } from '../store/redis.js';
 
-const api = new express.Router();
+const api = new Router();
 const { subkeys } = playerFields;
 
-const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
+const admins = ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 
 // Player caches middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   // Check cache
   if (!Object.keys(req.query).length && req.params.info) {
-    return cacheFunctions.read(
+    return read(
       {
         key: req.params.info,
         account_id: req.params.account_id,
@@ -107,10 +107,10 @@ api.get('/admin/apiMetrics', (req, res) => {
   const startTime = moment().startOf('month').format('YYYY-MM-DD');
   const endTime = moment().endOf('month').format('YYYY-MM-DD');
 
-  async.parallel(
+  parallel(
     {
       topAPI: (cb) => {
-        db.raw(
+        raw(
           `
         SELECT
             account_id,
@@ -136,7 +136,7 @@ api.get('/admin/apiMetrics', (req, res) => {
         ).asCallback((err, res) => cb(err, err ? null : res.rows));
       },
       topAPIIP: (cb) => {
-        db.raw(
+        raw(
           `
         SELECT
             ip,
@@ -163,7 +163,7 @@ api.get('/admin/apiMetrics', (req, res) => {
         ).asCallback((err, res) => cb(err, err ? null : res.rows));
       },
       numAPIUsers: (cb) => {
-        db.raw(
+        raw(
           `
         SELECT
             COUNT(DISTINCT account_id)
@@ -176,10 +176,10 @@ api.get('/admin/apiMetrics', (req, res) => {
         ).asCallback((err, res) => cb(err, err ? null : res.rows));
       },
       topUsersIP: (cb) => {
-        redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
+        zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
       },
       numUsersIP: (cb) => {
-        redis.zcard('user_usage_count', cb);
+        zcard('user_usage_count', cb);
       },
     },
     (err, result) => {
@@ -197,9 +197,9 @@ api.get('/', (req, res) => {
 });
 
 // API endpoints
-Object.keys(spec.paths).forEach((path) => {
-  Object.keys(spec.paths[path]).forEach((verb) => {
-    const { route, func } = spec.paths[path][verb];
+Object.keys(paths).forEach((path) => {
+  Object.keys(paths[path]).forEach((verb) => {
+    const { route, func } = paths[path][verb];
     // Use the 'route' function to get the route path if it's available; otherwise, transform the OpenAPI path to the Express format.
     const routePath = route
       ? route()
@@ -216,4 +216,4 @@ Object.keys(spec.paths).forEach((path) => {
   });
 });
 
-module.exports = api;
+export default api;

@@ -1,14 +1,14 @@
 /**
  * Worker to update counts based on incoming match data
  * */
-const async = require('async');
-const moment = require('moment');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const queries = require('../store/queries');
-const queue = require('../store/queue');
-const config = require('../config');
+import { each, series, parallel } from 'async';
+import moment from 'moment';
+import db, { select, raw, transaction } from '../store/db.js';
+import utility, { getAnonymousAccountId as _getAnonymousAccountId } from '../util/utility.js';
+import queries from '../store/queries.js';
+import { runQueue } from '../store/queue.js';
+import { PUBLIC_SAMPLE_PERCENT } from '../config.js';
+import redis from '../store/redis.js';
 
 const {
   getMatchRankTier,
@@ -29,7 +29,7 @@ function updateHeroRankings(match, cb) {
     if (!matchScore) {
       return cb();
     }
-    return async.each(
+    return each(
       match.players,
       (player, cb) => {
         if (
@@ -43,8 +43,7 @@ function updateHeroRankings(match, cb) {
         // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
         const win = Number(isRadiant(player) === player.radiant_win);
         const kFactor = 100;
-        return db
-          .select('score')
+        return select('score')
           .from('hero_ranking')
           .where({
             account_id: player.account_id,
@@ -62,8 +61,7 @@ function updateHeroRankings(match, cb) {
             const e1 = r1 / (r1 + r2);
             const ratingDiff1 = kFactor * (win - e1);
             const newScore = currRating1 + ratingDiff1;
-            return db
-              .raw(
+            return raw(
                 'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
                 [player.account_id, player.hero_id, newScore, newScore]
               )
@@ -78,15 +76,14 @@ function updateHeroRankings(match, cb) {
 function updateMmrEstimate(match, cb) {
   getMatchRating(match, (err, avg) => {
     if (avg && !Number.isNaN(Number(avg))) {
-      return async.each(
+      return each(
         match.players,
         (player, cb) => {
           if (
             player.account_id &&
-            player.account_id !== utility.getAnonymousAccountId()
+            player.account_id !== _getAnonymousAccountId()
           ) {
-            return db
-              .raw(
+            return raw(
                 `
           INSERT INTO mmr_estimates VALUES(?, ?)
           ON CONFLICT(account_id)
@@ -116,7 +113,7 @@ function upsertMatchSample(match, cb) {
       if (!avgRankTier || numRankTier < 2) {
         return cb();
       }
-      return db.transaction((trx) => {
+      return transaction((trx) => {
         function upsertMatchSample(cb) {
           const matchMmrData = {
             avg_mmr: avg || null,
@@ -137,7 +134,7 @@ function upsertMatchSample(match, cb) {
         }
 
         function upsertPlayerMatchesSample(cb) {
-          async.each(
+          each(
             match.players || [],
             (pm, cb) => {
               pm.match_id = match.match_id;
@@ -166,7 +163,7 @@ function upsertMatchSample(match, cb) {
           cb(err);
         }
 
-        async.series(
+        series(
           {
             upsertMatchSample,
             upsertPlayerMatchesSample,
@@ -239,7 +236,7 @@ function updateLastPlayed(match, cb) {
     }
   });
 
-  async.each(
+  each(
     filteredPlayers,
     (player, cb) => {
       insertPlayer(
@@ -288,8 +285,7 @@ function updateHeroSearch(match, cb) {
   const teamB = inverted ? radiant : dire;
   const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
 
-  return db
-    .raw(
+  return raw(
       'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)',
       [match.match_id, teamA, teamB, teamAWin, match.start_time]
     )
@@ -347,7 +343,7 @@ function updateMatchups(match, cb) {
 
 function processCounts(match, cb) {
   console.log('match %s', match.match_id);
-  return async.parallel(
+  return parallel(
     {
       updateRankings(cb) {
         if (isSignificant(match)) {
@@ -364,7 +360,7 @@ function processCounts(match, cb) {
       upsertMatchSample(cb) {
         if (
           isSignificant(match) &&
-          match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT
+          match.match_id % 100 < PUBLIC_SAMPLE_PERCENT
         ) {
           return upsertMatchSample(match, cb);
         }
@@ -407,4 +403,4 @@ function processCounts(match, cb) {
   );
 }
 
-queue.runQueue('countsQueue', 1, processCounts);
+runQueue('countsQueue', 1, processCounts);

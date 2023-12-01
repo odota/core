@@ -1,5 +1,5 @@
-const redis = require('./redis');
-const config = require('../config');
+import redis from './redis.js';
+import config from '../config.js';
 
 const write = (req, data, cb) => {
   // console.log(`[WRITECACHE] cache:${req.key}:${req.account_id}`);
@@ -12,7 +12,7 @@ const write = (req, data, cb) => {
 };
 const getKeys = () => ['wl', 'heroes', 'peers', 'counts'];
 
-module.exports = {
+export default {
   read: (req, cb) => {
     // console.log(`[READCACHE] cache:${req.key}:${req.account_id}`);
     redis.get(`cache:${req.key}:${req.account_id}`, cb);

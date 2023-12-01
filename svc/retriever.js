@@ -2,21 +2,19 @@
  * Worker interfacing with the Steam GC.
  * Provides HTTP endpoints for other workers.
  * */
-const Steam = require('steam');
-const Dota2 = require('dota2');
-const async = require('async');
-const express = require('express');
-const compression = require('compression');
-const cp = require('child_process');
-const os = require('os');
-const config = require('../config');
+import { servers, SteamClient, SteamUser, EResult } from 'steam';
+import { Dota2Client } from 'dota2';
+import { each } from 'async';
+import express from 'express';
+import compression from 'compression';
+import { execSync } from 'child_process';
+import { uptime as _uptime, hostname as _hostname } from 'os';
+import { ENABLE_RETRIEVER_ADVANCED_AUTH, PORT, RETRIEVER_PORT, STEAM_USER, STEAM_PASS, STEAM_ACCOUNT_DATA, RETRIEVER_SECRET, NODE_ENV } from '../config.js';
 
-const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH
+const advancedAuth = ENABLE_RETRIEVER_ADVANCED_AUTH
   ? {
-      /* eslint-disable global-require */
-      redis: require('../store/redis'),
-      crypto: require('crypto'),
-      /* eslint-enable global-require */
+      // redis
+      // crypto
       pendingTwoFactorAuth: {},
       pendingSteamGuardAuth: {},
     }
@@ -30,7 +28,7 @@ const timeoutMs = 5000;
 const accountsToUse = 5;
 // maybe can do 1000 per IP now?
 const matchRequestLimit = 600;
-const port = config.PORT || config.RETRIEVER_PORT;
+const port = PORT || RETRIEVER_PORT;
 const matchRequestDelay = 500;
 const matchRequestDelayStep = 3;
 
@@ -41,11 +39,11 @@ let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
 let allReady = false;
-let users = config.STEAM_USER.split(',');
-let passes = config.STEAM_PASS.split(',');
+let users = STEAM_USER.split(',');
+let passes = STEAM_PASS.split(',');
 
 // For the latest list: https://api.steampowered.com/ISteamDirectory/GetCMList/v1/?format=json&cellid=0
-Steam.servers = [
+servers = [
   { host: '155.133.242.9', port: 27018 },
   { host: '185.25.180.15', port: 27019 },
   { host: '185.25.180.15', port: 27018 },
@@ -138,7 +136,7 @@ function getUptime() {
 }
 
 function getServerUptime() {
-  return os.uptime();
+  return _uptime();
 }
 
 function genStats() {
@@ -149,7 +147,7 @@ function genStats() {
     profileSuccesses,
     uptime: getUptime(),
     serverUptime: getServerUptime(),
-    hostname: os.hostname(),
+    hostname: _hostname(),
     numReadyAccounts: Object.keys(steamObj).length,
     totalAccounts: users.length,
   };
@@ -223,13 +221,13 @@ function getGcMatchData(idx, matchId, cb) {
 }
 
 function init() {
-  async.each(
+  each(
     Array.from(new Array(Math.min(accountsToUse, users.length)), (v, i) => i),
     (i, cb) => {
-      const client = new Steam.SteamClient();
-      client.steamUser = new Steam.SteamUser(client);
+      const client = new SteamClient();
+      client.steamUser = new SteamUser(client);
       // client.steamFriends = new Steam.SteamFriends(client);
-      client.Dota2 = new Dota2.Dota2Client(client, false);
+      client.Dota2 = new Dota2Client(client, false);
       client.Dota2.on('ready', () => {
         console.log('acct %s ready', i);
         // As of 2023-06-04 seeing some double ready which crashes the process
@@ -274,7 +272,7 @@ function init() {
         }
         */
 
-        if (logOnResp.eresult !== Steam.EResult.OK) {
+        if (logOnResp.eresult !== EResult.OK) {
           console.error(logOnResp);
           // give up
           // cb();
@@ -398,9 +396,8 @@ function init() {
 }
 
 let accountData = [];
-if (config.STEAM_ACCOUNT_DATA) {
-  accountData = cp
-    .execSync(`curl '${config.STEAM_ACCOUNT_DATA}'`, {
+if (STEAM_ACCOUNT_DATA) {
+  accountData = execSync(`curl '${STEAM_ACCOUNT_DATA}'`, {
       maxBuffer: 8 * 1024 * 1024,
     })
     .toString()
@@ -427,7 +424,7 @@ app.get('/healthz', (req, res, cb) => {
   return res.end('ok');
 });
 app.use((req, res, cb) => {
-  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+  if (RETRIEVER_SECRET && RETRIEVER_SECRET !== req.query.key) {
     // reject request if it doesn't have key
     return cb('invalid key');
   }
@@ -501,7 +498,7 @@ app.use((req, res, cb) => {
     // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
     (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds) ||
     (!allReady && getUptime() > minUpTimeSeconds);
-  if (shouldRestart && config.NODE_ENV !== 'development') {
+  if (shouldRestart && NODE_ENV !== 'development') {
     return selfDestruct();
   }
   if (!allReady) {

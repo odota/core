@@ -1,4 +1,4 @@
-const utility = require('../util/utility');
+import { isRadiant } from '../util/utility.js';
 
 /**
  * Compute data requiring all players in a match for storage in match table
@@ -13,12 +13,12 @@ function processAllPlayers(entries, meta) {
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     if (e.time >= 0 && e.time % 60 === 0 && e.type === 'interval') {
-      const g = utility.isRadiant({
+      const g = isRadiant({
         player_slot: meta.slot_to_playerslot[e.slot],
       })
         ? e.gold
         : -e.gold;
-      const x = utility.isRadiant({
+      const x = isRadiant({
         player_slot: meta.slot_to_playerslot[e.slot],
       })
         ? e.xp
@@ -34,4 +34,4 @@ function processAllPlayers(entries, meta) {
   });
   return res;
 }
-module.exports = processAllPlayers;
+export default processAllPlayers;

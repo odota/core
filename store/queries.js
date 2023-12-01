@@ -1,25 +1,10 @@
 /**
  * Provides functions to get/insert data into data stores.
  * */
-const async = require('async');
-const constants = require('dotaconstants');
-const util = require('util');
-const utility = require('../util/utility');
-const config = require('../config');
-const queue = require('./queue');
-const su = require('../util/scenariosUtil');
-const filter = require('../util/filter');
-const compute = require('../util/compute');
-const db = require('./db');
-const redis = require('./redis');
-const { es, INDEX } = require('./elasticsearch');
-const cassandra = require('./cassandra');
-const cacheFunctions = require('./cacheFunctions');
-const benchmarksUtil = require('../util/benchmarksUtil');
-const { archiveGet } = require('./archive');
-
-const {
-  redisCount,
+import { map, eachSeries, each, series, some, parallel } from 'async';
+import { items as _items, patch as _patch } from 'dotaconstants';
+import { format, promisify } from 'util';
+import { getStartOfBlockMinutes, getAnonymousAccountId, isProMatch, getLaneFromPosData, getPatchIndex,   redisCount,
 
   convert64to32,
 
@@ -33,8 +18,21 @@ const {
 
   countItemPopularity,
 
-  averageMedal,
-} = utility;
+  averageMedal } from '../util/utility.js';
+import config from '../config.js';
+import { addJob } from './queue.js';
+import { teamScenariosQueryParams, metadata } from '../util/scenariosUtil.js';
+import filter from '../util/filter.js';
+import compute from '../util/compute.js';
+import db from './db.js';
+import redis from './redis.js';
+import esClient from './elasticsearch.js';
+import cassandra from './cassandra.js';
+import cacheFunctions from './cacheFunctions.js';
+import benchmarksUtil from '../util/benchmarksUtil.js';
+import { archiveGet } from './archive.js';
+
+const { es, INDEX } = esClient;
 const { computeMatchData } = compute;
 const columnInfo = {};
 const cassandraColumnInfo = {};
@@ -106,17 +104,17 @@ function getAPIKeys(db, cb) {
  * Benchmarks a match against stored data in Redis.
  * */
 function getMatchBenchmarks(m, cb) {
-  async.map(
+  map(
     m.players,
     (p, cb) => {
       p.benchmarks = {};
-      async.eachSeries(
+      eachSeries(
         Object.keys(benchmarks),
         (metric, cb) => {
           // Use data from previous epoch
           let key = [
             'benchmarks',
-            utility.getStartOfBlockMinutes(
+            getStartOfBlockMinutes(
               config.BENCHMARK_RETENTION_MINUTES,
               -1
             ),
@@ -125,7 +123,7 @@ function getMatchBenchmarks(m, cb) {
           ].join(':');
           const backupKey = [
             'benchmarks',
-            utility.getStartOfBlockMinutes(
+            getStartOfBlockMinutes(
               config.BENCHMARK_RETENTION_MINUTES,
               0
             ),
@@ -192,7 +190,7 @@ function getDistributions(redis, cb) {
     'distribution:country_mmr',
   ];
   const result = {};
-  async.each(
+  each(
     keys,
     (r, cb) => {
       redis.get(r, (err, blob) => {
@@ -312,7 +310,7 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
       .filter((item) => item && item.key && item.time != null)
       .map((item) => {
         const time = parseInt(item.time, 10);
-        const { cost, id } = constants.items[item.key];
+        const { cost, id } = _items[item.key];
         return { cost, id, time };
       });
 
@@ -346,17 +344,17 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
 function getHeroBenchmarks(db, redis, options, cb) {
   const heroId = options.hero_id;
   const ret = {};
-  async.each(
+  each(
     Object.keys(benchmarks),
     (metric, cb) => {
       const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
-      async.each(
+      each(
         arr,
         (percentile, cb) => {
           // Use data from previous epoch
           let key = [
             'benchmarks',
-            utility.getStartOfBlockMinutes(
+            getStartOfBlockMinutes(
               config.BENCHMARK_RETENTION_MINUTES,
               -1
             ),
@@ -365,7 +363,7 @@ function getHeroBenchmarks(db, redis, options, cb) {
           ].join(':');
           const backupKey = [
             'benchmarks',
-            utility.getStartOfBlockMinutes(
+            getStartOfBlockMinutes(
               config.BENCHMARK_RETENTION_MINUTES,
               0
             ),
@@ -434,7 +432,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
       return cb(err);
     }
     // console.log(queryObj.project, cassandraColumnInfo.player_caches);
-    const query = util.format(
+    const query = format(
       `
       SELECT %s FROM player_caches
       WHERE account_id = ?
@@ -560,7 +558,7 @@ function getPeers(db, input, player, cb) {
     if (
       numId &&
       numId !== Number(player.account_id) &&
-      numId !== utility.getAnonymousAccountId() &&
+      numId !== getAnonymousAccountId() &&
       tm.games >= 5
     ) {
       teammatesArr.push(tm);
@@ -569,7 +567,7 @@ function getPeers(db, input, player, cb) {
   teammatesArr.sort((a, b) => b.games - a.games);
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
-  return async.each(
+  return each(
     teammatesArr,
     (t, cb) => {
       db.first(
@@ -638,7 +636,7 @@ function getProPeers(db, input, player, cb) {
 }
 
 function getMatchRating(match, cb) {
-  async.map(
+  map(
     match.players,
     (player, cb) => {
       if (!player.account_id) {
@@ -667,7 +665,7 @@ function getMatchRating(match, cb) {
 }
 
 function getMatchRankTier(match, cb) {
-  async.map(
+  map(
     match.players,
     (player, cb) => {
       if (!player.account_id) {
@@ -701,9 +699,9 @@ function upsert(db, table, row, conflict, cb) {
     }
     const values = Object.keys(row).map(() => '?');
     const update = Object.keys(row).map((key) =>
-      util.format('%s=%s', key, `EXCLUDED.${key}`)
+      format('%s=%s', key, `EXCLUDED.${key}`)
     );
-    const query = util.format(
+    const query = format(
       'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
       table,
       Object.keys(row).join(','),
@@ -727,7 +725,7 @@ function insertPlayer(db, player, indexPlayer, cb) {
   }
   if (
     !player.account_id ||
-    player.account_id === utility.getAnonymousAccountId()
+    player.account_id === getAnonymousAccountId()
   ) {
     return cb();
   }
@@ -780,7 +778,7 @@ function bulkIndexPlayer(bulkActions, cb) {
 }
 
 function insertPlayerRating(db, row, cb) {
-  async.series(
+  series(
     {
       pr(cb) {
         if (
@@ -867,7 +865,7 @@ function insertPlayerRating(db, row, cb) {
 }
 
 function writeCache(accountId, cache, cb) {
-  return async.each(
+  return each(
     cache.raw,
     (match, cb) => {
       cleanRowCassandra(
@@ -879,7 +877,7 @@ function writeCache(accountId, cache, cb) {
             return cb(err);
           }
           const serializedMatch = serialize(cleanedMatch);
-          const query = util.format(
+          const query = format(
             'INSERT INTO player_caches (%s) VALUES (%s)',
             Object.keys(serializedMatch).join(','),
             Object.keys(serializedMatch)
@@ -916,12 +914,12 @@ function insertPlayerCache(match, cb) {
       }
     });
   }
-  return async.eachSeries(
+  return eachSeries(
     players,
     (playerMatch, cb) => {
       if (
         playerMatch.account_id &&
-        playerMatch.account_id !== utility.getAnonymousAccountId()
+        playerMatch.account_id !== getAnonymousAccountId()
       ) {
         // join player with match to form player_match
         Object.keys(match).forEach((key) => {
@@ -1008,7 +1006,7 @@ function createMatchCopy(match, players) {
   return copy;
 }
 
-const insertMatchPromise = util.promisify(insertMatch);
+const insertMatchPromise = promisify(insertMatch);
 
 function insertMatch(match, options, cb) {
   const players = match.players
@@ -1024,7 +1022,7 @@ function insertMatch(match, options, cb) {
     // don't insert anonymous account id
     if (players) {
       players.forEach((p) => {
-        if (p.account_id === utility.getAnonymousAccountId()) {
+        if (p.account_id === getAnonymousAccountId()) {
           delete p.account_id;
         }
       });
@@ -1096,7 +1094,7 @@ function insertMatch(match, options, cb) {
   }
 
   async function upsertMatchPostgres(cb) {
-    if (options.type === 'api' && !utility.isProMatch(match)) {
+    if (options.type === 'api' && !isProMatch(match)) {
       // Check if the match is legit if this is API insert
       return cb();
     }
@@ -1126,13 +1124,13 @@ function insertMatch(match, options, cb) {
       }
 
       function upsertPlayerMatches(cb) {
-        async.each(
+        each(
           players || [],
           (pm, cb) => {
             pm.match_id = match.match_id;
             // Add lane data
             if (pm.lane_pos) {
-              const laneData = utility.getLaneFromPosData(
+              const laneData = getLaneFromPosData(
                 pm.lane_pos,
                 isRadiant(pm)
               );
@@ -1156,7 +1154,7 @@ function insertMatch(match, options, cb) {
       }
 
       function upsertPicksBans(cb) {
-        async.each(
+        each(
           match.picks_bans || [],
           (p, cb) => {
             // order is a reserved keyword
@@ -1185,7 +1183,7 @@ function insertMatch(match, options, cb) {
             {
               match_id: match.match_id,
               patch:
-                constants.patch[utility.getPatchIndex(match.start_time)].name,
+                _patch[getPatchIndex(match.start_time)].name,
             },
             {
               match_id: match.match_id,
@@ -1212,7 +1210,7 @@ function insertMatch(match, options, cb) {
             radiant: false,
           });
         }
-        async.each(
+        each(
           arr,
           (tm, cb) => {
             upsert(
@@ -1244,7 +1242,7 @@ function insertMatch(match, options, cb) {
         cb(err);
       }
 
-      async.series(
+      series(
         {
           upsertMatch,
           upsertPlayerMatches,
@@ -1281,7 +1279,7 @@ function insertMatch(match, options, cb) {
       if (!Object.keys(obj).length) {
         return cb(err);
       }
-      const query = util.format(
+      const query = format(
         'INSERT INTO matches (%s) VALUES (%s)',
         Object.keys(obj).join(','),
         Object.keys(obj)
@@ -1301,7 +1299,7 @@ function insertMatch(match, options, cb) {
           if (err) {
             return cb(err);
           }
-          return async.each(
+          return each(
             players || [],
             (pm, cb) => {
               pm.match_id = match.match_id;
@@ -1313,7 +1311,7 @@ function insertMatch(match, options, cb) {
                 if (!Object.keys(obj2).length) {
                   return cb(err);
                 }
-                const query2 = util.format(
+                const query2 = format(
                   'INSERT INTO player_matches (%s) VALUES (%s)',
                   Object.keys(obj2).join(','),
                   Object.keys(obj2)
@@ -1388,10 +1386,10 @@ function insertMatch(match, options, cb) {
   }
 
   function clearRedisPlayer(cb) {
-    async.each(
+    each(
       (match.players || []).filter((player) => Boolean(player.account_id)),
       (player, cb) => {
-        async.each(
+        each(
           cacheFunctions.getKeys(),
           (key, cb) => {
             cacheFunctions.update({ key, account_id: player.account_id }, cb);
@@ -1434,14 +1432,14 @@ function insertMatch(match, options, cb) {
   }
 
   function decideMmr(cb) {
-    async.each(
+    each(
       match.players,
       (p, cb) => {
         if (
           options.origin === 'scanner' &&
           match.lobby_type === 7 &&
           p.account_id &&
-          p.account_id !== utility.getAnonymousAccountId() &&
+          p.account_id !== getAnonymousAccountId() &&
           config.ENABLE_RANDOM_MMR_UPDATE
         ) {
           redis.rpush(
@@ -1461,14 +1459,14 @@ function insertMatch(match, options, cb) {
   }
 
   function decideProfile(cb) {
-    async.each(
+    each(
       match.players,
       (p, cb) => {
         if (
           match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) &&
           options.origin === 'scanner' &&
           p.account_id &&
-          p.account_id !== utility.getAnonymousAccountId()
+          p.account_id !== getAnonymousAccountId()
         ) {
           upsert(
             db,
@@ -1517,7 +1515,7 @@ function insertMatch(match, options, cb) {
       return cb();
     }
     // determine if any player in the match is tracked
-    return async.some(
+    return some(
       match.players,
       (p, cb) => {
         redis.zscore('tracked', String(p.account_id), (err, score) =>
@@ -1537,7 +1535,7 @@ function insertMatch(match, options, cb) {
           if (hasTrackedPlayer) {
             priority = -2;
           }
-          return queue.addJob(
+          return addJob(
             'parse',
             {
               data: {
@@ -1561,7 +1559,7 @@ function insertMatch(match, options, cb) {
       }
     );
   }
-  async.series(
+  series(
     {
       preprocess,
       updateMatchSeriesType,
@@ -1621,7 +1619,7 @@ function getLaneRoles(req, cb) {
 
 function getTeamScenarios(req, cb) {
   const scenario =
-    (su.teamScenariosQueryParams.includes(req.query.scenario) &&
+    (teamScenariosQueryParams.includes(req.query.scenario) &&
       req.query.scenario) ||
     '';
   db.raw(
@@ -1635,10 +1633,10 @@ function getTeamScenarios(req, cb) {
 }
 
 function getMetadata(req, callback) {
-  async.parallel(
+  parallel(
     {
       scenarios(cb) {
-        cb(null, su.metadata);
+        cb(null, metadata);
       },
       banner(cb) {
         redis.get('banner', cb);
@@ -1695,7 +1693,7 @@ async function getArchivedMatch(matchId) {
   try {
     const result = JSON.parse(await archiveGet(matchId.toString()));
     if (result) {
-      utility.redisCount(redis, 'match_archive_read');
+      redisCount(redis, 'match_archive_read');
       return result;
     }
   } catch(e) {
@@ -1704,7 +1702,7 @@ async function getArchivedMatch(matchId) {
   return null;
 }
 
-module.exports = {
+export default {
   upsert,
   insertPlayer,
   bulkIndexPlayer,

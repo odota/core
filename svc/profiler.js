@@ -1,17 +1,16 @@
 /**
  * Worker to fetch updated player profiles
  * */
-const async = require('async');
-const queries = require('../store/queries');
-const db = require('../store/db');
-// const redis = require('../store/redis');
-const utility = require('../util/utility');
+import { each } from 'async';
+import queries from '../store/queries.js';
+import db, { raw } from '../store/db.js';
+import utility from '../util/utility.js';
 
 const { insertPlayer, bulkIndexPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;
 
 function getSummaries(cb) {
-  db.raw(
+  raw(
     'SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)'
   ).asCallback((err, result) => {
     if (err) {
@@ -61,7 +60,7 @@ function getSummaries(cb) {
       });
 
       // player summaries response
-      return async.each(
+      return each(
         results,
         (player, cb) => {
           insertPlayer(db, player, false, cb);

@@ -1,21 +1,16 @@
 /**
  * Functions to build/cache match object
  * */
-const constants = require('dotaconstants');
-const { promisify } = require('util');
-const config = require('../config');
-const queries = require('./queries');
-const compute = require('../util/compute');
-const utility = require('../util/utility');
-const cassandra = require('./cassandra');
-const redis = require('./redis');
-const db = require('./db');
-const {
-  getPlayerMatchData,
-  getMatchData,
-  insertMatchPromise,
-  getArchivedMatch,
-} = require('./queries');
+import { heroes } from 'dotaconstants';
+import { promisify } from 'util';
+import { ENABLE_MATCH_CACHE, MATCH_CACHE_SECONDS } from '../config.js';
+import { getMatchBenchmarksPromisified } from './queries.js';
+import compute from '../util/compute.js';
+import utility, { getData, generateJob, redisCount } from '../util/utility.js';
+import { execute } from './cassandra.js';
+import { first, raw } from './db.js';
+import { getPlayerMatchData, getMatchData, insertMatchPromise, getArchivedMatch } from './queries.js';
+import redis from './redis.js';
 
 const { computeMatchData } = compute;
 const { buildReplayUrl, isContributor } = utility;
@@ -33,13 +28,11 @@ async function extendPlayerData(player, match) {
     is_contributor: isContributor(player.account_id),
   };
   computeMatchData(p);
-  const row = await db
-    .first()
+  const row = await first()
     .from('rank_tier')
     .where({ account_id: p.account_id || null });
   p.rank_tier = row ? row.rating : null;
-  const subscriber = await db
-    .first()
+  const subscriber = await first()
     .from('subscriber')
     .where({ account_id: p.account_id || null });
   p.is_subscriber = Boolean(subscriber?.status);
@@ -47,8 +40,7 @@ async function extendPlayerData(player, match) {
 }
 
 async function prodataInfo(matchId) {
-  const result = await db
-    .first([
+  const result = await first([
       'radiant_team_id',
       'dire_team_id',
       'leagueid',
@@ -62,13 +54,13 @@ async function prodataInfo(matchId) {
   if (!result) {
     return Promise.resolve({});
   }
-  const leaguePromise = db.first().from('leagues').where({
+  const leaguePromise = first().from('leagues').where({
     leagueid: result.leagueid,
   });
-  const radiantTeamPromise = db.first().from('teams').where({
+  const radiantTeamPromise = first().from('teams').where({
     team_id: result.radiant_team_id,
   });
-  const direTeamPromise = db.first().from('teams').where({
+  const direTeamPromise = first().from('teams').where({
     team_id: result.dire_team_id,
   });
   const [league, radiantTeam, direTeam] = await Promise.all([
@@ -90,8 +82,8 @@ async function backfill(matchId) {
     match_id: Number(matchId),
   };
   await new Promise((resolve, reject) => {
-    utility.getData(
-      utility.generateJob('api_details', match).url,
+    getData(
+      generateJob('api_details', match).url,
       async (err, body) => {
         if (err) {
           console.error(err);
@@ -108,7 +100,7 @@ async function backfill(matchId) {
           reject(e);
         }
         // Count for logging
-        utility.redisCount(redis, 'steam_api_backfill');
+        redisCount(redis, 'steam_api_backfill');
         resolve();
       }
     );
@@ -123,7 +115,7 @@ async function getMatch(matchId) {
   // if so we prefer the archive since Cassandra may contain an unparsed version
   const isParsed = Boolean(
     (
-      await db.raw(
+      await raw(
         'select match_id from parsed_matches where match_id = ?',
         [matchId]
       )
@@ -144,7 +136,7 @@ async function getMatch(matchId) {
     // Still don't have it
     return Promise.resolve();
   }
-  utility.redisCount(redis, 'build_match');
+  redisCount(redis, 'build_match');
   let playersMatchData = [];
   try {
     // If we fetched from archive we already have players
@@ -161,9 +153,9 @@ async function getMatch(matchId) {
       e.message.startsWith('Unexpected') ||
       e.message.includes('Attempt to access memory outside buffer bounds')
     ) {
-      utility.redisCount(redis, 'cassandra_repair');
+      redisCount(redis, 'cassandra_repair');
       // Delete corrupted data and backfill
-      await cassandra.execute(
+      await execute(
         'DELETE FROM player_matches where match_id = ?',
         [Number(matchId)],
         { prepare: true }
@@ -177,8 +169,7 @@ async function getMatch(matchId) {
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(
     playersMatchData.map((r) =>
-      db
-        .raw(
+      raw(
           `
         SELECT personaname, name, last_login 
         FROM players
@@ -194,12 +185,12 @@ async function getMatch(matchId) {
   const playersPromise = Promise.all(
     playersMatchData.map((p) => extendPlayerData(p, match))
   );
-  const gcdataPromise = db.first().from('match_gcdata').where({
+  const gcdataPromise = first().from('match_gcdata').where({
     match_id: matchId,
   });
   const cosmeticsPromise = Promise.all(
     Object.keys(match.cosmetics || {}).map((itemId) =>
-      db.first().from('cosmetics').where({
+      first().from('cosmetics').where({
         item_id: itemId,
       })
     )
@@ -222,7 +213,7 @@ async function getMatch(matchId) {
 
   if (cosmetics) {
     const playersWithCosmetics = matchResult.players.map((p) => {
-      const hero = constants.heroes[p.hero_id] || {};
+      const hero = heroes[p.hero_id] || {};
       const playerCosmetics = cosmetics
         .filter(Boolean)
         .filter(
@@ -249,7 +240,7 @@ async function getMatch(matchId) {
     );
   }
   const matchWithBenchmarks =
-    await queries.getMatchBenchmarksPromisified(matchResult);
+    await getMatchBenchmarksPromisified(matchResult);
   return Promise.resolve(matchWithBenchmarks);
 }
 
@@ -263,10 +254,10 @@ async function buildMatch(matchId) {
   if (!match) {
     return Promise.resolve();
   }
-  if (match.version && config.ENABLE_MATCH_CACHE) {
-    await redis.setex(key, config.MATCH_CACHE_SECONDS, JSON.stringify(match));
+  if (match.version && ENABLE_MATCH_CACHE) {
+    await redis.setex(key, MATCH_CACHE_SECONDS, JSON.stringify(match));
   }
   return Promise.resolve(match);
 }
 
-module.exports = buildMatch;
+export default buildMatch;

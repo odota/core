@@ -1,4 +1,4 @@
-const utility = require('./utility');
+import utility from './utility.js';
 
 const { isRadiant } = utility;
 
@@ -144,4 +144,4 @@ function filter(matches, filters) {
   }
   return filtered;
 }
-module.exports = filter;
+export default filter;

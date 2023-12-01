@@ -1,12 +1,12 @@
 /**
  * Worker to fetch MMR and Dota Plus data for players
  * */
-const queue = require('../store/queue');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const { insertPlayer, insertPlayerRating } = require('../store/queries');
-const config = require('../config');
-const { getData, redisCount, getRetrieverArr } = require('../util/utility');
+import { runQueue } from '../store/queue.js';
+import db from '../store/db.js';
+import { insertPlayer, insertPlayerRating } from '../store/queries.js';
+import { RETRIEVER_SECRET, MMR_PARALLELISM } from '../config.js';
+import { getData, redisCount, getRetrieverArr } from '../util/utility.js';
+import redis from '../store/redis.js';
 
 const retrieverArr = getRetrieverArr();
 
@@ -17,7 +17,7 @@ function processMmr(job, cb) {
   }
   const accountId = job.account_id;
   const urls = retrieverArr.map(
-    (r) => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
+    (r) => `http://${r}?key=${RETRIEVER_SECRET}&account_id=${accountId}`
   );
   return getData({ url: urls }, (err, data) => {
     if (err) {
@@ -47,8 +47,8 @@ function processMmr(job, cb) {
   });
 }
 
-queue.runQueue(
+runQueue(
   'mmrQueue',
-  config.MMR_PARALLELISM * retrieverArr.length,
+  MMR_PARALLELISM * retrieverArr.length,
   processMmr
 );

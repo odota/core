@@ -1,12 +1,11 @@
-const { Console } = require('console');
-const readline = require('readline');
-const processAllPlayers = require('./processAllPlayers');
-const processTeamfights = require('./processTeamfights');
-// const processUploadProps = require('../processors/processUploadProps');
-const processParsedData = require('./processParsedData');
-const processMetadata = require('./processMetadata');
-const processExpand = require('./processExpand');
-const processDraftTimings = require('./processDraftTimings');
+import { Console } from 'console';
+import { createInterface } from 'readline';
+import processAllPlayers from './processAllPlayers.js';
+import processTeamfights from './processTeamfights.js';
+import processParsedData from './processParsedData.js';
+import processMetadata from './processMetadata.js';
+import processExpand from './processExpand.js';
+import processDraftTimings from './processDraftTimings.js';
 
 function getParseSchema() {
   return {
@@ -118,7 +117,7 @@ function createParsedDataBlob(entries, matchId) {
 const entries = [];
 let complete = false;
 const matchId = process.argv[2];
-const parseStream = readline.createInterface({
+const parseStream = createInterface({
   input: process.stdin,
 });
 parseStream.on('line', (e) => {

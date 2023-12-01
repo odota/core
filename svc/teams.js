@@ -1,18 +1,18 @@
-const async = require('async');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const queries = require('../store/queries');
+import { eachSeries } from 'async';
+import db, { raw as _raw } from '../store/db.js';
+import utility, { generateJob, getData } from '../util/utility.js';
+import { upsert } from '../store/queries.js';
 
 const { invokeInterval } = utility;
 
 function doTeams(cb) {
-  db.raw(
+  _raw(
     'select distinct team_id from team_match order by team_id desc'
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
-    return async.eachSeries(
+    return eachSeries(
       result.rows,
       (m, cb) => {
         if (!m.team_id) {
@@ -25,10 +25,10 @@ function doTeams(cb) {
         team_id: m.team_id || 2,
       });
       */
-        const container = utility.generateJob('api_team_info_by_team_id', {
+        const container = generateJob('api_team_info_by_team_id', {
           start_at_team_id: m.team_id,
         });
-        return utility.getData(
+        return getData(
           { url: container.url, raw: true },
           (err, body) => {
             if (err) {
@@ -46,20 +46,20 @@ function doTeams(cb) {
             const logoRegex = /^"logo":(.*),$/m;
             const match = logoRegex.exec(raw);
             const logoUgc = match[1];
-            const ugcJob = utility.generateJob('api_get_ugc_file_details', {
+            const ugcJob = generateJob('api_get_ugc_file_details', {
               ugcid: logoUgc,
             });
-            const cdnJob = utility.generateJob('steam_cdn_team_logos', {
+            const cdnJob = generateJob('steam_cdn_team_logos', {
               team_id: m.team_id,
             });
             // Steam's CDN sometimes has better versions of team logos available
-            return utility.getData(
+            return getData(
               { url: cdnJob.url, noRetry: true },
               (err, body) => {
                 if (!err && body) {
                   t.team_id = m.team_id;
                   t.logo_url = cdnJob.url;
-                  return queries.upsert(
+                  return upsert(
                     db,
                     'teams',
                     t,
@@ -69,7 +69,7 @@ function doTeams(cb) {
                     cb
                   );
                 }
-                return utility.getData(
+                return getData(
                   { url: ugcJob.url, noRetry: true },
                   (err, body) => {
                     if (err) {
@@ -80,7 +80,7 @@ function doTeams(cb) {
                     if (body && body.data) {
                       t.logo_url = body.data.url;
                     }
-                    return queries.upsert(
+                    return upsert(
                       db,
                       'teams',
                       t,

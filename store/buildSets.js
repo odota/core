@@ -1,12 +1,12 @@
 /**
  * Function to build/cache sets of players
  * */
-const async = require('async');
-const moment = require('moment');
+import { parallel } from 'async';
+import moment from 'moment';
 
-module.exports = function buildSets(db, redis, cb) {
+export default function buildSets(db, redis, cb) {
   console.log('rebuilding sets');
-  async.parallel(
+  parallel(
     {
       // users in this set are added to the trackedPlayers set
       subscribers(cb) {

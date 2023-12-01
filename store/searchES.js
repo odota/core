@@ -1,16 +1,16 @@
 /**
  * Methods for search functionality
  * */
-const async = require('async');
-const db = require('./db');
-const { es, INDEX } = require('./elasticsearch');
+import { parallel } from 'async';
+import { first } from './db.js';
+import { es, INDEX } from './elasticsearch.js';
 /**
  * @param db - database object
  * @param search - object for where parameter of query
  * @param cb - callback
  */
 function findPlayer(search, cb) {
-  db.first(['account_id', 'personaname', 'avatarfull'])
+  first(['account_id', 'personaname', 'avatarfull'])
     .from('players')
     .where(search)
     .asCallback(cb);
@@ -18,7 +18,7 @@ function findPlayer(search, cb) {
 
 function search(options, cb) {
   const query = options.q;
-  async.parallel(
+  parallel(
     {
       account_id(callback) {
         if (Number.isNaN(Number(query))) {
@@ -80,4 +80,4 @@ function search(options, cb) {
     }
   );
 }
-module.exports = search;
+export default search;

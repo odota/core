@@ -1,10 +1,10 @@
 /**
  * Provides methods for working with the job queue
  * */
-const moment = require('moment');
-const async = require('async');
-const redis = require('./redis');
-const db = require('./db');
+import moment from 'moment';
+import { forever } from 'async';
+import redis from './redis.js';
+import db from './db.js';
 
 function runQueue(queueName, parallelism, processor) {
   function processOneJob(cb) {
@@ -22,7 +22,7 @@ function runQueue(queueName, parallelism, processor) {
     });
   }
   for (let i = 0; i < parallelism; i += 1) {
-    async.forever(processOneJob, (err) => {
+    forever(processOneJob, (err) => {
       throw err;
     });
   }
@@ -85,7 +85,7 @@ function runReliableQueue(queueName, parallelism, processor) {
     });
   }
   for (let i = 0; i < parallelism; i += 1) {
-    async.forever(processOneJob, (err) => {
+    forever(processOneJob, (err) => {
       throw err;
     });
   }
@@ -123,7 +123,7 @@ function getJob(jobId, cb) {
   );
 }
 
-module.exports = {
+export default {
   runQueue,
   runReliableQueue,
   addJob,

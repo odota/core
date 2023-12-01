@@ -2,20 +2,20 @@
  * Issues a request to the retriever to get GC (Game Coordinator) data for a match
  * Calls back with an object containing the GC data
  * */
-const moment = require('moment');
-const { promisify } = require('util');
-const utility = require('./utility');
-const config = require('../config');
-const queries = require('../store/queries');
-const db = require('../store/db');
-const redis = require('../store/redis');
+import moment from 'moment';
+import { promisify } from 'util';
+import utility, { getRetrieverArr } from './utility.js';
+import { RETRIEVER_SECRET } from '../config.js';
+import queries, { upsert } from '../store/queries.js';
+import db, { raw } from '../store/db.js';
+import redis from '../store/redis.js';
 
-const secret = config.RETRIEVER_SECRET;
+const secret = RETRIEVER_SECRET;
 const { getData, redisCount } = utility;
 const { insertMatchPromise } = queries;
 
 async function getGcDataFromRetriever(match, cb) {
-  const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
+  const retrieverArr = getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
   const urls = retrieverArr.map(
     (r) => `http://${r}?key=${secret}&match_id=${match.match_id}`
@@ -71,7 +71,7 @@ async function getGcDataFromRetriever(match, cb) {
           skipParse: true,
         });
         // Persist GC data to database
-        await promisify(queries.upsert)(db, 'match_gcdata', gcdata, {
+        await promisify(upsert)(db, 'match_gcdata', gcdata, {
           match_id: match.match_id,
         });
         cb(null, gcdata);
@@ -82,13 +82,13 @@ async function getGcDataFromRetriever(match, cb) {
   );
 }
 
-module.exports = async function getGcData(match, cb) {
+export default async function getGcData(match, cb) {
   const matchId = match.match_id;
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return cb(new Error('invalid match_id'));
   }
   // Check if we have it in DB already
-  const saved = await db.raw(
+  const saved = await raw(
     'select match_id, cluster, replay_salt from match_gcdata where match_id = ?',
     [match.match_id]
   );

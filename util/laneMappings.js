@@ -22,4 +22,4 @@ for (let i = 0; i < 128; i += 1) {
     laneMappings[i].push(lane);
   }
 }
-module.exports = laneMappings;
+export default laneMappings;

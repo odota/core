@@ -1,26 +1,24 @@
-const async = require('async');
-const constants = require('dotaconstants');
-const moment = require('moment');
-const { Client } = require('pg');
-const config = require('../config');
-// const crypto = require("crypto");
-// const uuidV4 = require("uuid/v4");
-const queue = require('../store/queue');
-const queries = require('../store/queries');
-const search = require('../store/search');
-const searchES = require('../store/searchES');
-const buildMatch = require('../store/buildMatch');
-const buildStatus = require('../store/buildStatus');
-const playerFields = require('./playerFields.json');
-const utility = require('../util/utility');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const packageJson = require('../package.json');
-const cacheFunctions = require('../store/cacheFunctions');
-const params = require('./requests/importParams');
-const responses = require('./responses/schemas/importResponseSchemas');
-const generateOperationId = require('./generateOperationId');
-const { insertMatchPromise } = require('../store/queries');
+import { parallel } from 'async';
+import constants, { heroes as _heroes } from 'dotaconstants';
+import moment from 'moment';
+import { Client } from 'pg';
+import { READONLY_POSTGRES_URL, ES_SEARCH_PERCENT } from '../config.js';
+import { getJob } from '../store/queue.js';
+import { getPlayer, getMmrEstimate, getPlayerMatches, getPeers, getProPeers, getPlayerRatings, getPlayerHeroRankings, getMetadata, getDistributions, getHeroRankings, getHeroBenchmarks, getHeroItemPopularity, getItemTimings, getLaneRoles, getTeamScenarios } from '../store/queries.js';
+import search from '../store/search.js';
+import searchES from '../store/searchES.js';
+import buildMatch from '../store/buildMatch.js';
+import buildStatus from '../store/buildStatus.js';
+import playerFields from './playerFields.json';
+import utility, { isRadiant as _isRadiant, mergeObjects, checkIfInExperiment, getData, generateJob } from '../util/utility.js';
+import db, { raw, first, select } from '../store/db.js';
+import { version as _version } from '../package.json';
+import { sendDataWithCache } from '../store/cacheFunctions.js';
+import params from './requests/index.js';
+import responses from './responses/schemas/index.js';
+import generateOperationId from './generateOperationId.js';
+import { insertMatchPromise } from '../store/queries.js';
+import redis from '../store/redis.js';
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
@@ -85,7 +83,7 @@ You can find data that can be used to convert hero and ability IDs and other inf
 
 The OpenDota API offers 50,000 free calls per month and a rate limit of 60 requests/minute. We also offer a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.
     `,
-    version: packageJson.version,
+    version: _version,
   },
   servers: [
     {
@@ -152,7 +150,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/playersByRank',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `
           SELECT account_id, rating, fh_unavailable
           FROM players
@@ -193,10 +191,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/players/:account_id',
         func: (req, res, cb) => {
           const accountId = Number(req.params.account_id);
-          async.parallel(
+          parallel(
             {
               profile(cb) {
-                queries.getPlayer(db, accountId, (err, playerData) => {
+                getPlayer(db, accountId, (err, playerData) => {
                   if (playerData !== null && playerData !== undefined) {
                     playerData.is_contributor = isContributor(accountId);
                     playerData.is_subscriber = Boolean(playerData?.status);
@@ -205,7 +203,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 });
               },
               solo_competitive_rank(cb) {
-                db.first()
+                first()
                   .from('solo_competitive_rank')
                   .where({ account_id: accountId })
                   .asCallback((err, row) => {
@@ -213,7 +211,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   });
               },
               competitive_rank(cb) {
-                db.first()
+                first()
                   .from('competitive_rank')
                   .where({ account_id: accountId })
                   .asCallback((err, row) => {
@@ -221,7 +219,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   });
               },
               rank_tier(cb) {
-                db.first()
+                first()
                   .from('rank_tier')
                   .where({ account_id: accountId })
                   .asCallback((err, row) => {
@@ -229,7 +227,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   });
               },
               leaderboard_rank(cb) {
-                db.first()
+                first()
                   .from('leaderboard_rank')
                   .where({ account_id: accountId })
                   .asCallback((err, row) => {
@@ -237,7 +235,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   });
               },
               mmr_estimate(cb) {
-                queries.getMmrEstimate(accountId, (err, est) =>
+                getMmrEstimate(accountId, (err, est) =>
                   cb(err, est || {})
                 );
               },
@@ -281,7 +279,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'player_slot',
             'radiant_win'
           );
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -289,13 +287,13 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               cache.forEach((m) => {
-                if (utility.isRadiant(m) === m.radiant_win) {
+                if (_isRadiant(m) === m.radiant_win) {
                   result.win += 1;
                 } else {
                   result.lose += 1;
                 }
               });
-              return cacheFunctions.sendDataWithCache(req, res, result, 'wl');
+              return sendDataWithCache(req, res, result, 'wl');
             }
           );
         },
@@ -331,7 +329,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/recentMatches',
         func: (req, res, cb) => {
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             {
               project: req.queryObj.project.concat([
@@ -424,7 +422,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'party_size',
           ];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -463,7 +461,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         func: (req, res, cb) => {
           const heroes = {};
           // prefill heroes with every hero
-          Object.keys(constants.heroes).forEach((heroId) => {
+          Object.keys(_heroes).forEach((heroId) => {
             hero_id_int = parseInt(heroId);
             const hero = {
               hero_id: hero_id_int,
@@ -484,7 +482,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'player_slot',
             'radiant_win'
           );
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -526,7 +524,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     hero.games >= Number(req.queryObj.having)
                 )
                 .sort((a, b) => b.games - a.games);
-              return cacheFunctions.sendDataWithCache(
+              return sendDataWithCache(
                 req,
                 res,
                 result,
@@ -569,7 +567,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'gold_per_min',
             'xp_per_min'
           );
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -577,7 +575,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               const teammates = countPeers(cache);
-              return queries.getPeers(
+              return getPeers(
                 db,
                 teammates,
                 {
@@ -587,7 +585,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   if (err) {
                     return cb(err);
                   }
-                  return cacheFunctions.sendDataWithCache(
+                  return sendDataWithCache(
                     req,
                     res,
                     result,
@@ -630,7 +628,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'player_slot',
             'radiant_win'
           );
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -638,7 +636,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               const teammates = countPeers(cache);
-              return queries.getProPeers(
+              return getProPeers(
                 db,
                 teammates,
                 {
@@ -691,7 +689,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           req.queryObj.project = req.queryObj.project.concat(
             Object.keys(subkeys)
           );
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -740,7 +738,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           req.queryObj.project = req.queryObj.project.concat(
             Object.keys(countCats)
           );
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -748,7 +746,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               cache.forEach((m) => {
-                m.is_radiant = utility.isRadiant(m);
+                m.is_radiant = _isRadiant(m);
                 Object.keys(countCats).forEach((key) => {
                   if (!result[key][Math.floor(m[key])]) {
                     result[key][Math.floor(m[key])] = {
@@ -757,7 +755,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     };
                   }
                   result[key][Math.floor(m[key])].games += 1;
-                  const won = Number(m.radiant_win === utility.isRadiant(m));
+                  const won = Number(m.radiant_win === _isRadiant(m));
                   result[key][Math.floor(m[key])].win += won;
                 });
               });
@@ -804,7 +802,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           req.queryObj.project = req.queryObj.project
             .concat('radiant_win', 'player_slot')
             .concat([field].filter((f) => subkeys[f]));
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -832,7 +830,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   if (bucketArray[index]) {
                     bucketArray[index].games += 1;
                     bucketArray[index].win +=
-                      utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+                      _isRadiant(m) === m.radiant_win ? 1 : 0;
                   }
                 }
               });
@@ -873,7 +871,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           req.queryObj.project = req.queryObj.project.concat(
             Object.keys(result)
           );
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -882,7 +880,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               cache.forEach((m) => {
                 Object.keys(result).forEach((key) => {
-                  utility.mergeObjects(result[key], m[key]);
+                  mergeObjects(result[key], m[key]);
                 });
               });
               return res.json(result);
@@ -922,7 +920,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           req.queryObj.project = req.queryObj.project.concat(
             Object.keys(result)
           );
-          queries.getPlayerMatches(
+          getPlayerMatches(
             req.params.account_id,
             req.queryObj,
             (err, cache) => {
@@ -931,7 +929,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               cache.forEach((m) => {
                 Object.keys(result).forEach((key) => {
-                  utility.mergeObjects(result[key], m[key]);
+                  mergeObjects(result[key], m[key]);
                 });
               });
               return res.json(result);
@@ -967,7 +965,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/ratings',
         func: (req, res, cb) => {
-          queries.getPlayerRatings(db, req.params.account_id, (err, result) => {
+          getPlayerRatings(db, req.params.account_id, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -1003,7 +1001,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/rankings',
         func: (req, res, cb) => {
-          queries.getPlayerHeroRankings(
+          getPlayerHeroRankings(
             req.params.account_id,
             (err, result) => {
               if (err) {
@@ -1076,7 +1074,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/proPlayers',
         func: (req, res, cb) => {
-          db.select()
+          select()
             .from('players')
             .rightJoin(
               'notable_players',
@@ -1117,7 +1115,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/proMatches',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `
           SELECT match_id, duration, start_time,
           radiant_team_id, radiant.name as radiant_name,
@@ -1196,7 +1194,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             ? `AND avg_rank_tier <= ${req.query.max_rank}`
             : '';
 
-          db.raw(
+          raw(
             `
           WITH match_ids AS (SELECT match_id FROM public_matches
           WHERE TRUE
@@ -1254,7 +1252,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           const lessThan =
             req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
 
-          db.raw(
+          raw(
             `
           SELECT * FROM parsed_matches
           WHERE match_id < ?
@@ -1305,7 +1303,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         func: async (req, res) => {
           const input = req.query.sql;
           const client = new Client({
-            connectionString: config.READONLY_POSTGRES_URL,
+            connectionString: READONLY_POSTGRES_URL,
             statement_timeout: 10000,
           });
           client.connect();
@@ -1342,7 +1340,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/metadata',
         func: (req, res, cb) => {
-          queries.getMetadata(req, (err, result) => {
+          getMetadata(req, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -1371,7 +1369,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/distributions',
         func: (req, res, cb) => {
-          queries.getDistributions(redis, (err, result) => {
+          getDistributions(redis, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -1420,7 +1418,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
 
           if (
             req.query.es ||
-            utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)
+            checkIfInExperiment(res.locals.ip, ES_SEARCH_PERCENT)
           ) {
             return searchES(req.query, (err, result) => {
               if (err) {
@@ -1469,7 +1467,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/rankings',
         func: (req, res, cb) => {
-          queries.getHeroRankings(
+          getHeroRankings(
             db,
             redis,
             req.query.hero_id,
@@ -1515,7 +1513,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/benchmarks',
         func: (req, res, cb) => {
-          queries.getHeroBenchmarks(
+          getHeroBenchmarks(
             db,
             redis,
             {
@@ -1632,7 +1630,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/request/:jobId',
         func: (req, res, cb) => {
-          queue.getJob(req.params.jobId, (err, job) => {
+          getJob(req.params.jobId, (err, job) => {
             if (err) {
               return cb(err);
             }
@@ -1684,8 +1682,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           }
           if (match && match.match_id) {
             // match id request, get data from API
-            return utility.getData(
-              utility.generateJob('api_details', match).url,
+            return getData(
+              generateJob('api_details', match).url,
               async (err, body) => {
                 if (err) {
                   // couldn't get data from api, non-retryable
@@ -1702,7 +1700,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   // Check if match is already parsed
                   const isAlreadyParsed = Boolean(
                     (
-                      await db.raw(
+                      await raw(
                         'select match_id from parsed_matches where match_id = ?',
                         [match.match_id]
                       )
@@ -1802,8 +1800,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             const teamA = inverted ? t1 : t0;
             const teamB = inverted ? t0 : t1;
 
-            return db
-              .raw(
+            return raw(
                 'select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10',
                 [teamA, teamB, teamB, teamA]
               )
@@ -1841,7 +1838,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/heroes',
         func: (req, res, cb) => {
-          db.select()
+          select()
             .from('heroes')
             .orderBy('id', 'asc')
             .asCallback((err, result) => {
@@ -1912,7 +1909,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/heroes/:hero_id/matches',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(
+          raw(
             `SELECT
             matches.match_id,
             matches.start_time,
@@ -1968,7 +1965,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/heroes/:hero_id/matchups',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(
+          raw(
             `SELECT
             pm2.hero_id,
             count(player_matches.match_id) games_played,
@@ -2015,7 +2012,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/heroes/:hero_id/durations',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(
+          raw(
             `SELECT
             (matches.duration / 300 * 300) duration_bin,
             count(match_id) games_played,
@@ -2062,7 +2059,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/heroes/:hero_id/players',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(
+          raw(
             `SELECT
             account_id,
             count(match_id) games_played,
@@ -2108,7 +2105,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/heroes/:hero_id/itemPopularity',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
-          queries.getHeroItemPopularity(
+          getHeroItemPopularity(
             db,
             redis,
             heroId,
@@ -2146,7 +2143,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/leagues',
         func: (req, res, cb) => {
-          db.select()
+          select()
             .from('leagues')
             .asCallback((err, result) => {
               if (err) {
@@ -2181,7 +2178,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/leagues/:league_id',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `SELECT leagues.*
             FROM leagues
             WHERE leagues.leagueid = ?`,
@@ -2216,7 +2213,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/leagues/:league_id/matches',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `SELECT matches.*
             FROM matches
             WHERE matches.leagueid = ?`,
@@ -2251,7 +2248,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/leagues/:league_id/teams',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `SELECT team_rating.*, teams.*
             FROM matches
             LEFT JOIN team_match using(match_id)
@@ -2304,7 +2301,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/teams',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `SELECT team_rating.*, teams.*
             FROM teams
             LEFT JOIN team_rating using(team_id)
@@ -2342,7 +2339,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/teams/:team_id',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `SELECT team_rating.*, teams.*
             FROM teams
             LEFT JOIN team_rating using(team_id)
@@ -2378,7 +2375,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/teams/:team_id/matches',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `
             SELECT team_match.match_id, radiant_win, radiant_score, dire_score, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
             FROM team_match
@@ -2420,7 +2417,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/teams/:team_id/players',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
             FROM matches
             JOIN team_match USING(match_id)
@@ -2461,7 +2458,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/teams/:team_id/heroes',
         func: (req, res, cb) => {
-          db.raw(
+          raw(
             `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
             JOIN team_match USING(match_id)
@@ -2505,7 +2502,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/replays',
         func: (req, res, cb) => {
-          db.select(['match_id', 'cluster', 'replay_salt'])
+          select(['match_id', 'cluster', 'replay_salt'])
             .from('match_gcdata')
             .whereIn(
               'match_id',
@@ -2664,7 +2661,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/scenarios/itemTimings',
         func: (req, res, cb) => {
-          queries.getItemTimings(req, (err, result) => {
+          getItemTimings(req, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -2708,7 +2705,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/scenarios/laneRoles',
         func: (req, res, cb) => {
-          queries.getLaneRoles(req, (err, result) => {
+          getLaneRoles(req, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -2741,7 +2738,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/scenarios/misc',
         func: (req, res, cb) => {
-          queries.getTeamScenarios(req, (err, result) => {
+          getTeamScenarios(req, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -2774,7 +2771,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/schema',
         func: (req, res, cb) => {
-          db.select(['table_name', 'column_name', 'data_type'])
+          select(['table_name', 'column_name', 'data_type'])
             .from('information_schema.columns')
             .where({
               table_schema: 'public',
@@ -2884,4 +2881,4 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
     },
   },
 };
-module.exports = spec;
+export default spec;

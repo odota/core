@@ -1,4 +1,4 @@
-const populate = require('./populate');
+import populate from './populate.js';
 
 function processParsedData(entries, container, meta) {
   for (let i = 0; i < entries.length; i += 1) {
@@ -8,4 +8,4 @@ function processParsedData(entries, container, meta) {
   return container;
 }
 
-module.exports = processParsedData;
+export default processParsedData;

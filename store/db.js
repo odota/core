@@ -1,9 +1,9 @@
 /**
  * Interface to PostgreSQL client
  * */
-const pg = require('pg');
-const knex = require('knex');
-const config = require('../config');
+import pg from 'pg';
+import knex from 'knex';
+import config from '../config.js';
 
 // remember: all values returned from the server are either NULL or a string
 pg.types.setTypeParser(20, (val) => (val === null ? null : parseInt(val, 10)));
@@ -26,4 +26,4 @@ const db = knex({
 // db.on('query-error', (err) => {
 //   console.error(err);
 // });
-module.exports = db;
+export default db;

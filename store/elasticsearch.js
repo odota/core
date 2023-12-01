@@ -1,18 +1,18 @@
 /**
  * Interface to ElasticSearch client
  * */
-const elasticsearch = require('@elastic/elasticsearch');
-const config = require('../config');
+import { Client } from '@elastic/elasticsearch';
+import config from '../config.js';
 
 console.log('connecting %s', config.ELASTICSEARCH_URL);
-const es = new elasticsearch.Client({
+const es = new Client({
   node: `http://${config.ELASTICSEARCH_URL}`,
   apiVersion: '6.8',
 });
 
 const INDEX = config.NODE_ENV === 'test' ? 'dota-test' : 'dota';
 
-module.exports = {
+export default {
   es,
   INDEX,
 };

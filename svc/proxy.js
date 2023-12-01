@@ -1,17 +1,17 @@
 /**
  * Worker proxying requests to the Steam API.
  * */
-const httpProxy = require('http-proxy');
-const http = require('http');
-const config = require('../config');
+import { createProxyServer } from 'http-proxy';
+import { createServer } from 'http';
+import { PORT as _PORT, PROXY_PORT } from '../config.js';
 
-const PORT = config.PORT || config.PROXY_PORT;
-const proxy = httpProxy.createProxyServer({
+const PORT = _PORT || PROXY_PORT;
+const proxy = createProxyServer({
   target: 'http://api.steampowered.com',
   changeOrigin: true,
 });
 
-const server = http.createServer((req, res) => {
+const server = createServer((req, res) => {
   if (req.url === '/healthz') {
     return res.end('ok');
   }

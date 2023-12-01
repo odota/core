@@ -1,7 +1,7 @@
-const async = require('async');
-const utility = require('../util/utility');
-const db = require('../store/db');
-const queries = require('../store/queries');
+import { each } from 'async';
+import utility from '../util/utility.js';
+import db from '../store/db.js';
+import { upsert } from '../store/queries.js';
 
 const { invokeInterval, generateJob, getData } = utility;
 
@@ -12,7 +12,7 @@ function doLeagues(cb) {
       return cb(err);
     }
 
-    return async.each(
+    return each(
       apiLeagues.infos,
       (league, cb) => {
         const openQualifierTier =
@@ -30,7 +30,7 @@ function doLeagues(cb) {
         league.ticket = null;
         league.banner = null;
         league.leagueid = league.league_id;
-        queries.upsert(
+        upsert(
           db,
           'leagues',
           league,

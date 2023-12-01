@@ -1,11 +1,11 @@
-const async = require('async');
-const db = require('../store/db');
-const config = require('../config');
-const utility = require('../util/utility');
+import { parallel } from 'async';
+import db, { raw } from '../store/db.js';
+import { MAXIMUM_AGE_SCENARIOS_ROWS } from '../config.js';
+import { epochWeek, invokeInterval } from '../util/utility.js';
 
 function clearScenariosTables(cb) {
-  const currentWeek = utility.epochWeek();
-  async.parallel(
+  const currentWeek = epochWeek();
+  parallel(
     [
       (cb) => {
         db('team_scenarios')
@@ -13,7 +13,7 @@ function clearScenariosTables(cb) {
           .orWhere(
             'epoch_week',
             '<=',
-            currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS
+            currentWeek - MAXIMUM_AGE_SCENARIOS_ROWS
           )
           .del()
           .asCallback(cb);
@@ -24,13 +24,13 @@ function clearScenariosTables(cb) {
           .orWhere(
             'epoch_week',
             '<=',
-            currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS
+            currentWeek - MAXIMUM_AGE_SCENARIOS_ROWS
           )
           .del()
           .asCallback(cb);
       },
       (cb) => {
-        db.raw(
+        raw(
           "DELETE from public_matches where start_time < extract(epoch from now() - interval '6 month')::int"
         ).asCallback(cb);
       },
@@ -38,7 +38,7 @@ function clearScenariosTables(cb) {
         // db.raw('delete from match_gcdata where match_id not in (select match_id from matches) and match_id < (select max(match_id) - 50000000 from match_gcdata)').asCallback(cb);
       },
       (cb) => {
-        db.raw(
+        raw(
           'delete from hero_search where match_id < (select max(match_id) - 150000000 from hero_search)'
         ).asCallback(cb);
       },
@@ -47,4 +47,4 @@ function clearScenariosTables(cb) {
   );
 }
 
-utility.invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 6);
+invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 6);

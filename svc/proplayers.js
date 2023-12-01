@@ -1,7 +1,7 @@
-const async = require('async');
-const db = require('../store/db');
-const queries = require('../store/queries');
-const utility = require('../util/utility');
+import { each } from 'async';
+import db from '../store/db.js';
+import { upsert } from '../store/queries.js';
+import utility from '../util/utility.js';
 
 const { invokeInterval, generateJob, getData } = utility;
 
@@ -11,10 +11,10 @@ function doProPlayers(cb) {
     if (err) {
       return cb(err);
     }
-    return async.each(
+    return each(
       body.player_infos,
       (p, cb) => {
-        queries.upsert(
+        upsert(
           db,
           'notable_players',
           p,

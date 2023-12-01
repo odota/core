@@ -1,31 +1,31 @@
 /**
  * Periodically recalculate patch ID for matches in match table
  * */
-const async = require('async');
-const constants = require('dotaconstants');
-const db = require('../store/db');
-const queries = require('../store/queries');
-const utility = require('../util/utility');
+import { eachSeries } from 'async';
+import { patch as _patch } from 'dotaconstants';
+import db, { select } from '../store/db.js';
+import { upsert } from '../store/queries.js';
+import utility, { getPatchIndex } from '../util/utility.js';
 
 const { invokeInterval } = utility;
 
 function rePatch() {
-  db.select(['match_id', 'start_time'])
+  select(['match_id', 'start_time'])
     .from('matches')
     .asCallback((err, matchIds) => {
       if (err) {
         throw err;
       }
-      async.eachSeries(
+      eachSeries(
         matchIds,
         (match, cb) => {
-          queries.upsert(
+          upsert(
             db,
             'match_patch',
             {
               match_id: match.match_id,
               patch:
-                constants.patch[utility.getPatchIndex(match.start_time)].name,
+                _patch[getPatchIndex(match.start_time)].name,
             },
             {
               match_id: match.match_id,

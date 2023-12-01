@@ -28,6 +28,6 @@ const benchmarks = {
   // },
 };
 
-module.exports = {
+export default {
   benchmarks,
 };

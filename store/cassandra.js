@@ -1,16 +1,16 @@
 /**
  * Interface to Cassandra client
  * */
-const cassandraDriver = require('cassandra-driver');
-const url = require('url');
-const config = require('../config');
+import { Client } from 'cassandra-driver';
+import { parse } from 'url';
+import config from '../config.js';
 
 const spl = config.CASSANDRA_URL.split(',');
-const cps = spl.map((u) => url.parse(u).host);
+const cps = spl.map((u) => parse(u).host);
 console.log('connecting %s', config.CASSANDRA_URL);
-const cassandra = new cassandraDriver.Client({
+const cassandra = new Client({
   contactPoints: cps,
   localDataCenter: 'datacenter1',
-  keyspace: url.parse(spl[0]).path.substring(1),
+  keyspace: parse(spl[0]).path.substring(1),
 });
-module.exports = cassandra;
+export default cassandra;

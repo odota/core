@@ -1,15 +1,15 @@
 /**
  * Methods for search functionality
  * */
-const async = require('async');
-const db = require('./db');
+import { parallel } from 'async';
+import { first, raw } from './db.js';
 /**
  * @param db - database object
  * @param search - object for where parameter of query
  * @param cb - callback
  */
 function findPlayer(search, cb) {
-  db.first(['account_id', 'personaname', 'avatarfull'])
+  first(['account_id', 'personaname', 'avatarfull'])
     .from('players')
     .where(search)
     .asCallback(cb);
@@ -17,7 +17,7 @@ function findPlayer(search, cb) {
 
 function search(options, cb) {
   const query = options.q;
-  async.parallel(
+  parallel(
     {
       account_id(callback) {
         if (Number.isNaN(Number(query))) {
@@ -31,7 +31,7 @@ function search(options, cb) {
         );
       },
       personaname(callback) {
-        db.raw(
+        raw(
           `
         SELECT * FROM 
         (SELECT account_id, avatarfull, personaname, last_match_time
@@ -63,4 +63,4 @@ function search(options, cb) {
     }
   );
 }
-module.exports = search;
+export default search;

@@ -1,13 +1,13 @@
-const async = require('async');
-const moment = require('moment');
-const stripeLib = require('stripe');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const queries = require('../store/queries');
-const config = require('../config');
+import { eachOfLimit } from 'async';
+import moment, { unix } from 'moment';
+import stripeLib from 'stripe';
+import redis from '../store/redis.js';
+import db, { from, raw } from '../store/db.js';
+import utility from '../util/utility.js';
+import { getAPIKeys } from '../store/queries.js';
+import { STRIPE_SECRET, ENABLE_API_LIMIT, STRIPE_API_PLAN, API_BILLING_UNIT } from '../config.js';
 
-const stripe = stripeLib(config.STRIPE_SECRET);
+const stripe = stripeLib(STRIPE_SECRET);
 const { invokeInterval } = utility;
 
 function storeUsageCounts(cursor, cb) {
@@ -20,7 +20,7 @@ function storeUsageCounts(cursor, cb) {
 
       const apiTimestamp = moment().startOf('day');
 
-      async.eachOfLimit(
+      eachOfLimit(
         values,
         5,
         (e, i, cb2) => {
@@ -28,18 +28,18 @@ function storeUsageCounts(cursor, cb) {
             cb2();
           } else if (e.includes(':')) {
             cb2();
-          } else if (config.ENABLE_API_LIMIT) {
+          } else if (ENABLE_API_LIMIT) {
             const split = e;
             // console.log("Updating usage for", e, "usage", values[i + 1]);
             let apiRecord;
-            db.from('api_keys')
+            from('api_keys')
               .where({
                 api_key: split,
               })
               .then((rows) => {
                 if (rows.length > 0) {
                   [apiRecord] = rows;
-                  return db.raw(
+                  return raw(
                     `
                   INSERT INTO api_key_usage
                   (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
@@ -89,7 +89,7 @@ function storeUsageCounts(cursor, cb) {
 
 async function updateStripeUsage(cb) {
   const options = {
-    plan: config.STRIPE_API_PLAN,
+    plan: STRIPE_API_PLAN,
     limit: 100,
     // From the docs:
     // By default, returns a list of subscriptions that have not been canceled.
@@ -105,7 +105,7 @@ async function updateStripeUsage(cb) {
       // updateAPIKeysInRedis deletes the keys so just do that there
       if (sub.status === 'canceled') {
         console.log('updateStripeUsage CANCELED SUBSCRIPTION', sub.id);
-        await db.raw(
+        await raw(
           `
                   UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?
                 `,
@@ -115,12 +115,11 @@ async function updateStripeUsage(cb) {
         continue;
       }
 
-      const startTime = moment
-        .unix(sub.current_period_end - 1)
+      const startTime = unix(sub.current_period_end - 1)
         .startOf('month');
-      const endTime = moment.unix(sub.current_period_end - 1).endOf('month');
+      const endTime = unix(sub.current_period_end - 1).endOf('month');
 
-      const res = await db.raw(
+      const res = await raw(
         `
                 SELECT
                   SUM(usage) as usage_count
@@ -148,7 +147,7 @@ async function updateStripeUsage(cb) {
         // TODO(albert): We could break this out by day for the invoice
         // but we'd have to make changes to web.js and metrics
         await stripe.subscriptionItems.createUsageRecord(sub.items.data[0].id, {
-          quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
+          quantity: Math.ceil(usageCount / API_BILLING_UNIT),
           action: 'set',
           timestamp: sub.current_period_end - 1,
         });
@@ -156,7 +155,7 @@ async function updateStripeUsage(cb) {
           'updateStripeUsage updated',
           sub.id,
           usageCount,
-          Math.ceil(usageCount / config.API_BILLING_UNIT)
+          Math.ceil(usageCount / API_BILLING_UNIT)
         );
       } else {
         // console.log(`updateStripeUsage No usage for ${sub.id}`);
@@ -172,7 +171,7 @@ async function updateStripeUsage(cb) {
 
 invokeInterval(
   (cb) => {
-    queries.getAPIKeys(db, (err, rows) => {
+    getAPIKeys(db, (err, rows) => {
       if (err) {
         cb(err);
       } else if (rows.length > 0) {

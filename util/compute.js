@@ -1,8 +1,8 @@
-const constants = require('dotaconstants');
-const utility = require('./utility');
+import constants from 'dotaconstants';
+import utility from './utility.js';
 
+const { ancients, heroes, cluster } = constants;
 const { max, min, isRadiant } = utility;
-const { ancients } = constants;
 
 /**
  * Count the words that occur in a set of messages
@@ -44,13 +44,13 @@ function countWords(playerMatch, playerFilter) {
  * Computes additional properties from a match/player_match
  * */
 function computeMatchData(pm) {
-  const selfHero = constants.heroes[pm.hero_id];
+  const selfHero = heroes[pm.hero_id];
   // Compute patch based on start_time
   if (pm.start_time) {
     pm.patch = utility.getPatchIndex(pm.start_time);
   }
   if (pm.cluster) {
-    pm.region = constants.cluster[pm.cluster];
+    pm.region = cluster[pm.cluster];
   }
   if (pm.player_slot !== undefined && pm.radiant_win !== undefined) {
     pm.isRadiant = isRadiant(pm);
@@ -241,6 +241,6 @@ function computeMatchData(pm) {
   }
 }
 
-module.exports = {
+export default {
   computeMatchData,
 };
