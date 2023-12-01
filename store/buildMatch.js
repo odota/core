@@ -44,7 +44,7 @@ async function extendPlayerData(player, match) {
 
 async function prodataInfo(matchId) {
   const result = await db
-    .first(['radiant_team_id', 'dire_team_id', 'leagueid'])
+    .first(['radiant_team_id', 'dire_team_id', 'leagueid', 'series_id', 'series_type'])
     .from('matches')
     .where({
       match_id: matchId,
@@ -70,6 +70,8 @@ async function prodataInfo(matchId) {
     league,
     radiant_team: radiantTeam,
     dire_team: direTeam,
+    series_id: result.series_id,
+    series_type: result.series_type,
   });
 }
 
