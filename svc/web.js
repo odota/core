@@ -185,7 +185,7 @@ app.use((req, res, cb) => {
         config.API_FREE_LIMIT - Number(resp[2])
       );
     }
-    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+    if (config.NODE_ENV === 'development') {
       console.log('rate limit increment', resp);
     }
     if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
@@ -238,7 +238,7 @@ app.use((req, res, cb) => {
       }
 
       multi.exec((err, res) => {
-        if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+        if (config.NODE_ENV === 'development') {
           console.log('usage count increment', err, res);
         }
       });

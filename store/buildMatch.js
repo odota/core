@@ -95,14 +95,18 @@ async function backfill(matchId) {
       async (err, body) => {
         if (err) {
           console.error(err);
-          return reject();
+          return reject(err);
         }
         // match details response
         const match = body.result;
-        await insertMatchPromise(match, {
-          type: 'api',
-          skipParse: true,
-        });
+        try {
+          await insertMatchPromise(match, {
+            type: 'api',
+            skipParse: true,
+          });
+        } catch (e) {
+          reject(e);
+        }
         // Count for logging
         utility.redisCount(redis, 'steam_api_backfill');
         resolve();

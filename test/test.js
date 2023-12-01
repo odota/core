@@ -250,21 +250,7 @@ before(function setup(done) {
         require('../svc/parser');
         cb();
       },
-      function loadMatches(cb) {
-        console.log('loading matches');
-        async.mapSeries(
-          [detailsApi.result, detailsApiPro.result, detailsApiPro.result],
-          async (m, cb) => {
-            await queries.insertMatchPromise(m, {
-              type: 'api',
-              origin: 'scanner',
-              skipParse: true,
-            });
-            cb();
-          },
-          cb
-        );
-      },
+      (cb) => loadMatches(cb),
       function loadPlayers(cb) {
         console.log('loading players');
         async.mapSeries(
@@ -303,48 +289,53 @@ describe('swagger schema', function testSwaggerSchema() {
     );
   });
 });
-describe('replay parse', function testReplayParse() {
+describe('replay parse', function () {
   this.timeout(120000);
   const tests = {
     '1781962623_1.dem': detailsApi.result,
   };
-  Object.keys(tests).forEach((key) => {
-    const match = tests[key];
+  const key = '1781962623_1.dem';
+  it(`should parse replay ${key}`, async () => {
+    const matchData = tests[key];
     nock(`http://${config.RETRIEVER_HOST}`)
       .get('/')
       .query(true)
       .reply(200, {
         match: {
-          match_id: match.match_id,
-          cluster: match.cluster,
+          match_id: matchData.match_id,
+          cluster: matchData.cluster,
           replay_salt: 1,
           series_id: 0,
           series_type: 0,
           players: [],
         },
       });
-    it(`should parse replay ${key}`, async (done) => {
-      const job = await queries.insertMatchPromise(match, {
+    console.log('inserting match and requesting parse');
+    try {
+      const job = await queries.insertMatchPromise(matchData, {
         cassandra,
         type: 'api',
         forceParse: true,
         attempts: 1,
       });
-      assert(job && !err);
-      setTimeout(async () => {
-        // ensure parse data got inserted
-        const match = await buildMatch(tests[key].match_id);
-        // console.log(match.players[0]);
-        assert(match.players);
-        assert(match.players[0]);
-        assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
-        assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
-        assert(match.teamfights && match.teamfights.length > 0);
-        assert(match.draft_timings);
-        assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
-        return done();
-      }, 30000);
-    });
+      assert(job);
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+    console.log('waiting for insert settle');
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+    console.log('checking parsed match');
+    // ensure parse data got inserted
+    const match = await buildMatch(tests[key].match_id);
+    // console.log(match.players[0]);
+    assert(match.players);
+    assert(match.players[0]);
+    assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
+    assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
+    assert(match.teamfights && match.teamfights.length > 0);
+    assert(match.draft_timings);
+    assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
   });
 });
 describe('teamRanking', () => {
@@ -883,6 +874,20 @@ describe('api limits', () => {
     config.API_FREE_LIMIT = 50000;
   });
 });
+
+async function loadMatches(cb) {
+  console.log('loading matches');
+  const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
+  for (let i = 0; i < arr.length; i++) {
+    const m = arr[i];
+    await queries.insertMatchPromise(m, {
+      type: 'api',
+      origin: 'scanner',
+      skipParse: true,
+    });
+  }
+  cb();
+}
 /*
 describe('generateMatchups', () => {
   it('should generate matchups', (done) => {

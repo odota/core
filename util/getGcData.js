@@ -12,7 +12,7 @@ const redis = require('../store/redis');
 
 const secret = config.RETRIEVER_SECRET;
 const { getData, redisCount } = utility;
-const { insertMatch } = queries;
+const { insertMatchPromise } = queries;
 
 async function getGcDataFromRetriever(match, cb) {
   const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
@@ -66,7 +66,7 @@ async function getGcDataFromRetriever(match, cb) {
           replay_salt: body.match.replay_salt,
         };
         // Put extra fields in matches/player_matches
-        await promisify(insertMatch)(matchToInsert, {
+        await insertMatchPromise(matchToInsert, {
           type: 'gcdata',
           skipParse: true,
         });
