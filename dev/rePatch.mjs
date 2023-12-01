@@ -1,11 +1,11 @@
 /**
  * Recalculate patch ID for matches in match table
  * */
-const async = require("async");
-const constants = require("dotaconstants");
-const db = require("../store/db");
-const queries = require("../store/queries");
-const utility = require("../util/utility");
+import async from 'async';
+import constants from 'dotaconstants';
+import db from '../store/db.js';
+import queries from '../store/queries.js';
+import utility from '../util/utility.js';
 
 db.select(["match_id", "start_time"])
   .from("matches")

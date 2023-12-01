@@ -1,6 +1,6 @@
-const request = require("request");
-const async = require("async");
-const config = require("../config");
+import request from 'request';
+import async from 'async';
+import config from '../config.js';
 
 const output = [];
 

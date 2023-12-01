@@ -1,8 +1,6 @@
-/* eslint-disable */
-const fs = require("fs");
-const Steam = require("steam");
-const async = require("async");
-
+import fs from 'fs';
+import Steam from 'steam';
+import async from 'async';
 const accountData = fs.readFileSync("./STEAM_ACCOUNT_DATA_BAD.txt", "utf8");
 const accountArray = accountData.split(require("os").EOL);
 

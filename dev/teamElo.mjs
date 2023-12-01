@@ -1,9 +1,10 @@
 /**
  * Computes team Elo ratings by game
  * */
-const JSONStream = require("JSONStream");
-const async = require("async");
-const db = require("../store/db");
+import JSONStream from 'JSONStream';
+import async from 'async';
+import db from '../store/db';
+
 // Keep each team's rating in memory and update
 const teams = {};
 const wins = {};

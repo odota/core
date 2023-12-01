@@ -1,7 +1,5 @@
-/* eslint-disable */
-const request = require("request");
-const ProtoBuf = require("protobufjs");
-const fs = require("fs");
+import ProtoBuf from 'protobufjs';
+import fs from 'fs';
 
 /*
 const files = fs.readdirSync('./proto');

@@ -1,7 +1,6 @@
-/* eslint-disable */
-const Steam = require("steam");
-const SteamUser = require("steam-user");
-const async = require("async");
+import Steam from 'steam';
+import SteamUser from 'steam-user';
+import async from 'async';
 
 const steam = new SteamUser();
 const time = Math.floor(new Date() / 1000);

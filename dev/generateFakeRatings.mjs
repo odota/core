@@ -1,5 +1,5 @@
-const async = require("async");
-const db = require("../store/db");
+import async from 'async';
+import db from '../store/db.js';
 
 function randByCentralLimitTheorem() {
   let v = 0;

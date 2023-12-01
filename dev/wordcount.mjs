@@ -1,7 +1,7 @@
-const JSONStream = require("JSONStream");
-const db = require("../store/db");
-const utility = require("../util/utility");
-const compute = require("../util/compute");
+import JSONStream from 'JSONStream';
+import db from '../store/db';
+import utility from '../util/utility.js';
+import compute from '../util/compute.js';
 
 const args = process.argv.slice(2);
 const limit = Number(args[0]) || 1;

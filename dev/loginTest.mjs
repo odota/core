@@ -1,5 +1,5 @@
-const Steam = require("steam");
-const Dota2 = require("dota2");
+import Steam from 'steam';
+import Dota2 from 'dota2';
 
 const client = new Steam.SteamClient();
 const user = process.env.STEAM_USER;

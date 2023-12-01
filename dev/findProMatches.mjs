@@ -1,9 +1,8 @@
-const async = require("async");
-const queries = require("../store/queries");
-const db = require("../store/db");
-const utility = require("../util/utility");
+import async from 'async';
+import queries from '../store/queries.js';
+import db from '../store/db.js';
+import { generateJob, getData } from '../util/utility.js'; 
 
-const { generateJob, getData } = utility;
 // const leagueUrl = generateJob('api_leagues', {}).url;
 
 function getPage(url, leagueid, cb) {

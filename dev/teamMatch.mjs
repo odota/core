@@ -1,6 +1,6 @@
-const async = require("async");
-const db = require("../store/db");
-const queries = require("../store/queries");
+import async from 'async';
+import db from '../store/db';
+import queries from '../store/queries';
 
 db.select(["radiant_team_id", "dire_team_id", "match_id"])
   .from("matches")
