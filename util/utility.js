@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const laneMappings = require('./laneMappings');
 const config = require('../config');
 const contributors = require('../CONTRIBUTORS');
+const { promisify } = require('util');
 
 /**
  * Tokenizes an input string.
@@ -307,6 +308,9 @@ function getData(url, cb) {
     );
   }, delay);
 }
+
+const getDataPromise = promisify(getData);
+
 /**
  * Determines if a player is radiant
  * */
@@ -880,6 +884,7 @@ module.exports = {
   tokenize,
   generateJob,
   getData,
+  getDataPromise,
   convert32to64,
   convert64to32,
   isRadiant,

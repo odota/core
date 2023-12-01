@@ -38,18 +38,18 @@ function processMatch(matchId, cb) {
         }
         const match = body.result;
         try {
-        await insertMatchPromise(match, {
-          type: 'api',
-          origin: 'scanner',
-          skipCounts: false,
-        });
-        // Set with long expiration (1 month) to avoid picking up the same matches again
-        // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
-        redis.setex(`scanner_insert:${match.match_id}`, 3600 * 24 * 30, 1);
-        cb();
-      } catch(e) {
-        cb(e);
-      }
+          await insertMatchPromise(match, {
+            type: 'api',
+            origin: 'scanner',
+            skipCounts: false,
+          });
+          // Set with long expiration (1 month) to avoid picking up the same matches again
+          // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
+          redis.setex(`scanner_insert:${match.match_id}`, 3600 * 24 * 30, 1);
+          cb();
+        } catch (e) {
+          cb(e);
+        }
       }
     );
   });

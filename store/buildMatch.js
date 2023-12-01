@@ -123,17 +123,16 @@ async function getMatch(matchId) {
   // if so we prefer the archive since Cassandra may contain an unparsed version
   const isParsed = Boolean(
     (
-      await db.raw(
-        'select match_id from parsed_matches where match_id = ?',
-        [matchId]
-      )
+      await db.raw('select match_id from parsed_matches where match_id = ?', [
+        matchId,
+      ])
     ).rows[0]
   );
   let match = null;
   if (isParsed) {
-    match = await getArchivedMatch(matchId) || await getMatchData();
+    match = (await getArchivedMatch(matchId)) || (await getMatchData());
   } else {
-    match = await getMatchData(matchId) || await getArchivedMatch(matchId);
+    match = (await getMatchData(matchId)) || (await getArchivedMatch(matchId));
   }
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again

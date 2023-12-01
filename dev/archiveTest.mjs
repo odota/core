@@ -1,8 +1,15 @@
 import { archivePut } from '../store/archive.js';
-import { getArchivedMatch, getMatchData, getPlayerMatchData } from '../store/queries.js';
+import {
+  getArchivedMatch,
+  getMatchData,
+  getPlayerMatchData,
+} from '../store/queries.js';
 
 // Read some match data
-const match = {...await getMatchData(7465883253), players: await getPlayerMatchData(7465883253)};
+const match = {
+  ...(await getMatchData(7465883253)),
+  players: await getPlayerMatchData(7465883253),
+};
 const blob = Buffer.from(JSON.stringify(match));
 
 // Archive it

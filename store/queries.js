@@ -720,6 +720,8 @@ function upsert(db, table, row, conflict, cb) {
   });
 }
 
+const upsertPromise = util.promisify(upsert);
+
 function insertPlayer(db, player, indexPlayer, cb) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
@@ -1343,7 +1345,7 @@ function insertMatch(match, options, cb) {
   }
 
   function upsertMatchBlobs(cb) {
-    // TODO (howard) this function is meant to eventually replace the cassandra match/player_match tables
+    // TODO this function is meant to eventually replace the cassandra match/player_match tables
     // TODO remove pgroup from this since we don't actually need it stored
 
     // It's a temporary store (postgres table) holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
@@ -1698,7 +1700,7 @@ async function getArchivedMatch(matchId) {
       utility.redisCount(redis, 'match_archive_read');
       return result;
     }
-  } catch(e) {
+  } catch (e) {
     console.error(e);
   }
   return null;
@@ -1706,6 +1708,7 @@ async function getArchivedMatch(matchId) {
 
 module.exports = {
   upsert,
+  upsertPromise,
   insertPlayer,
   bulkIndexPlayer,
   insertMatchPromise,

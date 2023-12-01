@@ -9,9 +9,14 @@ const utility = require('../util/utility');
 const { getRetrieverArr } = utility;
 const retrieverArr = getRetrieverArr();
 
-function processGcData(job, cb) {
+async function processGcData(job, cb) {
   job.useGcDataArr = true;
-  getGcData(job, cb);
+  try {
+    await getGcData(job);
+    cb();
+  } catch (e) {
+    cb(e);
+  }
 }
 
 queue.runQueue(

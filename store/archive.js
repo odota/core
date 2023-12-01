@@ -73,7 +73,7 @@ async function archivePut(key, blob) {
       data.length
     );
     return result;
-  } catch(e) {
+  } catch (e) {
     console.error('[ARCHIVE] put error:', e.Code);
     return null;
   }
