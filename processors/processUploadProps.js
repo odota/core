@@ -15,7 +15,7 @@ function processUploadProps(entries) {
         container.match_id = dota.matchId_;
         container.game_mode = dota.gameMode_;
         container.radiant_win = dota.gameWinner_ === 2;
-        // TODO following needs some extraction/transformation
+        // NOTE: following needs some extraction/transformation
         // container.picks_bans = dota.picksBans_;
         // require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
         break;

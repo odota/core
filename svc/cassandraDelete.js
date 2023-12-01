@@ -73,7 +73,7 @@ async function start() {
       config.MATCH_ARCHIVE_S3_ENDPOINT &&
         (await Promise.all(parsedIds.map((id) => doArchive(id))));
 
-      // TODO remove insert once backfill complete
+      // TODO (howard) remove insert once backfill complete
       await Promise.all(
         parsedIds.map((id) =>
           db.raw(
@@ -97,7 +97,7 @@ async function doArchive(matchId) {
   );
   const result = await archivePut(matchId.toString(), blob);
   if (result) {
-    // TODO Delete from Cassandra after archival
+    // TODO (howard) Delete from Cassandra after archival
     // await cassandra.execute(
     //   "DELETE from player_matches where match_id = ?",
     //   [matchId],

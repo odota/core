@@ -139,7 +139,7 @@ async function getMatch(matchId) {
       playersMatchData = await getPlayerMatchData(matchId);
     }
   } catch (e) {
-    // TODO we can probably remove this try/catch after bad data is fixed
+    // TODO (howard) we can probably remove this try/catch after bad data is fixed
     console.error(e);
     if (
       e.message.startsWith('Unexpected') ||

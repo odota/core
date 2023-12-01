@@ -42,7 +42,7 @@ async function getGcDataFromRetriever(match, cb) {
         'retrieverCounts',
         moment().startOf('hour').add(1, 'hour').format('X')
       );
-      // TODO add discovered account_ids to database and fetch account data/rank medal
+      // TODO (howard) add discovered account_ids to database and fetch account data/rank medal
       try {
         const players = body.match.players.map((p, i) => ({
           player_slot: p.player_slot,

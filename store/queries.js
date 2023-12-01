@@ -1340,7 +1340,16 @@ function insertMatch(match, options, cb) {
     });
   }
 
-  function updatePlayerCaches(cb) {
+  function upsertMatchBlobs(cb) {
+    // TODO (howard) this function is meant to eventually replace the cassandra match/player_match tables
+    // It's a temporary store (postgres table) holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
+    // We store a match blob in the row for each stage
+    // in buildMatch we can assemble the data from all these pieces
+    // After some retention period we stick the data in match archive and delete it
+    cb();
+  }
+
+  function updateCassandraPlayerCaches(cb) {
     // console.log('[INSERTMATCH] upserting into Cassandra player_caches');
     const copy = createMatchCopy(match, players);
     return insertPlayerCache(copy, cb);
@@ -1372,11 +1381,11 @@ function insertMatch(match, options, cb) {
     return cb();
   }
 
-  function clearMatchCache(cb) {
+  function clearRedisMatch(cb) {
     redis.del(`match:${match.match_id}`, cb);
   }
 
-  function clearPlayerCaches(cb) {
+  function clearRedisPlayer(cb) {
     async.each(
       (match.players || []).filter((player) => Boolean(player.account_id)),
       (player, cb) => {
@@ -1557,10 +1566,11 @@ function insertMatch(match, options, cb) {
       upsertMatchPostgres: (cb) => upsertMatchPostgres(cb),
       getAverageRank,
       upsertMatchCassandra,
+      upsertMatchBlobs,
       upsertParsedMatch,
-      updatePlayerCaches,
-      clearMatchCache,
-      clearPlayerCaches,
+      updateCassandraPlayerCaches,
+      clearRedisMatch,
+      clearRedisPlayer,
       telemetry,
       decideCounts,
       decideScenarios,

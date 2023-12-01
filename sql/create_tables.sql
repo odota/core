@@ -454,7 +454,7 @@ CREATE TABLE IF NOT EXISTS subscriber (
 CREATE TABLE IF NOT EXISTS match_blobs (
   PRIMARY KEY (match_id),
   match_id bigint,
-  basic json,
+  api json,
   gcdata json,
   replay json
 );
