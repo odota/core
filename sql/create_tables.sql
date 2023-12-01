@@ -451,6 +451,14 @@ CREATE TABLE IF NOT EXISTS subscriber (
   status varchar(100)
 );
 
+CREATE TABLE IF NOT EXISTS match_blobs (
+  PRIMARY KEY (match_id),
+  match_id bigint,
+  basic json,
+  gcdata json,
+  replay json
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

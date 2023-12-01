@@ -1095,12 +1095,12 @@ function insertMatch(match, options, cb) {
   async function upsertMatchPostgres(cb) {
     // Check if leagueid is premium/professional
     const result =
-      match.leagueid &&
+      match.leagueid ?
       (await db.raw(
         `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
         [match.leagueid]
-      ));
-    const pass = result?.rows?.length > 0 && utility.isProMatch(match);
+      )) : null;
+    const pass = result?.rows?.length > 0;
     if (!pass) {
       // Skip this if not a pro match
       return cb();

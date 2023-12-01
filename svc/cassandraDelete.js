@@ -11,8 +11,6 @@ function genRandomNumber(byteCount, radix) {
   );
 }
 
-const PARSED_DATA_DELETE_ID = 0;
-
 async function start() {
   // Get the current max_match_id from postgres, subtract 200000000
   const max = (await db.raw('select max(match_id) from public_matches'))
@@ -29,39 +27,32 @@ async function start() {
         [randomBigint.toString()],
         {
           prepare: true,
-          fetchSize: 500,
+          fetchSize: 100,
           autoPage: true,
         }
       );
 
       // Put the ones that don't have parsed data or are too old into an array
-      const ids = result.rows
+      const unparsedIds = result.rows
         .filter(
           (result) =>
-            (result.version == null ||
-              result.match_id < PARSED_DATA_DELETE_ID) &&
+            result.version == null &&
             result.match_id < limit
         )
         .map((result) => result.match_id);
-      console.log(
-        ids.length,
-        'out of',
+      const parsedIds = result.rows
+        .filter((result) => result.version != null && result.match_id < limit)
+        .map((result) => result.match_id);
+      console.log('%s unparsed to delete, %s parsed to archive, %s total, del ID: %s',
+        unparsedIds.length,
+        parsedIds.length,
         result.rows.length,
-        'to delete, ex:',
-        ids[0]?.toString()
+        unparsedIds[0]?.toString()
       );
-
-      // Delete matches
-      await Promise.all(
-        ids.map((id) =>
-          cassandra.execute('DELETE from matches where match_id = ?', [id], {
-            prepare: true,
-          })
-        )
-      );
+      // NOTE: Due to lack of transactions there might be some orphaned player_matches without match
       // Delete player_matches
       await Promise.all(
-        ids.map((id) =>
+        unparsedIds.map((id) =>
           cassandra.execute(
             'DELETE from player_matches where match_id = ?',
             [id],
@@ -71,9 +62,14 @@ async function start() {
           )
         )
       );
-      const parsedIds = result.rows
-        .filter((result) => result.version != null)
-        .map((result) => result.match_id);
+      // Delete matches
+      await Promise.all(
+        unparsedIds.map((id) =>
+          cassandra.execute('DELETE from matches where match_id = ?', [id], {
+            prepare: true,
+          })
+        )
+      );
       config.MATCH_ARCHIVE_S3_ENDPOINT &&
         (await Promise.all(parsedIds.map((id) => doArchive(id))));
 
@@ -102,9 +98,6 @@ async function doArchive(matchId) {
   const result = await archivePut(matchId.toString(), blob);
   if (result) {
     // TODO Delete from Cassandra after archival
-    // await cassandra.execute("DELETE from matches where match_id = ?", [matchId], {
-    //   prepare: true,
-    // });
     // await cassandra.execute(
     //   "DELETE from player_matches where match_id = ?",
     //   [matchId],
@@ -112,6 +105,9 @@ async function doArchive(matchId) {
     //     prepare: true,
     //   }
     // );
+    // await cassandra.execute("DELETE from matches where match_id = ?", [matchId], {
+    //   prepare: true,
+    // });
   }
   return;
 }
