@@ -125,7 +125,7 @@ async function getMatch(matchId) {
     (
       await db.raw(
         'select match_id from parsed_matches where match_id = ?',
-        [match.match_id]
+        [matchId]
       )
     ).rows[0]
   );
