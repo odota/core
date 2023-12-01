@@ -1093,6 +1093,10 @@ function insertMatch(match, options, cb) {
   }
 
   async function upsertMatchPostgres(cb) {
+    if (options.type === 'api' && !utility.isProMatch(match)) {
+      // Check if the match is legit if this is API insert
+      return cb();
+    }
     // Check if leagueid is premium/professional
     const result =
       match.leagueid ?
