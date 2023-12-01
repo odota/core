@@ -254,16 +254,13 @@ before(function setup(done) {
         console.log('loading matches');
         async.mapSeries(
           [detailsApi.result, detailsApiPro.result, detailsApiPro.result],
-          (m, cb) => {
-            queries.insertMatch(
-              m,
-              {
-                type: 'api',
-                origin: 'scanner',
-                skipParse: true,
-              },
-              cb
-            );
+          async (m, cb) => {
+            await queries.insertMatchPromise(m, {
+              type: 'api',
+              origin: 'scanner',
+              skipParse: true,
+            });
+            cb();
           },
           cb
         );
@@ -326,32 +323,27 @@ describe('replay parse', function testReplayParse() {
           players: [],
         },
       });
-    it(`should parse replay ${key}`, (done) => {
-      queries.insertMatch(
-        match,
-        {
-          cassandra,
-          type: 'api',
-          forceParse: true,
-          attempts: 1,
-        },
-        (err, job) => {
-          assert(job && !err);
-          setTimeout(async () => {
-            // ensure parse data got inserted
-            const match = await buildMatch(tests[key].match_id);
-            // console.log(match.players[0]);
-            assert(match.players);
-            assert(match.players[0]);
-            assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
-            assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
-            assert(match.teamfights && match.teamfights.length > 0);
-            assert(match.draft_timings);
-            assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
-            return done();
-          }, 30000);
-        }
-      );
+    it(`should parse replay ${key}`, async (done) => {
+      const job = await queries.insertMatchPromise(match, {
+        cassandra,
+        type: 'api',
+        forceParse: true,
+        attempts: 1,
+      });
+      assert(job && !err);
+      setTimeout(async () => {
+        // ensure parse data got inserted
+        const match = await buildMatch(tests[key].match_id);
+        // console.log(match.players[0]);
+        assert(match.players);
+        assert(match.players[0]);
+        assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
+        assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
+        assert(match.teamfights && match.teamfights.length > 0);
+        assert(match.draft_timings);
+        assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
+        return done();
+      }, 30000);
     });
   });
 });

@@ -20,6 +20,7 @@ const cacheFunctions = require('../store/cacheFunctions');
 const params = require('./requests/importParams');
 const responses = require('./responses/schemas/importResponseSchemas');
 const generateOperationId = require('./generateOperationId');
+const { insertMatchPromise } = require('../store/queries');
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
@@ -1694,26 +1695,27 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 }
                 // match details response
                 const match = body.result;
-                // Check if match is already parsed
-                const isAlreadyParsed = Boolean(
-                  (
-                    await db.raw(
-                      'select match_id from parsed_matches where match_id = ?',
-                      [match.match_id]
-                    )
-                  ).rows[0]
-                );
-                return queries.insertMatch(
-                  match,
-                  {
+                try {
+                  // Check if match is already parsed
+                  const isAlreadyParsed = Boolean(
+                    (
+                      await db.raw(
+                        'select match_id from parsed_matches where match_id = ?',
+                        [match.match_id]
+                      )
+                    ).rows[0]
+                  );
+                  const job = await insertMatchPromise(match, {
                     type: 'api',
                     attempts: 1,
                     priority: req.query.api_key ? 2 : 1,
                     // Reduce load: only actually reprocess the replay for league matches
                     forceParse: Boolean(match.leagueid) || !isAlreadyParsed,
-                  },
-                  exitWithJob
-                );
+                  });
+                  exitWithJob(null, job);
+                } catch (e) {
+                  exitWithJob(e);
+                }
               }
             );
           }

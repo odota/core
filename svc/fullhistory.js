@@ -11,7 +11,7 @@ const redis = require('../store/redis');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 
-const { insertMatch } = queries;
+const { insertMatchPromise } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once
 const parallelism = Math.min(20, apiKeys.length);
@@ -134,19 +134,20 @@ function processFullHistory(job, cb) {
                 const container = generateJob('api_details', {
                   match_id: Number(matchId),
                 });
-                getData(container.url, (err, body) => {
+                getData(container.url, async (err, body) => {
                   if (err) {
                     return cb(err);
                   }
                   const match = body.result;
-                  return insertMatch(
-                    match,
-                    {
+                  try {
+                    await insertMatchPromise(match, {
                       type: 'api',
                       skipParse: true,
-                    },
-                    cb
-                  );
+                    });
+                    cb();
+                  } catch (e) {
+                    cb(e);
+                  }
                 });
               },
               (err) => {

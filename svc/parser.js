@@ -15,7 +15,7 @@ const config = require('../config');
 const queue = require('../store/queue');
 const queries = require('../store/queries');
 
-const { insertMatch } = queries;
+const { insertMatchPromise } = queries;
 const { buildReplayUrl } = utility;
 
 const app = express();
@@ -37,19 +37,20 @@ function runParse(match, job, cb) {
       config.PARSER_HOST
     } | node processors/createParsedDataBlob.js ${match.match_id}`,
     { shell: true, maxBuffer: 10 * 1024 * 1024 },
-    (err, stdout) => {
+    async (err, stdout) => {
       if (err) {
         return cb(err);
       }
       const result = { ...JSON.parse(stdout), ...match };
-      return insertMatch(
-        result,
-        {
+      try {
+        await insertMatchPromise(result, {
           type: 'parsed',
           skipParse: true,
-        },
-        cb
-      );
+        });
+        cb();
+      } catch (e) {
+        cb(e);
+      }
     }
   );
 }

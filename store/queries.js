@@ -1007,6 +1007,8 @@ function createMatchCopy(match, players) {
   return copy;
 }
 
+const insertMatchPromise = util.promisify(insertMatch);
+
 function insertMatch(match, options, cb) {
   const players = match.players
     ? JSON.parse(JSON.stringify(match.players))
@@ -1098,18 +1100,17 @@ function insertMatch(match, options, cb) {
       return cb();
     }
     // Check if leagueid is premium/professional
-    const result =
-      match.leagueid ?
-      (await db.raw(
-        `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-        [match.leagueid]
-      )) : null;
+    const result = match.leagueid
+      ? await db.raw(
+          `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+          [match.leagueid]
+        )
+      : null;
     const pass = result?.rows?.length > 0;
     if (!pass) {
       // Skip this if not a pro match
       return cb();
     }
-    // console.log('[INSERTMATCH] upserting into Postgres');
     return db.transaction((trx) => {
       function upsertMatch(cb) {
         upsert(
@@ -1342,6 +1343,8 @@ function insertMatch(match, options, cb) {
 
   function upsertMatchBlobs(cb) {
     // TODO (howard) this function is meant to eventually replace the cassandra match/player_match tables
+    // TODO remove pgroup from this since we don't actually need it stored
+
     // It's a temporary store (postgres table) holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces
@@ -1350,13 +1353,11 @@ function insertMatch(match, options, cb) {
   }
 
   function updateCassandraPlayerCaches(cb) {
-    // console.log('[INSERTMATCH] upserting into Cassandra player_caches');
     const copy = createMatchCopy(match, players);
     return insertPlayerCache(copy, cb);
   }
 
   function telemetry(cb) {
-    // console.log('[INSERTMATCH] updating telemetry');
     const types = {
       api: 'matches_last_added',
       parsed: 'matches_last_parsed',
@@ -1693,7 +1694,7 @@ module.exports = {
   upsert,
   insertPlayer,
   bulkIndexPlayer,
-  insertMatch,
+  insertMatchPromise,
   insertPlayerRating,
   getDistributions,
   getProPlayers,

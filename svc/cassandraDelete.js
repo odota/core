@@ -34,16 +34,13 @@ async function start() {
 
       // Put the ones that don't have parsed data or are too old into an array
       const unparsedIds = result.rows
-        .filter(
-          (result) =>
-            result.version == null &&
-            result.match_id < limit
-        )
+        .filter((result) => result.version == null && result.match_id < limit)
         .map((result) => result.match_id);
       const parsedIds = result.rows
         .filter((result) => result.version != null && result.match_id < limit)
         .map((result) => result.match_id);
-      console.log('%s unparsed to delete, %s parsed to archive, %s total, del ID: %s',
+      console.log(
+        '%s unparsed to delete, %s parsed to archive, %s total, del ID: %s',
         unparsedIds.length,
         parsedIds.length,
         result.rows.length,

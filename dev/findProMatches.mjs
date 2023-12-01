@@ -28,18 +28,14 @@ function getPage(url, leagueid, cb) {
             url,
             delay: 200,
           },
-          (err, body) => {
+          async (err, body) => {
             if (err) {
               throw err;
             }
             if (body.result) {
               const match = body.result;
-              queries.insertMatch(match, { skipParse: true }, (err) => {
-                if (err) {
-                  throw err;
-                }
-                cb(err);
-              });
+              await queries.insertMatchPromise(match, { skipParse: true });
+              cb();
             } else {
               cb();
             }

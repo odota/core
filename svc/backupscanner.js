@@ -5,7 +5,7 @@ const queries = require('../store/queries');
 const config = require('../config');
 
 const { generateJob, getData } = utility;
-const { insertMatch } = queries;
+const { insertMatchPromise } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);
@@ -29,7 +29,7 @@ function processMatch(matchId, cb) {
         url,
         delay,
       },
-      (err, body) => {
+      async (err, body) => {
         if (err) {
           throw err;
         }
@@ -37,26 +37,15 @@ function processMatch(matchId, cb) {
           return cb();
         }
         const match = body.result;
-        return insertMatch(
-          match,
-          {
-            type: 'api',
-            origin: 'scanner',
-            skipCounts: false,
-          },
-          (err) => {
-            if (!err) {
-              // Set with long expiration (1 month) to avoid picking up the same matches again
-              // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
-              redis.setex(
-                `scanner_insert:${match.match_id}`,
-                3600 * 24 * 30,
-                1
-              );
-            }
-            cb(err);
-          }
-        );
+        await insertMatchPromise(match, {
+          type: 'api',
+          origin: 'scanner',
+          skipCounts: false,
+        });
+        // Set with long expiration (1 month) to avoid picking up the same matches again
+        // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
+        redis.setex(`scanner_insert:${match.match_id}`, 3600 * 24 * 30, 1);
+        cb();
       }
     );
   });

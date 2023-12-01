@@ -11,7 +11,11 @@ const cassandra = require('./cassandra');
 const redis = require('./redis');
 const db = require('./db');
 const { archiveGet } = require('./archive');
-const { getPlayerMatchData, getMatchData } = require('./queries');
+const {
+  getPlayerMatchData,
+  getMatchData,
+  insertMatchPromise,
+} = require('./queries');
 
 const { computeMatchData } = compute;
 const { buildReplayUrl, isContributor } = utility;
@@ -44,7 +48,13 @@ async function extendPlayerData(player, match) {
 
 async function prodataInfo(matchId) {
   const result = await db
-    .first(['radiant_team_id', 'dire_team_id', 'leagueid', 'series_id', 'series_type'])
+    .first([
+      'radiant_team_id',
+      'dire_team_id',
+      'leagueid',
+      'series_id',
+      'series_type',
+    ])
     .from('matches')
     .where({
       match_id: matchId,
@@ -82,25 +92,20 @@ async function backfill(matchId) {
   await new Promise((resolve, reject) => {
     utility.getData(
       utility.generateJob('api_details', match).url,
-      (err, body) => {
+      async (err, body) => {
         if (err) {
           console.error(err);
           return reject();
         }
         // match details response
         const match = body.result;
-        return queries.insertMatch(
-          match,
-          {
-            type: 'api',
-            skipParse: true,
-          },
-          () => {
-            // Count for logging
-            utility.redisCount(redis, 'steam_api_backfill');
-            resolve();
-          }
-        );
+        await insertMatchPromise(match, {
+          type: 'api',
+          skipParse: true,
+        });
+        // Count for logging
+        utility.redisCount(redis, 'steam_api_backfill');
+        resolve();
       }
     );
   });

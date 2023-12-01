@@ -32,29 +32,29 @@ function scanApi(seqNum) {
       return finishMatch(null, cb);
     }
     // check if match was previously processed
-    return redis.get(`scanner_insert:${match.match_id}`, (err, result) => {
-      if (err) {
+    return redis.get(
+      `scanner_insert:${match.match_id}`,
+      async (err, result) => {
+        if (err) {
+          return finishMatch(err, cb);
+        }
+        // don't insert this match if we already processed it recently
+        if (!result) {
+          try {
+            await queries.insertMatchPromise(match, {
+              type: 'api',
+              origin: 'scanner',
+            });
+            redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
+            finishMatch(null, cb);
+          } catch (e) {
+            finishMatch(e, cb);
+          }
+          return;
+        }
         return finishMatch(err, cb);
       }
-      // don't insert this match if we already processed it recently
-      if (!result) {
-        return insertMatch(
-          match,
-          {
-            type: 'api',
-            origin: 'scanner',
-          },
-          (err) => {
-            if (!err) {
-              // Save match_id in Redis to avoid duplicate inserts (persist even if process restarts)
-              redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
-            }
-            finishMatch(err, cb);
-          }
-        );
-      }
-      return finishMatch(err, cb);
-    });
+    );
   }
 
   function processPage(matchSeqNum, cb) {
