@@ -55,7 +55,7 @@ function runReliableQueue(queueName, parallelism, processor) {
           }
           if (!job) {
             trx.commit();
-            console.log('no job available, waiting');
+            // console.log('no job available, waiting');
             return setTimeout(cb, 5000);
           }
           return processor(job.data, (err) => {
