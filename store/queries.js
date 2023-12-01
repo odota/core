@@ -1528,6 +1528,7 @@ function insertMatch(match, options, cb) {
             {
               data: {
                 match_id: match.match_id,
+                leagueid: match.leagueid,
                 game_mode: match.game_mode,
                 radiant_win: match.radiant_win,
                 start_time: match.start_time,
