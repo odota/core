@@ -1302,7 +1302,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => "/explorer",
         func: async (req, res) => {
-          // TODO handle NQL (@nicholashh query language)
           const input = req.query.sql;
           const client = new Client({
             connectionString: config.READONLY_POSTGRES_URL,

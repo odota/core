@@ -1260,7 +1260,8 @@ function insertMatch(match, options, cb) {
   }
 
   function upsertMatchCassandra(cb) {
-    // console.log('[INSERTMATCH] upserting into Cassandra');
+    // NOTE parsed insert doesn't have original match info so can't archive here
+    // unless we insert then read it back from cassandra
     return cleanRowCassandra(cassandra, "matches", match, (err, match) => {
       if (err) {
         return cb(err);
@@ -1645,6 +1646,34 @@ function getMetadata(req, callback) {
   );
 }
 
+async function getMatchData(matchId) {
+  const result = await cassandra.execute(
+    "SELECT * FROM matches where match_id = ?",
+    [Number(matchId)],
+    {
+      prepare: true,
+      fetchSize: 1,
+      autoPage: true,
+    }
+  );
+  const deserializedResult = result.rows.map((m) => deserialize(m));
+  return Promise.resolve(deserializedResult[0]);
+}
+
+async function getPlayerMatchData(matchId) {
+  const result = await cassandra.execute(
+    "SELECT * FROM player_matches where match_id = ?",
+    [Number(matchId)],
+    {
+      prepare: true,
+      fetchSize: 24,
+      autoPage: true,
+    }
+  );
+  const deserializedResult = result.rows.map((m) => deserialize(m));
+  return deserializedResult;
+}
+
 module.exports = {
   upsert,
   insertPlayer,
@@ -1673,4 +1702,6 @@ module.exports = {
   getTeamScenarios,
   getMetadata,
   getMatchRankTier,
+  getMatchData,
+  getPlayerMatchData,
 };

@@ -1,6 +1,9 @@
 const crypto = require("crypto");
 const cassandra = require("../store/cassandra");
 const db = require("../store/db");
+const { archivePut } = require("../store/archive");
+const { getMatchData, getPlayerMatchData } = require("../store/queries");
+const config = require("../config");
 
 function genRandomNumber(byteCount, radix) {
   return BigInt(`0x${  crypto.randomBytes(byteCount).toString("hex")}`).toString(
@@ -69,11 +72,36 @@ async function start() {
         )
       );
       const parsedIds = result.rows.filter(result => result.version != null).map(result => result.match_id);
+      config.MATCH_ARCHIVE_S3_ENDPOINT && await Promise.all(parsedIds.map(id => doArchive(id)));
+
+      // TODO remove insert once backfill complete
       await Promise.all(parsedIds.map(id => db.raw("INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING", [Number(id)])));
     } catch (e) {
       console.log(e);
     }
   }
+}
+
+async function doArchive(matchId) {
+  // archive old parsed match blobs to s3 compatible storage
+  const match = await getMatchData(matchId);
+  const playerMatches = await getPlayerMatchData(matchId);
+  const blob = Buffer.from(JSON.stringify({...match, players: playerMatches }));
+  const result = await archivePut(matchId.toString(), blob);
+  if (result) {
+    // TODO Delete from Cassandra after archival
+    // await cassandra.execute("DELETE from matches where match_id = ?", [matchId], {
+    //   prepare: true,
+    // });
+    // await cassandra.execute(
+    //   "DELETE from player_matches where match_id = ?",
+    //   [matchId],
+    //   {
+    //     prepare: true,
+    //   }
+    // );
+  }
+  return;
 }
 
 start();

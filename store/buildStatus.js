@@ -56,6 +56,12 @@ module.exports = function buildStatus(db, redis, cb) {
       requests_api_key_last_day(cb) {
         utility.getRedisCountDay(redis, "request_api_key", cb);
       },
+      steam_api_backfill_last_day(cb) {
+        utility.getRedisCountDay(redis, "steam_api_backfill", cb);
+      },
+      match_archive_read_last_day(cb) {
+        utility.getRedisCountDay(redis, "match_archive_read", cb);
+      },
       cassandra_repair_last_day(cb) {
         utility.getRedisCountDay(redis, "cassandra_repair", cb);
       },

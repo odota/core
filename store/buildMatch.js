@@ -10,53 +10,12 @@ const utility = require("../util/utility");
 const cassandra = require("./cassandra");
 const redis = require("./redis");
 const db = require("./db");
+const { archiveGet } = require("./archive");
+const { getPlayerMatchData, getMatchData } = require("./queries");
 
 const { computeMatchData } = compute;
-const { deserialize, buildReplayUrl, isContributor } = utility;
+const { buildReplayUrl, isContributor } = utility;
 const getRedisAsync = promisify(redis.get).bind(redis);
-
-async function getMatchData(matchId) {
-  const result = await cassandra.execute(
-    "SELECT * FROM matches where match_id = ?",
-    [Number(matchId)],
-    {
-      prepare: true,
-      fetchSize: 1,
-      autoPage: true,
-    }
-  );
-  const deserializedResult = result.rows.map((m) => deserialize(m));
-  return Promise.resolve(deserializedResult[0]);
-}
-
-async function getPlayerMatchData(matchId) {
-  const result = await cassandra.execute(
-    "SELECT * FROM player_matches where match_id = ?",
-    [Number(matchId)],
-    {
-      prepare: true,
-      fetchSize: 24,
-      autoPage: true,
-    }
-  );
-  const deserializedResult = result.rows.map((m) => deserialize(m));
-  return Promise.all(
-    deserializedResult.map((r) =>
-      db
-        .raw(
-          `
-        SELECT personaname, name, last_login 
-        FROM players
-        LEFT JOIN notable_players
-        ON players.account_id = notable_players.account_id
-        WHERE players.account_id = ?
-      `,
-          [r.account_id]
-        )
-        .then((names) => ({ ...r, ...names.rows[0] }))
-    )
-  );
-}
 
 async function extendPlayerData(player, match) {
   const p = {
@@ -136,7 +95,7 @@ async function backfill(matchId) {
           },
           () => {
             // Count for logging
-            utility.redisCount(redis, "cassandra_repair");
+            utility.redisCount(redis, "steam_api_backfill");
             resolve();
           }
         );
@@ -151,18 +110,27 @@ async function getMatch(matchId) {
   }
   let match = await getMatchData(matchId);
   if (!match) {
-    // if we don't have it, try backfilling it from Steam API and then check again
+    // check the parsed match archive to see if we have it
+    const blob = await archiveGet(matchId.toString());
+    if (blob) {
+      match = JSON.parse(blob);
+      utility.redisCount(redis, "match_archive_read");
+    }
+  }
+  if (!match) {
+    // if we still don't have it, try backfilling it from Steam API and then check again
     await backfill(matchId);
     match = await getMatchData(matchId);
-    if (!match) {
-      // Still don't have it
-      return Promise.resolve();
-    }
+  }
+  if (!match) {
+    // Still don't have it
+    return Promise.resolve();
   }
   utility.redisCount(redis, "build_match");
   let playersMatchData = [];
   try {
-    playersMatchData = await getPlayerMatchData(matchId);
+    // If we fetched from archive we already have players
+    playersMatchData = match.players || await getPlayerMatchData(matchId);
     if (playersMatchData.length === 0) {
       throw new Error("no players found for match");
     }
@@ -173,6 +141,7 @@ async function getMatch(matchId) {
       e.message.startsWith("Unexpected") ||
       e.message.includes("Attempt to access memory outside buffer bounds")
     ) {
+      utility.redisCount(redis, "cassandra_repair");
       // Delete corrupted data and backfill
       await cassandra.execute(
         "DELETE FROM player_matches where match_id = ?",
@@ -185,6 +154,23 @@ async function getMatch(matchId) {
       throw e;
     }
   }
+  // Get names, last login for players from DB
+  playersMatchData = await Promise.all(
+    playersMatchData.map((r) =>
+      db
+        .raw(
+          `
+        SELECT personaname, name, last_login 
+        FROM players
+        LEFT JOIN notable_players
+        ON players.account_id = notable_players.account_id
+        WHERE players.account_id = ?
+      `,
+          [r.account_id]
+        )
+        .then((names) => ({ ...r, ...names.rows[0] }))
+    )
+  );
   const playersPromise = Promise.all(
     playersMatchData.map((p) => extendPlayerData(p, match))
   );
