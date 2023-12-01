@@ -30,7 +30,7 @@ async function stream2buffer(stream) {
 
 async function archiveGet(key) {
   if (!client) {
-    return;
+    return null;
   }
   const command = new GetObjectCommand({
     Bucket: config.MATCH_ARCHIVE_S3_BUCKET,
@@ -39,7 +39,7 @@ async function archiveGet(key) {
   try {
     const data = await client.send(command);
     if (!data.Body) {
-      return;
+      return null;
     }
     const buffer = await stream2buffer(data.Body);
     const result = gunzipSync(buffer);
@@ -50,27 +50,33 @@ async function archiveGet(key) {
     );
     return result;
   } catch (e) {
-    return;
+    console.error('[ARCHIVE] get error:', e.Code);
+    return null;
   }
 }
 
 async function archivePut(key, blob) {
   if (!client) {
-    return;
+    return null;
   }
-  const data = gzipSync(blob);
-  const command = new PutObjectCommand({
-    Bucket: config.MATCH_ARCHIVE_S3_BUCKET,
-    Key: key,
-    Body: data,
-  });
-  const result = await client.send(command);
-  console.log(
-    '[ARCHIVE] original %s bytes, archived %s bytes',
-    blob.length,
-    data.length
-  );
-  return result;
+  try {
+    const data = gzipSync(blob);
+    const command = new PutObjectCommand({
+      Bucket: config.MATCH_ARCHIVE_S3_BUCKET,
+      Key: key,
+      Body: data,
+    });
+    const result = await client.send(command);
+    console.log(
+      '[ARCHIVE] original %s bytes, archived %s bytes',
+      blob.length,
+      data.length
+    );
+    return result;
+  } catch(e) {
+    console.error('[ARCHIVE] put error:', e.Code);
+    return null;
+  }
 }
 
 module.exports = {

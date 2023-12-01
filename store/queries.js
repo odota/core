@@ -16,6 +16,7 @@ const { es, INDEX } = require('./elasticsearch');
 const cassandra = require('./cassandra');
 const cacheFunctions = require('./cacheFunctions');
 const benchmarksUtil = require('../util/benchmarksUtil');
+const { archiveGet } = require('./archive');
 
 const {
   redisCount,
@@ -1690,6 +1691,19 @@ async function getPlayerMatchData(matchId) {
   return deserializedResult;
 }
 
+async function getArchivedMatch(matchId) {
+  try {
+    const result = JSON.parse(await archiveGet(matchId.toString()));
+    if (result) {
+      utility.redisCount(redis, 'match_archive_read');
+      return result;
+    }
+  } catch(e) {
+    console.error(e);
+  }
+  return null;
+}
+
 module.exports = {
   upsert,
   insertPlayer,
@@ -1720,4 +1734,5 @@ module.exports = {
   getMatchRankTier,
   getMatchData,
   getPlayerMatchData,
+  getArchivedMatch,
 };

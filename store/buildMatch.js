@@ -10,11 +10,11 @@ const utility = require('../util/utility');
 const cassandra = require('./cassandra');
 const redis = require('./redis');
 const db = require('./db');
-const { archiveGet } = require('./archive');
 const {
   getPlayerMatchData,
   getMatchData,
   insertMatchPromise,
+  getArchivedMatch,
 } = require('./queries');
 
 const { computeMatchData } = compute;
@@ -119,14 +119,21 @@ async function getMatch(matchId) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return Promise.resolve();
   }
-  let match = await getMatchData(matchId);
-  if (!match) {
-    // check the parsed match archive to see if we have it
-    const blob = await archiveGet(matchId.toString());
-    if (blob) {
-      match = JSON.parse(blob);
-      utility.redisCount(redis, 'match_archive_read');
-    }
+  // Check if the match is parsed
+  // if so we prefer the archive since Cassandra may contain an unparsed version
+  const isParsed = Boolean(
+    (
+      await db.raw(
+        'select match_id from parsed_matches where match_id = ?',
+        [match.match_id]
+      )
+    ).rows[0]
+  );
+  let match = null;
+  if (isParsed) {
+    match = await getArchivedMatch(matchId) || await getMatchData();
+  } else {
+    match = await getMatchData(matchId) || await getArchivedMatch(matchId);
   }
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
