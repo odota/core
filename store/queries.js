@@ -1354,7 +1354,6 @@ function insertMatch(match, options, cb) {
 
         JSON.stringify({
           match_id: match.match_id,
-          duration: match.duration,
           start_time: match.start_time,
         })
       );
@@ -1528,15 +1527,11 @@ function insertMatch(match, options, cb) {
             {
               data: {
                 match_id: match.match_id,
+                // leagueid to determine whether to upsert Postgres after parse
                 leagueid: match.leagueid,
-                game_mode: match.game_mode,
-                radiant_win: match.radiant_win,
+                // start_time just for debug logging
                 start_time: match.start_time,
-                duration: match.duration,
-                replay_blob_key: match.replay_blob_key,
                 pgroup: match.pgroup,
-                ability_upgrades: abilityUpgrades,
-                allowBackup: options.allowBackup,
                 origin: options.origin,
               },
             },

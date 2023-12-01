@@ -134,12 +134,14 @@ async function getMatch(matchId) {
     // If we fetched from archive we already have players
     playersMatchData = match.players || (await getPlayerMatchData(matchId));
     if (playersMatchData.length === 0) {
-      throw new Error('no players found for match');
+      // Could be due to partial deletion where we only finished deleting players
+      await backfill(matchId);
+      playersMatchData = await getPlayerMatchData(matchId);
     }
   } catch (e) {
+    // TODO we can probably remove this try/catch after bad data is fixed
     console.error(e);
     if (
-      e.message.startsWith('no players found') ||
       e.message.startsWith('Unexpected') ||
       e.message.includes('Attempt to access memory outside buffer bounds')
     ) {
