@@ -1,5 +1,5 @@
-const redis = require("./redis");
-const config = require("../config");
+const redis = require('./redis');
+const config = require('../config');
 
 const write = (req, data, cb) => {
   // console.log(`[WRITECACHE] cache:${req.key}:${req.account_id}`);
@@ -10,7 +10,7 @@ const write = (req, data, cb) => {
     cb
   );
 };
-const getKeys = () => ["wl", "heroes", "peers", "counts"];
+const getKeys = () => ['wl', 'heroes', 'peers', 'counts'];
 
 module.exports = {
   read: (req, cb) => {

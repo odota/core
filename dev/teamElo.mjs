@@ -25,7 +25,7 @@ ORDER BY match_id ASC
   )
   .stream();
 stream.pipe(JSONStream.parse());
-stream.on("data", (match) => {
+stream.on('data', (match) => {
   // console.log(JSON.stringify(match));
   if (!teams[match.team_id1]) {
     teams[match.team_id1] = 1000;
@@ -64,7 +64,7 @@ stream.on("data", (match) => {
   losses[match.team_id1] += Number(!win1);
   losses[match.team_id2] += Number(!win2);
 });
-stream.on("end", () => {
+stream.on('end', () => {
   console.log(teams, wins, losses, startTimes);
   // Write the results to table
   async.eachSeries(
@@ -97,6 +97,6 @@ stream.on("end", () => {
     }
   );
 });
-stream.on("error", (err) => {
+stream.on('error', (err) => {
   throw err;
 });

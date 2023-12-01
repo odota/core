@@ -1,13 +1,13 @@
-const async = require("async");
-const db = require("../store/db");
-const utility = require("../util/utility");
-const queries = require("../store/queries");
+const async = require('async');
+const db = require('../store/db');
+const utility = require('../util/utility');
+const queries = require('../store/queries');
 
 const { invokeInterval, generateJob, getData } = utility;
 
 function doHeroes(cb) {
-  const container = generateJob("api_heroes", {
-    language: "english",
+  const container = generateJob('api_heroes', {
+    language: 'english',
   });
   getData(container.url, (err, body) => {
     if (err) {
@@ -17,7 +17,7 @@ function doHeroes(cb) {
       return cb();
     }
     return getData(
-      "https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json",
+      'https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json',
       (err, heroData) => {
         if (err || !heroData) {
           return cb();
@@ -28,7 +28,7 @@ function doHeroes(cb) {
             const heroDataHero = heroData[hero.id] || {};
             queries.upsert(
               db,
-              "heroes",
+              'heroes',
               {
                 ...hero,
                 primary_attr: heroDataHero.primary_attr,

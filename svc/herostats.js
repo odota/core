@@ -1,15 +1,15 @@
-const constants = require("dotaconstants");
-const moment = require("moment");
-const async = require("async");
-const db = require("../store/db");
-const redis = require("../store/redis");
-const utility = require("../util/utility");
+const constants = require('dotaconstants');
+const moment = require('moment');
+const async = require('async');
+const db = require('../store/db');
+const redis = require('../store/redis');
+const utility = require('../util/utility');
 
 const { invokeInterval } = utility;
 
 function doHeroStats(cb) {
-  const minTime = moment().subtract(30, "day").format("X");
-  const maxTime = moment().format("X");
+  const minTime = moment().subtract(30, 'day').format('X');
+  const maxTime = moment().format('X');
   async.parallel(
     {
       publicHeroes(cb) {
@@ -74,8 +74,8 @@ function doHeroStats(cb) {
         ).asCallback(cb);
       },
       turboHeroes(cb) {
-        redis.hgetall("turboPicks", (err, picks) => {
-          redis.hgetall("turboWins", (err, wins) => {
+        redis.hgetall('turboPicks', (err, picks) => {
+          redis.hgetall('turboWins', (err, wins) => {
             const result = {
               rows: Object.keys(picks).map((key) => {
                 return {
@@ -100,7 +100,7 @@ function doHeroStats(cb) {
         result[key].rows.forEach((row) => {
           objectResponse[row.hero_id] = {
             ...objectResponse[row.hero_id],
-            ...(key === "publicHeroes"
+            ...(key === 'publicHeroes'
               ? {
                   [`${row.rank_tier}_pick`]: row.pick,
                   [`${row.rank_tier}_win`]: row.win,
@@ -110,7 +110,7 @@ function doHeroStats(cb) {
         });
       });
       return redis.set(
-        "heroStats",
+        'heroStats',
         JSON.stringify(Object.values(objectResponse)),
         cb
       );

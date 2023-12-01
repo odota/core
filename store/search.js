@@ -1,16 +1,16 @@
 /**
  * Methods for search functionality
  * */
-const async = require("async");
-const db = require("./db");
+const async = require('async');
+const db = require('./db');
 /**
  * @param db - database object
  * @param search - object for where parameter of query
  * @param cb - callback
  */
 function findPlayer(search, cb) {
-  db.first(["account_id", "personaname", "avatarfull"])
-    .from("players")
+  db.first(['account_id', 'personaname', 'avatarfull'])
+    .from('players')
     .where(search)
     .asCallback(cb);
 }

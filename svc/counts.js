@@ -1,14 +1,14 @@
 /**
  * Worker to update counts based on incoming match data
  * */
-const async = require("async");
-const moment = require("moment");
-const redis = require("../store/redis");
-const db = require("../store/db");
-const utility = require("../util/utility");
-const queries = require("../store/queries");
-const queue = require("../store/queue");
-const config = require("../config");
+const async = require('async');
+const moment = require('moment');
+const redis = require('../store/redis');
+const db = require('../store/db');
+const utility = require('../util/utility');
+const queries = require('../store/queries');
+const queue = require('../store/queue');
+const config = require('../config');
 
 const {
   getMatchRankTier,
@@ -44,8 +44,8 @@ function updateHeroRankings(match, cb) {
         const win = Number(isRadiant(player) === player.radiant_win);
         const kFactor = 100;
         return db
-          .select("score")
-          .from("hero_ranking")
+          .select('score')
+          .from('hero_ranking')
           .where({
             account_id: player.account_id,
             hero_id: player.hero_id,
@@ -64,7 +64,7 @@ function updateHeroRankings(match, cb) {
             const newScore = currRating1 + ratingDiff1;
             return db
               .raw(
-                "INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?",
+                'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
                 [player.account_id, player.hero_id, newScore, newScore]
               )
               .asCallback(cb);
@@ -127,7 +127,7 @@ function upsertMatchSample(match, cb) {
           const newMatch = { ...match, ...matchMmrData };
           return upsert(
             trx,
-            "public_matches",
+            'public_matches',
             newMatch,
             {
               match_id: newMatch.match_id,
@@ -143,7 +143,7 @@ function upsertMatchSample(match, cb) {
               pm.match_id = match.match_id;
               upsert(
                 trx,
-                "public_player_matches",
+                'public_player_matches',
                 pm,
                 {
                   match_id: pm.match_id,
@@ -182,27 +182,27 @@ function updateRecord(field, match, player) {
   redis.zadd(
     `records:${field}`,
     match[field] || player[field],
-    [match.match_id, match.start_time, player.hero_id].join(":")
+    [match.match_id, match.start_time, player.hero_id].join(':')
   );
   // Keep only 100 top scores
-  redis.zremrangebyrank(`records:${field}`, "0", "-101");
-  const expire = moment().add(1, "month").startOf("month").format("X");
+  redis.zremrangebyrank(`records:${field}`, '0', '-101');
+  const expire = moment().add(1, 'month').startOf('month').format('X');
   redis.expireat(`records:${field}`, expire);
 }
 
 function updateRecords(match, cb) {
-  updateRecord("duration", match, {});
+  updateRecord('duration', match, {});
   match.players.forEach((player) => {
-    updateRecord("kills", match, player);
-    updateRecord("deaths", match, player);
-    updateRecord("assists", match, player);
-    updateRecord("last_hits", match, player);
-    updateRecord("denies", match, player);
-    updateRecord("gold_per_min", match, player);
-    updateRecord("xp_per_min", match, player);
-    updateRecord("hero_damage", match, player);
-    updateRecord("tower_damage", match, player);
-    updateRecord("hero_healing", match, player);
+    updateRecord('kills', match, player);
+    updateRecord('deaths', match, player);
+    updateRecord('assists', match, player);
+    updateRecord('last_hits', match, player);
+    updateRecord('denies', match, player);
+    updateRecord('gold_per_min', match, player);
+    updateRecord('xp_per_min', match, player);
+    updateRecord('hero_damage', match, player);
+    updateRecord('tower_damage', match, player);
+    updateRecord('hero_healing', match, player);
   });
   cb();
 }
@@ -290,7 +290,7 @@ function updateHeroSearch(match, cb) {
 
   return db
     .raw(
-      "INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)",
+      'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)',
       [match.match_id, teamA, teamB, teamAWin, match.start_time]
     )
     .asCallback(cb);
@@ -302,14 +302,14 @@ function updateTurbo(match, cb) {
     const heroId = player.hero_id;
     if (heroId) {
       const win = Number(isRadiant(player) === match.radiant_win);
-      redis.hincrby("turboPicks", heroId, 1);
+      redis.hincrby('turboPicks', heroId, 1);
       if (win) {
-        redis.hincrby("turboWins", heroId, 1);
+        redis.hincrby('turboWins', heroId, 1);
       }
     }
   }
-  redis.expireat("turboPicks", moment().endOf("month").unix());
-  redis.expireat("turboWins", moment().endOf("month").unix());
+  redis.expireat('turboPicks', moment().endOf('month').unix());
+  redis.expireat('turboWins', moment().endOf('month').unix());
   cb();
 }
 
@@ -346,7 +346,7 @@ function updateMatchups(match, cb) {
 */
 
 function processCounts(match, cb) {
-  console.log("match %s", match.match_id);
+  console.log('match %s', match.match_id);
   return async.parallel(
     {
       updateRankings(cb) {
@@ -407,4 +407,4 @@ function processCounts(match, cb) {
   );
 }
 
-queue.runQueue("countsQueue", 1, processCounts);
+queue.runQueue('countsQueue', 1, processCounts);

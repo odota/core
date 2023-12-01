@@ -1,23 +1,23 @@
 /**
  * Worker to fetch updated player profiles
  * */
-const async = require("async");
-const queries = require("../store/queries");
-const db = require("../store/db");
+const async = require('async');
+const queries = require('../store/queries');
+const db = require('../store/db');
 // const redis = require('../store/redis');
-const utility = require("../util/utility");
+const utility = require('../util/utility');
 
 const { insertPlayer, bulkIndexPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;
 
 function getSummaries(cb) {
   db.raw(
-    "SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)"
+    'SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)'
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);
     }
-    const container = generateJob("api_summaries", {
+    const container = generateJob('api_summaries', {
       players: result.rows,
     });
     // Request rank_tier data for these players

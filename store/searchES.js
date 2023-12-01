@@ -1,17 +1,17 @@
 /**
  * Methods for search functionality
  * */
-const async = require("async");
-const db = require("./db");
-const { es, INDEX } = require("./elasticsearch");
+const async = require('async');
+const db = require('./db');
+const { es, INDEX } = require('./elasticsearch');
 /**
  * @param db - database object
  * @param search - object for where parameter of query
  * @param cb - callback
  */
 function findPlayer(search, cb) {
-  db.first(["account_id", "personaname", "avatarfull"])
-    .from("players")
+  db.first(['account_id', 'personaname', 'avatarfull'])
+    .from('players')
     .where(search)
     .asCallback(cb);
 }
@@ -44,7 +44,7 @@ function search(options, cb) {
                   },
                 },
               },
-              sort: [{ _score: "desc" }, { last_match_time: "desc" }],
+              sort: [{ _score: 'desc' }, { last_match_time: 'desc' }],
             },
           },
           (err, { body }) => {

@@ -10,9 +10,9 @@ files.forEach((file) => {
 });
 */
 
-const builder = ProtoBuf.loadProtoFile("./proto/dota_match_metadata.proto");
+const builder = ProtoBuf.loadProtoFile('./proto/dota_match_metadata.proto');
 const Message = builder.build();
-const buf = fs.readFileSync("./2750586075_1028519576.meta");
+const buf = fs.readFileSync('./2750586075_1028519576.meta');
 const message = Message.CDOTAMatchMetadataFile.decode(buf);
 message.metadata.teams.forEach((team) => {
   team.players.forEach((player) => {

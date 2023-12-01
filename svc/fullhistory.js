@@ -1,25 +1,25 @@
 /**
  * Worker to fetch full match histories for players
  * */
-const async = require("async");
-const urllib = require("url");
-const constants = require("dotaconstants");
-const config = require("../config");
-const { redisCount, getData, generateJob } = require("../util/utility");
-const db = require("../store/db");
-const redis = require("../store/redis");
-const queue = require("../store/queue");
-const queries = require("../store/queries");
+const async = require('async');
+const urllib = require('url');
+const constants = require('dotaconstants');
+const config = require('../config');
+const { redisCount, getData, generateJob } = require('../util/utility');
+const db = require('../store/db');
+const redis = require('../store/redis');
+const queue = require('../store/queue');
+const queries = require('../store/queries');
 
 const { insertMatch } = queries;
-const apiKeys = config.STEAM_API_KEY.split(",");
+const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once
 const parallelism = Math.min(20, apiKeys.length);
 
 function processFullHistory(job, cb) {
   function updatePlayer(player, cb) {
     // done with this player, update
-    db("players")
+    db('players')
       .update({
         full_history_time: new Date(),
         fh_unavailable: player.fh_unavailable,
@@ -31,8 +31,8 @@ function processFullHistory(job, cb) {
         if (err) {
           return cb(err);
         }
-        console.log("got full match history for %s", player.account_id);
-        redisCount(redis, "fullhistory");
+        console.log('got full match history for %s', player.account_id);
+        redisCount(redis, 'fullhistory');
         return cb(err);
       });
   }
@@ -41,7 +41,7 @@ function processFullHistory(job, cb) {
     getData(url, (err, body) => {
       if (err) {
         // non-retryable error, probably the user's account is private
-        console.log("non-retryable error");
+        console.log('non-retryable error');
         return cb(err);
       }
       // if !body.result, retry
@@ -78,7 +78,7 @@ function processFullHistory(job, cb) {
   // if test or only want last 100 (no paging), set short_history
   // const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
   // As of December 2021 filtering by hero ID doesn't work
-  const heroArray = ["0"];
+  const heroArray = ['0'];
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   player.match_ids = {};
   return async.eachLimit(
@@ -86,13 +86,13 @@ function processFullHistory(job, cb) {
     parallelism,
     (heroId, cb) => {
       // make a request for every possible hero
-      const container = generateJob("api_history", {
+      const container = generateJob('api_history', {
         account_id: player.account_id,
         hero_id: heroId,
         matches_requested: 100,
       });
       getApiMatchPage(player, container.url, (err) => {
-        console.log("%s matches found", Object.keys(player.match_ids).length);
+        console.log('%s matches found', Object.keys(player.match_ids).length);
         cb(err);
       });
     },
@@ -100,21 +100,21 @@ function processFullHistory(job, cb) {
       player.fh_unavailable = Boolean(err);
       if (err) {
         // non-retryable error while scanning, user had a private account
-        console.log("error: %s", JSON.stringify(err));
+        console.log('error: %s', JSON.stringify(err));
         updatePlayer(player, cb);
       } else {
         // check what matches the player is already associated with
         queries.getPlayerMatches(
           player.account_id,
           {
-            project: ["match_id"],
+            project: ['match_id'],
           },
           (err, docs) => {
             if (err) {
               return cb(err);
             }
             console.log(
-              "%s matches found, %s already in db, %s to add",
+              '%s matches found, %s already in db, %s to add',
               Object.keys(player.match_ids).length,
               docs.length,
               Object.keys(player.match_ids).length - docs.length
@@ -131,7 +131,7 @@ function processFullHistory(job, cb) {
               parallelism,
               (matchId, cb) => {
                 // process api jobs directly with parallelism
-                const container = generateJob("api_details", {
+                const container = generateJob('api_details', {
                   match_id: Number(matchId),
                 });
                 getData(container.url, (err, body) => {
@@ -142,7 +142,7 @@ function processFullHistory(job, cb) {
                   return insertMatch(
                     match,
                     {
-                      type: "api",
+                      type: 'api',
                       skipParse: true,
                     },
                     cb
@@ -163,4 +163,4 @@ function processFullHistory(job, cb) {
   );
 }
 
-queue.runQueue("fhQueue", 1, processFullHistory);
+queue.runQueue('fhQueue', 1, processFullHistory);

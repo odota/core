@@ -1,9 +1,9 @@
 /**
  * Worker to auto-queue full history requests for random players
  * */
-const async = require("async");
-const db = require("../store/db");
-const redis = require("../store/redis");
+const async = require('async');
+const db = require('../store/db');
+const redis = require('../store/redis');
 
 function getSummaries(cb) {
   db.raw(
@@ -17,7 +17,7 @@ function getSummaries(cb) {
       result.rows,
       (row, cb) => {
         return redis.rpush(
-          "fhQueue",
+          'fhQueue',
           JSON.stringify({
             account_id: row.account_id,
             short_history: true,

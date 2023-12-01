@@ -3,27 +3,27 @@
 /**
  * Main test script to run tests
  * */
-process.env.NODE_ENV = "test";
-const async = require("async");
-const nock = require("nock");
-const assert = require("assert");
-const supertest = require("supertest");
-const stripeLib = require("stripe");
-const pg = require("pg");
-const fs = require("fs");
-const cassandraDriver = require("cassandra-driver");
-const swaggerParser = require("@apidevtools/swagger-parser");
-const config = require("../config");
-const redis = require("../store/redis");
+process.env.NODE_ENV = 'test';
+const async = require('async');
+const nock = require('nock');
+const assert = require('assert');
+const supertest = require('supertest');
+const stripeLib = require('stripe');
+const pg = require('pg');
+const fs = require('fs');
+const cassandraDriver = require('cassandra-driver');
+const swaggerParser = require('@apidevtools/swagger-parser');
+const config = require('../config');
+const redis = require('../store/redis');
 // const utility = require('../util/utility');
-const detailsApi = require("./data/details_api.json");
-const summariesApi = require("./data/summaries_api.json");
-const historyApi = require("./data/history_api.json");
-const heroesApi = require("./data/heroes_api.json");
-const leaguesApi = require("./data/leagues_api.json");
-const retrieverPlayer = require("./data/retriever_player.json");
-const detailsApiPro = require("./data/details_api_pro.json");
-const spec = require("../routes/spec");
+const detailsApi = require('./data/details_api.json');
+const summariesApi = require('./data/summaries_api.json');
+const historyApi = require('./data/history_api.json');
+const heroesApi = require('./data/heroes_api.json');
+const leaguesApi = require('./data/leagues_api.json');
+const retrieverPlayer = require('./data/retriever_player.json');
+const detailsApiPro = require('./data/details_api_pro.json');
+const spec = require('../routes/spec');
 
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = config.INIT_CASSANDRA_HOST;
@@ -35,35 +35,35 @@ let app;
 let queries;
 let buildMatch;
 // fake api responses
-nock("http://api.steampowered.com")
+nock('http://api.steampowered.com')
   // fake 500 error
-  .get("/IDOTA2Match_570/GetMatchDetails/V001/")
+  .get('/IDOTA2Match_570/GetMatchDetails/V001/')
   .query(true)
   .reply(500, {})
   // fake match details
-  .get("/IDOTA2Match_570/GetMatchDetails/V001/")
+  .get('/IDOTA2Match_570/GetMatchDetails/V001/')
   .query(true)
   .times(10)
   .reply(200, detailsApi)
   // fake player summaries
-  .get("/ISteamUser/GetPlayerSummaries/v0002/")
+  .get('/ISteamUser/GetPlayerSummaries/v0002/')
   .query(true)
   .reply(200, summariesApi)
   // fake full history
-  .get("/IDOTA2Match_570/GetMatchHistory/V001/")
+  .get('/IDOTA2Match_570/GetMatchHistory/V001/')
   .query(true)
   .reply(200, historyApi)
   // fake heroes list
-  .get("/IEconDOTA2_570/GetHeroes/v0001/")
+  .get('/IEconDOTA2_570/GetHeroes/v0001/')
   .query(true)
   .reply(200, heroesApi)
   // fake leagues
-  .get("/IDOTA2Match_570/GetLeagueListing/v0001/")
+  .get('/IDOTA2Match_570/GetLeagueListing/v0001/')
   .query(true)
   .reply(200, leaguesApi);
 // fake mmr response
 nock(`http://${config.RETRIEVER_HOST}`)
-  .get("/?account_id=88367253")
+  .get('/?account_id=88367253')
   .reply(200, retrieverPlayer);
 before(function setup(done) {
   this.timeout(60000);
@@ -80,12 +80,12 @@ before(function setup(done) {
           return async.series(
             [
               function drop(cb) {
-                console.log("drop postgres test database");
-                client.query("DROP DATABASE IF EXISTS yasp_test", cb);
+                console.log('drop postgres test database');
+                client.query('DROP DATABASE IF EXISTS yasp_test', cb);
               },
               function create(cb) {
-                console.log("create postgres test database");
-                client.query("CREATE DATABASE yasp_test", cb);
+                console.log('create postgres test database');
+                client.query('CREATE DATABASE yasp_test', cb);
               },
               function tables(cb) {
                 const pool2 = new pg.Pool({
@@ -95,17 +95,17 @@ before(function setup(done) {
                   if (err) {
                     return cb(err);
                   }
-                  console.log("create postgres test tables");
+                  console.log('create postgres test tables');
                   const query = fs.readFileSync(
-                    "./sql/create_tables.sql",
-                    "utf8"
+                    './sql/create_tables.sql',
+                    'utf8'
                   );
                   return client2.query(query, cb);
                 });
               },
               function setup(cb) {
-                db = require("../store/db");
-                console.log("insert postgres test data");
+                db = require('../store/db');
+                console.log('insert postgres test data');
                 // populate the DB with this leagueid so we insert a pro match
                 db.raw(
                   "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')"
@@ -119,28 +119,28 @@ before(function setup(done) {
       function initCassandra(cb) {
         const client = new cassandraDriver.Client({
           contactPoints: [initCassandraHost],
-          localDataCenter: "datacenter1",
+          localDataCenter: 'datacenter1',
         });
         async.series(
           [
             function drop(cb) {
-              console.log("drop cassandra test keyspace");
-              client.execute("DROP KEYSPACE IF EXISTS yasp_test", cb);
+              console.log('drop cassandra test keyspace');
+              client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
             },
             function create(cb) {
-              console.log("create cassandra test keyspace");
+              console.log('create cassandra test keyspace');
               client.execute(
                 "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
                 cb
               );
             },
             function tables(cb) {
-              cassandra = require("../store/cassandra");
-              console.log("create cassandra test tables");
+              cassandra = require('../store/cassandra');
+              console.log('create cassandra test tables');
               async.eachSeries(
                 fs
-                  .readFileSync("./sql/create_tables.cql", "utf8")
-                  .split(";")
+                  .readFileSync('./sql/create_tables.cql', 'utf8')
+                  .split(';')
                   .filter((cql) => cql.length > 1),
                 (cql, cb) => {
                   cassandra.execute(cql, cb);
@@ -153,17 +153,17 @@ before(function setup(done) {
         );
       },
       function initElasticsearch(cb) {
-        console.log("Create Elasticsearch Mapping");
+        console.log('Create Elasticsearch Mapping');
         const mapping = JSON.parse(
-          fs.readFileSync("./elasticsearch/index.json")
+          fs.readFileSync('./elasticsearch/index.json')
         );
-        const { es } = require("../store/elasticsearch");
+        const { es } = require('../store/elasticsearch');
         async.series(
           [
             (cb) => {
               es.indices.exists(
                 {
-                  index: "dota-test", // Check if index already exists, in which case, delete it
+                  index: 'dota-test', // Check if index already exists, in which case, delete it
                 },
                 (err, exists) => {
                   if (err) {
@@ -172,7 +172,7 @@ before(function setup(done) {
                   } else if (exists.body) {
                     es.indices.delete(
                       {
-                        index: "dota-test",
+                        index: 'dota-test',
                       },
                       (err) => {
                         if (err) {
@@ -190,7 +190,7 @@ before(function setup(done) {
             (cb) => {
               es.indices.create(
                 {
-                  index: "dota-test",
+                  index: 'dota-test',
                 },
                 cb
               );
@@ -198,7 +198,7 @@ before(function setup(done) {
             (cb) => {
               es.indices.close(
                 {
-                  index: "dota-test",
+                  index: 'dota-test',
                 },
                 cb
               );
@@ -206,7 +206,7 @@ before(function setup(done) {
             (cb) => {
               es.indices.putSettings(
                 {
-                  index: "dota-test",
+                  index: 'dota-test',
                   body: mapping.settings,
                 },
                 cb
@@ -215,8 +215,8 @@ before(function setup(done) {
             (cb) => {
               es.indices.putMapping(
                 {
-                  index: "dota-test",
-                  type: "player",
+                  index: 'dota-test',
+                  type: 'player',
                   body: mapping.mappings.player,
                 },
                 cb
@@ -225,7 +225,7 @@ before(function setup(done) {
             (cb) => {
               es.indices.open(
                 {
-                  index: "dota-test",
+                  index: 'dota-test',
                 },
                 cb
               );
@@ -235,31 +235,31 @@ before(function setup(done) {
         );
       },
       function wipeRedis(cb) {
-        console.log("wiping redis");
+        console.log('wiping redis');
         redis.flushdb((err, success) => {
           console.log(err, success);
           cb(err);
         });
       },
       function startServices(cb) {
-        console.log("starting services");
-        app = require("../svc/web");
-        queries = require("../store/queries");
-        buildMatch = require("../store/buildMatch");
+        console.log('starting services');
+        app = require('../svc/web');
+        queries = require('../store/queries');
+        buildMatch = require('../store/buildMatch');
 
-        require("../svc/parser");
+        require('../svc/parser');
         cb();
       },
       function loadMatches(cb) {
-        console.log("loading matches");
+        console.log('loading matches');
         async.mapSeries(
           [detailsApi.result, detailsApiPro.result, detailsApiPro.result],
           (m, cb) => {
             queries.insertMatch(
               m,
               {
-                type: "api",
-                origin: "scanner",
+                type: 'api',
+                origin: 'scanner',
                 skipParse: true,
               },
               cb
@@ -269,7 +269,7 @@ before(function setup(done) {
         );
       },
       function loadPlayers(cb) {
-        console.log("loading players");
+        console.log('loading players');
         async.mapSeries(
           summariesApi.response.players,
           (p, cb) => {
@@ -282,9 +282,9 @@ before(function setup(done) {
     done
   );
 });
-describe("swagger schema", function testSwaggerSchema() {
+describe('swagger schema', function testSwaggerSchema() {
   this.timeout(2000);
-  it("should be valid", (cb) => {
+  it('should be valid', (cb) => {
     const validOpts = {
       validate: {
         schema: true,
@@ -306,15 +306,15 @@ describe("swagger schema", function testSwaggerSchema() {
     );
   });
 });
-describe("replay parse", function testReplayParse() {
+describe('replay parse', function testReplayParse() {
   this.timeout(120000);
   const tests = {
-    "1781962623_1.dem": detailsApi.result,
+    '1781962623_1.dem': detailsApi.result,
   };
   Object.keys(tests).forEach((key) => {
     const match = tests[key];
     nock(`http://${config.RETRIEVER_HOST}`)
-      .get("/")
+      .get('/')
       .query(true)
       .reply(200, {
         match: {
@@ -331,7 +331,7 @@ describe("replay parse", function testReplayParse() {
         match,
         {
           cassandra,
-          type: "api",
+          type: 'api',
           forceParse: true,
           attempts: 1,
         },
@@ -355,10 +355,10 @@ describe("replay parse", function testReplayParse() {
     });
   });
 });
-describe("teamRanking", () => {
-  it("should have team rankings", (cb) => {
-    db.select(["team_id", "rating", "wins", "losses"])
-      .from("team_rating")
+describe('teamRanking', () => {
+  it('should have team rankings', (cb) => {
+    db.select(['team_id', 'rating', 'wins', 'losses'])
+      .from('team_rating')
       .asCallback((err, rows) => {
         // We inserted the pro match twice so expect to update the ratings twice
         const loser = rows.find((row) => row.team_id === 4251435);
@@ -372,11 +372,11 @@ describe("teamRanking", () => {
   });
 });
 // TODO test against an unparsed match to catch exceptions caused by code expecting parsed data
-describe("api", () => {
-  it("should get API spec", function testAPISpec(cb) {
+describe('api', () => {
+  it('should get API spec', function testAPISpec(cb) {
     this.timeout(5000);
     supertest(app)
-      .get("/api")
+      .get('/api')
       .end((err, res) => {
         if (err) {
           return cb(err);
@@ -391,14 +391,14 @@ describe("api", () => {
               .replace(/{team_id}/, 15)
               .replace(/{hero_id}/, 1)
               .replace(/{league_id}/, 1)
-              .replace(/{field}/, "kills")
-              .replace(/{resource}/, "heroes");
+              .replace(/{field}/, 'kills')
+              .replace(/{resource}/, 'heroes');
             async.eachSeries(
               Object.keys(spec.paths[path]),
               (verb, cb) => {
                 if (
-                  path.indexOf("/explorer") === 0 ||
-                  path.indexOf("/request") === 0
+                  path.indexOf('/explorer') === 0 ||
+                  path.indexOf('/request') === 0
                 ) {
                   return cb(err);
                 }
@@ -408,9 +408,9 @@ describe("api", () => {
                     if (err || res.statusCode !== 200) {
                       console.error(verb, replacedPath, res.body);
                     }
-                    if (replacedPath.startsWith("/admin")) {
+                    if (replacedPath.startsWith('/admin')) {
                       assert.equal(res.statusCode, 403);
-                    } else if (replacedPath.startsWith("/subscribeSuccess")) {
+                    } else if (replacedPath.startsWith('/subscribeSuccess')) {
                       assert.equal(res.statusCode, 400);
                     } else {
                       assert.equal(res.statusCode, 200);
@@ -426,9 +426,9 @@ describe("api", () => {
       });
   });
 });
-describe("api management", () => {
+describe('api management', () => {
   beforeEach(function getApiRecord(done) {
-    db.from("api_keys")
+    db.from('api_keys')
       .where({
         account_id: 1,
       })
@@ -442,9 +442,9 @@ describe("api management", () => {
       .catch((err) => done(err));
   });
 
-  it("should get 403 when not logged in.", (done) => {
+  it('should get 403 when not logged in.', (done) => {
     supertest(app)
-      .get("/keys")
+      .get('/keys')
       .then((res) => {
         assert.equal(res.statusCode, 403);
         return done();
@@ -452,9 +452,9 @@ describe("api management", () => {
       .catch((err) => done(err));
   });
 
-  it("should not get fields for GET", (done) => {
+  it('should not get fields for GET', (done) => {
     supertest(app)
-      .get("/keys?loggedin=1")
+      .get('/keys?loggedin=1')
       .then((res) => {
         assert.equal(res.statusCode, 200);
         assert.deepStrictEqual(res.body, {});
@@ -463,32 +463,32 @@ describe("api management", () => {
       .catch((err) => done(err));
   });
 
-  it("should create api key", function testCreatingApiKey(done) {
+  it('should create api key', function testCreatingApiKey(done) {
     this.timeout(5000);
     supertest(app)
-      .post("/keys?loggedin=1")
+      .post('/keys?loggedin=1')
       .send({
         token: {
-          id: "tok_visa",
-          email: "test@test.com",
+          id: 'tok_visa',
+          email: 'test@test.com',
         },
       })
       .then((res) => {
         assert.equal(res.statusCode, 200);
 
         supertest(app)
-          .get("/keys?loggedin=1")
+          .get('/keys?loggedin=1')
           .end((err, res) => {
             if (err) {
               done(err);
             } else {
               assert.equal(res.statusCode, 200);
-              assert.equal(res.body.customer.credit_brand, "Visa");
+              assert.equal(res.body.customer.credit_brand, 'Visa');
               assert.notEqual(res.body.customer.api_key, null);
               assert.equal(Array.isArray(res.body.openInvoices), true);
               assert.equal(Array.isArray(res.body.usage), true);
               redis.sismember(
-                "api_keys",
+                'api_keys',
                 res.body.customer.api_key,
                 (err, resp) => {
                   if (err) {
@@ -504,39 +504,39 @@ describe("api management", () => {
       .catch((err) => done(err));
   });
 
-  it("post should not change key", function testPostDoesNotChangeKey(done) {
+  it('post should not change key', function testPostDoesNotChangeKey(done) {
     this.timeout(5000);
     supertest(app)
-      .get("/keys?loggedin=1")
+      .get('/keys?loggedin=1')
       .then((res) => {
         assert.equal(res.statusCode, 200);
-        assert.equal(res.body.customer.credit_brand, "Visa");
+        assert.equal(res.body.customer.credit_brand, 'Visa');
 
         const previousCredit = res.body.customer.credit_brand;
 
         supertest(app)
-          .post("/keys?loggedin=1")
+          .post('/keys?loggedin=1')
           .send({
             token: {
-              id: "tok_discover",
-              email: "test@test.com",
+              id: 'tok_discover',
+              email: 'test@test.com',
             },
           })
           .then((res) => {
             assert.equal(res.statusCode, 200);
 
-            db.from("api_keys")
+            db.from('api_keys')
               .where({
                 account_id: 1,
               })
               .then((res2) => {
                 if (res2.length === 0) {
-                  throw Error("No API record found");
+                  throw Error('No API record found');
                 }
                 assert.equal(res2[0].customer_id, this.previousCustomer);
                 assert.equal(res2[0].subscription_id, this.previousSub);
                 supertest(app)
-                  .get("/keys?loggedin=1")
+                  .get('/keys?loggedin=1')
                   .end((err, res) => {
                     if (err) {
                       return done(err);
@@ -559,32 +559,32 @@ describe("api management", () => {
       .catch((err) => done(err));
   });
 
-  it("put should update payment but not change customer/sub", function testPutOnlyChangesBilling(done) {
+  it('put should update payment but not change customer/sub', function testPutOnlyChangesBilling(done) {
     this.timeout(5000);
     supertest(app)
-      .put("/keys?loggedin=1")
+      .put('/keys?loggedin=1')
       .send({
         token: {
-          id: "tok_mastercard",
-          email: "test@test.com",
+          id: 'tok_mastercard',
+          email: 'test@test.com',
         },
       })
       .then((res) => {
         assert.equal(res.statusCode, 200);
 
         supertest(app)
-          .get("/keys?loggedin=1")
+          .get('/keys?loggedin=1')
           .then((res) => {
             assert.equal(res.statusCode, 200);
-            assert.equal(res.body.customer.credit_brand, "MasterCard");
+            assert.equal(res.body.customer.credit_brand, 'MasterCard');
             assert.equal(res.body.customer.api_key, this.previousKey);
-            db.from("api_keys")
+            db.from('api_keys')
               .where({
                 account_id: 1,
               })
               .then((res2) => {
                 if (res.length === 0) {
-                  throw Error("No API record found");
+                  throw Error('No API record found');
                 }
                 assert.equal(res2[0].customer_id, this.previousCustomer);
                 assert.equal(res2[0].subscription_id, this.previousSub);
@@ -596,33 +596,33 @@ describe("api management", () => {
       })
       .catch((err) => done(err));
   });
-  it("delete should set is_deleted and remove from redis but not change other db fields", function testDeleteOnlyModifiesKey(done) {
+  it('delete should set is_deleted and remove from redis but not change other db fields', function testDeleteOnlyModifiesKey(done) {
     this.timeout(5000);
     assert.notEqual(this.previousKey, null);
     assert.equal(this.previousIsCanceled, undefined);
-    redis.sismember("api_keys", this.previousKey, (err, resp) => {
+    redis.sismember('api_keys', this.previousKey, (err, resp) => {
       if (err) {
         done(err);
       } else {
         assert.equal(resp, 1);
         supertest(app)
-          .delete("/keys?loggedin=1")
+          .delete('/keys?loggedin=1')
           .then((res) => {
             assert.equal(res.statusCode, 200);
 
-            db.from("api_keys")
+            db.from('api_keys')
               .where({
                 account_id: 1,
               })
               .then((res2) => {
                 if (res2.length === 0) {
-                  throw Error("No API record found");
+                  throw Error('No API record found');
                 }
                 assert.equal(res2[0].api_key, this.previousKey);
                 assert.equal(res2[0].customer_id, this.previousCustomer);
                 assert.equal(res2[0].subscription_id, this.previousSub);
                 assert.equal(res2[0].is_canceled, true);
-                redis.sismember("api_keys", this.previousKey, (err, resp) => {
+                redis.sismember('api_keys', this.previousKey, (err, resp) => {
                   if (err) {
                     return done(err);
                   }
@@ -637,39 +637,39 @@ describe("api management", () => {
     });
   });
 
-  it("should get new key with new sub but not change customer", function testGettingNewKey(done) {
+  it('should get new key with new sub but not change customer', function testGettingNewKey(done) {
     this.timeout(5000);
     supertest(app)
-      .post("/keys?loggedin=1")
+      .post('/keys?loggedin=1')
       .send({
         token: {
-          id: "tok_discover",
-          email: "test@test.com",
+          id: 'tok_discover',
+          email: 'test@test.com',
         },
       })
       .then((res) => {
         assert.equal(res.statusCode, 200);
 
-        db.from("api_keys")
+        db.from('api_keys')
           .where({
             account_id: 1,
             is_canceled: null,
           })
           .then((res2) => {
             if (res2.length === 0) {
-              throw Error("No API record found");
+              throw Error('No API record found');
             }
             assert.equal(res2[0].customer_id, this.previousCustomer);
             assert.notEqual(res2[0].subscription_id, this.previousSub);
             supertest(app)
-              .get("/keys?loggedin=1")
+              .get('/keys?loggedin=1')
               .end((err, res) => {
                 if (err) {
                   return done(err);
                 }
 
                 assert.equal(res.statusCode, 200);
-                assert.equal(res.body.customer.credit_brand, "Discover");
+                assert.equal(res.body.customer.credit_brand, 'Discover');
                 assert.notEqual(res.body.customer.api_key, null);
                 assert.notEqual(res.body.customer.api_key, this.previousKey);
                 return done();
@@ -679,18 +679,18 @@ describe("api management", () => {
       })
       .catch((err) => done(err));
   });
-  it("should fail to create key if open invoice", function openInvoice(done) {
+  it('should fail to create key if open invoice', function openInvoice(done) {
     this.timeout(5000);
     // delete the key first
     supertest(app)
-      .delete("/keys?loggedin=1")
+      .delete('/keys?loggedin=1')
       .then(async (res) => {
         assert.equal(res.statusCode, 200);
         const stripe = stripeLib(config.STRIPE_SECRET);
 
         await stripe.invoiceItems.create({
           customer: this.previousCustomer,
-          price: "price_1Lm1siCHN72mG1oKkk3Jh1JT", // test $123 one time
+          price: 'price_1Lm1siCHN72mG1oKkk3Jh1JT', // test $123 one time
         });
 
         const invoice = await stripe.invoices.create({
@@ -700,19 +700,19 @@ describe("api management", () => {
         await stripe.invoices.finalizeInvoice(invoice.id);
 
         supertest(app)
-          .post("/keys?loggedin=1")
+          .post('/keys?loggedin=1')
           .send({
             token: {
-              id: "tok_discover",
-              email: "test@test.com",
+              id: 'tok_discover',
+              email: 'test@test.com',
             },
           })
           .then((res) => {
             assert.equal(res.statusCode, 402);
-            assert.equal(res.body.error, "Open invoice");
+            assert.equal(res.body.error, 'Open invoice');
 
             supertest(app)
-              .get("/keys?loggedin=1")
+              .get('/keys?loggedin=1')
               .end((err, res) => {
                 if (err) {
                   return done(err);
@@ -722,7 +722,7 @@ describe("api management", () => {
                 assert.equal(res.body.customer, null);
                 assert.equal(res.body.openInvoices[0].id, invoice.id);
                 assert.equal(res.body.openInvoices[0].amountDue, 12300);
-                db.from("api_keys")
+                db.from('api_keys')
                   .where({
                     account_id: 1,
                     is_canceled: null,
@@ -737,15 +737,15 @@ describe("api management", () => {
       .catch((err) => done(err));
   });
 });
-describe("api limits", () => {
+describe('api limits', () => {
   before((done) => {
     config.ENABLE_API_LIMIT = true;
     config.API_FREE_LIMIT = 10;
     redis
       .multi()
-      .del("user_usage_count")
-      .del("usage_count")
-      .sadd("api_keys", "KEY")
+      .del('user_usage_count')
+      .del('usage_count')
+      .sadd('api_keys', 'KEY')
       .exec((err) => {
         if (err) {
           return done(err);
@@ -786,7 +786,7 @@ describe("api limits", () => {
       (i, cb) => {
         setTimeout(() => {
           supertest(app)
-            .get("/api/matches/1781962623")
+            .get('/api/matches/1781962623')
             .end((err, res) => {
               if (err) {
                 return cb(err);
@@ -802,7 +802,7 @@ describe("api limits", () => {
     );
   }
 
-  it("should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted", function testNoApiLimit(done) {
+  it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', function testNoApiLimit(done) {
     this.timeout(25000);
     testWhiteListedRoutes((err) => {
       if (err) {
@@ -813,29 +813,29 @@ describe("api limits", () => {
             done(err);
           } else {
             supertest(app)
-              .get("/api/matches/1781962623")
+              .get('/api/matches/1781962623')
               .end((err, res) => {
                 if (err) {
                   done(err);
                 }
                 assert.equal(res.statusCode, 429);
-                assert.equal(res.body.error, "monthly api limit exceeded");
+                assert.equal(res.body.error, 'monthly api limit exceeded');
 
-                testWhiteListedRoutes(done, "");
+                testWhiteListedRoutes(done, '');
               });
           }
         });
       }
-    }, "");
+    }, '');
   });
 
-  it("should be able to make more than 10 calls when using API KEY", function testAPIKeyLimitsAndCounting(done) {
+  it('should be able to make more than 10 calls when using API KEY', function testAPIKeyLimitsAndCounting(done) {
     this.timeout(25000);
     async.timesSeries(
       25,
       (i, cb) => {
         supertest(app)
-          .get("/api/matches/1781962623?api_key=KEY")
+          .get('/api/matches/1781962623?api_key=KEY')
           .end((err, res) => {
             if (err) {
               return cb(err);
@@ -853,7 +853,7 @@ describe("api limits", () => {
           } else {
             // Try a 429. Should not increment usage.
             supertest(app)
-              .get("/gen429")
+              .get('/gen429')
               .end((err, res) => {
                 if (err) {
                   done(err);
@@ -862,13 +862,13 @@ describe("api limits", () => {
 
                 // Try a 500. Should not increment usage.
                 supertest(app)
-                  .get("/gen500")
+                  .get('/gen500')
                   .end((err, res) => {
                     if (err) {
                       done(err);
                     }
                     assert.equal(res.statusCode, 500);
-                    redis.hgetall("usage_count", (err, res) => {
+                    redis.hgetall('usage_count', (err, res) => {
                       if (err) {
                         done(err);
                       } else {
@@ -881,7 +881,7 @@ describe("api limits", () => {
                   });
               });
           }
-        }, "?api_key=KEY");
+        }, '?api_key=KEY');
       }
     );
   });

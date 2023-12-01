@@ -1,13 +1,13 @@
-const su = require("../../../util/scenariosUtil");
+const su = require('../../../util/scenariosUtil');
 
 module.exports = {
   scenarioParam: {
-    name: "scenario",
-    in: "query",
+    name: 'scenario',
+    in: 'query',
     description: su.teamScenariosQueryParams.toString(),
     required: false,
     schema: {
-      type: "string",
+      type: 'string',
     },
   },
 };

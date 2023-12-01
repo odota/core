@@ -2,13 +2,13 @@
  * Issues a request to the retriever to get GC (Game Coordinator) data for a match
  * Calls back with an object containing the GC data
  * */
-const moment = require("moment");
-const { promisify } = require("util");
-const utility = require("./utility");
-const config = require("../config");
-const queries = require("../store/queries");
-const db = require("../store/db");
-const redis = require("../store/redis");
+const moment = require('moment');
+const { promisify } = require('util');
+const utility = require('./utility');
+const config = require('../config');
+const queries = require('../store/queries');
+const db = require('../store/db');
+const redis = require('../store/redis');
 
 const secret = config.RETRIEVER_SECRET;
 const { getData, redisCount } = utility;
@@ -33,14 +33,14 @@ async function getGcDataFromRetriever(match, cb) {
         // non-retryable error
         // redis.lpush('nonRetryable', JSON.stringify({ matchId: match.match_id, body }));
         // redis.ltrim('nonRetryable', 0, 10000);
-        return cb(new Error("invalid body or error"));
+        return cb(new Error('invalid body or error'));
       }
       // Count retriever calls
-      redisCount(redis, "retriever");
-      redis.zincrby("retrieverCounts", 1, "retriever");
+      redisCount(redis, 'retriever');
+      redis.zincrby('retrieverCounts', 1, 'retriever');
       redis.expireat(
-        "retrieverCounts",
-        moment().startOf("hour").add(1, "hour").format("X")
+        'retrieverCounts',
+        moment().startOf('hour').add(1, 'hour').format('X')
       );
       // TODO add discovered account_ids to database and fetch account data/rank medal
       try {
@@ -67,11 +67,11 @@ async function getGcDataFromRetriever(match, cb) {
         };
         // Put extra fields in matches/player_matches
         await promisify(insertMatch)(matchToInsert, {
-          type: "gcdata",
+          type: 'gcdata',
           skipParse: true,
         });
         // Persist GC data to database
-        await promisify(queries.upsert)(db, "match_gcdata", gcdata, {
+        await promisify(queries.upsert)(db, 'match_gcdata', gcdata, {
           match_id: match.match_id,
         });
         cb(null, gcdata);
@@ -85,17 +85,17 @@ async function getGcDataFromRetriever(match, cb) {
 module.exports = async function getGcData(match, cb) {
   const matchId = match.match_id;
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
-    return cb(new Error("invalid match_id"));
+    return cb(new Error('invalid match_id'));
   }
   // Check if we have it in DB already
   const saved = await db.raw(
-    "select match_id, cluster, replay_salt from match_gcdata where match_id = ?",
+    'select match_id, cluster, replay_salt from match_gcdata where match_id = ?',
     [match.match_id]
   );
   const gcdata = saved.rows[0];
   if (gcdata) {
-    console.log("found cached gcdata for %s", matchId);
-    redisCount(redis, "cached_gcdata");
+    console.log('found cached gcdata for %s', matchId);
+    redisCount(redis, 'cached_gcdata');
     return cb(null, gcdata);
   }
   getGcDataFromRetriever(match, cb);

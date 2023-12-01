@@ -2,30 +2,30 @@
  * Worker serving as main web application
  * Serves web/API requests
  * */
-const request = require("request");
-const compression = require("compression");
-const session = require("cookie-session");
-const moment = require("moment");
-const express = require("express");
+const request = require('request');
+const compression = require('compression');
+const session = require('cookie-session');
+const moment = require('moment');
+const express = require('express');
 // const requestIp = require('request-ip');
-const passport = require("passport");
-const SteamStrategy = require("passport-steam").Strategy;
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const stripeLib = require("stripe");
-const keys = require("../routes/keyManagement");
-const api = require("../routes/api");
-const queries = require("../store/queries");
-const db = require("../store/db");
-const redis = require("../store/redis");
-const utility = require("../util/utility");
-const config = require("../config");
+const passport = require('passport');
+const SteamStrategy = require('passport-steam').Strategy;
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const stripeLib = require('stripe');
+const keys = require('../routes/keyManagement');
+const api = require('../routes/api');
+const queries = require('../store/queries');
+const db = require('../store/db');
+const redis = require('../store/redis');
+const utility = require('../util/utility');
+const config = require('../config');
 
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { redisCount } = utility;
 
 const app = express();
-const apiKey = config.STEAM_API_KEY.split(",")[0];
+const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
 
 const sessOptions = {
@@ -35,18 +35,18 @@ const sessOptions = {
 };
 
 const whitelistedPaths = [
-  "/api", // Docs
-  "/api/metadata", // Login status
-  "/login",
-  "/logout",
-  "/return",
-  "/api/admin/apiMetrics", // Admin metrics
-  "/keys", // API Key management
+  '/api', // Docs
+  '/api/metadata', // Login status
+  '/login',
+  '/logout',
+  '/return',
+  '/api/admin/apiMetrics', // Admin metrics
+  '/keys', // API Key management
 ];
 
 const pathCosts = {
-  "/api/request": 30,
-  "/api/explorer": 5,
+  '/api/request': 30,
+  '/api/explorer': 5,
 };
 
 // PASSPORT config
@@ -61,7 +61,7 @@ passport.deserializeUser((accountId, done) => {
 passport.use(
   new SteamStrategy(
     {
-      providerURL: "https://steamcommunity.com/openid",
+      providerURL: 'https://steamcommunity.com/openid',
       returnURL: `${host}/return`,
       realm: host,
       apiKey,
@@ -81,20 +81,20 @@ passport.use(
 // Compression middleware
 app.use(compression());
 // Dota 2 images middleware (proxy to Dota 2 CDN to serve over https)
-app.use("/apps", (req, res) => {
+app.use('/apps', (req, res) => {
   request(`http://cdn.dota2.com/${req.originalUrl}`).pipe(res);
 });
 // Proxy to serve team logos over https
-app.use("/ugc", (req, res) => {
+app.use('/ugc', (req, res) => {
   request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
-    .on("response", (resp) => {
-      resp.headers["content-type"] = "image/png";
+    .on('response', (resp) => {
+      resp.headers['content-type'] = 'image/png';
     })
     .pipe(res);
 });
 // Health check
-app.route("/healthz").get((req, res) => {
-  res.send("ok");
+app.route('/healthz').get((req, res) => {
+  res.send('ok');
 });
 // Session/Passport middleware
 app.use(session(sessOptions));
@@ -104,7 +104,7 @@ app.use(passport.session());
 // app.use(requestIp.mw());
 
 // Dummy User ID for testing
-if (config.NODE_ENV === "test") {
+if (config.NODE_ENV === 'test') {
   app.use((req, res, cb) => {
     if (req.query.loggedin) {
       req.user = {
@@ -115,9 +115,9 @@ if (config.NODE_ENV === "test") {
     cb();
   });
 
-  app.route("/gen429").get((req, res) => res.status(429).end());
+  app.route('/gen429').get((req, res) => res.status(429).end());
 
-  app.route("/gen500").get((req, res) => res.status(500).end());
+  app.route('/gen500').get((req, res) => res.status(500).end());
 }
 
 // Rate limiter and API key middleware
@@ -125,10 +125,10 @@ app.use((req, res, cb) => {
   // console.log('[REQ]', req.originalUrl);
   const apiKey =
     (req.headers.authorization &&
-      req.headers.authorization.replace("Bearer ", "")) ||
+      req.headers.authorization.replace('Bearer ', '')) ||
     req.query.api_key;
   if (config.ENABLE_API_LIMIT && apiKey) {
-    redis.sismember("api_keys", apiKey, (err, resp) => {
+    redis.sismember('api_keys', apiKey, (err, resp) => {
       if (err) {
         cb(err);
       } else {
@@ -141,16 +141,16 @@ app.use((req, res, cb) => {
     cb();
   }
 });
-app.set("trust proxy", true);
+app.set('trust proxy', true);
 app.use((req, res, cb) => {
-  const {ip} = req;
+  const { ip } = req;
   res.locals.ip = ip;
 
-  let rateLimit = "";
+  let rateLimit = '';
   if (res.locals.isAPIRequest) {
     const requestAPIKey =
       (req.headers.authorization &&
-        req.headers.authorization.replace("Bearer ", "")) ||
+        req.headers.authorization.replace('Bearer ', '')) ||
       req.query.api_key;
     res.locals.usageIdentifier = requestAPIKey;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
@@ -162,11 +162,11 @@ app.use((req, res, cb) => {
   }
   const multi = redis
     .multi()
-    .hincrby("rate_limit", res.locals.usageIdentifier, pathCosts[req.path] || 1)
-    .expireat("rate_limit", utility.getStartOfBlockMinutes(1, 1));
+    .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
+    .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
 
   if (!res.locals.isAPIRequest) {
-    multi.zscore("user_usage_count", res.locals.usageIdentifier); // not API request so check previous usage.
+    multi.zscore('user_usage_count', res.locals.usageIdentifier); // not API request so check previous usage.
   }
 
   multi.exec((err, resp) => {
@@ -176,21 +176,21 @@ app.use((req, res, cb) => {
     }
 
     res.set({
-      "X-Rate-Limit-Remaining-Minute": rateLimit - resp[0],
-      "X-IP-Address": ip,
+      'X-Rate-Limit-Remaining-Minute': rateLimit - resp[0],
+      'X-IP-Address': ip,
     });
     if (!res.locals.isAPIRequest) {
       res.set(
-        "X-Rate-Limit-Remaining-Month",
+        'X-Rate-Limit-Remaining-Month',
         config.API_FREE_LIMIT - Number(resp[2])
       );
     }
-    if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
-      console.log("rate limit increment", resp);
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      console.log('rate limit increment', resp);
     }
-    if (resp[0] > rateLimit && config.NODE_ENV !== "test") {
+    if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
       return res.status(429).json({
-        error: "rate limit exceeded",
+        error: 'rate limit exceeded',
       });
     }
     if (
@@ -200,7 +200,7 @@ app.use((req, res, cb) => {
       Number(resp[2]) >= config.API_FREE_LIMIT
     ) {
       return res.status(429).json({
-        error: "monthly api limit exceeded",
+        error: 'monthly api limit exceeded',
       });
     }
 
@@ -210,11 +210,11 @@ app.use((req, res, cb) => {
 // Telemetry middleware
 app.use((req, res, cb) => {
   const timeStart = new Date();
-  res.once("finish", () => {
+  res.once('finish', () => {
     const timeEnd = new Date();
     const elapsed = timeEnd - timeStart;
-    if (elapsed > 2000 || config.NODE_ENV === "development") {
-      console.log("[SLOWLOG] %s, %s", req.originalUrl, elapsed);
+    if (elapsed > 2000 || config.NODE_ENV === 'development') {
+      console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
 
     // When called from a middleware, the mount point is not included in req.path. See Express docs.
@@ -222,59 +222,59 @@ app.use((req, res, cb) => {
       res.statusCode !== 500 &&
       res.statusCode !== 429 &&
       !whitelistedPaths.includes(
-        req.baseUrl + (req.path === "/" ? "" : req.path)
+        req.baseUrl + (req.path === '/' ? '' : req.path)
       ) &&
       elapsed < 10000
     ) {
       const multi = redis.multi();
       if (res.locals.isAPIRequest) {
         multi
-          .hincrby("usage_count", res.locals.usageIdentifier, 1)
-          .expireat("usage_count", utility.getEndOfMonth());
+          .hincrby('usage_count', res.locals.usageIdentifier, 1)
+          .expireat('usage_count', utility.getEndOfMonth());
       } else {
         multi
-          .zincrby("user_usage_count", 1, res.locals.usageIdentifier)
-          .expireat("user_usage_count", utility.getEndOfMonth());
+          .zincrby('user_usage_count', 1, res.locals.usageIdentifier)
+          .expireat('user_usage_count', utility.getEndOfMonth());
       }
 
       multi.exec((err, res) => {
-        if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
-          console.log("usage count increment", err, res);
+        if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+          console.log('usage count increment', err, res);
         }
       });
     }
 
-    if (req.originalUrl.indexOf("/api") === 0) {
-      redisCount(redis, "api_hits");
-      if (req.headers.origin === "https://www.opendota.com") {
-        redisCount(redis, "api_hits_ui");
+    if (req.originalUrl.indexOf('/api') === 0) {
+      redisCount(redis, 'api_hits');
+      if (req.headers.origin === 'https://www.opendota.com') {
+        redisCount(redis, 'api_hits_ui');
       }
-      redis.zincrby("api_paths", 1, req.path.split("/")[1] || "");
+      redis.zincrby('api_paths', 1, req.path.split('/')[1] || '');
       redis.expireat(
-        "api_paths",
-        moment().startOf("hour").add(1, "hour").format("X")
+        'api_paths',
+        moment().startOf('hour').add(1, 'hour').format('X')
       );
     }
     if (req.user && req.user.account_id) {
-      redis.zadd("visitors", moment().format("X"), req.user.account_id);
+      redis.zadd('visitors', moment().format('X'), req.user.account_id);
     }
-    redis.lpush("load_times", elapsed);
-    redis.ltrim("load_times", 0, 9999);
+    redis.lpush('load_times', elapsed);
+    redis.ltrim('load_times', 0, 9999);
   });
   cb();
 });
 app.use((req, res, next) => {
   // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
   if (
-    req.method !== "GET" &&
-    req.header("Origin") &&
-    req.header("Origin") !== config.UI_HOST
+    req.method !== 'GET' &&
+    req.header('Origin') &&
+    req.header('Origin') !== config.UI_HOST
   ) {
     // Make an exception for replay parse request
-    if (req.method === "POST" && req.path.startsWith("/api/request/")) {
+    if (req.method === 'POST' && req.path.startsWith('/api/request/')) {
       return next();
     }
-    return res.status(403).json({ error: "Invalid Origin header" });
+    return res.status(403).json({ error: 'Invalid Origin header' });
   }
   return next();
 });
@@ -286,36 +286,36 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-app.route("/login").get(
-  passport.authenticate("steam", {
-    failureRedirect: "/api",
+app.route('/login').get(
+  passport.authenticate('steam', {
+    failureRedirect: '/api',
   })
 );
-app.route("/return").get(
-  passport.authenticate("steam", {
-    failureRedirect: "/api",
+app.route('/return').get(
+  passport.authenticate('steam', {
+    failureRedirect: '/api',
   }),
   (req, res) => {
     if (config.UI_HOST) {
       return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
     }
-    return res.redirect("/api");
+    return res.redirect('/api');
   }
 );
-app.route("/logout").get((req, res) => {
+app.route('/logout').get((req, res) => {
   req.logout();
   req.session = null;
   if (config.UI_HOST) {
     return res.redirect(config.UI_HOST);
   }
-  return res.redirect("/api");
+  return res.redirect('/api');
 });
-app.route("/subscribeSuccess").get(async (req, res) => {
+app.route('/subscribeSuccess').get(async (req, res) => {
   if (!req.query.session_id) {
-    return res.status(400).json({ error: "no session ID" });
+    return res.status(400).json({ error: 'no session ID' });
   }
   if (!req.user?.account_id) {
-    return res.status(400).json({ error: "no account ID" });
+    return res.status(400).json({ error: 'no account ID' });
   }
   // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
   const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
@@ -323,15 +323,15 @@ app.route("/subscribeSuccess").get(async (req, res) => {
   const accountId = req.user.account_id;
   // associate the customer id with the steam account ID (req.user.account_id)
   await db.raw(
-    "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status",
-    [accountId, customer.id, "active"]
+    'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
+    [accountId, customer.id, 'active']
   );
   // Send the user back to the subscribe page
-  return res.redirect(`${config.UI_HOST  }/subscribe`);
+  return res.redirect(`${config.UI_HOST}/subscribe`);
 });
-app.route("/manageSub").post(async (req, res) => {
+app.route('/manageSub').post(async (req, res) => {
   if (!req.user?.account_id) {
-    return res.status(400).json({ error: "no account ID" });
+    return res.status(400).json({ error: 'no account ID' });
   }
   const result = await db.raw(
     "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
@@ -340,7 +340,7 @@ app.route("/manageSub").post(async (req, res) => {
   );
   const customer = result?.rows?.[0];
   if (!customer) {
-    return res.status(400).json({ error: "customer not found" });
+    return res.status(400).json({ error: 'customer not found' });
   }
   const session = await stripe.billingPortal.sessions.create({
     customer: customer.customer_id,
@@ -348,53 +348,53 @@ app.route("/manageSub").post(async (req, res) => {
   });
   return res.json(session);
 });
-app.use("/api", api);
+app.use('/api', api);
 // CORS Preflight for API keys
 // NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
-app.options("/keys", cors());
-app.use("/keys", keys);
+app.options('/keys', cors());
+app.use('/keys', keys);
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
-    error: "Not Found",
+    error: 'Not Found',
   })
 );
 // 500 route
 app.use((err, req, res, cb) => {
-  console.log("[ERR]", req.originalUrl);
-  redisCount(redis, "500_error");
-  if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
+  console.log('[ERR]', req.originalUrl);
+  redisCount(redis, '500_error');
+  if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
     // default express handler
     return cb(err);
   }
   console.error(err, err.stacktrace);
   return res.status(500).json({
-    error: "Internal Server Error",
+    error: 'Internal Server Error',
   });
 });
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
-  console.log("[WEB] listening on %s", port);
+  console.log('[WEB] listening on %s', port);
 });
 /**
  * Wait for connections to end, then shut down
  * */
 function gracefulShutdown() {
-  console.log("Received kill signal, shutting down gracefully.");
+  console.log('Received kill signal, shutting down gracefully.');
   server.close(() => {
-    console.log("Closed out remaining connections.");
+    console.log('Closed out remaining connections.');
     process.exit();
   });
   // if after
   setTimeout(() => {
     console.error(
-      "Could not close connections in time, forcefully shutting down"
+      'Could not close connections in time, forcefully shutting down'
     );
     process.exit();
   }, 10 * 1000);
 }
 // listen for TERM signal .e.g. kill
-process.once("SIGTERM", gracefulShutdown);
+process.once('SIGTERM', gracefulShutdown);
 // listen for INT signal e.g. Ctrl-C
-process.once("SIGINT", gracefulShutdown);
+process.once('SIGINT', gracefulShutdown);
 module.exports = app;

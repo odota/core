@@ -11,7 +11,7 @@ function processMetadata(entries) {
       // check if hero has been assigned to entity
       if (e.hero_id) {
         // grab the end of the name, lowercase it
-        const ending = e.unit.slice("CDOTA_Unit_Hero_".length);
+        const ending = e.unit.slice('CDOTA_Unit_Hero_'.length);
         // the combat log name could involve replacing camelCase with _ or not!
         // double map it so we can look up both cases
         const combatLogName = `npc_dota_hero_${ending.toLowerCase()}`;

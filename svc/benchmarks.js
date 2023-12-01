@@ -1,9 +1,9 @@
-const queue = require("../store/queue");
-const benchmarksUtil = require("../util/benchmarksUtil");
-const buildMatch = require("../store/buildMatch");
-const utility = require("../util/utility");
-const config = require("../config");
-const redis = require("../store/redis");
+const queue = require('../store/queue');
+const benchmarksUtil = require('../util/benchmarksUtil');
+const buildMatch = require('../store/buildMatch');
+const utility = require('../util/utility');
+const config = require('../config');
+const redis = require('../store/redis');
 
 const { benchmarks } = benchmarksUtil;
 
@@ -23,14 +23,14 @@ async function doBenchmarks(matchID, cb) {
               !Number.isNaN(Number(metric))
             ) {
               const rkey = [
-                "benchmarks",
+                'benchmarks',
                 utility.getStartOfBlockMinutes(
                   config.BENCHMARK_RETENTION_MINUTES,
                   0
                 ),
                 key,
                 p.hero_id,
-              ].join(":");
+              ].join(':');
               redis.zadd(rkey, metric, match.match_id);
               // expire at time two epochs later (after prev/current cycle)
               const expiretime = utility.getStartOfBlockMinutes(
@@ -50,4 +50,4 @@ async function doBenchmarks(matchID, cb) {
   }
 }
 
-queue.runQueue("parsedBenchmarksQueue", 1, doBenchmarks);
+queue.runQueue('parsedBenchmarksQueue', 1, doBenchmarks);

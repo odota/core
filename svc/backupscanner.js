@@ -1,13 +1,13 @@
-const async = require("async");
-const utility = require("../util/utility");
-const redis = require("../store/redis");
-const queries = require("../store/queries");
-const config = require("../config");
+const async = require('async');
+const utility = require('../util/utility');
+const redis = require('../store/redis');
+const queries = require('../store/queries');
+const config = require('../config');
 
 const { generateJob, getData } = utility;
 const { insertMatch } = queries;
-const apiKeys = config.STEAM_API_KEY.split(",");
-const apiHosts = config.STEAM_API_HOST.split(",");
+const apiKeys = config.STEAM_API_KEY.split(',');
+const apiHosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);
 const delay = 1000;
 
@@ -20,7 +20,7 @@ function processMatch(matchId, cb) {
     if (res) {
       return cb();
     }
-    const job = generateJob("api_details", {
+    const job = generateJob('api_details', {
       match_id: matchId,
     });
     const { url } = job;
@@ -40,8 +40,8 @@ function processMatch(matchId, cb) {
         return insertMatch(
           match,
           {
-            type: "api",
-            origin: "scanner",
+            type: 'api',
+            origin: 'scanner',
             skipCounts: false,
           },
           (err) => {
@@ -63,7 +63,7 @@ function processMatch(matchId, cb) {
 }
 
 function processPlayer(accountId, cb) {
-  const ajob = generateJob("api_history", {
+  const ajob = generateJob('api_history', {
     account_id: accountId,
   });
   getData(
@@ -79,7 +79,7 @@ function processPlayer(accountId, cb) {
         // Skip this player on this iteration
         return cb();
       }
-      return redis.get("match_seq_num", (err, res) => {
+      return redis.get('match_seq_num', (err, res) => {
         if (err) {
           return cb(err);
         }
@@ -97,9 +97,9 @@ function start(err) {
   if (err) {
     throw err;
   }
-  console.log("starting backupscanner loop");
+  console.log('starting backupscanner loop');
   setTimeout(() => {
-    redis.zrange("tracked", 0, -1, (err, ids) => {
+    redis.zrange('tracked', 0, -1, (err, ids) => {
       if (err) {
         throw err;
       }

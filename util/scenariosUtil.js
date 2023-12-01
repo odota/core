@@ -1,5 +1,5 @@
-const constants = require("dotaconstants");
-const utility = require("./utility");
+const constants = require('dotaconstants');
+const utility = require('./utility');
 
 const { playerWon } = utility;
 
@@ -12,14 +12,14 @@ const dotaItems = Object.keys(constants.items)
 const timings = [7.5, 10, 12, 15, 20, 25, 30].map((x) => x * 60);
 const gameDurationBucket = [15, 30, 45, 60, 90].map((x) => x * 60);
 
-const negativeWords = ["ff", "report", "gg", "end", "noob"];
-const positiveWords = ["gl", "glhf", "hf", "good luck", "have fun"];
+const negativeWords = ['ff', 'report', 'gg', 'end', 'noob'];
+const positiveWords = ['gl', 'glhf', 'hf', 'good luck', 'have fun'];
 
 const teamScenariosQueryParams = [
-  "pos_chat_1min",
-  "neg_chat_1min",
-  "courier_kill",
-  "first_blood",
+  'pos_chat_1min',
+  'neg_chat_1min',
+  'courier_kill',
+  'first_blood',
 ];
 
 function buildTeamScenario(scenario, isRadiant, match) {
@@ -79,10 +79,10 @@ const scenarioChecks = {
     function firstBlood(match) {
       const condition =
         match.objectives &&
-        match.objectives.find((x) => x.type === "CHAT_MESSAGE_FIRSTBLOOD");
+        match.objectives.find((x) => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
       if (condition) {
         const isRadiant = condition.player_slot < 5;
-        return buildTeamScenario("first_blood", isRadiant, match);
+        return buildTeamScenario('first_blood', isRadiant, match);
       }
       return [];
     },
@@ -92,11 +92,11 @@ const scenarioChecks = {
       const condition =
         match.objectives &&
         match.objectives.find(
-          (x) => x.type === "CHAT_MESSAGE_COURIER_LOST" && x.time < 180
+          (x) => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180
         );
       if (condition) {
         const isRadiant = condition.team === 3;
-        return buildTeamScenario("courier_kill", isRadiant, match);
+        return buildTeamScenario('courier_kill', isRadiant, match);
       }
       return [];
     },
@@ -116,7 +116,7 @@ const scenarioChecks = {
           }
           if (
             negativeWords.some((word) =>
-              RegExp(`\\b${word}\\b`, "i").test(c.key)
+              RegExp(`\\b${word}\\b`, 'i').test(c.key)
             )
           ) {
             if (c.player_slot < 128) {
@@ -127,7 +127,7 @@ const scenarioChecks = {
           }
           if (
             positiveWords.some((word) =>
-              RegExp(`\\b${word}\\b`, "i").test(c.key)
+              RegExp(`\\b${word}\\b`, 'i').test(c.key)
             )
           ) {
             if (c.player_slot < 128) {
@@ -138,16 +138,16 @@ const scenarioChecks = {
           }
         }
         if (radiantNegative) {
-          rows.push(buildTeamScenario("neg_chat_1min", true, match)[0]);
+          rows.push(buildTeamScenario('neg_chat_1min', true, match)[0]);
         }
         if (direNegative) {
-          rows.push(buildTeamScenario("neg_chat_1min", false, match)[0]);
+          rows.push(buildTeamScenario('neg_chat_1min', false, match)[0]);
         }
         if (radiantPositive) {
-          rows.push(buildTeamScenario("pos_chat_1min", true, match)[0]);
+          rows.push(buildTeamScenario('pos_chat_1min', true, match)[0]);
         }
         if (direPositive) {
-          rows.push(buildTeamScenario("pos_chat_1min", false, match)[0]);
+          rows.push(buildTeamScenario('pos_chat_1min', false, match)[0]);
         }
       }
       return rows;
@@ -157,11 +157,11 @@ const scenarioChecks = {
 
 // list of match object properties that are required for scenario checks.
 const matchProperties = [
-  "players",
-  "objectives",
-  "duration",
-  "chat",
-  "radiant_win",
+  'players',
+  'objectives',
+  'duration',
+  'chat',
+  'radiant_win',
 ];
 
 const metadata = {

@@ -1,5 +1,5 @@
-const constants = require("dotaconstants");
-const utility = require("./utility");
+const constants = require('dotaconstants');
+const utility = require('./utility');
 
 const { max, min, isRadiant } = utility;
 const { ancients } = constants;
@@ -23,7 +23,7 @@ function countWords(playerMatch, playerFilter) {
       chatWords.push(message.key);
     }
   });
-  chatWords = chatWords.join(" ");
+  chatWords = chatWords.join(' ');
   const tokens = utility.tokenize(chatWords);
   // count how frequently each word occurs
   const counts = {};
@@ -103,38 +103,38 @@ function computeMatchData(pm) {
     pm.ancient_kills = 0;
     Object.keys(pm.killed).forEach((key) => {
       if (
-        key.indexOf("creep_goodguys") !== -1 ||
-        key.indexOf("creep_badguys") !== -1
+        key.indexOf('creep_goodguys') !== -1 ||
+        key.indexOf('creep_badguys') !== -1
       ) {
         pm.lane_kills += pm.killed[key];
       }
-      if (key.indexOf("observer") !== -1) {
+      if (key.indexOf('observer') !== -1) {
         pm.observer_kills += pm.killed[key];
       }
-      if (key.indexOf("sentry") !== -1) {
+      if (key.indexOf('sentry') !== -1) {
         pm.sentry_kills += pm.killed[key];
       }
-      if (key.indexOf("npc_dota_hero") === 0) {
+      if (key.indexOf('npc_dota_hero') === 0) {
         if (!selfHero || selfHero.name !== key) {
           pm.hero_kills += pm.killed[key];
         }
       }
-      if (key.indexOf("npc_dota_neutral") === 0) {
+      if (key.indexOf('npc_dota_neutral') === 0) {
         pm.neutral_kills += pm.killed[key];
       }
       if (key in ancients) {
         pm.ancient_kills += pm.killed[key];
       }
-      if (key.indexOf("_tower") !== -1) {
+      if (key.indexOf('_tower') !== -1) {
         pm.tower_kills += pm.killed[key];
       }
-      if (key.indexOf("courier") !== -1) {
+      if (key.indexOf('courier') !== -1) {
         pm.courier_kills += pm.killed[key];
       }
-      if (key.indexOf("roshan") !== -1) {
+      if (key.indexOf('roshan') !== -1) {
         pm.roshan_kills += pm.killed[key];
       }
-      if (key.indexOf("necronomicon") !== -1) {
+      if (key.indexOf('necronomicon') !== -1) {
         pm.necronomicon_kills += pm.killed[key];
       }
     });
@@ -171,8 +171,8 @@ function computeMatchData(pm) {
     pm.purchase_log = pm.purchase_log.filter(
       (purchase) =>
         !(
-          purchase.key.indexOf("recipe_") === 0 ||
-          purchase.key === "ward_dispenser"
+          purchase.key.indexOf('recipe_') === 0 ||
+          purchase.key === 'ward_dispenser'
         )
     );
     pm.purchase_time = {};
@@ -234,7 +234,7 @@ function computeMatchData(pm) {
     pm.stomp = pm.radiant_win === isRadiant(pm) ? stompVal : undefined;
   }
   if (pm.pings) {
-    pm.pings = pm.pings["0"];
+    pm.pings = pm.pings['0'];
   }
   if (pm.life_state) {
     pm.life_state_dead = (pm.life_state[1] || 0) + (pm.life_state[2] || 0);

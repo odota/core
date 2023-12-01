@@ -1,4 +1,4 @@
-const populate = require("./populate");
+const populate = require('./populate');
 
 /**
  * A processor to compute teamfights that occurred given an event stream
@@ -11,7 +11,7 @@ function processTeamfights(entries, meta) {
   const heroToSlot = meta.hero_to_slot;
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
-    if (e.type === "killed" && e.targethero && !e.targetillusion) {
+    if (e.type === 'killed' && e.targethero && !e.targetillusion) {
       // check teamfight state
       currTeamfight = currTeamfight || {
         start: e.time - teamfightCooldown,
@@ -35,7 +35,7 @@ function processTeamfights(entries, meta) {
       // update the last_death time of the current fight
       currTeamfight.last_death = e.time;
       currTeamfight.deaths += 1;
-    } else if (e.type === "interval") {
+    } else if (e.type === 'interval') {
       // store hero state at each interval for teamfight lookup
       if (!intervalState[e.time]) {
         intervalState[e.time] = {};
@@ -73,7 +73,7 @@ function processTeamfights(entries, meta) {
     for (let j = 0; j < teamfights.length; j += 1) {
       const tf = teamfights[j];
       if (e.time >= tf.start && e.time <= tf.end) {
-        if (e.type === "killed" && e.targethero && !e.targetillusion) {
+        if (e.type === 'killed' && e.targethero && !e.targetillusion) {
           populate(e, tf);
           // reverse the kill entry to find killed hero
           const r = {
@@ -87,19 +87,19 @@ function processTeamfights(entries, meta) {
             // get position from intervalstate
             const { x, y } = intervalState[r.time][r.slot];
             // fill in the copy
-            r.type = "deaths_pos";
+            r.type = 'deaths_pos';
             r.key = JSON.stringify([x, y]);
             r.posData = true;
             populate(r, tf);
             // increment death count for this hero
             tf.players[r.slot].deaths += 1;
           }
-        } else if (e.type === "buyback_log") {
+        } else if (e.type === 'buyback_log') {
           // bought back
           if (tf.players[e.slot]) {
             tf.players[e.slot].buybacks += 1;
           }
-        } else if (e.type === "damage") {
+        } else if (e.type === 'damage') {
           // sum damage
           // check if damage dealt to hero and not illusion
           if (e.targethero && !e.targetillusion) {
@@ -108,7 +108,7 @@ function processTeamfights(entries, meta) {
               tf.players[e.slot].damage += e.value;
             }
           }
-        } else if (e.type === "healing") {
+        } else if (e.type === 'healing') {
           // sum healing
           // check if healing dealt to hero and not illusion
           if (e.targethero && !e.targetillusion) {
@@ -117,16 +117,16 @@ function processTeamfights(entries, meta) {
               tf.players[e.slot].healing += e.value;
             }
           }
-        } else if (e.type === "gold_reasons" || e.type === "xp_reasons") {
+        } else if (e.type === 'gold_reasons' || e.type === 'xp_reasons') {
           // add gold/xp to delta
           if (tf.players[e.slot]) {
             const types = {
-              gold_reasons: "gold_delta",
-              xp_reasons: "xp_delta",
+              gold_reasons: 'gold_delta',
+              xp_reasons: 'xp_delta',
             };
             tf.players[e.slot][types[e.type]] += e.value;
           }
-        } else if (e.type === "ability_uses" || e.type === "item_uses") {
+        } else if (e.type === 'ability_uses' || e.type === 'item_uses') {
           // count skills, items
           populate(e, tf);
         }

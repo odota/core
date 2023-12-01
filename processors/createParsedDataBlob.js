@@ -1,12 +1,12 @@
-const { Console } = require("console");
-const readline = require("readline");
-const processAllPlayers = require("./processAllPlayers");
-const processTeamfights = require("./processTeamfights");
+const { Console } = require('console');
+const readline = require('readline');
+const processAllPlayers = require('./processAllPlayers');
+const processTeamfights = require('./processTeamfights');
 // const processUploadProps = require('../processors/processUploadProps');
-const processParsedData = require("./processParsedData");
-const processMetadata = require("./processMetadata");
-const processExpand = require("./processExpand");
-const processDraftTimings = require("./processDraftTimings");
+const processParsedData = require('./processParsedData');
+const processMetadata = require('./processMetadata');
+const processExpand = require('./processExpand');
+const processDraftTimings = require('./processDraftTimings');
 
 function getParseSchema() {
   return {
@@ -84,30 +84,30 @@ function getParseSchema() {
 function createParsedDataBlob(entries, matchId) {
   const logConsole = new Console(process.stderr);
 
-  logConsole.time("metadata");
+  logConsole.time('metadata');
   const meta = processMetadata(entries);
   meta.match_id = matchId;
-  logConsole.timeEnd("metadata");
+  logConsole.timeEnd('metadata');
 
-  logConsole.time("expand");
+  logConsole.time('expand');
   const expanded = processExpand(entries, meta);
-  logConsole.timeEnd("expand");
+  logConsole.timeEnd('expand');
 
-  logConsole.time("populate");
+  logConsole.time('populate');
   const parsedData = processParsedData(expanded, getParseSchema(), meta);
-  logConsole.timeEnd("populate");
+  logConsole.timeEnd('populate');
 
-  logConsole.time("teamfights");
+  logConsole.time('teamfights');
   parsedData.teamfights = processTeamfights(expanded, meta);
-  logConsole.timeEnd("teamfights");
+  logConsole.timeEnd('teamfights');
 
-  logConsole.time("draft");
+  logConsole.time('draft');
   parsedData.draft_timings = processDraftTimings(entries, meta);
-  logConsole.timeEnd("draft");
+  logConsole.timeEnd('draft');
 
-  logConsole.time("processAllPlayers");
+  logConsole.time('processAllPlayers');
   const ap = processAllPlayers(entries, meta);
-  logConsole.timeEnd("processAllPlayers");
+  logConsole.timeEnd('processAllPlayers');
 
   parsedData.radiant_gold_adv = ap.radiant_gold_adv;
   parsedData.radiant_xp_adv = ap.radiant_xp_adv;
@@ -121,14 +121,14 @@ const matchId = process.argv[2];
 const parseStream = readline.createInterface({
   input: process.stdin,
 });
-parseStream.on("line", (e) => {
+parseStream.on('line', (e) => {
   e = JSON.parse(e);
   entries.push(e);
-  if (e.type === "epilogue") {
+  if (e.type === 'epilogue') {
     complete = true;
   }
 });
-parseStream.on("close", () => {
+parseStream.on('close', () => {
   if (complete) {
     const parsedData = createParsedDataBlob(entries, matchId);
     process.stdout.write(JSON.stringify(parsedData), null, (err) => {

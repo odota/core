@@ -2,16 +2,16 @@
  * Provides utility functions.
  * All functions should have external dependencies (DB, etc.) passed as parameters
  * */
-const constants = require("dotaconstants");
-const request = require("request");
-const Long = require("long");
-const urllib = require("url");
-const uuidV4 = require("uuid/v4");
-const moment = require("moment");
-const crypto = require("crypto");
-const laneMappings = require("./laneMappings");
-const config = require("../config");
-const contributors = require("../CONTRIBUTORS");
+const constants = require('dotaconstants');
+const request = require('request');
+const Long = require('long');
+const urllib = require('url');
+const uuidV4 = require('uuid/v4');
+const moment = require('moment');
+const crypto = require('crypto');
+const laneMappings = require('./laneMappings');
+const config = require('../config');
+const contributors = require('../CONTRIBUTORS');
 
 /**
  * Tokenizes an input string.
@@ -22,10 +22,10 @@ const contributors = require("../CONTRIBUTORS");
  */
 function tokenize(input) {
   return input
-    .replace(/[^a-zа-я- ]+/gi, "")
-    .replace("/ {2,}/", " ")
+    .replace(/[^a-zа-я- ]+/gi, '')
+    .replace('/ {2,}/', ' ')
     .toLowerCase()
-    .split(" ");
+    .split(' ');
 }
 
 /*
@@ -34,7 +34,7 @@ function tokenize(input) {
  * Takes and returns a string
  */
 function convert64to32(id) {
-  return Long.fromString(id).subtract("76561197960265728").toString();
+  return Long.fromString(id).subtract('76561197960265728').toString();
 }
 
 /*
@@ -43,41 +43,41 @@ function convert64to32(id) {
  * Takes and returns a string
  */
 function convert32to64(id) {
-  return Long.fromString(id).add("76561197960265728").toString();
+  return Long.fromString(id).add('76561197960265728').toString();
 }
 
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
  * */
 function generateJob(type, payload) {
-  const apiUrl = "http://api.steampowered.com";
+  const apiUrl = 'http://api.steampowered.com';
   let apiKey;
   const opts = {
     api_details() {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
         title: [type, payload.match_id].join(),
-        type: "api",
+        type: 'api',
         payload,
       };
     },
     api_history() {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${
-          payload.account_id ? `&account_id=${payload.account_id}` : ""
+          payload.account_id ? `&account_id=${payload.account_id}` : ''
         }${
           payload.matches_requested
             ? `&matches_requested=${payload.matches_requested}`
-            : ""
-        }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ""}${
-          payload.leagueid ? `&league_id=${payload.leagueid}` : ""
+            : ''
+        }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${
+          payload.leagueid ? `&league_id=${payload.leagueid}` : ''
         }${
           payload.start_at_match_id
             ? `&start_at_match_id=${payload.start_at_match_id}`
-            : ""
+            : ''
         }`,
         title: [type, payload.account_id].join(),
-        type: "api",
+        type: 'api',
         payload,
       };
     },
@@ -87,7 +87,7 @@ function generateJob(type, payload) {
           .map((p) => convert32to64(String(p.account_id)))
           .join()}`,
         title: [type, payload.summaries_id].join(),
-        type: "api",
+        type: 'api',
         payload,
       };
     },
@@ -95,28 +95,28 @@ function generateJob(type, payload) {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}`,
         title: [type, payload.seq_num].join(),
-        type: "api",
+        type: 'api',
       };
     },
     api_heroes() {
       return {
         url: `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
         title: [type, payload.language].join(),
-        type: "api",
+        type: 'api',
         payload,
       };
     },
     api_items() {
       return {
         url: `${apiUrl}/IEconDOTA2_570/GetGameItems/v1?key=${apiKey}&language=${payload.language}`,
-        type: "api",
+        type: 'api',
       };
     },
     api_leagues() {
       return {
-        url: "http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001",
+        url: 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001',
         title: [type].join(),
-        type: "api",
+        type: 'api',
         payload,
       };
     },
@@ -124,15 +124,15 @@ function generateJob(type, payload) {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
         title: [type].join(),
-        type: "api",
+        type: 'api',
         payload,
       };
     },
     api_notable() {
       return {
-        url: "http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001",
+        url: 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001',
         title: [type].join(),
-        type: "api",
+        type: 'api',
         payload,
       };
     },
@@ -140,44 +140,44 @@ function generateJob(type, payload) {
       return {
         url: `${apiUrl}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${apiKey}&team_id=${payload.team_id}`,
         title: [type].join(),
-        type: "api",
+        type: 'api',
         payload,
       };
     },
     api_item_schema() {
       return {
         url: `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
-        type: "api",
+        type: 'api',
       };
     },
     api_item_icon() {
       return {
         url: `${apiUrl}/IEconDOTA2_570/GetItemIconPath/v1?key=${apiKey}&iconname=${payload.iconname}`,
-        type: "api",
+        type: 'api',
       };
     },
     api_top_live_game() {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=0`,
-        type: "api",
+        type: 'api',
       };
     },
     api_realtime_stats() {
       return {
         url: `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
-        type: "api",
+        type: 'api',
       };
     },
     api_team_info_by_team_id() {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
-        type: "api",
+        type: 'api',
       };
     },
     api_get_ugc_file_details() {
       return {
         url: `${apiUrl}/ISteamRemoteStorage/GetUGCFileDetails/v1/?key=${apiKey}&appid=570&ugcid=${payload.ugcid}`,
-        type: "api",
+        type: 'api',
       };
     },
     parse() {
@@ -191,7 +191,7 @@ function generateJob(type, payload) {
     steam_cdn_team_logos() {
       return {
         url: `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${payload.team_id}.png`,
-        type: "steam_cdn",
+        type: 'steam_cdn',
       };
     },
   };
@@ -208,7 +208,7 @@ function getData(url, cb) {
   let u;
   let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
-  if (typeof url === "object" && url && url.url) {
+  if (typeof url === 'object' && url && url.url) {
     // options object
     if (Array.isArray(url.url)) {
       // select a random element if array
@@ -222,18 +222,18 @@ function getData(url, cb) {
     u = url;
   }
   const parse = urllib.parse(u, true);
-  const steamApi = parse.host === "api.steampowered.com";
+  const steamApi = parse.host === 'api.steampowered.com';
   if (steamApi) {
     // choose an api key to use
-    const apiKeys = config.STEAM_API_KEY.split(",");
+    const apiKeys = config.STEAM_API_KEY.split(',');
     parse.query.key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
     parse.search = null;
     // choose a steam api host
-    const apiHosts = config.STEAM_API_HOST.split(",");
+    const apiHosts = config.STEAM_API_HOST.split(',');
     parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
   }
   const target = urllib.format(parse);
-  console.log("%s - getData: %s", new Date(), target);
+  console.log('%s - getData: %s', new Date(), target);
   return setTimeout(() => {
     request(
       {
@@ -260,11 +260,11 @@ function getData(url, cb) {
         ) {
           // invalid response
           if (url.noRetry) {
-            return cb(err || "invalid response", body);
+            return cb(err || 'invalid response', body);
           }
           console.error(
-            "[INVALID] status: %s, retrying: %s",
-            res ? res.statusCode : "",
+            '[INVALID] status: %s, retrying: %s',
+            res ? res.statusCode : '',
             target
           );
           // var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
@@ -278,11 +278,11 @@ function getData(url, cb) {
           if (
             body.result.status === 15 ||
             body.result.error ===
-              "Practice matches are not available via GetMatchDetails" ||
-            body.result.error === "No Match ID specified" ||
-            body.result.error === "Match ID not found" ||
+              'Practice matches are not available via GetMatchDetails' ||
+            body.result.error === 'No Match ID specified' ||
+            body.result.error === 'Match ID not found' ||
             (body.result.status === 2 &&
-              body.result.statusDetail === "Error retrieving match data." &&
+              body.result.statusDetail === 'Error retrieving match data.' &&
               Math.random() < 0.4)
           ) {
             // private match history or attempting to get practice match/invalid id, don't retry
@@ -292,10 +292,10 @@ function getData(url, cb) {
           if (body.result.error || body.result.status === 2) {
             // valid response, but invalid data, retry
             if (url.noRetry) {
-              return cb(err || "invalid data", body);
+              return cb(err || 'invalid data', body);
             }
             console.error(
-              "invalid data, retrying: %s, %s",
+              'invalid data, retrying: %s, %s',
               target,
               JSON.stringify(body)
             );
@@ -346,7 +346,7 @@ function mergeObjects(merge, val) {
       merge[attr] = val[attr];
     } else if (val[attr] && val[attr].constructor === Array) {
       merge[attr] = merge[attr].concat(val[attr]);
-    } else if (typeof val[attr] === "object") {
+    } else if (typeof val[attr] === 'object') {
       mergeObjects(merge[attr], val[attr]);
     } else {
       merge[attr] += Number(val[attr]);
@@ -470,7 +470,7 @@ function getStartOfBlockMinutes(size, offset) {
 }
 
 function getEndOfMonth() {
-  return moment().endOf("month").unix();
+  return moment().endOf('month').unix();
 }
 
 /**
@@ -539,7 +539,7 @@ function getPatchIndex(startTime) {
  * Constructs a replay url
  * */
 function buildReplayUrl(matchId, cluster, replaySalt) {
-  const suffix = config.NODE_ENV === "test" ? ".dem" : ".dem.bz2";
+  const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
   if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
   }
@@ -566,7 +566,7 @@ function expectedWin(rates) {
  * Converts a group of heroes to string
  * */
 function groupToString(g) {
-  return g.sort((a, b) => a - b).join(",");
+  return g.sort((a, b) => a - b).join(',');
 }
 
 /**
@@ -576,12 +576,12 @@ function matchupToString(t0, t1, t0win) {
   // create sorted strings of each team
   const rcg = groupToString(t0);
   const dcg = groupToString(t1);
-  let suffix = "0";
+  let suffix = '0';
   if (rcg <= dcg) {
-    suffix = t0win ? "0" : "1";
+    suffix = t0win ? '0' : '1';
     return `${rcg}:${dcg}:${suffix}`;
   }
-  suffix = t0win ? "1" : "0";
+  suffix = t0win ? '1' : '0';
   return `${dcg}:${rcg}:${suffix}`;
 }
 
@@ -655,10 +655,10 @@ function generateMatchups(match, max, oneSided) {
     rCombs.shift();
     dCombs.shift();
     rCombs.forEach((team) => {
-      result.push(`${groupToString(team)}:${match.radiant_win ? "1" : "0"}`);
+      result.push(`${groupToString(team)}:${match.radiant_win ? '1' : '0'}`);
     });
     dCombs.forEach((team) => {
-      result.push(`${groupToString(team)}:${match.radiant_win ? "0" : "1"}`);
+      result.push(`${groupToString(team)}:${match.radiant_win ? '0' : '1'}`);
     });
   } else {
     // iterate over combinations, increment count for unique key
@@ -802,10 +802,10 @@ function getLaneFromPosData(lanePos, isRadiant) {
  * Get array of retriever endpoints from config
  * */
 function getRetrieverArr(useGcDataArr) {
-  const parserHosts = useGcDataArr ? config.GCDATA_RETRIEVER_HOST : "";
+  const parserHosts = useGcDataArr ? config.GCDATA_RETRIEVER_HOST : '';
   const input = parserHosts || config.RETRIEVER_HOST;
   const output = [];
-  const arr = input.split(",");
+  const arr = input.split(',');
   arr.forEach((element) => {
     const parsedUrl = urllib.parse(`http://${element}`, true);
     for (let i = 0; i < (parsedUrl.query.size || 1); i += 1) {
@@ -816,9 +816,9 @@ function getRetrieverArr(useGcDataArr) {
 }
 
 function redisCount(redis, prefix) {
-  const key = `${prefix}:${moment().startOf("hour").format("X")}`;
+  const key = `${prefix}:${moment().startOf('hour').format('X')}`;
   redis.pfadd(key, uuidV4());
-  redis.expireat(key, moment().startOf("hour").add(1, "day").format("X"));
+  redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
 
 function getRedisCountDay(redis, prefix, cb) {
@@ -826,7 +826,7 @@ function getRedisCountDay(redis, prefix, cb) {
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(
-      `${prefix}:${moment().startOf("hour").subtract(i, "hour").format("X")}`
+      `${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`
     );
   }
   redis.pfcount(...keyArr, cb);
@@ -837,7 +837,7 @@ function getRedisCountHour(redis, prefix, cb) {
   const keyArr = [];
   for (let i = 1; i < 2; i += 1) {
     keyArr.push(
-      `${prefix}:${moment().startOf("hour").subtract(i, "hour").format("X")}`
+      `${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`
     );
   }
   redis.pfcount(...keyArr, cb);
@@ -846,7 +846,7 @@ function getRedisCountHour(redis, prefix, cb) {
 function invokeInterval(func, delay) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
-    console.log("running %s", func.name);
+    console.log('running %s', func.name);
     console.time(func.name);
     return func((err) => {
       if (err) {
@@ -872,7 +872,7 @@ function cleanItemSchema(input) {
 
 function checkIfInExperiment(ip, mod) {
   return (
-    crypto.createHash("md5").update(ip).digest().readInt32BE(0) % 100 < mod
+    crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );
 }
 

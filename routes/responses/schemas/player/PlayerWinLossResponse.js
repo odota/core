@@ -1,15 +1,15 @@
 module.exports = {
   PlayerWinLossResponse: {
-    title: "PlayerWinLossResponse",
-    type: "object",
+    title: 'PlayerWinLossResponse',
+    type: 'object',
     properties: {
       win: {
-        description: "Number of wins",
-        type: "integer",
+        description: 'Number of wins',
+        type: 'integer',
       },
       lose: {
-        description: "Number of loses",
-        type: "integer",
+        description: 'Number of loses',
+        type: 'integer',
       },
     },
   },

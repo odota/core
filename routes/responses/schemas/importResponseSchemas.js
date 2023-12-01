@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
 // Recursive function to import all files in a directory and its subdirectories
 function importAll(directory) {
@@ -12,9 +12,9 @@ function importAll(directory) {
     if (fs.lstatSync(itemPath).isDirectory()) {
       // If the item is a subdirectory, call this function with the subdirectory as the new starting point
       files = { ...files, ...importAll(itemPath) };
-    } else if (path.extname(item) === ".js" && itemPath !== __filename) {
+    } else if (path.extname(item) === '.js' && itemPath !== __filename) {
       // If the item is a JS file and not the current file, import it
-      const fileName = path.basename(item, ".js");
+      const fileName = path.basename(item, '.js');
       files[fileName] = require(itemPath);
     }
   });

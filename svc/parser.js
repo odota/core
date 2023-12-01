@@ -5,34 +5,34 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
-const cp = require("child_process");
-const async = require("async");
-const numCPUs = require("os").cpus().length;
-const express = require("express");
-const utility = require("../util/utility");
-const getGcData = require("../util/getGcData");
-const config = require("../config");
-const queue = require("../store/queue");
-const queries = require("../store/queries");
+const cp = require('child_process');
+const async = require('async');
+const numCPUs = require('os').cpus().length;
+const express = require('express');
+const utility = require('../util/utility');
+const getGcData = require('../util/getGcData');
+const config = require('../config');
+const queue = require('../store/queue');
+const queries = require('../store/queries');
 
 const { insertMatch } = queries;
 const { buildReplayUrl } = utility;
 
 const app = express();
-app.get("/healthz", (req, res) => {
-  res.end("ok");
+app.get('/healthz', (req, res) => {
+  res.end('ok');
 });
 app.listen(config.PORT || config.PARSER_PORT);
 
 function runParse(match, job, cb) {
   let { url } = match;
-  if (config.NODE_ENV === "test") {
+  if (config.NODE_ENV === 'test') {
     url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
   }
   console.log(new Date(), url);
   cp.exec(
     `curl --max-time 180 --fail ${url} | ${
-      url && url.slice(-3) === "bz2" ? "bunzip2" : "cat"
+      url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
     } | curl -X POST -T - ${
       config.PARSER_HOST
     } | node processors/createParsedDataBlob.js ${match.match_id}`,
@@ -45,7 +45,7 @@ function runParse(match, job, cb) {
       return insertMatch(
         result,
         {
-          type: "parsed",
+          type: 'parsed',
           skipParse: true,
         },
         cb
@@ -56,7 +56,7 @@ function runParse(match, job, cb) {
 
 function parseProcessor(job, cb) {
   const match = job;
-  if (!match.game_mode && match.origin !== "scanner") {
+  if (!match.game_mode && match.origin !== 'scanner') {
     // Skip parses without game_mode that weren't from scanner (do this to clear queue of event matches)
     return cb();
   }
@@ -83,7 +83,7 @@ function parseProcessor(job, cb) {
       if (err) {
         console.error(err.stack || err);
       } else {
-        console.log("completed parse of match %s", match.match_id);
+        console.log('completed parse of match %s', match.match_id);
       }
       return cb(err, match.match_id);
     }
@@ -91,7 +91,7 @@ function parseProcessor(job, cb) {
 }
 
 queue.runReliableQueue(
-  "parse",
+  'parse',
   Number(config.PARSER_PARALLELISM) || numCPUs,
   parseProcessor
 );

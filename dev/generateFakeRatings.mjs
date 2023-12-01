@@ -12,13 +12,13 @@ function randByCentralLimitTheorem() {
 function gaussianRandom(mean, std) {
   if (mean === undefined || std === undefined) {
     throw new Error(
-      "Gaussian random needs 2 arguments (mean, standard deviation)"
+      'Gaussian random needs 2 arguments (mean, standard deviation)'
     );
   }
   return randByCentralLimitTheorem() * std + mean;
 }
 
-db.from("players").asCallback((err, players) => {
+db.from('players').asCallback((err, players) => {
   async.each(
     players,
     (p, cb) => {
@@ -30,7 +30,7 @@ db.from("players").asCallback((err, players) => {
         time: new Date(),
       };
       console.log(fake.account_id, fake.solo_competitive_rank);
-      db.insert(fake).into("player_ratings").asCallback(cb);
+      db.insert(fake).into('player_ratings').asCallback(cb);
     },
     (err) => {
       process.exit(Number(err));

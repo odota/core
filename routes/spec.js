@@ -1,25 +1,25 @@
-const async = require("async");
-const constants = require("dotaconstants");
-const moment = require("moment");
-const { Client } = require("pg");
-const config = require("../config");
+const async = require('async');
+const constants = require('dotaconstants');
+const moment = require('moment');
+const { Client } = require('pg');
+const config = require('../config');
 // const crypto = require("crypto");
 // const uuidV4 = require("uuid/v4");
-const queue = require("../store/queue");
-const queries = require("../store/queries");
-const search = require("../store/search");
-const searchES = require("../store/searchES");
-const buildMatch = require("../store/buildMatch");
-const buildStatus = require("../store/buildStatus");
-const playerFields = require("./playerFields.json");
-const utility = require("../util/utility");
-const db = require("../store/db");
-const redis = require("../store/redis");
-const packageJson = require("../package.json");
-const cacheFunctions = require("../store/cacheFunctions");
-const params = require("./requests/importParams");
-const responses = require("./responses/schemas/importResponseSchemas");
-const generateOperationId = require("./generateOperationId");
+const queue = require('../store/queue');
+const queries = require('../store/queries');
+const search = require('../store/search');
+const searchES = require('../store/searchES');
+const buildMatch = require('../store/buildMatch');
+const buildStatus = require('../store/buildStatus');
+const playerFields = require('./playerFields.json');
+const utility = require('../util/utility');
+const db = require('../store/db');
+const redis = require('../store/redis');
+const packageJson = require('../package.json');
+const cacheFunctions = require('../store/cacheFunctions');
+const params = require('./requests/importParams');
+const responses = require('./responses/schemas/importResponseSchemas');
+const generateOperationId = require('./generateOperationId');
 
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
@@ -30,25 +30,25 @@ const parameters = Object.values(params).reduce(
 );
 
 const playerParamNames = [
-  "accountIdParam",
-  "limitParam",
-  "offsetParam",
-  "winParam",
-  "patchParam",
-  "gameModeParam",
-  "lobbyTypeParam",
-  "regionParam",
-  "dateParam",
-  "laneRoleParam",
-  "heroIdParam",
-  "isRadiantParam",
-  "includedAccountIdParam",
-  "excludedAccountIdParam",
-  "withHeroIdParam",
-  "againstHeroIdParam",
-  "significantParam",
-  "havingParam",
-  "sortParam",
+  'accountIdParam',
+  'limitParam',
+  'offsetParam',
+  'winParam',
+  'patchParam',
+  'gameModeParam',
+  'lobbyTypeParam',
+  'regionParam',
+  'dateParam',
+  'laneRoleParam',
+  'heroIdParam',
+  'isRadiantParam',
+  'includedAccountIdParam',
+  'excludedAccountIdParam',
+  'withHeroIdParam',
+  'againstHeroIdParam',
+  'significantParam',
+  'havingParam',
+  'sortParam',
 ];
 
 const playerParams = playerParamNames.map((paramName) => ({
@@ -62,21 +62,21 @@ const schemas = Object.values(responses).reduce(
 
 const securitySchemes = {
   api_key: {
-    type: "apiKey",
-    name: "api_key",
+    type: 'apiKey',
+    name: 'api_key',
     description: `Use an API key to remove monthly call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
         Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
         
         API key can also be sent using the authorization header "Authorization: Bearer YOUR-API-KEY"
         `,
-    in: "query",
+    in: 'query',
   },
 };
 
 const spec = {
-  openapi: "3.0.3",
+  openapi: '3.0.3',
   info: {
-    title: "OpenDota API",
+    title: 'OpenDota API',
     description: `# Introduction
 The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.
 
@@ -88,7 +88,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
   },
   servers: [
     {
-      url: "https://api.opendota.com/api",
+      url: 'https://api.opendota.com/api',
     },
   ],
   components: {
@@ -97,26 +97,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
     parameters,
   },
   paths: {
-    "/matches/{match_id}": {
+    '/matches/{match_id}': {
       get: {
-        operationId: generateOperationId("get", "/matches/{match_id}"),
-        summary: "GET /matches/{match_id}",
-        description: "Match data",
-        tags: ["matches"],
-        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
+        operationId: generateOperationId('get', '/matches/{match_id}'),
+        summary: 'GET /matches/{match_id}',
+        description: 'Match data',
+        tags: ['matches'],
+        parameters: [{ $ref: '#/components/parameters/matchIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/MatchResponse",
+                  $ref: '#/components/schemas/MatchResponse',
                 },
               },
             },
           },
         },
-        route: () => "/matches/:match_id/:info?",
+        route: () => '/matches/:match_id/:info?',
         func: async (req, res, cb) => {
           try {
             const match = await buildMatch(req.params.match_id, req.query);
@@ -130,26 +130,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/playersByRank": {
+    '/playersByRank': {
       get: {
-        operationId: generateOperationId("get", "/playersByRank"),
-        summary: "GET /playersByRank",
-        description: "Players ordered by rank/medal tier",
-        tags: ["playersByRank"],
+        operationId: generateOperationId('get', '/playersByRank'),
+        summary: 'GET /playersByRank',
+        description: 'Players ordered by rank/medal tier',
+        tags: ['playersByRank'],
         parameters: [],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/PlayersByRankResponse",
+                  $ref: '#/components/schemas/PlayersByRankResponse',
                 },
               },
             },
           },
         },
-        route: () => "/playersByRank",
+        route: () => '/playersByRank',
         func: (req, res, cb) => {
           db.raw(
             `
@@ -170,26 +170,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}": {
+    '/players/{account_id}': {
       get: {
-        operationId: generateOperationId("get", "/players/{account_id}"),
-        summary: "GET /players/{account_id}",
-        description: "Player data",
-        tags: ["players"],
-        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
+        operationId: generateOperationId('get', '/players/{account_id}'),
+        summary: 'GET /players/{account_id}',
+        description: 'Player data',
+        tags: ['players'],
+        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/PlayersResponse",
+                  $ref: '#/components/schemas/PlayersResponse',
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id",
+        route: () => '/players/:account_id',
         func: (req, res, cb) => {
           const accountId = Number(req.params.account_id);
           async.parallel(
@@ -205,7 +205,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               },
               solo_competitive_rank(cb) {
                 db.first()
-                  .from("solo_competitive_rank")
+                  .from('solo_competitive_rank')
                   .where({ account_id: accountId })
                   .asCallback((err, row) => {
                     cb(err, row ? row.rating : null);
@@ -213,7 +213,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               },
               competitive_rank(cb) {
                 db.first()
-                  .from("competitive_rank")
+                  .from('competitive_rank')
                   .where({ account_id: accountId })
                   .asCallback((err, row) => {
                     cb(err, row ? row.rating : null);
@@ -221,7 +221,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               },
               rank_tier(cb) {
                 db.first()
-                  .from("rank_tier")
+                  .from('rank_tier')
                   .where({ account_id: accountId })
                   .asCallback((err, row) => {
                     cb(err, row ? row.rating : null);
@@ -229,7 +229,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               },
               leaderboard_rank(cb) {
                 db.first()
-                  .from("leaderboard_rank")
+                  .from('leaderboard_rank')
                   .where({ account_id: accountId })
                   .asCallback((err, row) => {
                     cb(err, row ? row.rating : null);
@@ -251,34 +251,34 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/wl": {
+    '/players/{account_id}/wl': {
       get: {
-        operationId: generateOperationId("get", "/players/{account_id}/wl"),
-        summary: "GET /players/{account_id}/wl",
-        description: "Win/Loss count",
-        tags: ["players"],
+        operationId: generateOperationId('get', '/players/{account_id}/wl'),
+        summary: 'GET /players/{account_id}/wl',
+        description: 'Win/Loss count',
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/PlayerWinLossResponse",
+                  $ref: '#/components/schemas/PlayerWinLossResponse',
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/wl",
+        route: () => '/players/:account_id/wl',
         func: (req, res, cb) => {
           const result = {
             win: 0,
             lose: 0,
           };
           req.queryObj.project = req.queryObj.project.concat(
-            "player_slot",
-            "radiant_win"
+            'player_slot',
+            'radiant_win'
           );
           queries.getPlayerMatches(
             req.params.account_id,
@@ -294,33 +294,33 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   result.lose += 1;
                 }
               });
-              return cacheFunctions.sendDataWithCache(req, res, result, "wl");
+              return cacheFunctions.sendDataWithCache(req, res, result, 'wl');
             }
           );
         },
       },
     },
-    "/players/{account_id}/recentMatches": {
+    '/players/{account_id}/recentMatches': {
       get: {
         operationId: generateOperationId(
-          "get",
-          "/players/{account_id}/recentMatches"
+          'get',
+          '/players/{account_id}/recentMatches'
         ),
-        summary: "GET /players/{account_id}/recentMatches",
-        description: "Recent matches played",
-        tags: ["players"],
-        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
+        summary: 'GET /players/{account_id}/recentMatches',
+        description: 'Recent matches played',
+        tags: ['players'],
+        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    type: "object",
+                    type: 'object',
                     items: {
-                      $ref: "#/components/schemas/PlayerRecentMatchesResponse",
+                      $ref: '#/components/schemas/PlayerRecentMatchesResponse',
                     },
                   },
                 },
@@ -328,37 +328,37 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             },
           },
         },
-        route: () => "/players/:account_id/recentMatches",
+        route: () => '/players/:account_id/recentMatches',
         func: (req, res, cb) => {
           queries.getPlayerMatches(
             req.params.account_id,
             {
               project: req.queryObj.project.concat([
-                "hero_id",
-                "start_time",
-                "duration",
-                "player_slot",
-                "radiant_win",
-                "game_mode",
-                "lobby_type",
-                "version",
-                "kills",
-                "deaths",
-                "assists",
-                "skill",
-                "average_rank",
-                "xp_per_min",
-                "gold_per_min",
-                "hero_damage",
-                "tower_damage",
-                "hero_healing",
-                "last_hits",
-                "lane",
-                "lane_role",
-                "is_roaming",
-                "cluster",
-                "leaver_status",
-                "party_size",
+                'hero_id',
+                'start_time',
+                'duration',
+                'player_slot',
+                'radiant_win',
+                'game_mode',
+                'lobby_type',
+                'version',
+                'kills',
+                'deaths',
+                'assists',
+                'skill',
+                'average_rank',
+                'xp_per_min',
+                'gold_per_min',
+                'hero_damage',
+                'tower_damage',
+                'hero_healing',
+                'last_hits',
+                'lane',
+                'lane_role',
+                'is_roaming',
+                'cluster',
+                'leaver_status',
+                'party_size',
               ]),
               dbLimit: 20,
             },
@@ -372,55 +372,55 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/matches": {
+    '/players/{account_id}/matches': {
       get: {
         operationId: generateOperationId(
-          "get",
-          "/players/{account_id}/matches"
+          'get',
+          '/players/{account_id}/matches'
         ),
-        summary: "GET /players/{account_id}/matches",
-        description: "Matches played",
-        tags: ["players"],
+        summary: 'GET /players/{account_id}/matches',
+        description: 'Matches played',
+        tags: ['players'],
         parameters: [
           ...playerParams,
           {
-            $ref: "#/components/parameters/projectParam",
+            $ref: '#/components/parameters/projectParam',
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PlayerMatchesResponse",
+                    $ref: '#/components/schemas/PlayerMatchesResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/matches",
+        route: () => '/players/:account_id/matches',
         func: (req, res, cb) => {
           // Use passed fields as additional fields, if available
           const additionalFields = req.query.project || [
-            "hero_id",
-            "start_time",
-            "duration",
-            "player_slot",
-            "radiant_win",
-            "game_mode",
-            "lobby_type",
-            "version",
-            "kills",
-            "deaths",
-            "assists",
-            "skill",
-            "average_rank",
-            "leaver_status",
-            "party_size",
+            'hero_id',
+            'start_time',
+            'duration',
+            'player_slot',
+            'radiant_win',
+            'game_mode',
+            'lobby_type',
+            'version',
+            'kills',
+            'deaths',
+            'assists',
+            'skill',
+            'average_rank',
+            'leaver_status',
+            'party_size',
           ];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           queries.getPlayerMatches(
@@ -436,29 +436,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/heroes": {
+    '/players/{account_id}/heroes': {
       get: {
-        operationId: generateOperationId("get", "/players/{account_id}/heroes"),
-        summary: "GET /players/{account_id}/heroes",
-        description: "Heroes played",
-        tags: ["players"],
+        operationId: generateOperationId('get', '/players/{account_id}/heroes'),
+        summary: 'GET /players/{account_id}/heroes',
+        description: 'Heroes played',
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PlayerHeroesResponse",
+                    $ref: '#/components/schemas/PlayerHeroesResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/heroes",
+        route: () => '/players/:account_id/heroes',
         func: (req, res, cb) => {
           const heroes = {};
           // prefill heroes with every hero
@@ -477,11 +477,11 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             heroes[hero_id_int] = hero;
           });
           req.queryObj.project = req.queryObj.project.concat(
-            "heroes",
-            "account_id",
-            "start_time",
-            "player_slot",
-            "radiant_win"
+            'heroes',
+            'account_id',
+            'start_time',
+            'player_slot',
+            'radiant_win'
           );
           queries.getPlayerMatches(
             req.params.account_id,
@@ -529,44 +529,44 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 req,
                 res,
                 result,
-                "heroes"
+                'heroes'
               );
             }
           );
         },
       },
     },
-    "/players/{account_id}/peers": {
+    '/players/{account_id}/peers': {
       get: {
-        operationId: generateOperationId("get", "/players/{account_id}/peers"),
-        summary: "GET /players/{account_id}/peers",
-        description: "Players played with",
-        tags: ["players"],
+        operationId: generateOperationId('get', '/players/{account_id}/peers'),
+        summary: 'GET /players/{account_id}/peers',
+        description: 'Players played with',
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PlayerPeersResponse",
+                    $ref: '#/components/schemas/PlayerPeersResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/peers",
+        route: () => '/players/:account_id/peers',
         func: (req, res, cb) => {
           req.queryObj.project = req.queryObj.project.concat(
-            "heroes",
-            "start_time",
-            "player_slot",
-            "radiant_win",
-            "gold_per_min",
-            "xp_per_min"
+            'heroes',
+            'start_time',
+            'player_slot',
+            'radiant_win',
+            'gold_per_min',
+            'xp_per_min'
           );
           queries.getPlayerMatches(
             req.params.account_id,
@@ -590,7 +590,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     req,
                     res,
                     result,
-                    "peers"
+                    'peers'
                   );
                 }
               );
@@ -599,35 +599,35 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/pros": {
+    '/players/{account_id}/pros': {
       get: {
-        operationId: generateOperationId("get", "/players/{account_id}/pros"),
-        summary: "GET /players/{account_id}/pros",
-        description: "Pro players played with",
-        tags: ["players"],
+        operationId: generateOperationId('get', '/players/{account_id}/pros'),
+        summary: 'GET /players/{account_id}/pros',
+        description: 'Pro players played with',
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PlayerProsResponse",
+                    $ref: '#/components/schemas/PlayerProsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/pros",
+        route: () => '/players/:account_id/pros',
         func: (req, res, cb) => {
           req.queryObj.project = req.queryObj.project.concat(
-            "heroes",
-            "start_time",
-            "player_slot",
-            "radiant_win"
+            'heroes',
+            'start_time',
+            'player_slot',
+            'radiant_win'
           );
           queries.getPlayerMatches(
             req.params.account_id,
@@ -655,29 +655,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/totals": {
+    '/players/{account_id}/totals': {
       get: {
-        operationId: generateOperationId("get", "/players/{account_id}/totals"),
-        summary: "GET /players/{account_id}/totals",
-        description: "Totals in stats",
-        tags: ["players"],
+        operationId: generateOperationId('get', '/players/{account_id}/totals'),
+        summary: 'GET /players/{account_id}/totals',
+        description: 'Totals in stats',
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PlayerTotalsResponse",
+                    $ref: '#/components/schemas/PlayerTotalsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/totals",
+        route: () => '/players/:account_id/totals',
         func: (req, res, cb) => {
           const result = {};
           Object.keys(subkeys).forEach((key) => {
@@ -711,26 +711,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/counts": {
+    '/players/{account_id}/counts': {
       get: {
-        operationId: generateOperationId("get", "/players/{account_id}/counts"),
-        summary: "GET /players/{account_id}/counts",
-        description: "Counts in categories",
-        tags: ["players"],
+        operationId: generateOperationId('get', '/players/{account_id}/counts'),
+        summary: 'GET /players/{account_id}/counts',
+        description: 'Counts in categories',
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/PlayerCountsResponse",
+                  $ref: '#/components/schemas/PlayerCountsResponse',
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/counts",
+        route: () => '/players/:account_id/counts',
         func: (req, res, cb) => {
           const result = {};
           Object.keys(countCats).forEach((key) => {
@@ -766,42 +766,42 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/histograms/{field}": {
+    '/players/{account_id}/histograms/{field}': {
       get: {
         operationId: generateOperationId(
-          "get",
-          "/players/{account_id}/histograms/{field}"
+          'get',
+          '/players/{account_id}/histograms/{field}'
         ),
-        summary: "GET /players/{account_id}/histograms",
-        description: "Distribution of matches in a single stat",
-        tags: ["players"],
+        summary: 'GET /players/{account_id}/histograms',
+        description: 'Distribution of matches in a single stat',
+        tags: ['players'],
         parameters: [
           ...playerParams,
           {
-            $ref: "#/components/parameters/fieldParam",
+            $ref: '#/components/parameters/fieldParam',
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    title: "PlayerHistogramsResponse",
-                    type: "object",
+                    title: 'PlayerHistogramsResponse',
+                    type: 'object',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/histograms/:field",
+        route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
           const { field } = req.params;
           req.queryObj.project = req.queryObj.project
-            .concat("radiant_win", "player_slot")
+            .concat('radiant_win', 'player_slot')
             .concat([field].filter((f) => subkeys[f]));
           queries.getPlayerMatches(
             req.params.account_id,
@@ -841,29 +841,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/wardmap": {
+    '/players/{account_id}/wardmap': {
       get: {
         operationId: generateOperationId(
-          "get",
-          "/players/{account_id}/wardmap"
+          'get',
+          '/players/{account_id}/wardmap'
         ),
-        summary: "GET /players/{account_id}/wardmap",
-        description: "Wards placed in matches played",
-        tags: ["players"],
+        summary: 'GET /players/{account_id}/wardmap',
+        description: 'Wards placed in matches played',
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/PlayerWardMapResponse",
+                  $ref: '#/components/schemas/PlayerWardMapResponse',
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/wardmap",
+        route: () => '/players/:account_id/wardmap',
         func: (req, res, cb) => {
           const result = {
             obs: {},
@@ -890,29 +890,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/wordcloud": {
+    '/players/{account_id}/wordcloud': {
       get: {
         operationId: generateOperationId(
-          "get",
-          "/players/{account_id}/wordcloud"
+          'get',
+          '/players/{account_id}/wordcloud'
         ),
-        summary: "GET /players/{account_id}/wordcloud",
-        description: "Words said/read in matches played",
-        tags: ["players"],
+        summary: 'GET /players/{account_id}/wordcloud',
+        description: 'Words said/read in matches played',
+        tags: ['players'],
         parameters: playerParams,
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/PlayerWordCloudResponse",
+                  $ref: '#/components/schemas/PlayerWordCloudResponse',
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/wordcloud",
+        route: () => '/players/:account_id/wordcloud',
         func: (req, res, cb) => {
           const result = {
             my_word_counts: {},
@@ -939,32 +939,32 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/ratings": {
+    '/players/{account_id}/ratings': {
       get: {
         operationId: generateOperationId(
-          "get",
-          "/players/{account_id}/ratings"
+          'get',
+          '/players/{account_id}/ratings'
         ),
-        summary: "GET /players/{account_id}/ratings",
-        description: "Player rating history",
-        tags: ["players"],
-        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
+        summary: 'GET /players/{account_id}/ratings',
+        description: 'Player rating history',
+        tags: ['players'],
+        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PlayerRatingsResponse",
+                    $ref: '#/components/schemas/PlayerRatingsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/ratings",
+        route: () => '/players/:account_id/ratings',
         func: (req, res, cb) => {
           queries.getPlayerRatings(db, req.params.account_id, (err, result) => {
             if (err) {
@@ -975,32 +975,32 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/rankings": {
+    '/players/{account_id}/rankings': {
       get: {
         operationId: generateOperationId(
-          "get",
-          "/players/{account_id}/rankings"
+          'get',
+          '/players/{account_id}/rankings'
         ),
-        summary: "GET /players/{account_id}/rankings",
-        description: "Player hero rankings",
-        tags: ["players"],
-        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
+        summary: 'GET /players/{account_id}/rankings',
+        description: 'Player hero rankings',
+        tags: ['players'],
+        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PlayerRankingsResponse",
+                    $ref: '#/components/schemas/PlayerRankingsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/rankings",
+        route: () => '/players/:account_id/rankings',
         func: (req, res, cb) => {
           queries.getPlayerHeroRankings(
             req.params.account_id,
@@ -1014,31 +1014,31 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/players/{account_id}/refresh": {
+    '/players/{account_id}/refresh': {
       post: {
-        summary: "POST /players/{account_id}/refresh",
-        description: "Refresh player match history",
-        tags: ["players"],
-        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
+        summary: 'POST /players/{account_id}/refresh',
+        description: 'Refresh player match history',
+        tags: ['players'],
+        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  title: "PlayerRefreshResponse",
-                  type: "object",
+                  title: 'PlayerRefreshResponse',
+                  type: 'object',
                 },
               },
             },
           },
         },
-        route: () => "/players/:account_id/refresh",
+        route: () => '/players/:account_id/refresh',
         func: (req, res, cb) => {
           redis.rpush(
-            "fhQueue",
+            'fhQueue',
             JSON.stringify({
-              account_id: req.params.account_id || "1",
+              account_id: req.params.account_id || '1',
             }),
             (err, length) => {
               if (err) {
@@ -1052,37 +1052,37 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/proPlayers": {
+    '/proPlayers': {
       get: {
-        operationId: generateOperationId("get", "/proPlayers"),
-        summary: "GET /proPlayers",
-        description: "Get list of pro players",
-        tags: ["pro players"],
+        operationId: generateOperationId('get', '/proPlayers'),
+        summary: 'GET /proPlayers',
+        description: 'Get list of pro players',
+        tags: ['pro players'],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PlayerObjectResponse",
+                    $ref: '#/components/schemas/PlayerObjectResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/proPlayers",
+        route: () => '/proPlayers',
         func: (req, res, cb) => {
           db.select()
-            .from("players")
+            .from('players')
             .rightJoin(
-              "notable_players",
-              "players.account_id",
-              "notable_players.account_id"
+              'notable_players',
+              'players.account_id',
+              'notable_players.account_id'
             )
-            .orderBy("notable_players.account_id", "asc")
+            .orderBy('notable_players.account_id', 'asc')
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -1092,29 +1092,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/proMatches": {
+    '/proMatches': {
       get: {
-        operationId: generateOperationId("get", "/proMatches"),
-        summary: "GET /proMatches",
-        description: "Get list of pro matches",
-        tags: ["pro matches"],
-        parameters: [{ $ref: "#/components/parameters/lessThanMatchIdParam" }],
+        operationId: generateOperationId('get', '/proMatches'),
+        summary: 'GET /proMatches',
+        description: 'Get list of pro matches',
+        tags: ['pro matches'],
+        parameters: [{ $ref: '#/components/parameters/lessThanMatchIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/MatchObjectResponse",
+                    $ref: '#/components/schemas/MatchObjectResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/proMatches",
+        route: () => '/proMatches',
         func: (req, res, cb) => {
           db.raw(
             `
@@ -1145,55 +1145,55 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/publicMatches": {
+    '/publicMatches': {
       get: {
-        operationId: generateOperationId("get", "/publicMatches"),
-        summary: "GET /publicMatches",
-        description: "Get list of randomly sampled public matches",
-        tags: ["public matches"],
+        operationId: generateOperationId('get', '/publicMatches'),
+        summary: 'GET /publicMatches',
+        description: 'Get list of randomly sampled public matches',
+        tags: ['public matches'],
         parameters: [
-          { $ref: "#/components/parameters/lessThanMatchIdParam" },
-          { $ref: "#/components/parameters/minRankParam" },
-          { $ref: "#/components/parameters/maxRankParam" },
-          { $ref: "#/components/parameters/mmrAscendingParam" },
-          { $ref: "#/components/parameters/mmrDescendingParam" },
+          { $ref: '#/components/parameters/lessThanMatchIdParam' },
+          { $ref: '#/components/parameters/minRankParam' },
+          { $ref: '#/components/parameters/maxRankParam' },
+          { $ref: '#/components/parameters/mmrAscendingParam' },
+          { $ref: '#/components/parameters/mmrDescendingParam' },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/PublicMatchesResponse",
+                    $ref: '#/components/schemas/PublicMatchesResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/publicMatches",
+        route: () => '/publicMatches',
         func: async (req, res, cb) => {
           const currMax =
-            (await db("public_matches").max("match_id").first()).max || 0;
+            (await db('public_matches').max('match_id').first()).max || 0;
           const lessThan = Number(req.query.less_than_match_id) || currMax;
           let moreThan = lessThan - 1000000;
-          let order = "";
+          let order = '';
           if (req.query.mmr_ascending) {
-            order = "ORDER BY avg_rank_tier ASC NULLS LAST";
+            order = 'ORDER BY avg_rank_tier ASC NULLS LAST';
           } else if (req.query.mmr_descending) {
-            order = "ORDER BY avg_rank_tier DESC NULLS LAST";
+            order = 'ORDER BY avg_rank_tier DESC NULLS LAST';
           } else {
-            order = "ORDER BY match_id DESC";
+            order = 'ORDER BY match_id DESC';
             moreThan = 0;
           }
           const minRank = req.query.min_rank
             ? `AND avg_rank_tier >= ${req.query.min_rank}`
-            : "";
+            : '';
           const maxRank = req.query.max_rank
             ? `AND avg_rank_tier <= ${req.query.max_rank}`
-            : "";
+            : '';
 
           db.raw(
             `
@@ -1226,29 +1226,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/parsedMatches": {
+    '/parsedMatches': {
       get: {
-        operationId: generateOperationId("get", "/parsedMatches"),
-        summary: "GET /parsedMatches",
-        description: "Get list of parsed match IDs",
-        tags: ["parsed matches"],
-        parameters: [{ $ref: "#/components/parameters/lessThanMatchIdParam" }],
+        operationId: generateOperationId('get', '/parsedMatches'),
+        summary: 'GET /parsedMatches',
+        description: 'Get list of parsed match IDs',
+        tags: ['parsed matches'],
+        parameters: [{ $ref: '#/components/parameters/lessThanMatchIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/ParsedMatchesResponse",
+                    $ref: '#/components/schemas/ParsedMatchesResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/parsedMatches",
+        route: () => '/parsedMatches',
         func: (req, res, cb) => {
           const lessThan =
             req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
@@ -1270,37 +1270,37 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/explorer": {
+    '/explorer': {
       get: {
-        operationId: generateOperationId("get", "/explorer"),
-        summary: "GET /explorer",
-        description: "Submit arbitrary SQL queries to the database",
-        tags: ["explorer"],
+        operationId: generateOperationId('get', '/explorer'),
+        summary: 'GET /explorer',
+        description: 'Submit arbitrary SQL queries to the database',
+        tags: ['explorer'],
         parameters: [
           {
-            name: "sql",
-            in: "query",
-            description: "The PostgreSQL query as percent-encoded string.",
+            name: 'sql',
+            in: 'query',
+            description: 'The PostgreSQL query as percent-encoded string.',
             required: false,
             schema: {
-              type: "string",
+              type: 'string',
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  title: "ExplorerResponse",
-                  type: "object",
+                  title: 'ExplorerResponse',
+                  type: 'object',
                 },
               },
             },
           },
         },
-        route: () => "/explorer",
+        route: () => '/explorer',
         func: async (req, res) => {
           const input = req.query.sql;
           const client = new Client({
@@ -1316,30 +1316,30 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             err = e;
           }
           client.end();
-          const final = { ...result, err: err && err.toString(),};
+          const final = { ...result, err: err && err.toString() };
           return res.status(err ? 400 : 200).json(final);
         },
       },
     },
-    "/metadata": {
+    '/metadata': {
       get: {
-        operationId: generateOperationId("get", "/metadata"),
-        summary: "GET /metadata",
-        description: "Site metadata",
-        tags: ["metadata"],
+        operationId: generateOperationId('get', '/metadata'),
+        summary: 'GET /metadata',
+        description: 'Site metadata',
+        tags: ['metadata'],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/MetadataResponse",
+                  $ref: '#/components/schemas/MetadataResponse',
                 },
               },
             },
           },
         },
-        route: () => "/metadata",
+        route: () => '/metadata',
         func: (req, res, cb) => {
           queries.getMetadata(req, (err, result) => {
             if (err) {
@@ -1350,25 +1350,25 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/distributions": {
+    '/distributions': {
       get: {
-        operationId: generateOperationId("get", "/distributions"),
-        summary: "GET /distributions",
-        description: "Distributions of MMR data by bracket and country",
-        tags: ["distributions"],
+        operationId: generateOperationId('get', '/distributions'),
+        summary: 'GET /distributions',
+        description: 'Distributions of MMR data by bracket and country',
+        tags: ['distributions'],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/DistributionsResponse",
+                  $ref: '#/components/schemas/DistributionsResponse',
                 },
               },
             },
           },
         },
-        route: () => "/distributions",
+        route: () => '/distributions',
         func: (req, res, cb) => {
           queries.getDistributions(redis, (err, result) => {
             if (err) {
@@ -1379,39 +1379,39 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/search": {
+    '/search': {
       get: {
-        operationId: generateOperationId("get", "/search"),
-        summary: "GET /search",
-        description: "Search players by personaname.",
-        tags: ["search"],
+        operationId: generateOperationId('get', '/search'),
+        summary: 'GET /search',
+        description: 'Search players by personaname.',
+        tags: ['search'],
         parameters: [
           {
-            name: "q",
-            in: "query",
-            description: "Search string",
+            name: 'q',
+            in: 'query',
+            description: 'Search string',
             required: true,
             schema: {
-              type: "string",
+              type: 'string',
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/SearchResponse",
+                    $ref: '#/components/schemas/SearchResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/search",
+        route: () => '/search',
         func: (req, res, cb) => {
           if (!req.query.q) {
             return res.status(400).json([]);
@@ -1437,36 +1437,36 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/rankings": {
+    '/rankings': {
       get: {
-        operationId: generateOperationId("get", "/rankings"),
-        summary: "GET /rankings",
-        description: "Top players by hero",
-        tags: ["rankings"],
+        operationId: generateOperationId('get', '/rankings'),
+        summary: 'GET /rankings',
+        description: 'Top players by hero',
+        tags: ['rankings'],
         parameters: [
           {
-            name: "hero_id",
-            in: "query",
-            description: "Hero ID",
+            name: 'hero_id',
+            in: 'query',
+            description: 'Hero ID',
             required: true,
             schema: {
-              type: "string", // todo: String for hero id?
+              type: 'string', // todo: String for hero id?
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/RankingsResponse",
+                  $ref: '#/components/schemas/RankingsResponse',
                 },
               },
             },
           },
         },
-        route: () => "/rankings",
+        route: () => '/rankings',
         func: (req, res, cb) => {
           queries.getHeroRankings(
             db,
@@ -1483,36 +1483,36 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/benchmarks": {
+    '/benchmarks': {
       get: {
-        operationId: generateOperationId("get", "/benchmarks"),
-        summary: "GET /benchmarks",
-        description: "Benchmarks of average stat values for a hero",
-        tags: ["benchmarks"],
+        operationId: generateOperationId('get', '/benchmarks'),
+        summary: 'GET /benchmarks',
+        description: 'Benchmarks of average stat values for a hero',
+        tags: ['benchmarks'],
         parameters: [
           {
-            name: "hero_id",
-            in: "query",
-            description: "Hero ID",
+            name: 'hero_id',
+            in: 'query',
+            description: 'Hero ID',
             required: true,
             schema: {
-              type: "string", // todo: String for hero id?
+              type: 'string', // todo: String for hero id?
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/BenchmarksResponse",
+                  $ref: '#/components/schemas/BenchmarksResponse',
                 },
               },
             },
           },
         },
-        route: () => "/benchmarks",
+        route: () => '/benchmarks',
         func: (req, res, cb) => {
           queries.getHeroBenchmarks(
             db,
@@ -1530,26 +1530,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/status": {
+    '/status': {
       get: {
-        operationId: generateOperationId("get", "/status"),
-        summary: "GET /status",
-        description: "Get current service statistics",
-        tags: ["status"],
+        operationId: generateOperationId('get', '/status'),
+        summary: 'GET /status',
+        description: 'Get current service statistics',
+        tags: ['status'],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  title: "StatusResponse",
-                  type: "object",
+                  title: 'StatusResponse',
+                  type: 'object',
                 },
               },
             },
           },
         },
-        route: () => "/status",
+        route: () => '/status',
         func: (req, res, cb) => {
           buildStatus(db, redis, (err, status) => {
             if (err) {
@@ -1560,28 +1560,28 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/health": {
+    '/health': {
       get: {
-        operationId: generateOperationId("get", "/health"),
-        summary: "GET /health",
-        description: "Get service health data",
-        tags: ["health"],
+        operationId: generateOperationId('get', '/health'),
+        summary: 'GET /health',
+        description: 'Get service health data',
+        tags: ['health'],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  title: "HealthResponse",
-                  type: "object",
+                  title: 'HealthResponse',
+                  type: 'object',
                 },
               },
             },
           },
         },
-        route: () => "/health/:metric?",
+        route: () => '/health/:metric?',
         func: (req, res, cb) => {
-          redis.hgetall("health", (err, result) => {
+          redis.hgetall('health', (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -1599,72 +1599,70 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/request/{jobId}": {
+    '/request/{jobId}': {
       get: {
-        operationId: generateOperationId("get", "/request/{jobId}"),
-        summary: "GET /request/{jobId}",
-        description: "Get parse request state",
-        tags: ["request"],
+        operationId: generateOperationId('get', '/request/{jobId}'),
+        summary: 'GET /request/{jobId}',
+        description: 'Get parse request state',
+        tags: ['request'],
         parameters: [
           {
-            name: "jobId",
-            in: "path",
-            description: "The job ID to query.",
+            name: 'jobId',
+            in: 'path',
+            description: 'The job ID to query.',
             required: true,
             schema: {
-              type: "string",
+              type: 'string',
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  title: "RequestJobResponse",
-                  type: "object",
+                  title: 'RequestJobResponse',
+                  type: 'object',
                 },
               },
             },
           },
         },
-        route: () => "/request/:jobId",
+        route: () => '/request/:jobId',
         func: (req, res, cb) => {
           queue.getJob(req.params.jobId, (err, job) => {
             if (err) {
               return cb(err);
             }
             if (job) {
-              return res.json(
-                { ...job, jobId: job.id,}
-              );
+              return res.json({ ...job, jobId: job.id });
             }
             return res.json(null);
           });
         },
       },
     },
-    "/request/{match_id}": {
+    '/request/{match_id}': {
       post: {
-        summary: "POST /request/{match_id}",
-        description: "Submit a new parse request",
-        tags: ["request"],
-        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
+        summary: 'POST /request/{match_id}',
+        description: 'Submit a new parse request',
+        tags: ['request'],
+        parameters: [{ $ref: '#/components/parameters/matchIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  title: "RequestMatchResponse",
-                  type: "object",
+                  title: 'RequestMatchResponse',
+                  type: 'object',
                 },
               },
             },
           },
         },
-        route: () => "/request/:match_id",
+        route: () => '/request/:match_id',
         func: (req, res) => {
           const matchId = req.params.match_id;
           const match = {
@@ -1683,25 +1681,32 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           if (match && match.match_id) {
             // match id request, get data from API
             return utility.getData(
-              utility.generateJob("api_details", match).url,
+              utility.generateJob('api_details', match).url,
               async (err, body) => {
                 if (err) {
                   // couldn't get data from api, non-retryable
                   return exitWithJob(JSON.stringify(err));
                 }
                 // Count this request
-                redisCount(redis, "request");
+                redisCount(redis, 'request');
                 if (req.query.api_key) {
-                  redisCount(redis, "request_api_key");
+                  redisCount(redis, 'request_api_key');
                 }
                 // match details response
                 const match = body.result;
                 // Check if match is already parsed
-                const isAlreadyParsed = Boolean((await db.raw('select match_id from parsed_matches where match_id = ?', [match.match_id])).rows[0]);
+                const isAlreadyParsed = Boolean(
+                  (
+                    await db.raw(
+                      'select match_id from parsed_matches where match_id = ?',
+                      [match.match_id]
+                    )
+                  ).rows[0]
+                );
                 return queries.insertMatch(
                   match,
                   {
-                    type: "api",
+                    type: 'api',
                     attempts: 1,
                     priority: req.query.api_key ? 2 : 1,
                     // Reduce load: only actually reprocess the replay for league matches
@@ -1712,63 +1717,63 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
             );
           }
-          return exitWithJob("invalid input");
+          return exitWithJob('invalid input');
         },
       },
     },
-    "/findMatches": {
+    '/findMatches': {
       get: {
-        operationId: generateOperationId("get", "/findMatches"),
-        summary: "GET /",
-        description: "Finds recent matches by heroes played",
-        tags: ["findMatches"],
+        operationId: generateOperationId('get', '/findMatches'),
+        summary: 'GET /',
+        description: 'Finds recent matches by heroes played',
+        tags: ['findMatches'],
         parameters: [
           {
-            name: "teamA",
-            in: "query",
-            description: "Hero IDs on first team (array)",
+            name: 'teamA',
+            in: 'query',
+            description: 'Hero IDs on first team (array)',
             required: false,
-            style: "form",
+            style: 'form',
             explode: false,
             schema: {
-              type: "array",
+              type: 'array',
               items: {
-                type: "integer",
+                type: 'integer',
               },
             },
           },
           {
-            name: "teamB",
-            in: "query",
-            description: "Hero IDs on second team (array)",
+            name: 'teamB',
+            in: 'query',
+            description: 'Hero IDs on second team (array)',
             required: false,
-            style: "form",
+            style: 'form',
             explode: false,
             schema: {
-              type: "array",
+              type: 'array',
               items: {
-                type: "integer",
+                type: 'integer',
               },
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  title: "FindMatchesResponse",
-                  type: "array",
+                  title: 'FindMatchesResponse',
+                  type: 'array',
                   items: {
-                    type: "object",
+                    type: 'object',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/findMatches",
+        route: () => '/findMatches',
         func: (req, res, cb) => {
           // accept as input two arrays of up to 5
           const t0 = [].concat(req.query.teamA || []).slice(0, 5);
@@ -1794,7 +1799,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
 
             return db
               .raw(
-                "select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10",
+                'select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10',
                 [teamA, teamB, teamB, teamA]
               )
               .asCallback((err, result) => {
@@ -1808,32 +1813,32 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/heroes": {
+    '/heroes': {
       get: {
-        operationId: generateOperationId("get", "/heroes"),
-        summary: "GET /heroes",
-        description: "Get hero data",
-        tags: ["heroes"],
+        operationId: generateOperationId('get', '/heroes'),
+        summary: 'GET /heroes',
+        description: 'Get hero data',
+        tags: ['heroes'],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/HeroObjectResponse",
+                    $ref: '#/components/schemas/HeroObjectResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/heroes",
+        route: () => '/heroes',
         func: (req, res, cb) => {
           db.select()
-            .from("heroes")
-            .orderBy("id", "asc")
+            .from('heroes')
+            .orderBy('id', 'asc')
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -1843,32 +1848,32 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/heroStats": {
+    '/heroStats': {
       get: {
-        operationId: generateOperationId("get", "/heroStats"),
-        summary: "GET /heroStats",
-        description: "Get stats about hero performance in recent matches",
-        tags: ["hero stats"],
+        operationId: generateOperationId('get', '/heroStats'),
+        summary: 'GET /heroStats',
+        description: 'Get stats about hero performance in recent matches',
+        tags: ['hero stats'],
         parameters: [],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/HeroStatsResponse",
+                    $ref: '#/components/schemas/HeroStatsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/heroStats",
+        route: () => '/heroStats',
         func: (req, res, cb) => {
           // fetch from cached redis value
-          redis.get("heroStats", (err, result) => {
+          redis.get('heroStats', (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -1877,29 +1882,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/heroes/{hero_id}/matches": {
+    '/heroes/{hero_id}/matches': {
       get: {
-        operationId: generateOperationId("get", "/heroes/{hero_id}/matches"),
-        summary: "GET /heroes/{hero_id}/matches",
-        description: "Get recent matches with a hero",
-        tags: ["heroes"],
-        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
+        operationId: generateOperationId('get', '/heroes/{hero_id}/matches'),
+        summary: 'GET /heroes/{hero_id}/matches',
+        description: 'Get recent matches with a hero',
+        tags: ['heroes'],
+        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/MatchObjectResponse",
+                    $ref: '#/components/schemas/MatchObjectResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/heroes/:hero_id/matches",
+        route: () => '/heroes/:hero_id/matches',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
           db.raw(
@@ -1933,29 +1938,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/heroes/{hero_id}/matchups": {
+    '/heroes/{hero_id}/matchups': {
       get: {
-        operationId: generateOperationId("get", "/heroes/{hero_id}/matchups"),
-        summary: "GET /heroes/{hero_id}/matchups",
-        description: "Get results against other heroes for a hero",
-        tags: ["heroes"],
-        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
+        operationId: generateOperationId('get', '/heroes/{hero_id}/matchups'),
+        summary: 'GET /heroes/{hero_id}/matchups',
+        description: 'Get results against other heroes for a hero',
+        tags: ['heroes'],
+        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/HeroMatchupsResponse",
+                    $ref: '#/components/schemas/HeroMatchupsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/heroes/:hero_id/matchups",
+        route: () => '/heroes/:hero_id/matchups',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
           db.raw(
@@ -1970,7 +1975,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             AND matches.start_time > ?
             GROUP BY pm2.hero_id
             ORDER BY games_played DESC`,
-            [heroId, moment().subtract(1, "year").format("X")]
+            [heroId, moment().subtract(1, 'year').format('X')]
           ).asCallback((err, result) => {
             if (err) {
               return cb(err);
@@ -1980,29 +1985,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/heroes/{hero_id}/durations": {
+    '/heroes/{hero_id}/durations': {
       get: {
-        operationId: generateOperationId("get", "/heroes/{hero_id}/durations"),
-        summary: "GET /heroes/{hero_id}/durations",
-        description: "Get hero performance over a range of match durations",
-        tags: ["heroes"],
-        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
+        operationId: generateOperationId('get', '/heroes/{hero_id}/durations'),
+        summary: 'GET /heroes/{hero_id}/durations',
+        description: 'Get hero performance over a range of match durations',
+        tags: ['heroes'],
+        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/HeroDurationsResponse",
+                    $ref: '#/components/schemas/HeroDurationsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/heroes/:hero_id/durations",
+        route: () => '/heroes/:hero_id/durations',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
           db.raw(
@@ -2024,24 +2029,24 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/heroes/{hero_id}/players": {
+    '/heroes/{hero_id}/players': {
       get: {
-        operationId: generateOperationId("get", "/heroes/{hero_id}/players"),
-        summary: "GET /heroes/{hero_id}/players",
-        description: "Get players who have played this hero",
-        tags: ["heroes"],
-        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
+        operationId: generateOperationId('get', '/heroes/{hero_id}/players'),
+        summary: 'GET /heroes/{hero_id}/players',
+        description: 'Get players who have played this hero',
+        tags: ['heroes'],
+        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    type: "array", // todo: Why double array?
+                    type: 'array', // todo: Why double array?
                     items: {
-                      $ref: "#/components/schemas/PlayerObjectResponse",
+                      $ref: '#/components/schemas/PlayerObjectResponse',
                     },
                   },
                 },
@@ -2049,7 +2054,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             },
           },
         },
-        route: () => "/heroes/:hero_id/players",
+        route: () => '/heroes/:hero_id/players',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
           db.raw(
@@ -2072,30 +2077,30 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/heroes/{hero_id}/itemPopularity": {
+    '/heroes/{hero_id}/itemPopularity': {
       get: {
         operationId: generateOperationId(
-          "get",
-          "/heroes/{hero_id}/itemPopularity"
+          'get',
+          '/heroes/{hero_id}/itemPopularity'
         ),
-        summary: "GET /heroes/{hero_id}/itemPopularity",
+        summary: 'GET /heroes/{hero_id}/itemPopularity',
         description:
-          "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
-        tags: ["heroes"],
-        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
+          'Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games',
+        tags: ['heroes'],
+        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/HeroItemPopularityResponse",
+                  $ref: '#/components/schemas/HeroItemPopularityResponse',
                 },
               },
             },
           },
         },
-        route: () => "/heroes/:hero_id/itemPopularity",
+        route: () => '/heroes/:hero_id/itemPopularity',
         func: (req, res, cb) => {
           const heroId = req.params.hero_id;
           queries.getHeroItemPopularity(
@@ -2113,31 +2118,31 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/leagues": {
+    '/leagues': {
       get: {
-        operationId: generateOperationId("get", "/leagues"),
-        summary: "GET /leagues",
-        description: "Get league data",
-        tags: ["leagues"],
+        operationId: generateOperationId('get', '/leagues'),
+        summary: 'GET /leagues',
+        description: 'Get league data',
+        tags: ['leagues'],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/LeagueObjectResponse",
+                    $ref: '#/components/schemas/LeagueObjectResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/leagues",
+        route: () => '/leagues',
         func: (req, res, cb) => {
           db.select()
-            .from("leagues")
+            .from('leagues')
             .asCallback((err, result) => {
               if (err) {
                 return cb(err);
@@ -2147,29 +2152,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/leagues/{league_id}": {
+    '/leagues/{league_id}': {
       get: {
-        operationId: generateOperationId("get", "/leagues/{league_id}"),
-        summary: "GET /leagues/{league_id}",
-        description: "Get data for a league",
-        tags: ["leagues"],
-        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
+        operationId: generateOperationId('get', '/leagues/{league_id}'),
+        summary: 'GET /leagues/{league_id}',
+        description: 'Get data for a league',
+        tags: ['leagues'],
+        parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/LeagueObjectResponse",
+                    $ref: '#/components/schemas/LeagueObjectResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/leagues/:league_id",
+        route: () => '/leagues/:league_id',
         func: (req, res, cb) => {
           db.raw(
             `SELECT leagues.*
@@ -2185,26 +2190,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/leagues/{league_id}/matches": {
+    '/leagues/{league_id}/matches': {
       get: {
-        operationId: generateOperationId("get", "/leagues/{league_id}/matches"),
-        summary: "GET /leagues/{league_id}/matches",
-        description: "Get matches for a team",
-        tags: ["leagues"],
-        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
+        operationId: generateOperationId('get', '/leagues/{league_id}/matches'),
+        summary: 'GET /leagues/{league_id}/matches',
+        description: 'Get matches for a team',
+        tags: ['leagues'],
+        parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/MatchObjectResponse",
+                  $ref: '#/components/schemas/MatchObjectResponse',
                 },
               },
             },
           },
         },
-        route: () => "/leagues/:league_id/matches",
+        route: () => '/leagues/:league_id/matches',
         func: (req, res, cb) => {
           db.raw(
             `SELECT matches.*
@@ -2220,26 +2225,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/leagues/{league_id}/teams": {
+    '/leagues/{league_id}/teams': {
       get: {
-        operationId: generateOperationId("get", "/leagues/{league_id}/teams"),
-        summary: "GET /leagues/{league_id}/teams",
-        description: "Get teams for a league",
-        tags: ["leagues"],
-        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
+        operationId: generateOperationId('get', '/leagues/{league_id}/teams'),
+        summary: 'GET /leagues/{league_id}/teams',
+        description: 'Get teams for a league',
+        tags: ['leagues'],
+        parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/TeamObjectResponse",
+                  $ref: '#/components/schemas/TeamObjectResponse',
                 },
               },
             },
           },
         },
-        route: () => "/leagues/:league_id/teams",
+        route: () => '/leagues/:league_id/teams',
         func: (req, res, cb) => {
           db.raw(
             `SELECT team_rating.*, teams.*
@@ -2259,40 +2264,40 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/teams": {
+    '/teams': {
       get: {
-        operationId: generateOperationId("get", "/teams"),
-        summary: "GET /teams",
-        description: "Get team data",
-        tags: ["teams"],
+        operationId: generateOperationId('get', '/teams'),
+        summary: 'GET /teams',
+        description: 'Get team data',
+        tags: ['teams'],
         parameters: [
           {
-            name: "page",
-            in: "query",
+            name: 'page',
+            in: 'query',
             description:
-              "Page number, zero indexed. Each page returns up to 1000 entries.",
+              'Page number, zero indexed. Each page returns up to 1000 entries.',
             required: false,
             schema: {
-              type: "integer",
+              type: 'integer',
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/TeamObjectResponse",
+                    $ref: '#/components/schemas/TeamObjectResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/teams",
+        route: () => '/teams',
         func: (req, res, cb) => {
           db.raw(
             `SELECT team_rating.*, teams.*
@@ -2311,26 +2316,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/teams/{team_id}": {
+    '/teams/{team_id}': {
       get: {
-        operationId: generateOperationId("get", "/teams/{team_id}"),
-        summary: "GET /teams/{team_id}",
-        description: "Get data for a team",
-        tags: ["teams"],
-        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
+        operationId: generateOperationId('get', '/teams/{team_id}'),
+        summary: 'GET /teams/{team_id}',
+        description: 'Get data for a team',
+        tags: ['teams'],
+        parameters: [{ $ref: '#/components/parameters/teamIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/TeamObjectResponse",
+                  $ref: '#/components/schemas/TeamObjectResponse',
                 },
               },
             },
           },
         },
-        route: () => "/teams/:team_id",
+        route: () => '/teams/:team_id',
         func: (req, res, cb) => {
           db.raw(
             `SELECT team_rating.*, teams.*
@@ -2347,26 +2352,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/teams/{team_id}/matches": {
+    '/teams/{team_id}/matches': {
       get: {
-        operationId: generateOperationId("get", "/teams/{team_id}/matches"),
-        summary: "GET /teams/{team_id}/matches",
-        description: "Get matches for a team",
-        tags: ["teams"],
-        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
+        operationId: generateOperationId('get', '/teams/{team_id}/matches'),
+        summary: 'GET /teams/{team_id}/matches',
+        description: 'Get matches for a team',
+        tags: ['teams'],
+        parameters: [{ $ref: '#/components/parameters/teamIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/TeamMatchObjectResponse",
+                  $ref: '#/components/schemas/TeamMatchObjectResponse',
                 },
               },
             },
           },
         },
-        route: () => "/teams/:team_id/matches",
+        route: () => '/teams/:team_id/matches',
         func: (req, res, cb) => {
           db.raw(
             `
@@ -2389,26 +2394,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/teams/{team_id}/players": {
+    '/teams/{team_id}/players': {
       get: {
-        operationId: generateOperationId("get", "/teams/{team_id}/players"),
-        summary: "GET /teams/{team_id}/players",
-        description: "Get players who have played for a team",
-        tags: ["teams"],
-        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
+        operationId: generateOperationId('get', '/teams/{team_id}/players'),
+        summary: 'GET /teams/{team_id}/players',
+        description: 'Get players who have played for a team',
+        tags: ['teams'],
+        parameters: [{ $ref: '#/components/parameters/teamIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/TeamPlayersResponse",
+                  $ref: '#/components/schemas/TeamPlayersResponse',
                 },
               },
             },
           },
         },
-        route: () => "/teams/:team_id/players",
+        route: () => '/teams/:team_id/players',
         func: (req, res, cb) => {
           db.raw(
             `SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
@@ -2430,26 +2435,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/teams/{team_id}/heroes": {
+    '/teams/{team_id}/heroes': {
       get: {
-        operationId: generateOperationId("get", "/teams/{team_id}/heroes"),
-        summary: "GET /teams/{team_id}/heroes",
-        description: "Get heroes for a team",
-        tags: ["teams"],
-        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
+        operationId: generateOperationId('get', '/teams/{team_id}/heroes'),
+        summary: 'GET /teams/{team_id}/heroes',
+        description: 'Get heroes for a team',
+        tags: ['teams'],
+        parameters: [{ $ref: '#/components/parameters/teamIdPathParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  $ref: "#/components/schemas/TeamHeroesResponse",
+                  $ref: '#/components/schemas/TeamHeroesResponse',
                 },
               },
             },
           },
         },
-        route: () => "/teams/:team_id/heroes",
+        route: () => '/teams/:team_id/heroes',
         func: (req, res, cb) => {
           db.raw(
             `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
@@ -2471,34 +2476,34 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/replays": {
+    '/replays': {
       get: {
-        operationId: generateOperationId("get", "/replays"),
-        summary: "GET /replays",
-        description: "Get data to construct a replay URL with",
-        tags: ["replays"],
-        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
+        operationId: generateOperationId('get', '/replays'),
+        summary: 'GET /replays',
+        description: 'Get data to construct a replay URL with',
+        tags: ['replays'],
+        parameters: [{ $ref: '#/components/parameters/matchIdParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/ReplaysResponse",
+                    $ref: '#/components/schemas/ReplaysResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/replays",
+        route: () => '/replays',
         func: (req, res, cb) => {
-          db.select(["match_id", "cluster", "replay_salt"])
-            .from("match_gcdata")
+          db.select(['match_id', 'cluster', 'replay_salt'])
+            .from('match_gcdata')
             .whereIn(
-              "match_id",
+              'match_id',
               [].concat(req.query.match_id || []).slice(0, 5)
             )
             .asCallback((err, result) => {
@@ -2510,54 +2515,54 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/records/{field}": {
+    '/records/{field}': {
       get: {
-        operationId: generateOperationId("get", "/records/{field}"),
-        summary: "GET /records/{field}",
-        description: "Get top performances in a stat",
-        tags: ["records"],
+        operationId: generateOperationId('get', '/records/{field}'),
+        summary: 'GET /records/{field}',
+        description: 'Get top performances in a stat',
+        tags: ['records'],
         parameters: [
           {
-            name: "field",
-            in: "path",
-            description: "Field name to query",
+            name: 'field',
+            in: 'path',
+            description: 'Field name to query',
             required: true,
             schema: {
-              type: "string",
+              type: 'string',
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/RecordsResponse",
+                    $ref: '#/components/schemas/RecordsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/records/:field",
+        route: () => '/records/:field',
         func: (req, res, cb) => {
           redis.zrevrange(
             `records:${req.params.field}`,
             0,
             99,
-            "WITHSCORES",
+            'WITHSCORES',
             (err, rows) => {
               if (err) {
                 return cb(err);
               }
               const entries = rows
                 .map((r, i) => {
-                  const match_id = parseInt(r.split(":")[0]);
-                  const start_time = parseInt(r.split(":")[1]);
-                  const hero_id = parseInt(r.split(":")[2]);
+                  const match_id = parseInt(r.split(':')[0]);
+                  const start_time = parseInt(r.split(':')[1]);
+                  const hero_id = parseInt(r.split(':')[2]);
                   const score = parseInt(rows[i + 1]);
 
                   return {
@@ -2574,23 +2579,23 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/live": {
+    '/live': {
       get: {
-        operationId: generateOperationId("get", "/live"),
-        summary: "GET /live",
-        description: "Get top currently ongoing live games",
-        tags: ["live"],
+        operationId: generateOperationId('get', '/live'),
+        summary: 'GET /live',
+        description: 'Get top currently ongoing live games',
+        tags: ['live'],
         parameters: [],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    title: "LiveResponse",
-                    type: "object",
+                    title: 'LiveResponse',
+                    type: 'object',
                     properties: {},
                   },
                 },
@@ -2598,9 +2603,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             },
           },
         },
-        route: () => "/live",
+        route: () => '/live',
         func: (req, res, cb) => {
-          redis.zrangebyscore("liveGames", "-inf", "inf", (err, rows) => {
+          redis.zrangebyscore('liveGames', '-inf', 'inf', (err, rows) => {
             if (err) {
               return cb(err);
             }
@@ -2618,41 +2623,41 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/scenarios/itemTimings": {
+    '/scenarios/itemTimings': {
       get: {
-        operationId: generateOperationId("get", "/scenarios/itemTimings"),
-        summary: "GET /scenarios/itemTimings",
+        operationId: generateOperationId('get', '/scenarios/itemTimings'),
+        summary: 'GET /scenarios/itemTimings',
         description:
-          "Win rates for certain item timings on a hero for items that cost at least 1400 gold",
-        tags: ["scenarios"],
+          'Win rates for certain item timings on a hero for items that cost at least 1400 gold',
+        tags: ['scenarios'],
         parameters: [
           {
-            name: "item",
-            in: "query",
-            description: "Filter by item name e.g. \"spirit_vessel\"",
+            name: 'item',
+            in: 'query',
+            description: 'Filter by item name e.g. "spirit_vessel"',
             required: false,
             schema: {
-              type: "string",
+              type: 'string',
             },
           },
-          { $ref: "#/components/parameters/heroIdParam" },
+          { $ref: '#/components/parameters/heroIdParam' },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/ScenarioItemTimingsResponse",
+                    $ref: '#/components/schemas/ScenarioItemTimingsResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/scenarios/itemTimings",
+        route: () => '/scenarios/itemTimings',
         func: (req, res, cb) => {
           queries.getItemTimings(req, (err, result) => {
             if (err) {
@@ -2663,40 +2668,40 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/scenarios/laneRoles": {
+    '/scenarios/laneRoles': {
       get: {
-        operationId: generateOperationId("get", "/scenarios/laneRoles"),
-        summary: "GET /scenarios/laneRoles",
-        description: "Win rates for heroes in certain lane roles",
-        tags: ["scenarios"],
+        operationId: generateOperationId('get', '/scenarios/laneRoles'),
+        summary: 'GET /scenarios/laneRoles',
+        description: 'Win rates for heroes in certain lane roles',
+        tags: ['scenarios'],
         parameters: [
           {
-            name: "lane_role",
-            in: "query",
-            description: "Filter by lane role 1-4 (Safe, Mid, Off, Jungle)",
+            name: 'lane_role',
+            in: 'query',
+            description: 'Filter by lane role 1-4 (Safe, Mid, Off, Jungle)',
             required: false,
             schema: {
-              type: "string",
+              type: 'string',
             },
           },
-          { $ref: "#/components/parameters/heroIdParam" },
+          { $ref: '#/components/parameters/heroIdParam' },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/ScenarioLaneRolesResponse",
+                    $ref: '#/components/schemas/ScenarioLaneRolesResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/scenarios/laneRoles",
+        route: () => '/scenarios/laneRoles',
         func: (req, res, cb) => {
           queries.getLaneRoles(req, (err, result) => {
             if (err) {
@@ -2707,29 +2712,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/scenarios/misc": {
+    '/scenarios/misc': {
       get: {
-        operationId: generateOperationId("get", "/scenarios/misc"),
-        summary: "GET /scenarios/misc",
-        description: "Miscellaneous team scenarios",
-        tags: ["scenarios"],
-        parameters: [{ $ref: "#/components/parameters/scenarioParam" }],
+        operationId: generateOperationId('get', '/scenarios/misc'),
+        summary: 'GET /scenarios/misc',
+        description: 'Miscellaneous team scenarios',
+        tags: ['scenarios'],
+        parameters: [{ $ref: '#/components/parameters/scenarioParam' }],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/ScenarioMiscResponse",
+                    $ref: '#/components/schemas/ScenarioMiscResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/scenarios/misc",
+        route: () => '/scenarios/misc',
         func: (req, res, cb) => {
           queries.getTeamScenarios(req, (err, result) => {
             if (err) {
@@ -2740,34 +2745,34 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/schema": {
+    '/schema': {
       get: {
-        operationId: generateOperationId("get", "/schema"),
-        summary: "GET /schema",
-        description: "Get database schema",
-        tags: ["schema"],
+        operationId: generateOperationId('get', '/schema'),
+        summary: 'GET /schema',
+        description: 'Get database schema',
+        tags: ['schema'],
         parameters: [],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    $ref: "#/components/schemas/SchemaResponse",
+                    $ref: '#/components/schemas/SchemaResponse',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/schema",
+        route: () => '/schema',
         func: (req, res, cb) => {
-          db.select(["table_name", "column_name", "data_type"])
-            .from("information_schema.columns")
+          db.select(['table_name', 'column_name', 'data_type'])
+            .from('information_schema.columns')
             .where({
-              table_schema: "public",
+              table_schema: 'public',
             })
             .asCallback((err, result) => {
               if (err) {
@@ -2778,51 +2783,51 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/constants/{resource}": {
+    '/constants/{resource}': {
       get: {
-        operationId: generateOperationId("get", "/constants/{resource}"),
-        summary: "GET /constants",
+        operationId: generateOperationId('get', '/constants/{resource}'),
+        summary: 'GET /constants',
         description:
-          "Get static game data mirrored from the dotaconstants repository.",
-        tags: ["constants"],
+          'Get static game data mirrored from the dotaconstants repository.',
+        tags: ['constants'],
         parameters: [
           {
-            name: "resource",
-            in: "path",
+            name: 'resource',
+            in: 'path',
             description:
-              "Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)",
+              'Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)',
             required: true,
             schema: {
-              type: "string",
+              type: 'string',
             },
           },
         ],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
                   nullable: true,
                   oneOf: [
                     {
-                      type: "object",
+                      type: 'object',
                       additionalProperties: {
-                        title: "ConstantResourceResponse",
+                        title: 'ConstantResourceResponse',
                       },
                     },
                     {
-                      type: "array",
+                      type: 'array',
                       items: {
                         oneOf: [
                           {
-                            type: "object",
+                            type: 'object',
                             additionalProperties: {
-                              title: "ConstantResourceResponse",
+                              title: 'ConstantResourceResponse',
                             },
                           },
                           {
-                            type: "integer",
+                            type: 'integer',
                           },
                         ],
                       },
@@ -2833,7 +2838,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             },
           },
         },
-        route: () => "/constants/:resource?",
+        route: () => '/constants/:resource?',
         func: (req, res, cb) => {
           const { resource } = req.params;
           if (resource in constants) {
@@ -2843,30 +2848,30 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    "/constants": {
+    '/constants': {
       get: {
-        operationId: generateOperationId("get", "/constants"),
-        summary: "GET /constants",
-        description: "Gets an array of available resources.",
-        tags: ["constants"],
+        operationId: generateOperationId('get', '/constants'),
+        summary: 'GET /constants',
+        description: 'Gets an array of available resources.',
+        tags: ['constants'],
         parameters: [],
         responses: {
           200: {
-            description: "Success",
+            description: 'Success',
             content: {
-              "application/json; charset=utf-8": {
+              'application/json; charset=utf-8': {
                 schema: {
-                  type: "array",
+                  type: 'array',
                   items: {
-                    title: "ConstantsResponse",
-                    type: "string",
+                    title: 'ConstantsResponse',
+                    type: 'string',
                   },
                 },
               },
             },
           },
         },
-        route: () => "/constants",
+        route: () => '/constants',
         func: (req, res) => {
           return res.json(Object.keys(constants));
         },

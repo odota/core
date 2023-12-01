@@ -2,8 +2,8 @@ import async from 'async';
 import db from '../store/db';
 import queries from '../store/queries';
 
-db.select(["radiant_team_id", "dire_team_id", "match_id"])
-  .from("matches")
+db.select(['radiant_team_id', 'dire_team_id', 'match_id'])
+  .from('matches')
   .asCallback((err, matches) => {
     if (err) {
       throw err;
@@ -32,7 +32,7 @@ db.select(["radiant_team_id", "dire_team_id", "match_id"])
           (tm, cb) => {
             queries.upsert(
               db,
-              "team_match",
+              'team_match',
               tm,
               {
                 team_id: tm.team_id,

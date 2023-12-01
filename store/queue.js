@@ -1,14 +1,14 @@
 /**
  * Provides methods for working with the job queue
  * */
-const moment = require("moment");
-const async = require("async");
-const redis = require("./redis");
-const db = require("./db");
+const moment = require('moment');
+const async = require('async');
+const redis = require('./redis');
+const db = require('./db');
 
 function runQueue(queueName, parallelism, processor) {
   function processOneJob(cb) {
-    redis.blpop(queueName, "0", (err, job) => {
+    redis.blpop(queueName, '0', (err, job) => {
       if (err) {
         throw err;
       }
@@ -46,7 +46,7 @@ function runReliableQueue(queueName, parallelism, processor) {
       )
       RETURNING *
       `,
-          [moment().add(2, "minute"), queueName]
+          [moment().add(2, 'minute'), queueName]
         )
         .asCallback((err, result) => {
           const job = result && result.rows && result.rows[0];
@@ -55,7 +55,7 @@ function runReliableQueue(queueName, parallelism, processor) {
           }
           if (!job) {
             trx.commit();
-            console.log("no job available, waiting");
+            console.log('no job available, waiting');
             return setTimeout(cb, 5000);
           }
           return processor(job.data, (err) => {
@@ -66,7 +66,7 @@ function runReliableQueue(queueName, parallelism, processor) {
             if (!err || job.attempts <= 0) {
               // remove the job from the queue if successful or out of attempts
               trx
-                .raw("DELETE FROM queue WHERE id = ?", [job.id])
+                .raw('DELETE FROM queue WHERE id = ?', [job.id])
                 .asCallback((err) => {
                   if (err) {
                     throw err;
@@ -113,7 +113,7 @@ function addJob(queueName, job, options, cb) {
 }
 
 function getJob(jobId, cb) {
-  db.raw("SELECT * FROM queue WHERE id = ?", [jobId]).asCallback(
+  db.raw('SELECT * FROM queue WHERE id = ?', [jobId]).asCallback(
     (err, result) => {
       if (err) {
         return cb(err);

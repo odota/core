@@ -1,7 +1,7 @@
 import async from 'async';
 import queries from '../store/queries.js';
 import db from '../store/db.js';
-import { generateJob, getData } from '../util/utility.js'; 
+import { generateJob, getData } from '../util/utility.js';
 
 // const leagueUrl = generateJob('api_leagues', {}).url;
 
@@ -19,7 +19,7 @@ function getPage(url, leagueid, cb) {
       data.result.matches,
       (match, cb) => {
         console.log(match.match_id);
-        const job = generateJob("api_details", {
+        const job = generateJob('api_details', {
           match_id: match.match_id,
         });
         const { url } = job;
@@ -51,7 +51,7 @@ function getPage(url, leagueid, cb) {
           throw err;
         }
         if (data.result.results_remaining) {
-          const url2 = generateJob("api_history", {
+          const url2 = generateJob('api_history', {
             leagueid,
             start_at_match_id:
               data.result.matches[data.result.matches.length - 1].match_id - 1,
@@ -66,10 +66,10 @@ function getPage(url, leagueid, cb) {
 }
 
 // From DB
-db.select("leagueid")
-  .from("leagues")
-  .where("tier", "professional")
-  .orWhere("tier", "premium")
+db.select('leagueid')
+  .from('leagues')
+  .where('tier', 'professional')
+  .orWhere('tier', 'premium')
   .asCallback((err, data) => {
     if (err) {
       throw err;
@@ -78,7 +78,7 @@ db.select("leagueid")
     async.eachSeries(
       leagueIds,
       (leagueid, cb) => {
-        const { url } = generateJob("api_history", {
+        const { url } = generateJob('api_history', {
           leagueid,
         });
         return getPage(url, leagueid, cb);

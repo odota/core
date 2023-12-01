@@ -1,4 +1,4 @@
-const utility = require("./utility");
+const utility = require('./utility');
 
 const { isRadiant } = utility;
 

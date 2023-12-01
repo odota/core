@@ -23,7 +23,7 @@ function processDraftTimings(entries, meta) {
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     const heroId = e.hero_id;
-    if (e.type === "draft_timings") {
+    if (e.type === 'draft_timings') {
       // The active team needs to be downshifted by 1, so ignore the final observation.
       if (i < entries.length - 1) {
         sumActiveTeam += e.draft_active_team;
@@ -41,7 +41,7 @@ function processDraftTimings(entries, meta) {
       };
       draftTimings.push(JSON.parse(JSON.stringify(currpickban)));
       previousActiveTeam = e.draft_active_team;
-    } else if (e.type === "draft_start") {
+    } else if (e.type === 'draft_start') {
       draftStart = e.time;
     }
   }

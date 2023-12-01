@@ -1,123 +1,123 @@
-const commonProperties = require("../../properties/commonProperties");
+const commonProperties = require('../../properties/commonProperties');
 
 module.exports = {
   BenchmarksResponse: {
-    title: "BenchmarksResponse",
-    type: "object",
+    title: 'BenchmarksResponse',
+    type: 'object',
     properties: {
       hero_id: commonProperties.hero_id,
       result: {
-        description: "result",
-        type: "object",
+        description: 'result',
+        type: 'object',
         properties: {
           gold_per_min: {
-            type: "array",
+            type: 'array',
             items: {
-              type: "object",
+              type: 'object',
               properties: {
                 percentile: {
-                  description: "percentile",
-                  type: "number",
+                  description: 'percentile',
+                  type: 'number',
                 },
                 value: {
-                  description: "value",
-                  type: "number",
+                  description: 'value',
+                  type: 'number',
                 },
               },
             },
           },
           xp_per_min: {
-            type: "array",
+            type: 'array',
             items: {
-              type: "object",
+              type: 'object',
               properties: {
                 percentile: {
-                  description: "percentile",
-                  type: "number",
+                  description: 'percentile',
+                  type: 'number',
                 },
                 value: {
-                  description: "value",
-                  type: "number",
+                  description: 'value',
+                  type: 'number',
                 },
               },
             },
           },
           kills_per_min: {
-            type: "array",
+            type: 'array',
             items: {
-              type: "object",
+              type: 'object',
               properties: {
                 percentile: {
-                  description: "percentile",
-                  type: "number",
+                  description: 'percentile',
+                  type: 'number',
                 },
                 value: {
-                  description: "value",
-                  type: "number",
+                  description: 'value',
+                  type: 'number',
                 },
               },
             },
           },
           last_hits_per_min: {
-            type: "array",
+            type: 'array',
             items: {
-              type: "object",
+              type: 'object',
               properties: {
                 percentile: {
-                  description: "percentile",
-                  type: "number",
+                  description: 'percentile',
+                  type: 'number',
                 },
                 value: {
-                  description: "value",
-                  type: "number",
+                  description: 'value',
+                  type: 'number',
                 },
               },
             },
           },
           hero_damage_per_min: {
-            type: "array",
+            type: 'array',
             items: {
-              type: "object",
+              type: 'object',
               properties: {
                 percentile: {
-                  description: "percentile",
-                  type: "number",
+                  description: 'percentile',
+                  type: 'number',
                 },
                 value: {
-                  description: "value",
-                  type: "number",
+                  description: 'value',
+                  type: 'number',
                 },
               },
             },
           },
           hero_healing_per_min: {
-            type: "array",
+            type: 'array',
             items: {
-              type: "object",
+              type: 'object',
               properties: {
                 percentile: {
-                  description: "percentile",
-                  type: "number",
+                  description: 'percentile',
+                  type: 'number',
                 },
                 value: {
-                  description: "value",
-                  type: "number",
+                  description: 'value',
+                  type: 'number',
                 },
               },
             },
           },
           tower_damage: {
-            type: "array",
+            type: 'array',
             items: {
-              type: "object",
+              type: 'object',
               properties: {
                 percentile: {
-                  description: "percentile",
-                  type: "number",
+                  description: 'percentile',
+                  type: 'number',
                 },
                 value: {
-                  description: "value",
-                  type: "integer",
+                  description: 'value',
+                  type: 'integer',
                 },
               },
             },

@@ -1,12 +1,12 @@
-const express = require("express");
-const uuid = require("uuid/v4");
-const bodyParser = require("body-parser");
-const moment = require("moment");
-const async = require("async");
-const stripeLib = require("stripe");
-const db = require("../store/db");
-const redis = require("../store/redis");
-const config = require("../config");
+const express = require('express');
+const uuid = require('uuid/v4');
+const bodyParser = require('body-parser');
+const moment = require('moment');
+const async = require('async');
+const stripeLib = require('stripe');
+const db = require('../store/db');
+const redis = require('../store/redis');
+const config = require('../config');
 
 const stripe = stripeLib(config.STRIPE_SECRET);
 const stripeAPIPlan = config.STRIPE_API_PLAN;
@@ -22,7 +22,7 @@ keys.use(
 keys.use((req, res, next) => {
   if (!req.user) {
     return res.status(403).json({
-      error: "Authentication required",
+      error: 'Authentication required',
     });
   }
 
@@ -50,7 +50,7 @@ async function getOpenInvoices(customerId) {
   const invoices = await stripe.invoices.list({
     customer: customerId,
     limit: 100,
-    status: "open",
+    status: 'open',
   });
 
   return invoices.data;
@@ -60,9 +60,9 @@ async function getOpenInvoices(customerId) {
  * Invariant: A Stripe subscription and an API key is a 1 to 1 mapping. canceled sub = deleted key and vice versa a single user can have multiple subs but only one active at a given time (others have is_canceled = true).
  */
 keys
-  .route("/")
+  .route('/')
   .all(async (req, res, next) => {
-    const rows = await db.from("api_keys").where({
+    const rows = await db.from('api_keys').where({
       account_id: req.user.account_id,
     });
 
@@ -150,8 +150,8 @@ keys
                 ORDER BY month DESC
               `,
             [
-              moment().subtract(5, "month").startOf("month"),
-              moment().endOf("month"),
+              moment().subtract(5, 'month').startOf('month'),
+              moment().endOf('month'),
               req.user.account_id,
             ]
           ).asCallback((err, results) => cb(err, err ? null : results.rows));
@@ -180,7 +180,7 @@ keys
     await stripe.subscriptions.del(subscription_id, { invoice_now: true });
 
     await db
-      .from("api_keys")
+      .from('api_keys')
       .where({
         account_id: req.user.account_id,
         subscription_id,
@@ -190,7 +190,7 @@ keys
       });
 
     // Force the key to be disabled
-    redis.srem("api_keys", api_key, (err) => {
+    redis.srem('api_keys', api_key, (err) => {
       if (err) {
         throw err;
       }
@@ -203,7 +203,7 @@ keys
 
     if (!hasToken(req)) {
       return res.status(500).json({
-        error: "Missing token",
+        error: 'Missing token',
       });
     }
 
@@ -213,7 +213,7 @@ keys
     let customer_id;
 
     if (hasActiveKey(keyRecord)) {
-      console.log("Active key exists for", req.user.account_id);
+      console.log('Active key exists for', req.user.account_id);
       return res.sendStatus(200);
     }
     // returning customer
@@ -224,12 +224,12 @@ keys
 
       if (invoices.length > 0) {
         console.log(
-          "Open invoices exist for",
+          'Open invoices exist for',
           req.user.account_id,
-          "customer",
+          'customer',
           customer_id
         );
-        return res.status(402).json({ error: "Open invoice" });
+        return res.status(402).json({ error: 'Open invoice' });
       }
 
       try {
@@ -264,7 +264,7 @@ keys
     const sub = await stripe.subscriptions.create({
       customer: customer_id,
       items: [{ plan: stripeAPIPlan }],
-      billing_cycle_anchor: moment().add(1, "month").startOf("month").unix(),
+      billing_cycle_anchor: moment().add(1, 'month').startOf('month').unix(),
       metadata: {
         apiKey,
       },
@@ -289,7 +289,7 @@ keys
     );
 
     // Add the key to Redis so that it works immediately
-    redis.sadd("api_keys", apiKey, (err) => {
+    redis.sadd('api_keys', apiKey, (err) => {
       if (err) {
         throw err;
       }
@@ -302,14 +302,14 @@ keys
 
     if (!hasToken(req)) {
       return res.status(400).json({
-        error: "Missing token",
+        error: 'Missing token',
       });
     }
 
     const { keyRecord } = res.locals;
 
     if (!hasActiveKey(keyRecord)) {
-      throw Error("No record to update.");
+      throw Error('No record to update.');
     }
 
     const { customer_id, subscription_id } = keyRecord;

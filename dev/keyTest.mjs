@@ -5,7 +5,7 @@ import config from '../config.js';
 const output = [];
 
 async.eachSeries(
-  config.STEAM_API_KEY.split(","),
+  config.STEAM_API_KEY.split(','),
   (key, cb) => {
     setTimeout(() => {
       request(
@@ -23,6 +23,6 @@ async.eachSeries(
     }, 1000);
   },
   () => {
-    console.log(output.join(","));
+    console.log(output.join(','));
   }
 );

@@ -1,13 +1,13 @@
-const async = require("async");
-const db = require("../store/db");
-const utility = require("../util/utility");
-const queries = require("../store/queries");
+const async = require('async');
+const db = require('../store/db');
+const utility = require('../util/utility');
+const queries = require('../store/queries');
 
 const { invokeInterval } = utility;
 
 function doItems(cb) {
-  const container = utility.generateJob("api_items", {
-    language: "english",
+  const container = utility.generateJob('api_items', {
+    language: 'english',
   });
   utility.getData(container.url, (err, body) => {
     if (err) {
@@ -21,7 +21,7 @@ function doItems(cb) {
       (item, cb) => {
         queries.upsert(
           db,
-          "items",
+          'items',
           item,
           {
             id: item.id,

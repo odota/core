@@ -1,30 +1,30 @@
-const performanceOthers = require("./performanceOthers");
+const performanceOthers = require('./performanceOthers');
 
 function populate(e, container, meta) {
   let t;
   switch (e.type) {
-    case "interval":
+    case 'interval':
       break;
-    case "player_slot":
+    case 'player_slot':
       container.players[e.key].player_slot = e.value;
       break;
-    case "chat":
-    case "chatwheel":
+    case 'chat':
+    case 'chatwheel':
       container.chat.push(JSON.parse(JSON.stringify(e)));
       break;
-    case "cosmetics":
+    case 'cosmetics':
       container.cosmetics = JSON.parse(e.key);
       break;
-    case "CHAT_MESSAGE_FIRSTBLOOD":
-    case "CHAT_MESSAGE_COURIER_LOST":
-    case "CHAT_MESSAGE_AEGIS":
-    case "CHAT_MESSAGE_AEGIS_STOLEN":
-    case "CHAT_MESSAGE_DENIED_AEGIS":
-    case "CHAT_MESSAGE_ROSHAN_KILL":
-    case "building_kill":
+    case 'CHAT_MESSAGE_FIRSTBLOOD':
+    case 'CHAT_MESSAGE_COURIER_LOST':
+    case 'CHAT_MESSAGE_AEGIS':
+    case 'CHAT_MESSAGE_AEGIS_STOLEN':
+    case 'CHAT_MESSAGE_DENIED_AEGIS':
+    case 'CHAT_MESSAGE_ROSHAN_KILL':
+    case 'building_kill':
       container.objectives.push(JSON.parse(JSON.stringify(e)));
       break;
-    case "ability_levels":
+    case 'ability_levels':
       meta.ability_levels[e.unit] = {
         [e.key]: e.level,
         ...meta.ability_levels[e.unit],
@@ -38,7 +38,7 @@ function populate(e, container, meta) {
         return;
       }
       t = container.players[e.slot][e.type];
-      if (typeof t === "undefined") {
+      if (typeof t === 'undefined') {
         // container.players[0] doesn't have a type for this event
         // console.log("no field in parsed_data.players for %s", e.type);
       } else if (e.posData) {
@@ -65,23 +65,23 @@ function populate(e, container, meta) {
         if (e.interval) {
           arrEntry = e.value;
         } else if (
-          e.type === "purchase_log" ||
-          e.type === "kills_log" ||
-          e.type === "runes_log"
+          e.type === 'purchase_log' ||
+          e.type === 'kills_log' ||
+          e.type === 'runes_log'
         ) {
           arrEntry = {
             time: e.time,
             key: e.key,
           };
-          const maxCharges = e.key === "tango" ? 3 : 1;
-          if (e.type === "purchase_log" && e.charges > maxCharges) {
+          const maxCharges = e.key === 'tango' ? 3 : 1;
+          if (e.type === 'purchase_log' && e.charges > maxCharges) {
             arrEntry = {
               time: e.time,
               key: e.key,
               charges: e.charges,
             };
           }
-          if (e.type === "kills_log" && e.tracked_death) {
+          if (e.type === 'kills_log' && e.tracked_death) {
             arrEntry = {
               tracked_death: e.tracked_death,
               tracked_sourcename: e.tracked_sourcename,
@@ -92,7 +92,7 @@ function populate(e, container, meta) {
           arrEntry = JSON.parse(JSON.stringify(e));
         }
         t.push(arrEntry);
-      } else if (e.type === "ability_targets") {
+      } else if (e.type === 'ability_targets') {
         // e.g. { Telekinesis: { Antimage: 1, Bristleback: 2 }, Fade Bolt: { Lion: 4, Timber: 5 }, ... }
         const ability = e.key[0];
         const target = e.key[1];
@@ -104,7 +104,7 @@ function populate(e, container, meta) {
           t[ability] = {};
           t[ability][target] = 1;
         }
-      } else if (e.type === "damage_targets") {
+      } else if (e.type === 'damage_targets') {
         const ability = e.key[0];
         const target = e.key[1];
         const damage = e.value;
@@ -115,7 +115,7 @@ function populate(e, container, meta) {
           t[ability][target] = 0;
         }
         t[ability][target] += damage;
-      } else if (typeof t === "object") {
+      } else if (typeof t === 'object') {
         // add it to hash of counts
         e.value = e.value || 1;
         if (t[e.key]) {
@@ -124,7 +124,7 @@ function populate(e, container, meta) {
           t[e.key] = e.value;
         }
         performanceOthers(e, container, meta);
-      } else if (typeof t === "string") {
+      } else if (typeof t === 'string') {
         // string, used for steam id
         container.players[e.slot][e.type] = e.key;
       } else {

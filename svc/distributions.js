@@ -1,16 +1,16 @@
-const fs = require("fs");
-const async = require("async");
-const constants = require("dotaconstants");
-const db = require("../store/db");
-const redis = require("../store/redis");
-const utility = require("../util/utility");
+const fs = require('fs');
+const async = require('async');
+const constants = require('dotaconstants');
+const db = require('../store/db');
+const redis = require('../store/redis');
+const utility = require('../util/utility');
 
 const { invokeInterval } = utility;
 
 const sql = {};
-const sqlq = fs.readdirSync("./sql");
+const sqlq = fs.readdirSync('./sql');
 sqlq.forEach((f) => {
-  sql[f.split(".")[0]] = fs.readFileSync(`./sql/${f}`, "utf8");
+  sql[f.split('.')[0]] = fs.readFileSync(`./sql/${f}`, 'utf8');
 });
 
 function mapMmr(results) {
@@ -59,13 +59,13 @@ function doDistributions(cb) {
   async.parallel(
     {
       country_mmr(cb) {
-        loadData("country_mmr", mapCountry, cb);
+        loadData('country_mmr', mapCountry, cb);
       },
       mmr(cb) {
-        loadData("mmr", mapMmr, cb);
+        loadData('mmr', mapMmr, cb);
       },
       ranks(cb) {
-        loadData("ranks", mapMmr, cb);
+        loadData('ranks', mapMmr, cb);
       },
     },
     (err, result) => {

@@ -1,15 +1,15 @@
-const vdf = require("simple-vdf");
-const async = require("async");
-const db = require("../store/db");
-const utility = require("../util/utility");
-const queries = require("../store/queries");
+const vdf = require('simple-vdf');
+const async = require('async');
+const db = require('../store/db');
+const utility = require('../util/utility');
+const queries = require('../store/queries');
 
 const { invokeInterval, cleanItemSchema } = utility;
 
 function doCosmetics(cb) {
   utility.getData(
     {
-      url: "https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt",
+      url: 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/game/dota/pak01_dir/scripts/items/items_game.txt',
       raw: true,
     },
     (err, body) => {
@@ -26,14 +26,14 @@ function doCosmetics(cb) {
           item.item_id = Number(itemId);
           const hero =
             item.used_by_heroes &&
-            typeof item.used_by_heroes === "object" &&
+            typeof item.used_by_heroes === 'object' &&
             Object.keys(item.used_by_heroes)[0];
 
           function insert(cb) {
             // console.log(item);
             return queries.upsert(
               db,
-              "cosmetics",
+              'cosmetics',
               item,
               {
                 item_id: item.item_id,
@@ -49,11 +49,11 @@ function doCosmetics(cb) {
             return cb();
           }
           if (item.image_inventory) {
-            const spl = item.image_inventory.split("/");
+            const spl = item.image_inventory.split('/');
             const iconname = spl[spl.length - 1];
             return utility.getData(
               {
-                url: utility.generateJob("api_item_icon", {
+                url: utility.generateJob('api_item_icon', {
                   iconname,
                 }).url,
                 noRetry: true,

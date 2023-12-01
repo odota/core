@@ -1,12 +1,12 @@
-const async = require("async");
-const db = require("../store/db");
-const queries = require("../store/queries");
-const utility = require("../util/utility");
+const async = require('async');
+const db = require('../store/db');
+const queries = require('../store/queries');
+const utility = require('../util/utility');
 
 const { invokeInterval, generateJob, getData } = utility;
 
 function doProPlayers(cb) {
-  const container = generateJob("api_notable", {});
+  const container = generateJob('api_notable', {});
   getData(container.url, (err, body) => {
     if (err) {
       return cb(err);
@@ -16,7 +16,7 @@ function doProPlayers(cb) {
       (p, cb) => {
         queries.upsert(
           db,
-          "notable_players",
+          'notable_players',
           p,
           {
             account_id: p.account_id,

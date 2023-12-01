@@ -7,9 +7,9 @@ import db from '../store/db.js';
 import queries from '../store/queries.js';
 import utility from '../util/utility.js';
 
-db.select(["match_id", "start_time"])
-  .from("matches")
-  .orderBy("match_id", "desc")
+db.select(['match_id', 'start_time'])
+  .from('matches')
+  .orderBy('match_id', 'desc')
   .asCallback((err, matchIds) => {
     if (err) {
       throw err;
@@ -22,7 +22,7 @@ db.select(["match_id", "start_time"])
         console.log(match.match_id, patch);
         queries.upsert(
           db,
-          "match_patch",
+          'match_patch',
           {
             match_id: match.match_id,
             patch,

@@ -1,19 +1,19 @@
 /**
  * Worker that monitors health metrics and saves results
  * */
-const request = require("request");
-const config = require("../config");
-const redis = require("../store/redis");
-const db = require("../store/db");
-const cassandra = require("../store/cassandra");
-const utility = require("../util/utility");
+const request = require('request');
+const config = require('../config');
+const redis = require('../store/redis');
+const db = require('../store/db');
+const cassandra = require('../store/cassandra');
+const utility = require('../util/utility');
 
-const apiKey = config.STEAM_API_KEY.split(",")[0];
+const apiKey = config.STEAM_API_KEY.split(',')[0];
 
 function invokeInterval(func) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
-    console.log("running %s", func.name);
+    console.log('running %s', func.name);
     console.time(func.name);
     func((err, result) => {
       if (err) {
@@ -24,8 +24,8 @@ function invokeInterval(func) {
         threshold: 0,
       };
       final.timestamp = Math.floor(new Date() / 1000);
-      redis.hset("health", func.name, JSON.stringify(final));
-      redis.expire("health", 900);
+      redis.hset('health', func.name, JSON.stringify(final));
+      redis.expire('health', 900);
       console.timeEnd(func.name);
       setTimeout(invoker, final && final.delay ? final.delay : 10000);
     });
@@ -34,10 +34,10 @@ function invokeInterval(func) {
 
 function steamApi(cb) {
   request(
-    `${"http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key="}${apiKey}`,
+    `${'http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key='}${apiKey}`,
     (err, resp, body) => {
       if (err || resp.statusCode !== 200) {
-        return cb("bad http response");
+        return cb('bad http response');
       }
       try {
         const fail =
@@ -49,20 +49,20 @@ function steamApi(cb) {
           threshold: 1,
         });
       } catch (e) {
-        return cb("malformed http response");
+        return cb('malformed http response');
       }
     }
   );
 }
 
 function seqNumDelay(cb) {
-  utility.getData(utility.generateJob("api_history", {}).url, (err, body) => {
+  utility.getData(utility.generateJob('api_history', {}).url, (err, body) => {
     if (err) {
-      return cb("failed to get current sequence number");
+      return cb('failed to get current sequence number');
     }
     // get match_seq_num, compare with real seqnum
     const currSeqNum = body.result.matches[0].match_seq_num;
-    return redis.get("match_seq_num", (err, num) => {
+    return redis.get('match_seq_num', (err, num) => {
       if (err) {
         return cb(err);
       }
@@ -91,7 +91,7 @@ function parseDelay(cb) {
 }
 
 function gcDelay(cb) {
-  redis.llen("gcQueue", (err, result) => {
+  redis.llen('gcQueue', (err, result) => {
     if (err) {
       return cb(err);
     }

@@ -1,22 +1,22 @@
-const commonProperties = require("../../properties/commonProperties");
+const commonProperties = require('../../properties/commonProperties');
 
 module.exports = {
   PlayerRankingsResponse: {
-    title: "PlayerRankingsResponse",
-    type: "object",
+    title: 'PlayerRankingsResponse',
+    type: 'object',
     properties: {
       hero_id: commonProperties.hero_id,
       score: {
-        description: "Hero score",
-        type: "number",
+        description: 'Hero score',
+        type: 'number',
       },
       percent_rank: {
-        description: "percent_rank",
-        type: "number",
+        description: 'percent_rank',
+        type: 'number',
       },
       card: {
-        description: "numeric_rank",
-        type: "integer",
+        description: 'numeric_rank',
+        type: 'integer',
       },
     },
   },

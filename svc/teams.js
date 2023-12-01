@@ -1,13 +1,13 @@
-const async = require("async");
-const db = require("../store/db");
-const utility = require("../util/utility");
-const queries = require("../store/queries");
+const async = require('async');
+const db = require('../store/db');
+const utility = require('../util/utility');
+const queries = require('../store/queries');
 
 const { invokeInterval } = utility;
 
 function doTeams(cb) {
   db.raw(
-    "select distinct team_id from team_match order by team_id desc"
+    'select distinct team_id from team_match order by team_id desc'
   ).asCallback((err, result) => {
     if (err) {
       return cb(err);
@@ -25,7 +25,7 @@ function doTeams(cb) {
         team_id: m.team_id || 2,
       });
       */
-        const container = utility.generateJob("api_team_info_by_team_id", {
+        const container = utility.generateJob('api_team_info_by_team_id', {
           start_at_team_id: m.team_id,
         });
         return utility.getData(
@@ -46,10 +46,10 @@ function doTeams(cb) {
             const logoRegex = /^"logo":(.*),$/m;
             const match = logoRegex.exec(raw);
             const logoUgc = match[1];
-            const ugcJob = utility.generateJob("api_get_ugc_file_details", {
+            const ugcJob = utility.generateJob('api_get_ugc_file_details', {
               ugcid: logoUgc,
             });
-            const cdnJob = utility.generateJob("steam_cdn_team_logos", {
+            const cdnJob = utility.generateJob('steam_cdn_team_logos', {
               team_id: m.team_id,
             });
             // Steam's CDN sometimes has better versions of team logos available
@@ -61,7 +61,7 @@ function doTeams(cb) {
                   t.logo_url = cdnJob.url;
                   return queries.upsert(
                     db,
-                    "teams",
+                    'teams',
                     t,
                     {
                       team_id: m.team_id,
@@ -82,7 +82,7 @@ function doTeams(cb) {
                     }
                     return queries.upsert(
                       db,
-                      "teams",
+                      'teams',
                       t,
                       {
                         team_id: m.team_id,

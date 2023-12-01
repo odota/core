@@ -1,6 +1,6 @@
 function greevilsGreed(e, container, meta) {
-  if (e.type === "killed" && "greevils_greed_stack" in e) {
-    const alchName = "npc_dota_hero_alchemist";
+  if (e.type === 'killed' && 'greevils_greed_stack' in e) {
+    const alchName = 'npc_dota_hero_alchemist';
     const alchSlot = meta.hero_to_slot[alchName];
     const alchPlayer = container.players[alchSlot];
 
@@ -18,8 +18,8 @@ function greevilsGreed(e, container, meta) {
 }
 
 function track(e, container, meta) {
-  if (e.tracked_death && e.type === "killed") {
-    const bhName = "npc_dota_hero_bountyhunter";
+  if (e.tracked_death && e.type === 'killed') {
+    const bhName = 'npc_dota_hero_bountyhunter';
     const trackerSlot = meta.hero_to_slot[e.tracked_sourcename];
     const trackerPlayer = container.players[trackerSlot];
 

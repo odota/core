@@ -1,10 +1,10 @@
-const async = require("async");
-const fs = require("fs");
-const db = require("../store/db");
+const async = require('async');
+const fs = require('fs');
+const db = require('../store/db');
 // const cassandra = require('../store/cassandra');
-const utility = require("../util/utility");
+const utility = require('../util/utility');
 
-const sqlQuery = fs.readFileSync("./sql/create_tables.sql", "utf8");
+const sqlQuery = fs.readFileSync('./sql/create_tables.sql', 'utf8');
 // const cassQuery = fs.readFileSync('./sql/create_tables.cql', 'utf8');
 const { invokeInterval } = utility;
 

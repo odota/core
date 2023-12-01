@@ -2,20 +2,20 @@
  * Worker interfacing with the Steam GC.
  * Provides HTTP endpoints for other workers.
  * */
-const Steam = require("steam");
-const Dota2 = require("dota2");
-const async = require("async");
-const express = require("express");
-const compression = require("compression");
-const cp = require("child_process");
-const os = require("os");
-const config = require("../config");
+const Steam = require('steam');
+const Dota2 = require('dota2');
+const async = require('async');
+const express = require('express');
+const compression = require('compression');
+const cp = require('child_process');
+const os = require('os');
+const config = require('../config');
 
 const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH
   ? {
       /* eslint-disable global-require */
-      redis: require("../store/redis"),
-      crypto: require("crypto"),
+      redis: require('../store/redis'),
+      crypto: require('crypto'),
       /* eslint-enable global-require */
       pendingTwoFactorAuth: {},
       pendingSteamGuardAuth: {},
@@ -41,95 +41,95 @@ let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
 let allReady = false;
-let users = config.STEAM_USER.split(",");
-let passes = config.STEAM_PASS.split(",");
+let users = config.STEAM_USER.split(',');
+let passes = config.STEAM_PASS.split(',');
 
 // For the latest list: https://api.steampowered.com/ISteamDirectory/GetCMList/v1/?format=json&cellid=0
 Steam.servers = [
-  { host: "155.133.242.9", port: 27018 },
-  { host: "185.25.180.15", port: 27019 },
-  { host: "185.25.180.15", port: 27018 },
-  { host: "185.25.180.14", port: 27017 },
-  { host: "185.25.180.15", port: 27017 },
-  { host: "155.133.242.9", port: 27019 },
-  { host: "155.133.242.9", port: 27017 },
-  { host: "185.25.180.14", port: 27018 },
-  { host: "185.25.180.14", port: 27019 },
-  { host: "155.133.242.8", port: 27017 },
-  { host: "155.133.242.8", port: 27018 },
-  { host: "155.133.242.8", port: 27019 },
-  { host: "162.254.197.40", port: 27018 },
-  { host: "155.133.248.50", port: 27017 },
-  { host: "155.133.248.51", port: 27017 },
-  { host: "162.254.196.68", port: 27017 },
-  { host: "162.254.197.41", port: 27017 },
-  { host: "162.254.196.67", port: 27019 },
-  { host: "155.133.248.53", port: 27018 },
-  { host: "155.133.248.52", port: 27018 },
-  { host: "162.254.196.67", port: 27017 },
-  { host: "162.254.196.67", port: 27018 },
-  { host: "162.254.196.83", port: 27017 },
-  { host: "162.254.196.84", port: 27017 },
-  { host: "155.133.248.52", port: 27017 },
-  { host: "162.254.196.68", port: 27018 },
-  { host: "162.254.197.40", port: 27019 },
-  { host: "155.133.248.51", port: 27019 },
-  { host: "155.133.248.52", port: 27019 },
-  { host: "155.133.248.53", port: 27019 },
-  { host: "155.133.248.50", port: 27019 },
-  { host: "155.133.248.53", port: 27017 },
-  { host: "162.254.196.68", port: 27019 },
-  { host: "162.254.197.42", port: 27019 },
-  { host: "162.254.196.84", port: 27018 },
-  { host: "155.133.248.50", port: 27018 },
-  { host: "162.254.196.83", port: 27019 },
-  { host: "162.254.197.42", port: 27018 },
-  { host: "162.254.197.41", port: 27018 },
-  { host: "162.254.196.84", port: 27019 },
-  { host: "162.254.196.83", port: 27018 },
-  { host: "162.254.197.40", port: 27017 },
-  { host: "162.254.197.41", port: 27019 },
-  { host: "155.133.248.51", port: 27018 },
-  { host: "162.254.197.42", port: 27017 },
-  { host: "146.66.152.11", port: 27018 },
-  { host: "146.66.152.11", port: 27019 },
-  { host: "146.66.152.11", port: 27017 },
-  { host: "146.66.152.10", port: 27019 },
-  { host: "146.66.152.10", port: 27017 },
-  { host: "146.66.152.10", port: 27018 },
-  { host: "208.78.164.10", port: 27018 },
-  { host: "208.78.164.9", port: 27019 },
-  { host: "208.78.164.13", port: 27018 },
-  { host: "208.78.164.9", port: 27017 },
-  { host: "208.78.164.12", port: 27018 },
-  { host: "208.78.164.10", port: 27017 },
-  { host: "155.133.229.251", port: 27019 },
-  { host: "155.133.229.251", port: 27017 },
-  { host: "208.78.164.14", port: 27018 },
-  { host: "208.78.164.12", port: 27019 },
-  { host: "208.78.164.13", port: 27017 },
-  { host: "208.78.164.9", port: 27018 },
-  { host: "208.78.164.14", port: 27019 },
-  { host: "208.78.164.11", port: 27018 },
-  { host: "208.78.164.10", port: 27019 },
-  { host: "155.133.229.250", port: 27017 },
-  { host: "208.78.164.12", port: 27017 },
-  { host: "208.78.164.11", port: 27019 },
-  { host: "155.133.229.250", port: 27018 },
-  { host: "155.133.229.251", port: 27018 },
-  { host: "208.78.164.11", port: 27017 },
-  { host: "155.133.229.250", port: 27019 },
-  { host: "208.78.164.13", port: 27019 },
-  { host: "208.78.164.14", port: 27017 },
-  { host: "162.254.193.7", port: 27017 },
-  { host: "162.254.193.47", port: 27019 },
-  { host: "162.254.193.7", port: 27018 },
-  { host: "162.254.193.46", port: 27018 },
-  { host: "162.254.193.6", port: 27017 },
+  { host: '155.133.242.9', port: 27018 },
+  { host: '185.25.180.15', port: 27019 },
+  { host: '185.25.180.15', port: 27018 },
+  { host: '185.25.180.14', port: 27017 },
+  { host: '185.25.180.15', port: 27017 },
+  { host: '155.133.242.9', port: 27019 },
+  { host: '155.133.242.9', port: 27017 },
+  { host: '185.25.180.14', port: 27018 },
+  { host: '185.25.180.14', port: 27019 },
+  { host: '155.133.242.8', port: 27017 },
+  { host: '155.133.242.8', port: 27018 },
+  { host: '155.133.242.8', port: 27019 },
+  { host: '162.254.197.40', port: 27018 },
+  { host: '155.133.248.50', port: 27017 },
+  { host: '155.133.248.51', port: 27017 },
+  { host: '162.254.196.68', port: 27017 },
+  { host: '162.254.197.41', port: 27017 },
+  { host: '162.254.196.67', port: 27019 },
+  { host: '155.133.248.53', port: 27018 },
+  { host: '155.133.248.52', port: 27018 },
+  { host: '162.254.196.67', port: 27017 },
+  { host: '162.254.196.67', port: 27018 },
+  { host: '162.254.196.83', port: 27017 },
+  { host: '162.254.196.84', port: 27017 },
+  { host: '155.133.248.52', port: 27017 },
+  { host: '162.254.196.68', port: 27018 },
+  { host: '162.254.197.40', port: 27019 },
+  { host: '155.133.248.51', port: 27019 },
+  { host: '155.133.248.52', port: 27019 },
+  { host: '155.133.248.53', port: 27019 },
+  { host: '155.133.248.50', port: 27019 },
+  { host: '155.133.248.53', port: 27017 },
+  { host: '162.254.196.68', port: 27019 },
+  { host: '162.254.197.42', port: 27019 },
+  { host: '162.254.196.84', port: 27018 },
+  { host: '155.133.248.50', port: 27018 },
+  { host: '162.254.196.83', port: 27019 },
+  { host: '162.254.197.42', port: 27018 },
+  { host: '162.254.197.41', port: 27018 },
+  { host: '162.254.196.84', port: 27019 },
+  { host: '162.254.196.83', port: 27018 },
+  { host: '162.254.197.40', port: 27017 },
+  { host: '162.254.197.41', port: 27019 },
+  { host: '155.133.248.51', port: 27018 },
+  { host: '162.254.197.42', port: 27017 },
+  { host: '146.66.152.11', port: 27018 },
+  { host: '146.66.152.11', port: 27019 },
+  { host: '146.66.152.11', port: 27017 },
+  { host: '146.66.152.10', port: 27019 },
+  { host: '146.66.152.10', port: 27017 },
+  { host: '146.66.152.10', port: 27018 },
+  { host: '208.78.164.10', port: 27018 },
+  { host: '208.78.164.9', port: 27019 },
+  { host: '208.78.164.13', port: 27018 },
+  { host: '208.78.164.9', port: 27017 },
+  { host: '208.78.164.12', port: 27018 },
+  { host: '208.78.164.10', port: 27017 },
+  { host: '155.133.229.251', port: 27019 },
+  { host: '155.133.229.251', port: 27017 },
+  { host: '208.78.164.14', port: 27018 },
+  { host: '208.78.164.12', port: 27019 },
+  { host: '208.78.164.13', port: 27017 },
+  { host: '208.78.164.9', port: 27018 },
+  { host: '208.78.164.14', port: 27019 },
+  { host: '208.78.164.11', port: 27018 },
+  { host: '208.78.164.10', port: 27019 },
+  { host: '155.133.229.250', port: 27017 },
+  { host: '208.78.164.12', port: 27017 },
+  { host: '208.78.164.11', port: 27019 },
+  { host: '155.133.229.250', port: 27018 },
+  { host: '155.133.229.251', port: 27018 },
+  { host: '208.78.164.11', port: 27017 },
+  { host: '155.133.229.250', port: 27019 },
+  { host: '208.78.164.13', port: 27019 },
+  { host: '208.78.164.14', port: 27017 },
+  { host: '162.254.193.7', port: 27017 },
+  { host: '162.254.193.47', port: 27019 },
+  { host: '162.254.193.7', port: 27018 },
+  { host: '162.254.193.46', port: 27018 },
+  { host: '162.254.193.6', port: 27017 },
 ];
 
 function selfDestruct() {
-  console.log("shutting down");
+  console.log('shutting down');
   process.exit(0);
 }
 
@@ -157,7 +157,7 @@ function genStats() {
 }
 
 function shaHash(buffer) {
-  const h = advancedAuth.crypto.createHash("sha1");
+  const h = advancedAuth.crypto.createHash('sha1');
   h.update(buffer);
   return h.digest();
 }
@@ -216,7 +216,7 @@ function getGcMatchData(idx, matchId, cb) {
     const end = Date.now();
     // Reset delay on success
     matchRequestDelayIncr = 0;
-    console.log("received match %s in %sms", matchId, end - start);
+    console.log('received match %s in %sms', matchId, end - start);
     clearTimeout(timeout);
     return cb(err, matchData);
   });
@@ -230,8 +230,8 @@ function init() {
       client.steamUser = new Steam.SteamUser(client);
       // client.steamFriends = new Steam.SteamFriends(client);
       client.Dota2 = new Dota2.Dota2Client(client, false);
-      client.Dota2.on("ready", () => {
-        console.log("acct %s ready", i);
+      client.Dota2.on('ready', () => {
+        console.log('acct %s ready', i);
         // As of 2023-06-04 seeing some double ready which crashes the process
         try {
           cb();
@@ -239,15 +239,15 @@ function init() {
           console.warn(e);
         }
       });
-      client.on("connected", () => {
+      client.on('connected', () => {
         const logOnDetails = chooseLoginInfo();
         console.log(
-          "[STEAM] Trying to log on with %s",
+          '[STEAM] Trying to log on with %s',
           JSON.stringify(logOnDetails)
         );
         client.steamUser.logOn(logOnDetails);
       });
-      client.on("logOnResponse", (logOnResp) => {
+      client.on('logOnResponse', (logOnResp) => {
         /*
         if (advancedAuth) {
           delete client.logOnDetails.two_factor_code;
@@ -284,7 +284,7 @@ function init() {
         }
 
         if (client && client.steamID) {
-          console.log("[STEAM] Logged on %s", client.steamID);
+          console.log('[STEAM] Logged on %s', client.steamID);
           // client.steamFriends.setPersonaName(client.steamID.toString());
           steamObj[client.steamID] = client;
           client.Dota2.launch();
@@ -340,14 +340,14 @@ function init() {
         }
       });
       */
-      client.on("error", (err) => {
+      client.on('error', (err) => {
         console.error(err);
         if (
           advancedAuth &&
           (user in advancedAuth.pendingTwoFactorAuth ||
             user in advancedAuth.pendingSteamGuardAuth)
         ) {
-          console.log("not reconnecting %s, waiting for auth...", user);
+          console.log('not reconnecting %s, waiting for auth...', user);
           client.pendingLogOn = true;
         } else {
           // console.log('reconnecting %s', user);
@@ -405,8 +405,8 @@ if (config.STEAM_ACCOUNT_DATA) {
     })
     .toString()
     .split(/\r\n|\r|\n/g);
-  users = accountData.map((a) => a.split("\t")[0]);
-  passes = accountData.map((a) => a.split("\t")[1]);
+  users = accountData.map((a) => a.split('\t')[0]);
+  passes = accountData.map((a) => a.split('\t')[1]);
 }
 
 function chooseLoginInfo() {
@@ -420,22 +420,21 @@ function chooseLoginInfo() {
 init();
 
 app.use(compression());
-app.get("/healthz", (req, res, cb) => {
+app.get('/healthz', (req, res, cb) => {
   if (!allReady) {
-    return cb("not ready");
-  } 
-    return res.end("ok");
-  
+    return cb('not ready');
+  }
+  return res.end('ok');
 });
 app.use((req, res, cb) => {
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     // reject request if it doesn't have key
-    return cb("invalid key");
+    return cb('invalid key');
   }
   return cb();
 });
 if (advancedAuth) {
-  app.get("/auth", (req, res) => {
+  app.get('/auth', (req, res) => {
     if (req.query.account) {
       if (req.query.two_factor) {
         const client = advancedAuth.pendingTwoFactorAuth[req.query.account];
@@ -447,12 +446,12 @@ if (advancedAuth) {
           delete client.pendingLogOn;
 
           return res.json({
-            result: "success",
+            result: 'success',
           });
         }
 
         return res.status(400).json({
-          error: "account not pending a two-factor authentication",
+          error: 'account not pending a two-factor authentication',
         });
       }
 
@@ -466,17 +465,17 @@ if (advancedAuth) {
           delete client.pendingLogOn;
 
           return res.json({
-            result: "success",
+            result: 'success',
           });
         }
 
         return res.status(400).json({
-          error: "account not pending a SteamGuard authentication",
+          error: 'account not pending a SteamGuard authentication',
         });
       }
 
       return res.status(400).json({
-        error: "missing two_factor or steam_guard parameter",
+        error: 'missing two_factor or steam_guard parameter',
       });
     }
 
@@ -488,7 +487,7 @@ if (advancedAuth) {
 }
 app.use((req, res, cb) => {
   console.log(
-    "numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s",
+    'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s',
     Object.keys(steamObj).length,
     matchSuccesses,
     matchRequests,
@@ -502,22 +501,22 @@ app.use((req, res, cb) => {
     // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
     (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds) ||
     (!allReady && getUptime() > minUpTimeSeconds);
-  if (shouldRestart && config.NODE_ENV !== "development") {
+  if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
   if (!allReady) {
-    return cb("not ready");
+    return cb('not ready');
   }
   return cb();
 });
-app.get("/", (req, res, cb) => {
+app.get('/', (req, res, cb) => {
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor(Math.random() * keys.length)];
   if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = new Date();
     if (matchRequests > matchRequestLimit) {
-      return res.status(403).json({ error: "match request limit exceeded" });
+      return res.status(403).json({ error: 'match request limit exceeded' });
     }
     if (
       lastRequestTime &&
@@ -525,7 +524,7 @@ app.get("/", (req, res, cb) => {
         matchRequestDelay + matchRequestDelayIncr
     ) {
       return res.status(429).json({
-        error: "too many requests",
+        error: 'too many requests',
       });
     }
     lastRequestTime = curRequestTime;
@@ -553,5 +552,5 @@ app.use((err, req, res) =>
 );
 const server = app.listen(port, () => {
   const host = server.address().address;
-  console.log("[RETRIEVER] listening at http://%s:%s", host, port);
+  console.log('[RETRIEVER] listening at http://%s:%s', host, port);
 });

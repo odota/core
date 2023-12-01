@@ -10,7 +10,7 @@ function processUploadProps(entries) {
     const e = entries[i];
     let dota;
     switch (e.type) {
-      case "epilogue":
+      case 'epilogue':
         dota = JSON.parse(e.key).gameInfo_.dota_;
         container.match_id = dota.matchId_;
         container.game_mode = dota.gameMode_;
@@ -19,7 +19,7 @@ function processUploadProps(entries) {
         // container.picks_bans = dota.picksBans_;
         // require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
         break;
-      case "interval":
+      case 'interval':
         if (!container.player_map[e.player_slot]) {
           container.player_map[e.player_slot] = {};
         }
