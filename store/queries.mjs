@@ -1254,7 +1254,7 @@ function insertMatch(match, options, cb) {
   }
   function upsertMatchBlobs(cb) {
     // TODO this function is meant to eventually replace the cassandra match/player_match tables
-    // TODO remove pgroup from this since we don't actually need it stored
+    // NOTE: remove pgroup since we don't actually need it stored
     // It's a temporary store (postgres table) holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces

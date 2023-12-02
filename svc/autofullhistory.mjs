@@ -1,38 +1,19 @@
 // Randomly requests history refreshes for users to fill in missing matches
-// TODO use top level await
-import async from 'async';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
-function getSummaries(cb) {
-  db.raw(
+
+while(true) {
+  const result = await db.raw(
     "SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100) where last_match_time > (now() - interval '7 day')"
-  ).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    console.log(result.rows);
-    return async.each(
-      result.rows,
-      (row, cb) => {
-        return redis.rpush(
-          'fhQueue',
-          JSON.stringify({
-            account_id: row.account_id,
-            short_history: true,
-          }),
-          cb
-        );
-      },
-      cb
-    );
-  });
+  );
+  console.log(result.rows);
+  await Promise.all(result.rows.map(row => redis.rpush(
+    'fhQueue',
+    JSON.stringify({
+      account_id: row.account_id,
+      short_history: true,
+    })
+    )
+  ));
+  await new Promise(resolve => setTimeout(resolve, 30000));
 }
-function start() {
-  getSummaries((err) => {
-    if (err) {
-      throw err;
-    }
-    return setTimeout(start, 30000);
-  });
-}
-start();
