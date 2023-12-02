@@ -693,9 +693,7 @@ describe('api limits', () => {
 
 async function initElasticsearch(cb) {
   console.log('Create Elasticsearch Mapping');
-  const mapping = JSON.parse(
-    fs.readFileSync('./elasticsearch/index.json')
-  );
+  const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
   const { es } = await import('../store/elasticsearch.mjs');
   async.series(
     [
@@ -810,10 +808,7 @@ async function initPostgres(cb) {
               return cb(err);
             }
             console.log('create postgres test tables');
-            const query = fs.readFileSync(
-              './sql/create_tables.sql',
-              'utf8'
-            );
+            const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
             return client2.query(query, cb);
           });
         },
@@ -842,7 +837,7 @@ async function initCassandra(cb) {
           cb
         );
       },
-      (cb) => setupCassandraClient(cb), 
+      (cb) => setupCassandraClient(cb),
       function tables(cb) {
         console.log('create cassandra test tables');
         async.eachSeries(
@@ -890,7 +885,9 @@ async function loadMatches(cb) {
 async function loadPlayers(cb) {
   console.log('loading players');
   const insertPlayerPromise = util.promisify(queries.insertPlayer);
-  await Promise.all(summariesApi.response.players.map(p => insertPlayerPromise(db, p, true)));
+  await Promise.all(
+    summariesApi.response.players.map((p) => insertPlayerPromise(db, p, true))
+  );
   cb();
 }
 

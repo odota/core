@@ -5,9 +5,9 @@ import config from '../config.js';
 pg.types.setTypeParser(20, (val) => (val === null ? null : parseInt(val, 10)));
 console.log('connecting %s', config.POSTGRES_URL);
 const db = knex({
-    client: 'pg',
-    connection: config.POSTGRES_URL,
-    pool: {
+  client: 'pg',
+  connection: config.POSTGRES_URL,
+  pool: {
     // min: 2,
     // max: 20,
     // afterCreate: (conn, done) => {
@@ -17,6 +17,6 @@ const db = knex({
     //     done(err, conn);
     //   });
     // },
-    },
+  },
 });
 export default db;
