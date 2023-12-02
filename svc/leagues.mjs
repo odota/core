@@ -1,5 +1,5 @@
 import async from 'async';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import db from '../store/db.mjs';
 import queries from '../store/queries.mjs';
 const { invokeInterval, generateJob, getData } = utility;

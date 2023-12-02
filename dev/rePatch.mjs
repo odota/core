@@ -5,7 +5,7 @@ import async from 'async';
 import constants from 'dotaconstants';
 import db from '../store/db.mjs';
 import queries from '../store/queries.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 
 db.select(['match_id', 'start_time'])
   .from('matches')

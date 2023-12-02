@@ -1,6 +1,6 @@
 import queue from '../store/queue.mjs';
 import buildMatch from '../store/buildMatch.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import config from '../config.js';
 import redis from '../store/redis.mjs';
 

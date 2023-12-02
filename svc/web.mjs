@@ -17,7 +17,7 @@ import api from '../routes/api.mjs';
 import queries from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import config from '../config.js';
 const SteamStrategy = passportSteam.Strategy;
 const stripe = stripeLib(config.STRIPE_SECRET);

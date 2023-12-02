@@ -1,4 +1,4 @@
-import utility from './utility.js';
+import utility from './utility.mjs';
 const { isRadiant } = utility;
 function filter(matches, filters) {
   const curtime = Math.floor(Date.now() / 1000);

@@ -3,7 +3,7 @@ import moment from 'moment';
 import stripeLib from 'stripe';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import queries from '../store/queries.mjs';
 import config from '../config.js';
 const stripe = stripeLib(config.STRIPE_SECRET);

@@ -1,19 +1,14 @@
-/**
- * Provides utility functions.
- * All functions should have external dependencies (DB, etc.) passed as parameters
- * */
-const constants = require('dotaconstants');
-const request = require('request');
-const Long = require('long');
-const urllib = require('url');
-const uuid = require('uuid');
-const moment = require('moment');
-const crypto = require('crypto');
-const laneMappings = require('./laneMappings');
-const config = require('../config');
-const contributors = require('../CONTRIBUTORS');
-const { promisify } = require('util');
-
+import constants from 'dotaconstants';
+import request from 'request';
+import Long from 'long';
+import urllib from 'url';
+import uuid from 'uuid';
+import moment from 'moment';
+import crypto from 'crypto';
+import laneMappings from './laneMappings.mjs';
+import config from '../config.js';
+import contributors from '../CONTRIBUTORS.js';
+import { promisify } from 'util';
 /**
  * Tokenizes an input string.
  *
@@ -28,7 +23,6 @@ function tokenize(input) {
     .toLowerCase()
     .split(' ');
 }
-
 /*
  * Converts a steamid 64 to a steamid 32
  *
@@ -37,7 +31,6 @@ function tokenize(input) {
 function convert64to32(id) {
   return Long.fromString(id).subtract('76561197960265728').toString();
 }
-
 /*
  * Converts a steamid 64 to a steamid 32
  *
@@ -46,7 +39,6 @@ function convert64to32(id) {
 function convert32to64(id) {
   return Long.fromString(id).add('76561197960265728').toString();
 }
-
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
  * */
@@ -308,30 +300,25 @@ function getData(url, cb) {
     );
   }, delay);
 }
-
 const getDataPromise = promisify(getData);
-
 /**
  * Determines if a player is radiant
  * */
 function isRadiant(player) {
   return player.player_slot < 128;
 }
-
 /**
  * Determines if a player has contributed to the development of OpenDota
  */
 function isContributor(accountId) {
   return accountId in contributors;
 }
-
 /**
  * Determines if a player won
  * */
 function playerWon(player, match) {
   return player.player_slot < 128 === match.radiant_win;
 }
-
 /**
  * Recursively merges objects that share some keys
  * Numbers get summed
@@ -357,7 +344,6 @@ function mergeObjects(merge, val) {
     }
   });
 }
-
 /**
  * Finds the mode and its occurrence count in the input array
  * */
@@ -379,11 +365,9 @@ function modeWithCount(array) {
   }
   return { mode: maxEl, count: maxCount };
 }
-
 function mode(array) {
   return modeWithCount(array).mode;
 }
-
 /**
  * Determines if a match is significant for aggregation purposes
  * */
@@ -398,7 +382,6 @@ function isSignificant(match) {
       (match.players || []).every((player) => (player.gold_per_min || 0) < 2500)
   );
 }
-
 /**
  * Determines if a match is a pro match
  * */
@@ -416,21 +399,18 @@ function isProMatch(match) {
       match.players.every((player) => player.hero_id > 0)
   );
 }
-
 /**
  * Finds the max of the input array
  * */
 function max(array) {
   return Math.max.apply(null, array);
 }
-
 /**
  * Finds the min of the input array
  * */
 function min(array) {
   return Math.min.apply(null, array);
 }
-
 /**
  * Serializes a JSON object to row for storage in Cassandra
  * */
@@ -447,7 +427,6 @@ function serialize(row) {
   });
   return obj;
 }
-
 /**
  * Deserializes a row to JSON object read from Cassandra
  * */
@@ -460,7 +439,6 @@ function deserialize(row) {
   }
   return obj;
 }
-
 /**
  * Returns the unix timestamp at the beginning of a block of n minutes
  * Offset controls the number of blocks to look ahead
@@ -472,18 +450,15 @@ function getStartOfBlockMinutes(size, offset) {
   const blockStart = curTime - (curTime % blockS);
   return (blockStart + offset * blockS).toFixed(0);
 }
-
 function getEndOfMonth() {
   return moment().endOf('month').unix();
 }
-
 /**
  * Finds the arithmetic mean of the input array
  * */
 function average(data) {
   return Math.floor(data.reduce((a, b) => a + b, 0) / data.length);
 }
-
 /**
  * Finds the average rank medal of input array
  * */
@@ -494,7 +469,6 @@ function averageMedal(values) {
   const avgStars = numStars.reduce((a, b) => a + b, 0) / numStars.length;
   return Math.floor(avgStars / 5) * 10 + Math.max(1, Math.round(avgStars % 5));
 }
-
 /**
  * Finds the standard deviation of the input array
  * */
@@ -509,7 +483,6 @@ function stdDev(data) {
   const stdDev = Math.sqrt(avgSquareDiff);
   return stdDev;
 }
-
 /**
  * Finds the median of the input array
  * */
@@ -521,7 +494,6 @@ function median(data) {
   }
   return (data[half - 1] + data[half]) / 2.0;
 }
-
 /**
  * Gets the patch ID given a unix start time
  * */
@@ -538,7 +510,6 @@ function getPatchIndex(startTime) {
   // use the value of i before the break, started at 1 to avoid negative index
   return i - 1;
 }
-
 /**
  * Constructs a replay url
  * */
@@ -549,7 +520,6 @@ function buildReplayUrl(matchId, cluster, replaySalt) {
   }
   return `http://replay${cluster}.valve.net/570/${matchId}_${replaySalt}${suffix}`;
 }
-
 /**
  * Computes the expected winrate given an input array of winrates
  * */
@@ -565,14 +535,12 @@ function expectedWin(rates) {
   const denominator = 50 ** (rates.length - 1);
   return 1 - (adjustedRates / denominator) * 100;
 }
-
 /**
  * Converts a group of heroes to string
  * */
 function groupToString(g) {
   return g.sort((a, b) => a - b).join(',');
 }
-
 /**
  * Serialize a matchup/result of heroes to a string
  * */
@@ -588,7 +556,6 @@ function matchupToString(t0, t1, t0win) {
   suffix = t0win ? '1' : '0';
   return `${dcg}:${rcg}:${suffix}`;
 }
-
 /**
  * Enumerates the k-combinations of the input array
  * */
@@ -623,7 +590,6 @@ function kCombinations(arr, k) {
   }
   return combs;
 }
-
 /**
  * Generates an array of the hero matchups in a given match
  * */
@@ -684,7 +650,6 @@ function generateMatchups(match, max, oneSided) {
   }
   return result;
 }
-
 /**
  * Aggregate popularity of items in the input item array
  */
@@ -695,7 +660,6 @@ function countItemPopularity(items) {
     return acc;
   }, {});
 }
-
 /**
  * Counts the peer account_ids in the input match array
  * */
@@ -742,14 +706,12 @@ function countPeers(matches) {
   });
   return teammates;
 }
-
 /**
  * The anonymous account ID used as a placeholder for player with match privacy settings on
  * */
 function getAnonymousAccountId() {
   return 4294967295;
 }
-
 /**
  * Computes the lane a hero is in based on an input hash of positions
  * */
@@ -777,7 +739,6 @@ function getLaneFromPosData(lanePos, isRadiant) {
    * Having low presence (<45%) probably means the player is roaming.
    * */
   const isRoaming = count / lanes.length < 0.45;
-
   // Roles, currently doesn't distinguish between carry/support in safelane
   // 1 safelane
   // 2 mid
@@ -801,7 +762,6 @@ function getLaneFromPosData(lanePos, isRadiant) {
     is_roaming: isRoaming,
   };
 }
-
 /**
  * Get array of retriever endpoints from config
  * */
@@ -818,13 +778,11 @@ function getRetrieverArr(useGcDataArr) {
   });
   return output;
 }
-
 function redisCount(redis, prefix) {
   const key = `${prefix}:${moment().startOf('hour').format('X')}`;
   redis.pfadd(key, uuid.v4());
   redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
-
 function getRedisCountDay(redis, prefix, cb) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
@@ -835,7 +793,6 @@ function getRedisCountDay(redis, prefix, cb) {
   }
   redis.pfcount(...keyArr, cb);
 }
-
 function getRedisCountHour(redis, prefix, cb) {
   // Get counts for previous full hour
   const keyArr = [];
@@ -846,7 +803,6 @@ function getRedisCountHour(redis, prefix, cb) {
   }
   redis.pfcount(...keyArr, cb);
 }
-
 function invokeInterval(func, delay) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
@@ -862,25 +818,22 @@ function invokeInterval(func, delay) {
     });
   })();
 }
-
 /**
  * Returns the current UNIX Epoch time in weeks
  * */
 function epochWeek() {
   return Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7));
 }
-
 function cleanItemSchema(input) {
   return input;
 }
-
 function checkIfInExperiment(ip, mod) {
   return (
     crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );
 }
 
-module.exports = {
+export default {
   tokenize,
   generateJob,
   getData,

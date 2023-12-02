@@ -3,7 +3,7 @@ import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
 import queries from '../store/queries.mjs';
 import config from '../config.js';
-import { getData, redisCount, getRetrieverArr } from '../util/utility.js';
+import { getData, redisCount, getRetrieverArr } from '../util/utility.mjs';
 const { insertPlayer, insertPlayerRating } = queries;
 const retrieverArr = getRetrieverArr();
 function processMmr(job, cb) {

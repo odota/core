@@ -3,7 +3,7 @@ import config from '../config.js';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 import cassandra from '../store/cassandra.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 function invokeInterval(func) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again

@@ -1,7 +1,7 @@
 import async from 'async';
 import queries from '../store/queries.mjs';
 import db from '../store/db.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 const { insertPlayer, bulkIndexPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;
 function getSummaries(cb) {

@@ -1,5 +1,5 @@
 import db from '../store/db.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import config from '../config.js';
 import stripeLib from 'stripe';
 const stripe = stripeLib(config.STRIPE_SECRET);

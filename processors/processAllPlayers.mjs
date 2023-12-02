@@ -1,4 +1,4 @@
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 /**
  * Compute data requiring all players in a match for storage in match table
  * */

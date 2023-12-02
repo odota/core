@@ -8,7 +8,7 @@
 import { exec } from 'child_process';
 import os from 'os';
 import express from 'express';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import getGcData from '../store/getGcData.mjs';
 import config from '../config.js';
 import queue from '../store/queue.mjs';

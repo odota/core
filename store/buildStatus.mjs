@@ -1,5 +1,5 @@
 import async from 'async';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 export default function buildStatus(db, redis, cb) {
   function generatePercentiles(arr) {
     // sort the list

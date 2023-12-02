@@ -1,5 +1,5 @@
 import constants from 'dotaconstants';
-import utility from './utility.js';
+import utility from './utility.mjs';
 const { max, min, isRadiant } = utility;
 const { ancients } = constants;
 /**

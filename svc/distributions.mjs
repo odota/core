@@ -3,7 +3,7 @@ import async from 'async';
 import constants from 'dotaconstants';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 const { invokeInterval } = utility;
 const sql = {};
 const sqlq = fs.readdirSync('./sql');

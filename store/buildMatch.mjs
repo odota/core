@@ -2,7 +2,7 @@ import constants from 'dotaconstants';
 import config from '../config.js';
 import queries from './queries.mjs';
 import compute from '../util/compute.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import cassandra from './cassandra.mjs';
 import redis from './redis.mjs';
 import db from './db.mjs';

@@ -1,8 +1,6 @@
-const constants = require('dotaconstants');
-const utility = require('./utility');
-
+import constants from 'dotaconstants';
+import utility from './utility.mjs';
 const { playerWon } = utility;
-
 // all items that cost at least 1400
 const itemCost = 1400;
 const dotaItems = Object.keys(constants.items)
@@ -11,17 +9,14 @@ const dotaItems = Object.keys(constants.items)
   .map((x) => x[1]);
 const timings = [7.5, 10, 12, 15, 20, 25, 30].map((x) => x * 60);
 const gameDurationBucket = [15, 30, 45, 60, 90].map((x) => x * 60);
-
 const negativeWords = ['ff', 'report', 'gg', 'end', 'noob'];
 const positiveWords = ['gl', 'glhf', 'hf', 'good luck', 'have fun'];
-
 const teamScenariosQueryParams = [
   'pos_chat_1min',
   'neg_chat_1min',
   'courier_kill',
   'first_blood',
 ];
-
 function buildTeamScenario(scenario, isRadiant, match) {
   return [
     {
@@ -32,7 +27,6 @@ function buildTeamScenario(scenario, isRadiant, match) {
     },
   ];
 }
-
 const scenarioChecks = {
   scenarios: [
     function itemTimings(match) {
@@ -56,7 +50,6 @@ const scenarioChecks = {
       });
       return rows;
     },
-
     function laneRole(match) {
       // hero's lane role
       const rows = [];
@@ -86,7 +79,6 @@ const scenarioChecks = {
       }
       return [];
     },
-
     function courierKill(match) {
       // team killed enemy courier at least once before the 3 min mark
       const condition =
@@ -100,7 +92,6 @@ const scenarioChecks = {
       }
       return [];
     },
-
     function chat(match) {
       // negative/positive words in chat before minute 1
       const rows = [];
@@ -154,7 +145,6 @@ const scenarioChecks = {
     },
   ],
 };
-
 // list of match object properties that are required for scenario checks.
 const matchProperties = [
   'players',
@@ -163,14 +153,12 @@ const matchProperties = [
   'chat',
   'radiant_win',
 ];
-
 const metadata = {
   itemCost,
   timings,
   gameDurationBucket,
   teamScenariosQueryParams,
 };
-
 /**
  * Make sure the match object has all required properties.
  * */
@@ -179,8 +167,7 @@ function validateMatchProperties(match) {
     (property) => match[property] !== undefined && match[property] !== null
   );
 }
-
-module.exports = {
+export default {
   scenarioChecks,
   validateMatchProperties,
   teamScenariosQueryParams,

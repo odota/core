@@ -3,7 +3,7 @@ import JSONbig from 'json-bigint';
 import request from 'request';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import config from '../config.js';
 const { invokeInterval } = utility;
 function doLiveGames(cb) {

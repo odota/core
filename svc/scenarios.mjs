@@ -3,8 +3,8 @@ import util from 'util';
 import queue from '../store/queue.mjs';
 import buildMatch from '../store/buildMatch.mjs';
 import db from '../store/db.mjs';
-import utility from '../util/utility.js';
-import su from '../util/scenariosUtil.js';
+import utility from '../util/utility.mjs';
+import su from '../util/scenariosUtil.mjs';
 async function processScenarios(matchID, cb) {
   try {
     const match = await buildMatch(matchID);

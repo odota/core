@@ -1,7 +1,7 @@
 import async from 'async';
 import fs from 'fs';
 import db from '../store/db.mjs';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 const sqlQuery = fs.readFileSync('./sql/create_tables.sql', 'utf8');
 // const cassQuery = fs.readFileSync('./sql/create_tables.cql', 'utf8');
 const { invokeInterval } = utility;

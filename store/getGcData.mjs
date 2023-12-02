@@ -1,5 +1,5 @@
 import moment from 'moment';
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import config from '../config.js';
 import queries from './queries.mjs';
 import db from './db.mjs';

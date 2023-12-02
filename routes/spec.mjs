@@ -10,7 +10,7 @@ import searchES from '../store/searchES.mjs';
 import buildMatch from '../store/buildMatch.mjs';
 import buildStatus from '../store/buildStatus.mjs';
 import playerFields from './playerFields.json' assert { type: 'json' };
-import utility from '../util/utility.js';
+import utility from '../util/utility.mjs';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
 import packageJson from '../package.json' assert { type: 'json' };
