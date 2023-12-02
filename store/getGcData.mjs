@@ -60,6 +60,11 @@ async function getGcDataFromRetriever(match) {
     type: 'gcdata',
     skipParse: true,
   });
+  // Update series id and type for pro match
+  await db.raw(
+    'UPDATE matches SET series_id = ?, series_type = ? WHERE match_id = ?',
+    [matchToInsert.series_id, matchToInsert.series_type, match.match_id]
+  ).asCallback(cb);
   // Persist GC data to database
   await upsertPromise(db, 'match_gcdata', gcdata, {
     match_id: match.match_id,

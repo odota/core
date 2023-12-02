@@ -14,6 +14,7 @@ import config from '../config.js';
 import queue from '../store/queue.mjs';
 import queries from '../store/queries.mjs';
 import { promisify } from 'util';
+import db from '../store/db.mjs';
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, NODE_ENV, PARSER_HOST, PARSER_PARALLELISM } = config;
 const numCPUs = os.cpus().length;
@@ -43,6 +44,19 @@ async function runParse(match, url) {
     type: 'parsed',
     skipParse: true,
   });
+  // Mark this match parsed
+  await db.raw(
+    'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
+    [Number(match.match_id)]
+  );
+  // Decide if we want to do scenarios (requires parsed match)
+  // Only if it originated from scanner to avoid triggering on requests
+  if (
+    match.origin === 'scanner' &&
+    match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
+  ) {
+    return redis.rpush('scenariosQueue', match.match_id, cb);
+  }
 }
 async function parseProcessor(job, cb) {
   const match = job;
