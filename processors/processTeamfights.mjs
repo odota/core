@@ -1,5 +1,4 @@
-const populate = require('./populate');
-
+import populate from './populate.mjs';
 /**
  * A processor to compute teamfights that occurred given an event stream
  * */
@@ -135,4 +134,4 @@ function processTeamfights(entries, meta) {
   }
   return teamfights;
 }
-module.exports = processTeamfights;
+export default processTeamfights;

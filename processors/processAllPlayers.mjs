@@ -1,5 +1,4 @@
-const utility = require('../util/utility');
-
+import utility from '../util/utility.js';
 /**
  * Compute data requiring all players in a match for storage in match table
  * */
@@ -34,4 +33,4 @@ function processAllPlayers(entries, meta) {
   });
   return res;
 }
-module.exports = processAllPlayers;
+export default processAllPlayers;

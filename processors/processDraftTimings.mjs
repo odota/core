@@ -12,14 +12,12 @@
  * extra_time: how much of the extra time is left at the end of the draft stage
  * total_time_taken: the time taken for the draft stage
  */
-
 function processDraftTimings(entries, meta) {
   const draftTimings = [];
   const heroIdToSlot = meta.hero_id_to_slot;
   let sumActiveTeam = 0;
   let previousActiveTeam = 0;
   let draftStart = 0;
-
   for (let i = 0; i < entries.length; i += 1) {
     const e = entries[i];
     const heroId = e.hero_id;
@@ -73,4 +71,4 @@ function processDraftTimings(entries, meta) {
   }
   return draftTimings;
 }
-module.exports = processDraftTimings;
+export default processDraftTimings;

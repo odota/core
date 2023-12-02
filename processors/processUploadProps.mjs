@@ -39,4 +39,4 @@ function processUploadProps(entries) {
   }
   return container;
 }
-module.exports = processUploadProps;
+export default processUploadProps;

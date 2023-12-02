@@ -49,4 +49,4 @@ function processMetadata(entries) {
     ability_levels: abilityLevels,
   };
 }
-module.exports = processMetadata;
+export default processMetadata;

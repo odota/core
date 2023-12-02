@@ -17,7 +17,6 @@ function translate(input) {
 function computeIllusionString(input, isIllusion) {
   return (isIllusion ? 'illusion_' : '') + input;
 }
-
 /**
  * Produces a new output array with expanded entries from the original input array
  * */
@@ -31,13 +30,10 @@ function processExpand(entries, meta) {
     const slot = 'slot' in e ? e.slot : meta.hero_to_slot[e.unit];
     output.push({ ...e, slot, player_slot: meta.slot_to_playerslot[slot] });
   }
-
   // Tracks current aegis holder so we can ignore kills that pop aegis
   let aegisHolder = null;
-
   // Used to ignore meepo clones killing themselves
   let aegisDeathTime = null;
-
   const types = {
     DOTA_COMBATLOG_DAMAGE(e) {
       // damage
@@ -120,7 +116,6 @@ function processExpand(entries, meta) {
       // e.attackername // unit that buffed (use source to get the hero? chen/enchantress)
       // e.inflictor // the buff
       // e.targetname // target of buff (possibly illusion)
-
       // Aegis expired
       if (e.inflictor === 'modifier_aegis_regen') {
         aegisHolder = null;
@@ -136,7 +131,6 @@ function processExpand(entries, meta) {
     DOTA_COMBATLOG_DEATH(e) {
       const unit = e.sourcename;
       const key = computeIllusionString(e.targetname, e.targetillusion);
-
       // If it is a building kill
       if (
         e.targetname.indexOf('_tower') > -1 ||
@@ -151,7 +145,6 @@ function processExpand(entries, meta) {
           key,
         });
       }
-
       if (meta.hero_to_slot[key] === aegisHolder) {
         // The aegis holder was killed
         if (aegisDeathTime === null) {
@@ -169,12 +162,10 @@ function processExpand(entries, meta) {
           return;
         }
       }
-
       // Ignore suicides
       if (e.attackername === key) {
         return;
       }
-
       // If a hero was killed log extra information
       if (e.targethero && !e.targetillusion) {
         expand({
@@ -193,7 +184,6 @@ function processExpand(entries, meta) {
           type: 'killed_by',
         });
       }
-
       expand({
         ...e,
         unit,
@@ -446,7 +436,6 @@ function processExpand(entries, meta) {
     },
     CHAT_MESSAGE_AEGIS(e) {
       aegisHolder = e.player1;
-
       expand({
         time: e.time,
         type: e.type,
@@ -455,7 +444,6 @@ function processExpand(entries, meta) {
     },
     CHAT_MESSAGE_AEGIS_STOLEN(e) {
       aegisHolder = e.player1;
-
       expand({
         time: e.time,
         type: e.type,
@@ -639,4 +627,4 @@ function processExpand(entries, meta) {
   }
   return output;
 }
-module.exports = processExpand;
+export default processExpand;
