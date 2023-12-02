@@ -1,7 +1,7 @@
 /**
  * Object listing dependent columns for each filter
  * */
-module.exports = {
+export default {
   win: ['player_slot', 'radiant_win'],
   patch: ['patch'],
   game_mode: ['game_mode'],

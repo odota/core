@@ -5,7 +5,7 @@ import utility from '../util/utility.js';
 import config from '../config.js';
 import queue from './queue.mjs';
 import su from '../util/scenariosUtil.js';
-import filter from '../util/filter.js';
+import filter from '../util/filter.mjs';
 import compute from '../util/compute.mjs';
 import db from './db.mjs';
 import redis from './redis.mjs';

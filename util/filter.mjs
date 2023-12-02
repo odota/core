@@ -1,7 +1,5 @@
-const utility = require('./utility');
-
+import utility from './utility.js';
 const { isRadiant } = utility;
-
 function filter(matches, filters) {
   const curtime = Math.floor(Date.now() / 1000);
   // accept a hash of filters, run all the filters in the hash in series
@@ -144,4 +142,4 @@ function filter(matches, filters) {
   }
   return filtered;
 }
-module.exports = filter;
+export default filter;
