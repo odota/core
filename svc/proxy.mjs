@@ -3,7 +3,8 @@
  * */
 import httpProxy from 'http-proxy';
 import http from 'http';
-import { PORT, PROXY_PORT } from '../config.js';
+import config from '../config.js';
+const { PORT, PROXY_PORT } = config;
 const port = PORT || PROXY_PORT;
 const proxy = httpProxy.createProxyServer({
   target: 'http://api.steampowered.com',

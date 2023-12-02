@@ -1,6 +1,6 @@
-import buildSets from '../store/buildSets.js';
-import redis from '../store/redis.js';
-import db from '../store/db.js';
+import buildSets from '../store/buildSets.mjs';
+import redis from '../store/redis.mjs';
+import db from '../store/db.mjs';
 import utility from '../util/utility.js';
 const { invokeInterval } = utility;
 function doBuildSets(cb) {

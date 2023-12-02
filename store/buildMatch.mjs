@@ -1,24 +1,19 @@
-/**
- * Functions to build/cache match object
- * */
-const constants = require('dotaconstants');
-const config = require('../config');
-const queries = require('./queries');
-const compute = require('../util/compute');
-const utility = require('../util/utility');
-const cassandra = require('./cassandra');
-const redis = require('./redis');
-const db = require('./db');
-const {
+import constants from 'dotaconstants';
+import config from '../config.js';
+import queries from './queries.mjs';
+import compute from '../util/compute.js';
+import utility from '../util/utility.js';
+import cassandra from './cassandra.mjs';
+import redis from './redis.mjs';
+import db from './db.mjs';
+import {
   getPlayerMatchData,
   getMatchData,
   insertMatchPromise,
   getArchivedMatch,
-} = require('./queries');
-
+} from './queries.mjs';
 const { computeMatchData } = compute;
 const { buildReplayUrl, isContributor } = utility;
-
 async function extendPlayerData(player, match) {
   const p = {
     ...player,
@@ -43,7 +38,6 @@ async function extendPlayerData(player, match) {
   p.is_subscriber = Boolean(subscriber?.status);
   return Promise.resolve(p);
 }
-
 async function prodataInfo(matchId) {
   const result = await db
     .first([
@@ -82,7 +76,6 @@ async function prodataInfo(matchId) {
     series_type: result.series_type,
   });
 }
-
 async function backfill(matchId) {
   const match = {
     match_id: Number(matchId),
@@ -112,7 +105,6 @@ async function backfill(matchId) {
     );
   });
 }
-
 async function getMatch(matchId) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return Promise.resolve();
@@ -202,21 +194,18 @@ async function getMatch(matchId) {
     )
   );
   const prodataPromise = prodataInfo(matchId);
-
   const [players, gcdata, prodata, cosmetics] = await Promise.all([
     playersPromise,
     gcdataPromise,
     prodataPromise,
     cosmeticsPromise,
   ]);
-
   let matchResult = {
     ...match,
     ...gcdata,
     ...prodata,
     players,
   };
-
   if (cosmetics) {
     const playersWithCosmetics = matchResult.players.map((p) => {
       const hero = constants.heroes[p.hero_id] || {};
@@ -249,7 +238,6 @@ async function getMatch(matchId) {
     await queries.getMatchBenchmarksPromisified(matchResult);
   return Promise.resolve(matchWithBenchmarks);
 }
-
 async function buildMatch(matchId) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
@@ -265,5 +253,4 @@ async function buildMatch(matchId) {
   }
   return match;
 }
-
-module.exports = buildMatch;
+export default buildMatch;

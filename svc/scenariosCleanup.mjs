@@ -1,5 +1,5 @@
 import async from 'async';
-import db from '../store/db.js';
+import db from '../store/db.mjs';
 import config from '../config.js';
 import utility from '../util/utility.js';
 function clearScenariosTables(cb) {

@@ -1,5 +1,4 @@
 /* global before describe it beforeEach after */
-/* eslint-disable global-require */
 /**
  * Main test script to run tests
  * */
@@ -11,10 +10,10 @@ const supertest = require('supertest');
 const stripeLib = require('stripe');
 const pg = require('pg');
 const fs = require('fs');
+const util = require('util');
 const cassandraDriver = require('cassandra-driver');
 const swaggerParser = require('@apidevtools/swagger-parser');
 const config = require('../config');
-const redis = require('../store/redis');
 // const utility = require('../util/utility');
 const detailsApi = require('./data/details_api.json');
 const summariesApi = require('./data/summaries_api.json');
@@ -23,8 +22,6 @@ const heroesApi = require('./data/heroes_api.json');
 const leaguesApi = require('./data/leagues_api.json');
 const retrieverPlayer = require('./data/retriever_player.json');
 const detailsApiPro = require('./data/details_api_pro.json');
-const queries = require('../store/queries');
-const buildMatch = require('../store/buildMatch');
 
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = config.INIT_CASSANDRA_HOST;
@@ -33,6 +30,9 @@ const initCassandraHost = config.INIT_CASSANDRA_HOST;
 let db;
 let cassandra;
 let app;
+let redis;
+let queries;
+let buildMatch;
 // fake api responses
 nock('http://api.steampowered.com')
   // fake 500 error
@@ -68,190 +68,14 @@ before(function setup(done) {
   this.timeout(60000);
   async.series(
     [
-      function initPostgres(cb) {
-        const pool = new pg.Pool({
-          connectionString: initPostgresHost,
-        });
-        pool.connect((err, client) => {
-          if (err) {
-            return cb(err);
-          }
-          return async.series(
-            [
-              function drop(cb) {
-                console.log('drop postgres test database');
-                client.query('DROP DATABASE IF EXISTS yasp_test', cb);
-              },
-              function create(cb) {
-                console.log('create postgres test database');
-                client.query('CREATE DATABASE yasp_test', cb);
-              },
-              function tables(cb) {
-                const pool2 = new pg.Pool({
-                  connectionString: config.POSTGRES_URL,
-                });
-                pool2.connect((err, client2) => {
-                  if (err) {
-                    return cb(err);
-                  }
-                  console.log('create postgres test tables');
-                  const query = fs.readFileSync(
-                    './sql/create_tables.sql',
-                    'utf8'
-                  );
-                  return client2.query(query, cb);
-                });
-              },
-              function setup(cb) {
-                db = require('../store/db');
-                console.log('insert postgres test data');
-                // populate the DB with this leagueid so we insert a pro match
-                db.raw(
-                  "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')"
-                ).asCallback(cb);
-              },
-            ],
-            cb
-          );
-        });
-      },
-      function initCassandra(cb) {
-        const client = new cassandraDriver.Client({
-          contactPoints: [initCassandraHost],
-          localDataCenter: 'datacenter1',
-        });
-        async.series(
-          [
-            function drop(cb) {
-              console.log('drop cassandra test keyspace');
-              client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
-            },
-            function create(cb) {
-              console.log('create cassandra test keyspace');
-              client.execute(
-                "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
-                cb
-              );
-            },
-            function tables(cb) {
-              cassandra = require('../store/cassandra');
-              console.log('create cassandra test tables');
-              async.eachSeries(
-                fs
-                  .readFileSync('./sql/create_tables.cql', 'utf8')
-                  .split(';')
-                  .filter((cql) => cql.length > 1),
-                (cql, cb) => {
-                  cassandra.execute(cql, cb);
-                },
-                cb
-              );
-            },
-          ],
-          cb
-        );
-      },
-      function initElasticsearch(cb) {
-        console.log('Create Elasticsearch Mapping');
-        const mapping = JSON.parse(
-          fs.readFileSync('./elasticsearch/index.json')
-        );
-        const { es } = require('../store/elasticsearch');
-        async.series(
-          [
-            (cb) => {
-              es.indices.exists(
-                {
-                  index: 'dota-test', // Check if index already exists, in which case, delete it
-                },
-                (err, exists) => {
-                  if (err) {
-                    console.warn(err);
-                    cb();
-                  } else if (exists.body) {
-                    es.indices.delete(
-                      {
-                        index: 'dota-test',
-                      },
-                      (err) => {
-                        if (err) {
-                          console.warn(err);
-                        }
-                        cb();
-                      }
-                    );
-                  } else {
-                    cb();
-                  }
-                }
-              );
-            },
-            (cb) => {
-              es.indices.create(
-                {
-                  index: 'dota-test',
-                },
-                cb
-              );
-            },
-            (cb) => {
-              es.indices.close(
-                {
-                  index: 'dota-test',
-                },
-                cb
-              );
-            },
-            (cb) => {
-              es.indices.putSettings(
-                {
-                  index: 'dota-test',
-                  body: mapping.settings,
-                },
-                cb
-              );
-            },
-            (cb) => {
-              es.indices.putMapping(
-                {
-                  index: 'dota-test',
-                  type: 'player',
-                  body: mapping.mappings.player,
-                },
-                cb
-              );
-            },
-            (cb) => {
-              es.indices.open(
-                {
-                  index: 'dota-test',
-                },
-                cb
-              );
-            },
-          ],
-          cb
-        );
-      },
-      function wipeRedis(cb) {
-        console.log('wiping redis');
-        redis.flushdb((err, success) => {
-          console.log(err, success);
-          cb(err);
-        });
-      },
+      (cb) => initPostgres(cb),
+      (cb) => initCassandra(cb),
+      (cb) => initElasticsearch(cb),
+      (cb) => initRedis(cb),
       (cb) => startServices(cb),
+      (cb) => queriesAndMatches(cb),
       (cb) => loadMatches(cb),
-      function loadPlayers(cb) {
-        console.log('loading players');
-        async.mapSeries(
-          summariesApi.response.players,
-          (p, cb) => {
-            queries.insertPlayer(db, p, true, cb);
-          },
-          cb
-        );
-      },
+      (cb) => loadPlayers(cb),
     ],
     done
   );
@@ -867,6 +691,176 @@ describe('api limits', () => {
   });
 });
 
+async function initElasticsearch(cb) {
+  console.log('Create Elasticsearch Mapping');
+  const mapping = JSON.parse(
+    fs.readFileSync('./elasticsearch/index.json')
+  );
+  const { es } = await import('../store/elasticsearch.mjs');
+  async.series(
+    [
+      (cb) => {
+        es.indices.exists(
+          {
+            index: 'dota-test', // Check if index already exists, in which case, delete it
+          },
+          (err, exists) => {
+            if (err) {
+              console.warn(err);
+              cb();
+            } else if (exists.body) {
+              es.indices.delete(
+                {
+                  index: 'dota-test',
+                },
+                (err) => {
+                  if (err) {
+                    console.warn(err);
+                  }
+                  cb();
+                }
+              );
+            } else {
+              cb();
+            }
+          }
+        );
+      },
+      (cb) => {
+        es.indices.create(
+          {
+            index: 'dota-test',
+          },
+          cb
+        );
+      },
+      (cb) => {
+        es.indices.close(
+          {
+            index: 'dota-test',
+          },
+          cb
+        );
+      },
+      (cb) => {
+        es.indices.putSettings(
+          {
+            index: 'dota-test',
+            body: mapping.settings,
+          },
+          cb
+        );
+      },
+      (cb) => {
+        es.indices.putMapping(
+          {
+            index: 'dota-test',
+            type: 'player',
+            body: mapping.mappings.player,
+          },
+          cb
+        );
+      },
+      (cb) => {
+        es.indices.open(
+          {
+            index: 'dota-test',
+          },
+          cb
+        );
+      },
+    ],
+    cb
+  );
+}
+
+async function initRedis(cb) {
+  redis = (await import('../store/redis.mjs')).default;
+  console.log('wiping redis');
+  redis.flushdb((err, success) => {
+    console.log(err, success);
+    cb(err);
+  });
+}
+
+async function initPostgres(cb) {
+  const pool = new pg.Pool({
+    connectionString: initPostgresHost,
+  });
+  pool.connect((err, client) => {
+    if (err) {
+      return cb(err);
+    }
+    return async.series(
+      [
+        function drop(cb) {
+          console.log('drop postgres test database');
+          client.query('DROP DATABASE IF EXISTS yasp_test', cb);
+        },
+        function create(cb) {
+          console.log('create postgres test database');
+          client.query('CREATE DATABASE yasp_test', cb);
+        },
+        function tables(cb) {
+          const pool2 = new pg.Pool({
+            connectionString: config.POSTGRES_URL,
+          });
+          pool2.connect((err, client2) => {
+            if (err) {
+              return cb(err);
+            }
+            console.log('create postgres test tables');
+            const query = fs.readFileSync(
+              './sql/create_tables.sql',
+              'utf8'
+            );
+            return client2.query(query, cb);
+          });
+        },
+        (cb) => setupPostgresClient(cb),
+      ],
+      cb
+    );
+  });
+}
+
+async function initCassandra(cb) {
+  const client = new cassandraDriver.Client({
+    contactPoints: [initCassandraHost],
+    localDataCenter: 'datacenter1',
+  });
+  async.series(
+    [
+      function drop(cb) {
+        console.log('drop cassandra test keyspace');
+        client.execute('DROP KEYSPACE IF EXISTS yasp_test', cb);
+      },
+      function create(cb) {
+        console.log('create cassandra test keyspace');
+        client.execute(
+          "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
+          cb
+        );
+      },
+      (cb) => setupCassandraClient(cb), 
+      function tables(cb) {
+        console.log('create cassandra test tables');
+        async.eachSeries(
+          fs
+            .readFileSync('./sql/create_tables.cql', 'utf8')
+            .split(';')
+            .filter((cql) => cql.length > 1),
+          (cql, cb) => {
+            cassandra.execute(cql, cb);
+          },
+          cb
+        );
+      },
+    ],
+    cb
+  );
+}
+
 async function startServices(cb) {
   console.log('starting services');
   try {
@@ -874,6 +868,7 @@ async function startServices(cb) {
     await import('../svc/parser.mjs');
   } catch (e) {
     console.log(e);
+    cb(e);
   }
   cb();
 }
@@ -889,6 +884,33 @@ async function loadMatches(cb) {
       skipParse: true,
     });
   }
+  cb();
+}
+
+async function loadPlayers(cb) {
+  console.log('loading players');
+  const insertPlayerPromise = util.promisify(queries.insertPlayer);
+  await Promise.all(summariesApi.response.players.map(p => insertPlayerPromise(db, p, true)));
+  cb();
+}
+
+async function setupPostgresClient(cb) {
+  db = (await import('../store/db.mjs')).default;
+  console.log('insert postgres test data');
+  // populate the DB with this leagueid so we insert a pro match
+  db.raw(
+    "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')"
+  ).asCallback(cb);
+}
+
+async function setupCassandraClient(cb) {
+  cassandra = (await import('../store/cassandra.mjs')).default;
+  cb();
+}
+
+async function queriesAndMatches(cb) {
+  queries = (await import('../store/queries.mjs')).default;
+  buildMatch = (await import('../store/buildMatch.mjs')).default;
   cb();
 }
 /*

@@ -1,7 +1,7 @@
 import async from 'async';
 import utility from '../util/utility.js';
-import db from '../store/db.js';
-import queries from '../store/queries.js';
+import db from '../store/db.mjs';
+import queries from '../store/queries.mjs';
 const { invokeInterval, generateJob, getData } = utility;
 function doLeagues(cb) {
   const container = generateJob('api_leagues', {});

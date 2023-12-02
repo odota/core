@@ -1,9 +1,9 @@
-import queue from '../store/queue.js';
+import queue from '../store/queue.mjs';
 import benchmarksUtil from '../util/benchmarksUtil.js';
-import buildMatch from '../store/buildMatch.js';
+import buildMatch from '../store/buildMatch.mjs';
 import utility from '../util/utility.js';
 import config from '../config.js';
-import redis from '../store/redis.js';
+import redis from '../store/redis.mjs';
 const { benchmarks } = benchmarksUtil;
 async function doBenchmarks(matchID, cb) {
   try {

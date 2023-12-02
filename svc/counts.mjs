@@ -1,10 +1,10 @@
 import async from 'async';
 import moment from 'moment';
-import redis from '../store/redis.js';
-import db from '../store/db.js';
+import redis from '../store/redis.mjs';
+import db from '../store/db.mjs';
 import utility from '../util/utility.js';
-import queries from '../store/queries.js';
-import queue from '../store/queue.js';
+import queries from '../store/queries.mjs';
+import queue from '../store/queue.mjs';
 import config from '../config.js';
 const {
   getMatchRankTier,

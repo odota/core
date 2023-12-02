@@ -1,9 +1,9 @@
-import { archivePut } from '../store/archive.js';
+import { archivePut } from '../store/archive.mjs';
 import {
   getArchivedMatch,
   getMatchData,
   getPlayerMatchData,
-} from '../store/queries.js';
+} from '../store/queries.mjs';
 
 // Read some match data
 const match = {

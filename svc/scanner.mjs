@@ -1,8 +1,8 @@
 import async from 'async';
 import utility from '../util/utility.js';
 import config from '../config.js';
-import redis from '../store/redis.js';
-import queries from '../store/queries.js';
+import redis from '../store/redis.mjs';
+import queries from '../store/queries.mjs';
 const { getData, generateJob } = utility;
 const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;

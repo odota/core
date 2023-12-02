@@ -1,8 +1,8 @@
 import request from 'request';
 import config from '../config.js';
-import redis from '../store/redis.js';
-import db from '../store/db.js';
-import cassandra from '../store/cassandra.js';
+import redis from '../store/redis.mjs';
+import db from '../store/db.mjs';
+import cassandra from '../store/cassandra.mjs';
 import utility from '../util/utility.js';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 function invokeInterval(func) {

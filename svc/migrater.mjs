@@ -1,6 +1,6 @@
 import async from 'async';
 import fs from 'fs';
-import db from '../store/db.js';
+import db from '../store/db.mjs';
 import utility from '../util/utility.js';
 const sqlQuery = fs.readFileSync('./sql/create_tables.sql', 'utf8');
 // const cassQuery = fs.readFileSync('./sql/create_tables.cql', 'utf8');

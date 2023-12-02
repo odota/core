@@ -1,9 +1,6 @@
-/**
- * Methods for search functionality
- * */
-const async = require('async');
-const db = require('./db');
-const { es, INDEX } = require('./elasticsearch');
+import async from 'async';
+import db from './db.mjs';
+import { es, INDEX } from './elasticsearch.mjs';
 /**
  * @param db - database object
  * @param search - object for where parameter of query
@@ -15,7 +12,6 @@ function findPlayer(search, cb) {
     .where(search)
     .asCallback(cb);
 }
-
 function search(options, cb) {
   const query = options.q;
   async.parallel(
@@ -51,7 +47,6 @@ function search(options, cb) {
             if (err) {
               return callback(err);
             }
-
             return callback(
               null,
               body.hits.hits.map((e) => ({
@@ -80,4 +75,4 @@ function search(options, cb) {
     }
   );
 }
-module.exports = search;
+export default search;

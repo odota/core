@@ -1,8 +1,8 @@
 import crypto from 'crypto';
-import cassandra from '../store/cassandra.js';
-import db from '../store/db.js';
-import { archivePut } from '../store/archive.js';
-import { getMatchData, getPlayerMatchData } from '../store/queries.js';
+import cassandra from '../store/cassandra.mjs';
+import db from '../store/db.mjs';
+import { archivePut } from '../store/archive.mjs';
+import { getMatchData, getPlayerMatchData } from '../store/queries.mjs';
 import config from '../config.js';
 function genRandomNumber(byteCount, radix) {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`).toString(

@@ -1,6 +1,6 @@
 import async from 'async';
-import queries from '../store/queries.js';
-import db from '../store/db.js';
+import queries from '../store/queries.mjs';
+import db from '../store/db.mjs';
 import { generateJob, getData } from '../util/utility.js';
 
 // const leagueUrl = generateJob('api_leagues', {}).url;

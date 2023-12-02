@@ -1,5 +1,5 @@
 import async from 'async';
-import db from '../store/db.js';
+import db from '../store/db.mjs';
 
 function randByCentralLimitTheorem() {
   let v = 0;

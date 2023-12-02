@@ -1,6 +1,6 @@
 import async from 'async';
-import db from '../store/db.js';
-import redis from '../store/redis.js';
+import db from '../store/db.mjs';
+import redis from '../store/redis.mjs';
 function getSummaries(cb) {
   db.raw(
     "SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100) where last_match_time > (now() - interval '7 day')"

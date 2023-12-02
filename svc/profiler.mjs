@@ -1,6 +1,6 @@
 import async from 'async';
-import queries from '../store/queries.js';
-import db from '../store/db.js';
+import queries from '../store/queries.mjs';
+import db from '../store/db.mjs';
 import utility from '../util/utility.js';
 const { insertPlayer, bulkIndexPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;

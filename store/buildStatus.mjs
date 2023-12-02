@@ -1,11 +1,6 @@
-/**
- * Function to build status data
- * */
-// const config = require('../config');
-const async = require('async');
-const utility = require('../util/utility');
-
-module.exports = function buildStatus(db, redis, cb) {
+import async from 'async';
+import utility from '../util/utility.js';
+export default function buildStatus(db, redis, cb) {
   function generatePercentiles(arr) {
     // sort the list
     arr.sort((a, b) => Number(a) - Number(b));
@@ -185,4 +180,4 @@ module.exports = function buildStatus(db, redis, cb) {
       cb(err, results);
     }
   );
-};
+}

@@ -1,8 +1,8 @@
 import constants from 'dotaconstants';
 import moment from 'moment';
 import async from 'async';
-import db from '../store/db.js';
-import redis from '../store/redis.js';
+import db from '../store/db.mjs';
+import redis from '../store/redis.mjs';
 import utility from '../util/utility.js';
 const { invokeInterval } = utility;
 function doHeroStats(cb) {

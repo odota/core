@@ -1,10 +1,6 @@
-/**
- * Function to build/cache sets of players
- * */
-const async = require('async');
-const moment = require('moment');
-
-module.exports = function buildSets(db, redis, cb) {
+import async from 'async';
+import moment from 'moment';
+export default function buildSets(db, redis, cb) {
   console.log('rebuilding sets');
   async.parallel(
     {
@@ -40,4 +36,4 @@ module.exports = function buildSets(db, redis, cb) {
       return cb(err);
     }
   );
-};
+}

@@ -1,8 +1,8 @@
 import async from 'async';
 import JSONbig from 'json-bigint';
 import request from 'request';
-import redis from '../store/redis.js';
-import db from '../store/db.js';
+import redis from '../store/redis.mjs';
+import db from '../store/db.mjs';
 import utility from '../util/utility.js';
 import config from '../config.js';
 const { invokeInterval } = utility;

@@ -1,7 +1,7 @@
 import async from 'async';
 import constants from 'dotaconstants';
-import db from '../store/db.js';
-import queries from '../store/queries.js';
+import db from '../store/db.mjs';
+import queries from '../store/queries.mjs';
 import utility from '../util/utility.js';
 const { invokeInterval } = utility;
 function rePatch() {

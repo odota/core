@@ -1,7 +1,7 @@
 import async from 'async';
-import db from '../store/db.js';
+import db from '../store/db.mjs';
 import utility from '../util/utility.js';
-import queries from '../store/queries.js';
+import queries from '../store/queries.mjs';
 const { invokeInterval } = utility;
 function doItems(cb) {
   const container = utility.generateJob('api_items', {

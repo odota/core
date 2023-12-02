@@ -1,5 +1,5 @@
 /**
- * File managing configuration for the application
+ * File managing configuration for the applicaption
  * */
 const dotenv = require('dotenv');
 const fs = require('fs');

@@ -1,8 +1,8 @@
 import async from 'async';
 import util from 'util';
-import queue from '../store/queue.js';
-import buildMatch from '../store/buildMatch.js';
-import db from '../store/db.js';
+import queue from '../store/queue.mjs';
+import buildMatch from '../store/buildMatch.mjs';
+import db from '../store/db.mjs';
 import utility from '../util/utility.js';
 import su from '../util/scenariosUtil.js';
 async function processScenarios(matchID, cb) {

@@ -3,10 +3,10 @@ import urllib from 'url';
 import constants from 'dotaconstants';
 import config from '../config.js';
 import { redisCount, getData, generateJob } from '../util/utility.js';
-import db from '../store/db.js';
-import redis from '../store/redis.js';
-import queue from '../store/queue.js';
-import queries from '../store/queries.js';
+import db from '../store/db.mjs';
+import redis from '../store/redis.mjs';
+import queue from '../store/queue.mjs';
+import queries from '../store/queries.mjs';
 const { insertMatchPromise } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once

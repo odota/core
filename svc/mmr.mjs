@@ -1,9 +1,10 @@
-import queue from '../store/queue.js';
-import db from '../store/db.js';
-import redis from '../store/redis.js';
-import { insertPlayer, insertPlayerRating } from '../store/queries.js';
+import queue from '../store/queue.mjs';
+import db from '../store/db.mjs';
+import redis from '../store/redis.mjs';
+import queries from '../store/queries.mjs';
 import config from '../config.js';
 import { getData, redisCount, getRetrieverArr } from '../util/utility.js';
+const { insertPlayer, insertPlayerRating } = queries;
 const retrieverArr = getRetrieverArr();
 function processMmr(job, cb) {
   // Don't always do the job
