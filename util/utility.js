@@ -6,7 +6,7 @@ const constants = require('dotaconstants');
 const request = require('request');
 const Long = require('long');
 const urllib = require('url');
-const uuidV4 = require('uuid/v4');
+const uuid = require('uuid');
 const moment = require('moment');
 const crypto = require('crypto');
 const laneMappings = require('./laneMappings');
@@ -821,7 +821,7 @@ function getRetrieverArr(useGcDataArr) {
 
 function redisCount(redis, prefix) {
   const key = `${prefix}:${moment().startOf('hour').format('X')}`;
-  redis.pfadd(key, uuidV4());
+  redis.pfadd(key, uuid.v4());
   redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
 

@@ -1,4 +1,4 @@
-import * as vdf from 'simple-vdf';
+import vdf from 'simple-vdf';
 import async from 'async';
 import db from '../store/db.js';
 import utility from '../util/utility.js';

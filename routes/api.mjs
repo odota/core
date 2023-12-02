@@ -1,19 +1,16 @@
-const express = require('express');
-const moment = require('moment');
-const async = require('async');
-const playerFields = require('./playerFields.json');
-const filterDeps = require('../util/filterDeps');
-const config = require('../config');
-const spec = require('./spec');
-const cacheFunctions = require('../store/cacheFunctions');
-const db = require('../store/db');
-const redis = require('../store/redis');
-
+import express from 'express';
+import moment from 'moment';
+import async from 'async';
+import playerFields from './playerFields.json' assert { type: 'json' };
+import filterDeps from '../util/filterDeps.js';
+import config from '../config.js';
+import spec from './spec.mjs';
+import cacheFunctions from '../store/cacheFunctions.js';
+import db from '../store/db.js';
+import redis from '../store/redis.js';
 const api = new express.Router();
 const { subkeys } = playerFields;
-
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
-
 // Player caches middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   // Check cache
@@ -43,7 +40,6 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   }
   return cb();
 });
-
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.account_id))) {
@@ -77,36 +73,30 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   };
   return cb();
 });
-
 api.use('/teams/:team_id/:info?', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.team_id))) {
     return res.status(400).json({ error: 'invalid team id' });
   }
   return cb();
 });
-
 api.use('/request/:jobId', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.jobId))) {
     return res.status(400).json({ error: 'invalid job id' });
   }
   return cb();
 });
-
 // Admin endpoints middleware
 api.use('/admin*', (req, res, cb) => {
   if (req.user && admins.includes(req.user.account_id)) {
     return cb();
   }
-
   return res.status(403).json({
     error: 'Access Denied',
   });
 });
-
 api.get('/admin/apiMetrics', (req, res) => {
   const startTime = moment().startOf('month').format('YYYY-MM-DD');
   const endTime = moment().endOf('month').format('YYYY-MM-DD');
-
   async.parallel(
     {
       topAPI: (cb) => {
@@ -190,12 +180,10 @@ api.get('/admin/apiMetrics', (req, res) => {
     }
   );
 });
-
 // API spec
 api.get('/', (req, res) => {
   res.json(spec);
 });
-
 // API endpoints
 Object.keys(spec.paths).forEach((path) => {
   Object.keys(spec.paths[path]).forEach((verb) => {
@@ -215,5 +203,4 @@ Object.keys(spec.paths).forEach((path) => {
     }
   });
 });
-
-module.exports = api;
+export default api;

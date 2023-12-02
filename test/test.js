@@ -23,7 +23,6 @@ const heroesApi = require('./data/heroes_api.json');
 const leaguesApi = require('./data/leagues_api.json');
 const retrieverPlayer = require('./data/retriever_player.json');
 const detailsApiPro = require('./data/details_api_pro.json');
-const spec = require('../routes/spec');
 const queries = require('../store/queries');
 const buildMatch = require('../store/buildMatch');
 
@@ -257,8 +256,9 @@ before(function setup(done) {
     done
   );
 });
-describe('swagger schema', function testSwaggerSchema() {
+describe('swagger schema', async function testSwaggerSchema() {
   this.timeout(2000);
+  const spec = (await import('../routes/spec.mjs')).default;
   it('should be valid', (cb) => {
     const validOpts = {
       validate: {

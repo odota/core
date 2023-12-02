@@ -1,35 +1,31 @@
-const async = require('async');
-const constants = require('dotaconstants');
-const moment = require('moment');
-const { Client } = require('pg');
-const config = require('../config');
-// const crypto = require("crypto");
-// const uuidV4 = require("uuid/v4");
-const queue = require('../store/queue');
-const queries = require('../store/queries');
-const search = require('../store/search');
-const searchES = require('../store/searchES');
-const buildMatch = require('../store/buildMatch');
-const buildStatus = require('../store/buildStatus');
-const playerFields = require('./playerFields.json');
-const utility = require('../util/utility');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const packageJson = require('../package.json');
-const cacheFunctions = require('../store/cacheFunctions');
-const params = require('./requests/importParams');
-const responses = require('./responses/schemas/importResponseSchemas');
-const generateOperationId = require('./generateOperationId');
-const { insertMatchPromise } = require('../store/queries');
-
+import async from 'async';
+import constants from 'dotaconstants';
+import moment from 'moment';
+import pg from 'pg';
+import config from '../config.js';
+import queue from '../store/queue.js';
+import queries from '../store/queries.js';
+import search from '../store/search.js';
+import searchES from '../store/searchES.js';
+import buildMatch from '../store/buildMatch.js';
+import buildStatus from '../store/buildStatus.js';
+import playerFields from './playerFields.json' assert { type: 'json' };
+import utility from '../util/utility.js';
+import db from '../store/db.js';
+import redis from '../store/redis.js';
+import packageJson from '../package.json' assert { type: 'json' };
+import cacheFunctions from '../store/cacheFunctions.js';
+import params from './requests/importParams.js';
+import responses from './responses/schemas/importResponseSchemas.js';
+import generateOperationId from './generateOperationId.mjs';
+import { insertMatchPromise } from '../store/queries.js';
+const { Client } = pg;
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
-
 const parameters = Object.values(params).reduce(
   (acc, category) => ({ ...acc, ...category }),
   {}
 );
-
 const playerParamNames = [
   'accountIdParam',
   'limitParam',
@@ -51,16 +47,13 @@ const playerParamNames = [
   'havingParam',
   'sortParam',
 ];
-
 const playerParams = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
 }));
-
 const schemas = Object.values(responses).reduce(
   (acc, category) => ({ ...acc, ...category }),
   {}
 );
-
 const securitySchemes = {
   api_key: {
     type: 'apiKey',
@@ -73,7 +66,6 @@ const securitySchemes = {
     in: 'query',
   },
 };
-
 const spec = {
   openapi: '3.0.3',
   info: {
@@ -1195,7 +1187,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           const maxRank = req.query.max_rank
             ? `AND avg_rank_tier <= ${req.query.max_rank}`
             : '';
-
           db.raw(
             `
           WITH match_ids AS (SELECT match_id FROM public_matches
@@ -1253,7 +1244,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         func: (req, res, cb) => {
           const lessThan =
             req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
-
           db.raw(
             `
           SELECT * FROM parsed_matches
@@ -1417,7 +1407,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           if (!req.query.q) {
             return res.status(400).json([]);
           }
-
           if (
             req.query.es ||
             utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)
@@ -1783,7 +1772,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           // accept as input two arrays of up to 5
           const t0 = [].concat(req.query.teamA || []).slice(0, 5);
           const t1 = [].concat(req.query.teamB || []).slice(0, 5);
-
           // Construct key for redis
           const key = `combos:${matchupToString(t0, t1, true)}`;
           redis.get(key, (err, reply) => {
@@ -1796,12 +1784,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             // Determine which comes first
             // const rcg = groupToString(t0);
             // const dcg = groupToString(t1);
-
             // const inverted = rcg > dcg;
             const inverted = false;
             const teamA = inverted ? t1 : t0;
             const teamB = inverted ? t0 : t1;
-
             return db
               .raw(
                 'select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10',
@@ -2049,7 +2035,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 schema: {
                   type: 'array',
                   items: {
-                    type: 'array', // todo: Why double array?
+                    type: 'array',
                     items: {
                       $ref: '#/components/schemas/PlayerObjectResponse',
                     },
@@ -2569,7 +2555,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   const start_time = parseInt(r.split(':')[1]);
                   const hero_id = parseInt(r.split(':')[2]);
                   const score = parseInt(rows[i + 1]);
-
                   return {
                     match_id: Number.isNaN(match_id) ? null : match_id,
                     start_time: Number.isNaN(start_time) ? null : start_time,
@@ -2884,4 +2869,4 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
     },
   },
 };
-module.exports = spec;
+export default spec;
