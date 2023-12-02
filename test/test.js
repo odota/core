@@ -24,6 +24,8 @@ const leaguesApi = require('./data/leagues_api.json');
 const retrieverPlayer = require('./data/retriever_player.json');
 const detailsApiPro = require('./data/details_api_pro.json');
 const spec = require('../routes/spec');
+const queries = require('../store/queries');
+const buildMatch = require('../store/buildMatch');
 
 const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = config.INIT_CASSANDRA_HOST;
@@ -241,15 +243,7 @@ before(function setup(done) {
           cb(err);
         });
       },
-      function startServices(cb) {
-        console.log('starting services');
-        app = require('../svc/web');
-        queries = require('../store/queries');
-        buildMatch = require('../store/buildMatch');
-
-        require('../svc/parser');
-        cb();
-      },
+      (cb) => startServices(cb),
       (cb) => loadMatches(cb),
       function loadPlayers(cb) {
         console.log('loading players');
@@ -874,6 +868,17 @@ describe('api limits', () => {
     config.API_FREE_LIMIT = 50000;
   });
 });
+
+async function startServices(cb) {
+  console.log('starting services');
+  app = require('../svc/web');
+  try {
+  import('../svc/parser.mjs');
+  } catch(e) {
+    console.log(e);
+  }
+  cb();
+}
 
 async function loadMatches(cb) {
   console.log('loading matches');

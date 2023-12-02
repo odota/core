@@ -17,7 +17,8 @@ if (process.env.PROVIDER === 'gce') {
 }
 if (process.env.ROLE) {
   // if role variable is set just run that script
-  require(`./svc/${process.env.ROLE}.js`);
+  const app = apps.find(app => app.group === process.env.ROLE);
+  import('./' + app?.script);
 } else if (group) {
   pm2.connect(() => {
     async.each(

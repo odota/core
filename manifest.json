@@ -177,7 +177,7 @@
       "instances": 1
     },
     {
-      "script": "svc/parser.js",
+      "script": "svc/parser.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "parser",
