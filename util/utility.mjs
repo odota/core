@@ -42,7 +42,7 @@ function convert32to64(id) {
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
  * */
-function generateJob(type, payload) {
+export function generateJob(type, payload) {
   const apiUrl = 'http://api.steampowered.com';
   let apiKey;
   const opts = {
@@ -197,7 +197,7 @@ function generateJob(type, payload) {
  * Injecting API key for Steam API
  * Errors from Steam API
  * */
-function getData(url, cb) {
+export function getData(url, cb) {
   let u;
   let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
@@ -300,7 +300,7 @@ function getData(url, cb) {
     );
   }, delay);
 }
-const getDataPromise = promisify(getData);
+export const getDataPromise = promisify(getData);
 /**
  * Determines if a player is radiant
  * */
@@ -765,7 +765,7 @@ function getLaneFromPosData(lanePos, isRadiant) {
 /**
  * Get array of retriever endpoints from config
  * */
-function getRetrieverArr(useGcDataArr) {
+export function getRetrieverArr(useGcDataArr) {
   const parserHosts = useGcDataArr ? config.GCDATA_RETRIEVER_HOST : '';
   const input = parserHosts || config.RETRIEVER_HOST;
   const output = [];
@@ -778,7 +778,7 @@ function getRetrieverArr(useGcDataArr) {
   });
   return output;
 }
-function redisCount(redis, prefix) {
+export function redisCount(redis, prefix) {
   const key = `${prefix}:${moment().startOf('hour').format('X')}`;
   redis.pfadd(key, uuid.v4());
   redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));

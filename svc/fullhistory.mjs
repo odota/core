@@ -1,7 +1,6 @@
 // Processes a queue of full history/refresh requests for players
 import async from 'async';
 import urllib from 'url';
-import constants from 'dotaconstants';
 import config from '../config.js';
 import { redisCount, getData, generateJob } from '../util/utility.mjs';
 import db from '../store/db.mjs';
