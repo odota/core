@@ -884,7 +884,9 @@ async function loadMatches(cb) {
 async function loadPlayers(cb) {
   console.log('loading players');
   await Promise.all(
-    summariesApi.response.players.map((p) => queries.insertPlayerPromise(db, p, true))
+    summariesApi.response.players.map((p) =>
+      queries.insertPlayerPromise(db, p, true)
+    )
   );
   cb();
 }

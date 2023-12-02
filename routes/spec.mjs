@@ -1029,15 +1029,16 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/players/:account_id/refresh',
         func: async (req, res, cb) => {
           try {
-          const length = await queue.addJob(
-            'fhQueue',
-            JSON.stringify({
-              account_id: req.params.account_id || '1',
-            }));
+            const length = await queue.addJob(
+              'fhQueue',
+              JSON.stringify({
+                account_id: req.params.account_id || '1',
+              })
+            );
             return res.json({
               length,
             });
-          } catch(e) {
+          } catch (e) {
             return cb(e);
           }
         },
@@ -1620,14 +1621,14 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/request/:jobId',
         func: async (req, res, cb) => {
           try {
-          const job = await queue.getReliableJob(req.params.jobId);
-          if (job) {
-            return res.json({ ...job, jobId: job.id });
+            const job = await queue.getReliableJob(req.params.jobId);
+            if (job) {
+              return res.json({ ...job, jobId: job.id });
+            }
+            return res.json(null);
+          } catch (e) {
+            return cb(e);
           }
-          return res.json(null);
-        } catch(e) {
-          return cb(e);
-        }
         },
       },
     },

@@ -1349,7 +1349,7 @@ function insertMatch(match, options, cb) {
             JSON.stringify({
               match_id: match.match_id,
               account_id: p.account_id,
-            }),
+            })
           );
           cb();
         } else {
@@ -1361,27 +1361,36 @@ function insertMatch(match, options, cb) {
   }
   async function decideProfile(cb) {
     // We only do this if fresh match
-    if (match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) && options.origin === 'scanner' && match.players) {
+    if (
+      match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) &&
+      options.origin === 'scanner' &&
+      match.players
+    ) {
       try {
-        const filteredPlayers = match.players.filter(p => {
-          return p.account_id &&
-            p.account_id !== utility.getAnonymousAccountId();
+        const filteredPlayers = match.players.filter((p) => {
+          return (
+            p.account_id && p.account_id !== utility.getAnonymousAccountId()
+          );
         });
         // Add a placeholder player with just the ID
-        await Promise.all(filteredPlayers.map(p => upsertPromise(
-          db,
-          'players',
-          { account_id: p.account_id },
-          { account_id: p.account_id },
-        )));
+        await Promise.all(
+          filteredPlayers.map((p) =>
+            upsertPromise(
+              db,
+              'players',
+              { account_id: p.account_id },
+              { account_id: p.account_id }
+            )
+          )
+        );
         // We could also queue a profile job here but seems like a lot to update name after each match
         cb();
-    } catch(e) {
-      cb(e);
+      } catch (e) {
+        cb(e);
+      }
+    } else {
+      cb();
     }
-  } else {
-    cb();
-  }
   }
   function decideGcData(cb) {
     // We only do this for fresh matches
@@ -1396,7 +1405,7 @@ function insertMatch(match, options, cb) {
         JSON.stringify({
           match_id: match.match_id,
           pgroup: match.pgroup,
-        }),
+        })
       );
       cb();
     } else {
@@ -1438,26 +1447,26 @@ function insertMatch(match, options, cb) {
             priority = -2;
           }
           try {
-          const job = await queue.addReliableJob(
-            'parse',
-            {
-              data: {
-                match_id: match.match_id,
-                // leagueid to determine whether to upsert Postgres after parse
-                leagueid: match.leagueid,
-                // start_time just for debug logging
-                start_time: match.start_time,
-                pgroup: match.pgroup,
-                origin: options.origin,
+            const job = await queue.addReliableJob(
+              'parse',
+              {
+                data: {
+                  match_id: match.match_id,
+                  // leagueid to determine whether to upsert Postgres after parse
+                  leagueid: match.leagueid,
+                  // start_time just for debug logging
+                  start_time: match.start_time,
+                  pgroup: match.pgroup,
+                  origin: options.origin,
+                },
               },
-            },
-            {
-              priority,
-              attempts: options.attempts || 15,
-            },
-          );
-          cb(null, job);
-          } catch(e) {
+              {
+                priority,
+                attempts: options.attempts || 15,
+              }
+            );
+            cb(null, job);
+          } catch (e) {
             cb(e);
           }
         }

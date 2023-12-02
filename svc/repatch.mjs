@@ -14,11 +14,10 @@ for (let i = 0; i < matches.length; i++) {
     'match_patch',
     {
       match_id: match.match_id,
-      patch:
-        constants.patch[utility.getPatchIndex(match.start_time)].name,
+      patch: constants.patch[utility.getPatchIndex(match.start_time)].name,
     },
     {
       match_id: match.match_id,
-    },
+    }
   );
 }
