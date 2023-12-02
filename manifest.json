@@ -161,7 +161,7 @@
       "instances": 1
     },
     {
-      "script": "svc/retriever.js",
+      "script": "svc/retriever.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "retriever",
@@ -169,7 +169,7 @@
       "instances": 1
     },
     {
-      "script": "svc/proxy.js",
+      "script": "svc/proxy.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "proxy",

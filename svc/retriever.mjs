@@ -2,25 +2,16 @@
  * Worker interfacing with the Steam GC.
  * Provides HTTP endpoints for other workers.
  * */
-const Steam = require('steam');
-const Dota2 = require('dota2');
-const async = require('async');
-const express = require('express');
-const compression = require('compression');
-const cp = require('child_process');
-const os = require('os');
-const config = require('../config');
+import Steam from 'steam';
+import Dota2 from 'dota2';
+import async from 'async';
+import express from 'express';
+import compression from 'compression';
+import cp from 'child_process';
+import os from 'os';
+import config from '../config.js';
 
-const advancedAuth = config.ENABLE_RETRIEVER_ADVANCED_AUTH
-  ? {
-      /* eslint-disable global-require */
-      redis: require('../store/redis'),
-      crypto: require('crypto'),
-      /* eslint-enable global-require */
-      pendingTwoFactorAuth: {},
-      pendingSteamGuardAuth: {},
-    }
-  : null;
+const advancedAuth = null;
 
 const app = express();
 const steamObj = {};
