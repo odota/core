@@ -456,7 +456,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           const heroes = {};
           // prefill heroes with every hero
           Object.keys(constants.heroes).forEach((heroId) => {
-            hero_id_int = parseInt(heroId);
+            const hero_id_int = parseInt(heroId);
             const hero = {
               hero_id: hero_id_int,
               last_played: 0,

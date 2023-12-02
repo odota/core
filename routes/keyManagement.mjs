@@ -10,7 +10,6 @@ import config from '../config.js';
 const stripe = stripeLib(config.STRIPE_SECRET);
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
-const uuidV4 = uuid.v4;
 keys.use(bodyParser.json());
 keys.use(
   bodyParser.urlencoded({
@@ -92,7 +91,7 @@ keys
           if (allKeyRecords.length === 0) {
             return cb();
           }
-          customer_id = allKeyRecords[0].customer_id;
+          const customer_id = allKeyRecords[0].customer_id;
           getOpenInvoices(customer_id).then((invoices) => {
             const processed = invoices.map((i) => ({
               id: i.id,
@@ -224,7 +223,7 @@ keys
         return res.status(402).json(err);
       }
     }
-    const apiKey = uuidV4();
+    const apiKey = uuid.v4();
     const sub = await stripe.subscriptions.create({
       customer: customer_id,
       items: [{ plan: stripeAPIPlan }],
