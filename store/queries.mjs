@@ -718,6 +718,7 @@ function insertPlayer(db, player, indexPlayer, cb) {
     cb
   );
 }
+export const insertPlayerPromise = util.promisify(insertPlayer);
 function bulkIndexPlayer(bulkActions, cb) {
   // Bulk call to ElasticSearch
   if (bulkActions.length > 0) {
@@ -1315,7 +1316,8 @@ function insertMatch(match, options, cb) {
       return cb();
     }
     if (options.origin === 'scanner') {
-      return redis.rpush('countsQueue', JSON.stringify(match), cb);
+      queue.addJob('countsQueue', JSON.stringify(match));
+      return cb();
     }
     return cb();
   }
@@ -1325,7 +1327,8 @@ function insertMatch(match, options, cb) {
       options.origin === 'scanner' &&
       match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT
     ) {
-      return redis.rpush('parsedBenchmarksQueue', match.match_id, cb);
+      queue.addJob('parsedBenchmarksQueue', match.match_id);
+      return cb();
     }
     return cb();
   }
@@ -1341,14 +1344,14 @@ function insertMatch(match, options, cb) {
           p.account_id !== utility.getAnonymousAccountId() &&
           config.ENABLE_RANDOM_MMR_UPDATE
         ) {
-          redis.rpush(
+          queue.addJob(
             'mmrQueue',
             JSON.stringify({
               match_id: match.match_id,
               account_id: p.account_id,
             }),
-            cb
           );
+          cb();
         } else {
           cb();
         }
@@ -1356,30 +1359,29 @@ function insertMatch(match, options, cb) {
       cb
     );
   }
-  function decideProfile(cb) {
+  async function decideProfile(cb) {
     // We only do this if fresh match
-    async.each(
-      match.players,
-      (p, cb) => {
-        if (
-          match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) &&
-          options.origin === 'scanner' &&
-          p.account_id &&
-          p.account_id !== utility.getAnonymousAccountId()
-        ) {
-          upsert(
-            db,
-            'players',
-            { account_id: p.account_id },
-            { account_id: p.account_id },
-            cb
-          );
-        } else {
-          cb();
-        }
-      },
-      cb
-    );
+    if (match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) && options.origin === 'scanner' && match.players) {
+      try {
+        const filteredPlayers = match.players.filter(p => {
+          return p.account_id &&
+            p.account_id !== utility.getAnonymousAccountId();
+        });
+        // Add a placeholder player with just the ID
+        await Promise.all(filteredPlayers.map(p => upsertPromise(
+          db,
+          'players',
+          { account_id: p.account_id },
+          { account_id: p.account_id },
+        )));
+        // We could also queue a profile job here but seems like a lot to update name after each match
+        cb();
+    } catch(e) {
+      cb(e);
+    }
+  } else {
+    cb();
+  }
   }
   function decideGcData(cb) {
     // We only do this for fresh matches
@@ -1389,14 +1391,14 @@ function insertMatch(match, options, cb) {
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      redis.rpush(
+      queue.addJob(
         'gcQueue',
         JSON.stringify({
           match_id: match.match_id,
           pgroup: match.pgroup,
         }),
-        cb
       );
+      cb();
     } else {
       cb();
     }
@@ -1422,7 +1424,7 @@ function insertMatch(match, options, cb) {
           cb(err, Boolean(score))
         );
       },
-      (err, hasTrackedPlayer) => {
+      async (err, hasTrackedPlayer) => {
         if (err) {
           return cb(err);
         }
@@ -1435,7 +1437,8 @@ function insertMatch(match, options, cb) {
           if (hasTrackedPlayer) {
             priority = -2;
           }
-          return queue.addJob(
+          try {
+          const job = await queue.addReliableJob(
             'parse',
             {
               data: {
@@ -1452,8 +1455,11 @@ function insertMatch(match, options, cb) {
               priority,
               attempts: options.attempts || 15,
             },
-            cb
           );
+          cb(null, job);
+          } catch(e) {
+            cb(e);
+          }
         }
         return cb();
       }
@@ -1473,7 +1479,7 @@ function insertMatch(match, options, cb) {
       decideCounts,
       decideBenchmarks,
       decideMmr,
-      decideProfile,
+      decideProfile: (cb) => decideProfile(cb),
       decideGcData,
       decideMetaParse,
       decideReplayParse,
@@ -1595,6 +1601,7 @@ export default {
   upsert,
   upsertPromise,
   insertPlayer,
+  insertPlayerPromise,
   bulkIndexPlayer,
   insertMatchPromise,
   insertPlayerRating,

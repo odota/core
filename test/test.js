@@ -10,7 +10,6 @@ const supertest = require('supertest');
 const stripeLib = require('stripe');
 const pg = require('pg');
 const fs = require('fs');
-const util = require('util');
 const cassandraDriver = require('cassandra-driver');
 const swaggerParser = require('@apidevtools/swagger-parser');
 const config = require('../config');
@@ -884,9 +883,8 @@ async function loadMatches(cb) {
 
 async function loadPlayers(cb) {
   console.log('loading players');
-  const insertPlayerPromise = util.promisify(queries.insertPlayer);
   await Promise.all(
-    summariesApi.response.players.map((p) => insertPlayerPromise(db, p, true))
+    summariesApi.response.players.map((p) => queries.insertPlayerPromise(db, p, true))
   );
   cb();
 }

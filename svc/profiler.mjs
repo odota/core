@@ -1,33 +1,22 @@
-// Processes a queue of requests to update Steam profile data
-// TODO use top level await
-import async from 'async';
+// Updates Steam profile data for players periodically
 import queries from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-const { insertPlayer, bulkIndexPlayer } = queries;
+const { insertPlayerPromise, bulkIndexPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;
-function getSummaries(cb) {
-  db.raw(
+
+while(true) {
+  // To optimize the api call we need to do 100 players at a time
+  // We sample 100 random rows from the DB, with the downside that we might update a lot of inactive players
+  // Alternatively we could also trigger updates from match insert to target active players
+  const result = await db.raw(
     'SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)'
-  ).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
+  );
     const container = generateJob('api_summaries', {
       players: result.rows,
     });
-    // Request rank_tier data for these players
-    // result.rows.forEach((row) => {
-    //   redis.rpush('mmrQueue', JSON.stringify({
-    //     match_id: null,
-    //     account_id: row.account_id,
-    //   }));
-    // });
-    return getData(container.url, (err, body) => {
-      if (err) {
-        // couldn't get data from api, non-retryable
-        return cb(JSON.stringify(err));
-      }
+    // We can also queue a rank tier/MMR request for these players
+    const body = await  getDataPromise(container.url);
       const results = body.response.players.filter((player) => player.steamid);
       const bulkUpdate = results.reduce((acc, player) => {
         acc.push(
@@ -51,23 +40,6 @@ function getSummaries(cb) {
           console.log(err);
         }
       });
-      // player summaries response
-      return async.each(
-        results,
-        (player, cb) => {
-          insertPlayer(db, player, false, cb);
-        },
-        cb
-      );
-    });
-  });
+      await Promise.all(results.map(player => insertPlayerPromise(db, player, false)));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 }
-function start() {
-  getSummaries((err) => {
-    if (err) {
-      throw err;
-    }
-    return setTimeout(start, 500);
-  });
-}
-start();

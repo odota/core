@@ -2,6 +2,7 @@ import moment from 'moment';
 import async from 'async';
 import redis from './redis.mjs';
 import db from './db.mjs';
+
 function runQueue(queueName, parallelism, processor) {
   function processOneJob(cb) {
     redis.blpop(queueName, '0', (err, job) => {
@@ -85,8 +86,11 @@ function runReliableQueue(queueName, parallelism, processor) {
     });
   }
 }
-function addJob(queueName, job, options, cb) {
-  db.raw(
+async function addJob(queueName, job) {
+  return await redis.rpush(queueName, job);
+}
+async function addReliableJob(queueName, job, options) {
+  const result = await db.raw(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority)
   VALUES (?, ?, ?, ?, ?, ?) 
   RETURNING *`,
@@ -98,26 +102,18 @@ function addJob(queueName, job, options, cb) {
       new Date(),
       options.priority || 10,
     ]
-  ).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows[0]);
-  });
-}
-function getJob(jobId, cb) {
-  db.raw('SELECT * FROM queue WHERE id = ?', [jobId]).asCallback(
-    (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(err, result.rows[0]);
-    }
   );
+  return result.rows[0];
 }
+async function getReliableJob(jobId) {
+  const result = await db.raw('SELECT * FROM queue WHERE id = ?', [jobId]);
+  return result.rows[0];
+}
+
 export default {
   runQueue,
   runReliableQueue,
+  addReliableJob,
+  getReliableJob,
   addJob,
-  getJob,
 };

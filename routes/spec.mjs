@@ -1027,21 +1027,19 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/refresh',
-        func: (req, res, cb) => {
-          redis.rpush(
+        func: async (req, res, cb) => {
+          try {
+          const length = await queue.addJob(
             'fhQueue',
             JSON.stringify({
               account_id: req.params.account_id || '1',
-            }),
-            (err, length) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json({
-                length,
-              });
-            }
-          );
+            }));
+            return res.json({
+              length,
+            });
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
@@ -1620,16 +1618,16 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/request/:jobId',
-        func: (req, res, cb) => {
-          queue.getJob(req.params.jobId, (err, job) => {
-            if (err) {
-              return cb(err);
-            }
-            if (job) {
-              return res.json({ ...job, jobId: job.id });
-            }
-            return res.json(null);
-          });
+        func: async (req, res, cb) => {
+          try {
+          const job = await queue.getReliableJob(req.params.jobId);
+          if (job) {
+            return res.json({ ...job, jobId: job.id });
+          }
+          return res.json(null);
+        } catch(e) {
+          return cb(e);
+        }
         },
       },
     },

@@ -63,7 +63,7 @@ async function parseProcessor(job, cb) {
       match.origin === 'scanner' &&
       match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
     ) {
-      return redis.rpush('scenariosQueue', match.match_id, cb);
+      await queue.addJob('scenariosQueue', match.match_id);
     }
     console.log('[PARSER] completed parse of match %s', match.match_id);
     cb(null, match.match_id);
