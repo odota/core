@@ -133,17 +133,17 @@ function cassandraUsage(cb) {
   );
 }
 
-function redisUsage(cb) {
-  redis.info((err) => {
-    if (err) {
-      return cb(err);
-    }
-    // console.log(info);
-    return cb(err, {
-      metric: Number(redis.server_info.used_memory),
+async function redisUsage(cb) {
+  try {
+    const info = await redis.info();
+    const line = info.split('\n').find(line => line.startsWith('used_memory'));
+    return cb(null, {
+      metric: Number(line.split(':')[1]),
       threshold: 4 * 10 ** 9,
     });
-  });
+} catch(e) {
+  cb(e);
+}
 }
 const health = {
   steamApi,

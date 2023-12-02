@@ -7,7 +7,7 @@ const config = require('../config');
 const stripeLib = require('stripe');
 
 const stripe = stripeLib(config.STRIPE_SECRET);
-s;
+
 const { invokeInterval } = utility;
 
 async function run(cb) {
