@@ -1,15 +1,10 @@
-/**
- * Worker to fetch MMR and Dota Plus data for players
- * */
-const queue = require('../store/queue');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const { insertPlayer, insertPlayerRating } = require('../store/queries');
-const config = require('../config');
-const { getData, redisCount, getRetrieverArr } = require('../util/utility');
-
+import queue from '../store/queue.js';
+import db from '../store/db.js';
+import redis from '../store/redis.js';
+import { insertPlayer, insertPlayerRating } from '../store/queries.js';
+import config from '../config.js';
+import { getData, redisCount, getRetrieverArr } from '../util/utility.js';
 const retrieverArr = getRetrieverArr();
-
 function processMmr(job, cb) {
   // Don't always do the job
   if (Math.random() < 0) {
@@ -46,7 +41,6 @@ function processMmr(job, cb) {
     });
   });
 }
-
 queue.runQueue(
   'mmrQueue',
   config.MMR_PARALLELISM * retrieverArr.length,

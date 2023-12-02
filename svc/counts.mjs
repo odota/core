@@ -1,15 +1,11 @@
-/**
- * Worker to update counts based on incoming match data
- * */
-const async = require('async');
-const moment = require('moment');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const queries = require('../store/queries');
-const queue = require('../store/queue');
-const config = require('../config');
-
+import async from 'async';
+import moment from 'moment';
+import redis from '../store/redis.js';
+import db from '../store/db.js';
+import utility from '../util/utility.js';
+import queries from '../store/queries.js';
+import queue from '../store/queue.js';
+import config from '../config.js';
 const {
   getMatchRankTier,
   getMatchRating,
@@ -18,7 +14,6 @@ const {
   bulkIndexPlayer,
 } = queries;
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
-
 function updateHeroRankings(match, cb) {
   getMatchRankTier(match, (err, avg) => {
     if (err) {
@@ -74,7 +69,6 @@ function updateHeroRankings(match, cb) {
     );
   });
 }
-
 function updateMmrEstimate(match, cb) {
   getMatchRating(match, (err, avg) => {
     if (avg && !Number.isNaN(Number(avg))) {
@@ -103,7 +97,6 @@ function updateMmrEstimate(match, cb) {
     return cb(err);
   });
 }
-
 function upsertMatchSample(match, cb) {
   return getMatchRating(match, (err, avg, num) => {
     if (err) {
@@ -135,7 +128,6 @@ function upsertMatchSample(match, cb) {
             cb
           );
         }
-
         function upsertPlayerMatchesSample(cb) {
           async.each(
             match.players || [],
@@ -155,7 +147,6 @@ function upsertMatchSample(match, cb) {
             cb
           );
         }
-
         function exit(err) {
           if (err) {
             console.error(err);
@@ -165,7 +156,6 @@ function upsertMatchSample(match, cb) {
           }
           cb(err);
         }
-
         async.series(
           {
             upsertMatchSample,
@@ -177,7 +167,6 @@ function upsertMatchSample(match, cb) {
     });
   });
 }
-
 function updateRecord(field, match, player) {
   redis.zadd(
     `records:${field}`,
@@ -189,7 +178,6 @@ function updateRecord(field, match, player) {
   const expire = moment().add(1, 'month').startOf('month').format('X');
   redis.expireat(`records:${field}`, expire);
 }
-
 function updateRecords(match, cb) {
   updateRecord('duration', match, {});
   match.players.forEach((player) => {
@@ -206,15 +194,12 @@ function updateRecords(match, cb) {
   });
   cb();
 }
-
 function updateLastPlayed(match, cb) {
   const filteredPlayers = (match.players || []).filter(
     (player) =>
       player.account_id && player.account_id !== getAnonymousAccountId()
   );
-
   const lastMatchTime = new Date(match.start_time * 1000);
-
   const bulkUpdate = filteredPlayers.reduce((acc, player) => {
     acc.push(
       {
@@ -229,16 +214,13 @@ function updateLastPlayed(match, cb) {
         doc_as_upsert: true,
       }
     );
-
     return acc;
   }, []);
-
   bulkIndexPlayer(bulkUpdate, (err) => {
     if (err) {
       console.log(err);
     }
   });
-
   async.each(
     filteredPlayers,
     (player, cb) => {
@@ -255,7 +237,6 @@ function updateLastPlayed(match, cb) {
     cb
   );
 }
-
 /**
  * Update table storing heroes played in a game for lookup of games by heroes played
  * */
@@ -274,11 +255,9 @@ function updateHeroSearch(match, cb) {
       dire.push(p.hero_id);
     }
   }
-
   // Turn the arrays into strings
   // const rcg = groupToString(radiant);
   // const dcg = groupToString(dire);
-
   // Always store the team whose string representation comes first (as teamA)
   // This lets us only search in one order when we do a query
   // Currently disabled because this doesn't work if the query is performed with a subset
@@ -287,7 +266,6 @@ function updateHeroSearch(match, cb) {
   const teamA = inverted ? dire : radiant;
   const teamB = inverted ? radiant : dire;
   const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
-
   return db
     .raw(
       'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)',
@@ -295,7 +273,6 @@ function updateHeroSearch(match, cb) {
     )
     .asCallback(cb);
 }
-
 function updateTurbo(match, cb) {
   for (let i = 0; i < match.players.length; i += 1) {
     const player = match.players[i];
@@ -312,7 +289,6 @@ function updateTurbo(match, cb) {
   redis.expireat('turboWins', moment().endOf('month').unix());
   cb();
 }
-
 /*
 // Stores winrate of each subset of heroes in this game
 function updateCompositions(match, cb) {
@@ -344,7 +320,6 @@ function updateMatchups(match, cb) {
   }, cb);
 }
 */
-
 function processCounts(match, cb) {
   console.log('match %s', match.match_id);
   return async.parallel(
@@ -389,22 +364,21 @@ function processCounts(match, cb) {
         return cb();
       },
       /*
-      updateCompositions(cb) {
-        if (options.origin === 'scanner') {
-          return updateCompositions(match, cb);
+        updateCompositions(cb) {
+          if (options.origin === 'scanner') {
+            return updateCompositions(match, cb);
+          }
+          return cb();
         }
-        return cb();
-      }
-      updateMatchups(cb) {
-        if (options.origin === 'scanner') {
-          return updateMatchups(match, cb);
-        }
-        return cb();
-      },
-      */
+        updateMatchups(cb) {
+          if (options.origin === 'scanner') {
+            return updateMatchups(match, cb);
+          }
+          return cb();
+        },
+        */
     },
     cb
   );
 }
-
 queue.runQueue('countsQueue', 1, processCounts);

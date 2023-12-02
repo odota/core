@@ -1,16 +1,14 @@
-const crypto = require('crypto');
-const cassandra = require('../store/cassandra');
-const db = require('../store/db');
-const { archivePut } = require('../store/archive');
-const { getMatchData, getPlayerMatchData } = require('../store/queries');
-const config = require('../config');
-
+import crypto from 'crypto';
+import cassandra from '../store/cassandra.js';
+import db from '../store/db.js';
+import { archivePut } from '../store/archive.js';
+import { getMatchData, getPlayerMatchData } from '../store/queries.js';
+import config from '../config.js';
 function genRandomNumber(byteCount, radix) {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`).toString(
     radix
   );
 }
-
 async function start() {
   // Get the current max_match_id from postgres, subtract 200000000
   const max = (await db.raw('select max(match_id) from public_matches'))
@@ -31,7 +29,6 @@ async function start() {
           autoPage: true,
         }
       );
-
       // Put the ones that don't have parsed data or are too old into an array
       const unparsedIds = result.rows
         .filter((result) => result.version == null && result.match_id < limit)
@@ -69,7 +66,6 @@ async function start() {
       );
       config.MATCH_ARCHIVE_S3_ENDPOINT &&
         (await Promise.all(parsedIds.map((id) => doArchive(id))));
-
       // TODO (howard) remove insert once backfill complete
       await Promise.all(
         parsedIds.map((id) =>
@@ -84,7 +80,6 @@ async function start() {
     }
   }
 }
-
 async function doArchive(matchId) {
   // archive old parsed match blobs to s3 compatible storage
   const match = await getMatchData(matchId);
@@ -108,5 +103,4 @@ async function doArchive(matchId) {
   }
   return;
 }
-
 start();

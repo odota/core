@@ -1,25 +1,14 @@
-/**
- * Worker scanning the Steam sequential match API (GetMatchHistoryBySequenceNum) for latest matches.
- * Note that the limit for this endpoint seems to be around 5 calls/IP/minute
- * The endpoint usually takes around 2 seconds to return data
- * Therefore each IP should generally avoid requesting more than once every 10 seconds
- * */
-const async = require('async');
-const utility = require('../util/utility');
-const config = require('../config');
-const redis = require('../store/redis');
-const queries = require('../store/queries');
-
-const { insertMatch } = queries;
+import async from 'async';
+import utility from '../util/utility.js';
+import config from '../config.js';
+import redis from '../store/redis.js';
+import queries from '../store/queries.js';
 const { getData, generateJob } = utility;
-// const api_hosts = config.STEAM_API_HOST.split(',');
 const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;
-
 function scanApi(seqNum) {
   let nextSeqNum = seqNum;
   let delayNextRequest = false;
-
   function processMatch(match, cb) {
     function finishMatch(err, cb) {
       if (err) {
@@ -56,7 +45,6 @@ function scanApi(seqNum) {
       }
     );
   }
-
   function processPage(matchSeqNum, cb) {
     const container = generateJob('api_sequence', {
       start_at_match_seq_num: matchSeqNum,
@@ -93,7 +81,6 @@ function scanApi(seqNum) {
       }
     );
   }
-
   function finishPageSet(err) {
     if (err) {
       // something bad happened, retry this page
@@ -106,7 +93,6 @@ function scanApi(seqNum) {
     // If not a full page, delay the next iteration
     return setTimeout(() => scanApi(nextSeqNum), delayNextRequest ? 3000 : 0);
   }
-
   processPage(seqNum, finishPageSet);
 }
 if (config.START_SEQ_NUM) {

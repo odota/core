@@ -1,10 +1,6 @@
-/**
- * Worker to auto-queue full history requests for random players
- * */
-const async = require('async');
-const db = require('../store/db');
-const redis = require('../store/redis');
-
+import async from 'async';
+import db from '../store/db.js';
+import redis from '../store/redis.js';
 function getSummaries(cb) {
   db.raw(
     "SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100) where last_match_time > (now() - interval '7 day')"
@@ -29,7 +25,6 @@ function getSummaries(cb) {
     );
   });
 }
-
 function start() {
   getSummaries((err) => {
     if (err) {
@@ -38,5 +33,4 @@ function start() {
     return setTimeout(start, 30000);
   });
 }
-
 start();

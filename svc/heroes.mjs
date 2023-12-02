@@ -1,10 +1,8 @@
-const async = require('async');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const queries = require('../store/queries');
-
+import async from 'async';
+import db from '../store/db.js';
+import utility from '../util/utility.js';
+import queries from '../store/queries.js';
 const { invokeInterval, generateJob, getData } = utility;
-
 function doHeroes(cb) {
   const container = generateJob('api_heroes', {
     language: 'english',

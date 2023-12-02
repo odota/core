@@ -1,15 +1,10 @@
-/**
- * Worker that monitors health metrics and saves results
- * */
-const request = require('request');
-const config = require('../config');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const cassandra = require('../store/cassandra');
-const utility = require('../util/utility');
-
+import request from 'request';
+import config from '../config.js';
+import redis from '../store/redis.js';
+import db from '../store/db.js';
+import cassandra from '../store/cassandra.js';
+import utility from '../util/utility.js';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
-
 function invokeInterval(func) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
@@ -31,7 +26,6 @@ function invokeInterval(func) {
     });
   })();
 }
-
 function steamApi(cb) {
   request(
     `${'http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key='}${apiKey}`,
@@ -54,7 +48,6 @@ function steamApi(cb) {
     }
   );
 }
-
 function seqNumDelay(cb) {
   utility.getData(utility.generateJob('api_history', {}).url, (err, body) => {
     if (err) {
@@ -75,7 +68,6 @@ function seqNumDelay(cb) {
     });
   });
 }
-
 function parseDelay(cb) {
   db.raw("select count(*) from queue where type = 'parse'").asCallback(
     (err, result) => {
@@ -89,7 +81,6 @@ function parseDelay(cb) {
     }
   );
 }
-
 function gcDelay(cb) {
   redis.llen('gcQueue', (err, result) => {
     if (err) {
@@ -101,7 +92,6 @@ function gcDelay(cb) {
     });
   });
 }
-
 function postgresUsage(cb) {
   db.raw("select pg_database_size('yasp')").asCallback((err, result) => {
     if (err) {
@@ -113,7 +103,6 @@ function postgresUsage(cb) {
     });
   });
 }
-
 function cassandraUsage(cb) {
   cassandra.execute(
     "select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = 'yasp'",
@@ -132,7 +121,6 @@ function cassandraUsage(cb) {
     }
   );
 }
-
 async function redisUsage(cb) {
   try {
     const info = await redis.info();

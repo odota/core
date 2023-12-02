@@ -1,21 +1,16 @@
-/**
- * Worker to fetch full match histories for players
- * */
-const async = require('async');
-const urllib = require('url');
-const constants = require('dotaconstants');
-const config = require('../config');
-const { redisCount, getData, generateJob } = require('../util/utility');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const queue = require('../store/queue');
-const queries = require('../store/queries');
-
+import async from 'async';
+import urllib from 'url';
+import constants from 'dotaconstants';
+import config from '../config.js';
+import { redisCount, getData, generateJob } from '../util/utility.js';
+import db from '../store/db.js';
+import redis from '../store/redis.js';
+import queue from '../store/queue.js';
+import queries from '../store/queries.js';
 const { insertMatchPromise } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once
 const parallelism = Math.min(20, apiKeys.length);
-
 function processFullHistory(job, cb) {
   function updatePlayer(player, cb) {
     // done with this player, update
@@ -36,7 +31,6 @@ function processFullHistory(job, cb) {
         return cb(err);
       });
   }
-
   function getApiMatchPage(player, url, cb) {
     getData(url, (err, body) => {
       if (err) {
@@ -70,7 +64,6 @@ function processFullHistory(job, cb) {
       return getApiMatchPage(player, url, cb);
     });
   }
-
   const player = job;
   if (Number(player.account_id) === 0) {
     return cb();
@@ -163,5 +156,4 @@ function processFullHistory(job, cb) {
     }
   );
 }
-
 queue.runQueue('fhQueue', 1, processFullHistory);

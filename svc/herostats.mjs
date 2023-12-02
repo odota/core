@@ -1,12 +1,10 @@
-const constants = require('dotaconstants');
-const moment = require('moment');
-const async = require('async');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const utility = require('../util/utility');
-
+import constants from 'dotaconstants';
+import moment from 'moment';
+import async from 'async';
+import db from '../store/db.js';
+import redis from '../store/redis.js';
+import utility from '../util/utility.js';
 const { invokeInterval } = utility;
-
 function doHeroStats(cb) {
   const minTime = moment().subtract(30, 'day').format('X');
   const maxTime = moment().format('X');

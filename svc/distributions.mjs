@@ -1,18 +1,15 @@
-const fs = require('fs');
-const async = require('async');
-const constants = require('dotaconstants');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const utility = require('../util/utility');
-
+import fs from 'fs';
+import async from 'async';
+import constants from 'dotaconstants';
+import db from '../store/db.js';
+import redis from '../store/redis.js';
+import utility from '../util/utility.js';
 const { invokeInterval } = utility;
-
 const sql = {};
 const sqlq = fs.readdirSync('./sql');
 sqlq.forEach((f) => {
   sql[f.split('.')[0]] = fs.readFileSync(`./sql/${f}`, 'utf8');
 });
-
 function mapMmr(results) {
   const sum = results.rows.reduce(
     (prev, current) => ({
@@ -36,7 +33,6 @@ function mapMmr(results) {
   results.sum = sum;
   return results;
 }
-
 function mapCountry(results) {
   results.rows = results.rows.map((r) => {
     const ref = constants.countries[r.loccountrycode];
@@ -45,7 +41,6 @@ function mapCountry(results) {
   });
   return results;
 }
-
 function loadData(key, mapFunc, cb) {
   db.raw(sql[key]).asCallback((err, results) => {
     if (err) {
@@ -54,7 +49,6 @@ function loadData(key, mapFunc, cb) {
     return cb(err, mapFunc(results));
   });
 }
-
 function doDistributions(cb) {
   async.parallel(
     {

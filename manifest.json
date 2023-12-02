@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "script": "svc/apiadmin.js",
+      "script": "svc/apiadmin.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -9,7 +9,7 @@
       "instances": 1
     },
     {
-      "script": "svc/mmr.js",
+      "script": "svc/mmr.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -17,7 +17,7 @@
       "instances": 1
     },
     {
-      "script": "svc/profiler.js",
+      "script": "svc/profiler.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -25,7 +25,7 @@
       "instances": 1
     },
     {
-      "script": "svc/scanner.js",
+      "script": "svc/scanner.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -33,7 +33,7 @@
       "instances": 1
     },
     {
-      "script": "svc/fullhistory.js",
+      "script": "svc/fullhistory.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -41,7 +41,7 @@
       "instances": 12
     },
     {
-      "script": "svc/autofullhistory.js",
+      "script": "svc/autofullhistory.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -49,7 +49,7 @@
       "instances": 1
     },
     {
-      "script": "svc/monitor.js",
+      "script": "svc/monitor.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -57,7 +57,7 @@
       "instances": 1
     },
     {
-      "script": "svc/backupscanner.js",
+      "script": "svc/backupscanner.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "disabled",
@@ -65,7 +65,7 @@
       "instances": 1
     },
     {
-      "script": "svc/gcdata.js",
+      "script": "svc/gcdata.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -73,7 +73,7 @@
       "instances": 1
     },
     {
-      "script": "svc/buildsets.js",
+      "script": "svc/buildsets.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -81,7 +81,7 @@
       "instances": 1
     },
     {
-      "script": "svc/cosmetics.js",
+      "script": "svc/cosmetics.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -89,7 +89,7 @@
       "instances": 1
     },
     {
-      "script": "svc/distributions.js",
+      "script": "svc/distributions.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -97,7 +97,7 @@
       "instances": 1
     },
     {
-      "script": "svc/heroes.js",
+      "script": "svc/heroes.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -105,7 +105,7 @@
       "instances": 1
     },
     {
-      "script": "svc/herostats.js",
+      "script": "svc/herostats.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -113,7 +113,7 @@
       "instances": 1
     },
     {
-      "script": "svc/items.js",
+      "script": "svc/items.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -121,7 +121,7 @@
       "instances": 1
     },
     {
-      "script": "svc/leagues.js",
+      "script": "svc/leagues.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -129,7 +129,7 @@
       "instances": 1
     },
     {
-      "script": "svc/livegames.js",
+      "script": "svc/livegames.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -137,7 +137,7 @@
       "instances": 1
     },
     {
-      "script": "svc/proplayers.js",
+      "script": "svc/proplayers.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -193,7 +193,7 @@
       "instances": 1
     },
     {
-      "script": "svc/scenariosCleanup.js",
+      "script": "svc/scenariosCleanup.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -201,7 +201,7 @@
       "instances": 1
     },
     {
-      "script": "svc/counts.js",
+      "script": "svc/counts.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -209,7 +209,7 @@
       "instances": 1
     },
     {
-      "script": "svc/benchmarks.js",
+      "script": "svc/benchmarks.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -217,7 +217,7 @@
       "instances": 1
     },
     {
-      "script": "svc/repatch.js",
+      "script": "svc/repatch.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -233,7 +233,7 @@
       "instances": 1
     },
     {
-      "script": "svc/cassandraDelete.js",
+      "script": "svc/cassandraDelete.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",

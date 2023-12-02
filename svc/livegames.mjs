@@ -1,13 +1,11 @@
-const async = require('async');
-const JSONbig = require('json-bigint');
-const request = require('request');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const config = require('../config');
-
+import async from 'async';
+import JSONbig from 'json-bigint';
+import request from 'request';
+import redis from '../store/redis.js';
+import db from '../store/db.js';
+import utility from '../util/utility.js';
+import config from '../config.js';
 const { invokeInterval } = utility;
-
 function doLiveGames(cb) {
   // Get the list of pro players
   db.select()

@@ -1,10 +1,8 @@
-const async = require('async');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const queries = require('../store/queries');
-
+import async from 'async';
+import db from '../store/db.js';
+import utility from '../util/utility.js';
+import queries from '../store/queries.js';
 const { invokeInterval } = utility;
-
 function doItems(cb) {
   const container = utility.generateJob('api_items', {
     language: 'english',

@@ -2,9 +2,7 @@ import async from 'async';
 import db from '../store/db.js';
 import utility from '../util/utility.js';
 import queries from '../store/queries.js';
-
 const { invokeInterval } = utility;
-
 function doTeams(cb) {
   db.raw(
     'select distinct team_id from team_match order by team_id desc'
@@ -20,11 +18,11 @@ function doTeams(cb) {
         }
         // GetTeamInfo disabled as of october 2017
         /*
-      const container = utility.generateJob('api_teams', {
-        // 2 is the smallest team id, use as default
-        team_id: m.team_id || 2,
-      });
-      */
+          const container = utility.generateJob('api_teams', {
+            // 2 is the smallest team id, use as default
+            team_id: m.team_id || 2,
+          });
+          */
         const container = utility.generateJob('api_team_info_by_team_id', {
           start_at_team_id: m.team_id,
         });

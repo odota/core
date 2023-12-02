@@ -1,11 +1,9 @@
-const vdf = require('simple-vdf');
-const async = require('async');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const queries = require('../store/queries');
-
+import * as vdf from 'simple-vdf';
+import async from 'async';
+import db from '../store/db.js';
+import utility from '../util/utility.js';
+import queries from '../store/queries.js';
 const { invokeInterval, cleanItemSchema } = utility;
-
 function doCosmetics(cb) {
   utility.getData(
     {
@@ -28,7 +26,6 @@ function doCosmetics(cb) {
             item.used_by_heroes &&
             typeof item.used_by_heroes === 'object' &&
             Object.keys(item.used_by_heroes)[0];
-
           function insert(cb) {
             // console.log(item);
             return queries.upsert(

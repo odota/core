@@ -1,15 +1,9 @@
-/**
- * Worker to fetch updated player profiles
- * */
-const async = require('async');
-const queries = require('../store/queries');
-const db = require('../store/db');
-// const redis = require('../store/redis');
-const utility = require('../util/utility');
-
+import async from 'async';
+import queries from '../store/queries.js';
+import db from '../store/db.js';
+import utility from '../util/utility.js';
 const { insertPlayer, bulkIndexPlayer } = queries;
 const { getData, generateJob, convert64to32 } = utility;
-
 function getSummaries(cb) {
   db.raw(
     'SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)'
@@ -32,9 +26,7 @@ function getSummaries(cb) {
         // couldn't get data from api, non-retryable
         return cb(JSON.stringify(err));
       }
-
       const results = body.response.players.filter((player) => player.steamid);
-
       const bulkUpdate = results.reduce((acc, player) => {
         acc.push(
           {
@@ -50,16 +42,13 @@ function getSummaries(cb) {
             doc_as_upsert: true,
           }
         );
-
         return acc;
       }, []);
-
       bulkIndexPlayer(bulkUpdate, (err) => {
         if (err) {
           console.log(err);
         }
       });
-
       // player summaries response
       return async.each(
         results,
@@ -71,7 +60,6 @@ function getSummaries(cb) {
     });
   });
 }
-
 function start() {
   getSummaries((err) => {
     if (err) {
@@ -80,5 +68,4 @@ function start() {
     return setTimeout(start, 500);
   });
 }
-
 start();

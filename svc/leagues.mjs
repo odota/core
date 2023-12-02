@@ -1,17 +1,14 @@
-const async = require('async');
-const utility = require('../util/utility');
-const db = require('../store/db');
-const queries = require('../store/queries');
-
+import async from 'async';
+import utility from '../util/utility.js';
+import db from '../store/db.js';
+import queries from '../store/queries.js';
 const { invokeInterval, generateJob, getData } = utility;
-
 function doLeagues(cb) {
   const container = generateJob('api_leagues', {});
   getData(container.url, (err, apiLeagues) => {
     if (err) {
       return cb(err);
     }
-
     return async.each(
       apiLeagues.infos,
       (league, cb) => {

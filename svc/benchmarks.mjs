@@ -1,12 +1,10 @@
-const queue = require('../store/queue');
-const benchmarksUtil = require('../util/benchmarksUtil');
-const buildMatch = require('../store/buildMatch');
-const utility = require('../util/utility');
-const config = require('../config');
-const redis = require('../store/redis');
-
+import queue from '../store/queue.js';
+import benchmarksUtil from '../util/benchmarksUtil.js';
+import buildMatch from '../store/buildMatch.js';
+import utility from '../util/utility.js';
+import config from '../config.js';
+import redis from '../store/redis.js';
 const { benchmarks } = benchmarksUtil;
-
 async function doBenchmarks(matchID, cb) {
   try {
     const match = await buildMatch(matchID);
@@ -49,5 +47,4 @@ async function doBenchmarks(matchID, cb) {
     return cb(err);
   }
 }
-
 queue.runQueue('parsedBenchmarksQueue', 1, doBenchmarks);

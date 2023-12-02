@@ -1,15 +1,13 @@
-const async = require('async');
-const moment = require('moment');
-const stripeLib = require('stripe');
-const redis = require('../store/redis');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const queries = require('../store/queries');
-const config = require('../config');
-
+import async from 'async';
+import moment from 'moment';
+import stripeLib from 'stripe';
+import redis from '../store/redis.js';
+import db from '../store/db.js';
+import utility from '../util/utility.js';
+import queries from '../store/queries.js';
+import config from '../config.js';
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
-
 function storeUsageCounts(cursor, cb) {
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
@@ -17,9 +15,7 @@ function storeUsageCounts(cursor, cb) {
     } else {
       const cursor = results[0];
       const values = results[1];
-
       const apiTimestamp = moment().startOf('day');
-
       async.eachOfLimit(
         values,
         5,
@@ -75,18 +71,15 @@ function storeUsageCounts(cursor, cb) {
           if (err) {
             return cb(err);
           }
-
           if (cursor !== '0') {
             return storeUsageCounts(cursor, cb);
           }
-
           return cb();
         }
       );
     }
   });
 }
-
 async function updateStripeUsage(cb) {
   const options = {
     plan: config.STRIPE_API_PLAN,
@@ -111,15 +104,12 @@ async function updateStripeUsage(cb) {
                 `,
           [sub.id]
         );
-
         continue;
       }
-
       const startTime = moment
         .unix(sub.current_period_end - 1)
         .startOf('month');
       const endTime = moment.unix(sub.current_period_end - 1).endOf('month');
-
       const res = await db.raw(
         `
                 SELECT
@@ -140,7 +130,6 @@ async function updateStripeUsage(cb) {
               `,
         [startTime.format('YYYY-MM-DD'), endTime.format('YYYY-MM-DD'), sub.id]
       );
-
       if (res.rows.length > 0 && res.rows[0].usage_count) {
         const usageCount = res.rows[0].usage_count;
         // Set usage to be the value at end of the billing period
@@ -169,7 +158,6 @@ async function updateStripeUsage(cb) {
     cb(err);
   }
 }
-
 invokeInterval(
   (cb) => {
     queries.getAPIKeys(db, (err, rows) => {
@@ -196,7 +184,6 @@ invokeInterval(
   },
   5 * 60 * 1000
 ); // Update every 5 min
-
 invokeInterval(
   (cb) => {
     storeUsageCounts(0, cb);

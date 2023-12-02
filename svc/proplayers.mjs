@@ -1,10 +1,8 @@
-const async = require('async');
-const db = require('../store/db');
-const queries = require('../store/queries');
-const utility = require('../util/utility');
-
+import async from 'async';
+import db from '../store/db.js';
+import queries from '../store/queries.js';
+import utility from '../util/utility.js';
 const { invokeInterval, generateJob, getData } = utility;
-
 function doProPlayers(cb) {
   const container = generateJob('api_notable', {});
   getData(container.url, (err, body) => {

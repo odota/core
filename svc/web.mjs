@@ -19,36 +19,30 @@ import db from '../store/db.js';
 import redis from '../store/redis.js';
 import utility from '../util/utility.js';
 import config from '../config.js';
-
 const SteamStrategy = passportSteam.Strategy;
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { redisCount } = utility;
-
 const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
-
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
   maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
   secret: config.SESSION_SECRET,
 };
-
 const whitelistedPaths = [
-  '/api', // Docs
-  '/api/metadata', // Login status
+  '/api',
+  '/api/metadata',
   '/login',
   '/logout',
   '/return',
-  '/api/admin/apiMetrics', // Admin metrics
+  '/api/admin/apiMetrics',
   '/keys', // API Key management
 ];
-
 const pathCosts = {
   '/api/request': 30,
   '/api/explorer': 5,
 };
-
 // PASSPORT config
 passport.serializeUser((user, done) => {
   done(null, user.account_id);
@@ -102,7 +96,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 // Get client IP to use for rate limiting;
 // app.use(requestIp.mw());
-
 // Dummy User ID for testing
 if (config.NODE_ENV === 'test') {
   app.use((req, res, cb) => {
@@ -111,15 +104,11 @@ if (config.NODE_ENV === 'test') {
         account_id: 1,
       };
     }
-
     cb();
   });
-
   app.route('/gen429').get((req, res) => res.status(429).end());
-
   app.route('/gen500').get((req, res) => res.status(500).end());
 }
-
 // Rate limiter and API key middleware
 app.use((req, res, cb) => {
   // console.log('[REQ]', req.originalUrl);
@@ -133,7 +122,6 @@ app.use((req, res, cb) => {
         cb(err);
       } else {
         res.locals.isAPIRequest = resp === 1;
-
         cb();
       }
     });
@@ -145,7 +133,6 @@ app.set('trust proxy', true);
 app.use((req, res, cb) => {
   const { ip } = req;
   res.locals.ip = ip;
-
   let rateLimit = '';
   if (res.locals.isAPIRequest) {
     const requestAPIKey =
@@ -161,16 +148,13 @@ app.use((req, res, cb) => {
     // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
   const command = redis.multi();
-
   command
     .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
-
   if (!res.locals.isAPIRequest) {
     // not API request so check previous usage
     command.zscore('user_usage_count', res.locals.usageIdentifier);
   }
-
   command.exec((err, resp) => {
     if (err) {
       console.log(err);
@@ -179,10 +163,8 @@ app.use((req, res, cb) => {
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       console.log('[WEB] rate limit increment', resp);
     }
-
     const incrValue = resp[0]?.[1];
     const prevUsage = resp[2]?.[1];
-
     res.set({
       'X-Rate-Limit-Remaining-Minute': rateLimit - incrValue,
       'X-IP-Address': ip,
@@ -208,7 +190,6 @@ app.use((req, res, cb) => {
         error: 'monthly api limit exceeded',
       });
     }
-
     return cb();
   });
 });
@@ -221,7 +202,6 @@ app.use((req, res, cb) => {
     if (elapsed > 2000 || config.NODE_ENV === 'development') {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
-
     // When called from a middleware, the mount point is not included in req.path. See Express docs.
     if (
       res.statusCode !== 500 &&
@@ -241,14 +221,12 @@ app.use((req, res, cb) => {
           .zincrby('user_usage_count', 1, res.locals.usageIdentifier)
           .expireat('user_usage_count', utility.getEndOfMonth());
       }
-
       multi.exec((err, res) => {
         if (config.NODE_ENV === 'development') {
           console.log('usage count increment', err, res);
         }
       });
     }
-
     if (req.originalUrl.indexOf('/api') === 0) {
       redisCount(redis, 'api_hits');
       if (req.headers.origin === 'https://www.opendota.com') {
@@ -340,7 +318,6 @@ app.route('/manageSub').post(async (req, res) => {
   }
   const result = await db.raw(
     "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
-
     [req.user.account_id]
   );
   const customer = result?.rows?.[0];

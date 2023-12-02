@@ -14,19 +14,16 @@ import config from '../config.js';
 import { runReliableQueue } from '../store/queue.js';
 import queries from '../store/queries.js';
 import { promisify } from 'util';
-
 const { PORT, PARSER_PORT, NODE_ENV, PARSER_HOST, PARSER_PARALLELISM } = config;
 const numCPUs = os.cpus().length;
 const { insertMatchPromise } = queries;
 const { buildReplayUrl } = utility;
 const execPromise = promisify(exec);
-
 const app = express();
 app.get('/healthz', (req, res) => {
   res.end('ok');
 });
 app.listen(PORT || PARSER_PORT);
-
 async function runParse(match, url) {
   if (NODE_ENV === 'test') {
     url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
@@ -46,7 +43,6 @@ async function runParse(match, url) {
     skipParse: true,
   });
 }
-
 async function parseProcessor(job, cb) {
   const match = job;
   try {
@@ -63,7 +59,6 @@ async function parseProcessor(job, cb) {
     cb(e);
   }
 }
-
 runReliableQueue(
   'parse',
   Number(PARSER_PARALLELISM) || numCPUs,

@@ -1,8 +1,7 @@
-const async = require('async');
-const db = require('../store/db');
-const config = require('../config');
-const utility = require('../util/utility');
-
+import async from 'async';
+import db from '../store/db.js';
+import config from '../config.js';
+import utility from '../util/utility.js';
 function clearScenariosTables(cb) {
   const currentWeek = utility.epochWeek();
   async.parallel(
@@ -46,5 +45,4 @@ function clearScenariosTables(cb) {
     cb
   );
 }
-
 utility.invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 6);

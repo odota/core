@@ -1,16 +1,14 @@
-const async = require('async');
-const utility = require('../util/utility');
-const redis = require('../store/redis');
-const queries = require('../store/queries');
-const config = require('../config');
-
+import async from 'async';
+import utility from '../util/utility.js';
+import redis from '../store/redis.js';
+import queries from '../store/queries.js';
+import config from '../config.js';
 const { generateJob, getData } = utility;
 const { insertMatchPromise } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);
 const delay = 1000;
-
 function processMatch(matchId, cb) {
   // Check if exists
   redis.get(`scanner_insert:${matchId}`, (err, res) => {
@@ -54,7 +52,6 @@ function processMatch(matchId, cb) {
     );
   });
 }
-
 function processPlayer(accountId, cb) {
   const ajob = generateJob('api_history', {
     account_id: accountId,
@@ -85,7 +82,6 @@ function processPlayer(accountId, cb) {
     }
   );
 }
-
 function start(err) {
   if (err) {
     throw err;
@@ -100,5 +96,4 @@ function start(err) {
     });
   }, 1000);
 }
-
 start();
