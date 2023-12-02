@@ -8,7 +8,7 @@ while(true) {
   const container = utility.generateJob('api_items', {
     language: 'english',
   });
-  const body = await utility.getDataPromise(container.url, (err, body));
+  const body = await utility.getDataPromise(container.url);
   if (!body || !body.result || !body.result.items) {
     throw new Error('invalid body');
   }
