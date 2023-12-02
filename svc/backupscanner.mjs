@@ -1,3 +1,5 @@
+// Alternative to scanner if seq match data endpoint isn't available
+// Works by repeatedly checking match histories for players
 import async from 'async';
 import utility from '../util/utility.mjs';
 import redis from '../store/redis.mjs';

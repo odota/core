@@ -1,3 +1,4 @@
+// Processes a queue of requests to update MMR/rank medal for players
 import queue from '../store/queue.mjs';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';

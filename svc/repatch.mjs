@@ -1,3 +1,5 @@
+// Updates the patch assigned to each pro match based on start_time
+// TODO use top level await
 import async from 'async';
 import constants from 'dotaconstants';
 import db from '../store/db.mjs';

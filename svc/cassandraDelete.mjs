@@ -1,3 +1,4 @@
+// Cleans up old data from Cassandra and optionally archives it
 import crypto from 'crypto';
 import cassandra from '../store/cassandra.mjs';
 import db from '../store/db.mjs';

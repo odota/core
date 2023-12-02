@@ -1,3 +1,4 @@
+// NOT WORKING: Updates game cosmetic items in the database
 import vdf from 'simple-vdf';
 import async from 'async';
 import db from '../store/db.mjs';

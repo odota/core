@@ -1,3 +1,4 @@
+// Processes a queue of jobs to collect stats on specific scenario data
 import async from 'async';
 import util from 'util';
 import queue from '../store/queue.mjs';

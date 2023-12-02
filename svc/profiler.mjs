@@ -1,3 +1,5 @@
+// Processes a queue of requests to update Steam profile data
+// TODO use top level await
 import async from 'async';
 import queries from '../store/queries.mjs';
 import db from '../store/db.mjs';

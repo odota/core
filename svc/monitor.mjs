@@ -1,3 +1,5 @@
+// Runs health checks periodically and writes result to Redis
+// TODO use top level await
 import request from 'request';
 import config from '../config.js';
 import redis from '../store/redis.mjs';

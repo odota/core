@@ -1,3 +1,4 @@
+// Computes rank/mmr distributions and stores in Redis
 import fs from 'fs';
 import async from 'async';
 import constants from 'dotaconstants';

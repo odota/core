@@ -1,3 +1,4 @@
+// Processes a queue of full history/refresh requests for players
 import async from 'async';
 import urllib from 'url';
 import constants from 'dotaconstants';

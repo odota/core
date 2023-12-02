@@ -1,3 +1,4 @@
+// Processes a queue of new matches to update totals/ratings
 import async from 'async';
 import moment from 'moment';
 import redis from '../store/redis.mjs';

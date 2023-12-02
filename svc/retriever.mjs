@@ -1,5 +1,5 @@
 /**
- * Worker interfacing with the Steam GC.
+ * Deployed in the cloud to get data from the Steam GC.
  * Provides HTTP endpoints for other workers.
  * */
 import Steam from 'steam';

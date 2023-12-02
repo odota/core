@@ -1,5 +1,5 @@
 /**
- * Worker that parses replays
+ * Processes a queue of parse jobs
  * The actual parsing is done by invoking the Java-based parser.
  * This produces an event stream (newline-delimited JSON)
  * Stream is run through a series of processors to count/aggregate it into a single object

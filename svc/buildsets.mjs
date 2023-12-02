@@ -1,3 +1,4 @@
+// Builds sets of data, e.g. tracked players in the background
 import buildSets from '../store/buildSets.mjs';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';

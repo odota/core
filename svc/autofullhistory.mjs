@@ -1,3 +1,5 @@
+// Randomly requests history refreshes for users to fill in missing matches
+// TODO use top level await
 import async from 'async';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';

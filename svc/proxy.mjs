@@ -1,6 +1,4 @@
-/**
- * Worker proxying requests to the Steam API.
- * */
+// Deployed in the cloud to proxy requests to the Steam API
 import httpProxy from 'http-proxy';
 import http from 'http';
 import config from '../config.js';

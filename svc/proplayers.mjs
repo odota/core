@@ -1,3 +1,5 @@
+// Updates the list of pro players in the database
+// TODO use top level await
 import async from 'async';
 import db from '../store/db.mjs';
 import queries from '../store/queries.mjs';

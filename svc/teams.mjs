@@ -1,3 +1,4 @@
+// Updates the list of teams in the database
 import async from 'async';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';

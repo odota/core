@@ -1,3 +1,4 @@
+// Updates the list of leagues in the database
 import async from 'async';
 import utility from '../util/utility.mjs';
 import db from '../store/db.mjs';

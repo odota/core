@@ -1,3 +1,4 @@
+// Processes a queue of jobs to benchmarks player hero performance against others
 import queue from '../store/queue.mjs';
 import buildMatch from '../store/buildMatch.mjs';
 import utility from '../util/utility.mjs';

@@ -1,6 +1,6 @@
 /**
- * Worker serving as main web application
- * Serves web/API requests
+ * Provides the OpenDota API and serves web requests
+ * Also supports login through Steam
  * */
 import request from 'request';
 import compression from 'compression';

@@ -1,3 +1,4 @@
+// Runs background processes related to API keys and billing/usage
 import async from 'async';
 import moment from 'moment';
 import stripeLib from 'stripe';

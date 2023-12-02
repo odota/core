@@ -1,3 +1,4 @@
+// Fetches new matches from the Steam API using the sequential endpoint
 import async from 'async';
 import utility from '../util/utility.mjs';
 import config from '../config.js';

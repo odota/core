@@ -1,3 +1,4 @@
+// Computes hero pick/win data and stores in Redis
 import constants from 'dotaconstants';
 import moment from 'moment';
 import async from 'async';

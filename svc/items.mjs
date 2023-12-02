@@ -1,3 +1,5 @@
+// NOT WORKING: Updates game items in the database
+// TODO use top level await
 import async from 'async';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
