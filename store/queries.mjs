@@ -1278,7 +1278,9 @@ function insertMatch(match, options, cb) {
         types[options.type],
         JSON.stringify({
           match_id: match.match_id,
+          // start_time + duration = end_time
           start_time: match.start_time,
+          duration: match.duration,
         })
       );
       redis.ltrim(types[options.type], 0, 9);
@@ -1454,8 +1456,9 @@ function insertMatch(match, options, cb) {
                   match_id: match.match_id,
                   // leagueid to determine whether to upsert Postgres after parse
                   leagueid: match.leagueid,
-                  // start_time just for debug logging
+                  // start_time and duration for logging
                   start_time: match.start_time,
+                  duration: match.duration,
                   pgroup: match.pgroup,
                   origin: options.origin,
                 },
