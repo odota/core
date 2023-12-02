@@ -897,6 +897,7 @@ function insertPlayerCache(match, cb) {
 async function updateTeamRankings(match, options) {
   if (
     options.origin === 'scanner' &&
+    options.type === 'api' &&
     match.radiant_team_id &&
     match.dire_team_id &&
     match.radiant_win !== undefined
@@ -1174,7 +1175,7 @@ function insertMatch(match, options, cb) {
   function getAverageRank(cb) {
     // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
     // We currently only store this in the player_caches table, not in the match itself
-    if (options.origin === 'scanner') {
+    if (options.origin === 'scanner' && options.type === 'api') {
       getMatchRankTier(match, (err, avg) => {
         match.average_rank = avg || null;
         return cb();
@@ -1288,7 +1289,7 @@ function insertMatch(match, options, cb) {
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');
     }
-    if (options.origin === 'scanner') {
+    if (options.origin === 'scanner' && options.type === 'api') {
       redisCount(redis, 'added_match');
     }
     return cb();
@@ -1317,7 +1318,7 @@ function insertMatch(match, options, cb) {
     if (options.skipCounts) {
       return cb();
     }
-    if (options.origin === 'scanner') {
+    if (options.origin === 'scanner' && options.type === 'api') {
       queue.addJob('countsQueue', JSON.stringify(match));
       return cb();
     }
@@ -1327,6 +1328,7 @@ function insertMatch(match, options, cb) {
     // We only do this if fresh match
     if (
       options.origin === 'scanner' &&
+      options.type === 'api' &&
       match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT
     ) {
       queue.addJob('parsedBenchmarksQueue', match.match_id);
@@ -1341,6 +1343,7 @@ function insertMatch(match, options, cb) {
       (p, cb) => {
         if (
           options.origin === 'scanner' &&
+          options.type === 'api' &&
           match.lobby_type === 7 &&
           p.account_id &&
           p.account_id !== utility.getAnonymousAccountId() &&
@@ -1366,6 +1369,7 @@ function insertMatch(match, options, cb) {
     if (
       match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) &&
       options.origin === 'scanner' &&
+      options.type === 'api' &&
       match.players
     ) {
       try {
@@ -1399,6 +1403,7 @@ function insertMatch(match, options, cb) {
     // Don't get replay URLs for event matches
     if (
       options.origin === 'scanner' &&
+      options.type === 'api' &&
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
