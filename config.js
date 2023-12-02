@@ -96,5 +96,9 @@ if (process.env.NODE_ENV === 'test') {
   process.env.FRONTEND_PORT = 5001;
   process.env.PARSER_PORT = 5201;
 }
-// now processes can use either process.env or config
-module.exports = process.env;
+
+// Export the combined values
+module.exports = {
+  ...defaults,
+  ...process.env,
+};
