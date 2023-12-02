@@ -7,6 +7,7 @@ export default async function buildSets(db, redis) {
   const docs = await db.select(['account_id'])
     .from('subscriber')
     .where('status', '=', 'active');
+  console.log('[BUILDSETS] %s tracked players', docs.length);
   const command = redis.multi();
   await command.del('tracked');
   // Refresh donators with expire date in the future
@@ -20,8 +21,9 @@ export default async function buildSets(db, redis) {
 
 while(true) {
   console.log('[BUILDSETS] rebuilding sets');
-  const result = await buildSets(db, redis);
-  console.log(result);
+  console.time('buildsets');
+  await buildSets(db, redis);
+  console.timeEnd('buildsets');
   await new Promise(resolve => setTimeout(resolve, 60 * 1000));
 }
 
