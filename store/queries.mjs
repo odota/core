@@ -675,7 +675,7 @@ function upsert(db, table, row, conflict, cb) {
       .asCallback(cb);
   });
 }
-const upsertPromise = util.promisify(upsert);
+export const upsertPromise = util.promisify(upsert);
 function insertPlayer(db, player, indexPlayer, cb) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid

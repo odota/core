@@ -1,36 +1,24 @@
 // NOT WORKING: Updates game items in the database
-// TODO use top level await
-import async from 'async';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import queries from '../store/queries.mjs';
-const { invokeInterval } = utility;
-function doItems(cb) {
+import { upsertPromise } from '../store/queries.mjs';
+
+while(true) {
+  // Need to find a replacement for this endpoint or just use dotaconstants
   const container = utility.generateJob('api_items', {
     language: 'english',
   });
-  utility.getData(container.url, (err, body) => {
-    if (err) {
-      return cb(err);
+  const body = await utility.getDataPromise(container.url, (err, body));
+  if (!body || !body.result || !body.result.items) {
+    throw new Error('invalid body');
+  }
+  await Promise.all(body.result.items.map(item => upsertPromise(
+    db,
+    'items',
+    item,
+    {
+      id: item.id,
     }
-    if (!body || !body.result || !body.result.items) {
-      return cb();
-    }
-    return async.eachSeries(
-      body.result.items,
-      (item, cb) => {
-        queries.upsert(
-          db,
-          'items',
-          item,
-          {
-            id: item.id,
-          },
-          cb
-        );
-      },
-      cb
-    );
-  });
+  )));
+  await new Promise(resolve => setTimeout(resolve, 60 * 60 * 1000))
 }
-invokeInterval(doItems, 60 * 60 * 1000);
