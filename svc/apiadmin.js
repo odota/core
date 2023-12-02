@@ -184,7 +184,7 @@ invokeInterval(
           .sadd('api_keys', keys)
           .exec((err, res) => {
             if (err) {
-              cb(err);
+              return cb(err);
             }
             console.log('[API KEY CACHE] Got response:', res);
             cb();

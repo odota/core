@@ -7,7 +7,6 @@ const compression = require('compression');
 const session = require('cookie-session');
 const moment = require('moment');
 const express = require('express');
-// const requestIp = require('request-ip');
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
@@ -160,35 +159,39 @@ app.use((req, res, cb) => {
     rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
     // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
-  const multi = redis
-    .multi()
-    .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
+  const command = redis.multi();
+
+  command.hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
 
   if (!res.locals.isAPIRequest) {
-    multi.zscore('user_usage_count', res.locals.usageIdentifier); // not API request so check previous usage.
+    // not API request so check previous usage
+    command.zscore('user_usage_count', res.locals.usageIdentifier);
   }
 
-  multi.exec((err, resp) => {
+  command.exec((err, resp) => {
     if (err) {
       console.log(err);
       return cb(err);
     }
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      console.log('[WEB] rate limit increment', resp);
+    }
+
+    const incrValue = resp[0]?.[1];
+    const prevUsage = resp[2]?.[1];
 
     res.set({
-      'X-Rate-Limit-Remaining-Minute': rateLimit - resp[0],
+      'X-Rate-Limit-Remaining-Minute': rateLimit - incrValue,
       'X-IP-Address': ip,
     });
     if (!res.locals.isAPIRequest) {
       res.set(
         'X-Rate-Limit-Remaining-Month',
-        config.API_FREE_LIMIT - Number(resp[2])
+        config.API_FREE_LIMIT - Number(prevUsage)
       );
     }
-    if (config.NODE_ENV === 'development') {
-      console.log('rate limit increment', resp);
-    }
-    if (resp[0] > rateLimit && config.NODE_ENV !== 'test') {
+    if (incrValue > rateLimit && config.NODE_ENV !== 'test') {
       return res.status(429).json({
         error: 'rate limit exceeded',
       });
@@ -197,7 +200,7 @@ app.use((req, res, cb) => {
       config.ENABLE_API_LIMIT &&
       !whitelistedPaths.includes(req.path) &&
       !res.locals.isAPIRequest &&
-      Number(resp[2]) >= config.API_FREE_LIMIT
+      Number(prevUsage) >= config.API_FREE_LIMIT
     ) {
       return res.status(429).json({
         error: 'monthly api limit exceeded',

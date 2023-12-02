@@ -2,7 +2,6 @@
  * Functions to build/cache match object
  * */
 const constants = require('dotaconstants');
-const { promisify } = require('util');
 const config = require('../config');
 const queries = require('./queries');
 const compute = require('../util/compute');
@@ -19,7 +18,6 @@ const {
 
 const { computeMatchData } = compute;
 const { buildReplayUrl, isContributor } = utility;
-const getRedisAsync = promisify(redis.get).bind(redis);
 
 async function extendPlayerData(player, match) {
   const p = {
@@ -254,18 +252,18 @@ async function getMatch(matchId) {
 
 async function buildMatch(matchId) {
   const key = `match:${matchId}`;
-  const reply = await getRedisAsync(key);
+  const reply = await redis.get(key);
   if (reply) {
-    return Promise.resolve(JSON.parse(reply));
+    return JSON.parse(reply);
   }
   const match = await getMatch(matchId);
   if (!match) {
-    return Promise.resolve();
+    return null;
   }
   if (match.version && config.ENABLE_MATCH_CACHE) {
     await redis.setex(key, config.MATCH_CACHE_SECONDS, JSON.stringify(match));
   }
-  return Promise.resolve(match);
+  return match;
 }
 
 module.exports = buildMatch;

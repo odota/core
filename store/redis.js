@@ -1,15 +1,10 @@
 /**
  * Interface to Redis client
  * */
-const redis = require('redis');
-const config = require('../config');
+const Redis = require('ioredis');
+const { REDIS_URL } = require('../config');
 
-console.log('connecting %s', config.REDIS_URL);
-const client = redis.createClient(config.REDIS_URL, {
-  detect_buffers: true,
-});
-client.on('error', (err) => {
-  console.error(err);
-  process.exit(1);
-});
+console.log('[REDIS] connecting %s', REDIS_URL);
+const client = new Redis(REDIS_URL);
+
 module.exports = client;
