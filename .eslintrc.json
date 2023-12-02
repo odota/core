@@ -17,6 +17,6 @@
     "no-param-reassign": 0,
     "no-underscore-dangle": 0,
     "arrow-body-style": 0,
-    "quotes": ["error", "double"]
+    "quotes": ["error", "single"]
   }
 }
