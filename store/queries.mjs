@@ -12,7 +12,7 @@ import redis from './redis.mjs';
 import { es, INDEX } from './elasticsearch.mjs';
 import cassandra from './cassandra.mjs';
 import cacheFunctions from './cacheFunctions.mjs';
-import benchmarksUtil from '../util/benchmarksUtil.js';
+import { benchmarks } from '../util/benchmarksUtil.mjs';
 import { archiveGet } from './archive.mjs';
 const {
   redisCount,
@@ -27,7 +27,6 @@ const {
 const { computeMatchData } = compute;
 const columnInfo = {};
 const cassandraColumnInfo = {};
-const { benchmarks } = benchmarksUtil;
 function doCleanRow(err, schema, row, cb) {
   if (err) {
     return cb(err);
