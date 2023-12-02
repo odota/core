@@ -162,7 +162,8 @@ app.use((req, res, cb) => {
   }
   const command = redis.multi();
 
-  command.hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
+  command
+    .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
     .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
 
   if (!res.locals.isAPIRequest) {

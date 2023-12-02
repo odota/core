@@ -185,7 +185,7 @@
       "instances": 1
     },
     {
-      "script": "svc/scenarios.js",
+      "script": "svc/scenarios.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
@@ -225,7 +225,7 @@
       "instances": 1
     },
     {
-      "script": "svc/syncSubs.js",
+      "script": "svc/syncSubs.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",

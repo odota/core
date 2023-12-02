@@ -19,13 +19,12 @@ async function getGcDataFromRetriever(match) {
   const urls = retrieverArr.map(
     (r) => `http://${r}?key=${secret}&match_id=${match.match_id}`
   );
-  const body = await getDataPromise({ url: urls, noRetry: match.noRetry, timeout: 5000 });
-  if (
-    !body ||
-    !body.match ||
-    !body.match.replay_salt ||
-    !body.match.players
-  ) {
+  const body = await getDataPromise({
+    url: urls,
+    noRetry: match.noRetry,
+    timeout: 5000,
+  });
+  if (!body || !body.match || !body.match.replay_salt || !body.match.players) {
     // non-retryable error
     // redis.lpush('nonRetryable', JSON.stringify({ matchId: match.match_id, body }));
     // redis.ltrim('nonRetryable', 0, 10000);
@@ -40,7 +39,7 @@ async function getGcDataFromRetriever(match) {
   );
   // TODO (howard) add discovered account_ids to database and fetch account data/rank medal
   // NOTE: extra player fields won't be set on repeated parses unless we manually delete match_gcdata row
-  // if someone requests a reparse we won't have this data 
+  // if someone requests a reparse we won't have this data
   const players = body.match.players.map((p, i) => ({
     player_slot: p.player_slot,
     party_id: p.party_id?.low,

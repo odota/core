@@ -872,7 +872,7 @@ async function startServices(cb) {
   try {
     app = (await import('../svc/web.mjs')).default;
     await import('../svc/parser.mjs');
-  } catch(e) {
+  } catch (e) {
     console.log(e);
   }
   cb();

@@ -1,15 +1,9 @@
-/**
- * Function to sync subs between Stripe and DB
- * */
-const db = require('../store/db');
-const utility = require('../util/utility');
-const config = require('../config');
-const stripeLib = require('stripe');
-
+import db from '../store/db.js';
+import utility from '../util/utility.js';
+import config from '../config.js';
+import stripeLib from 'stripe';
 const stripe = stripeLib(config.STRIPE_SECRET);
-
 const { invokeInterval } = utility;
-
 async function run(cb) {
   // Get list of current subscribers
   const result = [];
@@ -34,5 +28,4 @@ async function run(cb) {
   }
   await db.raw('COMMIT');
 }
-
 invokeInterval(run, 60 * 1000);

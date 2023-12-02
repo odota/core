@@ -3,7 +3,7 @@
  * */
 import httpProxy from 'http-proxy';
 import http from 'http';
-import {PORT, PROXY_PORT} from '../config.js';
+import { PORT, PROXY_PORT } from '../config.js';
 
 const PORT = PORT || PROXY_PORT;
 const proxy = httpProxy.createProxyServer({

@@ -136,14 +136,16 @@ function cassandraUsage(cb) {
 async function redisUsage(cb) {
   try {
     const info = await redis.info();
-    const line = info.split('\n').find(line => line.startsWith('used_memory'));
+    const line = info
+      .split('\n')
+      .find((line) => line.startsWith('used_memory'));
     return cb(null, {
       metric: Number(line.split(':')[1]),
       threshold: 4 * 10 ** 9,
     });
-} catch(e) {
-  cb(e);
-}
+  } catch (e) {
+    cb(e);
+  }
 }
 const health = {
   steamApi,

@@ -1,11 +1,10 @@
-const async = require('async');
-const util = require('util');
-const queue = require('../store/queue');
-const buildMatch = require('../store/buildMatch');
-const db = require('../store/db');
-const utility = require('../util/utility');
-const su = require('../util/scenariosUtil');
-
+import async from 'async';
+import util from 'util';
+import queue from '../store/queue.js';
+import buildMatch from '../store/buildMatch.js';
+import db from '../store/db.js';
+import utility from '../util/utility.js';
+import su from '../util/scenariosUtil.js';
 async function processScenarios(matchID, cb) {
   try {
     const match = await buildMatch(matchID);
@@ -48,5 +47,4 @@ async function processScenarios(matchID, cb) {
     return cb(err);
   }
 }
-
 queue.runQueue('scenariosQueue', 1, processScenarios);
