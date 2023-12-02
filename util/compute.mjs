@@ -1,9 +1,7 @@
-const constants = require('dotaconstants');
-const utility = require('./utility');
-
+import constants from 'dotaconstants';
+import utility from './utility.js';
 const { max, min, isRadiant } = utility;
 const { ancients } = constants;
-
 /**
  * Count the words that occur in a set of messages
  * - messages: the messages to create the counts over
@@ -39,7 +37,6 @@ function countWords(playerMatch, playerFilter) {
   // return the final counts
   return counts;
 }
-
 /**
  * Computes additional properties from a match/player_match
  * */
@@ -240,7 +237,7 @@ function computeMatchData(pm) {
     pm.life_state_dead = (pm.life_state[1] || 0) + (pm.life_state[2] || 0);
   }
 }
-
-module.exports = {
+export { computeMatchData };
+export default {
   computeMatchData,
 };

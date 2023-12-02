@@ -6,7 +6,7 @@ import config from '../config.js';
 import queue from './queue.mjs';
 import su from '../util/scenariosUtil.js';
 import filter from '../util/filter.js';
-import compute from '../util/compute.js';
+import compute from '../util/compute.mjs';
 import db from './db.mjs';
 import redis from './redis.mjs';
 import { es, INDEX } from './elasticsearch.mjs';
