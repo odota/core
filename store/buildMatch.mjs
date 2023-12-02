@@ -120,7 +120,7 @@ async function getMatch(matchId) {
   );
   let match = null;
   if (isParsed) {
-    match = (await getArchivedMatch(matchId)) || (await getMatchData());
+    match = (await getArchivedMatch(matchId)) || (await getMatchData(matchId));
   } else {
     match = (await getMatchData(matchId)) || (await getArchivedMatch(matchId));
   }

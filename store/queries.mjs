@@ -1564,7 +1564,7 @@ export async function getMatchData(matchId) {
     }
   );
   const deserializedResult = result.rows.map((m) => deserialize(m));
-  return Promise.resolve(deserializedResult[0]);
+  return deserializedResult[0];
 }
 export async function getPlayerMatchData(matchId) {
   const result = await cassandra.execute(
