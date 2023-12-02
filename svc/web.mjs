@@ -2,24 +2,25 @@
  * Worker serving as main web application
  * Serves web/API requests
  * */
-const request = require('request');
-const compression = require('compression');
-const session = require('cookie-session');
-const moment = require('moment');
-const express = require('express');
-const passport = require('passport');
-const SteamStrategy = require('passport-steam').Strategy;
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const stripeLib = require('stripe');
-const keys = require('../routes/keyManagement');
-const api = require('../routes/api');
-const queries = require('../store/queries');
-const db = require('../store/db');
-const redis = require('../store/redis');
-const utility = require('../util/utility');
-const config = require('../config');
+import request from 'request';
+import compression from 'compression';
+import session from 'cookie-session';
+import moment from 'moment';
+import express from 'express';
+import passport from 'passport';
+import passportSteam from 'passport-steam';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import stripeLib from 'stripe';
+import keys from '../routes/keyManagement.js';
+import api from '../routes/api.js';
+import queries from '../store/queries.js';
+import db from '../store/db.js';
+import redis from '../store/redis.js';
+import utility from '../util/utility.js';
+import config from '../config.js';
 
+const SteamStrategy = passportSteam.Strategy;
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { redisCount } = utility;
 
@@ -400,4 +401,4 @@ function gracefulShutdown() {
 process.once('SIGTERM', gracefulShutdown);
 // listen for INT signal e.g. Ctrl-C
 process.once('SIGINT', gracefulShutdown);
-module.exports = app;
+export default app;

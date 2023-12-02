@@ -153,7 +153,7 @@
       "instances": 1
     },
     {
-      "script": "svc/web.js",
+      "script": "svc/web.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "web",

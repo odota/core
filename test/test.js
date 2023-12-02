@@ -34,8 +34,6 @@ const initCassandraHost = config.INIT_CASSANDRA_HOST;
 let db;
 let cassandra;
 let app;
-let queries;
-let buildMatch;
 // fake api responses
 nock('http://api.steampowered.com')
   // fake 500 error
@@ -871,9 +869,9 @@ describe('api limits', () => {
 
 async function startServices(cb) {
   console.log('starting services');
-  app = require('../svc/web');
   try {
-  import('../svc/parser.mjs');
+    app = (await import('../svc/web.mjs')).default;
+    await import('../svc/parser.mjs');
   } catch(e) {
     console.log(e);
   }
