@@ -145,7 +145,7 @@
       "instances": 1
     },
     {
-      "script": "svc/teams.js",
+      "script": "svc/teams.mjs",
       "watch": true,
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
