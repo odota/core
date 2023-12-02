@@ -135,33 +135,12 @@ async function getMatch(matchId) {
   }
   utility.redisCount(redis, 'build_match');
   let playersMatchData = [];
-  try {
-    // If we fetched from archive we already have players
-    playersMatchData = match.players || (await getPlayerMatchData(matchId));
-    if (playersMatchData.length === 0) {
-      // Could be due to partial deletion where we only finished deleting players
-      await backfill(matchId);
-      playersMatchData = await getPlayerMatchData(matchId);
-    }
-  } catch (e) {
-    // TODO (howard) we can probably remove this try/catch after bad data is fixed
-    console.error(e);
-    if (
-      e.message.startsWith('Unexpected') ||
-      e.message.includes('Attempt to access memory outside buffer bounds')
-    ) {
-      utility.redisCount(redis, 'cassandra_repair');
-      // Delete corrupted data and backfill
-      await cassandra.execute(
-        'DELETE FROM player_matches where match_id = ?',
-        [Number(matchId)],
-        { prepare: true }
-      );
-      await backfill(matchId);
-      playersMatchData = await getPlayerMatchData(matchId);
-    } else {
-      throw e;
-    }
+  // If we fetched from archive we already have players
+  playersMatchData = match.players || (await getPlayerMatchData(matchId));
+  if (playersMatchData.length === 0) {
+    // Could be due to partial deletion where we only finished deleting players
+    await backfill(matchId);
+    playersMatchData = await getPlayerMatchData(matchId);
   }
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(
