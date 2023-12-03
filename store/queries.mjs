@@ -1255,7 +1255,7 @@ function insertMatch(match, options, cb) {
     });
   }
   function upsertMatchBlobs(cb) {
-    // TODO this function is meant to eventually replace the cassandra match/player_match tables
+    // TODO (howard) this function is meant to eventually replace the cassandra match/player_match tables
     // NOTE: remove pgroup since we don't actually need it stored
     // It's a temporary store (postgres table) holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
@@ -1473,9 +1473,9 @@ function insertMatch(match, options, cb) {
                 attempts: options.attempts || 15,
               }
             );
-            cb(null, job);
+            return cb(null, job);
           } catch (e) {
-            cb(e);
+            return cb(e);
           }
         }
         return cb();
