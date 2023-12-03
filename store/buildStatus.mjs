@@ -16,7 +16,7 @@ export default function buildStatus(db, redis, cb) {
     });
     return result;
   }
-  async.series(
+  async.parallel(
     {
       user_players(cb) {
         redis.zcard('visitors', cb);
