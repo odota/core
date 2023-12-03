@@ -143,12 +143,6 @@ export function generateJob(type, payload) {
         type: 'api',
       };
     },
-    api_item_icon() {
-      return {
-        url: `${apiUrl}/IEconDOTA2_570/GetItemIconPath/v1?key=${apiKey}&iconname=${payload.iconname}`,
-        type: 'api',
-      };
-    },
     api_top_live_game() {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=0`,
@@ -818,6 +812,23 @@ function invokeInterval(func, delay) {
     });
   })();
 }
+
+/*
+ * Promise replacement for async.eachLimit
+ * Executes funcs at most limit at once
+ */
+async function eachLimit(funcs, limit) {
+  let rest = funcs.slice(limit);
+  await Promise.all(
+    funcs.slice(0, limit).map(async (func) => {
+      await func();
+      while (rest.length) {
+        await rest.shift()();
+      }
+    })
+  );
+}
+
 /**
  * Returns the current UNIX Epoch time in weeks
  * */
@@ -873,6 +884,7 @@ export default {
   getRedisCountDay,
   getRedisCountHour,
   invokeInterval,
+  eachLimit,
   epochWeek,
   cleanItemSchema,
   checkIfInExperiment,
