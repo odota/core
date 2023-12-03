@@ -391,6 +391,7 @@ function getMmrEstimate(accountId, cb) {
     .where({ account_id: accountId })
     .asCallback(cb);
 }
+export const getPlayerMatchesPromise = util.promisify(getPlayerMatches);
 function getPlayerMatches(accountId, queryObj, cb) {
   // Validate accountId
   if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
@@ -1632,6 +1633,7 @@ export default {
   getMatchRating,
   getLeaderboard,
   getPlayerMatches,
+  getPlayerMatchesPromise,
   getPlayerRatings,
   getPlayerHeroRankings,
   getPlayer,
