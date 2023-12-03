@@ -815,15 +815,15 @@ function invokeInterval(func, delay) {
 
 /*
  * Promise replacement for async.eachLimit
- * Executes funcs at most limit at once
+ * Executes promises at most limit at once
  */
-async function eachLimit(funcs, limit) {
-  let rest = funcs.slice(limit);
+export async function eachLimit(promises, limit) {
+  let rest = promises.slice(limit);
   await Promise.all(
-    funcs.slice(0, limit).map(async (func) => {
-      await func();
+    promises.slice(0, limit).map(async (promise) => {
+      await promise;
       while (rest.length) {
-        await rest.shift()();
+        await rest.shift();
       }
     })
   );
@@ -884,7 +884,6 @@ export default {
   getRedisCountDay,
   getRedisCountHour,
   invokeInterval,
-  eachLimit,
   epochWeek,
   cleanItemSchema,
   checkIfInExperiment,

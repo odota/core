@@ -3,7 +3,8 @@ import vdf from 'simple-vdf';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import queries from '../store/queries.mjs';
-const { cleanItemSchema, getDataPromise, eachLimit } = utility;
+import { eachLimit } from '../util/utility.mjs';
+const { cleanItemSchema, getDataPromise } = utility;
 
 while (true) {
   console.time('doCosmetics');
@@ -42,10 +43,10 @@ while (true) {
       });
     }
 
-    const funcs = Object.keys(itemData.items_game.items).map(
-      (i) => () => processItem(i)
+    const promises = Object.keys(itemData.items_game.items).map(
+      (i)=> processItem(i)
     );
-    await eachLimit(funcs, 10);
+    await eachLimit(promises, 10);
   } catch (error) {
     console.log(error);
   }
