@@ -1,4 +1,5 @@
 import async from 'async';
+import moment from 'moment';
 import constants from 'dotaconstants';
 import util from 'util';
 import utility from '../util/utility.mjs';
@@ -1271,22 +1272,14 @@ function insertMatch(match, options, cb) {
     return insertPlayerCache(copy, cb);
   }
   function telemetry(cb) {
-    const types = {
-      api: 'matches_last_added',
-      parsed: 'matches_last_parsed',
-    };
-    if (types[options.type]) {
-      redis.lpush(
-        types[options.type],
-        JSON.stringify({
-          match_id: match.match_id,
-          // start_time + duration = end_time
-          start_time: match.start_time,
-          duration: match.duration,
-        })
-      );
-      redis.ltrim(types[options.type], 0, 9);
-    }
+    // Publish to log stream
+    // Name of process
+    // type of data (parsed gcdata api)
+    // Match ID
+    // When it finished (start_time + duration)
+    const name = process.env.name || process.argv[1];
+    const message = `[${name}] inserted [${options.type}] for match ${match.match_id} finished ${moment.unix(match.start_time + match.duration).fromNow()}`;
+    redis.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');
     }

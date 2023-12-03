@@ -12,6 +12,7 @@ import passportSteam from 'passport-steam';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import stripeLib from 'stripe';
+import Redis from 'ioredis';
 import keys from '../routes/keyManagement.mjs';
 import api from '../routes/api.mjs';
 import queries from '../store/queries.mjs';
@@ -19,6 +20,7 @@ import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
+
 const SteamStrategy = passportSteam.Strategy;
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { redisCount } = utility;
@@ -335,6 +337,29 @@ app.route('/manageSub').post(async (req, res) => {
   return res.json(session);
 });
 app.use('/api', api);
+let openClients = 0;
+app.get('/logs', (req, res, cb) => {
+  // limit the number of max clients
+  if (openClients >= 100) {
+    return cb('too many log clients');
+  }
+  const logSub = new Redis(config.REDIS_URL);
+  logSub.subscribe(['api', 'parsed', 'gcdata']);
+  openClients += 1;
+  // Create a subscriber client
+  logSub.on('message', (channel, message) => {
+    const matched = Array.isArray(req.query.channel) && req.query.channel.includes(channel);
+    if (!req.query.channel || matched) {
+      res.write(message + '\n');
+    }
+  });
+  // Teardown the subscriber on request close
+  req.on('close', () => {
+    console.log('closing log client');
+    logSub.disconnect();
+    openClients -= 1;
+  });
+});
 // CORS Preflight for API keys
 // NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
 app.options('/keys', cors());

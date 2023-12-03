@@ -150,22 +150,6 @@ export default function buildStatus(db, redis, cb) {
           }
         );
       },
-      last_added(cb) {
-        redis.lrange('matches_last_added', 0, -1, (err, result) => {
-          cb(
-            err,
-            result.map((r) => JSON.parse(r))
-          );
-        });
-      },
-      last_parsed(cb) {
-        redis.lrange('matches_last_parsed', 0, -1, (err, result) => {
-          cb(
-            err,
-            result.map((r) => JSON.parse(r))
-          );
-        });
-      },
       load_times(cb) {
         redis.lrange('load_times', 0, -1, (err, arr) => {
           cb(err, generatePercentiles(arr));
