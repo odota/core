@@ -13,6 +13,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import stripeLib from 'stripe';
 import Redis from 'ioredis';
+import uuid from 'uuid';
 import keys from '../routes/keyManagement.mjs';
 import api from '../routes/api.mjs';
 import queries from '../store/queries.mjs';
@@ -337,27 +338,23 @@ app.route('/manageSub').post(async (req, res) => {
   return res.json(session);
 });
 app.use('/api', api);
-let openClients = 0;
-app.get('/logs', (req, res, cb) => {
-  // limit the number of max clients
-  if (openClients >= 100) {
-    return cb('too many log clients');
-  }
-  const logSub = new Redis(config.REDIS_URL);
-  logSub.subscribe(['api', 'parsed', 'gcdata']);
-  openClients += 1;
-  // Create a subscriber client
-  logSub.on('message', (channel, message) => {
+const logReaders = {};
+const logSub = new Redis(config.REDIS_URL);
+logSub.subscribe(['api', 'parsed', 'gcdata']);
+logSub.on('message', (channel, message) => {
+  // Emit it to all the connected logs
+  Object.values(logReaders).forEach(([req, res]) => {
     const matched = Array.isArray(req.query.channel) && req.query.channel.includes(channel);
     if (!req.query.channel || matched) {
       res.write(message + '\n');
     }
   });
-  // Teardown the subscriber on request close
+});
+app.get('/logs', (req, res) => {
+  const id = uuid.v4();
+  logReaders[id] = [req, res];
   req.on('close', () => {
-    console.log('closing log client');
-    logSub.disconnect();
-    openClients -= 1;
+    delete logReaders[id];
   });
 });
 // CORS Preflight for API keys
