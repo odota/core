@@ -57,9 +57,6 @@ export default function buildStatus(db, redis, cb) {
       match_archive_read_last_day(cb) {
         utility.getRedisCountDay(redis, 'match_archive_read', cb);
       },
-      cassandra_repair_last_day(cb) {
-        utility.getRedisCountDay(redis, 'cassandra_repair', cb);
-      },
       build_match_last_day(cb) {
         utility.getRedisCountDay(redis, 'build_match', cb);
       },
@@ -80,6 +77,14 @@ export default function buildStatus(db, redis, cb) {
       },
       api_hits_ui_last_day(cb) {
         utility.getRedisCountDay(redis, 'api_hits_ui', cb);
+      },
+      seqNumDelay(cb) {
+        // It's slow to query Steam API so use the value saved by monitor
+        redis.hget('health', 'seqNumDelay', cb);
+      },
+      parseQueue(cb) {
+        // It's slow to count in postgres so use the value saved by monitor
+        redis.hget('health', 'parseDelay', cb);
       },
       fhQueue(cb) {
         redis.llen('fhQueue', cb);
