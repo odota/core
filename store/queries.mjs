@@ -1277,7 +1277,7 @@ function insertMatch(match, options, cb) {
     // type of data (parsed gcdata api)
     // Match ID
     // When it finished (start_time + duration)
-    const name = process.env.name || process.argv[1];
+    const name = process.env.name || process.env.ROLE || process.argv[1];
     const message = `[${name}] inserted [${options.type}] for match ${match.match_id} finished ${moment.unix(match.start_time + match.duration).fromNow()}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
