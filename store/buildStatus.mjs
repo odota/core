@@ -66,6 +66,9 @@ export default function buildStatus(db, redis, cb) {
       error_last_day(cb) {
         utility.getRedisCountDay(redis, '500_error', cb);
       },
+      web_crash_last_day(cb) {
+        utility.getRedisCountDay(redis, 'web_crash', cb);
+      },
       fullhistory_last_day(cb) {
         utility.getRedisCountDay(redis, 'fullhistory', cb);
       },

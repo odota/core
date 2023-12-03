@@ -383,4 +383,10 @@ function gracefulShutdown() {
 process.once('SIGTERM', gracefulShutdown);
 // listen for INT signal e.g. Ctrl-C
 process.once('SIGINT', gracefulShutdown);
+// count any uncaught exceptions crashing the process
+process.on('uncaughtException', function (err) {
+  redisCount(redis, 'web_crash');
+  console.error(err);
+  process.exit(1);
+});
 export default app;
