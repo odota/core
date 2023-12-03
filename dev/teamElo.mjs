@@ -2,7 +2,6 @@
  * Computes team Elo ratings by game
  * */
 import JSONStream from 'JSONStream';
-import async from 'async';
 import db from '../store/db';
 
 // Keep each team's rating in memory and update
@@ -67,35 +66,20 @@ stream.on('data', (match) => {
 stream.on('end', () => {
   console.log(teams, wins, losses, startTimes);
   // Write the results to table
-  async.eachSeries(
-    Object.keys(teams),
-    (teamId, cb) => {
-      console.log([
-        teamId,
-        teams[teamId],
-        wins[teamId],
-        losses[teamId],
-        startTimes[teamId],
-      ]);
-      db.raw(
-        `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
+  Object.keys(teams).forEach((teamId) => {
+    console.log([
+      teamId,
+      teams[teamId],
+      wins[teamId],
+      losses[teamId],
+      startTimes[teamId],
+    ]);
+    db.raw(
+      `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
   ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses, last_match_time=EXCLUDED.last_match_time`,
-        [
-          teamId,
-          teams[teamId],
-          wins[teamId],
-          losses[teamId],
-          startTimes[teamId],
-        ]
-      ).asCallback(cb);
-    },
-    (err) => {
-      if (err) {
-        console.error(err);
-      }
-      process.exit(Number(err));
-    }
-  );
+      [teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]]
+    );
+  });
 });
 stream.on('error', (err) => {
   throw err;

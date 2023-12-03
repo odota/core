@@ -19,7 +19,7 @@ const port = config.PORT || config.RETRIEVER_PORT;
 // create array of numbers from 0 to n
 const count = 0;
 while (a.length < users.length) a.push(a.length + 0);
-async.each(a, (i, cb) => {
+a.forEach((i) => {
   let dotaReady = false;
   const relationshipReady = false;
   const client = new Steam.SteamClient();

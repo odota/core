@@ -39,15 +39,3 @@ console.time('map');s
 entries.map(e => Object.assign({}, e));
 console.timeEnd('map');
 */
-/*
-const request = require('request');
-const async = require('async');
-async.eachSeries(Array.from(new Array(100), (e, i) => i), (i, cb) => {
-  request(`http://localhost:5100?match_id=2716007205`, (err, resp, body) => {
-    console.log(i, err, resp && resp.statusCode);
-    setTimeout(() => {
-      cb(err);
-    }, 1000);
-  });
-}, (err) => (process.exit(Number(err))));
-*/

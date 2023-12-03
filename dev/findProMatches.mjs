@@ -1,4 +1,3 @@
-import async from 'async';
 import queries from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import { generateJob, getData } from '../util/utility.mjs';
@@ -15,49 +14,38 @@ function getPage(url, leagueid, cb) {
       data.result.total_results,
       data.result.results_remaining
     );
-    async.eachSeries(
-      data.result.matches,
-      (match, cb) => {
-        console.log(match.match_id);
-        const job = generateJob('api_details', {
-          match_id: match.match_id,
-        });
-        const { url } = job;
-        getData(
-          {
-            url,
-            delay: 200,
-          },
-          async (err, body) => {
-            if (err) {
-              throw err;
-            }
-            if (body.result) {
-              const match = body.result;
-              await queries.insertMatchPromise(match, { skipParse: true });
-              cb();
-            } else {
-              cb();
-            }
+    data.result.matches.forEach((match) => {
+      console.log(match.match_id);
+      const job = generateJob('api_details', {
+        match_id: match.match_id,
+      });
+      const { url } = job;
+      getData(
+        {
+          url,
+          delay: 200,
+        },
+        async (err, body) => {
+          if (err) {
+            throw err;
           }
-        );
-      },
-      (err) => {
-        if (err) {
-          throw err;
+          if (body.result) {
+            const match = body.result;
+            await queries.insertMatchPromise(match, { skipParse: true });
+          } else {
+          }
         }
-        if (data.result.results_remaining) {
-          const url2 = generateJob('api_history', {
-            leagueid,
-            start_at_match_id:
-              data.result.matches[data.result.matches.length - 1].match_id - 1,
-          }).url;
-          getPage(url2, leagueid, cb);
-        } else {
-          cb(err);
-        }
-      }
-    );
+      );
+    });
+    if (data.result.results_remaining) {
+      const url2 = generateJob('api_history', {
+        leagueid,
+        start_at_match_id:
+          data.result.matches[data.result.matches.length - 1].match_id - 1,
+      }).url;
+      getPage(url2, leagueid, cb);
+    } else {
+    }
   });
 }
 
@@ -71,18 +59,13 @@ db.select('leagueid')
       throw err;
     }
     const leagueIds = data.map((l) => l.leagueid);
-    async.eachSeries(
-      leagueIds,
-      (leagueid, cb) => {
-        const { url } = generateJob('api_history', {
-          leagueid,
-        });
-        return getPage(url, leagueid, cb);
-      },
-      (err) => {
-        process.exit(Number(err));
-      }
-    );
+    leagueIds.forEach((leagueid) => {
+      const { url } = generateJob('api_history', {
+        leagueid,
+      });
+      return getPage(url, leagueid, cb);
+    });
+    process.exit(Number(err));
   });
 // From API
 /*
@@ -93,7 +76,7 @@ getData(leagueUrl, (err, data) => {
   // console.log(data);
   const leagueIds = data.result.leagues.map(l => l.leagueid);
     // iterate through leagueids and use getmatchhistory to retrieve matches for each
-  async.eachSeries(leagueIds, (leagueid, cb) => {
+ leagueIds.forEach(leagueid) => {
     const url = generateJob('api_history',
       {
         leagueid,

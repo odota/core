@@ -1,7 +1,6 @@
 /**
  * Recalculate patch ID for matches in match table
  * */
-import async from 'async';
 import constants from 'dotaconstants';
 import db from '../store/db.mjs';
 import queries from '../store/queries.mjs';
@@ -14,27 +13,20 @@ db.select(['match_id', 'start_time'])
     if (err) {
       throw err;
     }
-    async.eachSeries(
-      matchIds,
-      (match, cb) => {
-        const patch =
-          constants.patch[utility.getPatchIndex(match.start_time)].name;
-        console.log(match.match_id, patch);
-        queries.upsert(
-          db,
-          'match_patch',
-          {
-            match_id: match.match_id,
-            patch,
-          },
-          {
-            match_id: match.match_id,
-          },
-          cb
-        );
-      },
-      (err) => {
-        process.exit(Number(err));
-      }
-    );
+    matchIds.forEach((match) => {
+      const patch =
+        constants.patch[utility.getPatchIndex(match.start_time)].name;
+      console.log(match.match_id, patch);
+      queries.upsert(
+        db,
+        'match_patch',
+        {
+          match_id: match.match_id,
+          patch,
+        },
+        {
+          match_id: match.match_id,
+        }
+      );
+    });
   });

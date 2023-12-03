@@ -232,7 +232,11 @@ app.use((req, res, cb) => {
       if (req.headers.origin === 'https://www.opendota.com') {
         redisCount(redis, 'api_hits_ui');
       }
-      redis.zincrby('api_paths', 1, req.method + ' ' + req.path.replace(/\d+/g, ':id'));
+      redis.zincrby(
+        'api_paths',
+        1,
+        req.method + ' ' + req.path.replace(/\d+/g, ':id')
+      );
       redis.expireat(
         'api_paths',
         moment().startOf('hour').add(1, 'hour').format('X')
