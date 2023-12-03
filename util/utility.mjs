@@ -143,12 +143,6 @@ export function generateJob(type, payload) {
         type: 'api',
       };
     },
-    api_item_icon() {
-      return {
-        url: `${apiUrl}/IEconDOTA2_570/GetItemIconPath/v1?key=${apiKey}&iconname=${payload.iconname}`,
-        type: 'api',
-      };
-    },
     api_top_live_game() {
       return {
         url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=0`,
@@ -818,6 +812,23 @@ function invokeInterval(func, delay) {
     });
   })();
 }
+
+/*
+ * Promise replacement for async.eachLimit
+ * Executes promises at most limit at once
+ */
+export async function eachLimit(promises, limit) {
+  let rest = promises.slice(limit);
+  await Promise.all(
+    promises.slice(0, limit).map(async (promise) => {
+      await promise;
+      while (rest.length) {
+        await rest.shift();
+      }
+    })
+  );
+}
+
 /**
  * Returns the current UNIX Epoch time in weeks
  * */
