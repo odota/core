@@ -1,12 +1,11 @@
 import moment from 'moment';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
-import queries from './queries.mjs';
+import { insertMatchPromise, upsertPromise } from './queries.mjs';
 import db from './db.mjs';
 import redis from './redis.mjs';
 const secret = config.RETRIEVER_SECRET;
 const { getDataPromise, redisCount } = utility;
-const { insertMatchPromise, upsertPromise } = queries;
 async function getGcDataFromRetriever(match) {
   const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry

@@ -3,10 +3,9 @@
 import async from 'async';
 import utility from '../util/utility.mjs';
 import redis from '../store/redis.mjs';
-import queries from '../store/queries.mjs';
+import { insertMatchPromise } from '../store/queries.mjs';
 import config from '../config.js';
 const { generateJob, getData } = utility;
-const { insertMatchPromise } = queries;
 const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);

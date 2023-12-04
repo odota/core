@@ -1273,9 +1273,7 @@ export async function getArchivedMatch(matchId) {
 }
 export default {
   upsert,
-  upsertPromise,
   insertPlayerPromise,
-  insertMatchPromise,
   getHeroRankings,
   getHeroItemPopularity,
   getHeroBenchmarks,
