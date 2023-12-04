@@ -3,7 +3,6 @@ import config from '../config.js';
 import queries from './queries.mjs';
 import compute from '../util/compute.mjs';
 import utility from '../util/utility.mjs';
-import cassandra from './cassandra.mjs';
 import redis from './redis.mjs';
 import db from './db.mjs';
 import {
@@ -11,6 +10,7 @@ import {
   getMatchData,
   insertMatchPromise,
   getArchivedMatch,
+  getMatchBenchmarks,
 } from './queries.mjs';
 const { computeMatchData } = compute;
 const { buildReplayUrl, isContributor } = utility;
@@ -213,9 +213,13 @@ async function getMatch(matchId) {
       matchResult.replay_salt
     );
   }
-  const matchWithBenchmarks =
-    await queries.getMatchBenchmarksPromisified(matchResult);
-  return Promise.resolve(matchWithBenchmarks);
+  const playersWithBenchmarks =
+    await getMatchBenchmarks(matchResult);
+  matchResult = {
+    ...matchResult,
+    players: playersWithBenchmarks,
+  };
+  return Promise.resolve(matchResult);
 }
 async function buildMatch(matchId) {
   const key = `match:${matchId}`;
