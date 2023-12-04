@@ -344,7 +344,8 @@ logSub.subscribe(['api', 'parsed', 'gcdata']);
 logSub.on('message', (channel, message) => {
   // Emit it to all the connected logs
   Object.values(logReaders).forEach(([req, res]) => {
-    const matched = Array.isArray(req.query.channel) && req.query.channel.includes(channel);
+    const matched =
+      Array.isArray(req.query.channel) && req.query.channel.includes(channel);
     if (!req.query.channel || matched) {
       res.write(message + '\n');
     }

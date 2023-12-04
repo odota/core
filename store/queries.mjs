@@ -1036,143 +1036,100 @@ function insertMatch(match, options, cb) {
       // Skip this if not a pro match
       return cb();
     }
-    return db.transaction((trx) => {
-      function upsertMatch(cb) {
-        upsert(
+    const trx = await db.transaction();
+    try {
+      await upsertMatch();
+      await upsertPlayerMatches();
+      await upsertPicksBans();
+      await upsertMatchPatch();
+      await upsertTeamMatch();
+      await updateTeamRankings(match, options);
+      await trx.commit();
+      return cb();
+    } catch (e) {
+      trx.rollback();
+      return cb(e);
+    }
+    async function upsertMatch() {
+      await upsertPromise(trx, 'matches', match, {
+        match_id: match.match_id,
+      });
+    }
+    async function upsertPlayerMatches() {
+      await Promise.all(
+        (players || []).map((pm) => {
+          pm.match_id = match.match_id;
+          // Add lane data
+          if (pm.lane_pos) {
+            const laneData = utility.getLaneFromPosData(
+              pm.lane_pos,
+              isRadiant(pm)
+            );
+            pm.lane = laneData.lane || null;
+            pm.lane_role = laneData.lane_role || null;
+            pm.is_roaming = laneData.is_roaming || null;
+          }
+          return upsertPromise(trx, 'player_matches', pm, {
+            match_id: pm.match_id,
+            player_slot: pm.player_slot,
+          });
+        })
+      );
+    }
+    async function upsertPicksBans() {
+      await Promise.all(
+        (match.picks_bans || []).map((p) => {
+          // order is a reserved keyword
+          p.ord = p.order;
+          p.match_id = match.match_id;
+          return upsertPromise(trx, 'picks_bans', p, {
+            match_id: p.match_id,
+            ord: p.ord,
+          });
+        })
+      );
+    }
+    async function upsertMatchPatch() {
+      if (match.start_time) {
+        await upsertPromise(
           trx,
-          'matches',
-          match,
+          'match_patch',
           {
             match_id: match.match_id,
+            patch:
+              constants.patch[utility.getPatchIndex(match.start_time)].name,
           },
-          cb
-        );
-      }
-      function upsertPlayerMatches(cb) {
-        async.each(
-          players || [],
-          (pm, cb) => {
-            pm.match_id = match.match_id;
-            // Add lane data
-            if (pm.lane_pos) {
-              const laneData = utility.getLaneFromPosData(
-                pm.lane_pos,
-                isRadiant(pm)
-              );
-              pm.lane = laneData.lane || null;
-              pm.lane_role = laneData.lane_role || null;
-              pm.is_roaming = laneData.is_roaming || null;
-            }
-            upsert(
-              trx,
-              'player_matches',
-              pm,
-              {
-                match_id: pm.match_id,
-                player_slot: pm.player_slot,
-              },
-              cb
-            );
-          },
-          cb
-        );
-      }
-      function upsertPicksBans(cb) {
-        async.each(
-          match.picks_bans || [],
-          (p, cb) => {
-            // order is a reserved keyword
-            p.ord = p.order;
-            p.match_id = match.match_id;
-            upsert(
-              trx,
-              'picks_bans',
-              p,
-              {
-                match_id: p.match_id,
-                ord: p.ord,
-              },
-              cb
-            );
-          },
-          cb
-        );
-      }
-      function upsertMatchPatch(cb) {
-        if (match.start_time) {
-          return upsert(
-            trx,
-            'match_patch',
-            {
-              match_id: match.match_id,
-              patch:
-                constants.patch[utility.getPatchIndex(match.start_time)].name,
-            },
-            {
-              match_id: match.match_id,
-            },
-            cb
-          );
-        }
-        return cb();
-      }
-      function upsertTeamMatch(cb) {
-        const arr = [];
-        if (match.radiant_team_id) {
-          arr.push({
-            team_id: match.radiant_team_id,
+          {
             match_id: match.match_id,
-            radiant: true,
-          });
-        }
-        if (match.dire_team_id) {
-          arr.push({
-            team_id: match.dire_team_id,
-            match_id: match.match_id,
-            radiant: false,
-          });
-        }
-        async.each(
-          arr,
-          (tm, cb) => {
-            upsert(
-              trx,
-              'team_match',
-              tm,
-              {
-                team_id: tm.team_id,
-                match_id: tm.match_id,
-              },
-              cb
-            );
-          },
-          cb
+          }
         );
       }
-      function upsertTeamRankings(cb) {
-        return updateTeamRankings(match, options).then(cb).catch(cb);
+    }
+    async function upsertTeamMatch() {
+      const arr = [];
+      if (match.radiant_team_id) {
+        arr.push({
+          team_id: match.radiant_team_id,
+          match_id: match.match_id,
+          radiant: true,
+        });
       }
-      function exit(err) {
-        if (err) {
-          console.error(err);
-          trx.rollback(err);
-        } else {
-          trx.commit();
-        }
-        cb(err);
+      if (match.dire_team_id) {
+        arr.push({
+          team_id: match.dire_team_id,
+          match_id: match.match_id,
+          radiant: false,
+        });
       }
-      async.series(
-        {
-          upsertMatch,
-          upsertPlayerMatches,
-          upsertPicksBans,
-          upsertMatchPatch,
-          upsertTeamMatch,
-          upsertTeamRankings,
-        },
-        exit
+      await Promise.all(
+        arr.map((tm) => {
+          return upsertPromise(trx, 'team_match', tm, {
+            team_id: tm.team_id,
+            match_id: tm.match_id,
+          });
+        })
       );
-    });
+    }
   }
   function getAverageRank(cb) {
     // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
@@ -1278,7 +1235,9 @@ function insertMatch(match, options, cb) {
     // Match ID
     // When it finished (start_time + duration)
     const name = process.env.name || process.env.ROLE || process.argv[1];
-    const message = `[${name}] inserted [${options.type}] for match ${match.match_id} finished ${moment.unix(match.start_time + match.duration).fromNow()}`;
+    const message = `[${name}] inserted [${options.type}] for match ${
+      match.match_id
+    } finished ${moment.unix(match.start_time + match.duration).fromNow()}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');

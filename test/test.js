@@ -149,8 +149,13 @@ describe('replay parse', function () {
     assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
 
     // Assert that the pro data (with parsed info) is in postgres
-    const proMatch = await db.raw('select * from matches where match_id = ?', [tests[key].match_id]);
-    const proMatchPlayers = await db.raw('select * from player_matches where match_id = ?', [tests[key].match_id]);
+    const proMatch = await db.raw('select * from matches where match_id = ?', [
+      tests[key].match_id,
+    ]);
+    const proMatchPlayers = await db.raw(
+      'select * from player_matches where match_id = ?',
+      [tests[key].match_id]
+    );
     const picksBans = await db.raw('select * from picks_bans');
     const teamMatch = await db.raw('select * from team_match');
     const teamRankings = await db.raw('select * from team_rating');
