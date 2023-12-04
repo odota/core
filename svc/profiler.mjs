@@ -3,7 +3,7 @@ import queries from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 const { insertPlayerPromise, bulkIndexPlayer } = queries;
-const { getData, generateJob, convert64to32 } = utility;
+const { getDataPromise, generateJob, convert64to32 } = utility;
 
 while (true) {
   // To optimize the api call we need to do 100 players at a time
