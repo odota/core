@@ -68,7 +68,6 @@ before(async function setup() {
   await initElasticsearch();
   await initRedis();
   await startServices();
-  await queriesAndMatches();
   await loadMatches();
   await loadPlayers();
 });
