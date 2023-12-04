@@ -484,31 +484,23 @@ function getProPeers(db, input, player, cb) {
     });
 }
 
-export function getMatchRankTier(match, cb) {
-  async.map(
-    match.players,
-    (player, cb) => {
+export async function getMatchRankTier(match) {
+  const result = await Promise.all(
+    match.players.map(async (player) => {
       if (!player.account_id) {
-        return cb();
+        return;
       }
-      return db
+      const row = await db
         .first()
         .from('rank_tier')
-        .where({ account_id: player.account_id })
-        .asCallback((err, row) => {
-          cb(err, row ? row.rating : null);
-        });
-    },
-    (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      // Remove undefined/null values
-      const filt = result.filter((r) => r);
-      const avg = averageMedal(filt.map((r) => Number(r))) || null;
-      return cb(err, avg, filt.length);
-    }
+        .where({ account_id: player.account_id });
+      return row ? row.rating : null;
+    })
   );
+  // Remove undefined/null values
+  const filt = result.filter(Boolean);
+  const avg = averageMedal(filt.map((r) => Number(r))) || null;
+  return { avg, num: filt.length };
 }
 export const upsertPromise = util.promisify(upsert);
 export function upsert(db, table, row, conflict, cb) {
@@ -880,7 +872,7 @@ export async function insertMatchPromise(match, options) {
     // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
     // We currently only store this in the player_caches table, not in the match itself
     if (options.origin === 'scanner' && options.type === 'api') {
-      const avg = await util.promisify(getMatchRankTier)(match);
+      const { avg } = await getMatchRankTier(match);
       match.average_rank = avg || null;
     }
   }

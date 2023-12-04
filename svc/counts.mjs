@@ -17,48 +17,40 @@ async function updateHeroRankings(match) {
   if (!isSignificant(match)) {
     return;
   }
-  getMatchRankTier(match, async (err, avg) => {
-    if (err) {
-      return;
-    }
-    const matchScore =
-      avg && !Number.isNaN(Number(avg)) ? avg * 100 : undefined;
-    if (!matchScore) {
-      return;
-    }
-    await Promise.all(
-      match.players.map(async (player) => {
-        if (
-          !player.account_id ||
-          player.account_id === getAnonymousAccountId() ||
-          !player.hero_id
-        ) {
-          return;
-        }
-        player.radiant_win = match.radiant_win;
-        // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
-        const win = Number(isRadiant(player) === player.radiant_win);
-        const kFactor = 100;
-        const data1 = await db.select('score').from('hero_ranking').where({
-          account_id: player.account_id,
-          hero_id: player.hero_id,
-        });
-        const currRating1 = Number(
-          (data1 && data1[0] && data1[0].score) || 4000
-        );
-        const r1 = 10 ** (currRating1 / 1000);
-        const r2 = 10 ** (matchScore / 1000);
-        const e1 = r1 / (r1 + r2);
-        const ratingDiff1 = kFactor * (win - e1);
-        const newScore = currRating1 + ratingDiff1;
-        await db.raw(
-          'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
-          [player.account_id, player.hero_id, newScore, newScore]
-        );
+  const { avg } = await getMatchRankTier(match);
+  const matchScore = avg && !Number.isNaN(Number(avg)) ? avg * 100 : undefined;
+  if (!matchScore) {
+    return;
+  }
+  await Promise.all(
+    match.players.map(async (player) => {
+      if (
+        !player.account_id ||
+        player.account_id === getAnonymousAccountId() ||
+        !player.hero_id
+      ) {
         return;
-      })
-    );
-  });
+      }
+      player.radiant_win = match.radiant_win;
+      // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
+      const win = Number(isRadiant(player) === player.radiant_win);
+      const kFactor = 100;
+      const data1 = await db.select('score').from('hero_ranking').where({
+        account_id: player.account_id,
+        hero_id: player.hero_id,
+      });
+      const currRating1 = Number((data1 && data1[0] && data1[0].score) || 4000);
+      const r1 = 10 ** (currRating1 / 1000);
+      const r2 = 10 ** (matchScore / 1000);
+      const e1 = r1 / (r1 + r2);
+      const ratingDiff1 = kFactor * (win - e1);
+      const newScore = currRating1 + ratingDiff1;
+      return await db.raw(
+        'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
+        [player.account_id, player.hero_id, newScore, newScore]
+      );
+    })
+  );
 }
 
 async function upsertMatchSample(match) {
@@ -70,39 +62,35 @@ async function upsertMatchSample(match) {
   ) {
     return;
   }
-  getMatchRankTier(match, async (err, avgRankTier, numRankTier) => {
-    if (err) {
-      return;
-    }
-    if (!avgRankTier || numRankTier < 2) {
-      return;
-    }
-    const trx = await db.transaction();
-    try {
-      const matchMmrData = {
-        avg_rank_tier: avgRankTier || null,
-        num_rank_tier: numRankTier || null,
-      };
-      const newMatch = { ...match, ...matchMmrData };
-      await upsertPromise(trx, 'public_matches', newMatch, {
-        match_id: newMatch.match_id,
-      });
-      await Promise.all(
-        (match.players || []).map((pm) => {
-          pm.match_id = match.match_id;
-          return upsertPromise(trx, 'public_player_matches', pm, {
-            match_id: pm.match_id,
-            player_slot: pm.player_slot,
-          });
-        })
-      );
-    } catch (e) {
-      await trx.rollback();
-      throw e;
-    }
-    await trx.commit();
+  const { avg, num } = await getMatchRankTier(match);
+  if (!avg || num < 2) {
     return;
-  });
+  }
+  const trx = await db.transaction();
+  try {
+    const matchMmrData = {
+      avg_rank_tier: avg || null,
+      num_rank_tier: num || null,
+    };
+    const newMatch = { ...match, ...matchMmrData };
+    await upsertPromise(trx, 'public_matches', newMatch, {
+      match_id: newMatch.match_id,
+    });
+    await Promise.all(
+      (match.players || []).map((pm) => {
+        pm.match_id = match.match_id;
+        return upsertPromise(trx, 'public_player_matches', pm, {
+          match_id: pm.match_id,
+          player_slot: pm.player_slot,
+        });
+      })
+    );
+  } catch (e) {
+    await trx.rollback();
+    throw e;
+  }
+  await trx.commit();
+  return;
 }
 async function updateRecord(field, match, player) {
   redis.zadd(
@@ -255,7 +243,6 @@ function updateMatchups(match, cb) {
 async function processCounts(match, cb) {
   console.log('match %s', match.match_id);
   try {
-    // NOTE: Some of these don't actually wait for I/O since getMatchRankTier is still a callback
     await updateHeroRankings(match);
     await upsertMatchSample(match);
     await updateRecords(match);
