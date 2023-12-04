@@ -13,7 +13,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import stripeLib from 'stripe';
 import Redis from 'ioredis';
-import uuid from 'uuid';
+import { WebSocketServer } from 'ws';
 import keys from '../routes/keyManagement.mjs';
 import api from '../routes/api.mjs';
 import queries from '../store/queries.mjs';
@@ -338,26 +338,6 @@ app.route('/manageSub').post(async (req, res) => {
   return res.json(session);
 });
 app.use('/api', api);
-const logReaders = {};
-const logSub = new Redis(config.REDIS_URL);
-logSub.subscribe(['api', 'parsed', 'gcdata']);
-logSub.on('message', (channel, message) => {
-  // Emit it to all the connected logs
-  Object.values(logReaders).forEach(([req, res]) => {
-    const matched =
-      Array.isArray(req.query.channel) && req.query.channel?.includes(channel);
-    if (!req.query.channel || req.query.channel === channel || matched) {
-      res.write(message + '\n');
-    }
-  });
-});
-app.get('/logs', (req, res) => {
-  const id = uuid.v4();
-  logReaders[id] = [req, res];
-  req.on('close', () => {
-    delete logReaders[id];
-  });
-});
 // CORS Preflight for API keys
 // NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
 app.options('/keys', cors());
@@ -384,6 +364,18 @@ app.use((err, req, res, cb) => {
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);
+});
+const wss = new WebSocketServer({ server });
+const logSub = new Redis(config.REDIS_URL);
+logSub.subscribe(['api', 'parsed', 'gcdata']);
+logSub.on('message', (channel, message) => {
+  // Emit it to all the connected websockets
+  // Can we let the user choose channels to sub to?
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(message);
+    }
+  });
 });
 /**
  * Wait for connections to end, then shut down
