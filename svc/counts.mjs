@@ -77,8 +77,6 @@ function upsertMatchSample(match, cb) {
     const trx = await db.transaction();
     try {
       const matchMmrData = {
-        avg_mmr: avg || null,
-        num_mmr: num || null,
         avg_rank_tier: avgRankTier || null,
         num_rank_tier: numRankTier || null,
       };
