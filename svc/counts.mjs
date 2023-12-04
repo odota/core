@@ -7,7 +7,8 @@ import utility from '../util/utility.mjs';
 import queries from '../store/queries.mjs';
 import queue from '../store/queue.mjs';
 import config from '../config.js';
-const { getMatchRankTier, insertPlayer, bulkIndexPlayer, upsertPromise } = queries;
+const { getMatchRankTier, insertPlayer, bulkIndexPlayer, upsertPromise } =
+  queries;
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
 function updateHeroRankings(match, cb) {
   getMatchRankTier(match, (err, avg) => {

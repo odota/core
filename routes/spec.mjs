@@ -517,12 +517,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     hero.games >= Number(req.queryObj.having)
                 )
                 .sort((a, b) => b.games - a.games);
-              return sendDataWithCache(
-                req,
-                res,
-                result,
-                'heroes'
-              );
+              return sendDataWithCache(req, res, result, 'heroes');
             }
           );
         },
@@ -578,12 +573,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   if (err) {
                     return cb(err);
                   }
-                  return sendDataWithCache(
-                    req,
-                    res,
-                    result,
-                    'peers'
-                  );
+                  return sendDataWithCache(req, res, result, 'peers');
                 }
               );
             }

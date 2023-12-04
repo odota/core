@@ -18,9 +18,8 @@ export const sendDataWithCache = (req, res, data, key) => {
     redis.setex(
       `cache:${key}:${req.params.account_id}`,
       config.PLAYER_CACHE_SECONDS,
-      JSON.stringify(data),
+      JSON.stringify(data)
     );
   }
   return res.json(data);
 };
-
