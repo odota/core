@@ -42,10 +42,10 @@ while (true) {
     });
   }
 
-  const promises = Object.keys(itemData.items_game.items).map((i) =>
+  const promiseFuncs = Object.keys(itemData.items_game.items).map((i) =>
     () => processItem(i)
   );
-  await eachLimit(promises, 10);
+  await eachLimit(promiseFuncs, 10);
 
   console.timeEnd('doCosmetics');
   await new Promise((resolve) => setTimeout(resolve, 12 * 60 * 60 * 1000));

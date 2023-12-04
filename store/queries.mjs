@@ -1016,7 +1016,7 @@ export async function insertMatchPromise(match, options) {
           arr.push({ key, account_id: player.account_id });
         });
       });
-    await Promise.all(arr, (val) => clearCache(val));
+    await Promise.all(arr.map((val) => clearCache(val)));
   }
   async function decideCounts() {
     // We only do this if fresh match
@@ -1049,8 +1049,7 @@ export async function insertMatchPromise(match, options) {
         config.ENABLE_RANDOM_MMR_UPDATE
       );
     });
-    console.log(arr);
-    await Promise.all(arr, (p) =>
+    await Promise.all(arr.map((p) =>
       queue.addJob(
         'mmrQueue',
         JSON.stringify({
@@ -1058,7 +1057,7 @@ export async function insertMatchPromise(match, options) {
           account_id: p.account_id,
         })
       )
-    );
+    ));
   }
   async function decideProfile() {
     // We only do this if fresh match
