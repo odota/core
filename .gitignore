@@ -25,3 +25,4 @@ docker-compose.override.yml
 STEAM_ACCOUNT_DATA*.txt
 .DS_Store
 .vscode
+build

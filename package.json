@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node index",
     "test": "NODE_ENV=test mocha --exit",
-    "build": "npm install",
+    "build": "npm install && npm run typecheck",
+    "tsc": "tsc --project tsconfig.json",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
     "lint": "eslint . --ext .js,.mjs --ignore-path .gitignore",
     "lintfix": "eslint . --ext .js,.mjs --ignore-path .gitignore --fix",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
@@ -68,6 +70,8 @@
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-import": "^2.29.0",
     "mocha": "^8.2.1",
-    "prettier": "^3.1.0"
+    "prettier": "^3.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
   }
 }
