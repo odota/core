@@ -7,7 +7,7 @@ import utility from '../util/utility.mjs';
 import queries from '../store/queries.mjs';
 import queue from '../store/queue.mjs';
 import config from '../config.js';
-const { getMatchRankTier, upsert, insertPlayer, bulkIndexPlayer } = queries;
+const { getMatchRankTier, insertPlayer, bulkIndexPlayer, upsertPromise } = queries;
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
 function updateHeroRankings(match, cb) {
   getMatchRankTier(match, (err, avg) => {
@@ -66,68 +66,49 @@ function updateHeroRankings(match, cb) {
 }
 
 function upsertMatchSample(match, cb) {
-  return getMatchRankTier(match, (err, avgRankTier, numRankTier) => {
+  getMatchRankTier(match, async (err, avgRankTier, numRankTier) => {
     if (err) {
       return cb(err);
     }
     if (!avgRankTier || numRankTier < 2) {
       return cb();
     }
-    return db.transaction((trx) => {
-      function upsertMatchSample(cb) {
-        const matchMmrData = {
-          avg_mmr: avg || null,
-          num_mmr: num || null,
-          avg_rank_tier: avgRankTier || null,
-          num_rank_tier: numRankTier || null,
-        };
-        const newMatch = { ...match, ...matchMmrData };
-        return upsert(
-          trx,
-          'public_matches',
-          newMatch,
-          {
-            match_id: newMatch.match_id,
-          },
-          cb
-        );
-      }
-      function upsertPlayerMatchesSample(cb) {
-        async.each(
-          match.players || [],
-          (pm, cb) => {
-            pm.match_id = match.match_id;
-            upsert(
-              trx,
-              'public_player_matches',
-              pm,
-              {
-                match_id: pm.match_id,
-                player_slot: pm.player_slot,
-              },
-              cb
-            );
-          },
-          cb
-        );
-      }
-      function exit(err) {
-        if (err) {
-          console.error(err);
-          trx.rollback(err);
-        } else {
-          trx.commit();
-        }
-        cb(err);
-      }
-      async.series(
+    const trx = db.transaction();
+    try {
+      const matchMmrData = {
+        avg_mmr: avg || null,
+        num_mmr: num || null,
+        avg_rank_tier: avgRankTier || null,
+        num_rank_tier: numRankTier || null,
+      };
+      const newMatch = { ...match, ...matchMmrData };
+      await upsertPromise(
+        trx,
+        'public_matches',
+        newMatch,
         {
-          upsertMatchSample,
-          upsertPlayerMatchesSample,
-        },
-        exit
+          match_id: newMatch.match_id,
+        }
       );
-    });
+      await Promise.all((match.players || []).map((pm) => {
+          pm.match_id = match.match_id;
+          return upsertPromise(
+            trx,
+            'public_player_matches',
+            pm,
+            {
+              match_id: pm.match_id,
+              player_slot: pm.player_slot,
+            },
+            cb
+          );
+        }));
+    } catch(e) {
+      trx.rollback();
+      return cb(e);
+    }
+    await trx.commit();
+    return cb();
   });
 }
 function updateRecord(field, match, player) {
