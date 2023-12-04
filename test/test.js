@@ -99,6 +99,15 @@ describe('swagger schema', async function testSwaggerSchema() {
     );
   });
 });
+describe('player_caches', () => {
+  it('should have data in player_caches', async () => {
+    const { getPlayerMatchesPromise } = await import('../store/queries.mjs');
+    // Test fetching matches for first player
+    const data = await getPlayerMatchesPromise(120269134, { project: ['match_id'] });
+    // We should have one result
+    assert(data.length === 1);
+  });
+});
 describe('replay parse', function () {
   this.timeout(120000);
   const tests = {
