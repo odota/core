@@ -1,90 +1,59 @@
 import moment from 'moment';
-import async from 'async';
 import redis from './redis.mjs';
 import db from './db.mjs';
 
-function runQueue(queueName, parallelism, processor) {
-  function processOneJob(cb) {
-    redis.blpop(queueName, '0', (err, job) => {
-      if (err) {
-        throw err;
-      }
+async function runQueue(queueName, parallelism, processor) {
+  Array.from(new Array(parallelism), (v, i) => i).forEach(async (i) => {
+    while (true) {
+      const job = await redis.blpop(queueName, '0');
       const jobData = JSON.parse(job[1]);
-      processor(jobData, (err) => {
-        if (err) {
-          console.error(err);
-        }
-        process.nextTick(cb);
-      });
-    });
-  }
-  for (let i = 0; i < parallelism; i += 1) {
-    async.forever(processOneJob, (err) => {
-      throw err;
-    });
-  }
+      await processor(jobData);
+    }
+  });
 }
-function runReliableQueue(queueName, parallelism, processor) {
-  function processOneJob(cb) {
-    db.transaction((trx) => {
-      trx
-        .raw(
-          `
-      UPDATE queue SET attempts = attempts - 1, next_attempt_time = ?
-      WHERE id = (
-      SELECT id
-      FROM queue
-      WHERE type = ?
-      AND (next_attempt_time IS NULL OR next_attempt_time < now())
-      ORDER BY priority ASC NULLS LAST, id ASC
-      FOR UPDATE SKIP LOCKED
-      LIMIT 1
-      )
-      RETURNING *
-      `,
-          [moment().add(2, 'minute'), queueName]
+
+async function runReliableQueue(queueName, parallelism, processor) {
+  Array.from(new Array(parallelism), (v, i) => i).forEach(async (i) => {
+    while (true) {
+      const trx = await db.transaction();
+      const result = await trx.raw(
+        `
+        UPDATE queue SET attempts = attempts - 1, next_attempt_time = ?
+        WHERE id = (
+        SELECT id
+        FROM queue
+        WHERE type = ?
+        AND (next_attempt_time IS NULL OR next_attempt_time < now())
+        ORDER BY priority ASC NULLS LAST, id ASC
+        FOR UPDATE SKIP LOCKED
+        LIMIT 1
         )
-        .asCallback((err, result) => {
-          const job = result && result.rows && result.rows[0];
-          if (err) {
-            throw err;
-          }
-          if (!job) {
-            trx.commit();
-            // console.log('no job available, waiting');
-            return setTimeout(cb, 5000);
-          }
-          return processor(job.data, (err) => {
-            if (err) {
-              // processor encountered an error, just log it and commit the transaction
-              console.error(err);
-            }
-            if (!err || job.attempts <= 0) {
-              // remove the job from the queue if successful or out of attempts
-              trx
-                .raw('DELETE FROM queue WHERE id = ?', [job.id])
-                .asCallback((err) => {
-                  if (err) {
-                    throw err;
-                  }
-                  trx.commit();
-                  process.nextTick(cb);
-                });
-            } else {
-              trx.commit();
-              process.nextTick(cb);
-            }
-          });
-        });
-    }).catch((err) => {
-      throw err;
-    });
-  }
-  for (let i = 0; i < parallelism; i += 1) {
-    async.forever(processOneJob, (err) => {
-      throw err;
-    });
-  }
+        RETURNING *
+        `,
+        [moment().add(2, 'minute'), queueName]
+      );
+      const job = result && result.rows && result.rows[0];
+      if (job) {
+        // Handle possible exception here since we still need to commit the transaction to update attempts
+        let success = false;
+        try {
+          success = await processor(job.data);
+        } catch (e) {
+          // Don't crash the process as we expect some processing failures
+          console.error(e);
+        }
+        if (success || job.attempts <= 0) {
+          // remove the job from the queue if successful or out of attempts
+          await trx.raw('DELETE FROM queue WHERE id = ?', [job.id]);
+        }
+        await trx.commit();
+      } else {
+        await trx.commit();
+        // console.log('no job available, waiting');
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }
+    }
+  });
 }
 async function addJob(queueName, job) {
   return await redis.rpush(queueName, job);

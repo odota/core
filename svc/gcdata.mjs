@@ -4,16 +4,13 @@ import getGcData from '../store/getGcData.mjs';
 import queue from '../store/queue.mjs';
 import config from '../config.js';
 import utility from '../util/utility.mjs';
+
 const { getRetrieverArr } = utility;
 const retrieverArr = getRetrieverArr();
-async function processGcData(job, cb) {
+
+async function processGcData(job) {
   job.useGcDataArr = true;
-  try {
-    await getGcData(job);
-    cb();
-  } catch (e) {
-    cb(e);
-  }
+  await getGcData(job);
 }
 queue.runQueue(
   'gcQueue',

@@ -1,5 +1,6 @@
 // Processes a queue of full history/refresh requests for players
 import urllib from 'url';
+import { promisify } from 'util';
 import config from '../config.js';
 import {
   redisCount,
@@ -45,10 +46,10 @@ async function processMatch(matchId) {
   });
 }
 
-function processFullHistory(job, cb) {
+async function processFullHistory(job) {
   const player = job;
   if (Number(player.account_id) === 0) {
-    return cb();
+    return;
   }
   // if test or only want last 100 (no paging), set short_history
   // const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
@@ -95,42 +96,37 @@ function processFullHistory(job, cb) {
       return getApiMatchPage(player, url, cb);
     });
   };
-  getApiMatchPage(player, container.url, async (err) => {
-    console.log('%s matches found', Object.keys(player.match_ids).length);
-    player.fh_unavailable = Boolean(err);
-    try {
-      if (err) {
-        // non-retryable error while scanning, user had a private account
-        console.log('error: %s', JSON.stringify(err));
-        await updatePlayer(player);
-      } else {
-        // check what matches the player is already associated with
-        const docs = await getPlayerMatchesPromise(player.account_id, {
-          project: ['match_id'],
-        });
-        console.log(
-          '%s matches found, %s already in db, %s to add',
-          Object.keys(player.match_ids).length,
-          docs.length,
-          Object.keys(player.match_ids).length - docs.length
-        );
-        // iterate through db results, delete match_id key if this player has this match already
-        // will re-request and update matches where this player was previously anonymous
-        for (let i = 0; i < docs.length; i += 1) {
-          const matchId = docs[i].match_id;
-          delete player.match_ids[matchId];
-        }
-        // make api_details requests for matches
-        const promiseFuncs = Object.keys(player.match_ids).map(
-          (matchId) => () => processMatch(matchId)
-        );
-        await eachLimit(promiseFuncs, parallelism);
-        await updatePlayer(player);
-      }
-      cb();
-    } catch (e) {
-      cb(err);
-    }
+  try {
+    await promisify(getApiMatchPage)(player, container.url);
+  } catch (err) {
+    // non-retryable error while scanning, user had a private account
+    console.log('error: %s', JSON.stringify(err));
+    player.fh_unavailable = true;
+    await updatePlayer(player);
+  }
+  console.log('%s matches found', Object.keys(player.match_ids).length);
+  player.fh_unavailable = false;
+  // check what matches the player is already associated with
+  const docs = await getPlayerMatchesPromise(player.account_id, {
+    project: ['match_id'],
   });
+  console.log(
+    '%s matches found, %s already in db, %s to add',
+    Object.keys(player.match_ids).length,
+    docs.length,
+    Object.keys(player.match_ids).length - docs.length
+  );
+  // iterate through db results, delete match_id key if this player has this match already
+  // will re-request and update matches where this player was previously anonymous
+  for (let i = 0; i < docs.length; i += 1) {
+    const matchId = docs[i].match_id;
+    delete player.match_ids[matchId];
+  }
+  // make api_details requests for matches
+  const promiseFuncs = Object.keys(player.match_ids).map(
+    (matchId) => () => processMatch(matchId)
+  );
+  await eachLimit(promiseFuncs, parallelism);
+  await updatePlayer(player);
 }
 queue.runQueue('fhQueue', 10, processFullHistory);
