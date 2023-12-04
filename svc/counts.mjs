@@ -11,6 +11,7 @@ import {
 } from '../store/queries.mjs';
 import queue from '../store/queue.mjs';
 import config from '../config.js';
+import { benchmarks } from '../util/benchmarksUtil.mjs';
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
 
 async function updateHeroRankings(match) {
