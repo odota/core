@@ -30,8 +30,6 @@ let db;
 let cassandra;
 let app;
 let redis;
-let queries;
-let buildMatch;
 // fake api responses
 nock('http://api.steampowered.com')
   // fake 500 error
@@ -134,7 +132,8 @@ describe('replay parse', function () {
       });
     console.log('inserting match and requesting parse');
     try {
-      const job = await queries.insertMatchPromise(matchData, {
+      const {insertMatchPromise} = await import('../store/queries.mjs');
+      const job = await insertMatchPromise(matchData, {
         type: 'api',
         forceParse: true,
         attempts: 1,
@@ -148,6 +147,7 @@ describe('replay parse', function () {
     await new Promise((resolve) => setTimeout(resolve, 20000));
     console.log('checking parsed match');
     // ensure parse data got inserted
+    const buildMatch = (await import('../store/buildMatch.mjs')).default
     const match = await buildMatch(tests[key].match_id);
     // console.log(match.players[0]);
     assert(match.players);
@@ -810,10 +810,11 @@ async function startServices() {
 
 async function loadMatches() {
   console.log('loading matches');
+  const { insertMatchPromise } = await import('../store/queries.mjs');
   const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
   for (let i = 0; i < arr.length; i++) {
     const m = arr[i];
-    await queries.insertMatchPromise(m, {
+    await insertMatchPromise(m, {
       type: 'api',
       origin: 'scanner',
       skipParse: true,
@@ -822,18 +823,15 @@ async function loadMatches() {
 }
 
 async function loadPlayers() {
+  const { insertPlayerPromise } = await import('../store/queries.mjs');
   console.log('loading players');
   await Promise.all(
     summariesApi.response.players.map((p) =>
-      queries.insertPlayerPromise(db, p, true)
+      insertPlayerPromise(db, p, true)
     )
   );
 }
 
-async function queriesAndMatches() {
-  queries = (await import('../store/queries.mjs')).default;
-  buildMatch = (await import('../store/buildMatch.mjs')).default;
-}
 /*
 describe('generateMatchups', () => {
   it('should generate matchups', (done) => {

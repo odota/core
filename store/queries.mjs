@@ -1273,7 +1273,6 @@ export async function getArchivedMatch(matchId) {
 }
 export default {
   upsert,
-  insertPlayerPromise,
   getHeroRankings,
   getHeroItemPopularity,
   getHeroBenchmarks,
@@ -1287,7 +1286,5 @@ export default {
   getLaneRoles,
   getTeamScenarios,
   getMetadata,
-  getMatchData,
   getPlayerMatchData,
-  getArchivedMatch,
 };
