@@ -4,6 +4,7 @@ import cassandra from '../store/cassandra.mjs';
 import db from '../store/db.mjs';
 import { archivePut } from '../store/archive.mjs';
 import { getMatchData, getPlayerMatchData } from '../store/queries.mjs';
+import { eachLimit } from '../util/utility.mjs';
 import config from '../config.js';
 function genRandomNumber(byteCount, radix) {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`).toString(
@@ -22,11 +23,11 @@ async function start() {
       // Convert to signed bigint
       const randomBigint = BigInt.asIntN(64, genRandomNumber(8, 10));
       const result = await cassandra.execute(
-        'select match_id, version, token(match_id) from matches where token(match_id) >= ? limit 100 ALLOW FILTERING;',
+        'select match_id, version, token(match_id) from matches where token(match_id) >= ? limit 500 ALLOW FILTERING;',
         [randomBigint.toString()],
         {
           prepare: true,
-          fetchSize: 100,
+          fetchSize: 500,
           autoPage: true,
         }
       );
@@ -66,7 +67,8 @@ async function start() {
         )
       );
       if (config.MATCH_ARCHIVE_S3_ENDPOINT) {
-        await Promise.all(parsedIds.map((id) => doArchive(id)));
+        const funcs = parsedIds.map((id) => () => doArchive(id));
+        await eachLimit(funcs, 10);
       }
       // TODO (howard) remove insert once backfill complete
       await Promise.all(

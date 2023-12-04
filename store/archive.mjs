@@ -38,7 +38,8 @@ export async function archiveGet(key) {
     const buffer = await stream2buffer(data.Body);
     const result = gunzipSync(buffer);
     console.log(
-      '[ARCHIVE] read %s bytes, decompressed %s bytes',
+      '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
+      key,
       buffer.length,
       result.length
     );
@@ -61,7 +62,8 @@ export async function archivePut(key, blob) {
     });
     const result = await client.send(command);
     console.log(
-      '[ARCHIVE] original %s bytes, archived %s bytes',
+      '[ARCHIVE] %s: original %s bytes, archived %s bytes',
+      key,
       blob.length,
       data.length
     );

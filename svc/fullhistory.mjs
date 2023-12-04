@@ -133,4 +133,4 @@ function processFullHistory(job, cb) {
     }
   });
 }
-queue.runQueue('fhQueue', 1, processFullHistory);
+queue.runQueue('fhQueue', 10, processFullHistory);

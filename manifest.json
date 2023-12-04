@@ -38,7 +38,7 @@
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
-      "instances": 12
+      "instances": 1
     },
     {
       "script": "svc/autofullhistory.mjs",
@@ -222,7 +222,7 @@
       "ignore_watch": [".git", "node_modules"],
       "group": "backend",
       "exec_mode": "cluster",
-      "instances": 8
+      "instances": 1
     }
   ]
 }
