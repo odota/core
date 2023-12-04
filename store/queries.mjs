@@ -755,6 +755,14 @@ export async function insertMatchPromise(match, options) {
       });
     }
   }
+  async function getAverageRank() {
+    // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
+    // We currently only store this in the player_caches table, not in the match itself
+    if (options.origin === 'scanner' && options.type === 'api') {
+      const { avg } = await getMatchRankTier(match);
+      match.average_rank = avg || null;
+    }
+  }
   async function upsertMatchPostgres() {
     // Insert the pro match data: We do this if api or parser
     if (options.type === 'api' && !utility.isProMatch(match)) {
@@ -867,14 +875,6 @@ export async function insertMatchPromise(match, options) {
     }
     await trx.commit();
     await updateTeamRankings(match, options);
-  }
-  async function getAverageRank() {
-    // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
-    // We currently only store this in the player_caches table, not in the match itself
-    if (options.origin === 'scanner' && options.type === 'api') {
-      const { avg } = await getMatchRankTier(match);
-      match.average_rank = avg || null;
-    }
   }
   function upsertMatchCassandra(cb) {
     // We do this regardless of type (with different sets of fields)
@@ -1000,46 +1000,6 @@ export async function insertMatchPromise(match, options) {
       await queue.addJob('countsQueue', JSON.stringify(match));
     }
   }
-  async function decideBenchmarks() {
-    // We only do this if fresh match
-    if (
-      options.origin === 'scanner' &&
-      options.type === 'api' &&
-      match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT
-    ) {
-      for (let i = 0; i < match.players.length; i += 1) {
-        const p = match.players[i];
-        // only do if all players have heroes
-        if (p.hero_id) {
-          Object.keys(benchmarks).forEach((key) => {
-            const metric = benchmarks[key](match, p);
-            if (
-              metric !== undefined &&
-              metric !== null &&
-              !Number.isNaN(Number(metric))
-            ) {
-              const rkey = [
-                'benchmarks',
-                utility.getStartOfBlockMinutes(
-                  config.BENCHMARK_RETENTION_MINUTES,
-                  0
-                ),
-                key,
-                p.hero_id,
-              ].join(':');
-              redis.zadd(rkey, metric, match.match_id);
-              // expire at time two epochs later (after prev/current cycle)
-              const expiretime = utility.getStartOfBlockMinutes(
-                config.BENCHMARK_RETENTION_MINUTES,
-                2
-              );
-              redis.expireat(rkey, expiretime);
-            }
-          });
-        }
-      }
-    }
-  }
   async function decideMmr() {
     // We only do this if fresh match and ranked
     const arr = match.players.filter((p) => {
@@ -1159,8 +1119,8 @@ export async function insertMatchPromise(match, options) {
   }
 
   await preprocess();
-  await upsertMatchPostgres();
   await getAverageRank();
+  await upsertMatchPostgres();
   await util.promisify(upsertMatchCassandra)();
   await updateCassandraPlayerCaches();
   await upsertMatchBlobs();
@@ -1168,7 +1128,6 @@ export async function insertMatchPromise(match, options) {
   await clearRedisPlayer();
   await telemetry();
   await decideCounts();
-  await decideBenchmarks();
   await decideMmr();
   await decideProfile();
   await decideGcData();

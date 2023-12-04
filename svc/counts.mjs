@@ -55,42 +55,39 @@ async function updateHeroRankings(match) {
 
 async function upsertMatchSample(match) {
   if (
-    !(
-      isSignificant(match) &&
-      match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT
-    )
+    isSignificant(match) &&
+    match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT
   ) {
+    const { avg, num } = await getMatchRankTier(match);
+    if (!avg || num < 2) {
+      return;
+    }
+    const trx = await db.transaction();
+    try {
+      const matchMmrData = {
+        avg_rank_tier: avg || null,
+        num_rank_tier: num || null,
+      };
+      const newMatch = { ...match, ...matchMmrData };
+      await upsertPromise(trx, 'public_matches', newMatch, {
+        match_id: newMatch.match_id,
+      });
+      await Promise.all(
+        (match.players || []).map((pm) => {
+          pm.match_id = match.match_id;
+          return upsertPromise(trx, 'public_player_matches', pm, {
+            match_id: pm.match_id,
+            player_slot: pm.player_slot,
+          });
+        })
+      );
+    } catch (e) {
+      await trx.rollback();
+      throw e;
+    }
+    await trx.commit();
     return;
   }
-  const { avg, num } = await getMatchRankTier(match);
-  if (!avg || num < 2) {
-    return;
-  }
-  const trx = await db.transaction();
-  try {
-    const matchMmrData = {
-      avg_rank_tier: avg || null,
-      num_rank_tier: num || null,
-    };
-    const newMatch = { ...match, ...matchMmrData };
-    await upsertPromise(trx, 'public_matches', newMatch, {
-      match_id: newMatch.match_id,
-    });
-    await Promise.all(
-      (match.players || []).map((pm) => {
-        pm.match_id = match.match_id;
-        return upsertPromise(trx, 'public_player_matches', pm, {
-          match_id: pm.match_id,
-          player_slot: pm.player_slot,
-        });
-      })
-    );
-  } catch (e) {
-    await trx.rollback();
-    throw e;
-  }
-  await trx.commit();
-  return;
 }
 async function updateRecord(field, match, player) {
   redis.zadd(
@@ -104,22 +101,21 @@ async function updateRecord(field, match, player) {
   redis.expireat(`records:${field}`, expire);
 }
 async function updateRecords(match) {
-  if (!(isSignificant(match) && match.lobby_type === 7)) {
-    return;
+  if (isSignificant(match) && match.lobby_type === 7) {
+    updateRecord('duration', match, {});
+    match.players.forEach((player) => {
+      updateRecord('kills', match, player);
+      updateRecord('deaths', match, player);
+      updateRecord('assists', match, player);
+      updateRecord('last_hits', match, player);
+      updateRecord('denies', match, player);
+      updateRecord('gold_per_min', match, player);
+      updateRecord('xp_per_min', match, player);
+      updateRecord('hero_damage', match, player);
+      updateRecord('tower_damage', match, player);
+      updateRecord('hero_healing', match, player);
+    });
   }
-  updateRecord('duration', match, {});
-  match.players.forEach((player) => {
-    updateRecord('kills', match, player);
-    updateRecord('deaths', match, player);
-    updateRecord('assists', match, player);
-    updateRecord('last_hits', match, player);
-    updateRecord('denies', match, player);
-    updateRecord('gold_per_min', match, player);
-    updateRecord('xp_per_min', match, player);
-    updateRecord('hero_damage', match, player);
-    updateRecord('tower_damage', match, player);
-    updateRecord('hero_healing', match, player);
-  });
 }
 async function updateLastPlayed(match) {
   const filteredPlayers = (match.players || []).filter(
@@ -192,22 +188,57 @@ async function updateHeroSearch(match) {
   );
 }
 async function updateTurbo(match) {
-  if (match.game_mode !== 23) {
-    return;
+  if (match.game_mode === 23) {
+    for (let i = 0; i < match.players.length; i += 1) {
+      const player = match.players[i];
+      const heroId = player.hero_id;
+      if (heroId) {
+        const win = Number(isRadiant(player) === match.radiant_win);
+        redis.hincrby('turboPicks', heroId, 1);
+        if (win) {
+          redis.hincrby('turboWins', heroId, 1);
+        }
+      }
+    }
+    redis.expireat('turboPicks', moment().endOf('month').unix());
+    redis.expireat('turboWins', moment().endOf('month').unix());
   }
-  for (let i = 0; i < match.players.length; i += 1) {
-    const player = match.players[i];
-    const heroId = player.hero_id;
-    if (heroId) {
-      const win = Number(isRadiant(player) === match.radiant_win);
-      redis.hincrby('turboPicks', heroId, 1);
-      if (win) {
-        redis.hincrby('turboWins', heroId, 1);
+}
+
+async function updateBenchmarks(match) {
+  if (match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT) {
+    for (let i = 0; i < match.players.length; i += 1) {
+      const p = match.players[i];
+      // only do if all players have heroes
+      if (p.hero_id) {
+        Object.keys(benchmarks).forEach((key) => {
+          const metric = benchmarks[key](match, p);
+          if (
+            metric !== undefined &&
+            metric !== null &&
+            !Number.isNaN(Number(metric))
+          ) {
+            const rkey = [
+              'benchmarks',
+              utility.getStartOfBlockMinutes(
+                config.BENCHMARK_RETENTION_MINUTES,
+                0
+              ),
+              key,
+              p.hero_id,
+            ].join(':');
+            redis.zadd(rkey, metric, match.match_id);
+            // expire at time two epochs later (after prev/current cycle)
+            const expiretime = utility.getStartOfBlockMinutes(
+              config.BENCHMARK_RETENTION_MINUTES,
+              2
+            );
+            redis.expireat(rkey, expiretime);
+          }
+        });
       }
     }
   }
-  redis.expireat('turboPicks', moment().endOf('month').unix());
-  redis.expireat('turboWins', moment().endOf('month').unix());
 }
 /*
 // Stores winrate of each subset of heroes in this game
@@ -249,6 +280,7 @@ async function processCounts(match, cb) {
     await updateLastPlayed(match);
     await updateHeroSearch(match);
     await updateTurbo(match);
+    await updateBenchmarks(match);
     cb();
   } catch (e) {
     cb(e);
