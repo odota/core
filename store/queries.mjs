@@ -572,16 +572,15 @@ export async function insertPlayerPromise(db, player, indexPlayer) {
     }
   );
 }
-function bulkIndexPlayer(bulkActions, cb) {
+export async function bulkIndexPlayer(bulkActions) {
   // Bulk call to ElasticSearch
   if (bulkActions.length > 0) {
-    es.bulk(
+    await es.bulk(
       {
         body: bulkActions,
         index: INDEX,
         type: 'player',
-      },
-      cb
+      }
     );
   }
 }
@@ -1276,7 +1275,6 @@ export default {
   upsert,
   upsertPromise,
   insertPlayerPromise,
-  bulkIndexPlayer,
   insertMatchPromise,
   getHeroRankings,
   getHeroItemPopularity,

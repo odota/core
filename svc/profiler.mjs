@@ -1,8 +1,7 @@
 // Updates Steam profile data for players periodically
-import queries, { insertPlayerPromise } from '../store/queries.mjs';
+import queries, { insertPlayerPromise, bulkIndexPlayer } from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-const { bulkIndexPlayer } = queries;
 const { getDataPromise, generateJob, convert64to32 } = utility;
 
 while (true) {
@@ -35,11 +34,7 @@ while (true) {
     );
     return acc;
   }, []);
-  bulkIndexPlayer(bulkUpdate, (err) => {
-    if (err) {
-      console.log(err);
-    }
-  });
+  await bulkIndexPlayer(bulkUpdate);
   await Promise.all(
     results.map((player) => insertPlayerPromise(db, player, false))
   );
