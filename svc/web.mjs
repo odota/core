@@ -13,7 +13,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import stripeLib from 'stripe';
 import Redis from 'ioredis';
-import { WebSocketServer } from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import keys from '../routes/keyManagement.mjs';
 import api from '../routes/api.mjs';
 import queries from '../store/queries.mjs';
