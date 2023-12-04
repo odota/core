@@ -510,6 +510,7 @@ function getMatchRankTier(match, cb) {
     }
   );
 }
+export const upsertPromise = util.promisify(upsert);
 function upsert(db, table, row, conflict, cb) {
   cleanRowPostgres(db, table, row, (err, row) => {
     if (err) {
@@ -535,7 +536,7 @@ function upsert(db, table, row, conflict, cb) {
       .asCallback(cb);
   });
 }
-export const upsertPromise = util.promisify(upsert);
+export const insertPlayerPromise = util.promisify(insertPlayer);
 function insertPlayer(db, player, indexPlayer, cb) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
@@ -578,7 +579,6 @@ function insertPlayer(db, player, indexPlayer, cb) {
     cb
   );
 }
-export const insertPlayerPromise = util.promisify(insertPlayer);
 function bulkIndexPlayer(bulkActions, cb) {
   // Bulk call to ElasticSearch
   if (bulkActions.length > 0) {
@@ -602,7 +602,7 @@ export async function insertPlayerRating(row) {
     );
   }
   if (row.leaderboard_rank) {
-    upsertPromise(
+    await upsertPromise(
       db,
       'leaderboard_rank',
       {
