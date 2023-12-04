@@ -139,61 +139,7 @@ export async function getDistributions() {
   }
   return result;
 }
-function getProPlayers(db, redis, cb) {
-  db.raw(
-    `
-    SELECT * from notable_players
-    `
-  ).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows);
-  });
-}
-function getLeaderboard(db, redis, key, n, cb) {
-  redis.zrevrangebyscore(
-    key,
-    'inf',
-    '-inf',
-    'WITHSCORES',
-    'LIMIT',
-    '0',
-    n,
-    (err, rows) => {
-      if (err) {
-        return cb(err);
-      }
-      const entries = rows
-        .map((r, i) => ({
-          account_id: r,
-          score: rows[i + 1],
-        }))
-        .filter((r, i) => i % 2 === 0);
-      const accountIds = entries.map((r) => r.account_id);
-      // get player data from DB
-      return db
-        .select()
-        .from('players')
-        .whereIn('account_id', accountIds)
-        .asCallback((err, names) => {
-          if (err) {
-            return cb(err);
-          }
-          const obj = {};
-          names.forEach((n) => {
-            obj[n.account_id] = n;
-          });
-          entries.forEach((e) => {
-            Object.keys(obj[e.account_id]).forEach((key) => {
-              e[key] = e[key] || obj[e.account_id][key];
-            });
-          });
-          return cb(err, entries);
-        });
-    }
-  );
-}
+
 function getHeroRankings(db, redis, heroId, options, cb) {
   db.raw(
     `
@@ -390,18 +336,15 @@ function getPlayerMatches(accountId, queryObj, cb) {
     );
   });
 }
-function getPlayerRatings(db, accountId, cb) {
+export async function getPlayerRatings(accountId) {
   if (!Number.isNaN(Number(accountId))) {
-    db.from('player_ratings')
+    return await db.from('player_ratings')
       .where({
         account_id: Number(accountId),
       })
-      .orderBy('time', 'asc')
-      .asCallback((err, result) => {
-        cb(err, result);
-      });
+      .orderBy('time', 'asc');
   } else {
-    cb();
+    return null;
   }
 }
 function getPlayerHeroRankings(accountId, cb) {
@@ -1524,15 +1467,12 @@ export default {
   bulkIndexPlayer,
   insertMatchPromise,
   insertPlayerRating,
-  getProPlayers,
   getHeroRankings,
   getHeroItemPopularity,
   getHeroBenchmarks,
   getMatchRating,
-  getLeaderboard,
   getPlayerMatches,
   getPlayerMatchesPromise,
-  getPlayerRatings,
   getPlayerHeroRankings,
   getPlayer,
   getPeers,
