@@ -3,27 +3,29 @@
  * Main test script to run tests
  * */
 process.env.NODE_ENV = 'test';
-const async = require('async');
-const nock = require('nock');
-const assert = require('assert');
-const supertest = require('supertest');
-const stripeLib = require('stripe');
-const pg = require('pg');
-const fs = require('fs');
-const util = require('util');
-const cassandraDriver = require('cassandra-driver');
-const swaggerParser = require('@apidevtools/swagger-parser');
-const config = require('../config');
-const detailsApi = require('./data/details_api.json');
-const summariesApi = require('./data/summaries_api.json');
-const historyApi = require('./data/history_api.json');
-const heroesApi = require('./data/heroes_api.json');
-const leaguesApi = require('./data/leagues_api.json');
-const retrieverPlayer = require('./data/retriever_player.json');
-const detailsApiPro = require('./data/details_api_pro.json');
+import { eachSeries, timesSeries } from 'async';
+import nock from 'nock';
+import assert from 'assert';
+import supertest from 'supertest';
+import stripeLib from 'stripe';
+import pg from 'pg';
+import { readFileSync } from 'fs';
+import util from 'util';
+import { Client } from 'cassandra-driver';
+import swaggerParser from '@apidevtools/swagger-parser';
+import config from '../config.js';
+import detailsApi from './data/details_api.json' assert { type: 'json' };
+import summariesApi from './data/summaries_api.json' assert { type: 'json' };
+import historyApi from './data/history_api.json' assert { type: 'json' };
+import heroesApi from './data/heroes_api.json' assert { type: 'json' };
+import leaguesApi from './data/leagues_api.json' assert { type: 'json' };
+import retrieverPlayer from './data/retriever_player.json' assert { type: 'json' };
+import detailsApiPro from './data/details_api_pro.json' assert { type: 'json' };
 
-const initPostgresHost = `postgres://postgres:postgres@${config.INIT_POSTGRES_HOST}/postgres`;
-const initCassandraHost = config.INIT_CASSANDRA_HOST;
+const { Pool } = pg;
+const { INIT_POSTGRES_HOST, INIT_CASSANDRA_HOST, RETRIEVER_HOST, STRIPE_SECRET, POSTGRES_URL } = config;
+const initPostgresHost = `postgres://postgres:postgres@${INIT_POSTGRES_HOST}/postgres`;
+const initCassandraHost = INIT_CASSANDRA_HOST;
 
 // these are loaded later, as the database needs to be created when these are required
 let db;
@@ -58,7 +60,7 @@ nock('http://api.steampowered.com')
   .query(true)
   .reply(200, leaguesApi);
 // fake mmr response
-nock(`http://${config.RETRIEVER_HOST}`)
+nock(`http://${RETRIEVER_HOST}`)
   .get('/?account_id=88367253')
   .reply(200, retrieverPlayer);
 before(async function setup() {
@@ -104,7 +106,7 @@ describe('player_caches', () => {
       project: ['match_id'],
     });
     // We should have one result
-    assert(data.length === 1);
+    assert.equal(data.length, 1);
   });
 });
 describe('replay parse', function () {
@@ -118,7 +120,7 @@ describe('replay parse', function () {
     // Fake being a league match so we ingest into postgres
     // We could do this with a real pro match but we'd have to upload a new replay file
     matchData.leagueid = 5399;
-    nock(`http://${config.RETRIEVER_HOST}`)
+    nock(`http://${RETRIEVER_HOST}`)
       .get('/')
       .query(true)
       .reply(200, {
@@ -139,7 +141,7 @@ describe('replay parse', function () {
         forceParse: true,
         attempts: 1,
       });
-      assert(job);
+      assert.ok(job);
     } catch (e) {
       console.log(e);
       throw e;
@@ -151,13 +153,16 @@ describe('replay parse', function () {
     const buildMatch = (await import('../store/buildMatch.mjs')).default;
     const match = await buildMatch(tests[key].match_id);
     // console.log(match.players[0]);
-    assert(match.players);
-    assert(match.players[0]);
-    assert(match.players[0].killed.npc_dota_creep_badguys_melee === 46);
-    assert(match.players[0].lh_t && match.players[0].lh_t.length > 0);
-    assert(match.teamfights && match.teamfights.length > 0);
-    assert(match.draft_timings);
-    assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
+    assert.ok(match.players);
+    assert.ok(match.players[0]);
+    assert.equal(match.players[0].killed.npc_dota_creep_badguys_melee, 46);
+    assert.ok(match.players[0].lh_t)
+    assert.ok(match.players[0].lh_t.length);
+    assert.ok(match.teamfights)
+    assert.ok(match.teamfights.length);
+    assert.ok(match.draft_timings);
+    assert.ok(match.radiant_gold_adv);
+    assert.ok(match.radiant_gold_adv.length);
 
     // Assert that the pro data (with parsed info) is in postgres
     const proMatch = await db.raw('select * from matches where match_id = ?', [
@@ -171,13 +176,13 @@ describe('replay parse', function () {
     const teamMatch = await db.raw('select * from team_match');
     const teamRankings = await db.raw('select * from team_rating');
     // console.log(proMatch.rows, proMatchPlayers.rows[0], picksBans.rows, teamMatch.rows, teamRankings.rows);
-    assert(proMatch.rows.length > 0);
-    assert(proMatch.rows[0].chat);
-    assert(proMatchPlayers.rows.length === 10);
-    assert(proMatchPlayers.rows[0].killed);
-    assert(picksBans.rows.length === 20);
-    assert(teamMatch.rows.length === 2);
-    assert(teamRankings.rows.length === 2);
+    assert.ok(proMatch.rows.length);
+    assert.ok(proMatch.rows[0].chat);
+    assert.equal(proMatchPlayers.rows.length, 10);
+    assert.ok(proMatchPlayers.rows[0].killed);
+    assert.equal(picksBans.rows.length, 20);
+    assert.equal(teamMatch.rows.length, 2);
+    assert.equal(teamRankings.rows.length, 2);
   });
 });
 describe('teamRanking', () => {
@@ -207,7 +212,7 @@ describe('api', () => {
           return cb(err);
         }
         const spec = res.body;
-        return async.eachSeries(
+        return eachSeries(
           Object.keys(spec.paths),
           (path, cb) => {
             const replacedPath = path
@@ -218,7 +223,7 @@ describe('api', () => {
               .replace(/{league_id}/, 1)
               .replace(/{field}/, 'kills')
               .replace(/{resource}/, 'heroes');
-            async.eachSeries(
+            eachSeries(
               Object.keys(spec.paths[path]),
               (verb, cb) => {
                 if (
@@ -511,7 +516,7 @@ describe('api management', () => {
       .delete('/keys?loggedin=1')
       .then(async (res) => {
         assert.equal(res.statusCode, 200);
-        const stripe = stripeLib(config.STRIPE_SECRET);
+        const stripe = stripeLib(STRIPE_SECRET);
 
         await stripe.invoiceItems.create({
           customer: this.previousCustomer,
@@ -581,7 +586,7 @@ describe('api limits', () => {
   });
 
   function testWhiteListedRoutes(done, key) {
-    async.eachSeries(
+    eachSeries(
       [
         `/api${key}`, // Docs
         `/api/metadata${key}`, // Login status
@@ -606,7 +611,7 @@ describe('api limits', () => {
   }
 
   function testRateCheckedRoute(done) {
-    async.timesSeries(
+    timesSeries(
       10,
       (i, cb) => {
         setTimeout(() => {
@@ -656,7 +661,7 @@ describe('api limits', () => {
 
   it('should be able to make more than 10 calls when using API KEY', function testAPIKeyLimitsAndCounting(done) {
     this.timeout(25000);
-    async.timesSeries(
+    timesSeries(
       25,
       (i, cb) => {
         supertest(app)
@@ -719,7 +724,7 @@ describe('api limits', () => {
 
 async function initElasticsearch() {
   console.log('Create Elasticsearch Mapping');
-  const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
+  const mapping = JSON.parse(readFileSync('./elasticsearch/index.json'));
   const { es } = await import('../store/elasticsearch.mjs');
   const exists = await es.indices.exists({
     index: 'dota-test', // Check if index already exists, in which case, delete it
@@ -756,7 +761,7 @@ async function initRedis() {
 }
 
 async function initPostgres() {
-  const pool = new pg.Pool({
+  const pool = new Pool({
     connectionString: initPostgresHost,
   });
   const client = await pool.connect();
@@ -764,12 +769,12 @@ async function initPostgres() {
   await client.query('DROP DATABASE IF EXISTS yasp_test');
   console.log('create postgres test database');
   await client.query('CREATE DATABASE yasp_test');
-  const pool2 = new pg.Pool({
-    connectionString: config.POSTGRES_URL,
+  const pool2 = new Pool({
+    connectionString: POSTGRES_URL,
   });
   const client2 = await pool2.connect();
   console.log('create postgres test tables');
-  const query = fs.readFileSync('./sql/create_tables.sql', 'utf8');
+  const query = readFileSync('./sql/create_tables.sql', 'utf8');
   await client2.query(query);
   // ready to create client
   db = (await import('../store/db.mjs')).default;
@@ -781,7 +786,7 @@ async function initPostgres() {
 }
 
 async function initCassandra() {
-  const client = new cassandraDriver.Client({
+  const client = new Client({
     contactPoints: [initCassandraHost],
     localDataCenter: 'datacenter1',
   });
@@ -793,8 +798,7 @@ async function initCassandra() {
   );
   // ready to create client
   cassandra = (await import('../store/cassandra.mjs')).default;
-  const tables = fs
-    .readFileSync('./sql/create_tables.cql', 'utf8')
+  const tables = readFileSync('./sql/create_tables.cql', 'utf8')
     .split(';')
     .filter((cql) => cql.length > 1);
   for (let i = 0; i < tables.length; i++) {
