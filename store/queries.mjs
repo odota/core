@@ -1036,20 +1036,14 @@ export async function insertMatchPromise(match, options) {
     // Clear out the Redis caches, we do this regardless of insert type
     await redis.del(`match:${match.match_id}`);
   }
-  function clearRedisPlayer(cb) {
-    async.each(
-      (match.players || []).filter((player) => Boolean(player.account_id)),
-      (player, cb) => {
-        async.each(
-          cacheFunctions.getKeys(),
-          (key, cb) => {
-            cacheFunctions.update({ key, account_id: player.account_id }, cb);
-          },
-          cb
-        );
-      },
-      cb
-    );
+  async function clearRedisPlayer() {
+    const arr = [];
+    match.players.filter((player) => Boolean(player.account_id)).forEach(player => {
+      cacheFunctions.getKeys().forEach(key => {
+        arr.push({ key, account_id: player.account_id });
+      });
+    });
+    await Promise.all(arr, (val) => cacheFunctions.update(val));
   }
   async function decideCounts() {
     // We only do this if fresh match
@@ -1193,7 +1187,7 @@ export async function insertMatchPromise(match, options) {
   await util.promisify(updateCassandraPlayerCaches)();
   await upsertMatchBlobs();
   await clearRedisMatch();
-  await util.promisify(clearRedisPlayer)();
+  await clearRedisPlayer();
   await telemetry();
   await decideCounts();
   await decideBenchmarks();

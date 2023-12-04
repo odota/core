@@ -14,8 +14,8 @@ export const read = (req, cb) => {
   // console.log(`[READCACHE] cache:${req.key}:${req.account_id}`);
   redis.get(`cache:${req.key}:${req.account_id}`, cb);
 };
-export const update = (req, cb) => {
-  redis.del(`cache:${req.key}:${req.account_id}`, cb);
+export const update = async (req) => {
+  await redis.del(`cache:${req.key}:${req.account_id}`);
 };
 export const sendDataWithCache = (req, res, data, key) => {
   if (
