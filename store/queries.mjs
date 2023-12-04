@@ -962,14 +962,10 @@ export async function insertMatchPromise(match, options) {
   }
   async function telemetry() {
     // Publish to log stream
-    // Name of process
-    // type of data (parsed gcdata api)
-    // Match ID
-    // When it finished (start_time + duration)
     const name = process.env.name || process.env.ROLE || process.argv[1];
-    const message = `[${new Date().toISOString()}] [${name}] inserted [${
+    const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
-    }] for match ${match.match_id} finished ${moment
+    }] for ${match.match_id} ended ${moment
       .unix(match.start_time + match.duration)
       .fromNow()}`;
     redis.publish(options.type, message);
@@ -1011,7 +1007,37 @@ export async function insertMatchPromise(match, options) {
       options.type === 'api' &&
       match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT
     ) {
-      await queue.addJob('parsedBenchmarksQueue', match.match_id);
+      for (let i = 0; i < match.players.length; i += 1) {
+        const p = match.players[i];
+        // only do if all players have heroes
+        if (p.hero_id) {
+          Object.keys(benchmarks).forEach((key) => {
+            const metric = benchmarks[key](match, p);
+            if (
+              metric !== undefined &&
+              metric !== null &&
+              !Number.isNaN(Number(metric))
+            ) {
+              const rkey = [
+                'benchmarks',
+                utility.getStartOfBlockMinutes(
+                  config.BENCHMARK_RETENTION_MINUTES,
+                  0
+                ),
+                key,
+                p.hero_id,
+              ].join(':');
+              redis.zadd(rkey, metric, match.match_id);
+              // expire at time two epochs later (after prev/current cycle)
+              const expiretime = utility.getStartOfBlockMinutes(
+                config.BENCHMARK_RETENTION_MINUTES,
+                2
+              );
+              redis.expireat(rkey, expiretime);
+            }
+          });
+        }
+      }
     }
   }
   async function decideMmr() {
