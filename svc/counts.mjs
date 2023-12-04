@@ -1,5 +1,4 @@
 // Processes a queue of new matches to update totals/ratings
-import async from 'async';
 import moment from 'moment';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
@@ -13,69 +12,70 @@ import {
 import queue from '../store/queue.mjs';
 import config from '../config.js';
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
-function updateHeroRankings(match, cb) {
-  getMatchRankTier(match, (err, avg) => {
+
+async function updateHeroRankings(match) {
+  if (!isSignificant(match)) {
+    return;
+  }
+  getMatchRankTier(match, async (err, avg) => {
     if (err) {
-      return cb(err);
+      return;
     }
     const matchScore =
       avg && !Number.isNaN(Number(avg)) ? avg * 100 : undefined;
     if (!matchScore) {
-      return cb();
+      return;
     }
-    return async.each(
-      match.players,
-      (player, cb) => {
+    await Promise.all(
+      match.players.map(async (player) => {
         if (
           !player.account_id ||
           player.account_id === getAnonymousAccountId() ||
           !player.hero_id
         ) {
-          return cb();
+          return;
         }
         player.radiant_win = match.radiant_win;
         // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
         const win = Number(isRadiant(player) === player.radiant_win);
         const kFactor = 100;
-        return db
-          .select('score')
-          .from('hero_ranking')
-          .where({
-            account_id: player.account_id,
-            hero_id: player.hero_id,
-          })
-          .asCallback((err, data1) => {
-            if (err) {
-              return cb(err);
-            }
-            const currRating1 = Number(
-              (data1 && data1[0] && data1[0].score) || 4000
-            );
-            const r1 = 10 ** (currRating1 / 1000);
-            const r2 = 10 ** (matchScore / 1000);
-            const e1 = r1 / (r1 + r2);
-            const ratingDiff1 = kFactor * (win - e1);
-            const newScore = currRating1 + ratingDiff1;
-            return db
-              .raw(
-                'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
-                [player.account_id, player.hero_id, newScore, newScore]
-              )
-              .asCallback(cb);
-          });
-      },
-      cb
+        const data1 = await db.select('score').from('hero_ranking').where({
+          account_id: player.account_id,
+          hero_id: player.hero_id,
+        });
+        const currRating1 = Number(
+          (data1 && data1[0] && data1[0].score) || 4000
+        );
+        const r1 = 10 ** (currRating1 / 1000);
+        const r2 = 10 ** (matchScore / 1000);
+        const e1 = r1 / (r1 + r2);
+        const ratingDiff1 = kFactor * (win - e1);
+        const newScore = currRating1 + ratingDiff1;
+        await db.raw(
+          'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
+          [player.account_id, player.hero_id, newScore, newScore]
+        );
+        return;
+      })
     );
   });
 }
 
-function upsertMatchSample(match, cb) {
+async function upsertMatchSample(match) {
+  if (
+    !(
+      isSignificant(match) &&
+      match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT
+    )
+  ) {
+    return;
+  }
   getMatchRankTier(match, async (err, avgRankTier, numRankTier) => {
     if (err) {
-      return cb(err);
+      return;
     }
     if (!avgRankTier || numRankTier < 2) {
-      return cb();
+      return;
     }
     const trx = await db.transaction();
     try {
@@ -97,14 +97,14 @@ function upsertMatchSample(match, cb) {
         })
       );
     } catch (e) {
-      trx.rollback();
-      return cb(e);
+      await trx.rollback();
+      throw e;
     }
     await trx.commit();
-    return cb();
+    return;
   });
 }
-function updateRecord(field, match, player) {
+async function updateRecord(field, match, player) {
   redis.zadd(
     `records:${field}`,
     match[field] || player[field],
@@ -115,7 +115,10 @@ function updateRecord(field, match, player) {
   const expire = moment().add(1, 'month').startOf('month').format('X');
   redis.expireat(`records:${field}`, expire);
 }
-function updateRecords(match, cb) {
+async function updateRecords(match) {
+  if (!(isSignificant(match) && match.lobby_type === 7)) {
+    return;
+  }
   updateRecord('duration', match, {});
   match.players.forEach((player) => {
     updateRecord('kills', match, player);
@@ -129,9 +132,8 @@ function updateRecords(match, cb) {
     updateRecord('tower_damage', match, player);
     updateRecord('hero_healing', match, player);
   });
-  cb();
 }
-function updateLastPlayed(match, cb) {
+async function updateLastPlayed(match) {
   const filteredPlayers = (match.players || []).filter(
     (player) =>
       player.account_id && player.account_id !== getAnonymousAccountId()
@@ -154,7 +156,7 @@ function updateLastPlayed(match, cb) {
     return acc;
   }, []);
   bulkIndexPlayer(bulkUpdate);
-  Promise.all(
+  await Promise.all(
     filteredPlayers.map((player) =>
       insertPlayerPromise(
         db,
@@ -166,19 +168,18 @@ function updateLastPlayed(match, cb) {
       )
     )
   );
-  cb();
 }
 /**
  * Update table storing heroes played in a game for lookup of games by heroes played
  * */
-function updateHeroSearch(match, cb) {
+async function updateHeroSearch(match) {
   const radiant = [];
   const dire = [];
   for (let i = 0; i < match.players.length; i += 1) {
     const p = match.players[i];
     if (p.hero_id === 0) {
       // exclude this match if any hero is 0
-      return cb();
+      return;
     }
     if (isRadiant(p)) {
       radiant.push(p.hero_id);
@@ -197,14 +198,15 @@ function updateHeroSearch(match, cb) {
   const teamA = inverted ? dire : radiant;
   const teamB = inverted ? radiant : dire;
   const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
-  return db
-    .raw(
-      'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)',
-      [match.match_id, teamA, teamB, teamAWin, match.start_time]
-    )
-    .asCallback(cb);
+  return await db.raw(
+    'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)',
+    [match.match_id, teamA, teamB, teamAWin, match.start_time]
+  );
 }
-function updateTurbo(match, cb) {
+async function updateTurbo(match) {
+  if (match.game_mode !== 23) {
+    return;
+  }
   for (let i = 0; i < match.players.length; i += 1) {
     const player = match.players[i];
     const heroId = player.hero_id;
@@ -218,7 +220,6 @@ function updateTurbo(match, cb) {
   }
   redis.expireat('turboPicks', moment().endOf('month').unix());
   redis.expireat('turboWins', moment().endOf('month').unix());
-  cb();
 }
 /*
 // Stores winrate of each subset of heroes in this game
@@ -251,59 +252,19 @@ function updateMatchups(match, cb) {
   }, cb);
 }
 */
-function processCounts(match, cb) {
+async function processCounts(match, cb) {
   console.log('match %s', match.match_id);
-  return async.parallel(
-    {
-      updateRankings(cb) {
-        if (isSignificant(match)) {
-          return updateHeroRankings(match, cb);
-        }
-        return cb();
-      },
-      upsertMatchSample(cb) {
-        if (
-          isSignificant(match) &&
-          match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT
-        ) {
-          return upsertMatchSample(match, cb);
-        }
-        return cb();
-      },
-      updateRecords(cb) {
-        if (isSignificant(match) && match.lobby_type === 7) {
-          return updateRecords(match, cb);
-        }
-        return cb();
-      },
-      updateLastPlayed(cb) {
-        return updateLastPlayed(match, cb);
-      },
-      updateHeroSearch(cb) {
-        return updateHeroSearch(match, cb);
-      },
-      updateTurbo(cb) {
-        if (match.game_mode === 23) {
-          return updateTurbo(match, cb);
-        }
-        return cb();
-      },
-      /*
-        updateCompositions(cb) {
-          if (options.origin === 'scanner') {
-            return updateCompositions(match, cb);
-          }
-          return cb();
-        }
-        updateMatchups(cb) {
-          if (options.origin === 'scanner') {
-            return updateMatchups(match, cb);
-          }
-          return cb();
-        },
-        */
-    },
-    cb
-  );
+  try {
+    // NOTE: Some of these don't actually wait for I/O since getMatchRankTier is still a callback
+    await updateHeroRankings(match);
+    await upsertMatchSample(match);
+    await updateRecords(match);
+    await updateLastPlayed(match);
+    await updateHeroSearch(match);
+    await updateTurbo(match);
+    cb();
+  } catch (e) {
+    cb(e);
+  }
 }
 queue.runQueue('countsQueue', 1, processCounts);
