@@ -3,7 +3,8 @@ import async from 'async';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
 import redis from '../store/redis.mjs';
-import queries from '../store/queries.mjs';
+import { insertMatchPromise } from '../store/queries.mjs';
+
 const { getData, generateJob } = utility;
 const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;
@@ -31,7 +32,7 @@ function scanApi(seqNum) {
         // don't insert this match if we already processed it recently
         if (!result) {
           try {
-            await queries.insertMatchPromise(match, {
+            await insertMatchPromise(match, {
               type: 'api',
               origin: 'scanner',
             });

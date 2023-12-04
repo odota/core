@@ -1,4 +1,4 @@
-import queries from '../store/queries.mjs';
+import { insertMatchPromise } from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import { generateJob, getData } from '../util/utility.mjs';
 
@@ -31,7 +31,7 @@ function getPage(url, leagueid, cb) {
           }
           if (body.result) {
             const match = body.result;
-            await queries.insertMatchPromise(match, { skipParse: true });
+            await insertMatchPromise(match, { skipParse: true });
           } else {
           }
         }
