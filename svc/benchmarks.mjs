@@ -7,6 +7,7 @@ import redis from '../store/redis.mjs';
 import { benchmarks } from '../util/benchmarksUtil.mjs';
 
 async function doBenchmarks(matchID, cb) {
+  console.log('[BENCHMARKS] %s', matchID);
   try {
     const match = await buildMatch(matchID);
     if (match.players && utility.isSignificant(match)) {
