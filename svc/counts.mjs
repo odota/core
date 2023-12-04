@@ -94,8 +94,7 @@ function upsertMatchSample(match, cb) {
             {
               match_id: pm.match_id,
               player_slot: pm.player_slot,
-            },
-            cb
+            }
           );
         })
       );
