@@ -106,6 +106,9 @@ describe('replay parse', function () {
   const key = '1781962623_1.dem';
   it(`should parse replay ${key}`, async () => {
     const matchData = tests[key];
+    // Fake being a league match so we ingest into postgres
+    // We could do this with a real pro match but we'd have to upload a new replay file
+    matchData.leagueid = 5399;
     nock(`http://${config.RETRIEVER_HOST}`)
       .get('/')
       .query(true)
@@ -122,7 +125,6 @@ describe('replay parse', function () {
     console.log('inserting match and requesting parse');
     try {
       const job = await queries.insertMatchPromise(matchData, {
-        cassandra,
         type: 'api',
         forceParse: true,
         attempts: 1,
@@ -145,6 +147,21 @@ describe('replay parse', function () {
     assert(match.teamfights && match.teamfights.length > 0);
     assert(match.draft_timings);
     assert(match.radiant_gold_adv && match.radiant_gold_adv.length > 0);
+
+    // Assert that the pro data (with parsed info) is in postgres
+    const proMatch = await db.raw('select * from matches where match_id = ?', [tests[key].match_id]);
+    const proMatchPlayers = await db.raw('select * from player_matches where match_id = ?', [tests[key].match_id]);
+    const picksBans = await db.raw('select * from picks_bans');
+    const teamMatch = await db.raw('select * from team_match');
+    const teamRankings = await db.raw('select * from team_rating');
+    // console.log(proMatch.rows, proMatchPlayers.rows[0], picksBans.rows, teamMatch.rows, teamRankings.rows);
+    assert(proMatch.rows.length > 0);
+    assert(proMatch.rows[0].chat);
+    assert(proMatchPlayers.rows.length === 10);
+    assert(proMatchPlayers.rows[0].killed);
+    assert(picksBans.rows.length === 20);
+    assert(teamMatch.rows.length === 2);
+    assert(teamRankings.rows.length === 2);
   });
 });
 describe('teamRanking', () => {

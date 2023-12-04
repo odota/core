@@ -31,7 +31,8 @@ async function getGcDataFromRetriever(match) {
     'retrieverCounts',
     moment().startOf('hour').add(1, 'hour').format('X')
   );
-  // TODO (howard) add discovered account_ids to database and fetch account data/rank medal
+  // NOTE: account ids are not anonymous in this call so we don't include it in the data to insert
+  // We could start storing this data but then the API also needs to respect the user's match history setting
   // NOTE: extra player fields won't be set on repeated parses unless we manually delete match_gcdata row
   // if someone requests a reparse we won't have this data
   const players = body.match.players.map((p, i) => ({
