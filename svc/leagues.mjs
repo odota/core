@@ -2,7 +2,7 @@
 import async from 'async';
 import utility from '../util/utility.mjs';
 import db from '../store/db.mjs';
-import queries from '../store/queries.mjs';
+import {upsert} from '../store/queries.mjs';
 const { invokeInterval, generateJob, getData } = utility;
 
 function doLeagues(cb) {
@@ -29,7 +29,7 @@ function doLeagues(cb) {
         league.ticket = null;
         league.banner = null;
         league.leagueid = league.league_id;
-        queries.upsert(
+        upsert(
           db,
           'leagues',
           league,

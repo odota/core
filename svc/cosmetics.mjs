@@ -2,7 +2,7 @@
 import vdf from 'simple-vdf';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import queries from '../store/queries.mjs';
+import { upsertPromise } from '../store/queries.mjs';
 import { eachLimit } from '../util/utility.mjs';
 const { cleanItemSchema, getDataPromise } = utility;
 
@@ -37,7 +37,7 @@ while (true) {
         item.image_path = icons[iconname];
       }
     }
-    await queries.upsertPromise(db, 'cosmetics', item, {
+    await upsertPromise(db, 'cosmetics', item, {
       item_id: item.item_id,
     });
   }

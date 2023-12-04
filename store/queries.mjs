@@ -511,7 +511,7 @@ export function getMatchRankTier(match, cb) {
   );
 }
 export const upsertPromise = util.promisify(upsert);
-function upsert(db, table, row, conflict, cb) {
+export function upsert(db, table, row, conflict, cb) {
   cleanRowPostgres(db, table, row, (err, row) => {
     if (err) {
       return cb(err);
@@ -1272,7 +1272,6 @@ export async function getArchivedMatch(matchId) {
   return null;
 }
 export default {
-  upsert,
   getHeroRankings,
   getHeroItemPopularity,
   getHeroBenchmarks,

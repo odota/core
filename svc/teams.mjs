@@ -1,7 +1,7 @@
 // Updates the list of teams in the database
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import queries from '../store/queries.mjs';
+import {upsertPromise} from '../store/queries.mjs';
 
 while (true) {
   console.time('doTeams');
@@ -55,7 +55,7 @@ while (true) {
         t.team_id = m.team_id;
         t.logo_url = cdnJob.url;
         // console.log('[TEAMS] cdn: ', t);
-        await queries.upsertPromise(db, 'teams', t, {
+        await upsertPromise(db, 'teams', t, {
           team_id: m.team_id,
         });
         continue;
@@ -73,7 +73,7 @@ while (true) {
           t.logo_url = ugcBody.data.url;
         }
         // console.log('[TEAMS] ugc: ', t);
-        await queries.upsertPromise(db, 'teams', t, {
+        await upsertPromise(db, 'teams', t, {
           team_id: m.team_id,
         });
       } catch (e) {

@@ -1,6 +1,5 @@
-import async from 'async';
-import db from '../store/db';
-import queries from '../store/queries';
+import db from '../store/db.mjs';
+import { upsertPromise } from '../store/queries.mjs';
 
 db.select(['radiant_team_id', 'dire_team_id', 'match_id'])
   .from('matches')
@@ -25,8 +24,8 @@ db.select(['radiant_team_id', 'dire_team_id', 'match_id'])
           radiant: false,
         });
       }
-      arr.forEach((tm) => {
-        queries.upsert(db, 'team_match', tm, {
+      arr.forEach(async (tm) => {
+        await upsertPromise(db, 'team_match', tm, {
           team_id: tm.team_id,
           match_id: tm.match_id,
         });
