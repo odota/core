@@ -65,8 +65,9 @@ async function start() {
           })
         )
       );
-      config.MATCH_ARCHIVE_S3_ENDPOINT &&
-        (await Promise.all(parsedIds.map((id) => doArchive(id))));
+      if (config.MATCH_ARCHIVE_S3_ENDPOINT) {
+        await Promise.all(parsedIds.map((id) => doArchive(id)));
+      }
       // TODO (howard) remove insert once backfill complete
       await Promise.all(
         parsedIds.map((id) =>

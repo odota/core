@@ -815,18 +815,17 @@ function invokeInterval(func, delay) {
 
 /*
  * Promise replacement for async.eachLimit
- * Executes promises at most limit at once
+ * Takes an array of functions that return promises
+ * Note this doesn't work on an array of promises as that will start all of them
  */
-export async function eachLimit(promises, limit) {
-  let rest = promises.slice(limit);
-  await Promise.all(
-    promises.slice(0, limit).map(async (promise) => {
-      await promise;
-      while (rest.length) {
-        await rest.shift();
-      }
-    })
-  );
+export async function eachLimit(funcs, limit) {
+  let rest = funcs.slice(limit);
+  await Promise.all(funcs.slice(0, limit).map(async func => {
+    await func();
+    while (rest.length) {
+      await rest.shift()();
+    }
+  }));
 }
 
 /**

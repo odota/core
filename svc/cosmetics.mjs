@@ -43,7 +43,7 @@ while (true) {
   }
 
   const promises = Object.keys(itemData.items_game.items).map((i) =>
-    processItem(i)
+    () => processItem(i)
   );
   await eachLimit(promises, 10);
 

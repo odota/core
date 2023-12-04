@@ -122,7 +122,7 @@ function processFullHistory(job, cb) {
         }
         // make api_details requests for matches
         const promises = Object.keys(player.match_ids).map((matchId) =>
-          processMatch(matchId)
+          () => processMatch(matchId)
         );
         await eachLimit(promises, parallelism);
         await updatePlayer(player);
