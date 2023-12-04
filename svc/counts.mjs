@@ -4,7 +4,12 @@ import moment from 'moment';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import { getMatchRankTier, insertPlayerPromise, bulkIndexPlayer, upsertPromise } from '../store/queries.mjs';
+import {
+  getMatchRankTier,
+  insertPlayerPromise,
+  bulkIndexPlayer,
+  upsertPromise,
+} from '../store/queries.mjs';
 import queue from '../store/queue.mjs';
 import config from '../config.js';
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
@@ -85,15 +90,10 @@ function upsertMatchSample(match, cb) {
       await Promise.all(
         (match.players || []).map((pm) => {
           pm.match_id = match.match_id;
-          return upsertPromise(
-            trx,
-            'public_player_matches',
-            pm,
-            {
-              match_id: pm.match_id,
-              player_slot: pm.player_slot,
-            }
-          );
+          return upsertPromise(trx, 'public_player_matches', pm, {
+            match_id: pm.match_id,
+            player_slot: pm.player_slot,
+          });
         })
       );
     } catch (e) {
@@ -154,14 +154,18 @@ function updateLastPlayed(match, cb) {
     return acc;
   }, []);
   bulkIndexPlayer(bulkUpdate);
-  Promise.all(filteredPlayers.map(player => insertPlayerPromise(
-    db,
-    {
-      account_id: player.account_id,
-      last_match_time: lastMatchTime,
-    },
-    false
-  )));
+  Promise.all(
+    filteredPlayers.map((player) =>
+      insertPlayerPromise(
+        db,
+        {
+          account_id: player.account_id,
+          last_match_time: lastMatchTime,
+        },
+        false
+      )
+    )
+  );
   cb();
 }
 /**

@@ -1,6 +1,6 @@
 // Updates the list of pro players in the database
 import db from '../store/db.mjs';
-import {upsertPromise} from '../store/queries.mjs';
+import { upsertPromise } from '../store/queries.mjs';
 import utility from '../util/utility.mjs';
 const { generateJob, getDataPromise } = utility;
 

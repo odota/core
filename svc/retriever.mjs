@@ -326,8 +326,8 @@ function init() {
         //   console.log('not reconnecting %s, waiting for auth...', user);
         //   client.pendingLogOn = true;
         // } else {
-          // console.log('reconnecting %s', user);
-          // client.connect();
+        // console.log('reconnecting %s', user);
+        // client.connect();
         // }
       });
       client.connect();

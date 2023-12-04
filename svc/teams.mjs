@@ -1,7 +1,7 @@
 // Updates the list of teams in the database
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import {upsertPromise} from '../store/queries.mjs';
+import { upsertPromise } from '../store/queries.mjs';
 
 while (true) {
   console.time('doTeams');

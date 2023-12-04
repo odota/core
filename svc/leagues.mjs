@@ -2,7 +2,7 @@
 import async from 'async';
 import utility from '../util/utility.mjs';
 import db from '../store/db.mjs';
-import {upsert} from '../store/queries.mjs';
+import { upsert } from '../store/queries.mjs';
 const { invokeInterval, generateJob, getData } = utility;
 
 function doLeagues(cb) {

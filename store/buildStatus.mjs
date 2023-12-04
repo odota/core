@@ -81,7 +81,7 @@ export default function buildStatus(db, redis, cb) {
       seqNumDelay(cb) {
         // It's slow to query Steam API so use the value saved by monitor
         redis.hget('health', 'seqNumDelay', (err, data) => {
-          cb(err, JSON.parse(data)?.metric)
+          cb(err, JSON.parse(data)?.metric);
         });
       },
       parseQueue(cb) {

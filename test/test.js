@@ -101,7 +101,9 @@ describe('player_caches', () => {
   it('should have data in player_caches', async () => {
     const { getPlayerMatchesPromise } = await import('../store/queries.mjs');
     // Test fetching matches for first player
-    const data = await getPlayerMatchesPromise(120269134, { project: ['match_id'] });
+    const data = await getPlayerMatchesPromise(120269134, {
+      project: ['match_id'],
+    });
     // We should have one result
     assert(data.length === 1);
   });
@@ -132,7 +134,7 @@ describe('replay parse', function () {
       });
     console.log('inserting match and requesting parse');
     try {
-      const {insertMatchPromise} = await import('../store/queries.mjs');
+      const { insertMatchPromise } = await import('../store/queries.mjs');
       const job = await insertMatchPromise(matchData, {
         type: 'api',
         forceParse: true,
@@ -147,7 +149,7 @@ describe('replay parse', function () {
     await new Promise((resolve) => setTimeout(resolve, 20000));
     console.log('checking parsed match');
     // ensure parse data got inserted
-    const buildMatch = (await import('../store/buildMatch.mjs')).default
+    const buildMatch = (await import('../store/buildMatch.mjs')).default;
     const match = await buildMatch(tests[key].match_id);
     // console.log(match.players[0]);
     assert(match.players);
@@ -826,9 +828,7 @@ async function loadPlayers() {
   const { insertPlayerPromise } = await import('../store/queries.mjs');
   console.log('loading players');
   await Promise.all(
-    summariesApi.response.players.map((p) =>
-      insertPlayerPromise(db, p, true)
-    )
+    summariesApi.response.players.map((p) => insertPlayerPromise(db, p, true))
   );
 }
 

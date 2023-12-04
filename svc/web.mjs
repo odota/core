@@ -69,7 +69,7 @@ passport.use(
       try {
         await insertPlayerPromise(db, player, true);
         cb(null, player);
-      } catch(e) {
+      } catch (e) {
         cb(e);
       }
     }

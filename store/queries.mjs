@@ -548,40 +548,31 @@ export async function insertPlayerPromise(db, player, indexPlayer) {
     return;
   }
   if (indexPlayer) {
-    await es.update(
-      {
-        index: INDEX,
-        type: 'player',
-        id: player.account_id,
-        body: {
-          doc: {
-            personaname: player.personaname,
-            avatarfull: player.avatarfull,
-          },
-          doc_as_upsert: true,
+    await es.update({
+      index: INDEX,
+      type: 'player',
+      id: player.account_id,
+      body: {
+        doc: {
+          personaname: player.personaname,
+          avatarfull: player.avatarfull,
         },
-      }
-    );
+        doc_as_upsert: true,
+      },
+    });
   }
-  return await upsertPromise(
-    db,
-    'players',
-    player,
-    {
-      account_id: player.account_id,
-    }
-  );
+  return await upsertPromise(db, 'players', player, {
+    account_id: player.account_id,
+  });
 }
 export async function bulkIndexPlayer(bulkActions) {
   // Bulk call to ElasticSearch
   if (bulkActions.length > 0) {
-    await es.bulk(
-      {
-        body: bulkActions,
-        index: INDEX,
-        type: 'player',
-      }
-    );
+    await es.bulk({
+      body: bulkActions,
+      index: INDEX,
+      type: 'player',
+    });
   }
 }
 export async function insertPlayerRating(row) {
@@ -1041,15 +1032,17 @@ export async function insertMatchPromise(match, options) {
         config.ENABLE_RANDOM_MMR_UPDATE
       );
     });
-    await Promise.all(arr.map((p) =>
-      queue.addJob(
-        'mmrQueue',
-        JSON.stringify({
-          match_id: match.match_id,
-          account_id: p.account_id,
-        })
+    await Promise.all(
+      arr.map((p) =>
+        queue.addJob(
+          'mmrQueue',
+          JSON.stringify({
+            match_id: match.match_id,
+            account_id: p.account_id,
+          })
+        )
       )
-    ));
+    );
   }
   async function decideProfile() {
     // We only do this if fresh match

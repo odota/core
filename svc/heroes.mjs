@@ -2,7 +2,7 @@
 import async from 'async';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import {upsert} from '../store/queries.mjs';
+import { upsert } from '../store/queries.mjs';
 const { invokeInterval, generateJob, getData } = utility;
 function doHeroes(cb) {
   const container = generateJob('api_heroes', {

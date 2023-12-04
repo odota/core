@@ -121,8 +121,8 @@ function processFullHistory(job, cb) {
           delete player.match_ids[matchId];
         }
         // make api_details requests for matches
-        const promiseFuncs = Object.keys(player.match_ids).map((matchId) =>
-          () => processMatch(matchId)
+        const promiseFuncs = Object.keys(player.match_ids).map(
+          (matchId) => () => processMatch(matchId)
         );
         await eachLimit(promiseFuncs, parallelism);
         await updatePlayer(player);

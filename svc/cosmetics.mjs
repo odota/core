@@ -42,8 +42,8 @@ while (true) {
     });
   }
 
-  const promiseFuncs = Object.keys(itemData.items_game.items).map((i) =>
-    () => processItem(i)
+  const promiseFuncs = Object.keys(itemData.items_game.items).map(
+    (i) => () => processItem(i)
   );
   await eachLimit(promiseFuncs, 10);
 

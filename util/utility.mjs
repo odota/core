@@ -820,12 +820,14 @@ export function invokeInterval(func, delay) {
  */
 export async function eachLimit(funcs, limit) {
   let rest = funcs.slice(limit);
-  await Promise.all(funcs.slice(0, limit).map(async func => {
-    await func();
-    while (rest.length) {
-      await rest.shift()();
-    }
-  }));
+  await Promise.all(
+    funcs.slice(0, limit).map(async (func) => {
+      await func();
+      while (rest.length) {
+        await rest.shift()();
+      }
+    })
+  );
 }
 
 /**
