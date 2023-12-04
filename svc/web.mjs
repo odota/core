@@ -345,8 +345,8 @@ logSub.on('message', (channel, message) => {
   // Emit it to all the connected logs
   Object.values(logReaders).forEach(([req, res]) => {
     const matched =
-      Array.isArray(req.query.channel) && req.query.channel.includes(channel);
-    if (!req.query.channel || matched) {
+      Array.isArray(req.query.channel) && req.query.channel?.includes(channel);
+    if (!req.query.channel || req.query.channel === channel || matched) {
       res.write(message + '\n');
     }
   });
