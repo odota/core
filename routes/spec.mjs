@@ -18,7 +18,7 @@ import cacheFunctions from '../store/cacheFunctions.mjs';
 import params from './requests/importParams.js';
 import responses from './responses/schemas/importResponseSchemas.js';
 import generateOperationId from './generateOperationId.mjs';
-import { insertMatchPromise } from '../store/queries.mjs';
+import { insertMatchPromise, getDistributions } from '../store/queries.mjs';
 const { Client } = pg;
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
@@ -1354,13 +1354,13 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/distributions',
-        func: (req, res, cb) => {
-          queries.getDistributions(redis, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
+        func: async (req, res, cb) => {
+          try {
+            const result = await getDistributions();
             return res.json(result);
-          });
+          } catch(e) {
+            cb(e);
+          }
         },
       },
     },

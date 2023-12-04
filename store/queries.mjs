@@ -125,26 +125,19 @@ export async function getMatchBenchmarks(m) {
     return p;
   }));
 }
-function getDistributions(redis, cb) {
+export async function getDistributions() {
+  const result = {};
   const keys = [
     'distribution:ranks',
     'distribution:mmr',
     'distribution:country_mmr',
   ];
-  const result = {};
-  async.each(
-    keys,
-    (r, cb) => {
-      redis.get(r, (err, blob) => {
-        if (err) {
-          return cb(err);
-        }
-        result[r.split(':')[1]] = JSON.parse(blob);
-        return cb(err);
-      });
-    },
-    (err) => cb(err, result)
-  );
+  for (let i = 0; i < keys.length; i++) {
+    const r = keys[i];
+    const blob = await redis.get(r);
+    result[r.split(':')[1]] = JSON.parse(blob);
+  }
+  return result;
 }
 function getProPlayers(db, redis, cb) {
   db.raw(
@@ -1531,7 +1524,6 @@ export default {
   bulkIndexPlayer,
   insertMatchPromise,
   insertPlayerRating,
-  getDistributions,
   getProPlayers,
   getHeroRankings,
   getHeroItemPopularity,
