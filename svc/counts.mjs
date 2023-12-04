@@ -82,15 +82,11 @@ function upsertMatchSample(match, cb) {
         num_rank_tier: numRankTier || null,
       };
       const newMatch = { ...match, ...matchMmrData };
-      await upsertPromise(
-        trx,
-        'public_matches',
-        newMatch,
-        {
-          match_id: newMatch.match_id,
-        }
-      );
-      await Promise.all((match.players || []).map((pm) => {
+      await upsertPromise(trx, 'public_matches', newMatch, {
+        match_id: newMatch.match_id,
+      });
+      await Promise.all(
+        (match.players || []).map((pm) => {
           pm.match_id = match.match_id;
           return upsertPromise(
             trx,
@@ -102,8 +98,9 @@ function upsertMatchSample(match, cb) {
             },
             cb
           );
-        }));
-    } catch(e) {
+        })
+      );
+    } catch (e) {
       trx.rollback();
       return cb(e);
     }
