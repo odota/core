@@ -594,7 +594,6 @@ function bulkIndexPlayer(bulkActions, cb) {
 }
 export async function insertPlayerRating(row) {
   if (row.rank_tier) {
-    console.log('rank_tier');
     await upsertPromise(
       db,
       'rank_tier',
@@ -603,7 +602,6 @@ export async function insertPlayerRating(row) {
     );
   }
   if (row.leaderboard_rank) {
-    console.log('leaderboard_rank');
     await upsertPromise(
       db,
       'leaderboard_rank',

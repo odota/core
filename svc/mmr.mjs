@@ -25,7 +25,7 @@ async function processMmr(job, cb) {
         account_id: job.account_id || null,
         plus: Boolean(data.is_plus_subscriber),
       };
-      await insertPlayerPromise(db, player);
+      await insertPlayerPromise(db, player, false);
     }
     if (
       data.solo_competitive_rank ||
