@@ -73,18 +73,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
     }
   );
 }
-function getAPIKeys(db, cb) {
-  db.raw(
-    `
-    SELECT api_key FROM api_keys WHERE api_key IS NOT NULL AND is_canceled IS NOT TRUE
-    `
-  ).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows);
-  });
-}
+
 /**
  * Benchmarks a match against stored data in Redis.
  * */
@@ -1589,7 +1578,6 @@ export default {
   getPlayer,
   getPeers,
   getProPeers,
-  getAPIKeys,
   getItemTimings,
   getLaneRoles,
   getTeamScenarios,

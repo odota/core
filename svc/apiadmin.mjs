@@ -5,7 +5,6 @@ import stripeLib from 'stripe';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import queries from '../store/queries.mjs';
 import config from '../config.js';
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
@@ -159,9 +158,21 @@ async function updateStripeUsage(cb) {
     cb(err);
   }
 }
+function getAPIKeys(db, cb) {
+  db.raw(
+    `
+    SELECT api_key FROM api_keys WHERE api_key IS NOT NULL AND is_canceled IS NOT TRUE
+    `
+  ).asCallback((err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(err, result.rows);
+  });
+}
 invokeInterval(
   (cb) => {
-    queries.getAPIKeys(db, (err, rows) => {
+    getAPIKeys(db, (err, rows) => {
       if (err) {
         cb(err);
       } else if (rows.length > 0) {
