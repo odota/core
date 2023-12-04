@@ -613,44 +613,8 @@ export async function insertPlayerRating(row) {
     );
   }
 }
-function writeCache(accountId, cache, cb) {
-  return async.each(
-    cache.raw,
-    (match, cb) => {
-      cleanRowCassandra(
-        cassandra,
-        'player_caches',
-        match,
-        (err, cleanedMatch) => {
-          if (err) {
-            return cb(err);
-          }
-          const serializedMatch = serialize(cleanedMatch);
-          const query = util.format(
-            'INSERT INTO player_caches (%s) VALUES (%s)',
-            Object.keys(serializedMatch).join(','),
-            Object.keys(serializedMatch)
-              .map(() => '?')
-              .join(',')
-          );
-          const arr = Object.keys(serializedMatch).map(
-            (k) => serializedMatch[k]
-          );
-          return cassandra.execute(
-            query,
-            arr,
-            {
-              prepare: true,
-            },
-            cb
-          );
-        }
-      );
-    },
-    cb
-  );
-}
-function insertPlayerCache(match, cb) {
+
+async function insertPlayerCache(match) {
   const { players } = match;
   if (match.pgroup && players) {
     players.forEach((p) => {
@@ -662,31 +626,38 @@ function insertPlayerCache(match, cb) {
       }
     });
   }
-  return async.eachSeries(
-    players,
-    (playerMatch, cb) => {
-      if (
-        playerMatch.account_id &&
-        playerMatch.account_id !== utility.getAnonymousAccountId()
-      ) {
-        // join player with match to form player_match
-        Object.keys(match).forEach((key) => {
-          if (key !== 'players') {
-            playerMatch[key] = match[key];
-          }
-        });
-        computeMatchData(playerMatch);
-        return writeCache(
-          playerMatch.account_id,
-          {
-            raw: [playerMatch],
-          },
-          cb
-        );
-      }
-      return cb();
-    },
-    cb
+  const arr = players.filter(
+    (playerMatch) =>
+      playerMatch.account_id &&
+      playerMatch.account_id !== utility.getAnonymousAccountId()
+  );
+  await Promise.all(
+    arr.map(async (playerMatch) => {
+      // join player with match to form player_match
+      Object.keys(match).forEach((key) => {
+        if (key !== 'players') {
+          playerMatch[key] = match[key];
+        }
+      });
+      computeMatchData(playerMatch);
+      const cleanedMatch = await util.promisify(cleanRowCassandra)(
+        cassandra,
+        'player_caches',
+        playerMatch
+      );
+      const serializedMatch = serialize(cleanedMatch);
+      const query = util.format(
+        'INSERT INTO player_caches (%s) VALUES (%s)',
+        Object.keys(serializedMatch).join(','),
+        Object.keys(serializedMatch)
+          .map(() => '?')
+          .join(',')
+      );
+      const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
+      await cassandra.execute(query, arr, {
+        prepare: true,
+      });
+    })
   );
 }
 async function updateTeamRankings(match, options) {
@@ -1000,11 +971,11 @@ export async function insertMatchPromise(match, options) {
       );
     });
   }
-  function updateCassandraPlayerCaches(cb) {
+  async function updateCassandraPlayerCaches() {
     // Add the 10 player_match rows indexed by player
     // We currently do this on all types
     const copy = createMatchCopy(match, players);
-    return insertPlayerCache(copy, cb);
+    await insertPlayerCache(copy);
   }
   async function upsertMatchBlobs() {
     // TODO (howard) this function is meant to eventually replace the cassandra match/player_match tables
@@ -1038,11 +1009,13 @@ export async function insertMatchPromise(match, options) {
   }
   async function clearRedisPlayer() {
     const arr = [];
-    match.players.filter((player) => Boolean(player.account_id)).forEach(player => {
-      getKeys().forEach(key => {
-        arr.push({ key, account_id: player.account_id });
+    match.players
+      .filter((player) => Boolean(player.account_id))
+      .forEach((player) => {
+        getKeys().forEach((key) => {
+          arr.push({ key, account_id: player.account_id });
+        });
       });
-    });
     await Promise.all(arr, (val) => clearCache(val));
   }
   async function decideCounts() {
@@ -1184,7 +1157,7 @@ export async function insertMatchPromise(match, options) {
   await upsertMatchPostgres();
   await getAverageRank();
   await util.promisify(upsertMatchCassandra)();
-  await util.promisify(updateCassandraPlayerCaches)();
+  await updateCassandraPlayerCaches();
   await upsertMatchBlobs();
   await clearRedisMatch();
   await clearRedisPlayer();
