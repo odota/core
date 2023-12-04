@@ -7,7 +7,9 @@ import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import su from '../util/scenariosUtil.mjs';
 async function processScenarios(matchID, cb) {
+  console.log('[SCENARIOS] match: %s', matchID);
   try {
+    // Using buildMatch is unnecessarily expensive here since it also looks up player names etc.
     const match = await buildMatch(matchID);
     if (!su.validateMatchProperties(match)) {
       console.error(
