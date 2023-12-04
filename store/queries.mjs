@@ -830,102 +830,102 @@ function insertMatch(match, options, cb) {
         // Skip this if not a pro match
         return cb();
       }
+      async function upsertMatch() {
+        await upsertPromise(trx, 'matches', match, {
+          match_id: match.match_id,
+        });
+      }
+      async function upsertPlayerMatches() {
+        await Promise.all(
+          (players || []).map((pm) => {
+            pm.match_id = match.match_id;
+            // Add lane data
+            if (pm.lane_pos) {
+              const laneData = utility.getLaneFromPosData(
+                pm.lane_pos,
+                isRadiant(pm)
+              );
+              pm.lane = laneData.lane || null;
+              pm.lane_role = laneData.lane_role || null;
+              pm.is_roaming = laneData.is_roaming || null;
+            }
+            return upsertPromise(trx, 'player_matches', pm, {
+              match_id: pm.match_id,
+              player_slot: pm.player_slot,
+            });
+          })
+        );
+      }
+      async function upsertPicksBans() {
+        await Promise.all(
+          (match.picks_bans || []).map((p) => {
+            // order is a reserved keyword
+            p.ord = p.order;
+            p.match_id = match.match_id;
+            return upsertPromise(trx, 'picks_bans', p, {
+              match_id: p.match_id,
+              ord: p.ord,
+            });
+          })
+        );
+      }
+      async function upsertMatchPatch() {
+        if (match.start_time) {
+          await upsertPromise(
+            trx,
+            'match_patch',
+            {
+              match_id: match.match_id,
+              patch:
+                constants.patch[utility.getPatchIndex(match.start_time)].name,
+            },
+            {
+              match_id: match.match_id,
+            }
+          );
+        }
+      }
+      async function upsertTeamMatch() {
+        const arr = [];
+        if (match.radiant_team_id) {
+          arr.push({
+            team_id: match.radiant_team_id,
+            match_id: match.match_id,
+            radiant: true,
+          });
+        }
+        if (match.dire_team_id) {
+          arr.push({
+            team_id: match.dire_team_id,
+            match_id: match.match_id,
+            radiant: false,
+          });
+        }
+        await Promise.all(
+          arr.map((tm) => {
+            return upsertPromise(trx, 'team_match', tm, {
+              team_id: tm.team_id,
+              match_id: tm.match_id,
+            });
+          })
+        );
+      }
+      const trx = await db.transaction();
       try {
-        const trx = await db.transaction();
         await upsertMatch();
         await upsertPlayerMatches();
         await upsertPicksBans();
         await upsertMatchPatch();
         await upsertTeamMatch();
-        await updateTeamRankings(match, options);
-        await trx.commit();
-        return cb();
       } catch (e) {
         trx.rollback();
         return cb(e);
       }
+      await trx.commit();
+      await updateTeamRankings(match, options);
+      return cb();
     } catch (e) {
       return cb(e);
-    }
-    async function upsertMatch() {
-      await upsertPromise(trx, 'matches', match, {
-        match_id: match.match_id,
-      });
-    }
-    async function upsertPlayerMatches() {
-      await Promise.all(
-        (players || []).map((pm) => {
-          pm.match_id = match.match_id;
-          // Add lane data
-          if (pm.lane_pos) {
-            const laneData = utility.getLaneFromPosData(
-              pm.lane_pos,
-              isRadiant(pm)
-            );
-            pm.lane = laneData.lane || null;
-            pm.lane_role = laneData.lane_role || null;
-            pm.is_roaming = laneData.is_roaming || null;
-          }
-          return upsertPromise(trx, 'player_matches', pm, {
-            match_id: pm.match_id,
-            player_slot: pm.player_slot,
-          });
-        })
-      );
-    }
-    async function upsertPicksBans() {
-      await Promise.all(
-        (match.picks_bans || []).map((p) => {
-          // order is a reserved keyword
-          p.ord = p.order;
-          p.match_id = match.match_id;
-          return upsertPromise(trx, 'picks_bans', p, {
-            match_id: p.match_id,
-            ord: p.ord,
-          });
-        })
-      );
-    }
-    async function upsertMatchPatch() {
-      if (match.start_time) {
-        await upsertPromise(
-          trx,
-          'match_patch',
-          {
-            match_id: match.match_id,
-            patch:
-              constants.patch[utility.getPatchIndex(match.start_time)].name,
-          },
-          {
-            match_id: match.match_id,
-          }
-        );
-      }
-    }
-    async function upsertTeamMatch() {
-      const arr = [];
-      if (match.radiant_team_id) {
-        arr.push({
-          team_id: match.radiant_team_id,
-          match_id: match.match_id,
-          radiant: true,
-        });
-      }
-      if (match.dire_team_id) {
-        arr.push({
-          team_id: match.dire_team_id,
-          match_id: match.match_id,
-          radiant: false,
-        });
-      }
-      await Promise.all(
-        arr.map((tm) => {
-          return upsertPromise(trx, 'team_match', tm, {
-            team_id: tm.team_id,
-            match_id: tm.match_id,
-          });
-        })
-      );
     }
   }
   function getAverageRank(cb) {
