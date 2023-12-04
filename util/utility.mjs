@@ -797,7 +797,7 @@ function getRedisCountHour(redis, prefix, cb) {
   }
   redis.pfcount(...keyArr, cb);
 }
-function invokeInterval(func, delay) {
+export function invokeInterval(func, delay) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
     console.log('running %s', func.name);

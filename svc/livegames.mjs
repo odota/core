@@ -5,6 +5,7 @@ import request from 'request';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 import config from '../config.js';
+import { invokeInterval } from '../util/utility.mjs';
 function doLiveGames(cb) {
   // Get the list of pro players
   db.select()
@@ -58,4 +59,4 @@ function doLiveGames(cb) {
       });
     });
 }
-setInterval(doLiveGames, 60 * 1000);
+invokeInterval(doLiveGames, 60 * 1000);

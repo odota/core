@@ -4,6 +4,7 @@ import utility from '../util/utility.mjs';
 import db from '../store/db.mjs';
 import queries from '../store/queries.mjs';
 const { invokeInterval, generateJob, getData } = utility;
+
 function doLeagues(cb) {
   const container = generateJob('api_leagues', {});
   getData(container.url, (err, apiLeagues) => {
