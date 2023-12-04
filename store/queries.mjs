@@ -484,7 +484,7 @@ function getProPeers(db, input, player, cb) {
     });
 }
 
-function getMatchRankTier(match, cb) {
+export function getMatchRankTier(match, cb) {
   async.map(
     match.players,
     (player, cb) => {
@@ -1287,7 +1287,6 @@ export default {
   getLaneRoles,
   getTeamScenarios,
   getMetadata,
-  getMatchRankTier,
   getMatchData,
   getPlayerMatchData,
   getArchivedMatch,

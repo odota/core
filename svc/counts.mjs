@@ -4,11 +4,9 @@ import moment from 'moment';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import queries, { insertPlayerPromise, bulkIndexPlayer } from '../store/queries.mjs';
+import { getMatchRankTier, insertPlayerPromise, bulkIndexPlayer, upsertPromise } from '../store/queries.mjs';
 import queue from '../store/queue.mjs';
 import config from '../config.js';
-const { getMatchRankTier, upsertPromise } =
-  queries;
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
 function updateHeroRankings(match, cb) {
   getMatchRankTier(match, (err, avg) => {
