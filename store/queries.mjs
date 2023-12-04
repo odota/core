@@ -1049,6 +1049,7 @@ export async function insertMatchPromise(match, options) {
         config.ENABLE_RANDOM_MMR_UPDATE
       );
     });
+    console.log(arr);
     await Promise.all(arr, (p) =>
       queue.addJob(
         'mmrQueue',
