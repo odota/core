@@ -386,12 +386,6 @@ function getHeroBenchmarks(db, redis, options, cb) {
       })
   );
 }
-function getMmrEstimate(accountId, cb) {
-  db.first('estimate')
-    .from('mmr_estimates')
-    .where({ account_id: accountId })
-    .asCallback(cb);
-}
 export const getPlayerMatchesPromise = util.promisify(getPlayerMatches);
 function getPlayerMatches(accountId, queryObj, cb) {
   // Validate accountId
@@ -1589,7 +1583,6 @@ export default {
   getPlayerRatings,
   getPlayerHeroRankings,
   getPlayer,
-  getMmrEstimate,
   getPeers,
   getProPeers,
   getAPIKeys,

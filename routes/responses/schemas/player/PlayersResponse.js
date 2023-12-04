@@ -25,17 +25,6 @@ module.exports = {
         type: 'number',
         nullable: true,
       },
-      mmr_estimate: {
-        description: 'mmr_estimate',
-        type: 'object',
-        properties: {
-          estimate: {
-            description: 'estimate',
-            type: 'number',
-            nullable: true,
-          },
-        },
-      },
       profile: {
         description: 'profile',
         type: 'object',

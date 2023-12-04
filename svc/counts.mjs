@@ -70,34 +70,7 @@ function updateHeroRankings(match, cb) {
     );
   });
 }
-function updateMmrEstimate(match, cb) {
-  getMatchRating(match, (err, avg) => {
-    if (avg && !Number.isNaN(Number(avg))) {
-      return async.each(
-        match.players,
-        (player, cb) => {
-          if (
-            player.account_id &&
-            player.account_id !== utility.getAnonymousAccountId()
-          ) {
-            return db
-              .raw(
-                `
-          INSERT INTO mmr_estimates VALUES(?, ?)
-          ON CONFLICT(account_id)
-          DO UPDATE SET estimate = mmr_estimates.estimate - (mmr_estimates.estimate / 20) + (? / 20)`,
-                [player.account_id, avg, avg]
-              )
-              .asCallback(cb);
-          }
-          return cb();
-        },
-        cb
-      );
-    }
-    return cb(err);
-  });
-}
+
 function upsertMatchSample(match, cb) {
   return getMatchRating(match, (err, avg, num) => {
     if (err) {
@@ -328,12 +301,6 @@ function processCounts(match, cb) {
       updateRankings(cb) {
         if (isSignificant(match)) {
           return updateHeroRankings(match, cb);
-        }
-        return cb();
-      },
-      updateMmrEstimate(cb) {
-        if (isSignificant(match)) {
-          return updateMmrEstimate(match, cb);
         }
         return cb();
       },

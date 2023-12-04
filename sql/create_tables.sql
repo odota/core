@@ -375,12 +375,6 @@ CREATE TABLE IF NOT EXISTS queue (
 );
 CREATE INDEX IF NOT EXISTS queue_priority_id_idx on queue(priority, id);
 
-CREATE TABLE IF NOT EXISTS mmr_estimates (
-  PRIMARY KEY (account_id),
-  account_id bigint,
-  estimate int
-);
-
 CREATE TABLE IF NOT EXISTS solo_competitive_rank (
   PRIMARY KEY (account_id),
   account_id bigint,
