@@ -4,10 +4,10 @@ import moment from 'moment';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-import queries from '../store/queries.mjs';
+import queries, { insertPlayerPromise } from '../store/queries.mjs';
 import queue from '../store/queue.mjs';
 import config from '../config.js';
-const { getMatchRankTier, insertPlayer, bulkIndexPlayer, upsertPromise } =
+const { getMatchRankTier, bulkIndexPlayer, upsertPromise } =
   queries;
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
 function updateHeroRankings(match, cb) {
@@ -160,21 +160,15 @@ function updateLastPlayed(match, cb) {
       console.log(err);
     }
   });
-  async.each(
-    filteredPlayers,
-    (player, cb) => {
-      insertPlayer(
-        db,
-        {
-          account_id: player.account_id,
-          last_match_time: lastMatchTime,
-        },
-        false,
-        cb
-      );
+  Promise.all(filteredPlayers.map(player => insertPlayerPromise(
+    db,
+    {
+      account_id: player.account_id,
+      last_match_time: lastMatchTime,
     },
-    cb
-  );
+    false
+  )));
+  cb();
 }
 /**
  * Update table storing heroes played in a game for lookup of games by heroes played

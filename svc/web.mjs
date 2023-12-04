@@ -16,7 +16,7 @@ import Redis from 'ioredis';
 import WebSocket, { WebSocketServer } from 'ws';
 import keys from '../routes/keyManagement.mjs';
 import api from '../routes/api.mjs';
-import queries from '../store/queries.mjs';
+import { insertPlayerPromise } from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
 import utility from '../util/utility.mjs';
@@ -63,15 +63,15 @@ passport.use(
       realm: host,
       apiKey,
     },
-    (identifier, profile, cb) => {
+    async (identifier, profile, cb) => {
       const player = profile._json;
       player.last_login = new Date();
-      queries.insertPlayer(db, player, true, (err) => {
-        if (err) {
-          return cb(err);
-        }
-        return cb(err, player);
-      });
+      try {
+        await insertPlayerPromise(db, player, true);
+        cb(null, player);
+      } catch(e) {
+        cb(e);
+      }
     }
   )
 );

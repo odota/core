@@ -536,8 +536,7 @@ function upsert(db, table, row, conflict, cb) {
       .asCallback(cb);
   });
 }
-export const insertPlayerPromise = util.promisify(insertPlayer);
-function insertPlayer(db, player, indexPlayer, cb) {
+export async function insertPlayerPromise(db, player, indexPlayer) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
     player.account_id = Number(convert64to32(player.steamid));
@@ -546,10 +545,10 @@ function insertPlayer(db, player, indexPlayer, cb) {
     !player.account_id ||
     player.account_id === utility.getAnonymousAccountId()
   ) {
-    return cb();
+    return;
   }
   if (indexPlayer) {
-    es.update(
+    await es.update(
       {
         index: INDEX,
         type: 'player',
@@ -561,22 +560,16 @@ function insertPlayer(db, player, indexPlayer, cb) {
           },
           doc_as_upsert: true,
         },
-      },
-      (err) => {
-        if (err) {
-          console.log(err);
-        }
       }
     );
   }
-  return upsert(
+  return await upsertPromise(
     db,
     'players',
     player,
     {
       account_id: player.account_id,
-    },
-    cb
+    }
   );
 }
 function bulkIndexPlayer(bulkActions, cb) {
@@ -1282,7 +1275,6 @@ export async function getArchivedMatch(matchId) {
 export default {
   upsert,
   upsertPromise,
-  insertPlayer,
   insertPlayerPromise,
   bulkIndexPlayer,
   insertMatchPromise,

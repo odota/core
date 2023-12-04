@@ -1,8 +1,8 @@
 // Updates Steam profile data for players periodically
-import queries from '../store/queries.mjs';
+import queries, { insertPlayerPromise } from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
-const { insertPlayerPromise, bulkIndexPlayer } = queries;
+const { bulkIndexPlayer } = queries;
 const { getDataPromise, generateJob, convert64to32 } = utility;
 
 while (true) {
