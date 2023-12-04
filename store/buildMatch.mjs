@@ -213,8 +213,7 @@ async function getMatch(matchId) {
       matchResult.replay_salt
     );
   }
-  const playersWithBenchmarks =
-    await getMatchBenchmarks(matchResult);
+  const playersWithBenchmarks = await getMatchBenchmarks(matchResult);
   matchResult = {
     ...matchResult,
     players: playersWithBenchmarks,

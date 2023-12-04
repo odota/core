@@ -78,52 +78,47 @@ function cleanRowCassandra(cassandra, table, row, cb) {
  * Benchmarks a match against stored data in Redis
  * */
 export async function getMatchBenchmarks(m) {
-  return await Promise.all(m.players.map(async (p) => {
-    p.benchmarks = {};
-    for (let i = 0; i < Object.keys(benchmarks).length; i++) {
-      const metric = Object.keys(benchmarks)[i];
-      p.benchmarks[metric] = {};
-      // Use data from previous epoch
-      let key = [
-        'benchmarks',
-        utility.getStartOfBlockMinutes(
-          config.BENCHMARK_RETENTION_MINUTES,
-          -1
-        ),
-        metric,
-        p.hero_id,
-      ].join(':');
-      const backupKey = [
-        'benchmarks',
-        utility.getStartOfBlockMinutes(
-          config.BENCHMARK_RETENTION_MINUTES,
-          0
-        ),
-        metric,
-        p.hero_id,
-      ].join(':');
-      const raw = benchmarks[metric](m, p);
-      p.benchmarks[metric] = {
-        raw,
-      };
-      const exists = await redis.exists(key);
-      if (exists === 0) {
-        // No data, use backup key (current epoch)
-        key = backupKey;
+  return await Promise.all(
+    m.players.map(async (p) => {
+      p.benchmarks = {};
+      for (let i = 0; i < Object.keys(benchmarks).length; i++) {
+        const metric = Object.keys(benchmarks)[i];
+        p.benchmarks[metric] = {};
+        // Use data from previous epoch
+        let key = [
+          'benchmarks',
+          utility.getStartOfBlockMinutes(
+            config.BENCHMARK_RETENTION_MINUTES,
+            -1
+          ),
+          metric,
+          p.hero_id,
+        ].join(':');
+        const backupKey = [
+          'benchmarks',
+          utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+          metric,
+          p.hero_id,
+        ].join(':');
+        const raw = benchmarks[metric](m, p);
+        p.benchmarks[metric] = {
+          raw,
+        };
+        const exists = await redis.exists(key);
+        if (exists === 0) {
+          // No data, use backup key (current epoch)
+          key = backupKey;
+        }
+        const card = await redis.zcard(key);
+        if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
+          const count = await redis.zcount(key, '0', raw);
+          const pct = count / card;
+          p.benchmarks[metric].pct = pct;
+        }
       }
-      const card = await redis.zcard(key);
-      if (
-        raw !== undefined &&
-        raw !== null &&
-        !Number.isNaN(Number(raw))
-      ) {
-        const count = await redis.zcount(key, '0', raw);
-        const pct = count / card;
-        p.benchmarks[metric].pct = pct;
-      }
-    }
-    return p;
-  }));
+      return p;
+    })
+  );
 }
 export async function getDistributions() {
   const result = {};
@@ -338,7 +333,8 @@ function getPlayerMatches(accountId, queryObj, cb) {
 }
 export async function getPlayerRatings(accountId) {
   if (!Number.isNaN(Number(accountId))) {
-    return await db.from('player_ratings')
+    return await db
+      .from('player_ratings')
       .where({
         account_id: Number(accountId),
       })
@@ -487,34 +483,7 @@ function getProPeers(db, input, player, cb) {
       return cb(err, arr);
     });
 }
-function getMatchRating(match, cb) {
-  async.map(
-    match.players,
-    (player, cb) => {
-      if (!player.account_id) {
-        return cb();
-      }
-      return db
-        .first()
-        .from('solo_competitive_rank')
-        .where({ account_id: player.account_id })
-        .asCallback((err, row) => {
-          cb(err, row ? row.rating : null);
-        });
-    },
-    (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      // Remove undefined/null values
-      const filt = result.filter((r) => r);
-      const avg = Math.floor(
-        filt.map((r) => Number(r)).reduce((a, b) => a + b, 0) / filt.length
-      );
-      return cb(err, avg, filt.length);
-    }
-  );
-}
+
 function getMatchRankTier(match, cb) {
   async.map(
     match.players,
@@ -917,9 +886,9 @@ function insertMatch(match, options, cb) {
       // Check if leagueid is premium/professional
       const result = match.leagueid
         ? await db.raw(
-          `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-          [match.leagueid]
-        )
+            `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+            [match.leagueid]
+          )
         : null;
       const pass = result?.rows?.length > 0;
       if (!pass) {
@@ -1128,8 +1097,9 @@ function insertMatch(match, options, cb) {
     // Match ID
     // When it finished (start_time + duration)
     const name = process.env.name || process.env.ROLE || process.argv[1];
-    const message = `[${name}] inserted [${options.type}] for match ${match.match_id
-      } finished ${moment.unix(match.start_time + match.duration).fromNow()}`;
+    const message = `[${name}] inserted [${options.type}] for match ${
+      match.match_id
+    } finished ${moment.unix(match.start_time + match.duration).fromNow()}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');
@@ -1470,7 +1440,6 @@ export default {
   getHeroRankings,
   getHeroItemPopularity,
   getHeroBenchmarks,
-  getMatchRating,
   getPlayerMatches,
   getPlayerMatchesPromise,
   getPlayerHeroRankings,
