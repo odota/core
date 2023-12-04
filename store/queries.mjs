@@ -1018,30 +1018,34 @@ function insertMatch(match, options, cb) {
       // We need the basic match data to run the check, so only do it if type is api
       return cb();
     }
-    // Check if leagueid is premium/professional
-    const result = match.leagueid
-      ? await db.raw(
-          `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-          [match.leagueid]
-        )
-      : null;
-    const pass = result?.rows?.length > 0;
-    if (!pass) {
-      // Skip this if not a pro match
-      return cb();
-    }
-    const trx = await db.transaction();
     try {
-      await upsertMatch();
-      await upsertPlayerMatches();
-      await upsertPicksBans();
-      await upsertMatchPatch();
-      await upsertTeamMatch();
-      await updateTeamRankings(match, options);
-      await trx.commit();
-      return cb();
+      // Check if leagueid is premium/professional
+      const result = match.leagueid
+        ? await db.raw(
+            `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+            [match.leagueid]
+          )
+        : null;
+      const pass = result?.rows?.length > 0;
+      if (!pass) {
+        // Skip this if not a pro match
+        return cb();
+      }
+      const trx = await db.transaction();
+      try {
+        await upsertMatch();
+        await upsertPlayerMatches();
+        await upsertPicksBans();
+        await upsertMatchPatch();
+        await upsertTeamMatch();
+        await updateTeamRankings(match, options);
+        await trx.commit();
+        return cb();
+      } catch (e) {
+        trx.rollback();
+        return cb(e);
+      }
     } catch (e) {
-      trx.rollback();
       return cb(e);
     }
     async function upsertMatch() {
