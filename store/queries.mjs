@@ -830,8 +830,8 @@ function insertMatch(match, options, cb) {
         // Skip this if not a pro match
         return cb();
       }
-      const trx = await db.transaction();
       try {
+        const trx = await db.transaction();
         await upsertMatch();
         await upsertPlayerMatches();
         await upsertPicksBans();
