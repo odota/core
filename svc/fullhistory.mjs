@@ -127,6 +127,7 @@ function processFullHistory(job, cb) {
         await eachLimit(promises, parallelism);
         await updatePlayer(player);
       }
+      cb();
     } catch (e) {
       cb(err);
     }
