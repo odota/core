@@ -14,7 +14,7 @@ import utility from '../util/utility.mjs';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
 import packageJson from '../package.json' assert { type: 'json' };
-import cacheFunctions from '../store/cacheFunctions.mjs';
+import { sendDataWithCache } from '../store/cacheFunctions.mjs';
 import params from './requests/importParams.js';
 import responses from './responses/schemas/importResponseSchemas.js';
 import generateOperationId from './generateOperationId.mjs';
@@ -286,7 +286,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   result.lose += 1;
                 }
               });
-              return cacheFunctions.sendDataWithCache(req, res, result, 'wl');
+              return sendDataWithCache(req, res, result, 'wl');
             }
           );
         },
@@ -517,7 +517,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     hero.games >= Number(req.queryObj.having)
                 )
                 .sort((a, b) => b.games - a.games);
-              return cacheFunctions.sendDataWithCache(
+              return sendDataWithCache(
                 req,
                 res,
                 result,
@@ -578,7 +578,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   if (err) {
                     return cb(err);
                   }
-                  return cacheFunctions.sendDataWithCache(
+                  return sendDataWithCache(
                     req,
                     res,
                     result,

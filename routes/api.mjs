@@ -5,7 +5,7 @@ import playerFields from './playerFields.json' assert { type: 'json' };
 import filterDeps from '../util/filterDeps.mjs';
 import config from '../config.js';
 import spec from './spec.mjs';
-import cacheFunctions from '../store/cacheFunctions.mjs';
+import { readCache } from '../store/cacheFunctions.mjs';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
 const api = new express.Router();
@@ -15,7 +15,7 @@ const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 api.use('/players/:account_id/:info?', (req, res, cb) => {
   // Check cache
   if (!Object.keys(req.query).length && req.params.info) {
-    return cacheFunctions.read(
+    return readCache(
       {
         key: req.params.info,
         account_id: req.params.account_id,

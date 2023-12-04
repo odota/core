@@ -12,7 +12,7 @@ import db from './db.mjs';
 import redis from './redis.mjs';
 import { es, INDEX } from './elasticsearch.mjs';
 import cassandra from './cassandra.mjs';
-import cacheFunctions from './cacheFunctions.mjs';
+import { getKeys, clearCache } from './cacheFunctions.mjs';
 import { benchmarks } from '../util/benchmarksUtil.mjs';
 import { archiveGet } from './archive.mjs';
 const {
@@ -1039,11 +1039,11 @@ export async function insertMatchPromise(match, options) {
   async function clearRedisPlayer() {
     const arr = [];
     match.players.filter((player) => Boolean(player.account_id)).forEach(player => {
-      cacheFunctions.getKeys().forEach(key => {
+      getKeys().forEach(key => {
         arr.push({ key, account_id: player.account_id });
       });
     });
-    await Promise.all(arr, (val) => cacheFunctions.update(val));
+    await Promise.all(arr, (val) => clearCache(val));
   }
   async function decideCounts() {
     // We only do this if fresh match
