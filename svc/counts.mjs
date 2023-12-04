@@ -211,8 +211,8 @@ async function updateTurbo(match) {
 }
 /*
 // Stores winrate of each subset of heroes in this game
-function updateCompositions(match, cb) {
-  async.each(generateMatchups(match, 5, true), (team, cb) => {
+function updateCompositions(match) {
+  generateMatchups(match, 5, true).forEach((team) => {
     const key = team.split(':')[0];
     const win = Number(team.split(':')[1]);
     db.raw(`INSERT INTO compositions (composition, games, wins)
@@ -221,12 +221,12 @@ function updateCompositions(match, cb) {
     DO UPDATE SET games = compositions.games + 1, wins = compositions.wins + ?
     `, [key, win, win]).asCallback(cb);
     redis.hincrby('compositions', team, 1, cb);
-  }, cb);
+  });
 }
 
 // Stores result of each matchup of subsets of heroes in this game
-function updateMatchups(match, cb) {
-  async.each(generateMatchups(match, 1), (key, cb) => {
+function updateMatchups(match) {
+  generateMatchups(match, 1).forEach((key) => {
     db.raw(`INSERT INTO matchups (matchup, num)
     VALUES (?, 1)
     ON CONFLICT(matchup)

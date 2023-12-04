@@ -967,9 +967,11 @@ export async function insertMatchPromise(match, options) {
     // Match ID
     // When it finished (start_time + duration)
     const name = process.env.name || process.env.ROLE || process.argv[1];
-    const message = `[${new Date().toISOString()}] [${name}] inserted [${options.type}] for match ${
-      match.match_id
-    } finished ${moment.unix(match.start_time + match.duration).fromNow()}`;
+    const message = `[${new Date().toISOString()}] [${name}] inserted [${
+      options.type
+    }] for match ${match.match_id} finished ${moment
+      .unix(match.start_time + match.duration)
+      .fromNow()}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');
