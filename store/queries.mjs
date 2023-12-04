@@ -592,91 +592,26 @@ function bulkIndexPlayer(bulkActions, cb) {
     );
   }
 }
-function insertPlayerRating(db, row, cb) {
-  async.series(
-    {
-      pr(cb) {
-        if (
-          row.match_id &&
-          (row.solo_competitive_rank || row.competitive_rank)
-        ) {
-          db('player_ratings')
-            .insert({
-              account_id: row.account_id,
-              match_id: row.match_id,
-              time: row.time,
-              solo_competitive_rank: row.solo_competitive_rank,
-              competitive_rank: row.competitive_rank,
-            })
-            .asCallback(cb);
-        } else {
-          cb();
-        }
+export async function insertPlayerRating(row) {
+  if (row.rank_tier) {
+    await upsertPromise(
+      db,
+      'rank_tier',
+      { account_id: row.account_id, rating: row.rank_tier },
+      { account_id: row.account_id }
+    );
+  }
+  if (row.leaderboard_rank) {
+    upsertPromise(
+      db,
+      'leaderboard_rank',
+      {
+        account_id: row.account_id,
+        rating: row.leaderboard_rank,
       },
-      scr(cb) {
-        if (row.solo_competitive_rank) {
-          upsert(
-            db,
-            'solo_competitive_rank',
-            {
-              account_id: row.account_id,
-              rating: row.solo_competitive_rank,
-            },
-            { account_id: row.account_id },
-            cb
-          );
-        } else {
-          cb();
-        }
-      },
-      cr(cb) {
-        if (row.competitive_rank) {
-          upsert(
-            db,
-            'competitive_rank',
-            {
-              account_id: row.account_id,
-              rating: row.competitive_rank,
-            },
-            { account_id: row.account_id },
-            cb
-          );
-        } else {
-          cb();
-        }
-      },
-      rt(cb) {
-        if (row.rank_tier) {
-          upsert(
-            db,
-            'rank_tier',
-            { account_id: row.account_id, rating: row.rank_tier },
-            { account_id: row.account_id },
-            cb
-          );
-        } else {
-          cb();
-        }
-      },
-      lr(cb) {
-        if (row.leaderboard_rank) {
-          upsert(
-            db,
-            'leaderboard_rank',
-            {
-              account_id: row.account_id,
-              rating: row.leaderboard_rank,
-            },
-            { account_id: row.account_id },
-            cb
-          );
-        } else {
-          cb();
-        }
-      },
-    },
-    cb
-  );
+      { account_id: row.account_id }
+    );
+  }
 }
 function writeCache(accountId, cache, cb) {
   return async.each(
@@ -1436,7 +1371,6 @@ export default {
   insertPlayerPromise,
   bulkIndexPlayer,
   insertMatchPromise,
-  insertPlayerRating,
   getHeroRankings,
   getHeroItemPopularity,
   getHeroBenchmarks,
