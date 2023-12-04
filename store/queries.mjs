@@ -1010,6 +1010,12 @@ function insertMatch(match, options, cb) {
       );
     });
   }
+  function updateCassandraPlayerCaches(cb) {
+    // Add the 10 player_match rows indexed by player
+    // We currently do this on all types
+    const copy = createMatchCopy(match, players);
+    return insertPlayerCache(copy, cb);
+  }
   function upsertMatchBlobs(cb) {
     // TODO (howard) this function is meant to eventually replace the cassandra match/player_match tables
     // NOTE: remove pgroup since we don't actually need it stored
@@ -1018,12 +1024,6 @@ function insertMatch(match, options, cb) {
     // in buildMatch we can assemble the data from all these pieces
     // After some retention period we stick the data in match archive and delete it
     cb();
-  }
-  function updateCassandraPlayerCaches(cb) {
-    // Add the 10 player_match rows indexed by player
-    // We currently do this on all types
-    const copy = createMatchCopy(match, players);
-    return insertPlayerCache(copy, cb);
   }
   function telemetry(cb) {
     // Publish to log stream
@@ -1173,8 +1173,8 @@ function insertMatch(match, options, cb) {
     // metaQueue.add()
     cb();
   }
-  function decideReplayParse(cb) {
-    // We use params like skipParse and forceParse to determine whether we want to parse or not
+  async function decideReplayParse(cb) {
+    // Params like skipParse and forceParse determine whether we want to parse or not
     // Otherwise this assumes a fresh match and checks to see if pro or tracked player
     // Returns the created parse job (or null)
     if (options.skipParse || match.game_mode === 19) {
@@ -1182,55 +1182,48 @@ function insertMatch(match, options, cb) {
       // not parsing this match
       return cb();
     }
-    // determine if any player in the match is tracked
-    return async.some(
-      match.players,
-      (p, cb) => {
-        redis.zscore('tracked', String(p.account_id), (err, score) =>
-          cb(err, Boolean(score))
-        );
-      },
-      async (err, hasTrackedPlayer) => {
-        if (err) {
-          return cb(err);
-        }
-        const doParse = hasTrackedPlayer || options.forceParse;
-        if (doParse) {
-          let priority = options.priority;
-          if (match.leagueid) {
-            priority = -1;
-          }
-          if (hasTrackedPlayer) {
-            priority = -2;
-          }
-          try {
-            const job = await queue.addReliableJob(
-              'parse',
-              {
-                data: {
-                  match_id: match.match_id,
-                  // leagueid to determine whether to upsert Postgres after parse
-                  leagueid: match.leagueid,
-                  // start_time and duration for logging
-                  start_time: match.start_time,
-                  duration: match.duration,
-                  pgroup: match.pgroup,
-                  origin: options.origin,
-                },
-              },
-              {
-                priority,
-                attempts: options.attempts || 15,
-              }
-            );
-            return cb(null, job);
-          } catch (e) {
-            return cb(e);
-          }
-        }
+    try {
+      // determine if any player in the match is tracked
+      const trackedScores = await Promise.all(
+        match.players.map((p) => {
+          return redis.zscore('tracked', String(p.account_id));
+        })
+      );
+      let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
+      const doParse = hasTrackedPlayer || options.forceParse;
+      if (!doParse) {
         return cb();
       }
-    );
+      let priority = options.priority;
+      if (match.leagueid) {
+        priority = -1;
+      }
+      if (hasTrackedPlayer) {
+        priority = -2;
+      }
+      const job = await queue.addReliableJob(
+        'parse',
+        {
+          data: {
+            match_id: match.match_id,
+            // leagueid to determine whether to upsert Postgres after parse
+            leagueid: match.leagueid,
+            // start_time and duration for logging
+            start_time: match.start_time,
+            duration: match.duration,
+            pgroup: match.pgroup,
+            origin: options.origin,
+          },
+        },
+        {
+          priority,
+          attempts: options.attempts || 15,
+        }
+      );
+      return cb(null, job);
+    } catch (e) {
+      return cb(e);
+    }
   }
   async.series(
     {
@@ -1238,8 +1231,8 @@ function insertMatch(match, options, cb) {
       upsertMatchPostgres: (cb) => upsertMatchPostgres(cb),
       getAverageRank,
       upsertMatchCassandra,
-      upsertMatchBlobs,
       updateCassandraPlayerCaches,
+      upsertMatchBlobs,
       clearRedisMatch,
       clearRedisPlayer,
       telemetry,
@@ -1249,7 +1242,7 @@ function insertMatch(match, options, cb) {
       decideProfile: (cb) => decideProfile(cb),
       decideGcData,
       decideMetaParse,
-      decideReplayParse,
+      decideReplayParse: (cb) => decideReplayParse(cb),
     },
     (err, results) => {
       cb(err, results.decideReplayParse);
