@@ -10,6 +10,7 @@ const supertest = require('supertest');
 const stripeLib = require('stripe');
 const pg = require('pg');
 const fs = require('fs');
+const util = require('util');
 const cassandraDriver = require('cassandra-driver');
 const swaggerParser = require('@apidevtools/swagger-parser');
 const config = require('../config');
@@ -707,91 +708,34 @@ describe('api limits', () => {
 });
 
 async function initElasticsearch() {
-  return new Promise(async (resolve, reject) => {
-    console.log('Create Elasticsearch Mapping');
-    const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
-    const { es } = await import('../store/elasticsearch.mjs');
-    async.series(
-      [
-        (cb) => {
-          es.indices.exists(
-            {
-              index: 'dota-test', // Check if index already exists, in which case, delete it
-            },
-            (err, exists) => {
-              if (err) {
-                console.warn(err);
-                cb();
-              } else if (exists.body) {
-                es.indices.delete(
-                  {
-                    index: 'dota-test',
-                  },
-                  (err) => {
-                    if (err) {
-                      console.warn(err);
-                    }
-                    cb();
-                  }
-                );
-              } else {
-                cb();
-              }
-            }
-          );
-        },
-        (cb) => {
-          es.indices.create(
-            {
-              index: 'dota-test',
-            },
-            cb
-          );
-        },
-        (cb) => {
-          es.indices.close(
-            {
-              index: 'dota-test',
-            },
-            cb
-          );
-        },
-        (cb) => {
-          es.indices.putSettings(
-            {
-              index: 'dota-test',
-              body: mapping.settings,
-            },
-            cb
-          );
-        },
-        (cb) => {
-          es.indices.putMapping(
-            {
-              index: 'dota-test',
-              type: 'player',
-              body: mapping.mappings.player,
-            },
-            cb
-          );
-        },
-        (cb) => {
-          es.indices.open(
-            {
-              index: 'dota-test',
-            },
-            cb
-          );
-        },
-      ],
-      (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      }
-    );
+  console.log('Create Elasticsearch Mapping');
+  const mapping = JSON.parse(fs.readFileSync('./elasticsearch/index.json'));
+  const { es } = await import('../store/elasticsearch.mjs');
+  const exists = await es.indices.exists({
+    index: 'dota-test', // Check if index already exists, in which case, delete it
+  });
+  if (exists.body) {
+    await es.indices.delete({
+      index: 'dota-test',
+    });
+  }
+  await es.indices.create({
+    index: 'dota-test',
+  });
+  await es.indices.close({
+    index: 'dota-test',
+  });
+  await es.indices.putSettings({
+    index: 'dota-test',
+    body: mapping.settings,
+  });
+  await es.indices.putMapping({
+    index: 'dota-test',
+    type: 'player',
+    body: mapping.mappings.player,
+  });
+  await es.indices.open({
+    index: 'dota-test',
   });
 }
 
@@ -894,7 +838,7 @@ describe('generateMatchups', () => {
     keys.forEach((k) => {
       redis.hincrby('matchups', k, 1);
     });
-    async.series([
+    const funcs = [
       function zeroVzero(cb) {
         supertest(app).get('/api/matchups').expect(200).end((err, res) => {
           assert.equal(res.body.t0, 1);
@@ -944,7 +888,8 @@ describe('generateMatchups', () => {
           cb(err);
         });
       },
-    ], done);
+    ];
+    done();
   });
 });
 */
