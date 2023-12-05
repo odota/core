@@ -3,7 +3,7 @@ import axios from 'axios';
 import config from '../config.js';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
-import cassandra from '../store/cassandra.mjs';
+import cassandra from '../store/cassandra.mts';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
 const health = {

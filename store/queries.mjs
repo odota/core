@@ -11,7 +11,7 @@ import compute from '../util/compute.mjs';
 import db from './db.mjs';
 import redis from './redis.mjs';
 import { es, INDEX } from './elasticsearch.mjs';
-import cassandra from './cassandra.mjs';
+import cassandra from './cassandra.mts';
 import { getKeys, clearCache } from './cacheFunctions.mjs';
 import { benchmarks } from '../util/benchmarksUtil.mjs';
 import { archiveGet } from './archive.mts';

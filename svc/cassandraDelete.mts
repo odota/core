@@ -1,6 +1,6 @@
 // Cleans up old data from Cassandra and optionally archives it
 import crypto from 'crypto';
-import cassandra from '../store/cassandra.mjs';
+import cassandra from '../store/cassandra.mts';
 import db from '../store/db.mjs';
 //@ts-ignore
 import { archivePut } from '../store/archive.mts';
