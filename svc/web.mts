@@ -15,7 +15,7 @@ import stripeLib from 'stripe';
 import { Redis } from 'ioredis';
 import WebSocket, { WebSocketServer } from 'ws';
 import keys from '../routes/keyManagement.mts';
-import api from '../routes/api.mjs';
+import api from '../routes/api.mts';
 import { insertPlayerPromise } from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mts';

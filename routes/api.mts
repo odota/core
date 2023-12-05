@@ -1,4 +1,4 @@
-import express from 'express';
+import { Router } from 'express';
 import moment from 'moment';
 import async from 'async';
 import playerFields from './playerFields.json' assert { type: 'json' };
@@ -8,7 +8,8 @@ import spec from './spec.mjs';
 import { readCache } from '../store/cacheFunctions.mts';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mts';
-const api = new express.Router();
+//@ts-ignore
+const api: Router = new Router();
 const { subkeys } = playerFields;
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 // Player caches middleware
@@ -45,25 +46,32 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
+  //@ts-ignore
   req.originalQuery = JSON.parse(JSON.stringify(req.query));
   // Enable significance filter by default, disable it if 0 is passed
   if (req.query.significant === '0') {
     delete req.query.significant;
   } else {
+    //@ts-ignore
     req.query.significant = 1;
   }
-  let filterCols = [];
+  let filterCols: string[] = [];
   Object.keys(req.query).forEach((key) => {
     // numberify and arrayify everything in query
+    //@ts-ignore
     req.query[key] = []
+      //@ts-ignore
       .concat(req.query[key])
       .map((e) => (Number.isNaN(Number(e)) ? e : Number(e)));
     // build array of required projections due to filters
+    //@ts-ignore
     filterCols = filterCols.concat(filterDeps[key] || []);
   });
+  //@ts-ignore
   req.queryObj = {
     project: ['match_id', 'player_slot', 'radiant_win']
       .concat(filterCols)
+      //@ts-ignore
       .concat((req.query.sort || []).filter((f) => subkeys[f])),
     filter: req.query || {},
     sort: req.query.sort,
@@ -87,6 +95,7 @@ api.use('/request/:jobId', (req, res, cb) => {
 });
 // Admin endpoints middleware
 api.use('/admin*', (req, res, cb) => {
+  //@ts-ignore
   if (req.user && admins.includes(req.user.account_id)) {
     return cb();
   }
@@ -99,7 +108,7 @@ api.get('/admin/apiMetrics', (req, res) => {
   const endTime = moment().endOf('month').format('YYYY-MM-DD');
   async.parallel(
     {
-      topAPI: (cb) => {
+      topAPI: (cb: ErrorCb) => {
         db.raw(
           `
         SELECT
@@ -123,9 +132,9 @@ api.get('/admin/apiMetrics', (req, res) => {
         LIMIT 10
         `,
           [startTime, endTime]
-        ).asCallback((err, res) => cb(err, err ? null : res.rows));
+        ).asCallback((err: Error | null, res: any) => cb(err, err ? null : res.rows));
       },
-      topAPIIP: (cb) => {
+      topAPIIP: (cb: ErrorCb) => {
         db.raw(
           `
         SELECT
@@ -150,9 +159,9 @@ api.get('/admin/apiMetrics', (req, res) => {
         LIMIT 10
         `,
           [startTime, endTime]
-        ).asCallback((err, res) => cb(err, err ? null : res.rows));
+        ).asCallback((err: Error | null, res: any) => cb(err, err ? null : res.rows));
       },
-      numAPIUsers: (cb) => {
+      numAPIUsers: (cb: ErrorCb) => {
         db.raw(
           `
         SELECT
@@ -163,17 +172,18 @@ api.get('/admin/apiMetrics', (req, res) => {
             AND timestamp <= ?
         `,
           [startTime, endTime]
-        ).asCallback((err, res) => cb(err, err ? null : res.rows));
+        ).asCallback((err: Error | null, res: any) => cb(err, err ? null : res.rows));
       },
-      topUsersIP: (cb) => {
+      topUsersIP: (cb: ErrorCb) => {
         redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
       },
-      numUsersIP: (cb) => {
+      numUsersIP: (cb: ErrorCb) => {
         redis.zcard('user_usage_count', cb);
       },
     },
-    (err, result) => {
+    (err: Error | null | unknown, result: any) => {
       if (err) {
+        //@ts-ignore
         return res.status(500).send(err.message);
       }
       return res.json(result);
@@ -186,7 +196,9 @@ api.get('/', (req, res) => {
 });
 // API endpoints
 Object.keys(spec.paths).forEach((path) => {
+  //@ts-ignore
   Object.keys(spec.paths[path]).forEach((verb) => {
+    //@ts-ignore
     const { route, func } = spec.paths[path][verb];
     // Use the 'route' function to get the route path if it's available; otherwise, transform the OpenAPI path to the Express format.
     const routePath = route
@@ -194,6 +206,7 @@ Object.keys(spec.paths).forEach((path) => {
       : path.replace(/{/g, ':').replace(/}/g, '');
     // Check if the callback function is defined before adding the route..
     if (typeof func === 'function') {
+      //@ts-ignore
       api[verb](routePath, func);
     } else {
       // If the function is missing, log a warning message with the problematic route path and verb
