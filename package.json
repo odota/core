@@ -3,9 +3,8 @@
   "description": "Open source Dota data platform",
   "version": "22.0.0",
   "license": "MIT",
-  "main": "index.js",
   "scripts": {
-    "start": "node index",
+    "start": "node index.mjs",
     "test": "NODE_ENV=test mocha --exit",
     "build": "npm install && npm run typecheck",
     "tsc": "tsc --project tsconfig.json",

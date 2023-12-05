@@ -7,7 +7,7 @@
 # Rebuild to replace mapped directory build
 npm run build
 
-pm2 start manifest.json --only web
+pm2 start ecosystem.config.js --only web
 
 # We shall now display logs indefinitely
 pm2 logs
