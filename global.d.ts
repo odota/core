@@ -73,11 +73,15 @@ interface MmrJob {
 }
 
 interface GCDataJob {
-  useGcDataArr: boolean;
+    match_id: number;
+    pgroup: any;
+  useGcDataArr?: boolean;
+  noRetry?: boolean;
 }
 
 interface ParseJob {
-  match_id: number;
+    match_id: number;
+    pgroup: any;
   origin?: DataOrigin;
 }
 
@@ -85,6 +89,13 @@ interface ParsedPlayer extends Player {
   kills_log: any[];
   obs_log: any[];
   purchases: any[];
+}
+
+interface GCPlayer extends Player {
+  // From GC
+  party_id: { low: number, high: number };
+  permanent_buffs: any[];
+  net_worth: number;
 }
 
 interface ProPlayer {
