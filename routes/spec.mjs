@@ -7,7 +7,7 @@ import queue from '../store/queue.mjs';
 import queries from '../store/queries.mjs';
 import search from '../store/search.mjs';
 import searchES from '../store/searchES.mjs';
-import buildMatch from '../store/buildMatch.mjs';
+import buildMatch from '../store/buildMatch.mts';
 import buildStatus from '../store/buildStatus.mjs';
 import playerFields from './playerFields.json' assert { type: 'json' };
 import utility from '../util/utility.mjs';

@@ -24,7 +24,8 @@ import retrieverPlayer from './data/retriever_player.json' assert { type: 'json'
 import detailsApiPro from './data/details_api_pro.json' assert { type: 'json' };
 import spec from '../routes/spec.mjs';
 import { getPlayerMatchesPromise, insertMatchPromise, insertPlayerPromise } from '../store/queries.mjs';
-import buildMatch from '../store/buildMatch.mjs';
+//@ts-ignore
+import buildMatch from '../store/buildMatch.mts';
 import { es } from '../store/elasticsearch.mjs';
 import redis from '../store/redis.mjs';
 import cassandra from '../store/cassandra.mjs';

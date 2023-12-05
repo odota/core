@@ -19,6 +19,7 @@ interface Match {
     lobby_type: number;
     game_mode: number;
     players: Player[];
+    cluster?: number;
 }
 
 interface LiveMatch extends Match {
@@ -28,6 +29,7 @@ interface LiveMatch extends Match {
 interface ParsedMatch extends Match {
     chat: any[];
     version: number;
+    cosmetics: any;
 }
 
 interface Player {
@@ -38,8 +40,10 @@ interface Player {
     deaths: number,
 
     // Not on most players but we sometimes add it from match
-    radiant_win?: boolean,
-    match_id?: number,
+    radiant_win?: boolean;
+    match_id?: number;
+    rank_tier?: number;
+    is_subscriber: boolean;
 }
 
 interface User {

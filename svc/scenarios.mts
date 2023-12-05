@@ -2,7 +2,8 @@
 import async from 'async';
 import util from 'util';
 import queue from '../store/queue.mjs';
-import buildMatch from '../store/buildMatch.mjs';
+//@ts-ignore
+import buildMatch from '../store/buildMatch.mts';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import su from '../util/scenariosUtil.mjs';

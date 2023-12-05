@@ -13,7 +13,7 @@ import {
 } from './queries.mjs';
 const { computeMatchData } = compute;
 const { buildReplayUrl, isContributor } = utility;
-async function extendPlayerData(player, match) {
+async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
   const p = {
     ...player,
     radiant_win: match.radiant_win,
@@ -37,7 +37,7 @@ async function extendPlayerData(player, match) {
   p.is_subscriber = Boolean(subscriber?.status);
   return Promise.resolve(p);
 }
-async function prodataInfo(matchId) {
+async function prodataInfo(matchId: string) {
   const result = await db
     .first([
       'radiant_team_id',
@@ -75,38 +75,26 @@ async function prodataInfo(matchId) {
     series_type: result.series_type,
   });
 }
-async function backfill(matchId) {
-  const match = {
+async function backfill(matchId: string) {
+  const matchObj = {
     match_id: Number(matchId),
   };
-  await new Promise((resolve, reject) => {
-    utility.getData(
-      utility.generateJob('api_details', match).url,
-      async (err, body) => {
-        if (err) {
-          console.error(err);
-          return reject(err);
-        }
-        // match details response
-        const match = body.result;
-        try {
-          await insertMatchPromise(match, {
-            type: 'api',
-            skipParse: true,
-          });
-        } catch (e) {
-          reject(e);
-        }
-        // Count for logging
-        utility.redisCount(redis, 'steam_api_backfill');
-        resolve();
-      }
+  const body = await utility.getDataPromise(
+      //@ts-ignore
+      utility.generateJob('api_details', matchObj).url
     );
-  });
+    // match details response
+    const match = body.result;
+      await insertMatchPromise(match, {
+        type: 'api',
+        skipParse: true,
+      });
+    // Count for logging
+    utility.redisCount(redis, 'steam_api_backfill');
 }
-async function getMatch(matchId) {
+async function getMatch(matchId: string) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
-    return Promise.resolve();
+    return null;
   }
   // Check if the match is parsed
   // if so we prefer the archive since Cassandra may contain an unparsed version
@@ -117,7 +105,7 @@ async function getMatch(matchId) {
       ])
     ).rows[0]
   );
-  let match = null;
+  let match: ParsedMatch | null = null;
   if (isParsed) {
     match = (await getArchivedMatch(matchId)) || (await getMatchData(matchId));
   } else {
@@ -126,11 +114,12 @@ async function getMatch(matchId) {
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
     await backfill(matchId);
+    //@ts-ignore
     match = await getMatchData(matchId);
   }
   if (!match) {
     // Still don't have it
-    return Promise.resolve();
+    return null;
   }
   utility.redisCount(redis, 'build_match');
   let playersMatchData = [];
@@ -153,12 +142,14 @@ async function getMatch(matchId) {
         ON players.account_id = notable_players.account_id
         WHERE players.account_id = ?
       `,
+          //@ts-ignore
           [r.account_id]
         )
         .then((names) => ({ ...r, ...names.rows[0] }))
     )
   );
   const playersPromise = Promise.all(
+    //@ts-ignore
     playersMatchData.map((p) => extendPlayerData(p, match))
   );
   const gcdataPromise = db.first().from('match_gcdata').where({
@@ -185,12 +176,13 @@ async function getMatch(matchId) {
     players,
   };
   if (cosmetics) {
-    const playersWithCosmetics = matchResult.players.map((p) => {
+    const playersWithCosmetics = matchResult.players.map((p: ParsedPlayer) => {
       const hero = constants.heroes[p.hero_id] || {};
       const playerCosmetics = cosmetics
         .filter(Boolean)
         .filter(
           (c) =>
+            //@ts-ignore
             match.cosmetics[c.item_id] === p.player_slot &&
             (!c.used_by_heroes || c.used_by_heroes === hero.name)
         );
@@ -219,7 +211,7 @@ async function getMatch(matchId) {
   };
   return Promise.resolve(matchResult);
 }
-async function buildMatch(matchId) {
+async function buildMatch(matchId: string) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {
