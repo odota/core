@@ -1,6 +1,6 @@
 import constants from 'dotaconstants';
 import config from '../config.js';
-import compute from '../util/compute.mjs';
+import compute from '../util/compute.mts';
 import utility from '../util/utility.mjs';
 import redis from './redis.mts';
 import db from './db.mjs';
@@ -13,7 +13,7 @@ import {
 } from './queries.mjs';
 const { computeMatchData } = compute;
 const { buildReplayUrl, isContributor } = utility;
-async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
+async function extendPlayerData(player: ParsedPlayerMatch, match: ParsedMatch) {
   const p = {
     ...player,
     radiant_win: match.radiant_win,

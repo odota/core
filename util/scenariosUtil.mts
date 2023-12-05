@@ -17,7 +17,7 @@ const teamScenariosQueryParams = [
   'courier_kill',
   'first_blood',
 ];
-function buildTeamScenario(scenario, isRadiant, match) {
+function buildTeamScenario(scenario: any, isRadiant: boolean, match: ParsedMatch) {
   return [
     {
       scenario,
@@ -29,8 +29,8 @@ function buildTeamScenario(scenario, isRadiant, match) {
 }
 const scenarioChecks = {
   scenarios: [
-    function itemTimings(match) {
-      const rows = [];
+    function itemTimings(match: ParsedMatch) {
+      const rows: any[] = [];
       match.players.forEach((player) => {
         if (player.purchase_log) {
           player.purchase_log.forEach((item) => {
@@ -50,9 +50,9 @@ const scenarioChecks = {
       });
       return rows;
     },
-    function laneRole(match) {
+    function laneRole(match: ParsedMatch) {
       // hero's lane role
-      const rows = [];
+      const rows: any[] = [];
       match.players.forEach((player) => {
         if (
           match.duration <= gameDurationBucket[gameDurationBucket.length - 1]
@@ -69,7 +69,7 @@ const scenarioChecks = {
     },
   ],
   team_scenarios: [
-    function firstBlood(match) {
+    function firstBlood(match: ParsedMatch) {
       const condition =
         match.objectives &&
         match.objectives.find((x) => x.type === 'CHAT_MESSAGE_FIRSTBLOOD');
@@ -79,7 +79,7 @@ const scenarioChecks = {
       }
       return [];
     },
-    function courierKill(match) {
+    function courierKill(match: ParsedMatch) {
       // team killed enemy courier at least once before the 3 min mark
       const condition =
         match.objectives &&
@@ -92,7 +92,7 @@ const scenarioChecks = {
       }
       return [];
     },
-    function chat(match) {
+    function chat(match: ParsedMatch) {
       // negative/positive words in chat before minute 1
       const rows = [];
       let radiantNegative = false;
@@ -162,8 +162,9 @@ const metadata = {
 /**
  * Make sure the match object has all required properties.
  * */
-function validateMatchProperties(match) {
+function validateMatchProperties(match: ParsedMatch) {
   return matchProperties.every(
+    //@ts-ignore
     (property) => match[property] !== undefined && match[property] !== null
   );
 }

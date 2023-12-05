@@ -5,15 +5,15 @@ import util from 'util';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
 import queue from './queue.mts';
-import su from '../util/scenariosUtil.mjs';
-import filter from '../util/filter.mjs';
-import compute from '../util/compute.mjs';
+import su from '../util/scenariosUtil.mts';
+import filter from '../util/filter.mts';
+import compute from '../util/compute.mts';
 import db from './db.mjs';
 import redis from './redis.mts';
 import { es, INDEX } from './elasticsearch.mts';
 import cassandra from './cassandra.mts';
 import { getKeys, clearCache } from './cacheFunctions.mts';
-import { benchmarks } from '../util/benchmarksUtil.mjs';
+import { benchmarks } from '../util/benchmarksUtil.mts';
 import { archiveGet } from './archive.mts';
 const {
   redisCount,

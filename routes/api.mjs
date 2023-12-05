@@ -2,7 +2,7 @@ import express from 'express';
 import moment from 'moment';
 import async from 'async';
 import playerFields from './playerFields.json' assert { type: 'json' };
-import filterDeps from '../util/filterDeps.mjs';
+import filterDeps from '../util/filterDeps.mts';
 import config from '../config.js';
 import spec from './spec.mjs';
 import { readCache } from '../store/cacheFunctions.mts';

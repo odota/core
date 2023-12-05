@@ -5,7 +5,7 @@ import urllib from 'url';
 import uuid from 'uuid';
 import moment from 'moment';
 import crypto from 'crypto';
-import laneMappings from './laneMappings.mjs';
+import laneMappings from './laneMappings.mts';
 import config from '../config.js';
 import contributors from '../CONTRIBUTORS.js';
 import { promisify } from 'util';

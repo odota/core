@@ -7,11 +7,11 @@ const { ancients } = constants;
  * - messages: the messages to create the counts over
  * - player_filter: if non-null, only count that player's messages
  * */
-function countWords(playerMatch, playerFilter) {
+function countWords(playerMatch: ParsedPlayerMatch, playerFilter: { player_slot: number } | null) {
   const messages = playerMatch.chat;
   // extract the message strings from the message objects
   // extract individual words from the message strings
-  let chatWords = [];
+  let chatWords: string[] = [];
   messages.forEach((message) => {
     // if there is no player_filter
     // if the passed player's player_slot matches this message's parseSlot converted to player_slot
@@ -21,10 +21,10 @@ function countWords(playerMatch, playerFilter) {
       chatWords.push(message.key);
     }
   });
-  chatWords = chatWords.join(' ');
-  const tokens = utility.tokenize(chatWords);
+  const chatWordsString = chatWords.join(' ');
+  const tokens = utility.tokenize(chatWordsString);
   // count how frequently each word occurs
-  const counts = {};
+  const counts: NumberDict = {};
   for (let i = 0; i < tokens.length; i += 1) {
     // ignore the empty string
     if (tokens[i]) {
@@ -40,7 +40,7 @@ function countWords(playerMatch, playerFilter) {
 /**
  * Computes additional properties from a match/player_match
  * */
-function computeMatchData(pm) {
+function computeMatchData(pm: ParsedPlayerMatch) {
   const selfHero = constants.heroes[pm.hero_id];
   // Compute patch based on start_time
   if (pm.start_time) {
@@ -193,7 +193,7 @@ function computeMatchData(pm) {
   }
   if (pm.purchase) {
     // account for stacks
-    if (pm.patch < 42) {
+    if (pm.patch && pm.patch < 42) {
       // In 7.23 dust changed to one per stack
       pm.purchase.dust *= 2;
     }

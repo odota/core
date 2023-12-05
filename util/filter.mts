@@ -1,10 +1,10 @@
 import utility from './utility.mjs';
 const { isRadiant } = utility;
-function filter(matches, filters) {
+function filter(matches: ParsedPlayerMatch[], filters: NumberArrayDict) {
   const curtime = Math.floor(Date.now() / 1000);
   // accept a hash of filters, run all the filters in the hash in series
   // console.log(filters);
-  const conditions = {
+  const conditions: {[key: string]: (m: ParsedPlayerMatch, key: number, arr: number[]) => boolean} = {
     // filter: player won
     win(m, key) {
       return Number(isRadiant(m) === m.radiant_win) === key;
