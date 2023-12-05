@@ -1,12 +1,15 @@
 import async from 'async';
 import utility from '../util/utility.mjs';
-export default function buildStatus(db, redis, cb) {
-  function generatePercentiles(arr) {
+import db from '../store/db.mts';
+import redis from '../store/redis.mts';
+
+export default function buildStatus(cb: ErrorCb) {
+  function generatePercentiles(arr: string[]) {
     // sort the list
     arr.sort((a, b) => Number(a) - Number(b));
     // console.log(arr);
     const percentiles = [50, 75, 90, 95, 99];
-    const result = {};
+    const result: NumberDict = {};
     arr.forEach((time, i) => {
       if (i >= arr.length * (percentiles[0] / 100)) {
         result[percentiles[0]] = Number(time);
@@ -81,13 +84,13 @@ export default function buildStatus(db, redis, cb) {
       seqNumDelay(cb) {
         // It's slow to query Steam API so use the value saved by monitor
         redis.hget('health', 'seqNumDelay', (err, data) => {
-          cb(err, JSON.parse(data)?.metric);
+          cb(err, data ? JSON.parse(data)?.metric : null);
         });
       },
       parseQueue(cb) {
         // It's slow to count in postgres so use the value saved by monitor
         redis.hget('health', 'parseDelay', (err, data) => {
-          cb(err, JSON.parse(data)?.metric);
+          cb(err, data ? JSON.parse(data)?.metric : null);
         });
       },
       fhQueue(cb) {
@@ -118,8 +121,8 @@ export default function buildStatus(db, redis, cb) {
             if (err) {
               return cb(err);
             }
-            const response = [];
-            results.forEach((result, i) => {
+            const response: any[] = [];
+            results?.forEach((result, i) => {
               if (i % 2 === 0) {
                 response.push({
                   hostname: result.split('.')[0],
@@ -141,8 +144,8 @@ export default function buildStatus(db, redis, cb) {
             if (err) {
               return cb(err);
             }
-            const response = [];
-            results.forEach((result, i) => {
+            const response: any[] = [];
+            results?.forEach((result, i) => {
               if (i % 2 === 0) {
                 response.push({
                   hostname: result.split('.')[0],
@@ -156,7 +159,7 @@ export default function buildStatus(db, redis, cb) {
       },
       load_times(cb) {
         redis.lrange('load_times', 0, -1, (err, arr) => {
-          cb(err, generatePercentiles(arr));
+          cb(err, generatePercentiles(arr ?? []));
         });
       },
       health(cb) {

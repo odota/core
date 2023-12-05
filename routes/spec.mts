@@ -8,7 +8,7 @@ import queries from '../store/queries.mjs';
 import search from '../store/search.mts';
 import searchES from '../store/searchES.mts';
 import buildMatch from '../store/buildMatch.mts';
-import buildStatus from '../store/buildStatus.mjs';
+import buildStatus from '../store/buildStatus.mts';
 import playerFields from './playerFields.mts';
 import utility from '../util/utility.mjs';
 import db from '../store/db.mts';
@@ -1546,7 +1546,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/status',
         func: (req, res, cb) => {
-          buildStatus(db, redis, (err: Error | null, status: any) => {
+          buildStatus((err, status) => {
             if (err) {
               return cb(err);
             }
