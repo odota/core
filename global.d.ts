@@ -73,15 +73,15 @@ interface MmrJob {
 }
 
 interface GCDataJob {
-    match_id: number;
-    pgroup: any;
+  match_id: number;
+  pgroup: any;
   useGcDataArr?: boolean;
   noRetry?: boolean;
 }
 
 interface ParseJob {
-    match_id: number;
-    pgroup: any;
+  match_id: number;
+  pgroup: any;
   origin?: DataOrigin;
 }
 
@@ -93,7 +93,7 @@ interface ParsedPlayer extends Player {
 
 interface GCPlayer extends Player {
   // From GC
-  party_id: { low: number, high: number };
+  party_id: { low: number; high: number };
   permanent_buffs: any[];
   net_worth: number;
 }

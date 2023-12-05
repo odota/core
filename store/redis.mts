@@ -1,4 +1,4 @@
-import { Redis } from "ioredis";
+import { Redis } from 'ioredis';
 import config from '../config.js';
 const { REDIS_URL } = config;
 console.log('[REDIS] connecting %s', REDIS_URL);

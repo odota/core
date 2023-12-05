@@ -12,7 +12,7 @@ import passportSteam from 'passport-steam';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import stripeLib from 'stripe';
-import { Redis } from "ioredis";
+import { Redis } from 'ioredis';
 import WebSocket, { WebSocketServer } from 'ws';
 import keys from '../routes/keyManagement.mjs';
 import api from '../routes/api.mjs';
