@@ -12,7 +12,7 @@ import os from 'os';
 import config from '../config.js';
 const advancedAuth = null;
 const app = express();
-const steamObj: {[key: string]: any} = {};
+const steamObj: { [key: string]: any } = {};
 const minUpTimeSeconds = 300;
 const timeoutMs = 5000;
 // maybe 200 per account?
@@ -184,20 +184,23 @@ function getGcMatchData(idx: string, matchId: string, cb: Function) {
   const timeout = setTimeout(() => {
     matchRequestDelayIncr += matchRequestDelayStep;
   }, timeoutMs);
-  return Dota2.requestMatchDetails(Number(matchId), (err: any, matchData: any) => {
-    if (matchData.result === 15) {
-      // Valve is blocking GC access to this match, probably a community prediction match
-      // Return a 200 success code with specific format, so we treat it as an unretryable error
-      return cb(null, { result: { status: matchData.result } });
+  return Dota2.requestMatchDetails(
+    Number(matchId),
+    (err: any, matchData: any) => {
+      if (matchData.result === 15) {
+        // Valve is blocking GC access to this match, probably a community prediction match
+        // Return a 200 success code with specific format, so we treat it as an unretryable error
+        return cb(null, { result: { status: matchData.result } });
+      }
+      matchSuccesses += 1;
+      const end = Date.now();
+      // Reset delay on success
+      matchRequestDelayIncr = 0;
+      console.log('received match %s in %sms', matchId, end - start);
+      clearTimeout(timeout);
+      return cb(err, matchData);
     }
-    matchSuccesses += 1;
-    const end = Date.now();
-    // Reset delay on success
-    matchRequestDelayIncr = 0;
-    console.log('received match %s in %sms', matchId, end - start);
-    clearTimeout(timeout);
-    return cb(err, matchData);
-  });
+  );
 }
 function init() {
   async.each(
@@ -490,16 +493,24 @@ app.get('/', (req, res, cb) => {
       });
     }
     lastRequestTime = curRequestTime;
-    return getGcMatchData(rKey, req.query.match_id as string, (err: any, data: any) => {
-      res.locals.data = data;
-      return cb(err);
-    });
+    return getGcMatchData(
+      rKey,
+      req.query.match_id as string,
+      (err: any, data: any) => {
+        res.locals.data = data;
+        return cb(err);
+      }
+    );
   }
   if (req.query.account_id) {
-    return getPlayerProfile(rKey, req.query.account_id as string, (err: any, data: any) => {
-      res.locals.data = data;
-      return cb(err);
-    });
+    return getPlayerProfile(
+      rKey,
+      req.query.account_id as string,
+      (err: any, data: any) => {
+        res.locals.data = data;
+        return cb(err);
+      }
+    );
   }
   res.locals.data = genStats();
   return cb();

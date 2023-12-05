@@ -9,5 +9,13 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["index.mts", "global.d.ts", "processors", "routes", "store", "svc", "util"]
+  "include": [
+    "index.mts",
+    "global.d.ts",
+    "processors",
+    "routes",
+    "store",
+    "svc",
+    "util"
+  ]
 }

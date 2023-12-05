@@ -19,9 +19,9 @@ const health = {
 setInterval(() => {
   Object.entries(health).forEach(async ([key, value]) => {
     let final: {
-      metric: number,
-      threshold: number,
-      timestamp?: number,
+      metric: number;
+      threshold: number;
+      timestamp?: number;
     } = {
       metric: 1,
       threshold: 1,
@@ -104,7 +104,9 @@ async function cassandraUsage() {
 }
 async function redisUsage() {
   const info = await redis.info();
-  const line = info.split('\n').find((line: string) => line.startsWith('used_memory'));
+  const line = info
+    .split('\n')
+    .find((line: string) => line.startsWith('used_memory'));
   return {
     metric: Number(line.split(':')[1]),
     threshold: 4 * 10 ** 9,

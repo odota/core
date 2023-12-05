@@ -123,7 +123,10 @@ const apps = arr.map((app) => {
     exec_mode: 'fork',
     instances: 1,
     name: app.script.split('/').slice(-1)[0].split('.')[0],
-    interpreter: (app.script.endsWith('.mts') || app.script.endsWith('.ts')) ? 'node_modules/.bin/tsx' : undefined,
+    interpreter:
+      app.script.endsWith('.mts') || app.script.endsWith('.ts')
+        ? 'node_modules/.bin/tsx'
+        : undefined,
   };
 });
 

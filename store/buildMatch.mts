@@ -80,17 +80,17 @@ async function backfill(matchId: string) {
     match_id: Number(matchId),
   };
   const body = await utility.getDataPromise(
-      //@ts-ignore
-      utility.generateJob('api_details', matchObj).url
-    );
-    // match details response
-    const match = body.result;
-      await insertMatchPromise(match, {
-        type: 'api',
-        skipParse: true,
-      });
-    // Count for logging
-    utility.redisCount(redis, 'steam_api_backfill');
+    //@ts-ignore
+    utility.generateJob('api_details', matchObj).url
+  );
+  // match details response
+  const match = body.result;
+  await insertMatchPromise(match, {
+    type: 'api',
+    skipParse: true,
+  });
+  // Count for logging
+  utility.redisCount(redis, 'steam_api_backfill');
 }
 async function getMatch(matchId: string) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
@@ -178,14 +178,12 @@ async function getMatch(matchId: string) {
   if (cosmetics) {
     const playersWithCosmetics = matchResult.players.map((p: ParsedPlayer) => {
       const hero = constants.heroes[p.hero_id] || {};
-      const playerCosmetics = cosmetics
-        .filter(Boolean)
-        .filter(
-          (c) =>
-            //@ts-ignore
-            match.cosmetics[c.item_id] === p.player_slot &&
-            (!c.used_by_heroes || c.used_by_heroes === hero.name)
-        );
+      const playerCosmetics = cosmetics.filter(Boolean).filter(
+        (c) =>
+          //@ts-ignore
+          match.cosmetics[c.item_id] === p.player_slot &&
+          (!c.used_by_heroes || c.used_by_heroes === hero.name)
+      );
       return {
         ...p,
         cosmetics: playerCosmetics,

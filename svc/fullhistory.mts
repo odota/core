@@ -66,7 +66,11 @@ async function processFullHistory(job: FullHistoryJob) {
     hero_id: heroId,
     matches_requested: 100,
   });
-  const getApiMatchPage = (player: FullHistoryJob, url: string, cb: Function) => {
+  const getApiMatchPage = (
+    player: FullHistoryJob,
+    url: string,
+    cb: Function
+  ) => {
     getData(url, (err: any, body: any) => {
       if (err) {
         // non-retryable error, probably the user's account is private

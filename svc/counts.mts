@@ -92,7 +92,11 @@ async function upsertMatchSample(match: Match) {
     return;
   }
 }
-async function updateRecord(field: string, match: Match, player: Player | {hero_id?: number}) {
+async function updateRecord(
+  field: string,
+  match: Match,
+  player: Player | { hero_id?: number }
+) {
   redis.zadd(
     `records:${field}`,
     //@ts-ignore

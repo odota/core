@@ -1,8 +1,5 @@
 // Updates Steam profile data for players periodically
-import {
-  insertPlayerPromise,
-  bulkIndexPlayer,
-} from '../store/queries.mjs';
+import { insertPlayerPromise, bulkIndexPlayer } from '../store/queries.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 const { getDataPromise, generateJob, convert64to32 } = utility;
@@ -20,7 +17,9 @@ while (true) {
   // We can also queue a rank tier/MMR request for these players
   //@ts-ignore
   const body = await getDataPromise(container.url);
-  const results = body.response.players.filter((player: User) => player.steamid);
+  const results = body.response.players.filter(
+    (player: User) => player.steamid
+  );
   const bulkUpdate = results.reduce((acc: any, player: User) => {
     acc.push(
       {

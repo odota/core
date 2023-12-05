@@ -23,7 +23,11 @@ import leaguesApi from './data/leagues_api.json' assert { type: 'json' };
 import retrieverPlayer from './data/retriever_player.json' assert { type: 'json' };
 import detailsApiPro from './data/details_api_pro.json' assert { type: 'json' };
 import spec from '../routes/spec.mjs';
-import { getPlayerMatchesPromise, insertMatchPromise, insertPlayerPromise } from '../store/queries.mjs';
+import {
+  getPlayerMatchesPromise,
+  insertMatchPromise,
+  insertPlayerPromise,
+} from '../store/queries.mjs';
 //@ts-ignore
 import buildMatch from '../store/buildMatch.mts';
 import { es } from '../store/elasticsearch.mjs';
@@ -735,7 +739,9 @@ describe('api limits', () => {
 
 async function initElasticsearch() {
   console.log('Create Elasticsearch Mapping');
-  const mapping = JSON.parse(readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }));
+  const mapping = JSON.parse(
+    readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' })
+  );
   const exists = await es.indices.exists({
     index: 'dota-test', // Check if index already exists, in which case, delete it
   });

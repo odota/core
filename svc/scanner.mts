@@ -33,7 +33,8 @@ async function scanApi(seqNum: number) {
         throw err;
       }
     }
-    const resp = data && data.result && data.result.matches ? data.result.matches : [];
+    const resp =
+      data && data.result && data.result.matches ? data.result.matches : [];
     console.log('[API] match_seq_num:%s, matches:%s', nextSeqNum, resp.length);
     await Promise.all(resp.map((match: Match) => processMatch(match)));
     // Completed inserting matches on this page so update redis

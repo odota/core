@@ -104,7 +104,6 @@ async function doArchive(matchId: number) {
     // Need to find a solution for this before starting deletion
     // We can mark backfilled matches ineligible for archival (but then we can never archive missed matches from scanner)
     // We could ensure that all of api/gcdata/parsed is present (But then we won't archive older matches that don't have gcdata)
-    
     // TODO (howard) Delete from Cassandra after archival
     // await cassandra.execute(
     //   "DELETE from player_matches where match_id = ?",
