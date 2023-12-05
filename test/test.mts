@@ -22,7 +22,7 @@ import heroesApi from './data/heroes_api.json' assert { type: 'json' };
 import leaguesApi from './data/leagues_api.json' assert { type: 'json' };
 import retrieverPlayer from './data/retriever_player.json' assert { type: 'json' };
 import detailsApiPro from './data/details_api_pro.json' assert { type: 'json' };
-import spec from '../routes/spec.mjs';
+import spec from '../routes/spec.mts';
 import {
   getPlayerMatchesPromise,
   insertMatchPromise,

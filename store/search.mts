@@ -10,7 +10,7 @@ function findPlayer(search: { account_id: string | number }, cb: Function) {
     .where(search)
     .asCallback(cb);
 }
-function search(options: { q: string }, cb: Function) {
+function search(options: { q: string }, cb: ErrorCb) {
   const query = options.q;
   async.parallel(
     {

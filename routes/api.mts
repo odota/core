@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import moment from 'moment';
 import async from 'async';
-import playerFields from './playerFields.json' assert { type: 'json' };
+import playerFields from './playerFields.mts';
 import filterDeps from '../util/filterDeps.mts';
 import config from '../config.js';
-import spec from './spec.mjs';
+import spec from './spec.mts';
 import { readCache } from '../store/cacheFunctions.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';

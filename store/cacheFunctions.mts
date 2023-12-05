@@ -19,7 +19,7 @@ export const clearCache = async (input: {
 export const sendDataWithCache = (
   req: Request,
   res: Response,
-  data: string,
+  data: any,
   key: string
 ) => {
   if (

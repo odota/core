@@ -9,6 +9,7 @@ declare module 'uuid';
 
 type StringDict = { [key: string]: string };
 type NumberArrayDict =  { [key: string]: number[] }
+type AnyDict = {[key: string]: any}
 type NumberDict = { [key: string]: number };
 type ErrorCb = (err?: Error | null | undefined | unknown, result?: any) => void;
 type StringErrorCb = (
@@ -53,6 +54,8 @@ interface Player {
   kills: number;
   deaths: number;
   assists: number;
+  denies: number;
+  level: number;
   gold_per_min: number;
   xp_per_min: number;
   last_hits: number;
@@ -65,6 +68,7 @@ interface Player {
   radiant_win?: boolean;
   match_id: number;
   lane_role: number;
+  is_radiant: boolean;
   isRadiant?: boolean;
   win: number;
   lose: number;
@@ -93,6 +97,7 @@ interface ParsedPlayer extends Player {
     item_uses: NumberDict;
     buyback_log: any[];
     killed: NumberDict;
+    stuns: number;
   
     //Added by GC
     party_size: number;
@@ -155,6 +160,11 @@ interface User {
   steamid: string;
   personaname: string;
   avatarfull: string;
+  
+  // Computed fields
+  is_contributor: boolean
+  is_subscriber: boolean
+  status: number
 }
 
 interface FullHistoryJob {
@@ -194,4 +204,31 @@ type QueueName = 'mmrQueue' | 'countsQueue' | 'fhQueue' | 'scenariosQueue' | 'pa
 type DataType = 'api' | 'parsed' | 'gcdata' | 'meta';
 type DataOrigin = 'scanner';
 
-// Various types of job objects mostly based on matches, e.g. adding origin
+type PathSpec = {
+  operationId: string
+  summary: string
+  description: string
+  tags: string[];
+  parameters?: any[];
+  responses: {
+    [key: number]: {
+      description: string;
+      content: any;
+    }
+  }
+  route: () => string;
+  func: (req: express.Request, res: express.Response, cb: ErrorCb) => void;
+}
+
+type OpenAPISpec = {
+  openapi: string,
+  info: any,
+  servers: any[],
+  components: any,
+  paths: {
+    [key: string]: {
+      get?: PathSpec
+      post?: PathSpec
+    }
+  }
+};
