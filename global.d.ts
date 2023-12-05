@@ -9,6 +9,7 @@ declare module 'passport-steam';
 type StringDict = { [key: string]: string };
 type NumberDict = { [key: string]: number };
 type ErrorCb = (err?: Error | null | undefined | unknown) => void
+type StringErrorCb = (err?: Error | null | undefined | unknown, result: string) => void
 
 interface Match {
     match_id: number;

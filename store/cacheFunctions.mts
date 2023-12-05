@@ -1,18 +1,21 @@
 import redis from './redis.mjs';
 import config from '../config.js';
+import type { Request, Response } from 'express';
 
 export const getKeys = () => ['wl', 'heroes', 'peers', 'counts'];
-export const readCache = (input, cb) => {
+export const readCache = (input: {key: string, account_id: string}, cb: StringErrorCb) => {
   // console.log(`[READCACHE] cache:${req.key}:${req.account_id}`);
   redis.get(`cache:${input.key}:${input.account_id}`, cb);
 };
-export const clearCache = async (input) => {
+export const clearCache = async (input: {key: string, account_id: string}) => {
   await redis.del(`cache:${input.key}:${input.account_id}`);
 };
-export const sendDataWithCache = (req, res, data, key) => {
+export const sendDataWithCache = (req: Request, res: Response, data: string, key: string) => {
   if (
     config.ENABLE_PLAYER_CACHE &&
+    //@ts-ignore
     req.originalQuery &&
+    //@ts-ignore
     !Object.keys(req.originalQuery).length
   ) {
     redis.setex(
