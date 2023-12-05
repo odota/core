@@ -1,12 +1,7 @@
 /**
  * File managing configuration for the application
  * */
-const dotenv = require('dotenv');
-const fs = require('fs');
-
-if (fs.existsSync('.env')) {
-  dotenv.config();
-}
+require('dotenv').config();
 
 const defaults = {
   STEAM_API_KEY: '', // for API reqs, in worker
