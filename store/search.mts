@@ -1,21 +1,20 @@
 import async from 'async';
 import db from './db.mjs';
 /**
- * @param db - database object
  * @param search - object for where parameter of query
  * @param cb - callback
  */
-function findPlayer(search, cb) {
+function findPlayer(search: { account_id: string | number }, cb: Function) {
   db.first(['account_id', 'personaname', 'avatarfull'])
     .from('players')
     .where(search)
     .asCallback(cb);
 }
-function search(options, cb) {
+function search(options: { q: string }, cb: Function) {
   const query = options.q;
   async.parallel(
     {
-      account_id(callback) {
+      account_id: (callback: Function) => {
         if (Number.isNaN(Number(query))) {
           return callback();
         }
@@ -26,7 +25,7 @@ function search(options, cb) {
           callback
         );
       },
-      personaname(callback) {
+      personaname: (callback: Function) => {
         db.raw(
           `
         SELECT * FROM 
@@ -37,7 +36,7 @@ function search(options, cb) {
         ORDER BY last_match_time DESC NULLS LAST;
         `,
           [`%${query}%`]
-        ).asCallback((err, result) => {
+        ).asCallback((err: Error | null, result: { rows: any[] }) => {
           if (err) {
             return callback(err);
           }
@@ -45,11 +44,11 @@ function search(options, cb) {
         });
       },
     },
-    (err, result) => {
+    (err: Error | null | undefined, result: any) => {
       if (err) {
         return cb(err);
       }
-      let ret = [];
+      let ret: any[] = [];
       Object.keys(result).forEach((key) => {
         if (result[key]) {
           ret = ret.concat(result[key]);

@@ -2,21 +2,20 @@ import async from 'async';
 import db from './db.mjs';
 import { es, INDEX } from './elasticsearch.mts';
 /**
- * @param db - database object
  * @param search - object for where parameter of query
  * @param cb - callback
  */
-function findPlayer(search, cb) {
+function findPlayer(search: { account_id: string | number }, cb: Function) {
   db.first(['account_id', 'personaname', 'avatarfull'])
     .from('players')
     .where(search)
     .asCallback(cb);
 }
-function search(options, cb) {
+function search(options: { q: string }, cb: Function) {
   const query = options.q;
   async.parallel(
     {
-      account_id(callback) {
+      account_id: (callback: Function) => {
         if (Number.isNaN(Number(query))) {
           return callback();
         }
@@ -27,7 +26,7 @@ function search(options, cb) {
           callback
         );
       },
-      personaname(callback) {
+      personaname: (callback: Function) => {
         es.search(
           {
             index: INDEX,
@@ -49,7 +48,7 @@ function search(options, cb) {
             }
             return callback(
               null,
-              body.hits.hits.map((e) => ({
+              body.hits.hits.map((e: any) => ({
                 account_id: Number(e._id),
                 personaname: e._source.personaname,
                 avatarfull: e._source.avatarfull,
@@ -61,11 +60,11 @@ function search(options, cb) {
         );
       },
     },
-    (err, result) => {
+    (err: Error | null | undefined, result: any) => {
       if (err) {
         return cb(err);
       }
-      let ret = [];
+      let ret: any[] = [];
       Object.keys(result).forEach((key) => {
         if (result[key]) {
           ret = ret.concat(result[key]);
