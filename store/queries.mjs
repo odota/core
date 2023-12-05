@@ -14,7 +14,7 @@ import { es, INDEX } from './elasticsearch.mjs';
 import cassandra from './cassandra.mjs';
 import { getKeys, clearCache } from './cacheFunctions.mjs';
 import { benchmarks } from '../util/benchmarksUtil.mjs';
-import { archiveGet } from './archive.mjs';
+import { archiveGet } from './archive.ts';
 const {
   redisCount,
   convert64to32,

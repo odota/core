@@ -8,7 +8,7 @@
     "test": "NODE_ENV=test mocha test/test.mts --exit --node-option import=tsx",
     "build": "npm install && npm run typecheck",
     "tsc": "tsc --project tsconfig.json",
-    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "typecheck": "tsc --project tsconfig.json --noEmit --allowImportingTsExtensions",
     "lint": "eslint . --ext .js,.mjs --ignore-path .gitignore",
     "lintfix": "eslint . --ext .js,.mjs --ignore-path .gitignore --fix",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",

@@ -14,15 +14,15 @@ const client = config.MATCH_ARCHIVE_S3_ENDPOINT
       // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property
     })
   : null;
-async function stream2buffer(stream) {
+async function stream2buffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const _buf = [];
-    stream.on('data', (chunk) => _buf.push(chunk));
+    const _buf: any[] = [];
+    stream.on('data', (chunk: any) => _buf.push(chunk));
     stream.on('end', () => resolve(Buffer.concat(_buf)));
-    stream.on('error', (err) => reject(err));
+    stream.on('error', (err: any) => reject(err));
   });
 }
-export async function archiveGet(key) {
+export async function archiveGet(key: string) {
   if (!client) {
     return null;
   }
@@ -44,12 +44,12 @@ export async function archiveGet(key) {
       result.length
     );
     return result;
-  } catch (e) {
+  } catch (e: any) {
     console.error('[ARCHIVE] get error:', e.Code);
     return null;
   }
 }
-export async function archivePut(key, blob) {
+export async function archivePut(key: string, blob: Buffer) {
   if (!client) {
     return null;
   }
@@ -68,7 +68,7 @@ export async function archivePut(key, blob) {
       data.length
     );
     return result;
-  } catch (e) {
+  } catch (e: any) {
     console.error('[ARCHIVE] put error:', e.Code);
     return null;
   }

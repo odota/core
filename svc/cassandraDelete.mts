@@ -2,7 +2,8 @@
 import crypto from 'crypto';
 import cassandra from '../store/cassandra.mjs';
 import db from '../store/db.mjs';
-import { archivePut } from '../store/archive.mjs';
+//@ts-ignore
+import { archivePut } from '../store/archive.ts';
 import { getMatchData, getPlayerMatchData } from '../store/queries.mjs';
 import { eachLimit } from '../util/utility.mjs';
 import config from '../config.js';

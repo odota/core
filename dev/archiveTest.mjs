@@ -1,4 +1,4 @@
-import { archivePut } from '../store/archive.mjs';
+import { archivePut } from '../store/archive';
 import {
   getArchivedMatch,
   getMatchData,
