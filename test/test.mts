@@ -3,6 +3,7 @@
  * Main test script to run tests
  * */
 process.env.NODE_ENV = 'test';
+import type { Express } from 'express';
 import { eachSeries, timesSeries } from 'async';
 import nock from 'nock';
 import assert from 'assert';
@@ -40,7 +41,7 @@ const {
 const initPostgresHost = `postgres://postgres:postgres@${INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = INIT_CASSANDRA_HOST;
 
-let app;
+let app: Express;
 // fake api responses
 nock('http://api.steampowered.com')
   // fake 500 error
@@ -109,6 +110,7 @@ describe('swagger schema', async function testSwaggerSchema() {
 describe('player_caches', () => {
   it('should have data in player_caches', async () => {
     // Test fetching matches for first player
+    //@ts-ignore
     const data = await getPlayerMatchesPromise(120269134, {
       project: ['match_id'],
     });
@@ -221,11 +223,11 @@ describe('api', () => {
           Object.keys(spec.paths),
           (path, cb) => {
             const replacedPath = path
-              .replace(/{match_id}/, 1781962623)
-              .replace(/{account_id}/, 120269134)
-              .replace(/{team_id}/, 15)
-              .replace(/{hero_id}/, 1)
-              .replace(/{league_id}/, 1)
+              .replace(/{match_id}/, '1781962623')
+              .replace(/{account_id}/, '120269134')
+              .replace(/{team_id}/, '15')
+              .replace(/{hero_id}/, '1')
+              .replace(/{league_id}/, '1')
               .replace(/{field}/, 'kills')
               .replace(/{resource}/, 'heroes');
             eachSeries(
@@ -418,7 +420,7 @@ describe('api management', () => {
                 account_id: 1,
               })
               .then((res2) => {
-                if (res.length === 0) {
+                if (res2.length === 0) {
                   throw Error('No API record found');
                 }
                 assert.equal(res2[0].customer_id, this.previousCustomer);
@@ -521,6 +523,7 @@ describe('api management', () => {
       .delete('/keys?loggedin=1')
       .then(async (res) => {
         assert.equal(res.statusCode, 200);
+        //@ts-ignore
         const stripe = stripeLib(STRIPE_SECRET);
 
         await stripe.invoiceItems.create({
@@ -574,7 +577,7 @@ describe('api management', () => {
 });
 describe('api limits', () => {
   before((done) => {
-    config.ENABLE_API_LIMIT = true;
+    config.ENABLE_API_LIMIT = '1';
     config.API_FREE_LIMIT = 10;
     redis
       .multi()
@@ -706,6 +709,8 @@ describe('api limits', () => {
                     redis.hgetall('usage_count', (err, res) => {
                       if (err) {
                         done(err);
+                      } else if (!res) {
+                        done('no result from usage_count');
                       } else {
                         const keys = Object.keys(res);
                         assert.equal(keys.length, 1);
@@ -722,14 +727,14 @@ describe('api limits', () => {
   });
 
   after(() => {
-    config.ENABLE_API_LIMIT = false;
+    config.ENABLE_API_LIMIT = '';
     config.API_FREE_LIMIT = 50000;
   });
 });
 
 async function initElasticsearch() {
   console.log('Create Elasticsearch Mapping');
-  const mapping = JSON.parse(readFileSync('./elasticsearch/index.json'));
+  const mapping = JSON.parse(readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }));
   const exists = await es.indices.exists({
     index: 'dota-test', // Check if index already exists, in which case, delete it
   });
