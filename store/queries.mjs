@@ -10,7 +10,7 @@ import filter from '../util/filter.mjs';
 import compute from '../util/compute.mjs';
 import db from './db.mjs';
 import redis from './redis.mts';
-import { es, INDEX } from './elasticsearch.mjs';
+import { es, INDEX } from './elasticsearch.mts';
 import cassandra from './cassandra.mts';
 import { getKeys, clearCache } from './cacheFunctions.mts';
 import { benchmarks } from '../util/benchmarksUtil.mjs';

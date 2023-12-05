@@ -30,7 +30,7 @@ import {
 } from '../store/queries.mjs';
 //@ts-ignore
 import buildMatch from '../store/buildMatch.mts';
-import { es } from '../store/elasticsearch.mjs';
+import { es } from '../store/elasticsearch.mts';
 import redis from '../store/redis.mts';
 import cassandra from '../store/cassandra.mts';
 import db from '../store/db.mjs';

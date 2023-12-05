@@ -1,6 +1,6 @@
 import async from 'async';
 import db from './db.mjs';
-import { es, INDEX } from './elasticsearch.mjs';
+import { es, INDEX } from './elasticsearch.mts';
 /**
  * @param db - database object
  * @param search - object for where parameter of query

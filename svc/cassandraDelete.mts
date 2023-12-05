@@ -100,7 +100,7 @@ async function doArchive(matchId: number) {
     // because we don't make another gcdata call if we already have replay info
     // e.g. we archive a pro match with full data, it gets deleted and then request it for parse
     // We'll have api and parse data but not gcdata since we don't refetch it
-    // Currently we archive anything that's parsed
+    // But currently we archive anything that's parsed, so we can overwrite with less data
     // Need to find a solution for this before starting deletion
     // We can mark backfilled matches ineligible for archival (but then we can never archive missed matches from scanner)
     // We could ensure that all of api/gcdata/parsed is present (But then we won't archive older matches that don't have gcdata)
