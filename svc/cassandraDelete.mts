@@ -6,7 +6,8 @@ import { archivePut } from '../store/archive.mjs';
 import { getMatchData, getPlayerMatchData } from '../store/queries.mjs';
 import { eachLimit } from '../util/utility.mjs';
 import config from '../config.js';
-function genRandomNumber(byteCount, radix) {
+
+function genRandomNumber(byteCount: number, radix: number): string {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`).toString(
     radix
   );
@@ -21,6 +22,7 @@ async function start() {
     // We can backfill these from Steam API on demand
     try {
       // Convert to signed bigint
+      //@ts-ignore
       const randomBigint = BigInt.asIntN(64, genRandomNumber(8, 10));
       const result = await cassandra.execute(
         'select match_id, version, token(match_id) from matches where token(match_id) >= ? limit 500 ALLOW FILTERING;',
@@ -84,7 +86,7 @@ async function start() {
     }
   }
 }
-async function doArchive(matchId) {
+async function doArchive(matchId: number) {
   // archive old parsed match blobs to s3 compatible storage
   const match = await getMatchData(matchId);
   const playerMatches = await getPlayerMatchData(matchId);

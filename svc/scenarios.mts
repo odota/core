@@ -6,7 +6,7 @@ import buildMatch from '../store/buildMatch.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import su from '../util/scenariosUtil.mjs';
-async function processScenarios(matchID) {
+async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);
   // Using buildMatch is unnecessarily expensive here since it also looks up player names etc.
   const match = await buildMatch(matchID);
@@ -18,9 +18,10 @@ async function processScenarios(matchID) {
   }
   const currentWeek = utility.epochWeek();
   Object.keys(su.scenarioChecks).forEach((table) => {
+    //@ts-ignore
     su.scenarioChecks[table].forEach((scenarioCheck) => {
       const rows = scenarioCheck(match);
-      async.eachSeries(rows, (row, cb) => {
+      async.eachSeries(rows, (row: any, cb: Function) => {
         row = Object.assign(row, {
           epoch_week: currentWeek,
           wins: row.wins ? '1' : '0',

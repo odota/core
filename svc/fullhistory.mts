@@ -20,7 +20,7 @@ const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once
 const parallelism = Math.min(40, apiKeys.length);
 
-async function updatePlayer(player) {
+async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
   await db('players')
     .update({
@@ -34,10 +34,11 @@ async function updatePlayer(player) {
   redisCount(redis, 'fullhistory');
 }
 
-async function processMatch(matchId) {
+async function processMatch(matchId: string) {
   const container = generateJob('api_details', {
     match_id: Number(matchId),
   });
+  //@ts-ignore
   const body = await getDataPromise(container.url);
   const match = body.result;
   await insertMatchPromise(match, {
@@ -46,7 +47,7 @@ async function processMatch(matchId) {
   });
 }
 
-async function processFullHistory(job) {
+async function processFullHistory(job: FullHistoryJob) {
   const player = job;
   if (Number(player.account_id) === 0) {
     return;
@@ -57,6 +58,7 @@ async function processFullHistory(job) {
   // const heroArray = ['0'];
   const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
+  //@ts-ignore
   player.match_ids = {};
   // make a request for every possible hero
   const container = generateJob('api_history', {
@@ -64,8 +66,8 @@ async function processFullHistory(job) {
     hero_id: heroId,
     matches_requested: 100,
   });
-  const getApiMatchPage = (player, url, cb) => {
-    getData(url, (err, body) => {
+  const getApiMatchPage = (player: FullHistoryJob, url: string, cb: Function) => {
+    getData(url, (err: any, body: any) => {
       if (err) {
         // non-retryable error, probably the user's account is private
         return cb(err);
@@ -77,19 +79,22 @@ async function processFullHistory(job) {
       // response for match history for single player
       const resp = body.result.matches;
       let startId = 0;
-      resp.forEach((match) => {
+      resp.forEach((match: any) => {
         // add match ids on each page to match_ids
         const matchId = match.match_id;
+        //@ts-ignore
         player.match_ids[matchId] = true;
         startId = match.match_id;
       });
       const rem = body.result.results_remaining;
+
       if (rem === 0 || player.short_history) {
         // no more pages
         return cb();
       }
       // paginate through to max 500 games if necessary with start_at_match_id=
       const parse = urllib.parse(url, true);
+      //@ts-ignore
       parse.query.start_at_match_id = startId - 1;
       parse.search = null;
       url = urllib.format(parse);
@@ -107,6 +112,7 @@ async function processFullHistory(job) {
   console.log('%s matches found', Object.keys(player.match_ids).length);
   player.fh_unavailable = false;
   // check what matches the player is already associated with
+  //@ts-ignore
   const docs = await getPlayerMatchesPromise(player.account_id, {
     project: ['match_id'],
   });

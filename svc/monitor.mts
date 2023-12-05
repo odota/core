@@ -18,13 +18,17 @@ const health = {
 
 setInterval(() => {
   Object.entries(health).forEach(async ([key, value]) => {
-    let final = {
+    let final: {
+      metric: number,
+      threshold: number,
+      timestamp?: number,
+    } = {
       metric: 1,
       threshold: 1,
     };
     try {
       final = await value();
-      final.timestamp = Math.floor(new Date() / 1000);
+      final.timestamp = Math.floor(Number(new Date()) / 1000);
       console.log('[%s]: %s', key, JSON.stringify(final));
     } catch (e) {
       console.log('[%s] error: %s', key, e);
@@ -100,7 +104,7 @@ async function cassandraUsage() {
 }
 async function redisUsage() {
   const info = await redis.info();
-  const line = info.split('\n').find((line) => line.startsWith('used_memory'));
+  const line = info.split('\n').find((line: string) => line.startsWith('used_memory'));
   return {
     metric: Number(line.split(':')[1]),
     threshold: 4 * 10 ** 9,

@@ -7,9 +7,11 @@ const { generateJob, getDataPromise } = utility;
 while (true) {
   console.time('doProPlayers');
   const container = generateJob('api_notable', {});
+  //@ts-ignore
   const body = await getDataPromise(container.url);
   await Promise.all(
-    body.player_infos.map((p) =>
+    body.player_infos.map((p: ProPlayer) =>
+      //@ts-ignore
       upsertPromise(db, 'notable_players', p, {
         account_id: p.account_id,
       })

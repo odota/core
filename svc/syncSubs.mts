@@ -3,9 +3,10 @@ import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
 import stripeLib from 'stripe';
+//@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
-async function run(cb) {
+async function run(cb: Function) {
   // Get list of current subscribers
   const result = [];
   for await (const sub of stripe.subscriptions.list({

@@ -2,18 +2,20 @@
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import { upsertPromise } from '../store/queries.mjs';
-const { invokeInterval, generateJob, getDataPromise } = utility;
+const { invokeInterval, generateJob, getData, getDataPromise } = utility;
 
-async function doHeroes(cb) {
+async function doHeroes(cb: Function) {
   const container = generateJob('api_heroes', {
     language: 'english',
   });
   try {
+    //@ts-ignore
     const body = await getDataPromise(container.url);
     if (!body || !body.result || !body.result.heroes) {
       return;
     }
-    const heroData = await getData(
+    const heroData = await getDataPromise(
+      //@ts-ignore
       'https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json'
     );
     if (!heroData) {
@@ -23,6 +25,7 @@ async function doHeroes(cb) {
       const hero = body.result.heroes.length;
       const heroDataHero = heroData[hero.id] || {};
       await upsertPromise(
+        //@ts-ignore
         db,
         'heroes',
         {

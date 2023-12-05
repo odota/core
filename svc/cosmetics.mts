@@ -8,16 +8,18 @@ const { cleanItemSchema, getDataPromise } = utility;
 
 while (true) {
   console.time('doCosmetics');
+  //@ts-ignore
   const items = await getDataPromise({
     url: 'https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt',
     raw: true,
   });
   const icons = await getDataPromise(
+    //@ts-ignore
     'https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json'
   );
   const itemData = vdf.parse(cleanItemSchema(items));
 
-  async function processItem(itemId) {
+  async function processItem(itemId: string) {
     const item = itemData.items_game.items[itemId];
     item.item_id = Number(itemId);
     const hero =
@@ -37,6 +39,7 @@ while (true) {
         item.image_path = icons[iconname];
       }
     }
+    //@ts-ignore
     await upsertPromise(db, 'cosmetics', item, {
       item_id: item.item_id,
     });

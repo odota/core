@@ -6,7 +6,7 @@ import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
 import utility from '../util/utility.mjs';
 const { invokeInterval } = utility;
-function doHeroStats(cb) {
+function doHeroStats(cb: Function) {
   const minTime = moment().subtract(30, 'day').format('X');
   const maxTime = moment().format('X');
   async.parallel(
@@ -73,8 +73,8 @@ function doHeroStats(cb) {
         ).asCallback(cb);
       },
       turboHeroes(cb) {
-        redis.hgetall('turboPicks', (err, picks) => {
-          redis.hgetall('turboWins', (err, wins) => {
+        redis.hgetall('turboPicks', (err: any, picks: any) => {
+          redis.hgetall('turboWins', (err: any, wins: any) => {
             const result = {
               rows: Object.keys(picks).map((key) => {
                 return {
@@ -89,14 +89,14 @@ function doHeroStats(cb) {
         });
       },
     },
-    (err, result) => {
+    (err: any, result: any) => {
       if (err) {
         return cb(err);
       }
       // Build object keyed by hero_id for each result array
       const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
       Object.keys(result).forEach((key) => {
-        result[key].rows.forEach((row) => {
+        result[key].rows.forEach((row: any) => {
           objectResponse[row.hero_id] = {
             ...objectResponse[row.hero_id],
             ...(key === 'publicHeroes'

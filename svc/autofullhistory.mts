@@ -9,7 +9,7 @@ while (true) {
   );
   console.log(result.rows);
   await Promise.all(
-    result.rows.map((row) =>
+    result.rows.map((row: any) =>
       queue.addJob(
         'fhQueue',
         JSON.stringify({

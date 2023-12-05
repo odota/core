@@ -6,10 +6,13 @@ import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
+import type Knex from 'knex';
+
+//@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
-function storeUsageCounts(cursor, cb) {
-  redis.hscan('usage_count', cursor, (err, results) => {
+function storeUsageCounts(cursor: number, cb: Function) {
+  redis.hscan('usage_count', cursor, (err: any, results: any[]) => {
     if (err) {
       cb(err);
     } else {
@@ -19,7 +22,8 @@ function storeUsageCounts(cursor, cb) {
       async.eachOfLimit(
         values,
         5,
-        (e, i, cb2) => {
+        //@ts-ignore
+        (e: any, i: number, cb2: Function) => {
           if (i % 2) {
             cb2();
           } else if (e.includes(':')) {
@@ -67,7 +71,7 @@ function storeUsageCounts(cursor, cb) {
             cb2();
           }
         },
-        (err) => {
+        (err: any) => {
           if (err) {
             return cb(err);
           }
@@ -80,7 +84,7 @@ function storeUsageCounts(cursor, cb) {
     }
   });
 }
-async function updateStripeUsage(cb) {
+async function updateStripeUsage(cb: Function) {
   const options = {
     plan: config.STRIPE_API_PLAN,
     limit: 100,
@@ -158,12 +162,12 @@ async function updateStripeUsage(cb) {
     cb(err);
   }
 }
-function getAPIKeys(db, cb) {
+function getAPIKeys(db: Knex, cb: Function) {
   db.raw(
     `
     SELECT api_key FROM api_keys WHERE api_key IS NOT NULL AND is_canceled IS NOT TRUE
     `
-  ).asCallback((err, result) => {
+  ).asCallback((err: any, result: any) => {
     if (err) {
       return cb(err);
     }
@@ -171,8 +175,8 @@ function getAPIKeys(db, cb) {
   });
 }
 invokeInterval(
-  (cb) => {
-    getAPIKeys(db, (err, rows) => {
+  (cb: Function) => {
+    getAPIKeys(db, (err: any, rows: any[]) => {
       if (err) {
         cb(err);
       } else if (rows.length > 0) {
@@ -182,7 +186,7 @@ invokeInterval(
           .multi()
           .del('api_keys')
           .sadd('api_keys', keys)
-          .exec((err, res) => {
+          .exec((err: any, res: any) => {
             if (err) {
               return cb(err);
             }
@@ -197,7 +201,7 @@ invokeInterval(
   5 * 60 * 1000
 ); // Update every 5 min
 invokeInterval(
-  (cb) => {
+  (cb: Function) => {
     storeUsageCounts(0, cb);
   },
   10 * 60 * 1000

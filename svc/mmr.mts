@@ -10,11 +10,12 @@ import {
   getRetrieverArr,
 } from '../util/utility.mjs';
 const retrieverArr = getRetrieverArr();
-async function processMmr(job) {
+async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
   const urls = retrieverArr.map(
     (r) => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
   );
+  //@ts-ignore
   const data = await getDataPromise({ url: urls });
   redisCount(redis, 'retriever_player');
   // NOTE: This leads to a massive number of updates on the player table

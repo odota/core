@@ -12,7 +12,7 @@ import os from 'os';
 import config from '../config.js';
 const advancedAuth = null;
 const app = express();
-const steamObj = {};
+const steamObj: {[key: string]: any} = {};
 const minUpTimeSeconds = 300;
 const timeoutMs = 5000;
 // maybe 200 per account?
@@ -23,7 +23,7 @@ const port = config.PORT || config.RETRIEVER_PORT;
 const matchRequestDelay = 500;
 const matchRequestDelayStep = 3;
 let matchRequestDelayIncr = 0;
-let lastRequestTime;
+let lastRequestTime: number | null = null;
 let matchRequests = 0;
 let matchSuccesses = 0;
 let profileRequests = 0;
@@ -138,20 +138,19 @@ function genStats() {
   };
   return data;
 }
-function shaHash(buffer) {
-  const h = advancedAuth.crypto.createHash('sha1');
-  h.update(buffer);
-  return h.digest();
-}
-function getSentryHashKey(user) {
-  return Buffer.from(`retriever:sentry:${user}`);
-}
-function getPlayerProfile(idx, accountId, cb) {
-  accountId = Number(accountId);
+// function shaHash(buffer) {
+//   const h = advancedAuth.crypto.createHash('sha1');
+//   h.update(buffer);
+//   return h.digest();
+// }
+// function getSentryHashKey(user) {
+//   return Buffer.from(`retriever:sentry:${user}`);
+// }
+function getPlayerProfile(idx: string, accountId: string, cb: Function) {
   const { Dota2 } = steamObj[idx];
   // console.log("requesting player profile %s", accountId);
   profileRequests += 1;
-  Dota2.requestProfileCard(accountId, (err, profileData) => {
+  Dota2.requestProfileCard(Number(accountId), (err: any, profileData: any) => {
     /*
         enum EStatID {
         k_eStat_SoloRank = 1;
@@ -167,7 +166,7 @@ function getPlayerProfile(idx, accountId, cb) {
     }
     const response = { ...profileData };
     profileSuccesses += 1;
-    profileData.slots.forEach((s) => {
+    profileData.slots.forEach((s: any) => {
       if (s.stat && s.stat.stat_id === 1) {
         response.solo_competitive_rank = s.stat.stat_score;
       }
@@ -178,14 +177,14 @@ function getPlayerProfile(idx, accountId, cb) {
     return cb(err, response);
   });
 }
-function getGcMatchData(idx, matchId, cb) {
+function getGcMatchData(idx: string, matchId: string, cb: Function) {
   const { Dota2 } = steamObj[idx];
   matchRequests += 1;
   const start = Date.now();
   const timeout = setTimeout(() => {
     matchRequestDelayIncr += matchRequestDelayStep;
   }, timeoutMs);
-  return Dota2.requestMatchDetails(Number(matchId), (err, matchData) => {
+  return Dota2.requestMatchDetails(Number(matchId), (err: any, matchData: any) => {
     if (matchData.result === 15) {
       // Valve is blocking GC access to this match, probably a community prediction match
       // Return a 200 success code with specific format, so we treat it as an unretryable error
@@ -203,7 +202,7 @@ function getGcMatchData(idx, matchId, cb) {
 function init() {
   async.each(
     Array.from(new Array(Math.min(accountsToUse, users.length)), (v, i) => i),
-    (i, cb) => {
+    (i: number, cb: Function) => {
       const client = new Steam.SteamClient();
       client.steamUser = new Steam.SteamUser(client);
       // client.steamFriends = new Steam.SteamFriends(client);
@@ -225,7 +224,7 @@ function init() {
         );
         client.steamUser.logOn(logOnDetails);
       });
-      client.on('logOnResponse', (logOnResp) => {
+      client.on('logOnResponse', (logOnResp: any) => {
         /*
             if (advancedAuth) {
               delete client.logOnDetails.two_factor_code;
@@ -316,7 +315,7 @@ function init() {
           }
         });
         */
-      client.on('error', (err) => {
+      client.on('error', (err: any) => {
         console.error(err);
         // if (
         //   advancedAuth &&
@@ -405,49 +404,49 @@ app.use((req, res, cb) => {
   }
   return cb();
 });
-if (advancedAuth) {
-  app.get('/auth', (req, res) => {
-    if (req.query.account) {
-      if (req.query.two_factor) {
-        const client = advancedAuth.pendingTwoFactorAuth[req.query.account];
-        if (client && client.pendingLogOn) {
-          client.logOnDetails.two_factor_code = req.query.two_factor;
-          delete client.logOnDetails.sha_sentryfile;
-          client.connect();
-          delete client.pendingLogOn;
-          return res.json({
-            result: 'success',
-          });
-        }
-        return res.status(400).json({
-          error: 'account not pending a two-factor authentication',
-        });
-      }
-      if (req.query.steam_guard) {
-        const client = advancedAuth.pendingSteamGuardAuth[req.query.account];
-        if (client && client.pendingLogOn) {
-          client.logOnDetails.auth_code = req.query.steam_guard;
-          delete client.logOnDetails.sha_sentryfile;
-          client.connect();
-          delete client.pendingLogOn;
-          return res.json({
-            result: 'success',
-          });
-        }
-        return res.status(400).json({
-          error: 'account not pending a SteamGuard authentication',
-        });
-      }
-      return res.status(400).json({
-        error: 'missing two_factor or steam_guard parameter',
-      });
-    }
-    return res.json({
-      twoFactorAuth: Object.keys(advancedAuth.pendingTwoFactorAuth),
-      steamGuardAuth: Object.keys(advancedAuth.pendingSteamGuardAuth),
-    });
-  });
-}
+// if (advancedAuth) {
+//   app.get('/auth', (req, res) => {
+//     if (req.query.account) {
+//       if (req.query.two_factor) {
+//         const client = advancedAuth.pendingTwoFactorAuth[req.query.account];
+//         if (client && client.pendingLogOn) {
+//           client.logOnDetails.two_factor_code = req.query.two_factor;
+//           delete client.logOnDetails.sha_sentryfile;
+//           client.connect();
+//           delete client.pendingLogOn;
+//           return res.json({
+//             result: 'success',
+//           });
+//         }
+//         return res.status(400).json({
+//           error: 'account not pending a two-factor authentication',
+//         });
+//       }
+//       if (req.query.steam_guard) {
+//         const client = advancedAuth.pendingSteamGuardAuth[req.query.account];
+//         if (client && client.pendingLogOn) {
+//           client.logOnDetails.auth_code = req.query.steam_guard;
+//           delete client.logOnDetails.sha_sentryfile;
+//           client.connect();
+//           delete client.pendingLogOn;
+//           return res.json({
+//             result: 'success',
+//           });
+//         }
+//         return res.status(400).json({
+//           error: 'account not pending a SteamGuard authentication',
+//         });
+//       }
+//       return res.status(400).json({
+//         error: 'missing two_factor or steam_guard parameter',
+//       });
+//     }
+//     return res.json({
+//       twoFactorAuth: Object.keys(advancedAuth.pendingTwoFactorAuth),
+//       steamGuardAuth: Object.keys(advancedAuth.pendingSteamGuardAuth),
+//     });
+//   });
+// }
 app.use((req, res, cb) => {
   console.log(
     'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s',
@@ -477,7 +476,7 @@ app.get('/', (req, res, cb) => {
   const rKey = keys[Math.floor(Math.random() * keys.length)];
   if (req.query.match_id) {
     // Don't allow requests coming in too fast
-    const curRequestTime = new Date();
+    const curRequestTime = Number(new Date());
     if (matchRequests > matchRequestLimit) {
       return res.status(403).json({ error: 'match request limit exceeded' });
     }
@@ -491,13 +490,13 @@ app.get('/', (req, res, cb) => {
       });
     }
     lastRequestTime = curRequestTime;
-    return getGcMatchData(rKey, req.query.match_id, (err, data) => {
+    return getGcMatchData(rKey, req.query.match_id as string, (err: any, data: any) => {
       res.locals.data = data;
       return cb(err);
     });
   }
   if (req.query.account_id) {
-    return getPlayerProfile(rKey, req.query.account_id, (err, data) => {
+    return getPlayerProfile(rKey, req.query.account_id as string, (err: any, data: any) => {
       res.locals.data = data;
       return cb(err);
     });
@@ -508,12 +507,15 @@ app.get('/', (req, res, cb) => {
 app.use((req, res) => {
   res.json(res.locals.data);
 });
+//@ts-ignore
 app.use((err, req, res) =>
+  //@ts-ignore
   res.status(500).json({
     error: err,
   })
 );
 const server = app.listen(port, () => {
-  const host = server.address().address;
+  //@ts-ignore
+  const host = server.address()?.address;
   console.log('[RETRIEVER] listening at http://%s:%s', host, port);
 });

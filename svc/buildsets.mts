@@ -3,7 +3,7 @@ import moment from 'moment';
 import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 
-export default async function buildSets(db, redis) {
+export default async function buildSets() {
   const docs = await db
     .select(['account_id'])
     .from('subscriber')
@@ -27,7 +27,7 @@ export default async function buildSets(db, redis) {
 while (true) {
   console.log('[BUILDSETS] rebuilding sets');
   console.time('buildsets');
-  await buildSets(db, redis);
+  await buildSets();
   console.timeEnd('buildsets');
   await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
 }

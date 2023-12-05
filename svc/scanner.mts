@@ -8,7 +8,7 @@ const { getDataPromise, generateJob } = utility;
 const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;
 
-async function scanApi(seqNum) {
+async function scanApi(seqNum: number) {
   let nextSeqNum = seqNum;
   let delayNextRequest = false;
   while (true) {
@@ -17,11 +17,12 @@ async function scanApi(seqNum) {
     });
     let data = null;
     try {
+      //@ts-ignore
       data = await getDataPromise({
         url: container.url,
         delay,
       });
-    } catch (err) {
+    } catch (err: any) {
       // unretryable steam error
       if (err?.result?.status === 2) {
         nextSeqNum += 1;
@@ -34,7 +35,7 @@ async function scanApi(seqNum) {
     }
     const resp = data && data.result && data.result.matches ? data.result.matches : [];
     console.log('[API] match_seq_num:%s, matches:%s', nextSeqNum, resp.length);
-    await Promise.all(resp.map((match) => processMatch(match)));
+    await Promise.all(resp.map((match: Match) => processMatch(match)));
     // Completed inserting matches on this page so update redis
     if (resp.length) {
       nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
@@ -51,7 +52,7 @@ async function scanApi(seqNum) {
   }
 }
 
-async function processMatch(match) {
+async function processMatch(match: Match) {
   // Optionally throttle inserts to prevent overload
   if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
     return;
@@ -76,6 +77,7 @@ if (config.START_SEQ_NUM) {
 } else if (config.NODE_ENV !== 'production') {
   // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
   const container = generateJob('api_history', {});
+  //@ts-ignore
   const data = await getDataPromise(container.url);
   await scanApi(data.result.matches[0].match_seq_num);
 } else {

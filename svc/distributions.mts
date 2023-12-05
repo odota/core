@@ -5,24 +5,25 @@ import constants from 'dotaconstants';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mjs';
 import utility from '../util/utility.mjs';
+import Knex from 'knex';
 const { invokeInterval } = utility;
-const sql = {};
+const sql: StringDict = {};
 const sqlq = fs.readdirSync('./sql');
 sqlq.forEach((f) => {
   sql[f.split('.')[0]] = fs.readFileSync(`./sql/${f}`, 'utf8');
 });
-function mapMmr(results) {
+function mapMmr(results: any) {
   const sum = results.rows.reduce(
-    (prev, current) => ({
+    (prev: any, current: any) => ({
       count: prev.count + current.count,
     }),
     {
       count: 0,
     }
   );
-  results.rows = results.rows.map((r, i) => {
+  results.rows = results.rows.map((r: any, i: number) => {
     r.cumulative_sum = results.rows.slice(0, i + 1).reduce(
-      (prev, current) => ({
+      (prev: any, current: any) => ({
         count: prev.count + current.count,
       }),
       {
@@ -34,23 +35,23 @@ function mapMmr(results) {
   results.sum = sum;
   return results;
 }
-function mapCountry(results) {
-  results.rows = results.rows.map((r) => {
+function mapCountry(results: any) {
+  results.rows = results.rows.map((r: any) => {
     const ref = constants.countries[r.loccountrycode];
     r.common = ref ? ref.name.common : r.loccountrycode;
     return r;
   });
   return results;
 }
-function loadData(key, mapFunc, cb) {
-  db.raw(sql[key]).asCallback((err, results) => {
+function loadData(key: string, mapFunc: Function, cb: Function) {
+  db.raw(sql[key]).asCallback((err: any, results: any) => {
     if (err) {
       return cb(err);
     }
     return cb(err, mapFunc(results));
   });
 }
-function doDistributions(cb) {
+function doDistributions(cb: Function) {
   async.parallel(
     {
       country_mmr(cb) {
@@ -63,7 +64,7 @@ function doDistributions(cb) {
         loadData('ranks', mapMmr, cb);
       },
     },
-    (err, result) => {
+    (err, result: any) => {
       if (err) {
         return cb(err);
       }

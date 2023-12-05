@@ -14,7 +14,7 @@ import config from '../config.js';
 import { benchmarks } from '../util/benchmarksUtil.mjs';
 const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
 
-async function updateHeroRankings(match) {
+async function updateHeroRankings(match: Match) {
   if (!isSignificant(match)) {
     return;
   }
@@ -54,7 +54,7 @@ async function updateHeroRankings(match) {
   );
 }
 
-async function upsertMatchSample(match) {
+async function upsertMatchSample(match: Match) {
   if (
     isSignificant(match) &&
     match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT
@@ -70,12 +70,14 @@ async function upsertMatchSample(match) {
         num_rank_tier: num || null,
       };
       const newMatch = { ...match, ...matchMmrData };
+      //@ts-ignore
       await upsertPromise(trx, 'public_matches', newMatch, {
         match_id: newMatch.match_id,
       });
       await Promise.all(
         (match.players || []).map((pm) => {
           pm.match_id = match.match_id;
+          //@ts-ignore
           return upsertPromise(trx, 'public_player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
@@ -90,9 +92,10 @@ async function upsertMatchSample(match) {
     return;
   }
 }
-async function updateRecord(field, match, player) {
+async function updateRecord(field: string, match: Match, player: Player | {hero_id?: number}) {
   redis.zadd(
     `records:${field}`,
+    //@ts-ignore
     match[field] || player[field],
     [match.match_id, match.start_time, player.hero_id].join(':')
   );
@@ -101,7 +104,7 @@ async function updateRecord(field, match, player) {
   const expire = moment().add(1, 'month').startOf('month').format('X');
   redis.expireat(`records:${field}`, expire);
 }
-async function updateRecords(match) {
+async function updateRecords(match: Match) {
   if (isSignificant(match) && match.lobby_type === 7) {
     updateRecord('duration', match, {});
     match.players.forEach((player) => {
@@ -118,7 +121,7 @@ async function updateRecords(match) {
     });
   }
 }
-async function updateLastPlayed(match) {
+async function updateLastPlayed(match: Match) {
   const filteredPlayers = (match.players || []).filter(
     (player) =>
       player.account_id && player.account_id !== getAnonymousAccountId()
@@ -126,6 +129,7 @@ async function updateLastPlayed(match) {
   const lastMatchTime = new Date(match.start_time * 1000);
   const bulkUpdate = filteredPlayers.reduce((acc, player) => {
     acc.push(
+      //@ts-ignore
       {
         update: {
           _id: player.account_id,
@@ -157,7 +161,7 @@ async function updateLastPlayed(match) {
 /**
  * Update table storing heroes played in a game for lookup of games by heroes played
  * */
-async function updateHeroSearch(match) {
+async function updateHeroSearch(match: Match) {
   const radiant = [];
   const dire = [];
   for (let i = 0; i < match.players.length; i += 1) {
@@ -188,7 +192,7 @@ async function updateHeroSearch(match) {
     [match.match_id, teamA, teamB, teamAWin, match.start_time]
   );
 }
-async function updateTurbo(match) {
+async function updateTurbo(match: Match) {
   if (match.game_mode === 23) {
     for (let i = 0; i < match.players.length; i += 1) {
       const player = match.players[i];
@@ -206,13 +210,14 @@ async function updateTurbo(match) {
   }
 }
 
-async function updateBenchmarks(match) {
+async function updateBenchmarks(match: Match) {
   if (match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT) {
     for (let i = 0; i < match.players.length; i += 1) {
       const p = match.players[i];
       // only do if all players have heroes
       if (p.hero_id) {
         Object.keys(benchmarks).forEach((key) => {
+          //@ts-ignore
           const metric = benchmarks[key](match, p);
           if (
             metric !== undefined &&
@@ -272,7 +277,7 @@ function updateMatchups(match) {
   }, cb);
 }
 */
-async function processCounts(match) {
+async function processCounts(match: Match) {
   console.log('match %s', match.match_id);
   await updateHeroRankings(match);
   await upsertMatchSample(match);

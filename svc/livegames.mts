@@ -6,15 +6,15 @@ import redis from '../store/redis.mjs';
 import db from '../store/db.mjs';
 import config from '../config.js';
 import { invokeInterval } from '../util/utility.mjs';
-function doLiveGames(cb) {
+function doLiveGames(cb: (err?: any) => void) {
   // Get the list of pro players
   db.select()
     .from('notable_players')
-    .asCallback((err, proPlayers) => {
+    .asCallback((err: any, proPlayers: ProPlayer[]) => {
       // Get the list of live games
       const apiKeys = config.STEAM_API_KEY.split(',');
       const liveGamesUrl = `https://api.steampowered.com/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKeys[0]}&partner=0`;
-      request.get(liveGamesUrl, (err, resp, body) => {
+      request.get(liveGamesUrl, (err: any, resp: any, body: any) => {
         if (err) {
           return cb(err);
         }
@@ -23,7 +23,7 @@ function doLiveGames(cb) {
         // add their name to the match object, save it to redis zset, keyed by server_steam_id
         return async.eachSeries(
           json.game_list,
-          (match, cb) => {
+          (match: LiveMatch, cb: Function) => {
             // let addToRedis = false;
             if (match && match.players) {
               match.players.forEach((player, i) => {

@@ -4,9 +4,10 @@ import db from '../store/db.mjs';
 import { upsertPromise } from '../store/queries.mjs';
 const { invokeInterval, generateJob, getDataPromise } = utility;
 
-async function doLeagues(cb) {
+async function doLeagues(cb: Function) {
   const container = generateJob('api_leagues', {});
   try {
+    //@ts-ignore
     const apiLeagues = await getDataPromise(container.url);
     for (let i = 0; i < apiLeagues.length; i++) {
       const league = apiLeagues[i];
@@ -25,6 +26,7 @@ async function doLeagues(cb) {
       league.ticket = null;
       league.banner = null;
       league.leagueid = league.league_id;
+      //@ts-ignore
       await upsertPromise(db, 'leagues', league, {
         leagueid: league.league_id,
       });

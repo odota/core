@@ -23,6 +23,7 @@ import utility from '../util/utility.mjs';
 import config from '../config.js';
 
 const SteamStrategy = passportSteam.Strategy;
+//@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { redisCount } = utility;
 const app = express();
@@ -42,15 +43,15 @@ const whitelistedPaths = [
   '/api/admin/apiMetrics',
   '/keys', // API Key management
 ];
-const pathCosts = {
+const pathCosts: NumberDict = {
   '/api/request': 30,
   '/api/explorer': 5,
 };
 // PASSPORT config
-passport.serializeUser((user, done) => {
+passport.serializeUser((user: any, done: Function) => {
   done(null, user.account_id);
 });
-passport.deserializeUser((accountId, done) => {
+passport.deserializeUser((accountId: string, done: Function) => {
   done(null, {
     account_id: accountId,
   });
@@ -63,7 +64,7 @@ passport.use(
       realm: host,
       apiKey,
     },
-    async (identifier, profile, cb) => {
+    async (identifier: string, profile: any, cb: Function) => {
       const player = profile._json;
       player.last_login = new Date();
       try {
@@ -84,7 +85,7 @@ app.use('/apps', (req, res) => {
 // Proxy to serve team logos over https
 app.use('/ugc', (req, res) => {
   request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
-    .on('response', (resp) => {
+    .on('response', (resp: any) => {
       resp.headers['content-type'] = 'image/png';
     })
     .pipe(res);
@@ -120,7 +121,7 @@ app.use((req, res, cb) => {
       req.headers.authorization.replace('Bearer ', '')) ||
     req.query.api_key;
   if (config.ENABLE_API_LIMIT && apiKey) {
-    redis.sismember('api_keys', apiKey, (err, resp) => {
+    redis.sismember('api_keys', apiKey, (err: any, resp: any) => {
       if (err) {
         cb(err);
       } else {
@@ -136,7 +137,7 @@ app.set('trust proxy', true);
 app.use((req, res, cb) => {
   const { ip } = req;
   res.locals.ip = ip;
-  let rateLimit = '';
+  let rateLimit: number | string = '';
   if (res.locals.isAPIRequest) {
     const requestAPIKey =
       (req.headers.authorization &&
@@ -158,7 +159,7 @@ app.use((req, res, cb) => {
     // not API request so check previous usage
     command.zscore('user_usage_count', res.locals.usageIdentifier);
   }
-  command.exec((err, resp) => {
+  command.exec((err: any, resp: number[][]) => {
     if (err) {
       console.log(err);
       return cb(err);
@@ -169,16 +170,16 @@ app.use((req, res, cb) => {
     const incrValue = resp[0]?.[1];
     const prevUsage = resp[2]?.[1];
     res.set({
-      'X-Rate-Limit-Remaining-Minute': rateLimit - incrValue,
+      'X-Rate-Limit-Remaining-Minute': Number(rateLimit) - incrValue,
       'X-IP-Address': ip,
     });
     if (!res.locals.isAPIRequest) {
       res.set(
         'X-Rate-Limit-Remaining-Month',
-        config.API_FREE_LIMIT - Number(prevUsage)
+        (config.API_FREE_LIMIT - Number(prevUsage)).toString()
       );
     }
-    if (incrValue > rateLimit && config.NODE_ENV !== 'test') {
+    if (incrValue > Number(rateLimit) && config.NODE_ENV !== 'test') {
       return res.status(429).json({
         error: 'rate limit exceeded',
       });
@@ -197,10 +198,10 @@ app.use((req, res, cb) => {
   });
 });
 // Telemetry middleware
-app.use((req, res, cb) => {
-  const timeStart = new Date();
+app.use((req: any, res: any, cb: Function) => {
+  const timeStart = Number(new Date());
   res.once('finish', () => {
-    const timeEnd = new Date();
+    const timeEnd = Number(new Date());
     const elapsed = timeEnd - timeStart;
     if (elapsed > 2000 || config.NODE_ENV === 'development') {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
@@ -224,7 +225,7 @@ app.use((req, res, cb) => {
           .zincrby('user_usage_count', 1, res.locals.usageIdentifier)
           .expireat('user_usage_count', utility.getEndOfMonth());
       }
-      multi.exec((err, res) => {
+      multi.exec((err: any, res: number) => {
         if (config.NODE_ENV === 'development') {
           console.log('usage count increment', err, res);
         }
@@ -245,7 +246,9 @@ app.use((req, res, cb) => {
         moment().startOf('hour').add(1, 'hour').format('X')
       );
     }
+    //@ts-ignore
     if (req.user && req.user.account_id) {
+      //@ts-ignore
       redis.zadd('visitors', moment().format('X'), req.user.account_id);
     }
     redis.lpush('load_times', elapsed);
@@ -285,7 +288,7 @@ app.route('/return').get(
   passport.authenticate('steam', {
     failureRedirect: '/api',
   }),
-  (req, res) => {
+  (req: any, res: any) => {
     if (config.UI_HOST) {
       return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
     }
@@ -293,6 +296,7 @@ app.route('/return').get(
   }
 );
 app.route('/logout').get((req, res) => {
+  //@ts-ignore
   req.logout();
   req.session = null;
   if (config.UI_HOST) {
@@ -300,7 +304,7 @@ app.route('/logout').get((req, res) => {
   }
   return res.redirect('/api');
 });
-app.route('/subscribeSuccess').get(async (req, res) => {
+app.route('/subscribeSuccess').get(async (req: any, res: any) => {
   if (!req.query.session_id) {
     return res.status(400).json({ error: 'no session ID' });
   }
@@ -319,7 +323,7 @@ app.route('/subscribeSuccess').get(async (req, res) => {
   // Send the user back to the subscribe page
   return res.redirect(`${config.UI_HOST}/subscribe`);
 });
-app.route('/manageSub').post(async (req, res) => {
+app.route('/manageSub').post(async (req: any, res: any) => {
   if (!req.user?.account_id) {
     return res.status(400).json({ error: 'no account ID' });
   }
@@ -349,7 +353,7 @@ app.use((req, res) =>
   })
 );
 // 500 route
-app.use((err, req, res, cb) => {
+app.use((err: any, req: any, res: any, cb: Function) => {
   console.log('[ERR]', req.originalUrl);
   redisCount(redis, '500_error');
   if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
@@ -366,9 +370,10 @@ const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);
 });
 const wss = new WebSocketServer({ server });
+//@ts-ignore
 const logSub = new Redis(config.REDIS_URL);
 logSub.subscribe(['api', 'parsed', 'gcdata']);
-logSub.on('message', (channel, message) => {
+logSub.on('message', (channel: string, message: string) => {
   // Emit it to all the connected websockets
   // Can we let the user choose channels to sub to?
   wss.clients.forEach(function each(client) {

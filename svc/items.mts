@@ -8,12 +8,14 @@ while (true) {
   const container = utility.generateJob('api_items', {
     language: 'english',
   });
+  //@ts-ignore
   const body = await utility.getDataPromise(container.url);
   if (!body || !body.result || !body.result.items) {
     throw new Error('invalid body');
   }
   await Promise.all(
-    body.result.items.map((item) =>
+    body.result.items.map((item: any) =>
+      //@ts-ignore
       upsertPromise(db, 'items', item, {
         id: item.id,
       })

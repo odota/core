@@ -10,6 +10,7 @@ const matches = await db.select(['match_id', 'start_time']).from('matches');
 for (let i = 0; i < matches.length; i++) {
   const match = matches[i];
   await upsertPromise(
+    //@ts-ignore
     db,
     'match_patch',
     {

@@ -3,8 +3,9 @@ import async from 'async';
 import db from '../store/db.mjs';
 import config from '../config.js';
 import utility from '../util/utility.mjs';
-function clearScenariosTables(cb) {
+function clearScenariosTables(cb: Function) {
   const currentWeek = utility.epochWeek();
+  //@ts-ignore
   async.parallel(
     [
       (cb) => {

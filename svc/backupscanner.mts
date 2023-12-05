@@ -10,9 +10,9 @@ const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);
 const delay = 1000;
-function processMatch(matchId, cb) {
+function processMatch(matchId: number, cb: ErrorCb) {
   // Check if exists
-  redis.get(`scanner_insert:${matchId}`, (err, res) => {
+  redis.get(`scanner_insert:${matchId}`, (err: any, res: string) => {
     if (err) {
       return cb(err);
     }
@@ -28,7 +28,7 @@ function processMatch(matchId, cb) {
         url,
         delay,
       },
-      async (err, body) => {
+      async (err: any, body: any) => {
         if (err) {
           throw err;
         }
@@ -53,7 +53,7 @@ function processMatch(matchId, cb) {
     );
   });
 }
-function processPlayer(accountId, cb) {
+function processPlayer(accountId: number, cb: ErrorCb) {
   const ajob = generateJob('api_history', {
     account_id: accountId,
   });
@@ -62,7 +62,7 @@ function processPlayer(accountId, cb) {
       url: ajob.url,
       delay,
     },
-    (err, body) => {
+    (err: any, body: any) => {
       if (err) {
         console.error(err);
       }
@@ -70,26 +70,26 @@ function processPlayer(accountId, cb) {
         // Skip this player on this iteration
         return cb();
       }
-      return redis.get('match_seq_num', (err, res) => {
+      return redis.get('match_seq_num', (err: any, res: string) => {
         if (err) {
           return cb(err);
         }
         // Get matches with recent seqnums
         const matches = body.result.matches
-          .filter((m) => m.match_seq_num > Number(res))
-          .map((m) => m.match_id);
+          .filter((m: any) => m.match_seq_num > Number(res))
+          .map((m: any) => m.match_id);
         return async.eachLimit(matches, 1, processMatch, cb);
       });
     }
   );
 }
-function start(err) {
+function start(err?: any) {
   if (err) {
     throw err;
   }
   console.log('starting backupscanner loop');
   setTimeout(() => {
-    redis.zrange('tracked', 0, -1, (err, ids) => {
+    redis.zrange('tracked', 0, -1, (err: any, ids: number[]) => {
       if (err) {
         throw err;
       }

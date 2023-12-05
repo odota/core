@@ -23,6 +23,7 @@ while (true) {
     const container = utility.generateJob('api_team_info_by_team_id', {
       start_at_team_id: m.team_id,
     });
+    //@ts-ignore
     let body = await utility.getDataPromise({
       url: container.url,
       raw: true,
@@ -38,6 +39,7 @@ while (true) {
     // JSON.parse will return an incorrect value in the logo field
     const logoRegex = /^"logo":(.*),$/m;
     const match = logoRegex.exec(raw);
+    //@ts-ignore
     const logoUgc = match[1];
     const ugcJob = utility.generateJob('api_get_ugc_file_details', {
       ugcid: logoUgc,
@@ -47,6 +49,7 @@ while (true) {
     });
     // Steam's CDN sometimes has better versions of team logos available
     try {
+      //@ts-ignore
       const cdnBody = await utility.getDataPromise({
         url: cdnJob.url,
         noRetry: true,
@@ -55,6 +58,7 @@ while (true) {
         t.team_id = m.team_id;
         t.logo_url = cdnJob.url;
         // console.log('[TEAMS] cdn: ', t);
+        //@ts-ignore
         await upsertPromise(db, 'teams', t, {
           team_id: m.team_id,
         });
@@ -64,6 +68,7 @@ while (true) {
       // This is fine, we failed to get CDN image info
       // Try getting image from ugc
       try {
+        //@ts-ignore
         const ugcBody = await utility.getDataPromise({
           url: ugcJob.url,
           noRetry: true,
@@ -73,6 +78,7 @@ while (true) {
           t.logo_url = ugcBody.data.url;
         }
         // console.log('[TEAMS] ugc: ', t);
+        //@ts-ignore
         await upsertPromise(db, 'teams', t, {
           team_id: m.team_id,
         });

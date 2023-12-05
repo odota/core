@@ -2,47 +2,47 @@ const config = require('./config.js');
 
 let arr = [
   {
-    script: 'svc/web.mjs',
+    script: 'svc/web.mts',
     group: 'web',
   },
   {
-    script: 'svc/retriever.mjs',
+    script: 'svc/retriever.mts',
     group: 'retriever',
   },
   {
-    script: 'svc/proxy.mjs',
+    script: 'svc/proxy.mts',
     group: 'proxy',
   },
   {
-    script: 'svc/parser.mjs',
+    script: 'svc/parser.mts',
     group: 'parser',
   },
   {
-    script: 'svc/apiadmin.mjs',
+    script: 'svc/apiadmin.mts',
     group: 'backend',
   },
   {
-    script: 'svc/mmr.mjs',
+    script: 'svc/mmr.mts',
     group: 'backend',
   },
   {
-    script: 'svc/profiler.mjs',
+    script: 'svc/profiler.mts',
     group: 'backend',
   },
   {
-    script: 'svc/scanner.mjs',
+    script: 'svc/scanner.mts',
     group: 'backend',
   },
   {
-    script: 'svc/fullhistory.mjs',
+    script: 'svc/fullhistory.mts',
     group: 'backend',
   },
   {
-    script: 'svc/autofullhistory.mjs',
+    script: 'svc/autofullhistory.mts',
     group: 'backend',
   },
   {
-    script: 'svc/monitor.mjs',
+    script: 'svc/monitor.mts',
     group: 'backend',
   },
   {
@@ -50,63 +50,63 @@ let arr = [
     group: 'backend',
   },
   {
-    script: 'svc/buildsets.mjs',
+    script: 'svc/buildsets.mts',
     group: 'backend',
   },
   {
-    script: 'svc/cosmetics.mjs',
+    script: 'svc/cosmetics.mts',
     group: 'backend',
   },
   {
-    script: 'svc/distributions.mjs',
+    script: 'svc/distributions.mts',
     group: 'backend',
   },
   {
-    script: 'svc/heroes.mjs',
+    script: 'svc/heroes.mts',
     group: 'backend',
   },
   {
-    script: 'svc/herostats.mjs',
+    script: 'svc/herostats.mts',
     group: 'backend',
   },
   {
-    script: 'svc/items.mjs',
+    script: 'svc/items.mts',
     group: 'backend',
   },
   {
-    script: 'svc/leagues.mjs',
+    script: 'svc/leagues.mts',
     group: 'backend',
   },
   {
-    script: 'svc/livegames.mjs',
+    script: 'svc/livegames.mts',
     group: 'backend',
   },
   {
-    script: 'svc/proplayers.mjs',
+    script: 'svc/proplayers.mts',
     group: 'backend',
   },
   {
-    script: 'svc/teams.mjs',
+    script: 'svc/teams.mts',
     group: 'backend',
   },
   {
-    script: 'svc/scenarios.mjs',
+    script: 'svc/scenarios.mts',
     group: 'backend',
   },
   {
-    script: 'svc/scenariosCleanup.mjs',
+    script: 'svc/scenariosCleanup.mts',
     group: 'backend',
   },
   {
-    script: 'svc/counts.mjs',
+    script: 'svc/counts.mts',
     group: 'backend',
   },
   {
-    script: 'svc/syncSubs.mjs',
+    script: 'svc/syncSubs.mts',
     group: 'backend',
   },
   {
-    script: 'svc/cassandraDelete.mjs',
+    script: 'svc/cassandraDelete.mts',
     group: 'backend',
   },
 ];

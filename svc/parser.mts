@@ -25,7 +25,7 @@ app.get('/healthz', (req, res) => {
   res.end('ok');
 });
 app.listen(PORT || PARSER_PORT);
-async function parseProcessor(job) {
+async function parseProcessor(job: ParseJob) {
   const match = job;
   const gcdata = await getGcData(match);
   let url = buildReplayUrl(gcdata.match_id, gcdata.cluster, gcdata.replay_salt);
@@ -39,6 +39,7 @@ async function parseProcessor(job) {
     } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${
       match.match_id
     }`,
+    //@ts-ignore
     { shell: true, maxBuffer: 10 * 1024 * 1024 }
   );
   const result = { ...JSON.parse(stdout), ...match };

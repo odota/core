@@ -13,6 +13,7 @@ const defaults = {
   PROVIDER: '', // The cloud provider used by the application (determines how environment data is downloaded)
   STEAM_ACCOUNT_DATA: '', // The URL to read Steam account data from
   NODE_ENV: 'development',
+  PORT: '', // Default port to use by services often set by the system
   FRONTEND_PORT: '5000',
   RETRIEVER_PORT: '5100',
   PARSER_PORT: '5200',
