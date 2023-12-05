@@ -93,6 +93,14 @@ async function doArchive(matchId) {
   );
   const result = await archivePut(matchId.toString(), blob);
   if (result) {
+    // TODO (howard) currently it's possible to re-archive with less data
+    // because we don't make another gcdata call if we already have replay info
+    // e.g. we archive a pro match with full data, it gets deleted and then request it for parse
+    // We'll have api and parse data but not gcdata since we don't refetch it
+    // Currently we archive anything that's parsed
+    // Need to find a solution for this before starting deletion
+    // We can mark backfilled matches ineligible for archival (but then we can never archive missed matches from scanner)
+    // We could ensure that all of api/gcdata/parsed is present (But then we won't archive older matches that don't have gcdata)
     // TODO (howard) Delete from Cassandra after archival
     // await cassandra.execute(
     //   "DELETE from player_matches where match_id = ?",

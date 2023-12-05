@@ -4,16 +4,23 @@ import db from './db.mjs';
 
 async function runQueue(queueName, parallelism, processor) {
   Array.from(new Array(parallelism), (v, i) => i).forEach(async (i) => {
+    try {
     while (true) {
       const job = await redis.blpop(queueName, '0');
       const jobData = JSON.parse(job[1]);
       await processor(jobData);
     }
+  } catch(e) {
+    console.error(e);
+    process.exit(1);
+  }
   });
+
 }
 
 async function runReliableQueue(queueName, parallelism, processor) {
   Array.from(new Array(parallelism), (v, i) => i).forEach(async (i) => {
+    try {
     while (true) {
       const trx = await db.transaction();
       const result = await trx.raw(
@@ -53,6 +60,10 @@ async function runReliableQueue(queueName, parallelism, processor) {
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     }
+  } catch(e) {
+    console.error(e);
+    process.exit(1);
+  }
   });
 }
 async function addJob(queueName, job) {
