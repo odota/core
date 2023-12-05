@@ -21,6 +21,13 @@ import heroesApi from './data/heroes_api.json' assert { type: 'json' };
 import leaguesApi from './data/leagues_api.json' assert { type: 'json' };
 import retrieverPlayer from './data/retriever_player.json' assert { type: 'json' };
 import detailsApiPro from './data/details_api_pro.json' assert { type: 'json' };
+import spec from '../routes/spec.mjs';
+import { getPlayerMatchesPromise, insertMatchPromise, insertPlayerPromise } from '../store/queries.mjs';
+import buildMatch from '../store/buildMatch.mjs';
+import { es } from '../store/elasticsearch.mjs';
+import redis from '../store/redis.mjs';
+import cassandra from '../store/cassandra.mjs';
+import db from '../store/db.mjs';
 
 const { Pool } = pg;
 const {
@@ -33,11 +40,7 @@ const {
 const initPostgresHost = `postgres://postgres:postgres@${INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = INIT_CASSANDRA_HOST;
 
-// these are loaded later, as the database needs to be created when these are required
-let db;
-let cassandra;
 let app;
-let redis;
 // fake api responses
 nock('http://api.steampowered.com')
   // fake 500 error
@@ -81,7 +84,6 @@ before(async function setup() {
 });
 describe('swagger schema', async function testSwaggerSchema() {
   this.timeout(2000);
-  const spec = (await import('../routes/spec.mjs')).default;
   it('should be valid', (cb) => {
     const validOpts = {
       validate: {
@@ -106,7 +108,6 @@ describe('swagger schema', async function testSwaggerSchema() {
 });
 describe('player_caches', () => {
   it('should have data in player_caches', async () => {
-    const { getPlayerMatchesPromise } = await import('../store/queries.mjs');
     // Test fetching matches for first player
     const data = await getPlayerMatchesPromise(120269134, {
       project: ['match_id'],
@@ -141,7 +142,6 @@ describe('replay parse', function () {
       });
     console.log('inserting match and requesting parse');
     try {
-      const { insertMatchPromise } = await import('../store/queries.mjs');
       const job = await insertMatchPromise(matchData, {
         type: 'api',
         forceParse: true,
@@ -156,7 +156,6 @@ describe('replay parse', function () {
     await new Promise((resolve) => setTimeout(resolve, 20000));
     console.log('checking parsed match');
     // ensure parse data got inserted
-    const buildMatch = (await import('../store/buildMatch.mjs')).default;
     const match = await buildMatch(tests[key].match_id);
     // console.log(match.players[0]);
     assert.ok(match.players);
@@ -731,7 +730,6 @@ describe('api limits', () => {
 async function initElasticsearch() {
   console.log('Create Elasticsearch Mapping');
   const mapping = JSON.parse(readFileSync('./elasticsearch/index.json'));
-  const { es } = await import('../store/elasticsearch.mjs');
   const exists = await es.indices.exists({
     index: 'dota-test', // Check if index already exists, in which case, delete it
   });
@@ -761,7 +759,6 @@ async function initElasticsearch() {
 }
 
 async function initRedis() {
-  redis = (await import('../store/redis.mjs')).default;
   console.log('wiping redis');
   await redis.flushdb();
 }
@@ -783,7 +780,6 @@ async function initPostgres() {
   const query = readFileSync('./sql/create_tables.sql', 'utf8');
   await client2.query(query);
   // ready to create client
-  db = (await import('../store/db.mjs')).default;
   console.log('insert postgres test data');
   // populate the DB with this leagueid so we insert a pro match
   await db.raw(
@@ -803,7 +799,6 @@ async function initCassandra() {
     "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };"
   );
   // ready to create client
-  cassandra = (await import('../store/cassandra.mjs')).default;
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
     .split(';')
     .filter((cql) => cql.length > 1);
@@ -821,7 +816,6 @@ async function startServices() {
 
 async function loadMatches() {
   console.log('loading matches');
-  const { insertMatchPromise } = await import('../store/queries.mjs');
   const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
   for (let i = 0; i < arr.length; i++) {
     const m = arr[i];
@@ -834,7 +828,6 @@ async function loadMatches() {
 }
 
 async function loadPlayers() {
-  const { insertPlayerPromise } = await import('../store/queries.mjs');
   console.log('loading players');
   await Promise.all(
     summariesApi.response.players.map((p) => insertPlayerPromise(db, p, true))
