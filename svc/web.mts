@@ -17,7 +17,7 @@ import WebSocket, { WebSocketServer } from 'ws';
 import keys from '../routes/keyManagement.mts';
 import api from '../routes/api.mts';
 import { insertPlayerPromise } from '../store/queries.mjs';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import utility from '../util/utility.mjs';
 import config from '../config.js';

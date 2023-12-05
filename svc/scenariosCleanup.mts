@@ -1,6 +1,6 @@
 // Cleans up old data from the database (originally used for scenarios but now also does other cleanup)
 import async from 'async';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import config from '../config.js';
 import utility from '../util/utility.mjs';
 function clearScenariosTables(cb: Function) {

@@ -14,7 +14,7 @@ import config from '../config.js';
 import queue from '../store/queue.mts';
 import { insertMatchPromise } from '../store/queries.mjs';
 import { promisify } from 'util';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, NODE_ENV, PARSER_HOST, PARSER_PARALLELISM } = config;
 const numCPUs = os.cpus().length;

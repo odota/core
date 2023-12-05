@@ -33,7 +33,7 @@ import buildMatch from '../store/buildMatch.mts';
 import { es } from '../store/elasticsearch.mts';
 import redis from '../store/redis.mts';
 import cassandra from '../store/cassandra.mts';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 
 const { Pool } = pg;
 const {

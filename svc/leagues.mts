@@ -1,6 +1,6 @@
 // Updates the list of leagues in the database
 import utility from '../util/utility.mjs';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mjs';
 const { invokeInterval, generateJob, getDataPromise } = utility;
 

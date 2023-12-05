@@ -2,7 +2,7 @@ import moment from 'moment';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
 import { insertMatchPromise, upsertPromise } from './queries.mjs';
-import db from './db.mjs';
+import db from './db.mts';
 import redis from './redis.mts';
 const secret = config.RETRIEVER_SECRET;
 const { getDataPromise, redisCount } = utility;

@@ -1,5 +1,5 @@
 import async from 'async';
-import db from './db.mjs';
+import db from './db.mts';
 import { es, INDEX } from './elasticsearch.mts';
 /**
  * @param search - object for where parameter of query

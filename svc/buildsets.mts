@@ -1,7 +1,7 @@
 // Builds sets of data, e.g. tracked players in the background
 import moment from 'moment';
 import redis from '../store/redis.mts';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 
 export default async function buildSets() {
   const docs = await db

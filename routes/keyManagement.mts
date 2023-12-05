@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import moment from 'moment';
 import async from 'async';
 import stripeLib from 'stripe';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import config from '../config.js';
 //@ts-ignore

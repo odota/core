@@ -1,5 +1,5 @@
 // Syncs the list of subscribers from Stripe to the database
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
 import stripeLib from 'stripe';

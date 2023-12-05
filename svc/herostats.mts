@@ -2,7 +2,7 @@
 import constants from 'dotaconstants';
 import moment from 'moment';
 import async from 'async';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import utility from '../util/utility.mjs';
 const { invokeInterval } = utility;

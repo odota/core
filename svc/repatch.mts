@@ -1,6 +1,6 @@
 //NOT ENABLED: Updates the patch assigned to each pro match based on start_time
 import constants from 'dotaconstants';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mjs';
 import utility from '../util/utility.mjs';
 

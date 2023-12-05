@@ -1,5 +1,5 @@
 // Randomly requests history refreshes for users to fill in missing matches
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import queue from '../store/queue.mts';
 
 while (true) {

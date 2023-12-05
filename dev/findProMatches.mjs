@@ -1,5 +1,5 @@
 import { insertMatchPromise } from '../store/queries.mjs';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import { generateJob, getData } from '../util/utility.mjs';
 
 // const leagueUrl = generateJob('api_leagues', {}).url;

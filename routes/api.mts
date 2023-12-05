@@ -6,7 +6,7 @@ import filterDeps from '../util/filterDeps.mts';
 import config from '../config.js';
 import spec from './spec.mjs';
 import { readCache } from '../store/cacheFunctions.mts';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 //@ts-ignore
 const api: Router = new Router();

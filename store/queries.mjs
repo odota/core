@@ -8,7 +8,7 @@ import queue from './queue.mts';
 import su from '../util/scenariosUtil.mts';
 import filter from '../util/filter.mts';
 import compute from '../util/compute.mts';
-import db from './db.mjs';
+import db from './db.mts';
 import redis from './redis.mts';
 import { es, INDEX } from './elasticsearch.mts';
 import cassandra from './cassandra.mts';

@@ -3,7 +3,7 @@ import config from '../config.js';
 import compute from '../util/compute.mts';
 import utility from '../util/utility.mjs';
 import redis from './redis.mts';
-import db from './db.mjs';
+import db from './db.mts';
 import {
   getPlayerMatchData,
   getMatchData,

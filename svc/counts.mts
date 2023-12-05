@@ -1,7 +1,7 @@
 // Processes a queue of new matches to update totals/ratings
 import moment from 'moment';
 import redis from '../store/redis.mts';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import utility from '../util/utility.mjs';
 import {
   getMatchRankTier,

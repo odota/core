@@ -3,10 +3,10 @@ import async from 'async';
 import moment from 'moment';
 import stripeLib from 'stripe';
 import redis from '../store/redis.mts';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
-import type Knex from 'knex';
+import type { knex } from 'knex';
 
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
@@ -162,7 +162,7 @@ async function updateStripeUsage(cb: Function) {
     cb(err);
   }
 }
-function getAPIKeys(db: Knex, cb: Function) {
+function getAPIKeys(db: knex.Knex, cb: Function) {
   db.raw(
     `
     SELECT api_key FROM api_keys WHERE api_key IS NOT NULL AND is_canceled IS NOT TRUE

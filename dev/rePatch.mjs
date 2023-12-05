@@ -2,7 +2,7 @@
  * Recalculate patch ID for matches in match table
  * */
 import constants from 'dotaconstants';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mjs';
 import utility from '../util/utility.mjs';
 

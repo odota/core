@@ -1,4 +1,4 @@
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 
 function randByCentralLimitTheorem() {
   let v = 0;

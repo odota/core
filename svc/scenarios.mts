@@ -4,7 +4,7 @@ import util from 'util';
 import queue from '../store/queue.mts';
 //@ts-ignore
 import buildMatch from '../store/buildMatch.mts';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import utility from '../util/utility.mjs';
 import su from '../util/scenariosUtil.mjs';
 async function processScenarios(matchID: string) {

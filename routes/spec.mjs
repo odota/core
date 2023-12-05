@@ -11,7 +11,7 @@ import buildMatch from '../store/buildMatch.mts';
 import buildStatus from '../store/buildStatus.mjs';
 import playerFields from './playerFields.json' assert { type: 'json' };
 import utility from '../util/utility.mjs';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import packageJson from '../package.json' assert { type: 'json' };
 import { sendDataWithCache } from '../store/cacheFunctions.mts';

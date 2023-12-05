@@ -1,4 +1,4 @@
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mjs';
 
 db.select(['radiant_team_id', 'dire_team_id', 'match_id'])

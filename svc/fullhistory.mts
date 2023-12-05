@@ -9,7 +9,7 @@ import {
   generateJob,
   eachLimit,
 } from '../util/utility.mjs';
-import db from '../store/db.mjs';
+import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import queue from '../store/queue.mts';
 import {
