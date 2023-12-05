@@ -1,4 +1,4 @@
-import { archivePut } from '../store/archive';
+import { archivePut } from '../store/archive.mts';
 import {
   getArchivedMatch,
   getMatchData,
