@@ -62,7 +62,7 @@ async function parseProcessor(job) {
   console.log('[PARSER] completed parse of match %s', match.match_id);
   return true;
 }
-runReliableQueue(
+await runReliableQueue(
   'parse',
   Number(PARSER_PARALLELISM) || numCPUs,
   parseProcessor

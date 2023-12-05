@@ -45,4 +45,4 @@ async function processScenarios(matchID) {
     });
   });
 }
-queue.runQueue('scenariosQueue', 1, processScenarios);
+await queue.runQueue('scenariosQueue', 1, processScenarios);

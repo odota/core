@@ -272,7 +272,7 @@ function updateMatchups(match) {
   }, cb);
 }
 */
-async function processCounts(match, cb) {
+async function processCounts(match) {
   console.log('match %s', match.match_id);
   await updateHeroRankings(match);
   await upsertMatchSample(match);
@@ -282,4 +282,4 @@ async function processCounts(match, cb) {
   await updateTurbo(match);
   await updateBenchmarks(match);
 }
-queue.runQueue('countsQueue', 1, processCounts);
+await queue.runQueue('countsQueue', 1, processCounts);

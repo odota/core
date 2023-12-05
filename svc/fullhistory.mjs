@@ -129,4 +129,4 @@ async function processFullHistory(job) {
   await eachLimit(promiseFuncs, parallelism);
   await updatePlayer(player);
 }
-queue.runQueue('fhQueue', 10, processFullHistory);
+await queue.runQueue('fhQueue', 10, processFullHistory);

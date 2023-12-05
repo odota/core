@@ -46,7 +46,7 @@ let arr = [
       "group": "backend",
     },
     {
-      "name": "fullhistory",
+      "name": "autofullhistory",
       "script": "svc/autofullhistory.mjs",
       "group": "backend",
     },

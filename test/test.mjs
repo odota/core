@@ -23,7 +23,13 @@ import retrieverPlayer from './data/retriever_player.json' assert { type: 'json'
 import detailsApiPro from './data/details_api_pro.json' assert { type: 'json' };
 
 const { Pool } = pg;
-const { INIT_POSTGRES_HOST, INIT_CASSANDRA_HOST, RETRIEVER_HOST, STRIPE_SECRET, POSTGRES_URL } = config;
+const {
+  INIT_POSTGRES_HOST,
+  INIT_CASSANDRA_HOST,
+  RETRIEVER_HOST,
+  STRIPE_SECRET,
+  POSTGRES_URL,
+} = config;
 const initPostgresHost = `postgres://postgres:postgres@${INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = INIT_CASSANDRA_HOST;
 
@@ -156,9 +162,9 @@ describe('replay parse', function () {
     assert.ok(match.players);
     assert.ok(match.players[0]);
     assert.equal(match.players[0].killed.npc_dota_creep_badguys_melee, 46);
-    assert.ok(match.players[0].lh_t)
+    assert.ok(match.players[0].lh_t);
     assert.ok(match.players[0].lh_t.length);
-    assert.ok(match.teamfights)
+    assert.ok(match.teamfights);
     assert.ok(match.teamfights.length);
     assert.ok(match.draft_timings);
     assert.ok(match.radiant_gold_adv);

@@ -41,5 +41,5 @@ while (true) {
   await Promise.all(
     results.map((player) => insertPlayerPromise(db, player, false))
   );
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 }
