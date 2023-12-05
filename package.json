@@ -4,7 +4,7 @@
   "version": "22.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "node index.mjs",
+    "start": "tsx index.mts",
     "test": "NODE_ENV=test mocha --exit",
     "build": "npm install && npm run typecheck",
     "tsc": "tsc --project tsconfig.json",

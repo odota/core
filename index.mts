@@ -12,7 +12,7 @@ const ecosystem = await import('./ecosystem.config.js');
 if (process.env.ROLE) {
   // if role variable is set just run that script
   const app = ecosystem.apps.find((app) => app.name === process.env.ROLE);
-  import('./' + app.script);
+  import('./' + app?.script);
 } else if (process.env.GROUP) {
   // or run the group with pm2
   cp.execSync('pm2 start ecosystem.config.js');
