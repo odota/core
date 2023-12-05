@@ -5,7 +5,7 @@ import moment from 'moment';
 import async from 'async';
 import stripeLib from 'stripe';
 import db from '../store/db.mjs';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import config from '../config.js';
 const stripe = stripeLib(config.STRIPE_SECRET);
 const stripeAPIPlan = config.STRIPE_API_PLAN;

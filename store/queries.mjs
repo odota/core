@@ -9,10 +9,10 @@ import su from '../util/scenariosUtil.mjs';
 import filter from '../util/filter.mjs';
 import compute from '../util/compute.mjs';
 import db from './db.mjs';
-import redis from './redis.mjs';
+import redis from './redis.mts';
 import { es, INDEX } from './elasticsearch.mjs';
 import cassandra from './cassandra.mts';
-import { getKeys, clearCache } from './cacheFunctions.mjs';
+import { getKeys, clearCache } from './cacheFunctions.mts';
 import { benchmarks } from '../util/benchmarksUtil.mjs';
 import { archiveGet } from './archive.mts';
 const {

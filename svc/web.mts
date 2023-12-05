@@ -12,13 +12,13 @@ import passportSteam from 'passport-steam';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import stripeLib from 'stripe';
-import Redis from 'ioredis';
+import { Redis } from "ioredis";
 import WebSocket, { WebSocketServer } from 'ws';
 import keys from '../routes/keyManagement.mjs';
 import api from '../routes/api.mjs';
 import { insertPlayerPromise } from '../store/queries.mjs';
 import db from '../store/db.mjs';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
 
@@ -121,7 +121,7 @@ app.use((req, res, cb) => {
       req.headers.authorization.replace('Bearer ', '')) ||
     req.query.api_key;
   if (config.ENABLE_API_LIMIT && apiKey) {
-    redis.sismember('api_keys', apiKey, (err: any, resp: any) => {
+    redis.sismember('api_keys', apiKey as string, (err, resp) => {
       if (err) {
         cb(err);
       } else {
@@ -159,7 +159,7 @@ app.use((req, res, cb) => {
     // not API request so check previous usage
     command.zscore('user_usage_count', res.locals.usageIdentifier);
   }
-  command.exec((err: any, resp: number[][]) => {
+  command.exec((err, resp) => {
     if (err) {
       console.log(err);
       return cb(err);
@@ -167,10 +167,10 @@ app.use((req, res, cb) => {
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       console.log('[WEB] rate limit increment', resp);
     }
-    const incrValue = resp[0]?.[1];
-    const prevUsage = resp[2]?.[1];
+    const incrValue = resp![0]?.[1];
+    const prevUsage = resp![2]?.[1];
     res.set({
-      'X-Rate-Limit-Remaining-Minute': Number(rateLimit) - incrValue,
+      'X-Rate-Limit-Remaining-Minute': Number(rateLimit) - Number(incrValue),
       'X-IP-Address': ip,
     });
     if (!res.locals.isAPIRequest) {
@@ -179,7 +179,7 @@ app.use((req, res, cb) => {
         (config.API_FREE_LIMIT - Number(prevUsage)).toString()
       );
     }
-    if (incrValue > Number(rateLimit) && config.NODE_ENV !== 'test') {
+    if (Number(incrValue) > Number(rateLimit) && config.NODE_ENV !== 'test') {
       return res.status(429).json({
         error: 'rate limit exceeded',
       });
@@ -225,7 +225,7 @@ app.use((req: any, res: any, cb: Function) => {
           .zincrby('user_usage_count', 1, res.locals.usageIdentifier)
           .expireat('user_usage_count', utility.getEndOfMonth());
       }
-      multi.exec((err: any, res: number) => {
+      multi.exec((err, res) => {
         if (config.NODE_ENV === 'development') {
           console.log('usage count increment', err, res);
         }
@@ -370,9 +370,8 @@ const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);
 });
 const wss = new WebSocketServer({ server });
-//@ts-ignore
 const logSub = new Redis(config.REDIS_URL);
-logSub.subscribe(['api', 'parsed', 'gcdata']);
+logSub.subscribe('api', 'parsed', 'gcdata');
 logSub.on('message', (channel: string, message: string) => {
   // Emit it to all the connected websockets
   // Can we let the user choose channels to sub to?

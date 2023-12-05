@@ -1,6 +1,6 @@
 // Processes a queue of new matches to update totals/ratings
 import moment from 'moment';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import {
@@ -203,9 +203,9 @@ async function updateTurbo(match: Match) {
       const heroId = player.hero_id;
       if (heroId) {
         const win = Number(isRadiant(player) === match.radiant_win);
-        redis.hincrby('turboPicks', heroId, 1);
+        redis.hincrby('turboPicks', heroId.toString(), 1);
         if (win) {
-          redis.hincrby('turboWins', heroId, 1);
+          redis.hincrby('turboWins', heroId.toString(), 1);
         }
       }
     }

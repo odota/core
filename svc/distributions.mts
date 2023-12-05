@@ -3,7 +3,7 @@ import fs from 'fs';
 import async from 'async';
 import constants from 'dotaconstants';
 import db from '../store/db.mjs';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import utility from '../util/utility.mjs';
 import Knex from 'knex';
 const { invokeInterval } = utility;

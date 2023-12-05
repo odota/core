@@ -2,7 +2,7 @@
 import async from 'async';
 import moment from 'moment';
 import stripeLib from 'stripe';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import db from '../store/db.mjs';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
@@ -11,13 +11,13 @@ import type Knex from 'knex';
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
-function storeUsageCounts(cursor: number, cb: Function) {
-  redis.hscan('usage_count', cursor, (err: any, results: any[]) => {
+function storeUsageCounts(cursor: string | number, cb: Function) {
+  redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
       cb(err);
     } else {
-      const cursor = results[0];
-      const values = results[1];
+      const cursor = results![0];
+      const values = results![1];
       const apiTimestamp = moment().startOf('day');
       async.eachOfLimit(
         values,
@@ -52,8 +52,8 @@ function storeUsageCounts(cursor: number, cb: Function) {
                       apiRecord.customer_id,
                       apiTimestamp,
                       '',
-                      values[i + 1],
-                      values[i + 1],
+                      values?.[i + 1],
+                      values?.[i + 1],
                     ]
                   );
                 }
@@ -186,7 +186,7 @@ invokeInterval(
           .multi()
           .del('api_keys')
           .sadd('api_keys', keys)
-          .exec((err: any, res: any) => {
+          .exec((err, res) => {
             if (err) {
               return cb(err);
             }

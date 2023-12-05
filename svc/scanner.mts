@@ -1,7 +1,7 @@
 // Fetches new matches from the Steam API using the sequential endpoint
 import utility from '../util/utility.mjs';
 import config from '../config.js';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import { insertMatchPromise } from '../store/queries.mjs';
 
 const { getDataPromise, generateJob } = utility;

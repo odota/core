@@ -2,7 +2,7 @@ import constants from 'dotaconstants';
 import config from '../config.js';
 import compute from '../util/compute.mjs';
 import utility from '../util/utility.mjs';
-import redis from './redis.mjs';
+import redis from './redis.mts';
 import db from './db.mjs';
 import {
   getPlayerMatchData,

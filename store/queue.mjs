@@ -1,5 +1,5 @@
 import moment from 'moment';
-import redis from './redis.mjs';
+import redis from './redis.mts';
 import db from './db.mjs';
 
 async function runQueue(queueName, parallelism, processor) {

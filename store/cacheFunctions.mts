@@ -1,4 +1,4 @@
-import redis from './redis.mjs';
+import redis from './redis.mts';
 import config from '../config.js';
 import type { Request, Response } from 'express';
 

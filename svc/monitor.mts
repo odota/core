@@ -1,7 +1,7 @@
 // Runs health checks periodically and writes result to Redis
 import axios from 'axios';
 import config from '../config.js';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import db from '../store/db.mjs';
 import cassandra from '../store/cassandra.mts';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
@@ -58,7 +58,7 @@ async function seqNumDelay() {
   const body = resp.data;
   // get match_seq_num, compare with real seqnum
   const currSeqNum = body.result.matches[0].match_seq_num;
-  let num = await redis.get('match_seq_num');
+  let num: string | null | number = await redis.get('match_seq_num');
   num = Number(num);
   const metric = currSeqNum - num;
   return {
@@ -108,7 +108,7 @@ async function redisUsage() {
     .split('\n')
     .find((line: string) => line.startsWith('used_memory'));
   return {
-    metric: Number(line.split(':')[1]),
+    metric: Number(line?.split(':')[1]),
     threshold: 4 * 10 ** 9,
   };
 }

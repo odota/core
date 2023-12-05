@@ -2,7 +2,7 @@
 // Works by repeatedly checking match histories for players
 import async from 'async';
 import utility from '../util/utility.mjs';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import { insertMatchPromise } from '../store/queries.mjs';
 import config from '../config.js';
 const { generateJob, getData } = utility;
@@ -12,7 +12,7 @@ const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);
 const delay = 1000;
 function processMatch(matchId: number, cb: ErrorCb) {
   // Check if exists
-  redis.get(`scanner_insert:${matchId}`, (err: any, res: string) => {
+  redis.get(`scanner_insert:${matchId}`, (err, res) => {
     if (err) {
       return cb(err);
     }
@@ -53,7 +53,7 @@ function processMatch(matchId: number, cb: ErrorCb) {
     );
   });
 }
-function processPlayer(accountId: number, cb: ErrorCb) {
+function processPlayer(accountId: string, cb: ErrorCb) {
   const ajob = generateJob('api_history', {
     account_id: accountId,
   });
@@ -70,7 +70,7 @@ function processPlayer(accountId: number, cb: ErrorCb) {
         // Skip this player on this iteration
         return cb();
       }
-      return redis.get('match_seq_num', (err: any, res: string) => {
+      return redis.get('match_seq_num', (err, res) => {
         if (err) {
           return cb(err);
         }
@@ -89,11 +89,13 @@ function start(err?: any) {
   }
   console.log('starting backupscanner loop');
   setTimeout(() => {
-    redis.zrange('tracked', 0, -1, (err: any, ids: number[]) => {
+    redis.zrange('tracked', 0, -1, (err, ids) => {
       if (err) {
         throw err;
       }
-      async.eachLimit(ids, parallelism, processPlayer, start);
+      if (ids) {
+        async.eachLimit(ids, parallelism, processPlayer, start);
+      }
     });
   }, 1000);
 }

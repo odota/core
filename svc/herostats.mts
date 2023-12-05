@@ -3,10 +3,10 @@ import constants from 'dotaconstants';
 import moment from 'moment';
 import async from 'async';
 import db from '../store/db.mjs';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import utility from '../util/utility.mjs';
 const { invokeInterval } = utility;
-function doHeroStats(cb: Function) {
+function doHeroStats(cb: StringErrorCb) {
   const minTime = moment().subtract(30, 'day').format('X');
   const maxTime = moment().format('X');
   async.parallel(

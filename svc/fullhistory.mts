@@ -10,7 +10,7 @@ import {
   eachLimit,
 } from '../util/utility.mjs';
 import db from '../store/db.mjs';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import queue from '../store/queue.mjs';
 import {
   insertMatchPromise,

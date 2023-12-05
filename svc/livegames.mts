@@ -2,7 +2,7 @@
 import async from 'async';
 import JSONbig from 'json-bigint';
 import request from 'request';
-import redis from '../store/redis.mjs';
+import redis from '../store/redis.mts';
 import db from '../store/db.mjs';
 import config from '../config.js';
 import { invokeInterval } from '../util/utility.mjs';

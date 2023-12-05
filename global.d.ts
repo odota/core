@@ -11,7 +11,7 @@ type NumberDict = { [key: string]: number };
 type ErrorCb = (err?: Error | null | undefined | unknown) => void;
 type StringErrorCb = (
   err?: Error | null | undefined | unknown,
-  result: string
+  result?: string | null | undefined
 ) => void;
 
 interface Match {
