@@ -8,10 +8,12 @@ import utility from '../util/utility.mjs';
 const { getRetrieverArr } = utility;
 const retrieverArr = getRetrieverArr();
 
-async function processGcData(job) {
+async function processGcData(job: any) {
   job.useGcDataArr = true;
   await getGcData(job);
 }
+
+console.log('[GCDATA] starting');
 queue.runQueue(
   'gcQueue',
   Number(config.GCDATA_PARALLELISM) * retrieverArr.length,

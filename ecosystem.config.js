@@ -57,7 +57,8 @@ let arr = [
     },
     {
       "name": "gcdata",
-      "script": "svc/gcdata.mjs",
+      "script": "svc/gcdata.mts",
+      "interpreter": "node_modules/.bin/tsx",
       "group": "backend",
     },
     {
