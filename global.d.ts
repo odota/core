@@ -5,11 +5,12 @@ declare module 'http-proxy';
 declare module 'steam';
 declare module 'dota2';
 declare module 'passport-steam';
+declare module 'uuid';
 
 type StringDict = { [key: string]: string };
 type NumberArrayDict =  { [key: string]: number[] }
 type NumberDict = { [key: string]: number };
-type ErrorCb = (err?: Error | null | undefined | unknown) => void;
+type ErrorCb = (err?: Error | null | undefined | unknown, result?: any) => void;
 type StringErrorCb = (
   err?: Error | null | undefined | unknown,
   result?: string | null | undefined

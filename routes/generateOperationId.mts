@@ -2,7 +2,7 @@
 `get_players_by_account_id` for the path: "/players/{account_id}"
 `get_players_by_account_id_select_matches` for the path: "/players/{account_id}/matches".
 */
-function generateOperationId(method, path) {
+function generateOperationId(method: string, path: string) {
   // Split the path into segments
   const pathSegments = path.split('/');
   // Remove the first segment if it's empty (because the path starts with a slash)

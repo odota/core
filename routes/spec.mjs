@@ -17,7 +17,7 @@ import packageJson from '../package.json' assert { type: 'json' };
 import { sendDataWithCache } from '../store/cacheFunctions.mts';
 import params from './requests/importParams.js';
 import responses from './responses/schemas/importResponseSchemas.js';
-import generateOperationId from './generateOperationId.mjs';
+import generateOperationId from './generateOperationId.mts';
 import {
   insertMatchPromise,
   getDistributions,

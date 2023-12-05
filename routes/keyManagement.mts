@@ -7,6 +7,7 @@ import stripeLib from 'stripe';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mts';
 import config from '../config.js';
+//@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
@@ -25,19 +26,18 @@ keys.use((req, res, next) => {
   return next();
 });
 // @param rows - query result from api_keys table
-function getActiveKey(rows) {
+function getActiveKey(rows: any[]) {
   const notCanceled = rows.filter((row) => row.is_canceled != true);
   return notCanceled.length > 0 ? notCanceled[0] : null;
 }
-// @param getActiveKeyResult - result from getActiveKey
-function hasActiveKey(getActiveKeyResult) {
+function hasActiveKey(getActiveKeyResult: any) {
   return getActiveKeyResult !== null;
 }
-function hasToken(req) {
+function hasToken(req: express.Request) {
   const { token } = req.body;
   return token && token.id && token.email;
 }
-async function getOpenInvoices(customerId) {
+async function getOpenInvoices(customerId: string) {
   const invoices = await stripe.invoices.list({
     customer: customerId,
     limit: 100,
@@ -52,6 +52,7 @@ keys
   .route('/')
   .all(async (req, res, next) => {
     const rows = await db.from('api_keys').where({
+      //@ts-ignore
       account_id: req.user.account_id,
     });
     res.locals.keyRecord = getActiveKey(rows);
@@ -65,35 +66,35 @@ keys
     }
     async.parallel(
       {
-        customer: (cb) => {
+        customer: (cb: ErrorCb) => {
           if (!keyRecord) {
             return cb();
           }
           const { api_key, customer_id, subscription_id } = keyRecord;
-          const toReturn = {
+          const toReturn: any = {
             api_key,
           };
           stripe.customers
             .retrieve(customer_id)
-            .then((customer) => {
+            .then((customer: any) => {
               const source = customer.sources.data[0];
               toReturn.credit_brand = source?.brand;
               toReturn.credit_last4 = source?.last4;
               return stripe.subscriptions.retrieve(subscription_id);
             })
-            .then((sub) => {
+            .then((sub: any) => {
               toReturn.current_period_end = sub.current_period_end;
             })
             .then(() => cb(null, toReturn))
-            .catch((err) => cb(err));
+            .catch((err: Error | null) => cb(err));
         },
-        openInvoices: (cb) => {
+        openInvoices: (cb: ErrorCb) => {
           if (allKeyRecords.length === 0) {
             return cb();
           }
           const customer_id = allKeyRecords[0].customer_id;
           getOpenInvoices(customer_id).then((invoices) => {
-            const processed = invoices.map((i) => ({
+            const processed = invoices.map((i: any) => ({
               id: i.id,
               amountDue: i.amount_due,
               paymentLink: i.hosted_invoice_url,
@@ -102,7 +103,7 @@ keys
             return cb(null, processed);
           });
         },
-        usage: (cb) => {
+        usage: (cb: ErrorCb) => {
           db.raw(
             `
                 SELECT
@@ -130,12 +131,13 @@ keys
             [
               moment().subtract(5, 'month').startOf('month'),
               moment().endOf('month'),
+              //@ts-ignore
               req.user.account_id,
             ]
-          ).asCallback((err, results) => cb(err, err ? null : results.rows));
+          ).asCallback((err: Error | null, results: { rows: any[] }) => cb(err, err ? null : results.rows));
         },
       },
-      (err, results) => {
+      (err: Error | null | unknown, results: any) => {
         if (err) {
           next(err);
         } else {
@@ -156,6 +158,7 @@ keys
     await db
       .from('api_keys')
       .where({
+        //@ts-ignore
         account_id: req.user.account_id,
         subscription_id,
       })
@@ -181,6 +184,7 @@ keys
     const { token } = req.body;
     let customer_id;
     if (hasActiveKey(keyRecord)) {
+      //@ts-ignore
       console.log('Active key exists for', req.user.account_id);
       return res.sendStatus(200);
     }
@@ -191,6 +195,7 @@ keys
       if (invoices.length > 0) {
         console.log(
           'Open invoices exist for',
+          //@ts-ignore
           req.user.account_id,
           'customer',
           customer_id
@@ -214,6 +219,7 @@ keys
           source: token.id,
           email: token.email,
           metadata: {
+            //@ts-ignore
             account_id: req.user.account_id,
           },
         });
@@ -240,6 +246,7 @@ keys
         api_key = ?, customer_id = ?, subscription_id = ?
       `,
       [
+        //@ts-ignore
         req.user.account_id,
         apiKey,
         sub.customer,

@@ -14,7 +14,7 @@ import bodyParser from 'body-parser';
 import stripeLib from 'stripe';
 import { Redis } from 'ioredis';
 import WebSocket, { WebSocketServer } from 'ws';
-import keys from '../routes/keyManagement.mjs';
+import keys from '../routes/keyManagement.mts';
 import api from '../routes/api.mjs';
 import { insertPlayerPromise } from '../store/queries.mjs';
 import db from '../store/db.mjs';
