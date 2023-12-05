@@ -11,7 +11,7 @@ import express from 'express';
 import utility from '../util/utility.mjs';
 import getGcData from '../store/getGcData.mts';
 import config from '../config.js';
-import queue from '../store/queue.mjs';
+import queue from '../store/queue.mts';
 import { insertMatchPromise } from '../store/queries.mjs';
 import { promisify } from 'util';
 import db from '../store/db.mjs';
@@ -58,7 +58,7 @@ async function parseProcessor(job: ParseJob) {
     match.origin === 'scanner' &&
     match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
   ) {
-    await queue.addJob('scenariosQueue', match.match_id);
+    await queue.addJob('scenariosQueue', match.match_id as any);
   }
   console.log('[PARSER] completed parse of match %s', match.match_id);
   return true;

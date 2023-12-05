@@ -60,11 +60,10 @@ interface User {
 
 interface FullHistoryJob {
   account_id: number;
-  short_history: boolean;
+  short_history?: boolean;
 
   // These fields don't exist on the job but we add them during processing
-  fh_unavailable: boolean;
-  match_ids: number[];
+  fh_unavailable?: boolean;
 }
 
 interface MmrJob {
@@ -85,6 +84,8 @@ interface ParseJob {
   origin?: DataOrigin;
 }
 
+type QueueJob = GCDataJob | MmrJob | ParseJob | FullHistoryJob;
+
 interface ParsedPlayer extends Player {
   kills_log: any[];
   obs_log: any[];
@@ -103,6 +104,7 @@ interface ProPlayer {
   account_id: number;
 }
 
+type QueueName = 'mmrQueue' | 'countsQueue' | 'fhQueue' | 'scenariosQueue' | 'parse' | 'gcQueue';
 type DataType = 'api' | 'parsed' | 'gcdata' | 'meta';
 type DataOrigin = 'scanner';
 

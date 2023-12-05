@@ -3,7 +3,7 @@ import constants from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
 import config from '../config.js';
-import queue from '../store/queue.mjs';
+import queue from '../store/queue.mts';
 import queries from '../store/queries.mjs';
 import search from '../store/search.mjs';
 import searchES from '../store/searchES.mjs';
@@ -1020,9 +1020,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           try {
             const length = await queue.addJob(
               'fhQueue',
-              JSON.stringify({
+              {
                 account_id: req.params.account_id || '1',
-              })
+              }
             );
             return res.json({
               length,

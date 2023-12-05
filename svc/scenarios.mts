@@ -1,7 +1,7 @@
 // Processes a queue of jobs to collect stats on specific scenario data
 import async from 'async';
 import util from 'util';
-import queue from '../store/queue.mjs';
+import queue from '../store/queue.mts';
 //@ts-ignore
 import buildMatch from '../store/buildMatch.mts';
 import db from '../store/db.mjs';

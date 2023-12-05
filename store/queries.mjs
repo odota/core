@@ -4,7 +4,7 @@ import constants from 'dotaconstants';
 import util from 'util';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
-import queue from './queue.mjs';
+import queue from './queue.mts';
 import su from '../util/scenariosUtil.mjs';
 import filter from '../util/filter.mjs';
 import compute from '../util/compute.mjs';
@@ -997,7 +997,7 @@ export async function insertMatchPromise(match, options) {
       return;
     }
     if (options.origin === 'scanner' && options.type === 'api') {
-      await queue.addJob('countsQueue', JSON.stringify(match));
+      await queue.addJob('countsQueue', match);
     }
   }
   async function decideMmr() {
@@ -1016,10 +1016,10 @@ export async function insertMatchPromise(match, options) {
       arr.map((p) =>
         queue.addJob(
           'mmrQueue',
-          JSON.stringify({
+          {
             match_id: match.match_id,
             account_id: p.account_id,
-          })
+          }
         )
       )
     );
@@ -1059,10 +1059,10 @@ export async function insertMatchPromise(match, options) {
     ) {
       await queue.addJob(
         'gcQueue',
-        JSON.stringify({
+        {
           match_id: match.match_id,
           pgroup: match.pgroup,
-        })
+        }
       );
     }
   }

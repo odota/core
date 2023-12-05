@@ -11,7 +11,7 @@ import {
 } from '../util/utility.mjs';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mts';
-import queue from '../store/queue.mjs';
+import queue from '../store/queue.mts';
 import {
   insertMatchPromise,
   getPlayerMatchesPromise,
@@ -59,7 +59,7 @@ async function processFullHistory(job: FullHistoryJob) {
   const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   //@ts-ignore
-  player.match_ids = {};
+  const match_ids: StringDict = {};
   // make a request for every possible hero
   const container = generateJob('api_history', {
     account_id: player.account_id,
@@ -87,7 +87,7 @@ async function processFullHistory(job: FullHistoryJob) {
         // add match ids on each page to match_ids
         const matchId = match.match_id;
         //@ts-ignore
-        player.match_ids[matchId] = true;
+        match_ids[matchId] = true;
         startId = match.match_id;
       });
       const rem = body.result.results_remaining;
@@ -113,7 +113,7 @@ async function processFullHistory(job: FullHistoryJob) {
     player.fh_unavailable = true;
     await updatePlayer(player);
   }
-  console.log('%s matches found', Object.keys(player.match_ids).length);
+  console.log('%s matches found', Object.keys(match_ids).length);
   player.fh_unavailable = false;
   // check what matches the player is already associated with
   //@ts-ignore
@@ -122,18 +122,18 @@ async function processFullHistory(job: FullHistoryJob) {
   });
   console.log(
     '%s matches found, %s already in db, %s to add',
-    Object.keys(player.match_ids).length,
+    Object.keys(match_ids).length,
     docs.length,
-    Object.keys(player.match_ids).length - docs.length
+    Object.keys(match_ids).length - docs.length
   );
   // iterate through db results, delete match_id key if this player has this match already
   // will re-request and update matches where this player was previously anonymous
   for (let i = 0; i < docs.length; i += 1) {
     const matchId = docs[i].match_id;
-    delete player.match_ids[matchId];
+    delete match_ids[matchId];
   }
   // make api_details requests for matches
-  const promiseFuncs = Object.keys(player.match_ids).map(
+  const promiseFuncs = Object.keys(match_ids).map(
     (matchId) => () => processMatch(matchId)
   );
   await eachLimit(promiseFuncs, parallelism);

@@ -1,7 +1,7 @@
 // Processes a queue of requests for gcdata (replay salts) without parsing
 // The parser will also request gcdata if needed
 import getGcData from '../store/getGcData.mts';
-import queue from '../store/queue.mjs';
+import queue from '../store/queue.mts';
 import config from '../config.js';
 import utility from '../util/utility.mjs';
 

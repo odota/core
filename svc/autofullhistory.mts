@@ -1,6 +1,6 @@
 // Randomly requests history refreshes for users to fill in missing matches
 import db from '../store/db.mjs';
-import queue from '../store/queue.mjs';
+import queue from '../store/queue.mts';
 
 while (true) {
   console.time('autofullhistory');
@@ -12,10 +12,10 @@ while (true) {
     result.rows.map((row: any) =>
       queue.addJob(
         'fhQueue',
-        JSON.stringify({
+        {
           account_id: row.account_id,
           short_history: true,
-        })
+        }
       )
     )
   );

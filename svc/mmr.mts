@@ -1,5 +1,5 @@
 // Processes a queue of requests to update MMR/rank medal for players
-import queue from '../store/queue.mjs';
+import queue from '../store/queue.mts';
 import db from '../store/db.mjs';
 import redis from '../store/redis.mts';
 import { insertPlayerRating, insertPlayerPromise } from '../store/queries.mjs';

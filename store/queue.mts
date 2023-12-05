@@ -2,13 +2,15 @@ import moment from 'moment';
 import redis from './redis.mts';
 import db from './db.mjs';
 
-async function runQueue(queueName, parallelism, processor) {
+async function runQueue(queueName: QueueName, parallelism: number, processor: (job: any) => Promise<void>) {
   Array.from(new Array(parallelism), (v, i) => i).forEach(async (i) => {
     try {
       while (true) {
         const job = await redis.blpop(queueName, '0');
-        const jobData = JSON.parse(job[1]);
-        await processor(jobData);
+        if (job) {
+          const jobData = JSON.parse(job[1]);
+          await processor(jobData);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -17,7 +19,7 @@ async function runQueue(queueName, parallelism, processor) {
   });
 }
 
-async function runReliableQueue(queueName, parallelism, processor) {
+async function runReliableQueue(queueName: QueueName, parallelism: number, processor: (job: any) => Promise<boolean>) {
   Array.from(new Array(parallelism), (v, i) => i).forEach(async (i) => {
     try {
       while (true) {
@@ -36,6 +38,7 @@ async function runReliableQueue(queueName, parallelism, processor) {
         )
         RETURNING *
         `,
+          //@ts-ignore
           [moment().add(2, 'minute'), queueName]
         );
         const job = result && result.rows && result.rows[0];
@@ -65,10 +68,10 @@ async function runReliableQueue(queueName, parallelism, processor) {
     }
   });
 }
-async function addJob(queueName, job) {
-  return await redis.rpush(queueName, job);
+async function addJob(queueName: QueueName, job: QueueJob) {
+  return await redis.rpush(queueName, JSON.stringify(job));
 }
-async function addReliableJob(queueName, job, options) {
+async function addReliableJob(queueName: QueueName, job: { data: ParseJob }, options: {attempts: number, priority: number}) {
   const result = await db.raw(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority)
   VALUES (?, ?, ?, ?, ?, ?) 
@@ -84,7 +87,7 @@ async function addReliableJob(queueName, job, options) {
   );
   return result.rows[0];
 }
-async function getReliableJob(jobId) {
+async function getReliableJob(jobId: string) {
   const result = await db.raw('SELECT * FROM queue WHERE id = ?', [jobId]);
   return result.rows[0];
 }
