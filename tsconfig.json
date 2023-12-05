@@ -9,5 +9,5 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["*.ts", "processors", "routes", "store", "svc", "util"]
+  "include": ["index.mts", "processors", "routes", "store", "svc", "util"]
 }
