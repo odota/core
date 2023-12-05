@@ -193,45 +193,57 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           async.parallel(
             {
               profile(cb) {
-                queries.getPlayer(db, accountId, (err: Error | null, playerData: User) => {
-                  if (playerData !== null && playerData !== undefined) {
-                    playerData.is_contributor = isContributor(accountId);
-                    playerData.is_subscriber = Boolean(playerData?.status);
+                queries.getPlayer(
+                  db,
+                  accountId,
+                  (err: Error | null, playerData: User) => {
+                    if (playerData !== null && playerData !== undefined) {
+                      playerData.is_contributor = isContributor(accountId);
+                      playerData.is_subscriber = Boolean(playerData?.status);
+                    }
+                    cb(err, playerData);
                   }
-                  cb(err, playerData);
-                });
+                );
               },
               solo_competitive_rank(cb) {
                 db.first()
                   .from('solo_competitive_rank')
                   .where({ account_id: accountId })
-                  .asCallback((err: Error | null, row: {rating: string} | null) => {
-                    cb(err, row ? row.rating : null);
-                  });
+                  .asCallback(
+                    (err: Error | null, row: { rating: string } | null) => {
+                      cb(err, row ? row.rating : null);
+                    }
+                  );
               },
               competitive_rank(cb) {
                 db.first()
                   .from('competitive_rank')
                   .where({ account_id: accountId })
-                  .asCallback((err: Error | null, row: {rating: string} | null) => {
-                    cb(err, row ? row.rating : null);
-                  });
+                  .asCallback(
+                    (err: Error | null, row: { rating: string } | null) => {
+                      cb(err, row ? row.rating : null);
+                    }
+                  );
               },
               rank_tier(cb) {
                 db.first()
                   .from('rank_tier')
                   .where({ account_id: accountId })
-                  .asCallback((err: Error | null, row: {rating: string} | null) => {
-                    cb(err, row ? row.rating : null);
-                  });
+                  .asCallback(
+                    (err: Error | null, row: { rating: string } | null) => {
+                      cb(err, row ? row.rating : null);
+                    }
+                  );
               },
               leaderboard_rank(cb) {
                 db.first()
                   .from('leaderboard_rank')
                   .where({ account_id: accountId })
-                  .asCallback((err: Error | null, row: {rating: string} | null) => {
-                    cb(err, row ? row.rating : null);
-                  });
+                  .asCallback(
+                    (err: Error | null, row: { rating: string } | null) => {
+                      cb(err, row ? row.rating : null);
+                    }
+                  );
               },
             },
             (err, result) => {
@@ -1032,12 +1044,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/players/:account_id/refresh',
         func: async (req, res, cb) => {
           try {
-            const length = await queue.addJob(
-              'fhQueue',
-              {
-                account_id: req.params.account_id || '1',
-              }
-            );
+            const length = await queue.addJob('fhQueue', {
+              account_id: req.params.account_id || '1',
+            });
             return res.json({
               length,
             });
@@ -1587,7 +1596,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             if (!req.params.metric) {
               return res.json(response);
             }
-            const single = response[req.params.metric] as unknown as { metric: number, threshold: number};
+            const single = response[req.params.metric] as unknown as {
+              metric: number;
+              threshold: number;
+            };
             const healthy = single.metric < single.threshold;
             return res.status(healthy ? 200 : 500).json(single);
           });
@@ -1664,7 +1676,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           const match = {
             match_id: Number(matchId),
           };
-          function exitWithJob(err: Error | string | null | unknown, parseJob?: { id: number } | null) {
+          function exitWithJob(
+            err: Error | string | null | unknown,
+            parseJob?: { id: number } | null
+          ) {
             if (err) {
               console.error(err);
               return res.status(400).json({
@@ -1873,7 +1888,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           try {
             const result = await redis.get('heroStats');
             return res.json(result ? JSON.parse(result) : null);
-          } catch(e) {
+          } catch (e) {
             return cb(e);
           }
         },
@@ -2555,7 +2570,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               if (err) {
                 return cb(err);
               }
-              const entries = rows?.map((r, i) => {
+              const entries = rows
+                ?.map((r, i) => {
                   const match_id = parseInt(r.split(':')[0]);
                   const start_time = parseInt(r.split(':')[1]);
                   const hero_id = parseInt(r.split(':')[2]);
@@ -2612,7 +2628,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               if (err) {
                 return cb(err);
               }
-              return res.json(rows?.map((r) => r ? JSON.parse(r) : null));
+              return res.json(rows?.map((r) => (r ? JSON.parse(r) : null)));
             });
           });
         },

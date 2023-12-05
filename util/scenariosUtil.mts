@@ -17,7 +17,11 @@ const teamScenariosQueryParams = [
   'courier_kill',
   'first_blood',
 ];
-function buildTeamScenario(scenario: any, isRadiant: boolean, match: ParsedMatch) {
+function buildTeamScenario(
+  scenario: any,
+  isRadiant: boolean,
+  match: ParsedMatch
+) {
   return [
     {
       scenario,

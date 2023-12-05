@@ -4,7 +4,13 @@ function filter(matches: ParsedPlayerMatch[], filters: NumberArrayDict) {
   const curtime = Math.floor(Date.now() / 1000);
   // accept a hash of filters, run all the filters in the hash in series
   // console.log(filters);
-  const conditions: {[key: string]: (m: ParsedPlayerMatch, key: number, arr: number[]) => boolean} = {
+  const conditions: {
+    [key: string]: (
+      m: ParsedPlayerMatch,
+      key: number,
+      arr: number[]
+    ) => boolean;
+  } = {
     // filter: player won
     win(m, key) {
       return Number(isRadiant(m) === m.radiant_win) === key;

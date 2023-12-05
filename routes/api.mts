@@ -132,7 +132,9 @@ api.get('/admin/apiMetrics', (req, res) => {
         LIMIT 10
         `,
           [startTime, endTime]
-        ).asCallback((err: Error | null, res: any) => cb(err, err ? null : res.rows));
+        ).asCallback((err: Error | null, res: any) =>
+          cb(err, err ? null : res.rows)
+        );
       },
       topAPIIP: (cb: ErrorCb) => {
         db.raw(
@@ -159,7 +161,9 @@ api.get('/admin/apiMetrics', (req, res) => {
         LIMIT 10
         `,
           [startTime, endTime]
-        ).asCallback((err: Error | null, res: any) => cb(err, err ? null : res.rows));
+        ).asCallback((err: Error | null, res: any) =>
+          cb(err, err ? null : res.rows)
+        );
       },
       numAPIUsers: (cb: ErrorCb) => {
         db.raw(
@@ -172,7 +176,9 @@ api.get('/admin/apiMetrics', (req, res) => {
             AND timestamp <= ?
         `,
           [startTime, endTime]
-        ).asCallback((err: Error | null, res: any) => cb(err, err ? null : res.rows));
+        ).asCallback((err: Error | null, res: any) =>
+          cb(err, err ? null : res.rows)
+        );
       },
       topUsersIP: (cb: ErrorCb) => {
         redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);

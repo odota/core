@@ -5,7 +5,10 @@ import { es, INDEX } from './elasticsearch.mts';
  * @param search - object for where parameter of query
  * @param cb - callback
  */
-function findPlayer(search: { account_id: string | number }, cb: NonUnknownErrorCb) {
+function findPlayer(
+  search: { account_id: string | number },
+  cb: NonUnknownErrorCb
+) {
   db.first(['account_id', 'personaname', 'avatarfull'])
     .from('players')
     .where(search)

@@ -1014,13 +1014,10 @@ export async function insertMatchPromise(match, options) {
     });
     await Promise.all(
       arr.map((p) =>
-        queue.addJob(
-          'mmrQueue',
-          {
-            match_id: match.match_id,
-            account_id: p.account_id,
-          }
-        )
+        queue.addJob('mmrQueue', {
+          match_id: match.match_id,
+          account_id: p.account_id,
+        })
       )
     );
   }
@@ -1057,13 +1054,10 @@ export async function insertMatchPromise(match, options) {
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      await queue.addJob(
-        'gcQueue',
-        {
-          match_id: match.match_id,
-          pgroup: match.pgroup,
-        }
-      );
+      await queue.addJob('gcQueue', {
+        match_id: match.match_id,
+        pgroup: match.pgroup,
+      });
     }
   }
   async function decideMetaParse() {

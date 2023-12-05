@@ -1,4 +1,4 @@
-export const benchmarks: { [key: string]: (m: Match, p: Player) => number} = {
+export const benchmarks: { [key: string]: (m: Match, p: Player) => number } = {
   gold_per_min(m, p) {
     return p.gold_per_min;
   },

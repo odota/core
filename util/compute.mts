@@ -7,7 +7,10 @@ const { ancients } = constants;
  * - messages: the messages to create the counts over
  * - player_filter: if non-null, only count that player's messages
  * */
-function countWords(playerMatch: ParsedPlayerMatch, playerFilter: { player_slot: number } | null) {
+function countWords(
+  playerMatch: ParsedPlayerMatch,
+  playerFilter: { player_slot: number } | null
+) {
   const messages = playerMatch.chat;
   // extract the message strings from the message objects
   // extract individual words from the message strings

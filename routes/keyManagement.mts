@@ -134,7 +134,9 @@ keys
               //@ts-ignore
               req.user.account_id,
             ]
-          ).asCallback((err: Error | null, results: { rows: any[] }) => cb(err, err ? null : results.rows));
+          ).asCallback((err: Error | null, results: { rows: any[] }) =>
+            cb(err, err ? null : results.rows)
+          );
         },
       },
       (err: Error | null | unknown, results: any) => {

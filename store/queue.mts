@@ -2,7 +2,11 @@ import moment from 'moment';
 import redis from './redis.mts';
 import db from './db.mts';
 
-async function runQueue(queueName: QueueName, parallelism: number, processor: (job: any) => Promise<void>) {
+async function runQueue(
+  queueName: QueueName,
+  parallelism: number,
+  processor: (job: any) => Promise<void>
+) {
   Array.from(new Array(parallelism), (v, i) => i).forEach(async (i) => {
     try {
       while (true) {
@@ -19,7 +23,11 @@ async function runQueue(queueName: QueueName, parallelism: number, processor: (j
   });
 }
 
-async function runReliableQueue(queueName: QueueName, parallelism: number, processor: (job: any) => Promise<boolean>) {
+async function runReliableQueue(
+  queueName: QueueName,
+  parallelism: number,
+  processor: (job: any) => Promise<boolean>
+) {
   Array.from(new Array(parallelism), (v, i) => i).forEach(async (i) => {
     try {
       while (true) {
@@ -71,8 +79,22 @@ async function runReliableQueue(queueName: QueueName, parallelism: number, proce
 async function addJob(queueName: QueueName, job: QueueJob) {
   return await redis.rpush(queueName, JSON.stringify(job));
 }
-async function addReliableJob(queueName: QueueName, job: { data: ParseJob }, options: {attempts: number, priority: number}) {
-  const result = await db.raw<{rows: {id: number, type: string, timestamp: string, attempts: number, data: any, next_attempt_time: string, priority: number}[]}>(
+async function addReliableJob(
+  queueName: QueueName,
+  job: { data: ParseJob },
+  options: { attempts: number; priority: number }
+) {
+  const result = await db.raw<{
+    rows: {
+      id: number;
+      type: string;
+      timestamp: string;
+      attempts: number;
+      data: any;
+      next_attempt_time: string;
+      priority: number;
+    }[];
+  }>(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority)
   VALUES (?, ?, ?, ?, ?, ?) 
   RETURNING *`,

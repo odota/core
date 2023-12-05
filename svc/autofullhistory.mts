@@ -10,13 +10,10 @@ while (true) {
   console.log(result.rows);
   await Promise.all(
     result.rows.map((row: any) =>
-      queue.addJob(
-        'fhQueue',
-        {
-          account_id: row.account_id,
-          short_history: true,
-        }
-      )
+      queue.addJob('fhQueue', {
+        account_id: row.account_id,
+        short_history: true,
+      })
     )
   );
   console.timeEnd('autofullhistory');
