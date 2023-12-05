@@ -22,7 +22,7 @@ async function processScenarios(matchID: string) {
     //@ts-ignore
     su.scenarioChecks[table].forEach((scenarioCheck) => {
       const rows = scenarioCheck(match);
-      async.eachSeries(rows, (row: any, cb: Function) => {
+      async.eachSeries(rows, (row: any, cb: ErrorCb) => {
         row = Object.assign(row, {
           epoch_week: currentWeek,
           wins: row.wins ? '1' : '0',

@@ -11,7 +11,7 @@ import type { knex } from 'knex';
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
-function storeUsageCounts(cursor: string | number, cb: Function) {
+function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
       cb(err);
@@ -84,7 +84,7 @@ function storeUsageCounts(cursor: string | number, cb: Function) {
     }
   });
 }
-async function updateStripeUsage(cb: Function) {
+async function updateStripeUsage(cb: ErrorCb) {
   const options = {
     plan: config.STRIPE_API_PLAN,
     limit: 100,
@@ -162,7 +162,7 @@ async function updateStripeUsage(cb: Function) {
     cb(err);
   }
 }
-function getAPIKeys(db: knex.Knex, cb: Function) {
+function getAPIKeys(db: knex.Knex, cb: ErrorCb) {
   db.raw(
     `
     SELECT api_key FROM api_keys WHERE api_key IS NOT NULL AND is_canceled IS NOT TRUE
@@ -175,7 +175,7 @@ function getAPIKeys(db: knex.Knex, cb: Function) {
   });
 }
 invokeInterval(
-  (cb: Function) => {
+  (cb: ErrorCb) => {
     getAPIKeys(db, (err: any, rows: any[]) => {
       if (err) {
         cb(err);
@@ -201,7 +201,7 @@ invokeInterval(
   5 * 60 * 1000
 ); // Update every 5 min
 invokeInterval(
-  (cb: Function) => {
+  (cb: ErrorCb) => {
     storeUsageCounts(0, cb);
   },
   10 * 60 * 1000

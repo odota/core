@@ -64,7 +64,7 @@ passport.use(
       realm: host,
       apiKey,
     },
-    async (identifier: string, profile: any, cb: Function) => {
+    async (identifier: string, profile: any, cb: ErrorCb) => {
       const player = profile._json;
       player.last_login = new Date();
       try {
@@ -198,7 +198,7 @@ app.use((req, res, cb) => {
   });
 });
 // Telemetry middleware
-app.use((req: any, res: any, cb: Function) => {
+app.use((req: any, res: any, cb: ErrorCb) => {
   const timeStart = Number(new Date());
   res.once('finish', () => {
     const timeEnd = Number(new Date());
@@ -353,7 +353,7 @@ app.use((req, res) =>
   })
 );
 // 500 route
-app.use((err: any, req: any, res: any, cb: Function) => {
+app.use((err: any, req: any, res: any, cb: ErrorCb) => {
   console.log('[ERR]', req.originalUrl);
   redisCount(redis, '500_error');
   if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {

@@ -4,7 +4,7 @@ import db from './db.mts';
  * @param search - object for where parameter of query
  * @param cb - callback
  */
-function findPlayer(search: { account_id: string | number }, cb: Function) {
+function findPlayer(search: { account_id: string | number }, cb: NonUnknownErrorCb) {
   db.first(['account_id', 'personaname', 'avatarfull'])
     .from('players')
     .where(search)
@@ -14,18 +14,18 @@ function search(options: { q: string }, cb: ErrorCb) {
   const query = options.q;
   async.parallel(
     {
-      account_id: (callback: Function) => {
+      account_id: (cb) => {
         if (Number.isNaN(Number(query))) {
-          return callback();
+          return cb();
         }
         return findPlayer(
           {
             account_id: Number(query),
           },
-          callback
+          cb
         );
       },
-      personaname: (callback: Function) => {
+      personaname: (cb: Function) => {
         db.raw(
           `
         SELECT * FROM 
@@ -38,9 +38,9 @@ function search(options: { q: string }, cb: ErrorCb) {
           [`%${query}%`]
         ).asCallback((err: Error | null, result: { rows: any[] }) => {
           if (err) {
-            return callback(err);
+            return cb(err);
           }
-          return callback(err, result.rows);
+          return cb(err, result.rows);
         });
       },
     },

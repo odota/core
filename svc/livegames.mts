@@ -23,7 +23,7 @@ function doLiveGames(cb: (err?: any) => void) {
         // add their name to the match object, save it to redis zset, keyed by server_steam_id
         return async.eachSeries(
           json.game_list,
-          (match: LiveMatch, cb: Function) => {
+          (match: LiveMatch, cb: ErrorCb) => {
             // let addToRedis = false;
             if (match && match.players) {
               match.players.forEach((player, i) => {

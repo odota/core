@@ -4,7 +4,7 @@ import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mjs';
 const { invokeInterval, generateJob, getDataPromise } = utility;
 
-async function doLeagues(cb: Function) {
+async function doLeagues(cb: ErrorCb) {
   const container = generateJob('api_leagues', {});
   try {
     //@ts-ignore

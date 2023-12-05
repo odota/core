@@ -6,7 +6,7 @@ import stripeLib from 'stripe';
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const { invokeInterval } = utility;
-async function run(cb: Function) {
+async function run(cb: ErrorCb) {
   // Get list of current subscribers
   const result = [];
   for await (const sub of stripe.subscriptions.list({
@@ -29,5 +29,6 @@ async function run(cb: Function) {
     ]);
   }
   await db.raw('COMMIT');
+  cb();
 }
 invokeInterval(run, 60 * 1000);

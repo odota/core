@@ -146,7 +146,7 @@ function genStats() {
 // function getSentryHashKey(user) {
 //   return Buffer.from(`retriever:sentry:${user}`);
 // }
-function getPlayerProfile(idx: string, accountId: string, cb: Function) {
+function getPlayerProfile(idx: string, accountId: string, cb: ErrorCb) {
   const { Dota2 } = steamObj[idx];
   // console.log("requesting player profile %s", accountId);
   profileRequests += 1;
@@ -177,7 +177,7 @@ function getPlayerProfile(idx: string, accountId: string, cb: Function) {
     return cb(err, response);
   });
 }
-function getGcMatchData(idx: string, matchId: string, cb: Function) {
+function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
   const { Dota2 } = steamObj[idx];
   matchRequests += 1;
   const start = Date.now();
@@ -205,7 +205,7 @@ function getGcMatchData(idx: string, matchId: string, cb: Function) {
 function init() {
   async.each(
     Array.from(new Array(Math.min(accountsToUse, users.length)), (v, i) => i),
-    (i: number, cb: Function) => {
+    (i: number, cb: ErrorCb) => {
       const client = new Steam.SteamClient();
       client.steamUser = new Steam.SteamUser(client);
       // client.steamFriends = new Steam.SteamFriends(client);

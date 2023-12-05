@@ -43,7 +43,7 @@ function mapCountry(results: any) {
   });
   return results;
 }
-function loadData(key: string, mapFunc: Function, cb: Function) {
+function loadData(key: string, mapFunc: Function, cb: NonUnknownErrorCb) {
   db.raw(sql[key]).asCallback((err: any, results: any) => {
     if (err) {
       return cb(err);
@@ -51,7 +51,7 @@ function loadData(key: string, mapFunc: Function, cb: Function) {
     return cb(err, mapFunc(results));
   });
 }
-function doDistributions(cb: Function) {
+function doDistributions(cb: ErrorCb) {
   async.parallel(
     {
       country_mmr(cb) {

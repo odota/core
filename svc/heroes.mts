@@ -4,7 +4,7 @@ import utility from '../util/utility.mjs';
 import { upsertPromise } from '../store/queries.mjs';
 const { invokeInterval, generateJob, getData, getDataPromise } = utility;
 
-async function doHeroes(cb: Function) {
+async function doHeroes(cb: ErrorCb) {
   const container = generateJob('api_heroes', {
     language: 'english',
   });

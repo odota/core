@@ -69,7 +69,7 @@ async function processFullHistory(job: FullHistoryJob) {
   const getApiMatchPage = (
     player: FullHistoryJob,
     url: string,
-    cb: Function
+    cb: ErrorCb
   ) => {
     getData(url, (err: any, body: any) => {
       if (err) {
