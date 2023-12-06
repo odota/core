@@ -29,6 +29,8 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       // console.log('[READCACHEMISS] %s', req.originalUrl);
       return cb();
     }
+    // console.log('[READCACHESKIP] %s', req.originalUrl);
+    return cb();
   } catch (e) {
     console.error(e);
     // Something weird with the cache but we can continue to the regular handler

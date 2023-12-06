@@ -168,7 +168,7 @@ app.use((req, res, cb) => {
       return cb(err);
     }
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      console.log('[WEB] rate limit increment', resp);
+      console.log('[WEB] %s rate limit %s', req.originalUrl, resp);
     }
     const incrValue = resp![0]?.[1];
     const prevUsage = resp![2]?.[1];
