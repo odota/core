@@ -65,7 +65,7 @@ keys
     }
     async.parallel(
       {
-        customer: (cb: ErrorCb) => {
+        customer: (cb) => {
           if (!keyRecord) {
             return cb();
           }
@@ -87,7 +87,7 @@ keys
             .then(() => cb(null, toReturn))
             .catch((err: Error | null) => cb(err));
         },
-        openInvoices: (cb: ErrorCb) => {
+        openInvoices: (cb) => {
           if (allKeyRecords.length === 0) {
             return cb();
           }
@@ -102,7 +102,7 @@ keys
             return cb(null, processed);
           });
         },
-        usage: (cb: ErrorCb) => {
+        usage: (cb) => {
           db.raw(
             `
                 SELECT
@@ -137,7 +137,7 @@ keys
           );
         },
       },
-      (err: Error | null | unknown, results: any) => {
+      (err, results) => {
         if (err) {
           next(err);
         } else {

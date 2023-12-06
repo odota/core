@@ -829,7 +829,7 @@ export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
   (function invoker() {
     console.log('running %s', func.name);
     console.time(func.name);
-    return func((err: any) => {
+    return func((err) => {
       if (err) {
         // log the error, but wait until next interval to retry
         console.error(err);

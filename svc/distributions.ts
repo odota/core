@@ -67,7 +67,7 @@ function doDistributions(cb: ErrorCb) {
         loadData('ranks', mapMmr, cb);
       },
     },
-    (err, result: any) => {
+    (err, result) => {
       if (err) {
         return cb(err);
       }

@@ -47,7 +47,7 @@ function search(options: { q: string }, cb: ErrorCb) {
         });
       },
     },
-    (err: Error | null | undefined, result: any) => {
+    (err, result) => {
       if (err) {
         return cb(err);
       }

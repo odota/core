@@ -205,7 +205,7 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
 function init() {
   async.each(
     Array.from(new Array(Math.min(accountsToUse, users.length)), (v, i) => i),
-    (i: number, cb: ErrorCb) => {
+    (i, cb) => {
       const client = new Steam.SteamClient();
       client.steamUser = new Steam.SteamUser(client);
       // client.steamFriends = new Steam.SteamFriends(client);

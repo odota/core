@@ -3,12 +3,11 @@ import config from '../config.js';
 import type { Request, Response } from 'express';
 
 export const getKeys = () => ['wl', 'heroes', 'peers', 'counts'];
-export const readCache = (
-  input: { key: string; account_id: string },
-  cb: StringErrorCb
+export const readCache = async (
+  input: { key: string; account_id: string }
 ) => {
   // console.log(`[READCACHE] cache:${req.key}:${req.account_id}`);
-  redis.get(`cache:${input.key}:${input.account_id}`, cb);
+  await redis.get(`cache:${input.key}:${input.account_id}`);
 };
 export const clearCache = async (input: {
   key: string;
