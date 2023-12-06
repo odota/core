@@ -4,8 +4,8 @@
   "version": "22.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "tsx index.mts",
-    "test": "NODE_ENV=test mocha test/test.mts --exit --node-option import=tsx",
+    "start": "tsx index",
+    "test": "NODE_ENV=test mocha test/test.ts --exit --node-option import=tsx",
     "build": "npm install && npm run typecheck",
     "tsc": "tsc --project tsconfig.json --noEmit false --allowImportingTsExtensions false",
     "typecheck": "tsc --project tsconfig.json",

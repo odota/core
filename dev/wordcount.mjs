@@ -1,6 +1,6 @@
 import JSONStream from 'JSONStream';
 import db from '../store/db';
-import compute from '../util/compute.mts';
+import compute from '../util/compute';
 
 const args = process.argv.slice(2);
 const limit = Number(args[0]) || 1;

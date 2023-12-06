@@ -2,111 +2,111 @@ const config = require('./config.js');
 
 let arr = [
   {
-    script: 'svc/web.mts',
+    script: 'svc/web.ts',
     group: 'web',
   },
   {
-    script: 'svc/retriever.mts',
+    script: 'svc/retriever.ts',
     group: 'retriever',
   },
   {
-    script: 'svc/proxy.mts',
+    script: 'svc/proxy.ts',
     group: 'proxy',
   },
   {
-    script: 'svc/parser.mts',
+    script: 'svc/parser.ts',
     group: 'parser',
   },
   {
-    script: 'svc/apiadmin.mts',
+    script: 'svc/apiadmin.ts',
     group: 'backend',
   },
   {
-    script: 'svc/mmr.mts',
+    script: 'svc/mmr.ts',
     group: 'backend',
   },
   {
-    script: 'svc/profiler.mts',
+    script: 'svc/profiler.ts',
     group: 'backend',
   },
   {
-    script: 'svc/scanner.mts',
+    script: 'svc/scanner.ts',
     group: 'backend',
   },
   {
-    script: 'svc/fullhistory.mts',
+    script: 'svc/fullhistory.ts',
     group: 'backend',
   },
   {
-    script: 'svc/autofullhistory.mts',
+    script: 'svc/autofullhistory.ts',
     group: 'backend',
   },
   {
-    script: 'svc/monitor.mts',
+    script: 'svc/monitor.ts',
     group: 'backend',
   },
   {
-    script: 'svc/gcdata.mts',
+    script: 'svc/gcdata.ts',
     group: 'backend',
   },
   {
-    script: 'svc/buildsets.mts',
+    script: 'svc/buildsets.ts',
     group: 'backend',
   },
   {
-    script: 'svc/cosmetics.mts',
+    script: 'svc/cosmetics.ts',
     group: 'backend',
   },
   {
-    script: 'svc/distributions.mts',
+    script: 'svc/distributions.ts',
     group: 'backend',
   },
   {
-    script: 'svc/heroes.mts',
+    script: 'svc/heroes.ts',
     group: 'backend',
   },
   {
-    script: 'svc/herostats.mts',
+    script: 'svc/herostats.ts',
     group: 'backend',
   },
   {
-    script: 'svc/items.mts',
+    script: 'svc/items.ts',
     group: 'backend',
   },
   {
-    script: 'svc/leagues.mts',
+    script: 'svc/leagues.ts',
     group: 'backend',
   },
   {
-    script: 'svc/livegames.mts',
+    script: 'svc/livegames.ts',
     group: 'backend',
   },
   {
-    script: 'svc/proplayers.mts',
+    script: 'svc/proplayers.ts',
     group: 'backend',
   },
   {
-    script: 'svc/teams.mts',
+    script: 'svc/teams.ts',
     group: 'backend',
   },
   {
-    script: 'svc/scenarios.mts',
+    script: 'svc/scenarios.ts',
     group: 'backend',
   },
   {
-    script: 'svc/scenariosCleanup.mts',
+    script: 'svc/scenariosCleanup.ts',
     group: 'backend',
   },
   {
-    script: 'svc/counts.mts',
+    script: 'svc/counts.ts',
     group: 'backend',
   },
   {
-    script: 'svc/syncSubs.mts',
+    script: 'svc/syncSubs.ts',
     group: 'backend',
   },
   {
-    script: 'svc/cassandraDelete.mts',
+    script: 'svc/cassandraDelete.ts',
     group: 'backend',
   },
 ];
@@ -124,7 +124,7 @@ const apps = arr.map((app) => {
     instances: 1,
     name: app.script.split('/').slice(-1)[0].split('.')[0],
     interpreter:
-      app.script.endsWith('.mts') || app.script.endsWith('.ts')
+      app.script.endsWith('.ts') || app.script.endsWith('.mts')
         ? 'node_modules/.bin/tsx'
         : undefined,
   };
