@@ -47,7 +47,7 @@ async function runReliableQueue(
         RETURNING *
         `,
           //@ts-ignore
-          [moment().add(2, 'minute'), queueName]
+          [moment().add(5, 'minute'), queueName]
         );
         const job = result && result.rows && result.rows[0];
         if (job) {

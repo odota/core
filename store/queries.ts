@@ -1109,7 +1109,7 @@ export async function insertMatchPromise(
       },
       {
         priority,
-        attempts: options.attempts || 15,
+        attempts: options.attempts || 20,
       }
     );
     return job;
