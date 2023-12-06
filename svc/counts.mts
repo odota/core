@@ -287,4 +287,4 @@ async function processCounts(match: Match) {
   await updateTurbo(match);
   await updateBenchmarks(match);
 }
-await queue.runQueue('countsQueue', 1, processCounts);
+queue.runQueue('countsQueue', 1, processCounts);

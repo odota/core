@@ -69,15 +69,18 @@ async function processMatch(match: Match) {
   await redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
 }
 
-if (config.START_SEQ_NUM) {
-  const result = await redis.get('match_seq_num');
-  const numResult = Number(result);
-  await scanApi(numResult);
-} else if (config.NODE_ENV !== 'production') {
-  // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
-  const container = generateJob('api_history', {});
-  const data = await getDataPromise(container.url);
-  await scanApi(data.result.matches[0].match_seq_num);
-} else {
-  throw new Error('failed to initialize sequence number');
+async function start() {
+  if (config.START_SEQ_NUM) {
+    const result = await redis.get('match_seq_num');
+    const numResult = Number(result);
+    await scanApi(numResult);
+  } else if (config.NODE_ENV !== 'production') {
+    // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
+    const container = generateJob('api_history', {});
+    const data = await getDataPromise(container.url);
+    await scanApi(data.result.matches[0].match_seq_num);
+  } else {
+    throw new Error('failed to initialize sequence number');
+  }
 }
+start();

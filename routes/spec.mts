@@ -22,7 +22,7 @@ import {
 import playerFields from './playerFields.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
-import packageJson from '../package.json' assert { type: 'json' };
+import packageJson from '../package.json';
 import { sendDataWithCache } from '../store/cacheFunctions.mts';
 import params from './requests/importParams.js';
 import responses from './responses/schemas/importResponseSchemas.js';

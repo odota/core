@@ -38,7 +38,7 @@ async function processMmr(job: MmrJob) {
     await insertPlayerRating(data);
   }
 }
-await queue.runQueue(
+queue.runQueue(
   'mmrQueue',
   config.MMR_PARALLELISM * retrieverArr.length,
   processMmr

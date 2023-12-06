@@ -51,6 +51,7 @@ async function processFullHistory(job: FullHistoryJob) {
   if (Number(player.account_id) === 0) {
     return;
   }
+  console.time(player.account_id.toString());
   // if test or only want last 100 (no paging), set short_history
   // const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
   // As of December 2021 filtering by hero ID doesn't work
@@ -134,5 +135,6 @@ async function processFullHistory(job: FullHistoryJob) {
   );
   await eachLimit(promiseFuncs, parallelism);
   await updatePlayer(player);
+  console.timeEnd(player.account_id.toString());
 }
-await queue.runQueue('fhQueue', 10, processFullHistory);
+queue.runQueue('fhQueue', 20, processFullHistory);

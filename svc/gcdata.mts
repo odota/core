@@ -13,7 +13,7 @@ async function processGcData(job: GcDataJob) {
 }
 
 console.log('[GCDATA] starting');
-await queue.runQueue(
+queue.runQueue(
   'gcQueue',
   Number(config.GCDATA_PARALLELISM) * retrieverArr.length,
   processGcData
