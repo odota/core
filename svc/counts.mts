@@ -2,7 +2,7 @@
 import moment from 'moment';
 import redis from '../store/redis.mts';
 import db from '../store/db.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import {
   getMatchRankTier,
   insertPlayerPromise,

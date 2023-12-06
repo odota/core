@@ -5,7 +5,7 @@ import db from '../store/db.mts';
 //@ts-ignore
 import { archivePut } from '../store/archive.mts';
 import { getMatchData, getPlayerMatchData } from '../store/queries.mts';
-import { eachLimit } from '../util/utility.mjs';
+import { eachLimit } from '../util/utility.mts';
 import config from '../config.js';
 
 function genRandomNumber(byteCount: number, radix: number): string {

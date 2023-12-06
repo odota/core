@@ -8,7 +8,7 @@ import {
   getDataPromise,
   redisCount,
   getRetrieverArr,
-} from '../util/utility.mjs';
+} from '../util/utility.mts';
 const retrieverArr = getRetrieverArr();
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;

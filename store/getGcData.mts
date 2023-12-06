@@ -1,5 +1,5 @@
 import moment from 'moment';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import config from '../config.js';
 import { insertMatchPromise, upsertPromise } from './queries.mts';
 import db from './db.mts';
@@ -15,7 +15,8 @@ async function getGcDataFromRetriever(match: GcDataJob) {
   );
   //@ts-ignore
   const body = await getDataPromise({
-    url: urls,
+    // Note: this can take a string or array of string or config object but typing it is weird
+    url: urls as any,
     noRetry: match.noRetry,
     timeout: 5000,
   });

@@ -19,7 +19,7 @@ import api from '../routes/api.mts';
 import { insertPlayerPromise } from '../store/queries.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import config from '../config.js';
 
 const SteamStrategy = passportSteam.Strategy;

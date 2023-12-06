@@ -8,7 +8,7 @@ import {
   getDataPromise,
   generateJob,
   eachLimit,
-} from '../util/utility.mjs';
+} from '../util/utility.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import queue from '../store/queue.mts';
@@ -118,7 +118,7 @@ async function processFullHistory(job: FullHistoryJob) {
   // check what matches the player is already associated with
   //@ts-ignore
   const docs =
-    (await getPlayerMatchesPromise(player.account_id, {
+    (await getPlayerMatchesPromise(player.account_id?.toString(), {
       project: ['match_id'],
     })) ?? [];
   console.log(

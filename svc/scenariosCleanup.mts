@@ -2,7 +2,7 @@
 import async from 'async';
 import db from '../store/db.mts';
 import config from '../config.js';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 function clearScenariosTables(cb: ErrorCb) {
   const currentWeek = utility.epochWeek();
   //@ts-ignore

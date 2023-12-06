@@ -1,5 +1,5 @@
 import constants from 'dotaconstants';
-import utility from './utility.mjs';
+import utility from './utility.mts';
 const { playerWon } = utility;
 // all items that cost at least 1400
 const itemCost = 1400;

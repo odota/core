@@ -9,6 +9,8 @@ import laneMappings from './laneMappings.mts';
 import config from '../config.js';
 import contributors from '../CONTRIBUTORS.js';
 import { promisify } from 'util';
+import type { Redis } from 'ioredis';
+
 /**
  * Tokenizes an input string.
  *
@@ -16,7 +18,7 @@ import { promisify } from 'util';
  *
  * @return {Array}
  */
-function tokenize(input) {
+function tokenize(input: string) {
   return input
     .replace(/[^a-zа-я- ]+/gi, '')
     .replace('/ {2,}/', ' ')
@@ -28,7 +30,7 @@ function tokenize(input) {
  *
  * Takes and returns a string
  */
-function convert64to32(id) {
+function convert64to32(id: string) {
   return Long.fromString(id).subtract('76561197960265728').toString();
 }
 /*
@@ -36,15 +38,15 @@ function convert64to32(id) {
  *
  * Takes and returns a string
  */
-function convert32to64(id) {
+function convert32to64(id: string) {
   return Long.fromString(id).add('76561197960265728').toString();
 }
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
  * */
-export function generateJob(type, payload) {
+export function generateJob(type: string, payload: any) {
   const apiUrl = 'http://api.steampowered.com';
-  let apiKey;
+  let apiKey: string;
   const opts = {
     api_details() {
       return {
@@ -77,7 +79,7 @@ export function generateJob(type, payload) {
     api_summaries() {
       return {
         url: `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
-          .map((p) => convert32to64(String(p.account_id)))
+          .map((p: Player) => convert32to64(String(p.account_id)))
           .join()}`,
         title: [type, payload.summaries_id].join(),
         type: 'api',
@@ -182,6 +184,7 @@ export function generateJob(type, payload) {
       };
     },
   };
+  //@ts-ignore
   return opts[type]();
 }
 /**
@@ -191,7 +194,7 @@ export function generateJob(type, payload) {
  * Injecting API key for Steam API
  * Errors from Steam API
  * */
-export function getData(url, cb) {
+export function getData(url: string | { url: string, delay?: number, timeout?: number, raw?: boolean, noRetry?: boolean }, cb: ErrorCb) {
   let u;
   let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
@@ -225,6 +228,7 @@ export function getData(url, cb) {
     request(
       {
         url: target,
+        //@ts-ignore
         json: !url.raw,
         gzip: true,
         timeout,
@@ -236,6 +240,7 @@ export function getData(url, cb) {
           res.statusCode !== 200 ||
           !body ||
           (steamApi &&
+            //@ts-ignore
             !url.raw &&
             !body.result &&
             !body.response &&
@@ -246,6 +251,7 @@ export function getData(url, cb) {
             !body.data)
         ) {
           // invalid response
+          //@ts-ignore
           if (url.noRetry) {
             return cb(err || 'invalid response', body);
           }
@@ -278,6 +284,7 @@ export function getData(url, cb) {
           }
           if (body.result.error || body.result.status === 2) {
             // valid response, but invalid data, retry
+            //@ts-ignore
             if (url.noRetry) {
               return cb(err || 'invalid data', body);
             }
@@ -298,19 +305,19 @@ export const getDataPromise = promisify(getData);
 /**
  * Determines if a player is radiant
  * */
-function isRadiant(player) {
+function isRadiant(player: Player) {
   return player.player_slot < 128;
 }
 /**
  * Determines if a player has contributed to the development of OpenDota
  */
-function isContributor(accountId) {
+function isContributor(accountId: string) {
   return accountId in contributors;
 }
 /**
  * Determines if a player won
  * */
-function playerWon(player, match) {
+function playerWon(player: Player, match: Match) {
   return player.player_slot < 128 === match.radiant_win;
 }
 /**
@@ -320,7 +327,7 @@ function playerWon(player, match) {
  * Strings get concatenated
  * Objects get recursively merged
  * */
-function mergeObjects(merge, val) {
+function mergeObjects(merge: any, val: any) {
   Object.keys(val || {}).forEach((attr) => {
     // check if prop is NaN
     if (Number.isNaN(val[attr])) {
@@ -341,11 +348,11 @@ function mergeObjects(merge, val) {
 /**
  * Finds the mode and its occurrence count in the input array
  * */
-function modeWithCount(array) {
+function modeWithCount(array: number[]) {
   if (!array.length) {
     return {};
   }
-  const modeMap = {};
+  const modeMap: NumberDict = {};
   let maxEl = array[0];
   let maxCount = 1;
   for (let i = 0; i < array.length; i += 1) {
@@ -359,13 +366,13 @@ function modeWithCount(array) {
   }
   return { mode: maxEl, count: maxCount };
 }
-function mode(array) {
+function mode(array: number[]) {
   return modeWithCount(array).mode;
 }
 /**
  * Determines if a match is significant for aggregation purposes
  * */
-function isSignificant(match) {
+function isSignificant(match: Match) {
   return Boolean(
     constants.game_mode[match.game_mode] &&
       constants.game_mode[match.game_mode].balanced &&
@@ -379,7 +386,7 @@ function isSignificant(match) {
 /**
  * Determines if a match is a pro match
  * */
-function isProMatch(match) {
+function isProMatch(match: Match) {
   return Boolean(
     isSignificant(match) &&
       match.leagueid &&
@@ -396,20 +403,20 @@ function isProMatch(match) {
 /**
  * Finds the max of the input array
  * */
-function max(array) {
+function max(array: number[]) {
   return Math.max.apply(null, array);
 }
 /**
  * Finds the min of the input array
  * */
-function min(array) {
+function min(array: number[]) {
   return Math.min.apply(null, array);
 }
 /**
  * Serializes a JSON object to row for storage in Cassandra
  * */
-function serialize(row) {
-  const obj = {};
+function serialize(row: AnyDict): AnyDict {
+  const obj: AnyDict = {};
   Object.keys(row).forEach((key) => {
     if (
       row[key] !== null &&
@@ -424,8 +431,8 @@ function serialize(row) {
 /**
  * Deserializes a row to JSON object read from Cassandra
  * */
-function deserialize(row) {
-  const obj = {};
+function deserialize(row: AnyDict): any {
+  const obj: AnyDict = {};
   const keys = row.keys();
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
@@ -437,10 +444,10 @@ function deserialize(row) {
  * Returns the unix timestamp at the beginning of a block of n minutes
  * Offset controls the number of blocks to look ahead
  * */
-function getStartOfBlockMinutes(size, offset) {
+function getStartOfBlockMinutes(size: number, offset: number) {
   offset = offset || 0;
   const blockS = size * 60;
-  const curTime = Math.floor(new Date() / 1000);
+  const curTime = Math.floor(Number(new Date()) / 1000);
   const blockStart = curTime - (curTime % blockS);
   return (blockStart + offset * blockS).toFixed(0);
 }
@@ -450,13 +457,13 @@ function getEndOfMonth() {
 /**
  * Finds the arithmetic mean of the input array
  * */
-function average(data) {
+function average(data: number[]) {
   return Math.floor(data.reduce((a, b) => a + b, 0) / data.length);
 }
 /**
  * Finds the average rank medal of input array
  * */
-function averageMedal(values) {
+function averageMedal(values: number[]) {
   const numStars = values.map(
     (value) => Number(String(value)[0]) * 5 + (value % 10)
   );
@@ -466,7 +473,7 @@ function averageMedal(values) {
 /**
  * Finds the standard deviation of the input array
  * */
-function stdDev(data) {
+function stdDev(data: number[]) {
   const avg = average(data);
   const squareDiffs = data.map((value) => {
     const diff = value - avg;
@@ -480,7 +487,7 @@ function stdDev(data) {
 /**
  * Finds the median of the input array
  * */
-function median(data) {
+function median(data: number[]) {
   data.sort((a, b) => a - b);
   const half = Math.floor(data.length / 2);
   if (data.length % 2) {
@@ -491,7 +498,7 @@ function median(data) {
 /**
  * Gets the patch ID given a unix start time
  * */
-function getPatchIndex(startTime) {
+function getPatchIndex(startTime: number) {
   const date = new Date(startTime * 1000);
   let i;
   for (i = 1; i < constants.patch.length; i += 1) {
@@ -507,7 +514,7 @@ function getPatchIndex(startTime) {
 /**
  * Constructs a replay url
  * */
-function buildReplayUrl(matchId, cluster, replaySalt) {
+function buildReplayUrl(matchId: number, cluster: number, replaySalt: number) {
   const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
   if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
@@ -517,7 +524,7 @@ function buildReplayUrl(matchId, cluster, replaySalt) {
 /**
  * Computes the expected winrate given an input array of winrates
  * */
-function expectedWin(rates) {
+function expectedWin(rates: number[]) {
   // simple implementation, average
   // return rates.reduce((prev, curr) => prev + curr)) / hids.length;
   // advanced implementation, asymptotic
@@ -532,13 +539,13 @@ function expectedWin(rates) {
 /**
  * Converts a group of heroes to string
  * */
-function groupToString(g) {
+function groupToString(g: number[]) {
   return g.sort((a, b) => a - b).join(',');
 }
 /**
  * Serialize a matchup/result of heroes to a string
  * */
-function matchupToString(t0, t1, t0win) {
+function matchupToString(t0: number[], t1: number[], t0win: boolean) {
   // create sorted strings of each team
   const rcg = groupToString(t0);
   const dcg = groupToString(t1);
@@ -553,7 +560,7 @@ function matchupToString(t0, t1, t0win) {
 /**
  * Enumerates the k-combinations of the input array
  * */
-function kCombinations(arr, k) {
+function kCombinations(arr: number[], k: number): number[][] {
   let i;
   let j;
   let combs;
@@ -587,14 +594,14 @@ function kCombinations(arr, k) {
 /**
  * Generates an array of the hero matchups in a given match
  * */
-function generateMatchups(match, max, oneSided) {
+function generateMatchups(match: Match, max: number, oneSided: boolean) {
   max = max || 5;
   const radiant = [];
   const dire = [];
   // start with empty arrays for the choose 0 case
-  let rCombs = [[]];
-  let dCombs = [[]];
-  const result = [];
+  let rCombs: number[][] = [[]];
+  let dCombs: number[][] = [[]];
+  const result: string[] = [];
   for (let i = 0; i < match.players.length; i += 1) {
     const p = match.players[i];
     if (p.hero_id === 0) {
@@ -647,7 +654,7 @@ function generateMatchups(match, max, oneSided) {
 /**
  * Aggregate popularity of items in the input item array
  */
-function countItemPopularity(items) {
+function countItemPopularity(items: any[]) {
   // get count of each items
   return items.reduce((acc, item) => {
     acc[item.id] = (acc[item.id] || 0) + 1;
@@ -657,8 +664,8 @@ function countItemPopularity(items) {
 /**
  * Counts the peer account_ids in the input match array
  * */
-function countPeers(matches) {
-  const teammates = {};
+function countPeers(matches: PlayerMatch[]) {
+  const teammates: AnyDict = {};
   matches.forEach((m) => {
     const playerWin = isRadiant(m) === m.radiant_win;
     const group = m.heroes || {};
@@ -709,9 +716,9 @@ function getAnonymousAccountId() {
 /**
  * Computes the lane a hero is in based on an input hash of positions
  * */
-function getLaneFromPosData(lanePos, isRadiant) {
+function getLaneFromPosData(lanePos: { [key: string]: NumberDict }, isRadiant: boolean) {
   // compute lanes
-  const lanes = [];
+  const lanes: number[] = [];
   // iterate over the position hash and get the lane bucket for each data point
   Object.keys(lanePos).forEach((x) => {
     Object.keys(lanePos[x]).forEach((y) => {
@@ -732,7 +739,7 @@ function getLaneFromPosData(lanePos, isRadiant) {
    * lane (`count` of mode) divided by the presence on all lanes (`lanes.length`).
    * Having low presence (<45%) probably means the player is roaming.
    * */
-  const isRoaming = count / lanes.length < 0.45;
+  const isRoaming = (count ?? 0) / lanes.length < 0.45;
   // Roles, currently doesn't distinguish between carry/support in safelane
   // 1 safelane
   // 2 mid
@@ -752,6 +759,7 @@ function getLaneFromPosData(lanePos, isRadiant) {
   };
   return {
     lane,
+    //@ts-ignore
     lane_role: laneRoles[lane],
     is_roaming: isRoaming,
   };
@@ -759,25 +767,27 @@ function getLaneFromPosData(lanePos, isRadiant) {
 /**
  * Get array of retriever endpoints from config
  * */
-export function getRetrieverArr(useGcDataArr) {
+export function getRetrieverArr(useGcDataArr?: boolean) {
   const parserHosts = useGcDataArr ? config.GCDATA_RETRIEVER_HOST : '';
   const input = parserHosts || config.RETRIEVER_HOST;
-  const output = [];
+  const output: string[] = [];
   const arr = input.split(',');
   arr.forEach((element) => {
     const parsedUrl = urllib.parse(`http://${element}`, true);
+    //@ts-ignore
     for (let i = 0; i < (parsedUrl.query.size || 1); i += 1) {
+      //@ts-ignore
       output.push(parsedUrl.host);
     }
   });
   return output;
 }
-export function redisCount(redis, prefix) {
+export function redisCount(redis: Redis, prefix: string) {
   const key = `${prefix}:${moment().startOf('hour').format('X')}`;
   redis.pfadd(key, uuid.v4());
   redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
-function getRedisCountDay(redis, prefix, cb) {
+function getRedisCountDay(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
@@ -787,7 +797,7 @@ function getRedisCountDay(redis, prefix, cb) {
   }
   redis.pfcount(...keyArr, cb);
 }
-function getRedisCountHour(redis, prefix, cb) {
+function getRedisCountHour(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
   // Get counts for previous full hour
   const keyArr = [];
   for (let i = 1; i < 2; i += 1) {
@@ -797,12 +807,12 @@ function getRedisCountHour(redis, prefix, cb) {
   }
   redis.pfcount(...keyArr, cb);
 }
-export function invokeInterval(func, delay) {
+export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
   // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
     console.log('running %s', func.name);
     console.time(func.name);
-    return func((err) => {
+    return func((err: any) => {
       if (err) {
         // log the error, but wait until next interval to retry
         console.error(err);
@@ -818,12 +828,13 @@ export function invokeInterval(func, delay) {
  * Takes an array of functions that return promises
  * Note this doesn't work on an array of promises as that will start all of them
  */
-export async function eachLimit(funcs, limit) {
+export async function eachLimit(funcs: Array<() => Promise<any>>, limit: number) {
   let rest = funcs.slice(limit);
   await Promise.all(
     funcs.slice(0, limit).map(async (func) => {
       await func();
       while (rest.length) {
+        //@ts-ignore
         await rest.shift()();
       }
     })
@@ -834,12 +845,12 @@ export async function eachLimit(funcs, limit) {
  * Returns the current UNIX Epoch time in weeks
  * */
 function epochWeek() {
-  return Math.floor(new Date() / (1000 * 60 * 60 * 24 * 7));
+  return Math.floor(Number(new Date()) / (1000 * 60 * 60 * 24 * 7));
 }
-function cleanItemSchema(input) {
+function cleanItemSchema(input: any) {
   return input;
 }
-function checkIfInExperiment(ip, mod) {
+function checkIfInExperiment(ip: string, mod: number) {
   return (
     crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );

@@ -3,7 +3,7 @@
 import getGcData from '../store/getGcData.mts';
 import queue from '../store/queue.mts';
 import config from '../config.js';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 
 const { getRetrieverArr } = utility;
 const retrieverArr = getRetrieverArr();

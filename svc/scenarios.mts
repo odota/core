@@ -5,7 +5,7 @@ import queue from '../store/queue.mts';
 //@ts-ignore
 import buildMatch from '../store/buildMatch.mts';
 import db from '../store/db.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import su from '../util/scenariosUtil.mjs';
 async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);

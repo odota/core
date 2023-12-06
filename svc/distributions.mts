@@ -4,7 +4,7 @@ import async from 'async';
 import constants from 'dotaconstants';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import Knex from 'knex';
 const { invokeInterval } = utility;
 const sql: StringDict = {};

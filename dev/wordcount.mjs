@@ -1,6 +1,6 @@
 import JSONStream from 'JSONStream';
 import db from '../store/db';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import compute from '../util/compute.mts';
 
 const args = process.argv.slice(2);

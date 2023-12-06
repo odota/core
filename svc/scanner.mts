@@ -1,5 +1,5 @@
 // Fetches new matches from the Steam API using the sequential endpoint
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import config from '../config.js';
 import redis from '../store/redis.mts';
 import { insertMatchPromise } from '../store/queries.mts';

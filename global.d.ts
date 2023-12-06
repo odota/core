@@ -33,9 +33,12 @@ interface Match {
   radiant_team_id?: number;
   dire_team_id?: number;
   picks_bans?: any[];
+  human_players: number;
 
   // Computed field
   pgroup: any;
+  // heroes is just pgroup alias?
+  heroes: any;
   average_rank?: number | null;
 }
 
@@ -137,7 +140,7 @@ interface ParsedPlayer extends Player {
   item_usage: NumberDict;
   purchase_time: NumberDict;
   first_purchase_time: NumberDict;
-  lane: number;
+  lane: number | undefined | null;
   is_roaming: boolean;
   lane_efficiency: number;
   lane_efficiency_pct: number;

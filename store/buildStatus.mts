@@ -1,24 +1,25 @@
 import async from 'async';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import redis from '../store/redis.mts';
 
-export default function buildStatus(cb: ErrorCb) {
-  function generatePercentiles(arr: string[]) {
-    // sort the list
-    arr.sort((a, b) => Number(a) - Number(b));
-    // console.log(arr);
-    const percentiles = [50, 75, 90, 95, 99];
-    const result: NumberDict = {};
-    arr.forEach((time, i) => {
-      if (i >= arr.length * (percentiles[0] / 100)) {
-        result[percentiles[0]] = Number(time);
-        // Pop the first element
-        percentiles.shift();
-      }
-    });
-    return result;
-  }
-  async.parallel(
+function generatePercentiles(arr: string[]) {
+  // sort the list
+  arr.sort((a, b) => Number(a) - Number(b));
+  // console.log(arr);
+  const percentiles = [50, 75, 90, 95, 99];
+  const result: NumberDict = {};
+  arr.forEach((time, i) => {
+    if (i >= arr.length * (percentiles[0] / 100)) {
+      result[percentiles[0]] = Number(time);
+      // Pop the first element
+      percentiles.shift();
+    }
+  });
+  return result;
+}
+
+export async function buildStatus() {
+  return await async.parallel(
     {
       user_players(cb) {
         redis.zcard('visitors', cb);
@@ -173,9 +174,5 @@ export default function buildStatus(cb: ErrorCb) {
           return cb(err, response);
         });
       },
-    },
-    (err, results) => {
-      cb(err, results);
-    }
-  );
+    });
 }

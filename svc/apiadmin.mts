@@ -4,7 +4,7 @@ import moment from 'moment';
 import stripeLib from 'stripe';
 import redis from '../store/redis.mts';
 import db from '../store/db.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import config from '../config.js';
 import type { knex } from 'knex';
 

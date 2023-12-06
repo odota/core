@@ -8,9 +8,9 @@ import queries from '../store/queries.mts';
 import search from '../store/search.mts';
 import searchES from '../store/searchES.mts';
 import buildMatch from '../store/buildMatch.mts';
-import buildStatus from '../store/buildStatus.mts';
+import { buildStatus } from '../store/buildStatus.mts';
 import playerFields from './playerFields.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import packageJson from '../package.json' assert { type: 'json' };
@@ -195,7 +195,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               profile(cb) {
                 queries.getPlayer(db, accountId, (err, playerData) => {
                   if (playerData !== null && playerData !== undefined) {
-                    playerData.is_contributor = isContributor(accountId);
+                    playerData.is_contributor = isContributor(accountId.toString());
                     playerData.is_subscriber = Boolean(playerData?.status);
                   }
                   cb(err as any, playerData);
@@ -1550,13 +1550,13 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/status',
-        func: (req, res, cb) => {
-          buildStatus((err, status) => {
-            if (err) {
-              return cb(err);
-            }
+        func: async (req, res, cb) => {
+          try {
+            const status = await buildStatus();
             return res.json(status);
-          });
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
@@ -1692,7 +1692,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             // match id request, get data from API
             return utility.getData(
               utility.generateJob('api_details', match).url,
-              async (err: Error | null, body: any) => {
+              async (err, body) => {
                 if (err) {
                   // couldn't get data from api, non-retryable
                   return exitWithJob(JSON.stringify(err));

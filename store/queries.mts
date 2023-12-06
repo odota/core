@@ -2,7 +2,7 @@ import async from 'async';
 import moment from 'moment';
 import constants from 'dotaconstants';
 import util from 'util';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import config from '../config.js';
 import queue from './queue.mts';
 import su from '../util/scenariosUtil.mts';
@@ -831,7 +831,7 @@ export async function insertMatchPromise(
   }
   async function upsertMatchPostgres() {
     // Insert the pro match data: We do this if api or parser
-    if (options.type === 'api' && !utility.isProMatch(match)) {
+    if (options.type === 'api' && !utility.isProMatch(match as Match)) {
       // Check whether we care about this match for pro purposes
       // We need the basic match data to run the check, so only do it if type is api
       return;
@@ -1053,7 +1053,7 @@ export async function insertMatchPromise(
     match.players.forEach((player) => {
       getKeys().forEach((key) => {
         if (player.account_id) {
-          arr.push({ key, account_id: player.account_id.toString() });
+          arr.push({ key, account_id: player.account_id?.toString() });
         }
       });
     });
@@ -1269,7 +1269,7 @@ function getMetadata(req: Request, cb: ErrorCb) {
     cb
   );
 }
-export async function getMatchData(matchId: string) {
+export async function getMatchData(matchId: string): Promise<ParsedMatch> {
   const result = await cassandra.execute(
     'SELECT * FROM matches where match_id = ?',
     [Number(matchId)],

@@ -1,4 +1,4 @@
-import utility from './utility.mjs';
+import utility from './utility.mts';
 const { isRadiant } = utility;
 function filter(matches: ParsedPlayerMatch[], filters: NumberArrayDict) {
   const curtime = Math.floor(Date.now() / 1000);

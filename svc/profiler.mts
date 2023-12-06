@@ -1,7 +1,7 @@
 // Updates Steam profile data for players periodically
 import { insertPlayerPromise, bulkIndexPlayer } from '../store/queries.mts';
 import db from '../store/db.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 const { getDataPromise, generateJob, convert64to32 } = utility;
 
 while (true) {

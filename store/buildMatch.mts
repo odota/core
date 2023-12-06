@@ -1,7 +1,7 @@
 import constants from 'dotaconstants';
 import config from '../config.js';
 import compute from '../util/compute.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 import redis from './redis.mts';
 import db from './db.mts';
 import {
@@ -22,7 +22,7 @@ async function extendPlayerData(player: ParsedPlayerMatch, match: ParsedMatch) {
     cluster: match.cluster,
     lobby_type: match.lobby_type,
     game_mode: match.game_mode,
-    is_contributor: isContributor(player.account_id),
+    is_contributor: isContributor(player.account_id?.toString()),
   };
   computeMatchData(p);
   const row = await db

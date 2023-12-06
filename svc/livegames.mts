@@ -5,8 +5,8 @@ import request from 'request';
 import redis from '../store/redis.mts';
 import db from '../store/db.mts';
 import config from '../config.js';
-import { invokeInterval } from '../util/utility.mjs';
-function doLiveGames(cb: (err?: any) => void) {
+import { invokeInterval } from '../util/utility.mts';
+function doLiveGames(cb: ErrorCb) {
   // Get the list of pro players
   db.select()
     .from('notable_players')

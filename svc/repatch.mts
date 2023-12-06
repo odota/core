@@ -2,7 +2,7 @@
 import constants from 'dotaconstants';
 import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 
 // No loop, just runs once when deployed
 const matches = await db.select(['match_id', 'start_time']).from('matches');

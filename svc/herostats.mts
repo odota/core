@@ -4,7 +4,7 @@ import moment from 'moment';
 import async from 'async';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
-import utility from '../util/utility.mjs';
+import utility from '../util/utility.mts';
 const { invokeInterval } = utility;
 function doHeroStats(cb: StringErrorCb) {
   const minTime = moment().subtract(30, 'day').format('X');
