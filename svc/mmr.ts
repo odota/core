@@ -6,6 +6,7 @@ import { insertPlayerRating, insertPlayerPromise } from '../store/queries';
 import config from '../config.js';
 import { getDataPromise, redisCount, getRetrieverArr } from '../util/utility';
 const retrieverArr = getRetrieverArr();
+
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
   const urls = retrieverArr.map(

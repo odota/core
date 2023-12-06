@@ -967,8 +967,8 @@ export async function insertMatchPromise(
     const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
     }] for ${match.match_id} ended ${
-      match.start_time && match.duration
-        ? moment.unix(match.start_time + match.duration).fromNow()
+        match.start_time
+        ? moment.unix(match.start_time + (match.duration ?? 0)).fromNow()
         : 'UNKNOWN'
     }`;
     redis.publish(options.type, message);
@@ -1000,7 +1000,7 @@ export async function insertMatchPromise(
       return;
     }
     if (options.origin === 'scanner' && options.type === 'api') {
-      await queue.addJob('countsQueue', match);
+      await queue.addJob('countsQueue', match as Match);
     }
   }
   async function decideMmr() {

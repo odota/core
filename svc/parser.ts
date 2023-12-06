@@ -57,7 +57,7 @@ async function parseProcessor(job: ParseJob) {
     match.origin === 'scanner' &&
     match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
   ) {
-    await queue.addJob('scenariosQueue', match.match_id as any);
+    await queue.addJob('scenariosQueue', match.match_id.toString());
   }
   console.log('[PARSER] completed parse of match %s', match.match_id);
   return true;

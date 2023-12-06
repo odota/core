@@ -76,24 +76,24 @@ async function runReliableQueue(
     }
   });
 }
+
+function addJob(queueName: 'mmrQueue', job: MmrJob): Promise<number>;
+function addJob(queueName: 'countsQueue', job: CountsJob): Promise<number>;
+function addJob(queueName: 'fhQueue', job: FullHistoryJob): Promise<number>;
+function addJob(queueName: 'gcQueue', job: GcDataJob): Promise<number>;
+function addJob(queueName: 'scenariosQueue', job: ScenariosJob): Promise<number>;
 async function addJob(queueName: QueueName, job: QueueJob) {
   return await redis.rpush(queueName, JSON.stringify(job));
 }
+
+function addReliableJob(queueName: 'parse', job: { data: ParseJob }, options: ReliableQueueOptions): Promise<ReliableQueueRow>;
 async function addReliableJob(
   queueName: QueueName,
-  job: { data: ParseJob },
-  options: { attempts: number; priority?: number }
+  job: { data: QueueJob },
+  options: ReliableQueueOptions
 ) {
   const result = await db.raw<{
-    rows: {
-      id: number;
-      type: string;
-      timestamp: string;
-      attempts: number;
-      data: any;
-      next_attempt_time: string;
-      priority: number;
-    }[];
+    rows: ReliableQueueRow[];
   }>(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority)
   VALUES (?, ?, ?, ?, ?, ?) 

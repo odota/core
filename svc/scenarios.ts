@@ -10,6 +10,7 @@ import { epochWeek } from '../util/utility';
 const { scenarioChecks } = su;
 type ScenariosKey = keyof typeof scenarioChecks;
 
+// Processors generally get back job objects but this one uses a string
 async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);
   // Using buildMatch is unnecessarily expensive here since it also looks up player names etc.

@@ -240,6 +240,9 @@ interface GcDataJob {
   noRetry?: boolean;
 }
 
+type CountsJob = Match;
+type ScenariosJob = string;
+
 interface ParseJob {
   match_id: number;
   pgroup: any;
@@ -249,7 +252,19 @@ interface ParseJob {
   duration?: number;
 }
 
-type QueueJob = GcDataJob | MmrJob | ParseJob | FullHistoryJob;
+type QueueJob = GcDataJob | MmrJob | FullHistoryJob | CountsJob | ScenariosJob;
+
+type ReliableQueueRow = {
+  id: number;
+  type: string;
+  timestamp: string;
+  attempts: number;
+  data: any;
+  next_attempt_time: string;
+  priority: number;
+}
+
+type ReliableQueueOptions = { attempts: number; priority?: number };
 
 interface ProPlayer {
   name: string;
