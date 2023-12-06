@@ -2,111 +2,111 @@ const config = require('./config.js');
 
 let arr = [
   {
-    script: 'svc/web.ts',
+    name: 'web',
     group: 'web',
   },
   {
-    script: 'svc/retriever.ts',
+    name: 'retriever',
     group: 'retriever',
   },
   {
-    script: 'svc/proxy.ts',
+    name: 'proxy',
     group: 'proxy',
   },
   {
-    script: 'svc/parser.ts',
+    name: 'parser',
     group: 'parser',
   },
   {
-    script: 'svc/apiadmin.ts',
+    name: 'apiadmin',
     group: 'backend',
   },
   {
-    script: 'svc/mmr.ts',
+    name: 'mmr',
     group: 'backend',
   },
   {
-    script: 'svc/profiler.ts',
+    name: 'profiler',
     group: 'backend',
   },
   {
-    script: 'svc/scanner.ts',
+    name: 'scanner',
     group: 'backend',
   },
   {
-    script: 'svc/fullhistory.ts',
+    name: 'fullhistory',
     group: 'backend',
   },
   {
-    script: 'svc/autofullhistory.ts',
+    name: 'autofullhistory',
     group: 'backend',
   },
   {
-    script: 'svc/monitor.ts',
+    name: 'monitor',
     group: 'backend',
   },
   {
-    script: 'svc/gcdata.ts',
+    name: 'gcdata',
     group: 'backend',
   },
   {
-    script: 'svc/buildsets.ts',
+    name: 'buildsets',
     group: 'backend',
   },
   {
-    script: 'svc/cosmetics.ts',
+    name: 'cosmetics',
     group: 'backend',
   },
   {
-    script: 'svc/distributions.ts',
+    name: 'distributions',
     group: 'backend',
   },
   {
-    script: 'svc/heroes.ts',
+    name: 'heroes',
     group: 'backend',
   },
   {
-    script: 'svc/herostats.ts',
+    name: 'herostats',
     group: 'backend',
   },
   {
-    script: 'svc/items.ts',
+    name: 'items',
     group: 'backend',
   },
   {
-    script: 'svc/leagues.ts',
+    name: 'leagues',
     group: 'backend',
   },
   {
-    script: 'svc/livegames.ts',
+    name: 'livegames',
     group: 'backend',
   },
   {
-    script: 'svc/proplayers.ts',
+    name: 'proplayers',
     group: 'backend',
   },
   {
-    script: 'svc/teams.ts',
+    name: 'teams',
     group: 'backend',
   },
   {
-    script: 'svc/scenarios.ts',
+    name: 'scenarios',
     group: 'backend',
   },
   {
-    script: 'svc/scenariosCleanup.ts',
+    name: 'scenariosCleanup',
     group: 'backend',
   },
   {
-    script: 'svc/counts.ts',
+    name: 'counts',
     group: 'backend',
   },
   {
-    script: 'svc/syncSubs.ts',
+    name: 'syncSubs',
     group: 'backend',
   },
   {
-    script: 'svc/cassandraDelete.ts',
+    name: 'cassandraDelete',
     group: 'backend',
   },
 ];
@@ -116,15 +116,16 @@ arr = arr.filter((app) => !config.GROUP || app.group === config.GROUP);
 
 const apps = arr.map((app) => {
   const dev = config.NODE_ENV === 'development';
+  const script = `svc/${app.name}.ts`;
   return {
     ...app,
     watch: dev ? true : false,
     ignore_watch: ['.git', 'node_modules', 'build'],
     exec_mode: 'fork',
     instances: 1,
-    name: app.script.split('/').slice(-1)[0].split('.')[0],
+    script,
     interpreter:
-      app.script.endsWith('.ts') || app.script.endsWith('.mts')
+      script.endsWith('.ts') || script.endsWith('.mts')
         ? 'node_modules/.bin/tsx'
         : undefined,
   };
