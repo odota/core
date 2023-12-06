@@ -13,8 +13,7 @@ db.select(['match_id', 'start_time'])
       throw err;
     }
     matchIds.forEach(async (match) => {
-      const patch =
-        constants.patch[getPatchIndex(match.start_time)].name;
+      const patch = constants.patch[getPatchIndex(match.start_time)].name;
       console.log(match.match_id, patch);
       await upsertPromise(
         db,

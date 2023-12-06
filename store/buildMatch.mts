@@ -1,7 +1,13 @@
 import constants from 'dotaconstants';
 import config from '../config.js';
 import compute from '../util/compute.mts';
-import { generateJob, getDataPromise, buildReplayUrl, isContributor, redisCount } from '../util/utility.mts';
+import {
+  generateJob,
+  getDataPromise,
+  buildReplayUrl,
+  isContributor,
+  redisCount,
+} from '../util/utility.mts';
 import redis from './redis.mts';
 import db from './db.mts';
 import {
@@ -78,9 +84,7 @@ async function backfill(matchId: string) {
   const matchObj = {
     match_id: Number(matchId),
   };
-  const body = await getDataPromise(
-    generateJob('api_details', matchObj).url
-  );
+  const body = await getDataPromise(generateJob('api_details', matchObj).url);
   // match details response
   const match = body.result;
   await insertMatchPromise(match, {
@@ -173,11 +177,13 @@ async function getMatch(matchId: string) {
   if (cosmetics) {
     const playersWithCosmetics = matchResult.players.map((p: ParsedPlayer) => {
       const hero = constants.heroes[p.hero_id] || {};
-      const playerCosmetics = cosmetics.filter(Boolean).filter(
-        (c) =>
-          match?.cosmetics[c.item_id] === p.player_slot &&
-          (!c.used_by_heroes || c.used_by_heroes === hero.name)
-      );
+      const playerCosmetics = cosmetics
+        .filter(Boolean)
+        .filter(
+          (c) =>
+            match?.cosmetics[c.item_id] === p.player_slot &&
+            (!c.used_by_heroes || c.used_by_heroes === hero.name)
+        );
       return {
         ...p,
         cosmetics: playerCosmetics,

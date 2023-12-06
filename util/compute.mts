@@ -1,5 +1,12 @@
 import constants from 'dotaconstants';
-import { getLaneFromPosData, getPatchIndex, isRadiant, max, min, tokenize } from './utility.mts';
+import {
+  getLaneFromPosData,
+  getPatchIndex,
+  isRadiant,
+  max,
+  min,
+  tokenize,
+} from './utility.mts';
 const { ancients } = constants;
 /**
  * Count the words that occur in a set of messages

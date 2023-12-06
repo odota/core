@@ -42,7 +42,11 @@ function mapCountry(results: any) {
   });
   return results;
 }
-function loadData(key: string, mapFunc: (result: { rows: any[] }) => any[], cb: NonUnknownErrorCb) {
+function loadData(
+  key: string,
+  mapFunc: (result: { rows: any[] }) => any[],
+  cb: NonUnknownErrorCb
+) {
   db.raw(sql[key]).asCallback((err: any, results: any) => {
     if (err) {
       return cb(err);

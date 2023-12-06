@@ -1,7 +1,11 @@
 // Updates the list of leagues in the database
 import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mts';
-import { generateJob, getDataPromise, invokeInterval } from '../util/utility.mts';
+import {
+  generateJob,
+  getDataPromise,
+  invokeInterval,
+} from '../util/utility.mts';
 
 async function doLeagues(cb: ErrorCb) {
   const container = generateJob('api_leagues', {});

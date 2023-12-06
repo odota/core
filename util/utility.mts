@@ -194,7 +194,13 @@ const jobs = {
  * Injecting API key for Steam API
  * Errors from Steam API
  * */
-type GetDataOptions = { url: string | string[], delay?: number, timeout?: number, raw?: boolean, noRetry?: boolean };
+type GetDataOptions = {
+  url: string | string[];
+  delay?: number;
+  timeout?: number;
+  raw?: boolean;
+  noRetry?: boolean;
+};
 export function getData(url: string | GetDataOptions, cb: ErrorCb) {
   let u: string;
   let delay = Number(config.DEFAULT_DELAY);
@@ -513,7 +519,11 @@ export function getPatchIndex(startTime: number) {
 /**
  * Constructs a replay url
  * */
-export function buildReplayUrl(matchId: number, cluster: number, replaySalt: number) {
+export function buildReplayUrl(
+  matchId: number,
+  cluster: number,
+  replaySalt: number
+) {
   const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
   if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
@@ -715,7 +725,10 @@ export function getAnonymousAccountId() {
 /**
  * Computes the lane a hero is in based on an input hash of positions
  * */
-export function getLaneFromPosData(lanePos: { [key: string]: NumberDict }, isRadiant: boolean) {
+export function getLaneFromPosData(
+  lanePos: { [key: string]: NumberDict },
+  isRadiant: boolean
+) {
   // compute lanes
   const lanes: number[] = [];
   // iterate over the position hash and get the lane bucket for each data point
@@ -783,7 +796,11 @@ export function redisCount(redis: Redis, prefix: string) {
   redis.pfadd(key, uuid.v4());
   redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
-export function getRedisCountDay(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
+export function getRedisCountDay(
+  redis: Redis,
+  prefix: string,
+  cb: NonUnknownErrorCb
+) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
@@ -793,7 +810,11 @@ export function getRedisCountDay(redis: Redis, prefix: string, cb: NonUnknownErr
   }
   redis.pfcount(...keyArr, cb);
 }
-export function getRedisCountHour(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
+export function getRedisCountHour(
+  redis: Redis,
+  prefix: string,
+  cb: NonUnknownErrorCb
+) {
   // Get counts for previous full hour
   const keyArr = [];
   for (let i = 1; i < 2; i += 1) {
@@ -824,7 +845,10 @@ export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
  * Takes an array of functions that return promises
  * Note this doesn't work on an array of promises as that will start all of them
  */
-export async function eachLimit(funcs: Array<() => Promise<any>>, limit: number) {
+export async function eachLimit(
+  funcs: Array<() => Promise<any>>,
+  limit: number
+) {
   let rest = funcs.slice(limit);
   await Promise.all(
     funcs.slice(0, limit).map(async (func) => {

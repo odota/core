@@ -20,7 +20,11 @@ import { insertPlayerPromise } from '../store/queries.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import config from '../config.js';
-import { getEndOfMonth, getStartOfBlockMinutes, redisCount } from '../util/utility.mts';
+import {
+  getEndOfMonth,
+  getStartOfBlockMinutes,
+  redisCount,
+} from '../util/utility.mts';
 
 const SteamStrategy = passportSteam.Strategy;
 //@ts-ignore
@@ -349,18 +353,20 @@ app.use((req, res) =>
   })
 );
 // 500 route
-app.use((err: Error, req: express.Request, res: express.Response, cb: ErrorCb) => {
-  console.log('[ERR]', req.originalUrl);
-  redisCount(redis, '500_error');
-  if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-    // default express handler
-    return cb(err);
+app.use(
+  (err: Error, req: express.Request, res: express.Response, cb: ErrorCb) => {
+    console.log('[ERR]', req.originalUrl);
+    redisCount(redis, '500_error');
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      // default express handler
+      return cb(err);
+    }
+    console.error(err.stack);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+    });
   }
-  console.error(err.stack);
-  return res.status(500).json({
-    error: 'Internal Server Error',
-  });
-});
+);
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);

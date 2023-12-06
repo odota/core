@@ -1,7 +1,7 @@
 /**
  * Object listing dependent columns for each filter
  * */
-export const filterDeps: {[key: string]: (keyof ParsedPlayerMatch)[]} = {
+export const filterDeps: { [key: string]: (keyof ParsedPlayerMatch)[] } = {
   win: ['player_slot', 'radiant_win'],
   patch: ['patch'],
   game_mode: ['game_mode'],

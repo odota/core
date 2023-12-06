@@ -1,7 +1,11 @@
 // Updates Steam profile data for players periodically
 import { insertPlayerPromise, bulkIndexPlayer } from '../store/queries.mts';
 import db from '../store/db.mts';
-import { getDataPromise, generateJob, convert64to32 } from '../util/utility.mts';
+import {
+  getDataPromise,
+  generateJob,
+  convert64to32,
+} from '../util/utility.mts';
 
 while (true) {
   // To optimize the api call we need to do 100 players at a time

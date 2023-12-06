@@ -1,6 +1,9 @@
-import { isRadiant, isSignificant } from "./utility.mts";
+import { isRadiant, isSignificant } from './utility.mts';
 
-export function filterMatches(matches: ParsedPlayerMatch[], filters?: ArrayifiedFilters) {
+export function filterMatches(
+  matches: ParsedPlayerMatch[],
+  filters?: ArrayifiedFilters
+) {
   const curtime = Math.floor(Date.now() / 1000);
   // accept a hash of filters, run all the filters in the hash in series
   // console.log(filters);

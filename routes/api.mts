@@ -66,7 +66,11 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   req.queryObj = {
     project: ['match_id', 'player_slot', 'radiant_win']
       .concat(filterCols)
-      .concat((req.query.sort as [] || []).filter((f: keyof ParsedPlayerMatch) => subkeys[f])) as (keyof ParsedPlayerMatch)[],
+      .concat(
+        ((req.query.sort as []) || []).filter(
+          (f: keyof ParsedPlayerMatch) => subkeys[f]
+        )
+      ) as (keyof ParsedPlayerMatch)[],
     filter: (req.query || {}) as unknown as ArrayifiedFilters,
     sort: req.query.sort as keyof ParsedPlayerMatch,
     limit: Number(req.query.limit),

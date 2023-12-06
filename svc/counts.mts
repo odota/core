@@ -11,7 +11,12 @@ import {
 import queue from '../store/queue.mts';
 import config from '../config.js';
 import { benchmarks } from '../util/benchmarksUtil.mjs';
-import { isSignificant, getAnonymousAccountId, isRadiant, getStartOfBlockMinutes } from '../util/utility.mts';
+import {
+  isSignificant,
+  getAnonymousAccountId,
+  isRadiant,
+  getStartOfBlockMinutes,
+} from '../util/utility.mts';
 
 async function updateHeroRankings(match: Match) {
   if (!isSignificant(match)) {
@@ -92,7 +97,7 @@ async function upsertMatchSample(match: Match) {
 async function updateRecord(
   field: keyof Match | keyof Player,
   match: Match,
-  player: Player,
+  player: Player
 ) {
   redis.zadd(
     `records:${field}`,
@@ -224,10 +229,7 @@ async function updateBenchmarks(match: Match) {
           ) {
             const rkey = [
               'benchmarks',
-              getStartOfBlockMinutes(
-                config.BENCHMARK_RETENTION_MINUTES,
-                0
-              ),
+              getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
               key,
               p.hero_id,
             ].join(':');

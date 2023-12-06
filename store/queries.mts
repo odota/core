@@ -18,7 +18,21 @@ import knex from 'knex';
 import type { Client } from 'cassandra-driver';
 import type { Redis } from 'ioredis';
 import type { Request } from 'express';
-import { getStartOfBlockMinutes, countItemPopularity, deserialize, getAnonymousAccountId, isContributor, averageMedal, convert64to32, serialize, isProMatch, getLaneFromPosData, isRadiant, getPatchIndex, redisCount } from '../util/utility.mts';
+import {
+  getStartOfBlockMinutes,
+  countItemPopularity,
+  deserialize,
+  getAnonymousAccountId,
+  isContributor,
+  averageMedal,
+  convert64to32,
+  serialize,
+  isProMatch,
+  getLaneFromPosData,
+  isRadiant,
+  getPatchIndex,
+  redisCount,
+} from '../util/utility.mts';
 
 const { computeMatchData } = compute;
 const columnInfo: AnyDict = {};
@@ -100,10 +114,7 @@ export async function getMatchBenchmarks(m: Match) {
         // Use data from previous epoch
         let key = [
           'benchmarks',
-          getStartOfBlockMinutes(
-            config.BENCHMARK_RETENTION_MINUTES,
-            -1
-          ),
+          getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1),
           metric,
           p.hero_id,
         ].join(':');
@@ -250,19 +261,13 @@ export function getHeroBenchmarks(
           // Use data from previous epoch
           let key = [
             'benchmarks',
-            getStartOfBlockMinutes(
-              config.BENCHMARK_RETENTION_MINUTES,
-              -1
-            ),
+            getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1),
             metric,
             heroId,
           ].join(':');
           const backupKey = [
             'benchmarks',
-            getStartOfBlockMinutes(
-              config.BENCHMARK_RETENTION_MINUTES,
-              0
-            ),
+            getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
             metric,
             heroId,
           ].join(':');
@@ -584,10 +589,7 @@ export async function insertPlayerPromise(
     // this is a login, compute the account_id from steamid
     player.account_id = Number(convert64to32(player.steamid));
   }
-  if (
-    !player.account_id ||
-    player.account_id === getAnonymousAccountId()
-  ) {
+  if (!player.account_id || player.account_id === getAnonymousAccountId()) {
     return;
   }
   if (indexPlayer) {
@@ -849,10 +851,7 @@ export async function insertMatchPromise(
           pm.match_id = match.match_id;
           // Add lane data
           if (pm.lane_pos) {
-            const laneData = getLaneFromPosData(
-              pm.lane_pos,
-              isRadiant(pm)
-            );
+            const laneData = getLaneFromPosData(pm.lane_pos, isRadiant(pm));
             pm.lane = laneData.lane || null;
             pm.lane_role = laneData.lane_role || null;
             pm.is_roaming = laneData.is_roaming || null;
@@ -884,8 +883,7 @@ export async function insertMatchPromise(
           'match_patch',
           {
             match_id: match.match_id,
-            patch:
-              constants.patch[getPatchIndex(match.start_time)].name,
+            patch: constants.patch[getPatchIndex(match.start_time)].name,
           },
           {
             match_id: match.match_id,
@@ -1296,4 +1294,3 @@ export async function getArchivedMatch(matchId: string) {
   }
   return null;
 }
-

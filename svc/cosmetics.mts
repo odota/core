@@ -2,7 +2,11 @@
 import vdf from 'simple-vdf';
 import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mts';
-import { cleanItemSchema, eachLimit, getDataPromise } from '../util/utility.mts';
+import {
+  cleanItemSchema,
+  eachLimit,
+  getDataPromise,
+} from '../util/utility.mts';
 
 while (true) {
   console.time('doCosmetics');

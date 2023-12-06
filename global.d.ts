@@ -10,25 +10,25 @@ declare module 'uuid';
 declare namespace Express {
   export interface Request {
     originalQuery: string;
-    queryObj: QueryObj
+    queryObj: QueryObj;
     user: {
       account_id: number;
-    }
+    };
   }
 }
 
-type ArrayifiedFilters = {[key: string]: number[]}
+type ArrayifiedFilters = { [key: string]: number[] };
 type QueryObj = {
-  project: (keyof ParsedPlayerMatch)[],
-  filter?: ArrayifiedFilters,
-  sort?: keyof ParsedPlayerMatch,
+  project: (keyof ParsedPlayerMatch)[];
+  filter?: ArrayifiedFilters;
+  sort?: keyof ParsedPlayerMatch;
   // Number of results to return after client filter/sort
-  limit?: number,
-  offset?: number,
-  having?: number,
+  limit?: number;
+  offset?: number;
+  having?: number;
   // Number of results to fetch from the database (before filter/sort)
-  dbLimit?: number,
-}
+  dbLimit?: number;
+};
 
 type StringDict = { [key: string]: string };
 type NumberArrayDict = { [key: string]: number[] };
@@ -293,7 +293,7 @@ type PathVerbSpec = {
   func: (req: express.Request, res: express.Response, cb: ErrorCb) => void;
 };
 
-type HttpVerb = 'get' | 'post'
+type HttpVerb = 'get' | 'post';
 
 type OpenAPISpec = {
   openapi: string;
@@ -302,7 +302,7 @@ type OpenAPISpec = {
   components: any;
   paths: {
     [path: string]: {
-        [verb: string]: PathVerbSpec;
-      }
-    }
+      [verb: string]: PathVerbSpec;
+    };
+  };
 };
