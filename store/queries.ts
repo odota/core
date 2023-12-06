@@ -332,9 +332,9 @@ export async function getPlayerMatchesPromise(
       }
     }, (err) => {
       if (err) {
-        reject(err)
+        return reject(err)
       }
-      resolve();
+      return resolve();
     });
   });
   const sort = queryObj.sort;
