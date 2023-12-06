@@ -1,5 +1,5 @@
-import db from '../store/db.mts';
-import { upsertPromise } from '../store/queries.mts';
+import db from '../store/db';
+import { upsertPromise } from '../store/queries';
 
 db.select(['radiant_team_id', 'dire_team_id', 'match_id'])
   .from('matches')

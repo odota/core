@@ -12,12 +12,13 @@
     "noEmit": true
   },
   "include": [
-    "index.mts",
+    "index.ts",
     "global.d.ts",
     "processors",
     "routes",
     "store",
     "svc",
+    "test",
     "util"
   ]
 }
