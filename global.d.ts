@@ -7,6 +7,14 @@ declare module 'dota2';
 declare module 'passport-steam';
 declare module 'uuid';
 
+declare namespace Express {
+  export interface Request {
+    user: {
+      account_id: number
+    }
+  }
+}
+
 type StringDict = { [key: string]: string };
 type NumberArrayDict = { [key: string]: number[] };
 type AnyDict = { [key: string]: any };

@@ -96,7 +96,6 @@ api.use('/request/:jobId', (req, res, cb) => {
 });
 // Admin endpoints middleware
 api.use('/admin*', (req, res, cb) => {
-  //@ts-ignore
   if (req.user && admins.includes(req.user.account_id)) {
     return cb();
   }

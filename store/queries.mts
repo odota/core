@@ -1247,7 +1247,6 @@ export function getMetadata(req: Request, cb: ErrorCb) {
         if (req.user) {
           db.raw(
             "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
-            //@ts-ignore
             [req.user.account_id]
           ).asCallback((err: Error | null, result: { rows: any[] }) => {
             cb(err, Boolean(result?.rows?.[0]));

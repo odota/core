@@ -197,7 +197,7 @@ app.use((req, res, cb) => {
   });
 });
 // Telemetry middleware
-app.use((req: any, res: any, cb: ErrorCb) => {
+app.use((req, res, cb) => {
   const timeStart = Number(new Date());
   res.once('finish', () => {
     const timeEnd = Number(new Date());
@@ -245,9 +245,7 @@ app.use((req: any, res: any, cb: ErrorCb) => {
         moment().startOf('hour').add(1, 'hour').format('X')
       );
     }
-    //@ts-ignore
     if (req.user && req.user.account_id) {
-      //@ts-ignore
       redis.zadd('visitors', moment().format('X'), req.user.account_id);
     }
     redis.lpush('load_times', elapsed);
@@ -287,7 +285,7 @@ app.route('/return').get(
   passport.authenticate('steam', {
     failureRedirect: '/api',
   }),
-  (req: any, res: any) => {
+  (req, res) => {
     if (config.UI_HOST) {
       return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
     }
@@ -302,7 +300,7 @@ app.route('/logout').get((req, res) => {
   }
   return res.redirect('/api');
 });
-app.route('/subscribeSuccess').get(async (req: any, res: any) => {
+app.route('/subscribeSuccess').get(async (req, res) => {
   if (!req.query.session_id) {
     return res.status(400).json({ error: 'no session ID' });
   }
@@ -321,7 +319,7 @@ app.route('/subscribeSuccess').get(async (req: any, res: any) => {
   // Send the user back to the subscribe page
   return res.redirect(`${config.UI_HOST}/subscribe`);
 });
-app.route('/manageSub').post(async (req: any, res: any) => {
+app.route('/manageSub').post(async (req, res) => {
   if (!req.user?.account_id) {
     return res.status(400).json({ error: 'no account ID' });
   }
@@ -351,14 +349,14 @@ app.use((req, res) =>
   })
 );
 // 500 route
-app.use((err: any, req: any, res: any, cb: ErrorCb) => {
+app.use((err: Error, req: express.Request, res: express.Response, cb: ErrorCb) => {
   console.log('[ERR]', req.originalUrl);
   redisCount(redis, '500_error');
   if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
     // default express handler
     return cb(err);
   }
-  console.error(err, err.stacktrace);
+  console.error(err.stack);
   return res.status(500).json({
     error: 'Internal Server Error',
   });
