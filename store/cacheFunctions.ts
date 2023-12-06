@@ -7,7 +7,7 @@ export const readCache = async (
   input: { key: string; account_id: string }
 ) => {
   // console.log(`[READCACHE] cache:${req.key}:${req.account_id}`);
-  await redis.get(`cache:${input.key}:${input.account_id}`);
+  return await redis.get(`cache:${input.key}:${input.account_id}`);
 };
 export const clearCache = async (input: {
   key: string;

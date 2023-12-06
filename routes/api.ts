@@ -14,33 +14,27 @@ const api: Router = new Router();
 const { subkeys } = playerFields;
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 // Player caches middleware
-api.use('/players/:account_id/:info?', (req, res, cb) => {
+api.use('/players/:account_id/:info?', async (req, res, cb) => {
   // Check cache
-  if (!Object.keys(req.query).length && req.params.info) {
-    return readCache(
-      {
-        key: req.params.info,
-        account_id: req.params.account_id,
-      },
-      (err, result) => {
-        if (err) {
-          console.error(err);
-        }
-        if (result) {
-          // console.log('[READCACHEHIT] %s', req.originalUrl);
-          try {
-            return res.json(JSON.parse(result));
-          } catch (e) {
-            console.error(e);
-            return cb();
-          }
-        }
-        // console.log('[READCACHEMISS] %s', req.originalUrl);
-        return cb();
+  try {
+    if (!Object.keys(req.query).length && req.params.info) {
+      const result = await readCache(
+        {
+          key: req.params.info,
+          account_id: req.params.account_id,
+        });
+      if (result) {
+        // console.log('[READCACHEHIT] %s', req.originalUrl);
+        return res.json(JSON.parse(result));
       }
-    );
+      // console.log('[READCACHEMISS] %s', req.originalUrl);
+      return cb();
+    }
+  } catch(e) {
+    console.error(e);
+    // Something weird with the cache but we can continue to the regular handler
+    return cb();
   }
-  return cb();
 });
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
