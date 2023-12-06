@@ -294,7 +294,6 @@ type PathVerbSpec = {
 };
 
 type HttpVerb = 'get' | 'post';
-
 type OpenAPISpec = {
   openapi: string;
   info: any;
@@ -302,7 +301,7 @@ type OpenAPISpec = {
   components: any;
   paths: {
     [path: string]: {
-      [verb: string]: PathVerbSpec;
-    };
+      [key in HttpVerb]?: PathVerbSpec
+    }
   };
 };
