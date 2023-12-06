@@ -148,7 +148,7 @@ export async function getDistributions() {
   return result;
 }
 
-function getHeroRankings(
+export function getHeroRankings(
   db: knex.Knex,
   redis: Redis,
   heroId: string,
@@ -178,7 +178,7 @@ function getHeroRankings(
     });
   });
 }
-function getHeroItemPopularity(
+export function getHeroItemPopularity(
   db: knex.Knex,
   redis: Redis,
   heroId: string,
@@ -232,7 +232,7 @@ function getHeroItemPopularity(
     });
   });
 }
-function getHeroBenchmarks(
+export function getHeroBenchmarks(
   db: knex.Knex,
   redis: Redis,
   options: AnyDict,
@@ -310,7 +310,7 @@ function getHeroBenchmarks(
   );
 }
 export const getPlayerMatchesPromise = util.promisify(getPlayerMatches);
-function getPlayerMatches(
+export function getPlayerMatches(
   accountId: string,
   queryObj: AnyDict,
   cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void
@@ -378,7 +378,7 @@ export async function getPlayerRatings(accountId: string) {
     return null;
   }
 }
-function getPlayerHeroRankings(accountId: string, cb: ErrorCb) {
+export function getPlayerHeroRankings(accountId: string, cb: ErrorCb) {
   db.raw(
     `
   SELECT
@@ -394,7 +394,7 @@ function getPlayerHeroRankings(accountId: string, cb: ErrorCb) {
     [accountId]
   ).asCallback(cb);
 }
-function getPlayer(db: knex.Knex, accountId: number, cb: ErrorCb) {
+export function getPlayer(db: knex.Knex, accountId: number, cb: ErrorCb) {
   if (!Number.isNaN(Number(accountId))) {
     db.first(
       'players.account_id',
@@ -426,7 +426,7 @@ function getPlayer(db: knex.Knex, accountId: number, cb: ErrorCb) {
     cb();
   }
 }
-function getPeers(
+export function getPeers(
   db: knex.Knex,
   input: AnyDict,
   player: { account_id: number },
@@ -494,7 +494,7 @@ function getPeers(
     }
   );
 }
-function getProPeers(
+export function getProPeers(
   db: knex.Knex,
   input: AnyDict,
   player: { account_id: number },
@@ -641,7 +641,7 @@ export async function insertPlayerRating(row: PlayerRating) {
   }
 }
 
-async function insertPlayerCache(match: Match) {
+export async function insertPlayerCache(match: Match) {
   const { players } = match;
   if (match.pgroup && players) {
     players.forEach((p) => {
@@ -1188,7 +1188,7 @@ export async function insertMatchPromise(
   const parseJob = await decideReplayParse();
   return parseJob;
 }
-function getItemTimings(req: Request, cb: ErrorCb) {
+export function getItemTimings(req: Request, cb: ErrorCb) {
   const heroId = req.query.hero_id || 0;
   const item = req.query.item || '';
   db.raw(
@@ -1202,7 +1202,7 @@ function getItemTimings(req: Request, cb: ErrorCb) {
     { heroId, item }
   ).asCallback(cb);
 }
-function getLaneRoles(req: Request, cb: ErrorCb) {
+export function getLaneRoles(req: Request, cb: ErrorCb) {
   const heroId = req.query.hero_id || 0;
   const lane = req.query.lane_role || 0;
   db.raw(
@@ -1216,7 +1216,7 @@ function getLaneRoles(req: Request, cb: ErrorCb) {
     { heroId, lane }
   ).asCallback(cb);
 }
-function getTeamScenarios(req: Request, cb: ErrorCb) {
+export function getTeamScenarios(req: Request, cb: ErrorCb) {
   const scenario =
     //@ts-ignore
     (su.teamScenariosQueryParams.includes(req.query.scenario) &&
@@ -1231,7 +1231,7 @@ function getTeamScenarios(req: Request, cb: ErrorCb) {
     { scenario }
   ).asCallback(cb);
 }
-function getMetadata(req: Request, cb: ErrorCb) {
+export function getMetadata(req: Request, cb: ErrorCb) {
   async.parallel(
     {
       scenarios(cb) {
@@ -1299,19 +1299,4 @@ export async function getArchivedMatch(matchId: string) {
   }
   return null;
 }
-export default {
-  getHeroRankings,
-  getHeroItemPopularity,
-  getHeroBenchmarks,
-  getPlayerMatches,
-  getPlayerMatchesPromise,
-  getPlayerHeroRankings,
-  getPlayer,
-  getPeers,
-  getProPeers,
-  getItemTimings,
-  getLaneRoles,
-  getTeamScenarios,
-  getMetadata,
-  getPlayerMatchData,
-};
+

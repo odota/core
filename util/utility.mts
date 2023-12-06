@@ -855,8 +855,3 @@ export function checkIfInExperiment(ip: string, mod: number) {
     crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );
 }
-
-export default {
-  getDataPromise,
-  generateJob,
-};
