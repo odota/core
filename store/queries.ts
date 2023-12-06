@@ -37,68 +37,43 @@ import {
 const { computeMatchData } = compute;
 const columnInfo: AnyDict = {};
 const cassandraColumnInfo: AnyDict = {};
-function doCleanRow(
-  err: Error | null,
-  schema: StringDict,
-  row: AnyDict,
-  cb: NonUnknownErrorCb
-) {
-  if (err) {
-    return cb(err);
-  }
+
+function doCleanRow(schema: StringDict, row: AnyDict) {
   const obj: AnyDict = {};
   Object.keys(row).forEach((key) => {
     if (key in schema) {
       obj[key] = row[key];
     }
   });
-  return cb(err, obj);
+  return obj;
 }
-function cleanRowPostgres(
+async function cleanRowPostgres(
   db: knex.Knex,
   table: string,
   row: AnyDict,
-  cb: ErrorCb
 ) {
-  if (columnInfo[table]) {
-    return doCleanRow(null, columnInfo[table], row, cb);
+  if (!columnInfo[table]) {
+    const result = await db(table).columnInfo();
+    columnInfo[table] = result;
   }
-  return (
-    db(table)
-      .columnInfo()
-      //@ts-ignore
-      .asCallback((err, result) => {
-        if (err) {
-          return cb(err);
-        }
-        columnInfo[table] = result;
-        return doCleanRow(err, columnInfo[table], row, cb);
-      })
-  );
+  return doCleanRow(columnInfo[table], row);
 }
-function cleanRowCassandra(
+async function cleanRowCassandra(
   cassandra: Client,
   table: string,
-  row: AnyDict,
-  cb: NonUnknownErrorCb
+  row: AnyDict
 ) {
-  if (cassandraColumnInfo[table]) {
-    return doCleanRow(null, cassandraColumnInfo[table], row, cb);
-  }
-  return cassandra.execute(
-    'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
-    [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
-    (err, result) => {
-      if (err) {
-        return cb(err);
-      }
+  if (!cassandraColumnInfo[table]) {
+    const result = await cassandra.execute(
+      'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
+      [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table]
+      );
       cassandraColumnInfo[table] = {};
       result.rows.forEach((r) => {
         cassandraColumnInfo[table][r.column_name] = 1;
       });
-      return doCleanRow(err, cassandraColumnInfo[table], row, cb);
     }
-  );
+  return doCleanRow(cassandraColumnInfo[table], row);
 }
 
 /**
@@ -314,62 +289,61 @@ export function getHeroBenchmarks(
       })
   );
 }
-export const getPlayerMatchesPromise = util.promisify(getPlayerMatches);
-export function getPlayerMatches(
+export function getPlayerMatches(accountId: string, queryObj: QueryObj, cb: (err: Error | null, cache?: ParsedPlayerMatch[]) => void) {
+  getPlayerMatchesPromise(accountId, queryObj).then(cache => cb(null, cache)).catch(cb);
+}
+export async function getPlayerMatchesPromise(
   accountId: string,
-  queryObj: QueryObj,
-  cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void
+  queryObj: QueryObj
 ) {
   // Validate accountId
   if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
-    return cb(null, []);
+    return [];
   }
   // call clean method to ensure we have column info cached
-  return cleanRowCassandra(cassandra, 'player_caches', {}, (err) => {
-    if (err) {
-      return cb(err, []);
-    }
-    // console.log(queryObj.project, cassandraColumnInfo.player_caches);
-    const query = util.format(
-      `
+  await cleanRowCassandra(cassandra, 'player_caches', {});
+  // console.log(queryObj.project, cassandraColumnInfo.player_caches);
+  const query = util.format(
+    `
       SELECT %s FROM player_caches
       WHERE account_id = ?
       ORDER BY match_id DESC
       ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
     `,
-      queryObj.project
-        .filter((f: string) => cassandraColumnInfo.player_caches[f])
-        .join(',')
-    );
-    const matches: ParsedPlayerMatch[] = [];
-    return cassandra.eachRow(
-      query,
-      [accountId],
-      {
-        prepare: true,
-        fetchSize: 5000,
-        autoPage: true,
-      },
-      (n, row) => {
-        const m = deserialize(row) as any;
-        if (filterMatches([m], queryObj.filter).length) {
-          matches.push(m);
-        }
-      },
-      (err) => {
-        if (err) {
-          return cb(err, []);
-        }
-        const sort = queryObj.sort;
-        if (sort) {
-          matches.sort((a, b) => b[sort] - a[sort]);
-        }
-        const offset = matches.slice(queryObj.offset || 0);
-        const result = offset.slice(0, queryObj.limit || offset.length);
-        return cb(err, result);
+    // Only allow selecting fields present in column names data
+    queryObj.project
+      .filter((f: string) => cassandraColumnInfo.player_caches[f])
+      .join(',')
+  );
+  const matches: ParsedPlayerMatch[] = [];
+  await new Promise<void>((resolve, reject) => {
+    cassandra.eachRow(
+    query,
+    [accountId],
+    {
+      prepare: true,
+      fetchSize: 5000,
+      autoPage: true,
+    },
+    (n, row) => {
+      const m = deserialize(row) as any;
+      if (filterMatches([m], queryObj.filter).length) {
+        matches.push(m);
       }
-    );
+    }, (err) => {
+      if (err) {
+        reject(err)
+      }
+      resolve();
+    });
   });
+  const sort = queryObj.sort;
+  if (sort) {
+    matches.sort((a, b) => b[sort] - a[sort]);
+  }
+  const offset = matches.slice(queryObj.offset || 0);
+  const result = offset.slice(0, queryObj.limit || offset.length);
+  return result;
 }
 export async function getPlayerRatings(accountId: string) {
   if (!Number.isNaN(Number(accountId))) {
@@ -548,18 +522,13 @@ export async function getMatchRankTier(match: Match) {
   return { avg, num: filt.length };
 }
 
-export const upsertPromise = util.promisify(upsert);
-export function upsert(
+export async function upsertPromise(
   db: knex.Knex,
   table: string,
-  row: AnyDict,
-  conflict: NumberDict,
-  cb: ErrorCb
+  insert: AnyDict,
+  conflict: NumberDict
 ) {
-  cleanRowPostgres(db, table, row, (err, row) => {
-    if (err) {
-      return cb(err);
-    }
+  const row = await cleanRowPostgres(db, table, insert);
     const values = Object.keys(row).map(() => '?');
     const update = Object.keys(row).map((key) =>
       util.format('%s=%s', key, `EXCLUDED.${key}`)
@@ -572,13 +541,11 @@ export function upsert(
       Object.keys(conflict).join(','),
       update.join(',')
     );
-    return db
+    return await db
       .raw(
         query,
         Object.keys(row).map((key) => row[key])
-      )
-      .asCallback(cb);
-  });
+      );
 }
 export async function insertPlayerPromise(
   db: knex.Knex,
@@ -669,7 +636,7 @@ export async function insertPlayerCache(match: Match) {
         }
       });
       computeMatchData(playerMatch as ParsedPlayerMatch);
-      const cleanedMatch = await util.promisify(cleanRowCassandra)(
+      const cleanedMatch = await cleanRowCassandra(
         cassandra,
         'player_caches',
         playerMatch
@@ -930,75 +897,55 @@ export async function insertMatchPromise(
     await trx.commit();
     await updateTeamRankings(match as Match, options);
   }
-  function upsertMatchCassandra(cb: ErrorCb) {
+  async function upsertMatchCassandra() {
     // We do this regardless of type (with different sets of fields)
-    return cleanRowCassandra(cassandra, 'matches', match, (err, match) => {
-      if (err) {
-        return;
-      }
-      const obj: any = serialize(match);
-      if (!Object.keys(obj).length) {
-        return;
-      }
-      const query = util.format(
-        'INSERT INTO matches (%s) VALUES (%s)',
-        Object.keys(obj).join(','),
-        Object.keys(obj)
-          .map(() => '?')
-          .join(',')
-      );
-      const arr = Object.keys(obj).map((k) =>
-        obj[k] === 'true' || obj[k] === 'false' ? JSON.parse(obj[k]) : obj[k]
-      );
-      return cassandra.execute(
-        query,
-        arr,
-        {
-          prepare: true,
-        },
-        (err) => {
-          if (err) {
-            return cb(err);
-          }
-          return async.each(
-            players || [],
-            (pm, cb) => {
-              pm.match_id = match.match_id;
-              cleanRowCassandra(cassandra, 'player_matches', pm, (err, pm) => {
-                if (err) {
-                  return cb(err);
-                }
-                const obj2: any = serialize(pm);
-                if (!Object.keys(obj2).length) {
-                  return cb(err);
-                }
-                const query2 = util.format(
-                  'INSERT INTO player_matches (%s) VALUES (%s)',
-                  Object.keys(obj2).join(','),
-                  Object.keys(obj2)
-                    .map(() => '?')
-                    .join(',')
-                );
-                const arr2 = Object.keys(obj2).map((k) =>
-                  obj2[k] === 'true' || obj2[k] === 'false'
-                    ? JSON.parse(obj2[k])
-                    : obj2[k]
-                );
-                return cassandra.execute(
-                  query2,
-                  arr2,
-                  {
-                    prepare: true,
-                  },
-                  cb
-                );
-              });
-            },
-            cb
-          );
-        }
-      );
+    const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
+    const obj: any = serialize(cleaned);
+    if (!Object.keys(obj).length) {
+      return;
+    }
+    const query = util.format(
+      'INSERT INTO matches (%s) VALUES (%s)',
+      Object.keys(obj).join(','),
+      Object.keys(obj)
+        .map(() => '?')
+        .join(',')
+    );
+    const arr = Object.keys(obj).map((k) =>
+      obj[k] === 'true' || obj[k] === 'false' ? JSON.parse(obj[k]) : obj[k]
+    );
+    await cassandra.execute(query, arr, {
+      prepare: true,
     });
+    await Promise.all(
+      players.map(async (pm) => {
+        pm.match_id = match.match_id;
+        const cleanedPm = await cleanRowCassandra(
+          cassandra,
+          'player_matches',
+          pm
+        );
+        const obj2: any = serialize(cleanedPm);
+        if (!Object.keys(obj2).length) {
+          return;
+        }
+        const query2 = util.format(
+          'INSERT INTO player_matches (%s) VALUES (%s)',
+          Object.keys(obj2).join(','),
+          Object.keys(obj2)
+            .map(() => '?')
+            .join(',')
+        );
+        const arr2 = Object.keys(obj2).map((k) =>
+          obj2[k] === 'true' || obj2[k] === 'false'
+            ? JSON.parse(obj2[k])
+            : obj2[k]
+        );
+        await cassandra.execute(query2, arr2, {
+          prepare: true,
+        });
+      })
+    );
   }
   async function updateCassandraPlayerCaches() {
     // Add the 10 player_match rows indexed by player
@@ -1171,7 +1118,7 @@ export async function insertMatchPromise(
   await preprocess();
   await getAverageRank();
   await upsertMatchPostgres();
-  await util.promisify(upsertMatchCassandra)();
+  await upsertMatchCassandra();
   await updateCassandraPlayerCaches();
   await upsertMatchBlobs();
   await clearRedisMatch();
