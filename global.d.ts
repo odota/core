@@ -245,7 +245,7 @@ type InsertMatchOptions = {
   skipParse?: boolean;
   priority?: number;
   attempts?: number;
-}
+};
 
 type PathSpec = {
   operationId: string;

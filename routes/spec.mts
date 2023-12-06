@@ -193,17 +193,13 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           async.parallel(
             {
               profile(cb) {
-                queries.getPlayer(
-                  db,
-                  accountId,
-                  (err, playerData) => {
-                    if (playerData !== null && playerData !== undefined) {
-                      playerData.is_contributor = isContributor(accountId);
-                      playerData.is_subscriber = Boolean(playerData?.status);
-                    }
-                    cb(err as any, playerData);
+                queries.getPlayer(db, accountId, (err, playerData) => {
+                  if (playerData !== null && playerData !== undefined) {
+                    playerData.is_contributor = isContributor(accountId);
+                    playerData.is_subscriber = Boolean(playerData?.status);
                   }
-                );
+                  cb(err as any, playerData);
+                });
               },
               solo_competitive_rank(cb) {
                 db.first()

@@ -117,9 +117,10 @@ async function processFullHistory(job: FullHistoryJob) {
   player.fh_unavailable = false;
   // check what matches the player is already associated with
   //@ts-ignore
-  const docs = await getPlayerMatchesPromise(player.account_id, {
-    project: ['match_id'],
-  }) ?? [];
+  const docs =
+    (await getPlayerMatchesPromise(player.account_id, {
+      project: ['match_id'],
+    })) ?? [];
   console.log(
     '%s matches found, %s already in db, %s to add',
     Object.keys(match_ids).length,

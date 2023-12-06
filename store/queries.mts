@@ -32,7 +32,12 @@ const {
 const { computeMatchData } = compute;
 const columnInfo: AnyDict = {};
 const cassandraColumnInfo: AnyDict = {};
-function doCleanRow(err: Error | null, schema: StringDict, row: AnyDict, cb: NonUnknownErrorCb) {
+function doCleanRow(
+  err: Error | null,
+  schema: StringDict,
+  row: AnyDict,
+  cb: NonUnknownErrorCb
+) {
   if (err) {
     return cb(err);
   }
@@ -44,22 +49,34 @@ function doCleanRow(err: Error | null, schema: StringDict, row: AnyDict, cb: Non
   });
   return cb(err, obj);
 }
-function cleanRowPostgres(db: knex.Knex, table: string, row: AnyDict, cb: ErrorCb) {
+function cleanRowPostgres(
+  db: knex.Knex,
+  table: string,
+  row: AnyDict,
+  cb: ErrorCb
+) {
   if (columnInfo[table]) {
     return doCleanRow(null, columnInfo[table], row, cb);
   }
-  return db(table)
-    .columnInfo()
-    //@ts-ignore
-    .asCallback((err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      columnInfo[table] = result;
-      return doCleanRow(err, columnInfo[table], row, cb);
-    });
+  return (
+    db(table)
+      .columnInfo()
+      //@ts-ignore
+      .asCallback((err, result) => {
+        if (err) {
+          return cb(err);
+        }
+        columnInfo[table] = result;
+        return doCleanRow(err, columnInfo[table], row, cb);
+      })
+  );
 }
-function cleanRowCassandra(cassandra: Client, table: string, row: AnyDict, cb: NonUnknownErrorCb) {
+function cleanRowCassandra(
+  cassandra: Client,
+  table: string,
+  row: AnyDict,
+  cb: NonUnknownErrorCb
+) {
   if (cassandraColumnInfo[table]) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   }
@@ -140,7 +157,13 @@ export async function getDistributions() {
   return result;
 }
 
-function getHeroRankings(db: knex.Knex, redis: Redis, heroId: string, options: AnyDict, cb: ErrorCb) {
+function getHeroRankings(
+  db: knex.Knex,
+  redis: Redis,
+  heroId: string,
+  options: AnyDict,
+  cb: ErrorCb
+) {
   db.raw(
     `
   SELECT players.account_id, score, personaname, name, avatar, last_login, rating as rank_tier
@@ -164,7 +187,13 @@ function getHeroRankings(db: knex.Knex, redis: Redis, heroId: string, options: A
     });
   });
 }
-function getHeroItemPopularity(db: knex.Knex, redis: Redis, heroId: string, options: AnyDict, cb: ErrorCb) {
+function getHeroItemPopularity(
+  db: knex.Knex,
+  redis: Redis,
+  heroId: string,
+  options: AnyDict,
+  cb: ErrorCb
+) {
   db.raw(
     `
   SELECT purchase_log
@@ -212,7 +241,12 @@ function getHeroItemPopularity(db: knex.Knex, redis: Redis, heroId: string, opti
     });
   });
 }
-function getHeroBenchmarks(db: knex.Knex, redis: Redis, options: AnyDict, cb: ErrorCb) {
+function getHeroBenchmarks(
+  db: knex.Knex,
+  redis: Redis,
+  options: AnyDict,
+  cb: ErrorCb
+) {
   const heroId = options.hero_id;
   const ret: AnyDict = {};
   async.each(
@@ -285,7 +319,11 @@ function getHeroBenchmarks(db: knex.Knex, redis: Redis, options: AnyDict, cb: Er
   );
 }
 export const getPlayerMatchesPromise = util.promisify(getPlayerMatches);
-function getPlayerMatches(accountId: string, queryObj: AnyDict, cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void) {
+function getPlayerMatches(
+  accountId: string,
+  queryObj: AnyDict,
+  cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void
+) {
   // Validate accountId
   if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
     return cb(null, []);
@@ -397,7 +435,12 @@ function getPlayer(db: knex.Knex, accountId: number, cb: ErrorCb) {
     cb();
   }
 }
-function getPeers(db: knex.Knex, input: AnyDict, player: { account_id: number }, cb: ErrorCb) {
+function getPeers(
+  db: knex.Knex,
+  input: AnyDict,
+  player: { account_id: number },
+  cb: ErrorCb
+) {
   if (!input) {
     return cb();
   }
@@ -460,7 +503,12 @@ function getPeers(db: knex.Knex, input: AnyDict, player: { account_id: number },
     }
   );
 }
-function getProPeers(db: knex.Knex, input: AnyDict, player: { account_id: number }, cb: ErrorCb) {
+function getProPeers(
+  db: knex.Knex,
+  input: AnyDict,
+  player: { account_id: number },
+  cb: ErrorCb
+) {
   if (!input) {
     return cb();
   }
@@ -505,7 +553,13 @@ export async function getMatchRankTier(match: Match) {
 }
 
 export const upsertPromise = util.promisify(upsert);
-export function upsert(db: knex.Knex, table: string, row: AnyDict, conflict: NumberDict, cb: ErrorCb) {
+export function upsert(
+  db: knex.Knex,
+  table: string,
+  row: AnyDict,
+  conflict: NumberDict,
+  cb: ErrorCb
+) {
   cleanRowPostgres(db, table, row, (err, row) => {
     if (err) {
       return cb(err);
@@ -530,7 +584,11 @@ export function upsert(db: knex.Knex, table: string, row: AnyDict, conflict: Num
       .asCallback(cb);
   });
 }
-export async function insertPlayerPromise(db: knex.Knex, player: Partial<User>, indexPlayer: boolean) {
+export async function insertPlayerPromise(
+  db: knex.Knex,
+  player: Partial<User>,
+  indexPlayer: boolean
+) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
     player.account_id = Number(convert64to32(player.steamid));
@@ -700,7 +758,10 @@ function createMatchCopy(match: any, players: any[]): Match {
   copy.players = JSON.parse(JSON.stringify(players));
   return copy;
 }
-export async function insertMatchPromise(match: Match | ParsedMatch | GcMatch, options: InsertMatchOptions) {
+export async function insertMatchPromise(
+  match: Match | ParsedMatch | GcMatch,
+  options: InsertMatchOptions
+) {
   // We currently can call this function from many places
   // There is a type to indicate source: api, gcdata, parsed
   // Also an origin to indicate the context: scanner (fresh match) or request
@@ -970,9 +1031,11 @@ export async function insertMatchPromise(match: Match | ParsedMatch | GcMatch, o
     const name = process.env.name || process.env.ROLE || process.argv[1];
     const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
-    }] for ${match.match_id} ended ${(match.start_time && match.duration) ? moment
-      .unix(match.start_time + match.duration)
-      .fromNow() : 'UNKNOWN'}`;
+    }] for ${match.match_id} ended ${
+      match.start_time && match.duration
+        ? moment.unix(match.start_time + match.duration).fromNow()
+        : 'UNKNOWN'
+    }`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');
@@ -986,15 +1049,14 @@ export async function insertMatchPromise(match: Match | ParsedMatch | GcMatch, o
     await redis.del(`match:${match.match_id}`);
   }
   async function clearRedisPlayer() {
-    const arr: { key: string, account_id: string}[] = [];
-    match.players
-      .forEach((player) => {
-        getKeys().forEach((key) => {
-          if (player.account_id) {
-            arr.push({ key, account_id: player.account_id.toString() });
-          }
-        });
+    const arr: { key: string; account_id: string }[] = [];
+    match.players.forEach((player) => {
+      getKeys().forEach((key) => {
+        if (player.account_id) {
+          arr.push({ key, account_id: player.account_id.toString() });
+        }
       });
+    });
     await Promise.all(arr.map((val) => clearCache(val)));
   }
   async function decideCounts() {
