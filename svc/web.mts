@@ -16,7 +16,7 @@ import { Redis } from 'ioredis';
 import WebSocket, { WebSocketServer } from 'ws';
 import keys from '../routes/keyManagement.mts';
 import api from '../routes/api.mts';
-import { insertPlayerPromise } from '../store/queries.mjs';
+import { insertPlayerPromise } from '../store/queries.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import utility from '../util/utility.mjs';

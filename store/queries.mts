@@ -15,6 +15,10 @@ import cassandra from './cassandra.mts';
 import { getKeys, clearCache } from './cacheFunctions.mts';
 import { benchmarks } from '../util/benchmarksUtil.mts';
 import { archiveGet } from './archive.mts';
+import knex from 'knex';
+import type { Client } from 'cassandra-driver';
+import type { Redis } from 'ioredis';
+import type { Request } from 'express';
 const {
   redisCount,
   convert64to32,
@@ -26,13 +30,13 @@ const {
   averageMedal,
 } = utility;
 const { computeMatchData } = compute;
-const columnInfo = {};
-const cassandraColumnInfo = {};
-function doCleanRow(err, schema, row, cb) {
+const columnInfo: AnyDict = {};
+const cassandraColumnInfo: AnyDict = {};
+function doCleanRow(err: Error | null, schema: StringDict, row: AnyDict, cb: NonUnknownErrorCb) {
   if (err) {
     return cb(err);
   }
-  const obj = {};
+  const obj: AnyDict = {};
   Object.keys(row).forEach((key) => {
     if (key in schema) {
       obj[key] = row[key];
@@ -40,12 +44,13 @@ function doCleanRow(err, schema, row, cb) {
   });
   return cb(err, obj);
 }
-function cleanRowPostgres(db, table, row, cb) {
+function cleanRowPostgres(db: knex.Knex, table: string, row: AnyDict, cb: ErrorCb) {
   if (columnInfo[table]) {
     return doCleanRow(null, columnInfo[table], row, cb);
   }
   return db(table)
     .columnInfo()
+    //@ts-ignore
     .asCallback((err, result) => {
       if (err) {
         return cb(err);
@@ -54,7 +59,7 @@ function cleanRowPostgres(db, table, row, cb) {
       return doCleanRow(err, columnInfo[table], row, cb);
     });
 }
-function cleanRowCassandra(cassandra, table, row, cb) {
+function cleanRowCassandra(cassandra: Client, table: string, row: AnyDict, cb: NonUnknownErrorCb) {
   if (cassandraColumnInfo[table]) {
     return doCleanRow(null, cassandraColumnInfo[table], row, cb);
   }
@@ -77,7 +82,7 @@ function cleanRowCassandra(cassandra, table, row, cb) {
 /**
  * Benchmarks a match against stored data in Redis
  * */
-export async function getMatchBenchmarks(m) {
+export async function getMatchBenchmarks(m: Match) {
   return await Promise.all(
     m.players.map(async (p) => {
       p.benchmarks = {};
@@ -121,7 +126,7 @@ export async function getMatchBenchmarks(m) {
   );
 }
 export async function getDistributions() {
-  const result = {};
+  const result: AnyDict = {};
   const keys = [
     'distribution:ranks',
     'distribution:mmr',
@@ -130,12 +135,12 @@ export async function getDistributions() {
   for (let i = 0; i < keys.length; i++) {
     const r = keys[i];
     const blob = await redis.get(r);
-    result[r.split(':')[1]] = JSON.parse(blob);
+    result[r.split(':')[1]] = blob ? JSON.parse(blob) : null;
   }
   return result;
 }
 
-function getHeroRankings(db, redis, heroId, options, cb) {
+function getHeroRankings(db: knex.Knex, redis: Redis, heroId: string, options: AnyDict, cb: ErrorCb) {
   db.raw(
     `
   SELECT players.account_id, score, personaname, name, avatar, last_login, rating as rank_tier
@@ -148,7 +153,7 @@ function getHeroRankings(db, redis, heroId, options, cb) {
   LIMIT 100
   `,
     [heroId || 0]
-  ).asCallback((err, result) => {
+  ).asCallback((err: Error | null, result: any) => {
     if (err) {
       return cb(err);
     }
@@ -159,7 +164,7 @@ function getHeroRankings(db, redis, heroId, options, cb) {
     });
   });
 }
-function getHeroItemPopularity(db, redis, heroId, options, cb) {
+function getHeroItemPopularity(db: knex.Knex, redis: Redis, heroId: string, options: AnyDict, cb: ErrorCb) {
   db.raw(
     `
   SELECT purchase_log
@@ -170,7 +175,7 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
   LIMIT 100
   `,
     [heroId || 0]
-  ).asCallback((err, purchaseLogs) => {
+  ).asCallback((err: Error | null, purchaseLogs: { rows: any[] }) => {
     if (err) {
       return cb(err);
     }
@@ -207,9 +212,9 @@ function getHeroItemPopularity(db, redis, heroId, options, cb) {
     });
   });
 }
-function getHeroBenchmarks(db, redis, options, cb) {
+function getHeroBenchmarks(db: knex.Knex, redis: Redis, options: AnyDict, cb: ErrorCb) {
   const heroId = options.hero_id;
-  const ret = {};
+  const ret: AnyDict = {};
   async.each(
     Object.keys(benchmarks),
     (metric, cb) => {
@@ -248,7 +253,7 @@ function getHeroBenchmarks(db, redis, options, cb) {
               if (err) {
                 return cb(err);
               }
-              const position = Math.floor(card * percentile);
+              const position = Math.floor((card || 0) * percentile);
               return redis.zrange(
                 key,
                 position,
@@ -257,13 +262,13 @@ function getHeroBenchmarks(db, redis, options, cb) {
                 (err, result) => {
                   const obj = {
                     percentile,
-                    value: Number(result[1]),
+                    value: Number(result?.[1]),
                   };
                   if (!ret[metric]) {
                     ret[metric] = [];
                   }
                   ret[metric].push(obj);
-                  cb(err, obj);
+                  cb(err);
                 }
               );
             });
@@ -280,7 +285,7 @@ function getHeroBenchmarks(db, redis, options, cb) {
   );
 }
 export const getPlayerMatchesPromise = util.promisify(getPlayerMatches);
-function getPlayerMatches(accountId, queryObj, cb) {
+function getPlayerMatches(accountId: string, queryObj: AnyDict, cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void) {
   // Validate accountId
   if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
     return cb(null, []);
@@ -288,7 +293,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
   // call clean method to ensure we have column info cached
   return cleanRowCassandra(cassandra, 'player_caches', {}, (err) => {
     if (err) {
-      return cb(err);
+      return cb(err, []);
     }
     // console.log(queryObj.project, cassandraColumnInfo.player_caches);
     const query = util.format(
@@ -299,10 +304,10 @@ function getPlayerMatches(accountId, queryObj, cb) {
       ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
     `,
       queryObj.project
-        .filter((f) => cassandraColumnInfo.player_caches[f])
+        .filter((f: string) => cassandraColumnInfo.player_caches[f])
         .join(',')
     );
-    const matches = [];
+    const matches: ParsedPlayerMatch[] = [];
     return cassandra.eachRow(
       query,
       [accountId],
@@ -312,16 +317,17 @@ function getPlayerMatches(accountId, queryObj, cb) {
         autoPage: true,
       },
       (n, row) => {
-        const m = deserialize(row);
+        const m = deserialize(row) as any;
         if (filter([m], queryObj.filter).length) {
           matches.push(m);
         }
       },
       (err) => {
         if (err) {
-          return cb(err);
+          return cb(err, []);
         }
         if (queryObj.sort) {
+          //@ts-ignore
           matches.sort((a, b) => b[queryObj.sort] - a[queryObj.sort]);
         }
         const offset = matches.slice(queryObj.offset || 0);
@@ -331,7 +337,7 @@ function getPlayerMatches(accountId, queryObj, cb) {
     );
   });
 }
-export async function getPlayerRatings(accountId) {
+export async function getPlayerRatings(accountId: string) {
   if (!Number.isNaN(Number(accountId))) {
     return await db
       .from('player_ratings')
@@ -343,7 +349,7 @@ export async function getPlayerRatings(accountId) {
     return null;
   }
 }
-function getPlayerHeroRankings(accountId, cb) {
+function getPlayerHeroRankings(accountId: string, cb: ErrorCb) {
   db.raw(
     `
   SELECT
@@ -357,14 +363,9 @@ function getPlayerHeroRankings(accountId, cb) {
   ORDER BY percent_rank desc
   `,
     [accountId]
-  ).asCallback((err, result) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(err, result.rows);
-  });
+  ).asCallback(cb);
 }
-function getPlayer(db, accountId, cb) {
+function getPlayer(db: knex.Knex, accountId: number, cb: ErrorCb) {
   if (!Number.isNaN(Number(accountId))) {
     db.first(
       'players.account_id',
@@ -396,11 +397,11 @@ function getPlayer(db, accountId, cb) {
     cb();
   }
 }
-function getPeers(db, input, player, cb) {
+function getPeers(db: knex.Knex, input: AnyDict, player: { account_id: number }, cb: ErrorCb) {
   if (!input) {
     return cb();
   }
-  let teammatesArr = [];
+  let teammatesArr: any[] = [];
   const teammates = input;
   Object.keys(teammates).forEach((id) => {
     const tm = teammates[id];
@@ -440,7 +441,7 @@ function getPeers(db, input, player, cb) {
         .where({
           'players.account_id': t.account_id,
         })
-        .asCallback((err, row) => {
+        .asCallback((err: Error | null, row: AnyDict) => {
           if (err || !row) {
             return cb(err);
           }
@@ -459,7 +460,7 @@ function getPeers(db, input, player, cb) {
     }
   );
 }
-function getProPeers(db, input, player, cb) {
+function getProPeers(db: knex.Knex, input: AnyDict, player: { account_id: number }, cb: ErrorCb) {
   if (!input) {
     return cb();
   }
@@ -472,7 +473,7 @@ function getProPeers(db, input, player, cb) {
           ON notable_players.account_id = players.account_id
           `
     )
-    .asCallback((err, result) => {
+    .asCallback((err: Error | null, result: { rows: any[] }) => {
       if (err) {
         return cb(err);
       }
@@ -484,7 +485,7 @@ function getProPeers(db, input, player, cb) {
     });
 }
 
-export async function getMatchRankTier(match) {
+export async function getMatchRankTier(match: Match) {
   const result = await Promise.all(
     match.players.map(async (player) => {
       if (!player.account_id) {
@@ -502,8 +503,9 @@ export async function getMatchRankTier(match) {
   const avg = averageMedal(filt.map((r) => Number(r))) || null;
   return { avg, num: filt.length };
 }
+
 export const upsertPromise = util.promisify(upsert);
-export function upsert(db, table, row, conflict, cb) {
+export function upsert(db: knex.Knex, table: string, row: AnyDict, conflict: NumberDict, cb: ErrorCb) {
   cleanRowPostgres(db, table, row, (err, row) => {
     if (err) {
       return cb(err);
@@ -528,7 +530,7 @@ export function upsert(db, table, row, conflict, cb) {
       .asCallback(cb);
   });
 }
-export async function insertPlayerPromise(db, player, indexPlayer) {
+export async function insertPlayerPromise(db: knex.Knex, player: Partial<User>, indexPlayer: boolean) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
     player.account_id = Number(convert64to32(player.steamid));
@@ -540,6 +542,7 @@ export async function insertPlayerPromise(db, player, indexPlayer) {
     return;
   }
   if (indexPlayer) {
+    //@ts-ignore
     await es.update({
       index: INDEX,
       type: 'player',
@@ -557,7 +560,7 @@ export async function insertPlayerPromise(db, player, indexPlayer) {
     account_id: player.account_id,
   });
 }
-export async function bulkIndexPlayer(bulkActions) {
+export async function bulkIndexPlayer(bulkActions: any[]) {
   // Bulk call to ElasticSearch
   if (bulkActions.length > 0) {
     await es.bulk({
@@ -567,7 +570,7 @@ export async function bulkIndexPlayer(bulkActions) {
     });
   }
 }
-export async function insertPlayerRating(row) {
+export async function insertPlayerRating(row: PlayerRating) {
   if (row.rank_tier) {
     await upsertPromise(
       db,
@@ -589,7 +592,7 @@ export async function insertPlayerRating(row) {
   }
 }
 
-async function insertPlayerCache(match) {
+async function insertPlayerCache(match: Match) {
   const { players } = match;
   if (match.pgroup && players) {
     players.forEach((p) => {
@@ -611,16 +614,17 @@ async function insertPlayerCache(match) {
       // join player with match to form player_match
       Object.keys(match).forEach((key) => {
         if (key !== 'players') {
+          //@ts-ignore
           playerMatch[key] = match[key];
         }
       });
-      computeMatchData(playerMatch);
+      computeMatchData(playerMatch as any);
       const cleanedMatch = await util.promisify(cleanRowCassandra)(
         cassandra,
         'player_caches',
         playerMatch
       );
-      const serializedMatch = serialize(cleanedMatch);
+      const serializedMatch: any = serialize(cleanedMatch);
       const query = util.format(
         'INSERT INTO player_caches (%s) VALUES (%s)',
         Object.keys(serializedMatch).join(','),
@@ -635,7 +639,7 @@ async function insertPlayerCache(match) {
     })
   );
 }
-async function updateTeamRankings(match, options) {
+async function updateTeamRankings(match: Match, options: InsertMatchOptions) {
   if (
     options.origin === 'scanner' &&
     options.type === 'api' &&
@@ -691,16 +695,16 @@ async function updateTeamRankings(match, options) {
     ]);
   }
 }
-function createMatchCopy(match, players) {
+function createMatchCopy(match: any, players: any[]): Match {
   const copy = JSON.parse(JSON.stringify(match));
   copy.players = JSON.parse(JSON.stringify(players));
   return copy;
 }
-export async function insertMatchPromise(match, options) {
+export async function insertMatchPromise(match: Match | ParsedMatch | GcMatch, options: InsertMatchOptions) {
   // We currently can call this function from many places
   // There is a type to indicate source: api, gcdata, parsed
   // Also an origin to indicate the context: scanner (fresh match) or request
-  const players = match.players
+  const players: ParsedPlayer[] = match.players
     ? JSON.parse(JSON.stringify(match.players))
     : undefined;
   const abilityUpgrades = [];
@@ -715,6 +719,7 @@ export async function insertMatchPromise(match, options) {
     if (players) {
       players.forEach((p) => {
         if (p.account_id === utility.getAnonymousAccountId()) {
+          //@ts-ignore
           delete p.account_id;
         }
       });
@@ -743,7 +748,7 @@ export async function insertMatchPromise(match, options) {
       players.forEach((p) => {
         if (p.ability_upgrades) {
           p.ability_upgrades_arr = p.ability_upgrades.map((au) => au.ability);
-          const abilityLvls = {};
+          const abilityLvls: NumberDict = {};
           p.ability_upgrades.forEach((au) => {
             if (au.ability in savedAbilityLvls) {
               abilityLvls[au.ability] = (abilityLvls[au.ability] || 0) + 1;
@@ -759,7 +764,7 @@ export async function insertMatchPromise(match, options) {
     // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
     // We currently only store this in the player_caches table, not in the match itself
     if (options.origin === 'scanner' && options.type === 'api') {
-      const { avg } = await getMatchRankTier(match);
+      const { avg } = await getMatchRankTier(match as Match);
       match.average_rank = avg || null;
     }
   }
@@ -871,18 +876,18 @@ export async function insertMatchPromise(match, options) {
       await upsertTeamMatch();
     } catch (e) {
       trx.rollback();
-      return cb(e);
+      throw e;
     }
     await trx.commit();
-    await updateTeamRankings(match, options);
+    await updateTeamRankings(match as Match, options);
   }
-  function upsertMatchCassandra(cb) {
+  function upsertMatchCassandra(cb: ErrorCb) {
     // We do this regardless of type (with different sets of fields)
     return cleanRowCassandra(cassandra, 'matches', match, (err, match) => {
       if (err) {
         return;
       }
-      const obj = serialize(match);
+      const obj: any = serialize(match);
       if (!Object.keys(obj).length) {
         return;
       }
@@ -914,7 +919,7 @@ export async function insertMatchPromise(match, options) {
                 if (err) {
                   return cb(err);
                 }
-                const obj2 = serialize(pm);
+                const obj2: any = serialize(pm);
                 if (!Object.keys(obj2).length) {
                   return cb(err);
                 }
@@ -965,9 +970,9 @@ export async function insertMatchPromise(match, options) {
     const name = process.env.name || process.env.ROLE || process.argv[1];
     const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
-    }] for ${match.match_id} ended ${moment
+    }] for ${match.match_id} ended ${(match.start_time && match.duration) ? moment
       .unix(match.start_time + match.duration)
-      .fromNow()}`;
+      .fromNow() : 'UNKNOWN'}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');
@@ -981,12 +986,13 @@ export async function insertMatchPromise(match, options) {
     await redis.del(`match:${match.match_id}`);
   }
   async function clearRedisPlayer() {
-    const arr = [];
+    const arr: { key: string, account_id: string}[] = [];
     match.players
-      .filter((player) => Boolean(player.account_id))
       .forEach((player) => {
         getKeys().forEach((key) => {
-          arr.push({ key, account_id: player.account_id });
+          if (player.account_id) {
+            arr.push({ key, account_id: player.account_id.toString() });
+          }
         });
       });
     await Promise.all(arr.map((val) => clearCache(val)));
@@ -1129,7 +1135,7 @@ export async function insertMatchPromise(match, options) {
   const parseJob = await decideReplayParse();
   return parseJob;
 }
-function getItemTimings(req, cb) {
+function getItemTimings(req: Request, cb: ErrorCb) {
   const heroId = req.query.hero_id || 0;
   const item = req.query.item || '';
   db.raw(
@@ -1141,9 +1147,9 @@ function getItemTimings(req, cb) {
      GROUP BY hero_id, item, time ORDER BY time, hero_id, item
      LIMIT 1600`,
     { heroId, item }
-  ).asCallback((err, result) => cb(err, result));
+  ).asCallback(cb);
 }
-function getLaneRoles(req, cb) {
+function getLaneRoles(req: Request, cb: ErrorCb) {
   const heroId = req.query.hero_id || 0;
   const lane = req.query.lane_role || 0;
   db.raw(
@@ -1155,10 +1161,11 @@ function getLaneRoles(req, cb) {
      GROUP BY hero_id, lane_role, time ORDER BY hero_id, time, lane_role
      LIMIT 1200`,
     { heroId, lane }
-  ).asCallback((err, result) => cb(err, result));
+  ).asCallback(cb);
 }
-function getTeamScenarios(req, cb) {
+function getTeamScenarios(req: Request, cb: ErrorCb) {
   const scenario =
+    //@ts-ignore
     (su.teamScenariosQueryParams.includes(req.query.scenario) &&
       req.query.scenario) ||
     '';
@@ -1169,9 +1176,9 @@ function getTeamScenarios(req, cb) {
      GROUP BY scenario, is_radiant, region ORDER BY scenario
      LIMIT 1000`,
     { scenario }
-  ).asCallback((err, result) => cb(err, result));
+  ).asCallback(cb);
 }
-function getMetadata(req, callback) {
+function getMetadata(req: Request, cb: ErrorCb) {
   async.parallel(
     {
       scenarios(cb) {
@@ -1187,8 +1194,9 @@ function getMetadata(req, callback) {
         if (req.user) {
           db.raw(
             "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
+            //@ts-ignore
             [req.user.account_id]
-          ).asCallback((err, result) => {
+          ).asCallback((err: Error | null, result: { rows: any[] }) => {
             cb(err, Boolean(result?.rows?.[0]));
           });
         } else {
@@ -1196,10 +1204,10 @@ function getMetadata(req, callback) {
         }
       },
     },
-    callback
+    cb
   );
 }
-export async function getMatchData(matchId) {
+export async function getMatchData(matchId: string) {
   const result = await cassandra.execute(
     'SELECT * FROM matches where match_id = ?',
     [Number(matchId)],
@@ -1212,7 +1220,7 @@ export async function getMatchData(matchId) {
   const deserializedResult = result.rows.map((m) => deserialize(m));
   return deserializedResult[0];
 }
-export async function getPlayerMatchData(matchId) {
+export async function getPlayerMatchData(matchId: string) {
   const result = await cassandra.execute(
     'SELECT * FROM player_matches where match_id = ?',
     [Number(matchId)],
@@ -1225,9 +1233,10 @@ export async function getPlayerMatchData(matchId) {
   const deserializedResult = result.rows.map((m) => deserialize(m));
   return deserializedResult;
 }
-export async function getArchivedMatch(matchId) {
+export async function getArchivedMatch(matchId: string) {
   try {
-    const result = JSON.parse(await archiveGet(matchId.toString()));
+    const blob = await archiveGet(matchId.toString());
+    const result = blob ? JSON.parse(blob.toString()) : null;
     if (result) {
       utility.redisCount(redis, 'match_archive_read');
       return result;

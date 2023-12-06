@@ -3,7 +3,7 @@
 import async from 'async';
 import utility from '../util/utility.mjs';
 import redis from '../store/redis.mts';
-import { insertMatchPromise } from '../store/queries.mjs';
+import { insertMatchPromise } from '../store/queries.mts';
 import config from '../config.js';
 const { generateJob, getData } = utility;
 const apiKeys = config.STEAM_API_KEY.split(',');

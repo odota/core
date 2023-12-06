@@ -2,7 +2,7 @@
 import vdf from 'simple-vdf';
 import db from '../store/db.mts';
 import utility from '../util/utility.mjs';
-import { upsertPromise } from '../store/queries.mjs';
+import { upsertPromise } from '../store/queries.mts';
 import { eachLimit } from '../util/utility.mjs';
 const { cleanItemSchema, getDataPromise } = utility;
 

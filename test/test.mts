@@ -27,7 +27,7 @@ import {
   getPlayerMatchesPromise,
   insertMatchPromise,
   insertPlayerPromise,
-} from '../store/queries.mjs';
+} from '../store/queries.mts';
 //@ts-ignore
 import buildMatch from '../store/buildMatch.mts';
 import { es } from '../store/elasticsearch.mts';

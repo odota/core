@@ -30,9 +30,13 @@ interface Match {
   cluster?: number;
   patch?: number;
   region?: number;
+  radiant_team_id?: number;
+  dire_team_id?: number;
+  picks_bans?: any[];
 
   // Computed field
-  pgroup?: any;
+  pgroup: any;
+  average_rank?: number | null;
 }
 
 interface LiveMatch extends Match {
@@ -46,6 +50,12 @@ interface ParsedMatch extends Match {
   cosmetics: any;
   objectives: any[];
   radiant_gold_adv: number[];
+}
+
+interface GcMatch extends Partial<Match> {
+  match_id: number;
+  pgroup: any;
+  players: GcPlayer[];
 }
 
 interface Player {
@@ -64,6 +74,8 @@ interface Player {
   hero_healing: number;
   tower_damage: number;
   leaver_status: number;
+  ability_upgrades: any[];
+  ability_upgrades_arr: number[];
 
   // Computed fields
   radiant_win?: boolean;
@@ -79,6 +91,7 @@ interface Player {
   kda: number;
   abandons: number;
   heroes: any;
+  benchmarks: AnyDict;
 
   // Added in buildMatch for display
   is_subscriber: boolean;
@@ -104,6 +117,7 @@ interface ParsedPlayer extends Player {
   party_size: number;
 
   // Computed
+  is_roaming?: boolean | null;
   all_word_counts: NumberDict;
   my_word_counts: NumberDict;
   throw: number | undefined;
@@ -145,7 +159,7 @@ interface ParsedPlayer extends Player {
   rank_tier?: number;
 }
 
-interface GCPlayer extends Player {
+interface GcPlayer extends Player {
   // From GC
   party_id: { low: number; high: number };
   permanent_buffs: any[];
@@ -162,11 +176,18 @@ interface User {
   steamid: string;
   personaname: string;
   avatarfull: string;
+  last_match_time: Date;
 
   // Computed fields
   is_contributor: boolean;
   is_subscriber: boolean;
   status: number;
+}
+
+interface PlayerRating {
+  account_id: number;
+  rank_tier: number;
+  leaderboard_rank: number;
 }
 
 interface FullHistoryJob {
@@ -182,7 +203,7 @@ interface MmrJob {
   match_id: number;
 }
 
-interface GCDataJob {
+interface GcDataJob {
   match_id: number;
   pgroup: any;
   useGcDataArr?: boolean;
@@ -192,10 +213,13 @@ interface GCDataJob {
 interface ParseJob {
   match_id: number;
   pgroup: any;
+  leagueid?: number;
   origin?: DataOrigin;
+  start_time?: number;
+  duration?: number;
 }
 
-type QueueJob = GCDataJob | MmrJob | ParseJob | FullHistoryJob;
+type QueueJob = GcDataJob | MmrJob | ParseJob | FullHistoryJob;
 
 interface ProPlayer {
   name: string;
@@ -209,8 +233,19 @@ type QueueName =
   | 'scenariosQueue'
   | 'parse'
   | 'gcQueue';
+
 type DataType = 'api' | 'parsed' | 'gcdata' | 'meta';
 type DataOrigin = 'scanner';
+
+type InsertMatchOptions = {
+  type: DataType;
+  origin?: DataOrigin;
+  skipCounts?: boolean;
+  forceParse?: boolean;
+  skipParse?: boolean;
+  priority?: number;
+  attempts?: number;
+}
 
 type PathSpec = {
   operationId: string;

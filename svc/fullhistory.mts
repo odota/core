@@ -15,7 +15,7 @@ import queue from '../store/queue.mts';
 import {
   insertMatchPromise,
   getPlayerMatchesPromise,
-} from '../store/queries.mjs';
+} from '../store/queries.mts';
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once
 const parallelism = Math.min(40, apiKeys.length);
@@ -119,7 +119,7 @@ async function processFullHistory(job: FullHistoryJob) {
   //@ts-ignore
   const docs = await getPlayerMatchesPromise(player.account_id, {
     project: ['match_id'],
-  });
+  }) ?? [];
   console.log(
     '%s matches found, %s already in db, %s to add',
     Object.keys(match_ids).length,

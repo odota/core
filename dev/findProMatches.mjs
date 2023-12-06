@@ -1,4 +1,4 @@
-import { insertMatchPromise } from '../store/queries.mjs';
+import { insertMatchPromise } from '../store/queries.mts';
 import db from '../store/db.mts';
 import { generateJob, getData } from '../util/utility.mjs';
 

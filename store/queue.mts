@@ -82,7 +82,7 @@ async function addJob(queueName: QueueName, job: QueueJob) {
 async function addReliableJob(
   queueName: QueueName,
   job: { data: ParseJob },
-  options: { attempts: number; priority: number }
+  options: { attempts: number; priority?: number }
 ) {
   const result = await db.raw<{
     rows: {

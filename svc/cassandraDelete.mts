@@ -4,7 +4,7 @@ import cassandra from '../store/cassandra.mts';
 import db from '../store/db.mts';
 //@ts-ignore
 import { archivePut } from '../store/archive.mts';
-import { getMatchData, getPlayerMatchData } from '../store/queries.mjs';
+import { getMatchData, getPlayerMatchData } from '../store/queries.mts';
 import { eachLimit } from '../util/utility.mjs';
 import config from '../config.js';
 
@@ -87,7 +87,7 @@ async function start() {
     }
   }
 }
-async function doArchive(matchId: number) {
+async function doArchive(matchId: string) {
   // archive old parsed match blobs to s3 compatible storage
   const match = await getMatchData(matchId);
   const playerMatches = await getPlayerMatchData(matchId);

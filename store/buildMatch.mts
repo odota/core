@@ -10,7 +10,7 @@ import {
   insertMatchPromise,
   getArchivedMatch,
   getMatchBenchmarks,
-} from './queries.mjs';
+} from './queries.mts';
 const { computeMatchData } = compute;
 const { buildReplayUrl, isContributor } = utility;
 async function extendPlayerData(player: ParsedPlayerMatch, match: ParsedMatch) {

@@ -1,13 +1,13 @@
 import moment from 'moment';
 import utility from '../util/utility.mjs';
 import config from '../config.js';
-import { insertMatchPromise, upsertPromise } from './queries.mjs';
+import { insertMatchPromise, upsertPromise } from './queries.mts';
 import db from './db.mts';
 import redis from './redis.mts';
 const secret = config.RETRIEVER_SECRET;
 const { getDataPromise, redisCount } = utility;
 
-async function getGcDataFromRetriever(match: GCDataJob) {
+async function getGcDataFromRetriever(match: GcDataJob) {
   const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
   const urls = retrieverArr.map(
@@ -36,12 +36,12 @@ async function getGcDataFromRetriever(match: GCDataJob) {
   // We could start storing this data but then the API also needs to respect the user's match history setting
   // NOTE: extra player fields won't be set on repeated parses unless we manually delete match_gcdata row
   // if someone requests a reparse we won't have this data
-  const players = body.match.players.map((p: GCPlayer, i: number) => ({
+  const players = body.match.players.map((p: GcPlayer, i: number) => ({
     player_slot: p.player_slot,
     party_id: p.party_id?.low,
     permanent_buffs: p.permanent_buffs,
     party_size: body.match.players.filter(
-      (matchPlayer: GCPlayer) => matchPlayer.party_id?.low === p.party_id?.low
+      (matchPlayer: GcPlayer) => matchPlayer.party_id?.low === p.party_id?.low
     ).length,
     net_worth: p.net_worth,
   }));
@@ -74,7 +74,7 @@ async function getGcDataFromRetriever(match: GCDataJob) {
   });
   return gcdata;
 }
-export default async function getGcData(match: GCDataJob) {
+export default async function getGcData(match: GcDataJob) {
   const matchId = match.match_id;
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     throw new Error('invalid match_id');

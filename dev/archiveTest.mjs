@@ -3,7 +3,7 @@ import {
   getArchivedMatch,
   getMatchData,
   getPlayerMatchData,
-} from '../store/queries.mjs';
+} from '../store/queries.mts';
 
 // Read some match data
 const match = {

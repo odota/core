@@ -2,7 +2,7 @@
 import queue from '../store/queue.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
-import { insertPlayerRating, insertPlayerPromise } from '../store/queries.mjs';
+import { insertPlayerRating, insertPlayerPromise } from '../store/queries.mts';
 import config from '../config.js';
 import {
   getDataPromise,
@@ -22,7 +22,7 @@ async function processMmr(job: MmrJob) {
   // Only write it sometimes, unless we're in dev mode
   if (config.NODE_ENV === 'development' || Math.random() < 0.05) {
     const player = {
-      account_id: job.account_id || null,
+      account_id: job.account_id,
       plus: Boolean(data.is_plus_subscriber),
     };
     await insertPlayerPromise(db, player, false);

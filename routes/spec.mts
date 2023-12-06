@@ -4,7 +4,7 @@ import moment from 'moment';
 import pg from 'pg';
 import config from '../config.js';
 import queue from '../store/queue.mts';
-import queries from '../store/queries.mjs';
+import queries from '../store/queries.mts';
 import search from '../store/search.mts';
 import searchES from '../store/searchES.mts';
 import buildMatch from '../store/buildMatch.mts';
@@ -22,7 +22,7 @@ import {
   insertMatchPromise,
   getDistributions,
   getPlayerRatings,
-} from '../store/queries.mjs';
+} from '../store/queries.mts';
 const { Client } = pg;
 const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
@@ -196,12 +196,12 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 queries.getPlayer(
                   db,
                   accountId,
-                  (err: Error | null, playerData: User) => {
+                  (err, playerData) => {
                     if (playerData !== null && playerData !== undefined) {
                       playerData.is_contributor = isContributor(accountId);
                       playerData.is_subscriber = Boolean(playerData?.status);
                     }
-                    cb(err, playerData);
+                    cb(err as any, playerData);
                   }
                 );
               },
@@ -288,7 +288,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -367,11 +367,11 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               ]),
               dbLimit: 20,
             },
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
-              return res.json(cache.filter((match) => match.duration));
+              return res.json(cache?.filter((match) => match.duration));
             }
           );
         },
@@ -431,7 +431,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -491,7 +491,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -571,7 +571,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -582,7 +582,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 {
                   account_id: req.params.account_id,
                 },
-                (err: Error | null, result: any) => {
+                (err, result) => {
                   if (err) {
                     return cb(err);
                   }
@@ -627,7 +627,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -638,7 +638,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 {
                   account_id: req.params.account_id,
                 },
-                (err: Error | null, result: any) => {
+                (err, result) => {
                   if (err) {
                     return cb(err);
                   }
@@ -688,7 +688,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -739,7 +739,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -808,7 +808,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -880,7 +880,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -930,7 +930,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           queries.getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err: Error | null, cache: ParsedPlayerMatch[]) => {
+            (err, cache) => {
               if (err) {
                 return cb(err);
               }
@@ -1011,7 +1011,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         func: (req, res, cb) => {
           queries.getPlayerHeroRankings(
             req.params.account_id,
-            (err: Error | null, result: any[]) => {
+            (err, result) => {
               if (err) {
                 return cb(err);
               }
@@ -1345,7 +1345,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/metadata',
         func: (req, res, cb) => {
-          queries.getMetadata(req, (err: Error | null, result: any) => {
+          queries.getMetadata(req, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -1477,7 +1477,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             redis,
             req.query.hero_id,
             {},
-            (err: Error | null, result: any) => {
+            (err, result) => {
               if (err) {
                 return cb(err);
               }
@@ -1524,7 +1524,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             {
               hero_id: req.query.hero_id,
             },
-            (err: Error | null, result: any) => {
+            (err, result) => {
               if (err) {
                 return cb(err);
               }
@@ -2120,7 +2120,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             redis,
             heroId,
             {},
-            (err: Error | null, result: any) => {
+            (err, result) => {
               if (err) {
                 return cb(err);
               }
@@ -2670,7 +2670,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/scenarios/itemTimings',
         func: (req, res, cb) => {
-          queries.getItemTimings(req, (err: Error | null, result: any) => {
+          queries.getItemTimings(req, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -2714,7 +2714,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/scenarios/laneRoles',
         func: (req, res, cb) => {
-          queries.getLaneRoles(req, (err: Error | null, result: any) => {
+          queries.getLaneRoles(req, (err, result) => {
             if (err) {
               return cb(err);
             }
@@ -2747,7 +2747,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/scenarios/misc',
         func: (req, res, cb) => {
-          queries.getTeamScenarios(req, (err: Error | null, result: any) => {
+          queries.getTeamScenarios(req, (err, result) => {
             if (err) {
               return cb(err);
             }

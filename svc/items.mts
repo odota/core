@@ -1,7 +1,7 @@
 // NOT WORKING: Updates game items in the database
 import db from '../store/db.mts';
 import utility from '../util/utility.mjs';
-import { upsertPromise } from '../store/queries.mjs';
+import { upsertPromise } from '../store/queries.mts';
 
 while (true) {
   // Need to find a replacement for this endpoint or just use dotaconstants

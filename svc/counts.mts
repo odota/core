@@ -8,7 +8,7 @@ import {
   insertPlayerPromise,
   bulkIndexPlayer,
   upsertPromise,
-} from '../store/queries.mjs';
+} from '../store/queries.mts';
 import queue from '../store/queue.mts';
 import config from '../config.js';
 import { benchmarks } from '../util/benchmarksUtil.mjs';

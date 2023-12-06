@@ -12,7 +12,7 @@ import utility from '../util/utility.mjs';
 import getGcData from '../store/getGcData.mts';
 import config from '../config.js';
 import queue from '../store/queue.mts';
-import { insertMatchPromise } from '../store/queries.mjs';
+import { insertMatchPromise } from '../store/queries.mts';
 import { promisify } from 'util';
 import db from '../store/db.mts';
 const { runReliableQueue } = queue;

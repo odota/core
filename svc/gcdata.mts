@@ -8,7 +8,7 @@ import utility from '../util/utility.mjs';
 const { getRetrieverArr } = utility;
 const retrieverArr = getRetrieverArr();
 
-async function processGcData(job: GCDataJob) {
+async function processGcData(job: GcDataJob) {
   job.useGcDataArr = true;
   await getGcData(job);
 }

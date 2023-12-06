@@ -3,7 +3,7 @@
  * */
 import constants from 'dotaconstants';
 import db from '../store/db.mts';
-import { upsertPromise } from '../store/queries.mjs';
+import { upsertPromise } from '../store/queries.mts';
 import utility from '../util/utility.mjs';
 
 db.select(['match_id', 'start_time'])

@@ -1,6 +1,5 @@
 import async from 'async';
 import utility from '../util/utility.mjs';
-import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 
 export default function buildStatus(cb: ErrorCb) {

@@ -2,7 +2,7 @@
 import utility from '../util/utility.mjs';
 import config from '../config.js';
 import redis from '../store/redis.mts';
-import { insertMatchPromise } from '../store/queries.mjs';
+import { insertMatchPromise } from '../store/queries.mts';
 
 const { getDataPromise, generateJob } = utility;
 const delay = Number(config.SCANNER_DELAY);
