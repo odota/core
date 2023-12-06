@@ -3,11 +3,7 @@ import config from '../config.js';
 import { insertMatchPromise, upsertPromise } from './queries';
 import db from './db';
 import redis from './redis';
-import {
-  getDataPromise,
-  getRetrieverArr,
-  redisCount,
-} from '../util/utility';
+import { getDataPromise, getRetrieverArr, redisCount } from '../util/utility';
 const secret = config.RETRIEVER_SECRET;
 
 async function getGcDataFromRetriever(match: GcDataJob) {

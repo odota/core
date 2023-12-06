@@ -18,11 +18,10 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
   // Check cache
   try {
     if (!Object.keys(req.query).length && req.params.info) {
-      const result = await readCache(
-        {
-          key: req.params.info,
-          account_id: req.params.account_id,
-        });
+      const result = await readCache({
+        key: req.params.info,
+        account_id: req.params.account_id,
+      });
       if (result) {
         // console.log('[READCACHEHIT] %s', req.originalUrl);
         return res.json(JSON.parse(result));
@@ -30,7 +29,7 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       // console.log('[READCACHEMISS] %s', req.originalUrl);
       return cb();
     }
-  } catch(e) {
+  } catch (e) {
     console.error(e);
     // Something weird with the cache but we can continue to the regular handler
     return cb();

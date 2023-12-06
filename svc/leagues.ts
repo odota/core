@@ -1,11 +1,7 @@
 // Updates the list of leagues in the database
 import db from '../store/db';
 import { upsertPromise } from '../store/queries';
-import {
-  generateJob,
-  getDataPromise,
-  invokeInterval,
-} from '../util/utility';
+import { generateJob, getDataPromise, invokeInterval } from '../util/utility';
 
 async function doLeagues(cb: ErrorCb) {
   const container = generateJob('api_leagues', {});

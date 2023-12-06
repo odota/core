@@ -1,11 +1,7 @@
 // Updates Steam profile data for players periodically
 import { insertPlayerPromise, bulkIndexPlayer } from '../store/queries';
 import db from '../store/db';
-import {
-  getDataPromise,
-  generateJob,
-  convert64to32,
-} from '../util/utility';
+import { getDataPromise, generateJob, convert64to32 } from '../util/utility';
 
 async function start() {
   while (true) {

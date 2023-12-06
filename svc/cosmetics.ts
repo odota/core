@@ -2,11 +2,7 @@
 import vdf from 'simple-vdf';
 import db from '../store/db';
 import { upsertPromise } from '../store/queries';
-import {
-  cleanItemSchema,
-  eachLimit,
-  getDataPromise,
-} from '../util/utility';
+import { cleanItemSchema, eachLimit, getDataPromise } from '../util/utility';
 
 async function start() {
   while (true) {

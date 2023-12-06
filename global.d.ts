@@ -301,7 +301,7 @@ type OpenAPISpec = {
   components: any;
   paths: {
     [path: string]: {
-      [key in HttpVerb]?: PathVerbSpec
-    }
+      [key in HttpVerb]?: PathVerbSpec;
+    };
   };
 };

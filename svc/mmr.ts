@@ -4,11 +4,7 @@ import db from '../store/db';
 import redis from '../store/redis';
 import { insertPlayerRating, insertPlayerPromise } from '../store/queries';
 import config from '../config.js';
-import {
-  getDataPromise,
-  redisCount,
-  getRetrieverArr,
-} from '../util/utility';
+import { getDataPromise, redisCount, getRetrieverArr } from '../util/utility';
 const retrieverArr = getRetrieverArr();
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;

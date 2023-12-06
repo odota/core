@@ -1,6 +1,10 @@
 import config from '../config.js';
 import { gzipSync, gunzipSync } from 'zlib';
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 const client = config.MATCH_ARCHIVE_S3_ENDPOINT
   ? new S3Client({
       region: 'us-east-1',
