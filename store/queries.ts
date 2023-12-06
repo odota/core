@@ -289,8 +289,8 @@ export function getHeroBenchmarks(
       })
   );
 }
-export function getPlayerMatches(accountId: string, queryObj: QueryObj, cb: (err: Error | null, cache?: ParsedPlayerMatch[]) => void) {
-  getPlayerMatchesPromise(accountId, queryObj).then(cache => cb(null, cache)).catch(cb);
+export function getPlayerMatches(accountId: string, queryObj: QueryObj, cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void) {
+  getPlayerMatchesPromise(accountId, queryObj).then(cache => cb(null, cache)).catch((err) => cb(err, []));
 }
 export async function getPlayerMatchesPromise(
   accountId: string,
