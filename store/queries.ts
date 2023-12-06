@@ -1112,6 +1112,11 @@ export async function insertMatchPromise(
         attempts: options.attempts || 20,
       }
     );
+    if (
+      options.origin === 'scanner' &&
+      options.type === 'api') {
+        redisCount(redis, 'auto_parse');
+    }
     return job;
   }
 

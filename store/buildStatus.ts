@@ -32,6 +32,9 @@ export async function buildStatus() {
     matches_last_hour(cb) {
       getRedisCountHour(redis, 'added_match', cb);
     },
+    auto_parse_last_day(cb) {
+      getRedisCountDay(redis, 'auto_parse', cb);
+    },
     retriever_matches_last_day(cb) {
       getRedisCountDay(redis, 'retriever', cb);
     },
