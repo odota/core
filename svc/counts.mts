@@ -2,7 +2,6 @@
 import moment from 'moment';
 import redis from '../store/redis.mts';
 import db from '../store/db.mts';
-import utility from '../util/utility.mts';
 import {
   getMatchRankTier,
   insertPlayerPromise,
@@ -12,7 +11,7 @@ import {
 import queue from '../store/queue.mts';
 import config from '../config.js';
 import { benchmarks } from '../util/benchmarksUtil.mjs';
-const { getAnonymousAccountId, isRadiant, isSignificant } = utility;
+import { isSignificant, getAnonymousAccountId, isRadiant, getStartOfBlockMinutes } from '../util/utility.mts';
 
 async function updateHeroRankings(match: Match) {
   if (!isSignificant(match)) {
@@ -70,14 +69,12 @@ async function upsertMatchSample(match: Match) {
         num_rank_tier: num || null,
       };
       const newMatch = { ...match, ...matchMmrData };
-      //@ts-ignore
       await upsertPromise(trx, 'public_matches', newMatch, {
         match_id: newMatch.match_id,
       });
       await Promise.all(
         (match.players || []).map((pm) => {
           pm.match_id = match.match_id;
-          //@ts-ignore
           return upsertPromise(trx, 'public_player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
@@ -230,7 +227,7 @@ async function updateBenchmarks(match: Match) {
           ) {
             const rkey = [
               'benchmarks',
-              utility.getStartOfBlockMinutes(
+              getStartOfBlockMinutes(
                 config.BENCHMARK_RETENTION_MINUTES,
                 0
               ),
@@ -239,7 +236,7 @@ async function updateBenchmarks(match: Match) {
             ].join(':');
             redis.zadd(rkey, metric, match.match_id);
             // expire at time two epochs later (after prev/current cycle)
-            const expiretime = utility.getStartOfBlockMinutes(
+            const expiretime = getStartOfBlockMinutes(
               config.BENCHMARK_RETENTION_MINUTES,
               2
             );

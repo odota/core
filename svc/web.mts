@@ -19,13 +19,12 @@ import api from '../routes/api.mts';
 import { insertPlayerPromise } from '../store/queries.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
-import utility from '../util/utility.mts';
 import config from '../config.js';
+import { getEndOfMonth, getStartOfBlockMinutes, redisCount } from '../util/utility.mts';
 
 const SteamStrategy = passportSteam.Strategy;
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
-const { redisCount } = utility;
 const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
@@ -154,7 +153,7 @@ app.use((req, res, cb) => {
   const command = redis.multi();
   command
     .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
-    .expireat('rate_limit', utility.getStartOfBlockMinutes(1, 1));
+    .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
   if (!res.locals.isAPIRequest) {
     // not API request so check previous usage
     command.zscore('user_usage_count', res.locals.usageIdentifier);
@@ -219,11 +218,11 @@ app.use((req: any, res: any, cb: ErrorCb) => {
       if (res.locals.isAPIRequest) {
         multi
           .hincrby('usage_count', res.locals.usageIdentifier, 1)
-          .expireat('usage_count', utility.getEndOfMonth());
+          .expireat('usage_count', getEndOfMonth());
       } else {
         multi
           .zincrby('user_usage_count', 1, res.locals.usageIdentifier)
-          .expireat('user_usage_count', utility.getEndOfMonth());
+          .expireat('user_usage_count', getEndOfMonth());
       }
       multi.exec((err, res) => {
         if (config.NODE_ENV === 'development') {
@@ -296,8 +295,7 @@ app.route('/return').get(
   }
 );
 app.route('/logout').get((req, res) => {
-  //@ts-ignore
-  req.logout();
+  req.logout(() => {});
   req.session = null;
   if (config.UI_HOST) {
     return res.redirect(config.UI_HOST);

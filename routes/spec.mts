@@ -9,8 +9,8 @@ import search from '../store/search.mts';
 import searchES from '../store/searchES.mts';
 import buildMatch from '../store/buildMatch.mts';
 import { buildStatus } from '../store/buildStatus.mts';
+import { checkIfInExperiment, countPeers, generateJob, getData, isContributor, isRadiant, matchupToString, mergeObjects, redisCount } from '../util/utility.mts';
 import playerFields from './playerFields.mts';
-import utility from '../util/utility.mts';
 import db from '../store/db.mts';
 import redis from '../store/redis.mts';
 import packageJson from '../package.json' assert { type: 'json' };
@@ -24,7 +24,6 @@ import {
   getPlayerRatings,
 } from '../store/queries.mts';
 const { Client } = pg;
-const { redisCount, countPeers, isContributor, matchupToString } = utility;
 const { subkeys, countCats } = playerFields;
 const parameters = Object.values(params).reduce(
   (acc, category) => ({ ...acc, ...category }),
@@ -289,7 +288,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               cache.forEach((m) => {
-                if (utility.isRadiant(m) === m.radiant_win) {
+                if (isRadiant(m) === m.radiant_win) {
                   result.win += 1;
                 } else {
                   result.lose += 1;
@@ -492,7 +491,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               cache.forEach((m) => {
-                const { isRadiant } = utility;
                 const playerWin = isRadiant(m) === m.radiant_win;
                 const group = m.heroes || {};
                 Object.keys(group).forEach((key) => {
@@ -740,7 +738,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               cache.forEach((m) => {
-                m.is_radiant = utility.isRadiant(m);
+                m.is_radiant = isRadiant(m);
                 Object.keys(countCats).forEach((key) => {
                   //@ts-ignore
                   if (!result[key][Math.floor(m[key])]) {
@@ -752,7 +750,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   }
                   //@ts-ignore
                   result[key][Math.floor(m[key])].games += 1;
-                  const won = Number(m.radiant_win === utility.isRadiant(m));
+                  const won = Number(m.radiant_win === isRadiant(m));
                   //@ts-ignore
                   result[key][Math.floor(m[key])].win += won;
                 });
@@ -832,7 +830,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   if (bucketArray[index]) {
                     bucketArray[index].games += 1;
                     bucketArray[index].win +=
-                      utility.isRadiant(m) === m.radiant_win ? 1 : 0;
+                      isRadiant(m) === m.radiant_win ? 1 : 0;
                   }
                 }
               });
@@ -883,7 +881,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               cache.forEach((m) => {
                 Object.keys(result).forEach((key) => {
                   //@ts-ignore
-                  utility.mergeObjects(result[key], m[key]);
+                  mergeObjects(result[key], m[key]);
                 });
               });
               return res.json(result);
@@ -933,7 +931,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               cache.forEach((m) => {
                 Object.keys(result).forEach((key) => {
                   //@ts-ignore
-                  utility.mergeObjects(result[key], m[key]);
+                  mergeObjects(result[key], m[key]);
                 });
               });
               return res.json(result);
@@ -1419,7 +1417,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           }
           if (
             req.query.es ||
-            utility.checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)
+            checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)
           ) {
             return searchES(req.query, (err, result) => {
               if (err) {
@@ -1690,8 +1688,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           }
           if (match && match.match_id) {
             // match id request, get data from API
-            return utility.getData(
-              utility.generateJob('api_details', match).url,
+            return getData(
+              generateJob('api_details', match).url,
               async (err, body) => {
                 if (err) {
                   // couldn't get data from api, non-retryable

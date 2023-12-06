@@ -2,7 +2,7 @@
 import constants from 'dotaconstants';
 import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mts';
-import utility from '../util/utility.mts';
+import { getPatchIndex } from '../util/utility.mts';
 
 // No loop, just runs once when deployed
 const matches = await db.select(['match_id', 'start_time']).from('matches');
@@ -10,12 +10,11 @@ const matches = await db.select(['match_id', 'start_time']).from('matches');
 for (let i = 0; i < matches.length; i++) {
   const match = matches[i];
   await upsertPromise(
-    //@ts-ignore
     db,
     'match_patch',
     {
       match_id: match.match_id,
-      patch: constants.patch[utility.getPatchIndex(match.start_time)].name,
+      patch: constants.patch[getPatchIndex(match.start_time)].name,
     },
     {
       match_id: match.match_id,

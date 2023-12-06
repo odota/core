@@ -8,17 +8,16 @@
 import { exec } from 'child_process';
 import os from 'os';
 import express from 'express';
-import utility from '../util/utility.mts';
 import getGcData from '../store/getGcData.mts';
 import config from '../config.js';
 import queue from '../store/queue.mts';
 import { insertMatchPromise } from '../store/queries.mts';
 import { promisify } from 'util';
 import db from '../store/db.mts';
+import { buildReplayUrl } from '../util/utility.mts';
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, NODE_ENV, PARSER_HOST, PARSER_PARALLELISM } = config;
 const numCPUs = os.cpus().length;
-const { buildReplayUrl } = utility;
 const execPromise = promisify(exec);
 const app = express();
 app.get('/healthz', (req, res) => {

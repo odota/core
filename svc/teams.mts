@@ -1,7 +1,7 @@
 // Updates the list of teams in the database
 import db from '../store/db.mts';
-import utility from '../util/utility.mts';
 import { upsertPromise } from '../store/queries.mts';
+import { generateJob, getDataPromise } from '../util/utility.mts';
 
 while (true) {
   console.time('doTeams');
@@ -20,11 +20,10 @@ while (true) {
             team_id: m.team_id || 2,
           });
           */
-    const container = utility.generateJob('api_team_info_by_team_id', {
+    const container = generateJob('api_team_info_by_team_id', {
       start_at_team_id: m.team_id,
     });
-    //@ts-ignore
-    let body = await utility.getDataPromise({
+    let body = await getDataPromise({
       url: container.url,
       raw: true,
     });
@@ -39,18 +38,16 @@ while (true) {
     // JSON.parse will return an incorrect value in the logo field
     const logoRegex = /^"logo":(.*),$/m;
     const match = logoRegex.exec(raw);
-    //@ts-ignore
-    const logoUgc = match[1];
-    const ugcJob = utility.generateJob('api_get_ugc_file_details', {
+    const logoUgc = match?.[1];
+    const ugcJob = generateJob('api_get_ugc_file_details', {
       ugcid: logoUgc,
     });
-    const cdnJob = utility.generateJob('steam_cdn_team_logos', {
+    const cdnJob = generateJob('steam_cdn_team_logos', {
       team_id: m.team_id,
     });
     // Steam's CDN sometimes has better versions of team logos available
     try {
-      //@ts-ignore
-      const cdnBody = await utility.getDataPromise({
+      const cdnBody = await getDataPromise({
         url: cdnJob.url,
         noRetry: true,
       });
@@ -58,7 +55,6 @@ while (true) {
         t.team_id = m.team_id;
         t.logo_url = cdnJob.url;
         // console.log('[TEAMS] cdn: ', t);
-        //@ts-ignore
         await upsertPromise(db, 'teams', t, {
           team_id: m.team_id,
         });
@@ -68,8 +64,7 @@ while (true) {
       // This is fine, we failed to get CDN image info
       // Try getting image from ugc
       try {
-        //@ts-ignore
-        const ugcBody = await utility.getDataPromise({
+        const ugcBody = await getDataPromise({
           url: ugcJob.url,
           noRetry: true,
         });
@@ -78,7 +73,6 @@ while (true) {
           t.logo_url = ugcBody.data.url;
         }
         // console.log('[TEAMS] ugc: ', t);
-        //@ts-ignore
         await upsertPromise(db, 'teams', t, {
           team_id: m.team_id,
         });

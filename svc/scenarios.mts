@@ -2,11 +2,11 @@
 import async from 'async';
 import util from 'util';
 import queue from '../store/queue.mts';
-//@ts-ignore
 import buildMatch from '../store/buildMatch.mts';
 import db from '../store/db.mts';
-import utility from '../util/utility.mts';
 import su from '../util/scenariosUtil.mjs';
+import { epochWeek } from '../util/utility.mts';
+
 async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);
   // Using buildMatch is unnecessarily expensive here since it also looks up player names etc.
@@ -17,7 +17,7 @@ async function processScenarios(matchID: string) {
     );
     return;
   }
-  const currentWeek = utility.epochWeek();
+  const currentWeek = epochWeek();
   Object.keys(su.scenarioChecks).forEach((table) => {
     //@ts-ignore
     su.scenarioChecks[table].forEach((scenarioCheck) => {

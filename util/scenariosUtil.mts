@@ -1,6 +1,5 @@
 import constants from 'dotaconstants';
-import utility from './utility.mts';
-const { playerWon } = utility;
+import { playerWon } from './utility.mts';
 // all items that cost at least 1400
 const itemCost = 1400;
 const dotaItems = Object.keys(constants.items)

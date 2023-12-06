@@ -4,13 +4,12 @@ import moment from 'moment';
 import stripeLib from 'stripe';
 import redis from '../store/redis.mts';
 import db from '../store/db.mts';
-import utility from '../util/utility.mts';
 import config from '../config.js';
 import type { knex } from 'knex';
+import { invokeInterval } from '../util/utility.mts';
 
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
-const { invokeInterval } = utility;
 function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
@@ -22,9 +21,8 @@ function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
       async.eachOfLimit(
         values,
         5,
-        //@ts-ignore
-        (e: any, i: number, cb2: Function) => {
-          if (i % 2) {
+        (e, i, cb2) => {
+          if (Number(i) % 2) {
             cb2();
           } else if (e.includes(':')) {
             cb2();
@@ -52,8 +50,8 @@ function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
                       apiRecord.customer_id,
                       apiTimestamp,
                       '',
-                      values?.[i + 1],
-                      values?.[i + 1],
+                      values?.[Number(i) + 1],
+                      values?.[Number(i) + 1],
                     ]
                   );
                 }

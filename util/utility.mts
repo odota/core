@@ -18,7 +18,7 @@ import type { Redis } from 'ioredis';
  *
  * @return {Array}
  */
-function tokenize(input: string) {
+export function tokenize(input: string) {
   return input
     .replace(/[^a-zа-я- ]+/gi, '')
     .replace('/ {2,}/', ' ')
@@ -30,7 +30,7 @@ function tokenize(input: string) {
  *
  * Takes and returns a string
  */
-function convert64to32(id: string) {
+export function convert64to32(id: string) {
   return Long.fromString(id).subtract('76561197960265728').toString();
 }
 /*
@@ -38,7 +38,7 @@ function convert64to32(id: string) {
  *
  * Takes and returns a string
  */
-function convert32to64(id: string) {
+export function convert32to64(id: string) {
   return Long.fromString(id).add('76561197960265728').toString();
 }
 /**
@@ -305,19 +305,19 @@ export const getDataPromise = promisify(getData);
 /**
  * Determines if a player is radiant
  * */
-function isRadiant(player: Player) {
+export function isRadiant(player: Player) {
   return player.player_slot < 128;
 }
 /**
  * Determines if a player has contributed to the development of OpenDota
  */
-function isContributor(accountId: string) {
+export function isContributor(accountId: string) {
   return accountId in contributors;
 }
 /**
  * Determines if a player won
  * */
-function playerWon(player: Player, match: Match) {
+export function playerWon(player: Player, match: Match) {
   return player.player_slot < 128 === match.radiant_win;
 }
 /**
@@ -327,7 +327,7 @@ function playerWon(player: Player, match: Match) {
  * Strings get concatenated
  * Objects get recursively merged
  * */
-function mergeObjects(merge: any, val: any) {
+export function mergeObjects(merge: any, val: any) {
   Object.keys(val || {}).forEach((attr) => {
     // check if prop is NaN
     if (Number.isNaN(val[attr])) {
@@ -348,7 +348,7 @@ function mergeObjects(merge: any, val: any) {
 /**
  * Finds the mode and its occurrence count in the input array
  * */
-function modeWithCount(array: number[]) {
+export function modeWithCount(array: number[]) {
   if (!array.length) {
     return {};
   }
@@ -366,13 +366,13 @@ function modeWithCount(array: number[]) {
   }
   return { mode: maxEl, count: maxCount };
 }
-function mode(array: number[]) {
+export function mode(array: number[]) {
   return modeWithCount(array).mode;
 }
 /**
  * Determines if a match is significant for aggregation purposes
  * */
-function isSignificant(match: Match) {
+export function isSignificant(match: Match) {
   return Boolean(
     constants.game_mode[match.game_mode] &&
       constants.game_mode[match.game_mode].balanced &&
@@ -386,7 +386,7 @@ function isSignificant(match: Match) {
 /**
  * Determines if a match is a pro match
  * */
-function isProMatch(match: Match) {
+export function isProMatch(match: Match) {
   return Boolean(
     isSignificant(match) &&
       match.leagueid &&
@@ -403,19 +403,19 @@ function isProMatch(match: Match) {
 /**
  * Finds the max of the input array
  * */
-function max(array: number[]) {
+export function max(array: number[]) {
   return Math.max.apply(null, array);
 }
 /**
  * Finds the min of the input array
  * */
-function min(array: number[]) {
+export function min(array: number[]) {
   return Math.min.apply(null, array);
 }
 /**
  * Serializes a JSON object to row for storage in Cassandra
  * */
-function serialize(row: AnyDict): AnyDict {
+export function serialize(row: AnyDict): AnyDict {
   const obj: AnyDict = {};
   Object.keys(row).forEach((key) => {
     if (
@@ -431,7 +431,7 @@ function serialize(row: AnyDict): AnyDict {
 /**
  * Deserializes a row to JSON object read from Cassandra
  * */
-function deserialize(row: AnyDict): any {
+export function deserialize(row: AnyDict): any {
   const obj: AnyDict = {};
   const keys = row.keys();
   for (let i = 0; i < keys.length; i++) {
@@ -444,26 +444,26 @@ function deserialize(row: AnyDict): any {
  * Returns the unix timestamp at the beginning of a block of n minutes
  * Offset controls the number of blocks to look ahead
  * */
-function getStartOfBlockMinutes(size: number, offset: number) {
+export function getStartOfBlockMinutes(size: number, offset: number) {
   offset = offset || 0;
   const blockS = size * 60;
   const curTime = Math.floor(Number(new Date()) / 1000);
   const blockStart = curTime - (curTime % blockS);
   return (blockStart + offset * blockS).toFixed(0);
 }
-function getEndOfMonth() {
+export function getEndOfMonth() {
   return moment().endOf('month').unix();
 }
 /**
  * Finds the arithmetic mean of the input array
  * */
-function average(data: number[]) {
+export function average(data: number[]) {
   return Math.floor(data.reduce((a, b) => a + b, 0) / data.length);
 }
 /**
  * Finds the average rank medal of input array
  * */
-function averageMedal(values: number[]) {
+export function averageMedal(values: number[]) {
   const numStars = values.map(
     (value) => Number(String(value)[0]) * 5 + (value % 10)
   );
@@ -473,7 +473,7 @@ function averageMedal(values: number[]) {
 /**
  * Finds the standard deviation of the input array
  * */
-function stdDev(data: number[]) {
+export function stdDev(data: number[]) {
   const avg = average(data);
   const squareDiffs = data.map((value) => {
     const diff = value - avg;
@@ -487,7 +487,7 @@ function stdDev(data: number[]) {
 /**
  * Finds the median of the input array
  * */
-function median(data: number[]) {
+export function median(data: number[]) {
   data.sort((a, b) => a - b);
   const half = Math.floor(data.length / 2);
   if (data.length % 2) {
@@ -498,7 +498,7 @@ function median(data: number[]) {
 /**
  * Gets the patch ID given a unix start time
  * */
-function getPatchIndex(startTime: number) {
+export function getPatchIndex(startTime: number) {
   const date = new Date(startTime * 1000);
   let i;
   for (i = 1; i < constants.patch.length; i += 1) {
@@ -514,7 +514,7 @@ function getPatchIndex(startTime: number) {
 /**
  * Constructs a replay url
  * */
-function buildReplayUrl(matchId: number, cluster: number, replaySalt: number) {
+export function buildReplayUrl(matchId: number, cluster: number, replaySalt: number) {
   const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
   if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
@@ -524,7 +524,7 @@ function buildReplayUrl(matchId: number, cluster: number, replaySalt: number) {
 /**
  * Computes the expected winrate given an input array of winrates
  * */
-function expectedWin(rates: number[]) {
+export function expectedWin(rates: number[]) {
   // simple implementation, average
   // return rates.reduce((prev, curr) => prev + curr)) / hids.length;
   // advanced implementation, asymptotic
@@ -539,13 +539,13 @@ function expectedWin(rates: number[]) {
 /**
  * Converts a group of heroes to string
  * */
-function groupToString(g: number[]) {
+export function groupToString(g: number[]) {
   return g.sort((a, b) => a - b).join(',');
 }
 /**
  * Serialize a matchup/result of heroes to a string
  * */
-function matchupToString(t0: number[], t1: number[], t0win: boolean) {
+export function matchupToString(t0: number[], t1: number[], t0win: boolean) {
   // create sorted strings of each team
   const rcg = groupToString(t0);
   const dcg = groupToString(t1);
@@ -560,7 +560,7 @@ function matchupToString(t0: number[], t1: number[], t0win: boolean) {
 /**
  * Enumerates the k-combinations of the input array
  * */
-function kCombinations(arr: number[], k: number): number[][] {
+export function kCombinations(arr: number[], k: number): number[][] {
   let i;
   let j;
   let combs;
@@ -594,7 +594,7 @@ function kCombinations(arr: number[], k: number): number[][] {
 /**
  * Generates an array of the hero matchups in a given match
  * */
-function generateMatchups(match: Match, max: number, oneSided: boolean) {
+export function generateMatchups(match: Match, max: number, oneSided: boolean) {
   max = max || 5;
   const radiant = [];
   const dire = [];
@@ -654,7 +654,7 @@ function generateMatchups(match: Match, max: number, oneSided: boolean) {
 /**
  * Aggregate popularity of items in the input item array
  */
-function countItemPopularity(items: any[]) {
+export function countItemPopularity(items: any[]) {
   // get count of each items
   return items.reduce((acc, item) => {
     acc[item.id] = (acc[item.id] || 0) + 1;
@@ -664,7 +664,7 @@ function countItemPopularity(items: any[]) {
 /**
  * Counts the peer account_ids in the input match array
  * */
-function countPeers(matches: PlayerMatch[]) {
+export function countPeers(matches: PlayerMatch[]) {
   const teammates: AnyDict = {};
   matches.forEach((m) => {
     const playerWin = isRadiant(m) === m.radiant_win;
@@ -710,13 +710,13 @@ function countPeers(matches: PlayerMatch[]) {
 /**
  * The anonymous account ID used as a placeholder for player with match privacy settings on
  * */
-function getAnonymousAccountId() {
+export function getAnonymousAccountId() {
   return 4294967295;
 }
 /**
  * Computes the lane a hero is in based on an input hash of positions
  * */
-function getLaneFromPosData(lanePos: { [key: string]: NumberDict }, isRadiant: boolean) {
+export function getLaneFromPosData(lanePos: { [key: string]: NumberDict }, isRadiant: boolean) {
   // compute lanes
   const lanes: number[] = [];
   // iterate over the position hash and get the lane bucket for each data point
@@ -787,7 +787,7 @@ export function redisCount(redis: Redis, prefix: string) {
   redis.pfadd(key, uuid.v4());
   redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
-function getRedisCountDay(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
+export function getRedisCountDay(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
@@ -797,7 +797,7 @@ function getRedisCountDay(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
   }
   redis.pfcount(...keyArr, cb);
 }
-function getRedisCountHour(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
+export function getRedisCountHour(redis: Redis, prefix: string, cb: NonUnknownErrorCb) {
   // Get counts for previous full hour
   const keyArr = [];
   for (let i = 1; i < 2; i += 1) {
@@ -844,60 +844,19 @@ export async function eachLimit(funcs: Array<() => Promise<any>>, limit: number)
 /**
  * Returns the current UNIX Epoch time in weeks
  * */
-function epochWeek() {
+export function epochWeek() {
   return Math.floor(Number(new Date()) / (1000 * 60 * 60 * 24 * 7));
 }
-function cleanItemSchema(input: any) {
+export function cleanItemSchema(input: any) {
   return input;
 }
-function checkIfInExperiment(ip: string, mod: number) {
+export function checkIfInExperiment(ip: string, mod: number) {
   return (
     crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );
 }
 
 export default {
-  tokenize,
-  generateJob,
-  getData,
   getDataPromise,
-  convert32to64,
-  convert64to32,
-  isRadiant,
-  isContributor,
-  playerWon,
-  mergeObjects,
-  modeWithCount,
-  mode,
-  isSignificant,
-  max,
-  min,
-  serialize,
-  getStartOfBlockMinutes,
-  getEndOfMonth,
-  average,
-  averageMedal,
-  stdDev,
-  median,
-  deserialize,
-  getPatchIndex,
-  buildReplayUrl,
-  expectedWin,
-  matchupToString,
-  groupToString,
-  kCombinations,
-  generateMatchups,
-  countPeers,
-  getAnonymousAccountId,
-  getLaneFromPosData,
-  getRetrieverArr,
-  isProMatch,
-  redisCount,
-  getRedisCountDay,
-  getRedisCountHour,
-  invokeInterval,
-  epochWeek,
-  cleanItemSchema,
-  checkIfInExperiment,
-  countItemPopularity,
+  generateJob,
 };

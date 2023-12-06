@@ -3,9 +3,8 @@
 import getGcData from '../store/getGcData.mts';
 import queue from '../store/queue.mts';
 import config from '../config.js';
-import utility from '../util/utility.mts';
+import { getRetrieverArr } from '../util/utility.mts';
 
-const { getRetrieverArr } = utility;
 const retrieverArr = getRetrieverArr();
 
 async function processGcData(job: GcDataJob) {

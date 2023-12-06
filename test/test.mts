@@ -28,7 +28,6 @@ import {
   insertMatchPromise,
   insertPlayerPromise,
 } from '../store/queries.mts';
-//@ts-ignore
 import buildMatch from '../store/buildMatch.mts';
 import { es } from '../store/elasticsearch.mts';
 import redis from '../store/redis.mts';
@@ -115,8 +114,7 @@ describe('swagger schema', async function testSwaggerSchema() {
 describe('player_caches', () => {
   it('should have data in player_caches', async () => {
     // Test fetching matches for first player
-    //@ts-ignore
-    const data = await getPlayerMatchesPromise(120269134, {
+    const data = await getPlayerMatchesPromise('120269134', {
       project: ['match_id'],
     });
     // We should have one result
@@ -163,7 +161,7 @@ describe('replay parse', function () {
     await new Promise((resolve) => setTimeout(resolve, 20000));
     console.log('checking parsed match');
     // ensure parse data got inserted
-    const match = await buildMatch(tests[key].match_id);
+    const match = await buildMatch(tests[key].match_id.toString());
     // console.log(match.players[0]);
     assert.ok(match.players);
     assert.ok(match.players[0]);

@@ -2,7 +2,6 @@ import async from 'async';
 import moment from 'moment';
 import constants from 'dotaconstants';
 import util from 'util';
-import utility from '../util/utility.mts';
 import config from '../config.js';
 import queue from './queue.mts';
 import su from '../util/scenariosUtil.mts';
@@ -19,16 +18,8 @@ import knex from 'knex';
 import type { Client } from 'cassandra-driver';
 import type { Redis } from 'ioredis';
 import type { Request } from 'express';
-const {
-  redisCount,
-  convert64to32,
-  serialize,
-  deserialize,
-  isRadiant,
-  isContributor,
-  countItemPopularity,
-  averageMedal,
-} = utility;
+import { getStartOfBlockMinutes, countItemPopularity, deserialize, getAnonymousAccountId, isContributor, averageMedal, convert64to32, serialize, isProMatch, getLaneFromPosData, isRadiant, getPatchIndex, redisCount } from '../util/utility.mts';
+
 const { computeMatchData } = compute;
 const columnInfo: AnyDict = {};
 const cassandraColumnInfo: AnyDict = {};
@@ -109,7 +100,7 @@ export async function getMatchBenchmarks(m: Match) {
         // Use data from previous epoch
         let key = [
           'benchmarks',
-          utility.getStartOfBlockMinutes(
+          getStartOfBlockMinutes(
             config.BENCHMARK_RETENTION_MINUTES,
             -1
           ),
@@ -118,7 +109,7 @@ export async function getMatchBenchmarks(m: Match) {
         ].join(':');
         const backupKey = [
           'benchmarks',
-          utility.getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+          getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
           metric,
           p.hero_id,
         ].join(':');
@@ -259,7 +250,7 @@ function getHeroBenchmarks(
           // Use data from previous epoch
           let key = [
             'benchmarks',
-            utility.getStartOfBlockMinutes(
+            getStartOfBlockMinutes(
               config.BENCHMARK_RETENTION_MINUTES,
               -1
             ),
@@ -268,7 +259,7 @@ function getHeroBenchmarks(
           ].join(':');
           const backupKey = [
             'benchmarks',
-            utility.getStartOfBlockMinutes(
+            getStartOfBlockMinutes(
               config.BENCHMARK_RETENTION_MINUTES,
               0
             ),
@@ -453,7 +444,7 @@ function getPeers(
     if (
       numId &&
       numId !== Number(player.account_id) &&
-      numId !== utility.getAnonymousAccountId() &&
+      numId !== getAnonymousAccountId() &&
       tm.games >= 5
     ) {
       teammatesArr.push(tm);
@@ -595,7 +586,7 @@ export async function insertPlayerPromise(
   }
   if (
     !player.account_id ||
-    player.account_id === utility.getAnonymousAccountId()
+    player.account_id === getAnonymousAccountId()
   ) {
     return;
   }
@@ -665,7 +656,7 @@ async function insertPlayerCache(match: Match) {
   const arr = players.filter(
     (playerMatch) =>
       playerMatch.account_id &&
-      playerMatch.account_id !== utility.getAnonymousAccountId()
+      playerMatch.account_id !== getAnonymousAccountId()
   );
   await Promise.all(
     arr.map(async (playerMatch) => {
@@ -779,7 +770,7 @@ export async function insertMatchPromise(
     // don't insert anonymous account id
     if (players) {
       players.forEach((p) => {
-        if (p.account_id === utility.getAnonymousAccountId()) {
+        if (p.account_id === getAnonymousAccountId()) {
           //@ts-ignore
           delete p.account_id;
         }
@@ -831,7 +822,7 @@ export async function insertMatchPromise(
   }
   async function upsertMatchPostgres() {
     // Insert the pro match data: We do this if api or parser
-    if (options.type === 'api' && !utility.isProMatch(match as Match)) {
+    if (options.type === 'api' && !isProMatch(match as Match)) {
       // Check whether we care about this match for pro purposes
       // We need the basic match data to run the check, so only do it if type is api
       return;
@@ -859,7 +850,7 @@ export async function insertMatchPromise(
           pm.match_id = match.match_id;
           // Add lane data
           if (pm.lane_pos) {
-            const laneData = utility.getLaneFromPosData(
+            const laneData = getLaneFromPosData(
               pm.lane_pos,
               isRadiant(pm)
             );
@@ -895,7 +886,7 @@ export async function insertMatchPromise(
           {
             match_id: match.match_id,
             patch:
-              constants.patch[utility.getPatchIndex(match.start_time)].name,
+              constants.patch[getPatchIndex(match.start_time)].name,
           },
           {
             match_id: match.match_id,
@@ -1076,7 +1067,7 @@ export async function insertMatchPromise(
         options.type === 'api' &&
         match.lobby_type === 7 &&
         p.account_id &&
-        p.account_id !== utility.getAnonymousAccountId() &&
+        p.account_id !== getAnonymousAccountId() &&
         config.ENABLE_RANDOM_MMR_UPDATE
       );
     });
@@ -1097,7 +1088,7 @@ export async function insertMatchPromise(
         options.origin === 'scanner' &&
         options.type === 'api' &&
         p.account_id &&
-        p.account_id !== utility.getAnonymousAccountId()
+        p.account_id !== getAnonymousAccountId()
       );
     });
     // Add a placeholder player with just the ID
@@ -1300,7 +1291,7 @@ export async function getArchivedMatch(matchId: string) {
     const blob = await archiveGet(matchId.toString());
     const result = blob ? JSON.parse(blob.toString()) : null;
     if (result) {
-      utility.redisCount(redis, 'match_archive_read');
+      redisCount(redis, 'match_archive_read');
       return result;
     }
   } catch (e) {

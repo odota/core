@@ -2,10 +2,10 @@
 import async from 'async';
 import db from '../store/db.mts';
 import config from '../config.js';
-import utility from '../util/utility.mts';
+import { epochWeek, invokeInterval } from '../util/utility.mts';
+
 function clearScenariosTables(cb: ErrorCb) {
-  const currentWeek = utility.epochWeek();
-  //@ts-ignore
+  const currentWeek = epochWeek();
   async.parallel(
     [
       (cb) => {
@@ -47,4 +47,4 @@ function clearScenariosTables(cb: ErrorCb) {
     cb
   );
 }
-utility.invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 6);
+invokeInterval(clearScenariosTables, 1000 * 60 * 60 * 6);

@@ -518,7 +518,6 @@ app.get('/', (req, res, cb) => {
 app.use((req, res) => {
   res.json(res.locals.data);
 });
-//@ts-ignore
 app.use((err, req, res) =>
   //@ts-ignore
   res.status(500).json({

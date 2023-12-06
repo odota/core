@@ -15,8 +15,7 @@ async function processMmr(job: MmrJob) {
   const urls = retrieverArr.map(
     (r) => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
   );
-  //@ts-ignore
-  const data = await getDataPromise({ url: urls });
+  const data = await getDataPromise({ url: urls as any });
   redisCount(redis, 'retriever_player');
   // NOTE: This leads to a massive number of updates on the player table
   // Only write it sometimes, unless we're in dev mode

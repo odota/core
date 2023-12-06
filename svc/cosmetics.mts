@@ -1,20 +1,16 @@
 // Updates game cosmetic items in the database
 import vdf from 'simple-vdf';
 import db from '../store/db.mts';
-import utility from '../util/utility.mts';
 import { upsertPromise } from '../store/queries.mts';
-import { eachLimit } from '../util/utility.mts';
-const { cleanItemSchema, getDataPromise } = utility;
+import { cleanItemSchema, eachLimit, getDataPromise } from '../util/utility.mts';
 
 while (true) {
   console.time('doCosmetics');
-  //@ts-ignore
   const items = await getDataPromise({
     url: 'https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt',
     raw: true,
   });
   const icons = await getDataPromise(
-    //@ts-ignore
     'https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json'
   );
   const itemData = vdf.parse(cleanItemSchema(items));

@@ -1,10 +1,9 @@
 // Fetches new matches from the Steam API using the sequential endpoint
-import utility from '../util/utility.mts';
 import config from '../config.js';
 import redis from '../store/redis.mts';
 import { insertMatchPromise } from '../store/queries.mts';
+import { generateJob, getDataPromise, redisCount } from '../util/utility.mts';
 
-const { getDataPromise, generateJob } = utility;
 const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;
 
@@ -17,7 +16,6 @@ async function scanApi(seqNum: number) {
     });
     let data = null;
     try {
-      //@ts-ignore
       data = await getDataPromise({
         url: container.url,
         delay,
@@ -26,7 +24,7 @@ async function scanApi(seqNum: number) {
       // unretryable steam error
       if (err?.result?.status === 2) {
         nextSeqNum += 1;
-        utility.redisCount(redis, 'skip_seq_num');
+        redisCount(redis, 'skip_seq_num');
         // continue with next seq num
         continue;
       } else {
@@ -78,7 +76,6 @@ if (config.START_SEQ_NUM) {
 } else if (config.NODE_ENV !== 'production') {
   // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
   const container = generateJob('api_history', {});
-  //@ts-ignore
   const data = await getDataPromise(container.url);
   await scanApi(data.result.matches[0].match_seq_num);
 } else {

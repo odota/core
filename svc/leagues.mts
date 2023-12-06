@@ -1,13 +1,11 @@
 // Updates the list of leagues in the database
-import utility from '../util/utility.mts';
 import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mts';
-const { invokeInterval, generateJob, getDataPromise } = utility;
+import { generateJob, getDataPromise, invokeInterval } from '../util/utility.mts';
 
 async function doLeagues(cb: ErrorCb) {
   const container = generateJob('api_leagues', {});
   try {
-    //@ts-ignore
     const apiLeagues = await getDataPromise(container.url);
     for (let i = 0; i < apiLeagues.length; i++) {
       const league = apiLeagues[i];
@@ -26,7 +24,6 @@ async function doLeagues(cb: ErrorCb) {
       league.ticket = null;
       league.banner = null;
       league.leagueid = league.league_id;
-      //@ts-ignore
       await upsertPromise(db, 'leagues', league, {
         leagueid: league.league_id,
       });

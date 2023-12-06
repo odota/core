@@ -1,19 +1,17 @@
 import moment from 'moment';
-import utility from '../util/utility.mts';
 import config from '../config.js';
 import { insertMatchPromise, upsertPromise } from './queries.mts';
 import db from './db.mts';
 import redis from './redis.mts';
+import { getDataPromise, getRetrieverArr, redisCount } from '../util/utility.mts';
 const secret = config.RETRIEVER_SECRET;
-const { getDataPromise, redisCount } = utility;
 
 async function getGcDataFromRetriever(match: GcDataJob) {
-  const retrieverArr = utility.getRetrieverArr(match.useGcDataArr);
+  const retrieverArr = getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
   const urls = retrieverArr.map(
     (r) => `http://${r}?key=${secret}&match_id=${match.match_id}`
   );
-  //@ts-ignore
   const body = await getDataPromise({
     // Note: this can take a string or array of string or config object but typing it is weird
     url: urls as any,
@@ -69,7 +67,6 @@ async function getGcDataFromRetriever(match: GcDataJob) {
     [matchToInsert.series_id, matchToInsert.series_type, match.match_id]
   );
   // Persist GC data to database
-  //@ts-ignore
   await upsertPromise(db, 'match_gcdata', gcdata, {
     match_id: match.match_id,
   });

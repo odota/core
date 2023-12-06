@@ -1,6 +1,6 @@
 import async from 'async';
-import utility from '../util/utility.mts';
 import redis from '../store/redis.mts';
+import { getRedisCountDay, getRedisCountHour } from '../util/utility.mts';
 
 function generatePercentiles(arr: string[]) {
   // sort the list
@@ -28,58 +28,58 @@ export async function buildStatus() {
         redis.zcard('tracked', cb);
       },
       matches_last_day(cb) {
-        utility.getRedisCountDay(redis, 'added_match', cb);
+        getRedisCountDay(redis, 'added_match', cb);
       },
       matches_last_hour(cb) {
-        utility.getRedisCountHour(redis, 'added_match', cb);
+        getRedisCountHour(redis, 'added_match', cb);
       },
       retriever_matches_last_day(cb) {
-        utility.getRedisCountDay(redis, 'retriever', cb);
+        getRedisCountDay(redis, 'retriever', cb);
       },
       retriever_players_last_day(cb) {
-        utility.getRedisCountDay(redis, 'retriever_player', cb);
+        getRedisCountDay(redis, 'retriever_player', cb);
       },
       // backup_retriever_last_day(cb) {
-      //   utility.getRedisCountDay(redis, "backup", cb);
+      //   getRedisCountDay(redis, "backup", cb);
       // },
       parsed_matches_last_day(cb) {
-        utility.getRedisCountDay(redis, 'parser', cb);
+        getRedisCountDay(redis, 'parser', cb);
       },
       cached_gcdata_last_day(cb) {
-        utility.getRedisCountDay(redis, 'cached_gcdata', cb);
+        getRedisCountDay(redis, 'cached_gcdata', cb);
       },
       requests_last_day(cb) {
-        utility.getRedisCountDay(redis, 'request', cb);
+        getRedisCountDay(redis, 'request', cb);
       },
       requests_api_key_last_day(cb) {
-        utility.getRedisCountDay(redis, 'request_api_key', cb);
+        getRedisCountDay(redis, 'request_api_key', cb);
       },
       steam_api_backfill_last_day(cb) {
-        utility.getRedisCountDay(redis, 'steam_api_backfill', cb);
+        getRedisCountDay(redis, 'steam_api_backfill', cb);
       },
       match_archive_read_last_day(cb) {
-        utility.getRedisCountDay(redis, 'match_archive_read', cb);
+        getRedisCountDay(redis, 'match_archive_read', cb);
       },
       build_match_last_day(cb) {
-        utility.getRedisCountDay(redis, 'build_match', cb);
+        getRedisCountDay(redis, 'build_match', cb);
       },
       error_last_day(cb) {
-        utility.getRedisCountDay(redis, '500_error', cb);
+        getRedisCountDay(redis, '500_error', cb);
       },
       web_crash_last_day(cb) {
-        utility.getRedisCountDay(redis, 'web_crash', cb);
+        getRedisCountDay(redis, 'web_crash', cb);
       },
       fullhistory_last_day(cb) {
-        utility.getRedisCountDay(redis, 'fullhistory', cb);
+        getRedisCountDay(redis, 'fullhistory', cb);
       },
       skip_seq_num_last_day(cb) {
-        utility.getRedisCountDay(redis, 'skip_seq_num', cb);
+        getRedisCountDay(redis, 'skip_seq_num', cb);
       },
       api_hits_last_day(cb) {
-        utility.getRedisCountDay(redis, 'api_hits', cb);
+        getRedisCountDay(redis, 'api_hits', cb);
       },
       api_hits_ui_last_day(cb) {
-        utility.getRedisCountDay(redis, 'api_hits_ui', cb);
+        getRedisCountDay(redis, 'api_hits_ui', cb);
       },
       seqNumDelay(cb) {
         // It's slow to query Steam API so use the value saved by monitor

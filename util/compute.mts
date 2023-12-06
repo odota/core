@@ -1,6 +1,5 @@
 import constants from 'dotaconstants';
-import utility from './utility.mts';
-const { max, min, isRadiant } = utility;
+import { getLaneFromPosData, getPatchIndex, isRadiant, max, min, tokenize } from './utility.mts';
 const { ancients } = constants;
 /**
  * Count the words that occur in a set of messages
@@ -25,7 +24,7 @@ function countWords(
     }
   });
   const chatWordsString = chatWords.join(' ');
-  const tokens = utility.tokenize(chatWordsString);
+  const tokens = tokenize(chatWordsString);
   // count how frequently each word occurs
   const counts: NumberDict = {};
   for (let i = 0; i < tokens.length; i += 1) {
@@ -47,7 +46,7 @@ function computeMatchData(pm: ParsedPlayerMatch) {
   const selfHero = constants.heroes[pm.hero_id];
   // Compute patch based on start_time
   if (pm.start_time) {
-    pm.patch = utility.getPatchIndex(pm.start_time);
+    pm.patch = getPatchIndex(pm.start_time);
   }
   if (pm.cluster) {
     pm.region = constants.cluster[pm.cluster];
@@ -160,7 +159,7 @@ function computeMatchData(pm: ParsedPlayerMatch) {
     pm.lane_efficiency_pct = Math.floor(pm.lane_efficiency * 100);
   }
   if (pm.lane_pos) {
-    const laneData = utility.getLaneFromPosData(pm.lane_pos, isRadiant(pm));
+    const laneData = getLaneFromPosData(pm.lane_pos, isRadiant(pm));
     pm.lane = laneData.lane;
     pm.lane_role = laneData.lane_role;
     pm.is_roaming = laneData.is_roaming;

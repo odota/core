@@ -4,7 +4,6 @@
 import constants from 'dotaconstants';
 import db from '../store/db.mts';
 import { upsertPromise } from '../store/queries.mts';
-import utility from '../util/utility.mts';
 
 db.select(['match_id', 'start_time'])
   .from('matches')
@@ -15,7 +14,7 @@ db.select(['match_id', 'start_time'])
     }
     matchIds.forEach(async (match) => {
       const patch =
-        constants.patch[utility.getPatchIndex(match.start_time)].name;
+        constants.patch[getPatchIndex(match.start_time)].name;
       console.log(match.match_id, patch);
       await upsertPromise(
         db,

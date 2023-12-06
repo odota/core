@@ -1,5 +1,5 @@
-import utility from './utility.mts';
-const { isRadiant } = utility;
+import { isRadiant, isSignificant } from "./utility.mts";
+
 function filter(matches: ParsedPlayerMatch[], filters: NumberArrayDict) {
   const curtime = Math.floor(Date.now() / 1000);
   // accept a hash of filters, run all the filters in the hash in series
@@ -121,7 +121,7 @@ function filter(matches: ParsedPlayerMatch[], filters: NumberArrayDict) {
       });
     },
     significant(m, key) {
-      return Number(utility.isSignificant(m)) === key;
+      return Number(isSignificant(m)) === key;
     },
     leagueid(m, key) {
       return m.leagueid === key;

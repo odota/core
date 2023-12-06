@@ -1,6 +1,5 @@
 import JSONStream from 'JSONStream';
 import db from '../store/db';
-import utility from '../util/utility.mts';
 import compute from '../util/compute.mts';
 
 const args = process.argv.slice(2);
@@ -19,5 +18,5 @@ stream.on('end', () => {
 });
 stream.pipe(JSONStream.parse());
 stream.on('data', (match) => {
-  utility.mergeObjects(counts, compute.count_words(match));
+  mergeObjects(counts, compute.count_words(match));
 });

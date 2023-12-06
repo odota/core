@@ -1,7 +1,7 @@
 import constants from 'dotaconstants';
 import config from '../config.js';
 import compute from '../util/compute.mts';
-import utility from '../util/utility.mts';
+import { generateJob, getDataPromise, buildReplayUrl, isContributor, redisCount } from '../util/utility.mts';
 import redis from './redis.mts';
 import db from './db.mts';
 import {
@@ -12,7 +12,6 @@ import {
   getMatchBenchmarks,
 } from './queries.mts';
 const { computeMatchData } = compute;
-const { buildReplayUrl, isContributor } = utility;
 async function extendPlayerData(player: ParsedPlayerMatch, match: ParsedMatch) {
   const p = {
     ...player,
@@ -79,9 +78,8 @@ async function backfill(matchId: string) {
   const matchObj = {
     match_id: Number(matchId),
   };
-  const body = await utility.getDataPromise(
-    //@ts-ignore
-    utility.generateJob('api_details', matchObj).url
+  const body = await getDataPromise(
+    generateJob('api_details', matchObj).url
   );
   // match details response
   const match = body.result;
@@ -90,7 +88,7 @@ async function backfill(matchId: string) {
     skipParse: true,
   });
   // Count for logging
-  utility.redisCount(redis, 'steam_api_backfill');
+  redisCount(redis, 'steam_api_backfill');
 }
 async function getMatch(matchId: string) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
@@ -114,14 +112,13 @@ async function getMatch(matchId: string) {
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
     await backfill(matchId);
-    //@ts-ignore
     match = await getMatchData(matchId);
   }
   if (!match) {
     // Still don't have it
     return null;
   }
-  utility.redisCount(redis, 'build_match');
+  redisCount(redis, 'build_match');
   let playersMatchData = [];
   // If we fetched from archive we already have players
   playersMatchData = match.players || (await getPlayerMatchData(matchId));
@@ -142,15 +139,13 @@ async function getMatch(matchId: string) {
         ON players.account_id = notable_players.account_id
         WHERE players.account_id = ?
       `,
-          //@ts-ignore
           [r.account_id]
         )
         .then((names) => ({ ...r, ...names.rows[0] }))
     )
   );
   const playersPromise = Promise.all(
-    //@ts-ignore
-    playersMatchData.map((p) => extendPlayerData(p, match))
+    playersMatchData.map((p) => extendPlayerData(p, match as ParsedMatch))
   );
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,
@@ -180,8 +175,7 @@ async function getMatch(matchId: string) {
       const hero = constants.heroes[p.hero_id] || {};
       const playerCosmetics = cosmetics.filter(Boolean).filter(
         (c) =>
-          //@ts-ignore
-          match.cosmetics[c.item_id] === p.player_slot &&
+          match?.cosmetics[c.item_id] === p.player_slot &&
           (!c.used_by_heroes || c.used_by_heroes === hero.name)
       );
       return {

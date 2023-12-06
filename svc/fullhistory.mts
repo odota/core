@@ -38,7 +38,6 @@ async function processMatch(matchId: string) {
   const container = generateJob('api_details', {
     match_id: Number(matchId),
   });
-  //@ts-ignore
   const body = await getDataPromise(container.url);
   const match = body.result;
   await insertMatchPromise(match, {
@@ -58,8 +57,7 @@ async function processFullHistory(job: FullHistoryJob) {
   // const heroArray = ['0'];
   const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
-  //@ts-ignore
-  const match_ids: StringDict = {};
+  const match_ids: BooleanDict = {};
   // make a request for every possible hero
   const container = generateJob('api_history', {
     account_id: player.account_id,
@@ -86,7 +84,6 @@ async function processFullHistory(job: FullHistoryJob) {
       resp.forEach((match: any) => {
         // add match ids on each page to match_ids
         const matchId = match.match_id;
-        //@ts-ignore
         match_ids[matchId] = true;
         startId = match.match_id;
       });
@@ -116,7 +113,6 @@ async function processFullHistory(job: FullHistoryJob) {
   console.log('%s matches found', Object.keys(match_ids).length);
   player.fh_unavailable = false;
   // check what matches the player is already associated with
-  //@ts-ignore
   const docs =
     (await getPlayerMatchesPromise(player.account_id?.toString(), {
       project: ['match_id'],
