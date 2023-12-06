@@ -89,6 +89,7 @@ async function start() {
 }
 async function doArchive(matchId: string) {
   // archive old parsed match blobs to s3 compatible storage
+  // TODO make sure we haven't archived it already
   const match = await getMatchData(matchId);
   const playerMatches = await getPlayerMatchData(matchId);
   const blob = Buffer.from(
@@ -104,6 +105,8 @@ async function doArchive(matchId: string) {
     // Need to find a solution for this before starting deletion
     // We can mark backfilled matches ineligible for archival (but then we can never archive missed matches from scanner)
     // We could ensure that all of api/gcdata/parsed is present (But then we won't archive older matches that don't have gcdata)
+    // We could set a flag to make sure we never re-archive a match
+    // Also we can check the DB to determine whether to fetch from archive or cassandra
     // TODO (howard) Delete from Cassandra after archival
     // await cassandra.execute(
     //   "DELETE from player_matches where match_id = ?",
@@ -115,6 +118,8 @@ async function doArchive(matchId: string) {
     // await cassandra.execute("DELETE from matches where match_id = ?", [matchId], {
     //   prepare: true,
     // });
+    // Mark the match archived
+    // await db.raw(`UPDATE parsed_matches SET is_archived = TRUE`);
   }
   return;
 }

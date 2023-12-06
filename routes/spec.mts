@@ -1706,7 +1706,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 const match = body.result;
                 try {
                   // Check if match is already parsed
-                  const isAlreadyParsed = Boolean(
+                  const isParsed = Boolean(
                     (
                       await db.raw(
                         'select match_id from parsed_matches where match_id = ?',
@@ -1719,7 +1719,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     attempts: 1,
                     priority: req.query.api_key ? 2 : 1,
                     // Reduce load: only actually reprocess the replay for league matches
-                    forceParse: Boolean(match.leagueid) || !isAlreadyParsed,
+                    forceParse: Boolean(match.leagueid) || !isParsed,
                   });
                   exitWithJob(null, job);
                 } catch (e) {
