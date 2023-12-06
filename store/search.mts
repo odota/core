@@ -28,7 +28,7 @@ function search(options: { q: string }, cb: ErrorCb) {
           cb
         );
       },
-      personaname: (cb: Function) => {
+      personaname: (cb) => {
         db.raw(
           `
         SELECT * FROM 

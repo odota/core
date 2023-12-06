@@ -47,10 +47,10 @@ const pathCosts: NumberDict = {
   '/api/explorer': 5,
 };
 // PASSPORT config
-passport.serializeUser((user: any, done: Function) => {
+passport.serializeUser((user: any, done: ErrorCb) => {
   done(null, user.account_id);
 });
-passport.deserializeUser((accountId: string, done: Function) => {
+passport.deserializeUser((accountId: string, done: ErrorCb) => {
   done(null, {
     account_id: accountId,
   });
