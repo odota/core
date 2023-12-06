@@ -5,7 +5,7 @@ import util from 'util';
 import config from '../config.js';
 import queue from './queue.mts';
 import su from '../util/scenariosUtil.mts';
-import filter from '../util/filter.mts';
+import { filterMatches } from '../util/filter.mts';
 import compute from '../util/compute.mts';
 import db from './db.mts';
 import redis from './redis.mts';
@@ -312,7 +312,7 @@ export function getHeroBenchmarks(
 export const getPlayerMatchesPromise = util.promisify(getPlayerMatches);
 export function getPlayerMatches(
   accountId: string,
-  queryObj: AnyDict,
+  queryObj: QueryObj,
   cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void
 ) {
   // Validate accountId
@@ -347,7 +347,7 @@ export function getPlayerMatches(
       },
       (n, row) => {
         const m = deserialize(row) as any;
-        if (filter([m], queryObj.filter).length) {
+        if (filterMatches([m], queryObj.filter).length) {
           matches.push(m);
         }
       },
@@ -355,9 +355,9 @@ export function getPlayerMatches(
         if (err) {
           return cb(err, []);
         }
-        if (queryObj.sort) {
-          //@ts-ignore
-          matches.sort((a, b) => b[queryObj.sort] - a[queryObj.sort]);
+        const sort = queryObj.sort;
+        if (sort) {
+          matches.sort((a, b) => b[sort] - a[sort]);
         }
         const offset = matches.slice(queryObj.offset || 0);
         const result = offset.slice(0, queryObj.limit || offset.length);
@@ -663,11 +663,10 @@ export async function insertPlayerCache(match: Match) {
       // join player with match to form player_match
       Object.keys(match).forEach((key) => {
         if (key !== 'players') {
-          //@ts-ignore
-          playerMatch[key] = match[key];
+          (playerMatch as any)[key] = match[key as keyof Match];
         }
       });
-      computeMatchData(playerMatch as any);
+      computeMatchData(playerMatch as ParsedPlayerMatch);
       const cleanedMatch = await util.promisify(cleanRowCassandra)(
         cassandra,
         'player_caches',
@@ -1218,8 +1217,7 @@ export function getLaneRoles(req: Request, cb: ErrorCb) {
 }
 export function getTeamScenarios(req: Request, cb: ErrorCb) {
   const scenario =
-    //@ts-ignore
-    (su.teamScenariosQueryParams.includes(req.query.scenario) &&
+    (su.teamScenariosQueryParams.includes(req.query.scenario as string) &&
       req.query.scenario) ||
     '';
   db.raw(

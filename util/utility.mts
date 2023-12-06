@@ -44,149 +44,149 @@ export function convert32to64(id: string) {
 /**
  * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
  * */
-export function generateJob(type: string, payload: any) {
-  const apiUrl = 'http://api.steampowered.com';
-  let apiKey: string;
-  const opts = {
-    api_details() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
-        title: [type, payload.match_id].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_history() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${
-          payload.account_id ? `&account_id=${payload.account_id}` : ''
-        }${
-          payload.matches_requested
-            ? `&matches_requested=${payload.matches_requested}`
-            : ''
-        }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${
-          payload.leagueid ? `&league_id=${payload.leagueid}` : ''
-        }${
-          payload.start_at_match_id
-            ? `&start_at_match_id=${payload.start_at_match_id}`
-            : ''
-        }`,
-        title: [type, payload.account_id].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_summaries() {
-      return {
-        url: `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
-          .map((p: Player) => convert32to64(String(p.account_id)))
-          .join()}`,
-        title: [type, payload.summaries_id].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_sequence() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}`,
-        title: [type, payload.seq_num].join(),
-        type: 'api',
-      };
-    },
-    api_heroes() {
-      return {
-        url: `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
-        title: [type, payload.language].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_items() {
-      return {
-        url: `${apiUrl}/IEconDOTA2_570/GetGameItems/v1?key=${apiKey}&language=${payload.language}`,
-        type: 'api',
-      };
-    },
-    api_leagues() {
-      return {
-        url: 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001',
-        title: [type].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_live() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
-        title: [type].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_notable() {
-      return {
-        url: 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001',
-        title: [type].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_teams() {
-      return {
-        url: `${apiUrl}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${apiKey}&team_id=${payload.team_id}`,
-        title: [type].join(),
-        type: 'api',
-        payload,
-      };
-    },
-    api_item_schema() {
-      return {
-        url: `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
-        type: 'api',
-      };
-    },
-    api_top_live_game() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=0`,
-        type: 'api',
-      };
-    },
-    api_realtime_stats() {
-      return {
-        url: `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
-        type: 'api',
-      };
-    },
-    api_team_info_by_team_id() {
-      return {
-        url: `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
-        type: 'api',
-      };
-    },
-    api_get_ugc_file_details() {
-      return {
-        url: `${apiUrl}/ISteamRemoteStorage/GetUGCFileDetails/v1/?key=${apiKey}&appid=570&ugcid=${payload.ugcid}`,
-        type: 'api',
-      };
-    },
-    parse() {
-      return {
-        title: [type, payload.match_id].join(),
-        type,
-        url: payload.url,
-        payload,
-      };
-    },
-    steam_cdn_team_logos() {
-      return {
-        url: `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${payload.team_id}.png`,
-        type: 'steam_cdn',
-      };
-    },
-  };
-  //@ts-ignore
-  return opts[type]();
+export function generateJob(type: GenerateJobName, payload: any) {
+  return jobs[type](type, payload);
 }
+type GenerateJobName = keyof typeof jobs;
+const apiUrl = 'http://api.steampowered.com';
+let apiKey: string;
+const jobs = {
+  api_details(type: string, payload: { match_id: string }) {
+    return {
+      url: `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
+      title: [type, payload.match_id].join(),
+      type: 'api',
+      payload,
+    };
+  },
+  api_history(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${
+        payload.account_id ? `&account_id=${payload.account_id}` : ''
+      }${
+        payload.matches_requested
+          ? `&matches_requested=${payload.matches_requested}`
+          : ''
+      }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${
+        payload.leagueid ? `&league_id=${payload.leagueid}` : ''
+      }${
+        payload.start_at_match_id
+          ? `&start_at_match_id=${payload.start_at_match_id}`
+          : ''
+      }`,
+      title: [type, payload.account_id].join(),
+      type: 'api',
+      payload,
+    };
+  },
+  api_summaries(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
+        .map((p: Player) => convert32to64(String(p.account_id)))
+        .join()}`,
+      title: [type, payload.summaries_id].join(),
+      type: 'api',
+      payload,
+    };
+  },
+  api_sequence(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}`,
+      title: [type, payload.seq_num].join(),
+      type: 'api',
+    };
+  },
+  api_heroes(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
+      title: [type, payload.language].join(),
+      type: 'api',
+      payload,
+    };
+  },
+  api_items(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IEconDOTA2_570/GetGameItems/v1?key=${apiKey}&language=${payload.language}`,
+      type: 'api',
+    };
+  },
+  api_leagues(type: string, payload: any) {
+    return {
+      url: 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001',
+      title: [type].join(),
+      type: 'api',
+      payload,
+    };
+  },
+  api_live(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
+      title: [type].join(),
+      type: 'api',
+      payload,
+    };
+  },
+  api_notable(type: string, payload: any) {
+    return {
+      url: 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001',
+      title: [type].join(),
+      type: 'api',
+      payload,
+    };
+  },
+  api_teams(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${apiKey}&team_id=${payload.team_id}`,
+      title: [type].join(),
+      type: 'api',
+      payload,
+    };
+  },
+  api_item_schema(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
+      type: 'api',
+    };
+  },
+  api_top_live_game(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=0`,
+      type: 'api',
+    };
+  },
+  api_realtime_stats(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
+      type: 'api',
+    };
+  },
+  api_team_info_by_team_id(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
+      type: 'api',
+    };
+  },
+  api_get_ugc_file_details(type: string, payload: any) {
+    return {
+      url: `${apiUrl}/ISteamRemoteStorage/GetUGCFileDetails/v1/?key=${apiKey}&appid=570&ugcid=${payload.ugcid}`,
+      type: 'api',
+    };
+  },
+  parse(type: string, payload: any) {
+    return {
+      title: [type, payload.match_id].join(),
+      type,
+      url: payload.url,
+      payload,
+    };
+  },
+  steam_cdn_team_logos(type: string, payload: any) {
+    return {
+      url: `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${payload.team_id}.png`,
+      type: 'steam_cdn',
+    };
+  },
+};
 /**
  * A wrapper around HTTP requests that handles:
  * proxying
@@ -194,8 +194,9 @@ export function generateJob(type: string, payload: any) {
  * Injecting API key for Steam API
  * Errors from Steam API
  * */
-export function getData(url: string | { url: string, delay?: number, timeout?: number, raw?: boolean, noRetry?: boolean }, cb: ErrorCb) {
-  let u;
+type GetDataOptions = { url: string | string[], delay?: number, timeout?: number, raw?: boolean, noRetry?: boolean };
+export function getData(url: string | GetDataOptions, cb: ErrorCb) {
+  let u: string;
   let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
   if (typeof url === 'object' && url && url.url) {
@@ -209,8 +210,10 @@ export function getData(url: string | { url: string, delay?: number, timeout?: n
     delay = url.delay || delay;
     timeout = url.timeout || timeout;
   } else {
-    u = url;
+    u = url as string;
   }
+  const isRaw = typeof url === 'object' && url.raw;
+  const isNoRetry = typeof url === 'object' && url.noRetry;
   const parse = urllib.parse(u, true);
   const steamApi = parse.host === 'api.steampowered.com';
   if (steamApi) {
@@ -228,8 +231,7 @@ export function getData(url: string | { url: string, delay?: number, timeout?: n
     request(
       {
         url: target,
-        //@ts-ignore
-        json: !url.raw,
+        json: !isRaw,
         gzip: true,
         timeout,
       },
@@ -240,8 +242,7 @@ export function getData(url: string | { url: string, delay?: number, timeout?: n
           res.statusCode !== 200 ||
           !body ||
           (steamApi &&
-            //@ts-ignore
-            !url.raw &&
+            !isRaw &&
             !body.result &&
             !body.response &&
             !body.player_infos &&
@@ -251,8 +252,7 @@ export function getData(url: string | { url: string, delay?: number, timeout?: n
             !body.data)
         ) {
           // invalid response
-          //@ts-ignore
-          if (url.noRetry) {
+          if (isNoRetry) {
             return cb(err || 'invalid response', body);
           }
           console.error(
@@ -284,8 +284,7 @@ export function getData(url: string | { url: string, delay?: number, timeout?: n
           }
           if (body.result.error || body.result.status === 2) {
             // valid response, but invalid data, retry
-            //@ts-ignore
-            if (url.noRetry) {
+            if (isNoRetry) {
               return cb(err || 'invalid data', body);
             }
             console.error(
@@ -759,8 +758,7 @@ export function getLaneFromPosData(lanePos: { [key: string]: NumberDict }, isRad
   };
   return {
     lane,
-    //@ts-ignore
-    lane_role: laneRoles[lane],
+    lane_role: laneRoles[lane as keyof typeof laneRoles],
     is_roaming: isRoaming,
   };
 }
@@ -774,10 +772,8 @@ export function getRetrieverArr(useGcDataArr?: boolean) {
   const arr = input.split(',');
   arr.forEach((element) => {
     const parsedUrl = urllib.parse(`http://${element}`, true);
-    //@ts-ignore
-    for (let i = 0; i < (parsedUrl.query.size || 1); i += 1) {
-      //@ts-ignore
-      output.push(parsedUrl.host);
+    for (let i = 0; i < (Number(parsedUrl.query.size) || 1); i += 1) {
+      output.push(parsedUrl.host as string);
     }
   });
   return output;

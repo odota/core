@@ -35,7 +35,6 @@ while (true) {
         item.image_path = icons[iconname];
       }
     }
-    //@ts-ignore
     await upsertPromise(db, 'cosmetics', item, {
       item_id: item.item_id,
     });

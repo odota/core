@@ -1,6 +1,6 @@
 import { isRadiant, isSignificant } from "./utility.mts";
 
-function filter(matches: ParsedPlayerMatch[], filters: NumberArrayDict) {
+export function filterMatches(matches: ParsedPlayerMatch[], filters?: ArrayifiedFilters) {
   const curtime = Math.floor(Date.now() / 1000);
   // accept a hash of filters, run all the filters in the hash in series
   // console.log(filters);
@@ -132,7 +132,7 @@ function filter(matches: ParsedPlayerMatch[], filters: NumberArrayDict) {
     let include = true;
     // verify the match passes each filter test
     Object.keys(filters || {}).forEach((key) => {
-      if (conditions[key] && filters[key] && filters[key].length) {
+      if (conditions[key] && filters && filters[key] && filters[key]?.length) {
         // earlier, we arrayified everything
         // pass the first element, as well as the full array
         // check that it passes all filters
@@ -148,4 +148,3 @@ function filter(matches: ParsedPlayerMatch[], filters: NumberArrayDict) {
   }
   return filtered;
 }
-export default filter;

@@ -518,8 +518,7 @@ app.get('/', (req, res, cb) => {
 app.use((req, res) => {
   res.json(res.locals.data);
 });
-app.use((err, req, res) =>
-  //@ts-ignore
+app.use((err: Error, req: express.Request, res: express.Response) =>
   res.status(500).json({
     error: err,
   })

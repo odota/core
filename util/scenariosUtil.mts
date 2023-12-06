@@ -149,7 +149,7 @@ const scenarioChecks = {
   ],
 };
 // list of match object properties that are required for scenario checks.
-const matchProperties = [
+const matchProperties: (keyof ParsedMatch)[] = [
   'players',
   'objectives',
   'duration',
@@ -167,7 +167,6 @@ const metadata = {
  * */
 function validateMatchProperties(match: ParsedMatch) {
   return matchProperties.every(
-    //@ts-ignore
     (property) => match[property] !== undefined && match[property] !== null
   );
 }

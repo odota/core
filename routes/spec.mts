@@ -699,11 +699,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               cache.forEach((m) => {
                 Object.keys(subkeys).forEach((key) => {
-                  //@ts-ignore
-                  if (m[key] !== null && m[key] !== undefined) {
+                  if (m[key as keyof ParsedPlayerMatch] !== null && m[key as keyof ParsedPlayerMatch] !== undefined) {
                     result[key].n += 1;
-                    //@ts-ignore
-                    result[key].sum += Number(m[key]);
+                    result[key].sum += Number(m[key as keyof ParsedPlayerMatch]);
                   }
                 });
               });
@@ -751,19 +749,15 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               cache.forEach((m) => {
                 m.is_radiant = isRadiant(m);
                 Object.keys(countCats).forEach((key) => {
-                  //@ts-ignore
-                  if (!result[key][Math.floor(m[key])]) {
-                    //@ts-ignore
-                    result[key][Math.floor(m[key])] = {
+                  if (!result[key][Math.floor(m[key as keyof ParsedPlayerMatch])]) {
+                    result[key][Math.floor(m[key as keyof ParsedPlayerMatch])] = {
                       games: 0,
                       win: 0,
                     };
                   }
-                  //@ts-ignore
-                  result[key][Math.floor(m[key])].games += 1;
+                  result[key][Math.floor(m[key as keyof ParsedPlayerMatch])].games += 1;
                   const won = Number(m.radiant_win === isRadiant(m));
-                  //@ts-ignore
-                  result[key][Math.floor(m[key])].win += won;
+                  result[key][Math.floor(m[key as keyof ParsedPlayerMatch])].win += won;
                 });
               });
               return res.json(result);
@@ -805,10 +799,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
-          const { field } = req.params;
+          const { field }: { field: keyof ParsedPlayerMatch } = req.params;
           req.queryObj.project = req.queryObj.project
             .concat('radiant_win', 'player_slot')
-            //@ts-ignore
             .concat([field].filter((f) => subkeys[f]));
           getPlayerMatches(
             req.params.account_id,
@@ -819,7 +812,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               const buckets = 40;
               // Find the maximum value to determine how large each bucket should be
-              //@ts-ignore
               const max = Math.max(...cache.map((m) => m[field]));
               // Round the bucket size up to the nearest integer
               const bucketSize = Math.ceil((max + 1) / buckets);
@@ -834,9 +826,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 })
               );
               cache.forEach((m) => {
-                //@ts-ignore
                 if (m[field] || m[field] === 0) {
-                  //@ts-ignore
                   const index = Math.floor(m[field] / bucketSize);
                   if (bucketArray[index]) {
                     bucketArray[index].games += 1;
@@ -891,8 +881,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               cache.forEach((m) => {
                 Object.keys(result).forEach((key) => {
-                  //@ts-ignore
-                  mergeObjects(result[key], m[key]);
+                  mergeObjects(result[key as keyof typeof result], m[key as keyof ParsedPlayerMatch]);
                 });
               });
               return res.json(result);
@@ -941,8 +930,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               cache.forEach((m) => {
                 Object.keys(result).forEach((key) => {
-                  //@ts-ignore
-                  mergeObjects(result[key], m[key]);
+                  mergeObjects(result[key as keyof typeof result], m[key as keyof ParsedPlayerMatch]);
                 });
               });
               return res.json(result);

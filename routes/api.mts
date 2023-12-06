@@ -2,7 +2,7 @@ import { Router } from 'express';
 import moment from 'moment';
 import async from 'async';
 import playerFields from './playerFields.mts';
-import filterDeps from '../util/filterDeps.mts';
+import { filterDeps } from '../util/filterDeps.mts';
 import config from '../config.js';
 import spec from './spec.mts';
 import { readCache } from '../store/cacheFunctions.mts';
@@ -47,35 +47,28 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
-  //@ts-ignore
   req.originalQuery = JSON.parse(JSON.stringify(req.query));
   // Enable significance filter by default, disable it if 0 is passed
   if (req.query.significant === '0') {
     delete req.query.significant;
   } else {
-    //@ts-ignore
-    req.query.significant = 1;
+    req.query.significant = '1';
   }
-  let filterCols: string[] = [];
+  let filterCols: (keyof ParsedPlayerMatch)[] = [];
   Object.keys(req.query).forEach((key) => {
     // numberify and arrayify everything in query
-    //@ts-ignore
     req.query[key] = []
-      //@ts-ignore
-      .concat(req.query[key])
-      .map((e) => (Number.isNaN(Number(e)) ? e : Number(e)));
+      .concat(req.query[key] as [])
+      .map((e) => (Number.isNaN(Number(e)) ? e : Number(e))) as any;
     // build array of required projections due to filters
-    //@ts-ignore
     filterCols = filterCols.concat(filterDeps[key] || []);
   });
-  //@ts-ignore
   req.queryObj = {
     project: ['match_id', 'player_slot', 'radiant_win']
       .concat(filterCols)
-      //@ts-ignore
-      .concat((req.query.sort || []).filter((f) => subkeys[f])),
-    filter: req.query || {},
-    sort: req.query.sort,
+      .concat((req.query.sort as [] || []).filter((f: keyof ParsedPlayerMatch) => subkeys[f])) as (keyof ParsedPlayerMatch)[],
+    filter: (req.query || {}) as unknown as ArrayifiedFilters,
+    sort: req.query.sort as keyof ParsedPlayerMatch,
     limit: Number(req.query.limit),
     offset: Number(req.query.offset),
     having: Number(req.query.having),
@@ -108,7 +101,7 @@ api.get('/admin/apiMetrics', (req, res) => {
   const endTime = moment().endOf('month').format('YYYY-MM-DD');
   async.parallel(
     {
-      topAPI: (cb: ErrorCb) => {
+      topAPI: (cb) => {
         db.raw(
           `
         SELECT
@@ -136,7 +129,7 @@ api.get('/admin/apiMetrics', (req, res) => {
           cb(err, err ? null : res.rows)
         );
       },
-      topAPIIP: (cb: ErrorCb) => {
+      topAPIIP: (cb) => {
         db.raw(
           `
         SELECT
@@ -165,7 +158,7 @@ api.get('/admin/apiMetrics', (req, res) => {
           cb(err, err ? null : res.rows)
         );
       },
-      numAPIUsers: (cb: ErrorCb) => {
+      numAPIUsers: (cb) => {
         db.raw(
           `
         SELECT
@@ -180,16 +173,15 @@ api.get('/admin/apiMetrics', (req, res) => {
           cb(err, err ? null : res.rows)
         );
       },
-      topUsersIP: (cb: ErrorCb) => {
+      topUsersIP: (cb) => {
         redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
       },
-      numUsersIP: (cb: ErrorCb) => {
+      numUsersIP: (cb) => {
         redis.zcard('user_usage_count', cb);
       },
     },
-    (err: Error | null | unknown, result: any) => {
+    (err, result) => {
       if (err) {
-        //@ts-ignore
         return res.status(500).send(err.message);
       }
       return res.json(result);
@@ -202,9 +194,7 @@ api.get('/', (req, res) => {
 });
 // API endpoints
 Object.keys(spec.paths).forEach((path) => {
-  //@ts-ignore
   Object.keys(spec.paths[path]).forEach((verb) => {
-    //@ts-ignore
     const { route, func } = spec.paths[path][verb];
     // Use the 'route' function to get the route path if it's available; otherwise, transform the OpenAPI path to the Express format.
     const routePath = route
@@ -212,8 +202,7 @@ Object.keys(spec.paths).forEach((path) => {
       : path.replace(/{/g, ':').replace(/}/g, '');
     // Check if the callback function is defined before adding the route..
     if (typeof func === 'function') {
-      //@ts-ignore
-      api[verb](routePath, func);
+      api[verb as HttpVerb](routePath, func);
     } else {
       // If the function is missing, log a warning message with the problematic route path and verb
       console.warn(

@@ -95,8 +95,7 @@ async function processFullHistory(job: FullHistoryJob) {
       }
       // paginate through to max 500 games if necessary with start_at_match_id=
       const parse = urllib.parse(url, true);
-      //@ts-ignore
-      parse.query.start_at_match_id = startId - 1;
+      parse.query.start_at_match_id = (startId - 1).toString();
       parse.search = null;
       url = urllib.format(parse);
       return getApiMatchPage(player, url, cb);

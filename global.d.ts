@@ -9,14 +9,30 @@ declare module 'uuid';
 
 declare namespace Express {
   export interface Request {
+    originalQuery: string;
+    queryObj: QueryObj
     user: {
-      account_id: number
+      account_id: number;
     }
   }
 }
 
+type ArrayifiedFilters = {[key: string]: number[]}
+type QueryObj = {
+  project: (keyof ParsedPlayerMatch)[],
+  filter?: ArrayifiedFilters,
+  sort?: keyof ParsedPlayerMatch,
+  // Number of results to return after client filter/sort
+  limit?: number,
+  offset?: number,
+  having?: number,
+  // Number of results to fetch from the database (before filter/sort)
+  dbLimit?: number,
+}
+
 type StringDict = { [key: string]: string };
 type NumberArrayDict = { [key: string]: number[] };
+type StringArrayDict = { [key: string]: string[] };
 type AnyDict = { [key: string]: any };
 type NumberDict = { [key: string]: number };
 type BooleanDict = { [key: string]: boolean };
@@ -92,7 +108,6 @@ interface Player {
   // Computed fields
   radiant_win?: boolean;
   match_id: number;
-  lane_role: number;
   is_radiant: boolean;
   isRadiant?: boolean;
   win: number;
@@ -124,6 +139,9 @@ interface ParsedPlayer extends Player {
   buyback_log: any[];
   killed: NumberDict;
   stuns: number;
+  obs: any;
+  sen: any;
+  lane_role: number | null;
 
   //Added by GC
   party_size: number;
@@ -259,7 +277,7 @@ type InsertMatchOptions = {
   attempts?: number;
 };
 
-type PathSpec = {
+type PathVerbSpec = {
   operationId: string;
   summary: string;
   description: string;
@@ -275,15 +293,16 @@ type PathSpec = {
   func: (req: express.Request, res: express.Response, cb: ErrorCb) => void;
 };
 
+type HttpVerb = 'get' | 'post'
+
 type OpenAPISpec = {
   openapi: string;
   info: any;
   servers: any[];
   components: any;
   paths: {
-    [key: string]: {
-      get?: PathSpec;
-      post?: PathSpec;
-    };
-  };
+    [path: string]: {
+        [verb: string]: PathVerbSpec;
+      }
+    }
 };

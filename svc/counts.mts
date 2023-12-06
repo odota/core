@@ -90,14 +90,13 @@ async function upsertMatchSample(match: Match) {
   }
 }
 async function updateRecord(
-  field: string,
+  field: keyof Match | keyof Player,
   match: Match,
-  player: Player | { hero_id?: number }
+  player: Player,
 ) {
   redis.zadd(
     `records:${field}`,
-    //@ts-ignore
-    match[field] || player[field],
+    match[field as keyof Match] || player[field as keyof Player],
     [match.match_id, match.start_time, player.hero_id].join(':')
   );
   // Keep only 100 top scores
@@ -107,7 +106,7 @@ async function updateRecord(
 }
 async function updateRecords(match: Match) {
   if (isSignificant(match) && match.lobby_type === 7) {
-    updateRecord('duration', match, {});
+    updateRecord('duration', match, {} as Player);
     match.players.forEach((player) => {
       updateRecord('kills', match, player);
       updateRecord('deaths', match, player);
@@ -128,9 +127,8 @@ async function updateLastPlayed(match: Match) {
       player.account_id && player.account_id !== getAnonymousAccountId()
   );
   const lastMatchTime = new Date(match.start_time * 1000);
-  const bulkUpdate = filteredPlayers.reduce((acc, player) => {
+  const bulkUpdate = filteredPlayers.reduce<any>((acc, player) => {
     acc.push(
-      //@ts-ignore
       {
         update: {
           _id: player.account_id,
@@ -218,7 +216,6 @@ async function updateBenchmarks(match: Match) {
       // only do if all players have heroes
       if (p.hero_id) {
         Object.keys(benchmarks).forEach((key) => {
-          //@ts-ignore
           const metric = benchmarks[key](match, p);
           if (
             metric !== undefined &&

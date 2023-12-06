@@ -4,8 +4,11 @@ import util from 'util';
 import queue from '../store/queue.mts';
 import buildMatch from '../store/buildMatch.mts';
 import db from '../store/db.mts';
-import su from '../util/scenariosUtil.mjs';
+import su from '../util/scenariosUtil.mts';
 import { epochWeek } from '../util/utility.mts';
+
+const { scenarioChecks } = su;
+type ScenariosKey = keyof typeof scenarioChecks;
 
 async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);
@@ -19,8 +22,7 @@ async function processScenarios(matchID: string) {
   }
   const currentWeek = epochWeek();
   Object.keys(su.scenarioChecks).forEach((table) => {
-    //@ts-ignore
-    su.scenarioChecks[table].forEach((scenarioCheck) => {
+    su.scenarioChecks[table as ScenariosKey].forEach((scenarioCheck) => {
       const rows = scenarioCheck(match);
       async.eachSeries(rows, (row: any, cb: ErrorCb) => {
         row = Object.assign(row, {

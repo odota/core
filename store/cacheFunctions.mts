@@ -24,9 +24,7 @@ export const sendDataWithCache = (
 ) => {
   if (
     config.ENABLE_PLAYER_CACHE &&
-    //@ts-ignore
     req.originalQuery &&
-    //@ts-ignore
     !Object.keys(req.originalQuery).length
   ) {
     redis.setex(

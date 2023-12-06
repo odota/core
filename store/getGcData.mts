@@ -13,8 +13,7 @@ async function getGcDataFromRetriever(match: GcDataJob) {
     (r) => `http://${r}?key=${secret}&match_id=${match.match_id}`
   );
   const body = await getDataPromise({
-    // Note: this can take a string or array of string or config object but typing it is weird
-    url: urls as any,
+    url: urls,
     noRetry: match.noRetry,
     timeout: 5000,
   });
