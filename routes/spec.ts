@@ -137,7 +137,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/matches/:match_id/:info?',
         func: async (req, res, cb) => {
           try {
-            const match = await buildMatch(req.params.match_id, Boolean(req.query.blob));
+            const match = await buildMatch(
+              req.params.match_id,
+              Boolean(req.query.blob)
+            );
             if (!match) {
               // 404 for match not found
               return cb();
@@ -1741,7 +1744,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     attempts: 1,
                     priority: req.query.api_key ? 2 : 1,
                     // Reduce load: only reparse the replay for league matches
-                    forceParse: config.NODE_ENV === 'development' || (Boolean(match.leagueid) || !isParsed),
+                    forceParse:
+                      config.NODE_ENV === 'development' ||
+                      Boolean(match.leagueid) ||
+                      !isParsed,
                   });
                   exitWithJob(null, job);
                 } catch (e) {

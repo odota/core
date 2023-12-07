@@ -103,15 +103,18 @@ async function getMatch(matchId: string, useBlobStore: boolean) {
   // if so we prefer the archive since the blobstore may have less data
   const isArchived = Boolean(
     (
-      await db.raw('select match_id from parsed_matches where match_id = ? and is_archived IS TRUE', [
-        matchId,
-      ])
+      await db.raw(
+        'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
+        [matchId]
+      )
     ).rows[0]
   );
   let match: ParsedMatch | null = null;
   if (isArchived) {
     // Fallback to blobstore if we don't have it
-    match = (await getArchivedMatch(matchId)) || (await getMatchData(matchId, useBlobStore));
+    match =
+      (await getArchivedMatch(matchId)) ||
+      (await getMatchData(matchId, useBlobStore));
   } else {
     // Fetch from blobstore
     match = await getMatchData(matchId, useBlobStore);
