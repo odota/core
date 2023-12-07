@@ -11,10 +11,13 @@ async function start() {
     console.log(result.rows);
     await Promise.all(
       result.rows.map((row: any) =>
-        queue.addJob({ name: 'fhQueue', data: {
-          account_id: row.account_id,
-          short_history: true,
-        }})
+        queue.addJob({
+          name: 'fhQueue',
+          data: {
+            account_id: row.account_id,
+            short_history: true,
+          },
+        })
       )
     );
     console.timeEnd('autofullhistory');

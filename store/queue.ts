@@ -82,7 +82,10 @@ async function addJob(input: QueueInput) {
   return await redis.rpush(name, JSON.stringify(data));
 }
 
-async function addReliableJob(input: QueueInput, options: ReliableQueueOptions) {
+async function addReliableJob(
+  input: QueueInput,
+  options: ReliableQueueOptions
+) {
   const { name, data } = input;
   const result = await db.raw<{
     rows: ReliableQueueRow[];

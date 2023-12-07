@@ -1065,10 +1065,11 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         func: async (req, res, cb) => {
           try {
             const length = await queue.addJob({
-              name: 'fhQueue', 
+              name: 'fhQueue',
               data: {
                 account_id: req.params.account_id || '1',
-              }});
+              },
+            });
             return res.json({
               length,
             });

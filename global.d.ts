@@ -65,7 +65,7 @@ type Match = {
   // heroes is just pgroup alias?
   heroes: any;
   average_rank?: number | null;
-}
+};
 
 interface LiveMatch extends Match {
   lobby_id: string;
@@ -122,7 +122,7 @@ type Player = {
 
   // Added in buildMatch for display
   is_subscriber: boolean;
-}
+};
 
 interface ParsedPlayer extends Player {
   kills_log: any[];
@@ -212,13 +212,13 @@ type User = {
   is_contributor: boolean;
   is_subscriber: boolean;
   status: number;
-}
+};
 
 type PlayerRating = {
   account_id: number;
   rank_tier: number;
   leaderboard_rank: number;
-}
+};
 
 type FullHistoryJob = {
   account_id: number;
@@ -226,19 +226,19 @@ type FullHistoryJob = {
 
   // These fields don't exist on the job but we add them during processing
   fh_unavailable?: boolean;
-}
+};
 
 type MmrJob = {
   account_id: number;
   match_id: number;
-}
+};
 
 type GcDataJob = {
   match_id: number;
   pgroup: any;
   useGcDataArr?: boolean;
   noRetry?: boolean;
-}
+};
 
 type CountsJob = Match;
 type ScenariosJob = string;
@@ -250,29 +250,35 @@ type ParseJob = {
   origin?: DataOrigin;
   start_time?: number;
   duration?: number;
-}
+};
 
-type QueueJob = QueueInput["data"];
-type QueueName = QueueInput["name"];
-type QueueInput = {
-  name: 'mmrQueue';
-  data: MmrJob;
-} | {
-  name: 'countsQueue';
-  data: CountsJob;
-} | {
-  name: 'fhQueue';
-  data: FullHistoryJob;
-} | {
-  name: 'scenariosQueue';
-  data: ScenariosJob;
-} | {
-  name: 'parse';
-  data: ParseJob;
-} | {
-  name: 'gcQueue';
-  data: GcDataJob;
-}
+type QueueJob = QueueInput['data'];
+type QueueName = QueueInput['name'];
+type QueueInput =
+  | {
+      name: 'mmrQueue';
+      data: MmrJob;
+    }
+  | {
+      name: 'countsQueue';
+      data: CountsJob;
+    }
+  | {
+      name: 'fhQueue';
+      data: FullHistoryJob;
+    }
+  | {
+      name: 'scenariosQueue';
+      data: ScenariosJob;
+    }
+  | {
+      name: 'parse';
+      data: ParseJob;
+    }
+  | {
+      name: 'gcQueue';
+      data: GcDataJob;
+    };
 
 type ReliableQueueRow = {
   id: number;
@@ -282,14 +288,14 @@ type ReliableQueueRow = {
   data: any;
   next_attempt_time: string;
   priority: number;
-}
+};
 
 type ReliableQueueOptions = { attempts: number; priority?: number };
 
 type ProPlayer = {
   name: string;
   account_id: number;
-}
+};
 
 type DataType = 'api' | 'parsed' | 'gcdata' | 'meta';
 type DataOrigin = 'scanner';

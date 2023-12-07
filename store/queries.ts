@@ -47,11 +47,7 @@ function doCleanRow(schema: StringDict, row: AnyDict) {
   });
   return obj;
 }
-async function cleanRowPostgres(
-  db: knex.Knex,
-  table: string,
-  row: AnyDict,
-) {
+async function cleanRowPostgres(db: knex.Knex, table: string, row: AnyDict) {
   if (!columnInfo[table]) {
     const result = await db(table).columnInfo();
     columnInfo[table] = result;
@@ -67,12 +63,12 @@ async function cleanRowCassandra(
     const result = await cassandra.execute(
       'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
       [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table]
-      );
-      cassandraColumnInfo[table] = {};
-      result.rows.forEach((r) => {
-        cassandraColumnInfo[table][r.column_name] = 1;
-      });
-    }
+    );
+    cassandraColumnInfo[table] = {};
+    result.rows.forEach((r) => {
+      cassandraColumnInfo[table][r.column_name] = 1;
+    });
+  }
   return doCleanRow(cassandraColumnInfo[table], row);
 }
 
@@ -289,8 +285,14 @@ export function getHeroBenchmarks(
       })
   );
 }
-export function getPlayerMatches(accountId: string, queryObj: QueryObj, cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void) {
-  getPlayerMatchesPromise(accountId, queryObj).then(cache => cb(null, cache)).catch((err) => cb(err, []));
+export function getPlayerMatches(
+  accountId: string,
+  queryObj: QueryObj,
+  cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void
+) {
+  getPlayerMatchesPromise(accountId, queryObj)
+    .then((cache) => cb(null, cache))
+    .catch((err) => cb(err, []));
 }
 export async function getPlayerMatchesPromise(
   accountId: string,
@@ -318,24 +320,26 @@ export async function getPlayerMatchesPromise(
   const matches: ParsedPlayerMatch[] = [];
   await new Promise<void>((resolve, reject) => {
     cassandra.eachRow(
-    query,
-    [accountId],
-    {
-      prepare: true,
-      fetchSize: 5000,
-      autoPage: true,
-    },
-    (n, row) => {
-      const m = deserialize(row) as any;
-      if (filterMatches([m], queryObj.filter).length) {
-        matches.push(m);
+      query,
+      [accountId],
+      {
+        prepare: true,
+        fetchSize: 5000,
+        autoPage: true,
+      },
+      (n, row) => {
+        const m = deserialize(row) as any;
+        if (filterMatches([m], queryObj.filter).length) {
+          matches.push(m);
+        }
+      },
+      (err) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve();
       }
-    }, (err) => {
-      if (err) {
-        return reject(err)
-      }
-      return resolve();
-    });
+    );
   });
   const sort = queryObj.sort;
   if (sort) {
@@ -529,23 +533,22 @@ export async function upsertPromise(
   conflict: NumberDict
 ) {
   const row = await cleanRowPostgres(db, table, insert);
-    const values = Object.keys(row).map(() => '?');
-    const update = Object.keys(row).map((key) =>
-      util.format('%s=%s', key, `EXCLUDED.${key}`)
-    );
-    const query = util.format(
-      'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
-      table,
-      Object.keys(row).join(','),
-      values.join(','),
-      Object.keys(conflict).join(','),
-      update.join(',')
-    );
-    return await db
-      .raw(
-        query,
-        Object.keys(row).map((key) => row[key])
-      );
+  const values = Object.keys(row).map(() => '?');
+  const update = Object.keys(row).map((key) =>
+    util.format('%s=%s', key, `EXCLUDED.${key}`)
+  );
+  const query = util.format(
+    'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
+    table,
+    Object.keys(row).join(','),
+    values.join(','),
+    Object.keys(conflict).join(','),
+    update.join(',')
+  );
+  return await db.raw(
+    query,
+    Object.keys(row).map((key) => row[key])
+  );
 }
 export async function insertPlayerPromise(
   db: knex.Knex,
@@ -967,7 +970,7 @@ export async function insertMatchPromise(
     const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
     }] for ${match.match_id} ended ${
-        match.start_time
+      match.start_time
         ? moment.unix(match.start_time + (match.duration ?? 0)).fromNow()
         : 'UNKNOWN'
     }`;
@@ -1000,7 +1003,7 @@ export async function insertMatchPromise(
       return;
     }
     if (options.origin === 'scanner' && options.type === 'api') {
-      await queue.addJob({ name: 'countsQueue', data: match as Match});
+      await queue.addJob({ name: 'countsQueue', data: match as Match });
     }
   }
   async function decideMmr() {
@@ -1017,10 +1020,13 @@ export async function insertMatchPromise(
     });
     await Promise.all(
       arr.map((p) =>
-        queue.addJob({name: 'mmrQueue', data: {
-          match_id: match.match_id,
-          account_id: p.account_id,
-        }})
+        queue.addJob({
+          name: 'mmrQueue',
+          data: {
+            match_id: match.match_id,
+            account_id: p.account_id,
+          },
+        })
       )
     );
   }
@@ -1057,10 +1063,13 @@ export async function insertMatchPromise(
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      await queue.addJob({name: 'gcQueue', data: {
-        match_id: match.match_id,
-        pgroup: match.pgroup,
-      }});
+      await queue.addJob({
+        name: 'gcQueue',
+        data: {
+          match_id: match.match_id,
+          pgroup: match.pgroup,
+        },
+      });
     }
   }
   async function decideScenarios() {
@@ -1070,7 +1079,10 @@ export async function insertMatchPromise(
       options.origin === 'scanner' &&
       match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
     ) {
-      await queue.addJob({name: 'scenariosQueue', data: match.match_id.toString()});
+      await queue.addJob({
+        name: 'scenariosQueue',
+        data: match.match_id.toString(),
+      });
     }
   }
   async function decideMetaParse() {
@@ -1115,16 +1127,15 @@ export async function insertMatchPromise(
           duration: match.duration,
           pgroup: match.pgroup,
           origin: options.origin,
-        } 
-      }, {
-          priority,
-          attempts: options.attempts || 20,
-        }
+        },
+      },
+      {
+        priority,
+        attempts: options.attempts || 20,
+      }
     );
-    if (
-      options.origin === 'scanner' &&
-      options.type === 'api') {
-        redisCount(redis, 'auto_parse');
+    if (options.origin === 'scanner' && options.type === 'api') {
+      redisCount(redis, 'auto_parse');
     }
     return job;
   }
