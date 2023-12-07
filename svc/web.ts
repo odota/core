@@ -382,27 +382,6 @@ logSub.on('message', (channel: string, message: string) => {
     }
   });
 });
-/**
- * Wait for connections to end, then shut down
- * */
-function gracefulShutdown() {
-  console.log('Received kill signal, shutting down gracefully.');
-  server.close(() => {
-    console.log('Closed out remaining connections.');
-    process.exit();
-  });
-  // if after
-  setTimeout(() => {
-    console.error(
-      'Could not close connections in time, forcefully shutting down'
-    );
-    process.exit();
-  }, 10 * 1000);
-}
-// listen for TERM signal .e.g. kill
-process.once('SIGTERM', gracefulShutdown);
-// listen for INT signal e.g. Ctrl-C
-process.once('SIGINT', gracefulShutdown);
 // count any uncaught exceptions crashing the process
 process.on('uncaughtException', function (err) {
   redisCount(redis, 'web_crash');
