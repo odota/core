@@ -1126,11 +1126,12 @@ export async function insertMatchPromise(
     // metaQueue.add()
   }
   async function archiveMatch() {
-    // If type is parsed, we have all the data
-    // If it was deleted before and we might be trying with incomplete (no gcdata), then it's archived and is a no-op
-    // Later we can add more validation to ensure this
     return;
     // TODO (howard) enable this to start archiving matches on insert
+    // Currently, parsed gets inserted last so we have all the data (api/gcdata/parsed)
+    // However after adding cleanup we might get here with no gcdata
+    // But if it was cleaned up then it was already archived and we don't rearchive
+    // Later, we can use the blobstore to verify we have all data (since meta parsing might happen after replay parse)
     if (options.type === 'parsed') {
       await doArchive(match.match_id.toString());
     }
