@@ -88,7 +88,7 @@ interface GcMatch extends Partial<Match> {
 
 type Player = {
   player_slot: number;
-  account_id: number;
+  account_id?: number;
   hero_id: number;
   kills: number;
   deaths: number;
@@ -102,12 +102,12 @@ type Player = {
   hero_healing: number;
   tower_damage: number;
   leaver_status: number;
-  ability_upgrades: any[];
+  ability_upgrades?: any[];
   ability_upgrades_arr: number[];
 
   // Computed fields
+  match_id?: number;
   radiant_win?: boolean;
-  match_id: number;
   is_radiant: boolean;
   isRadiant?: boolean;
   win: number;
@@ -119,6 +119,13 @@ type Player = {
   abandons: number;
   heroes: any;
   benchmarks: AnyDict;
+
+  // In Steam API that we're manually removing
+  scaled_hero_damage?: number;
+  scaled_tower_damage?: number;
+  scaled_hero_healing?: number;
+  aghanims_shard?: number;
+  aghanims_scepter?: number;
 
   // Added in buildMatch for display
   is_subscriber: boolean;

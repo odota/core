@@ -30,7 +30,7 @@ function doLiveGames(cb: ErrorCb) {
                 const proPlayer = proPlayers.find(
                   (proPlayer) =>
                     proPlayer.account_id.toString() ===
-                    player.account_id.toString()
+                    player.account_id?.toString()
                 );
                 if (proPlayer) {
                   match.players[i] = { ...player, ...proPlayer };

@@ -27,7 +27,7 @@ async function extendPlayerData(player: ParsedPlayerMatch, match: ParsedMatch) {
     cluster: match.cluster,
     lobby_type: match.lobby_type,
     game_mode: match.game_mode,
-    is_contributor: isContributor(player.account_id?.toString()),
+    is_contributor: player.account_id && isContributor(player.account_id),
   };
   computeMatchData(p);
   const row = await db

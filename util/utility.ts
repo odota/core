@@ -316,7 +316,7 @@ export function isRadiant(player: Player) {
 /**
  * Determines if a player has contributed to the development of OpenDota
  */
-export function isContributor(accountId: string) {
+export function isContributor(accountId: string | number) {
   return accountId in contributors;
 }
 /**
