@@ -24,8 +24,8 @@ import db from '../store/db';
 import redis from '../store/redis';
 import packageJson from '../package.json';
 import { sendDataWithCache } from '../store/cacheFunctions';
-import params from './requests/importParams.js';
-import responses from './responses/schemas/importResponseSchemas.js';
+import params from './requests/importParams';
+import responses from './responses/schemas/importResponseSchemas';
 import generateOperationId from './generateOperationId';
 import {
   insertMatchPromise,
@@ -46,8 +46,8 @@ import {
 } from '../store/queries';
 const { Client } = pg;
 const { subkeys, countCats } = playerFields;
-const parameters = Object.values(params).reduce(
-  (acc, category) => ({ ...acc, ...category }),
+const parameters = Object.values(params).reduce<any>(
+  (acc, category: any) => ({ ...acc, ...category }),
   {}
 );
 const playerParamNames = [
@@ -74,8 +74,8 @@ const playerParamNames = [
 const playerParams = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
 }));
-const schemas = Object.values(responses).reduce(
-  (acc, category) => ({ ...acc, ...category }),
+const schemas = Object.values(responses).reduce<any>(
+  (acc, category: any) => ({ ...acc, ...category }),
   {}
 );
 const securitySchemes = {

@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // Recursive function to import all files in a directory and its subdirectories
-function importAll(directory) {
-  let files = {};
+function importAll(directory: string) {
+  let files: AnyDict = {};
 
   // Read all files and subdirectories in the directory
   fs.readdirSync(directory).forEach((item) => {
@@ -12,9 +12,9 @@ function importAll(directory) {
     if (fs.lstatSync(itemPath).isDirectory()) {
       // If the item is a subdirectory, call this function with the subdirectory as the new starting point
       files = { ...files, ...importAll(itemPath) };
-    } else if (path.extname(item) === '.js' && itemPath !== __filename) {
+    } else if (path.extname(item) === '.ts' && itemPath !== __filename) {
       // If the item is a JS file and not the current file, import it
-      const fileName = path.basename(item, '.js');
+      const fileName = path.basename(item, '.ts');
       files[fileName] = require(itemPath);
     }
   });
@@ -23,6 +23,4 @@ function importAll(directory) {
 }
 
 // Import all files in the responses directory and its subdirectories
-const queryParams = importAll(__dirname);
-
-module.exports = queryParams;
+export default importAll(__dirname);
