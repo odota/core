@@ -24,4 +24,3 @@ function importAll(directory: string) {
 
 // Import all files in the responses directory and its subdirectories
 export default importAll(__dirname);
-

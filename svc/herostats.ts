@@ -4,16 +4,15 @@ import moment from 'moment';
 import async from 'async';
 import db from '../store/db';
 import redis from '../store/redis';
-import { invokeInterval } from '../util/utility';
+import { invokeIntervalAsync } from '../util/utility';
 
-function doHeroStats(cb: StringErrorCb) {
+async function doHeroStats() {
   const minTime = moment().subtract(30, 'day').format('X');
   const maxTime = moment().format('X');
-  async.parallel(
-    {
-      publicHeroes(cb) {
-        db.raw(
-          `
+  const result: any = await async.parallel({
+    publicHeroes(cb) {
+      db.raw(
+        `
               SELECT
               floor(avg_rank_tier / 10) as rank_tier,
               sum(case when radiant_win = (player_slot < 128) then 1 when public_player_matches.hero_id is null then null else 0 end) as win, 
@@ -32,12 +31,12 @@ function doHeroStats(cb: StringErrorCb) {
               GROUP BY rank_tier, public_player_matches.hero_id, heroes.id
               ORDER BY heroes.id
           `,
-          [minTime, maxTime]
-        ).asCallback(cb);
-      },
-      proHeroes(cb) {
-        db.raw(
-          `
+        [minTime, maxTime]
+      ).asCallback(cb);
+    },
+    proHeroes(cb) {
+      db.raw(
+        `
               SELECT 
               sum(case when radiant_win = (player_slot < 128) then 1 else 0 end) as pro_win, 
               count(hero_id) as pro_pick,
@@ -51,12 +50,12 @@ function doHeroStats(cb: StringErrorCb) {
               GROUP BY heroes.id
               ORDER BY heroes.id
           `,
-          [minTime, maxTime]
-        ).asCallback(cb);
-      },
-      proBans(cb) {
-        db.raw(
-          `
+        [minTime, maxTime]
+      ).asCallback(cb);
+    },
+    proBans(cb) {
+      db.raw(
+        `
               SELECT 
               count(hero_id) as pro_ban,
               heroes.id as hero_id
@@ -69,51 +68,42 @@ function doHeroStats(cb: StringErrorCb) {
               GROUP BY heroes.id
               ORDER BY heroes.id
           `,
-          [minTime, maxTime]
-        ).asCallback(cb);
-      },
-      turboHeroes(cb) {
-        redis.hgetall('turboPicks', (err: any, picks: any) => {
-          redis.hgetall('turboWins', (err: any, wins: any) => {
-            const result = {
-              rows: Object.keys(picks).map((key) => {
-                return {
-                  hero_id: key,
-                  turbo_picks: Number(picks[key]) || 0,
-                  turbo_wins: Number(wins[key]) || 0,
-                };
-              }),
-            };
-            cb(null, result);
-          });
-        });
-      },
+        [minTime, maxTime]
+      ).asCallback(cb);
     },
-    (err: any, result: any) => {
-      if (err) {
-        return cb(err);
-      }
-      // Build object keyed by hero_id for each result array
-      const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
-      Object.keys(result).forEach((key) => {
-        result[key].rows.forEach((row: any) => {
-          objectResponse[row.hero_id] = {
-            ...objectResponse[row.hero_id],
-            ...(key === 'publicHeroes'
-              ? {
-                  [`${row.rank_tier}_pick`]: row.pick,
-                  [`${row.rank_tier}_win`]: row.win,
-                }
-              : row),
+    turboHeroes(cb) {
+      redis.hgetall('turboPicks', (err: any, picks: any) => {
+        redis.hgetall('turboWins', (err: any, wins: any) => {
+          const result = {
+            rows: Object.keys(picks).map((key) => {
+              return {
+                hero_id: key,
+                turbo_picks: Number(picks[key]) || 0,
+                turbo_wins: Number(wins[key]) || 0,
+              };
+            }),
           };
+          cb(null, result);
         });
       });
-      return redis.set(
-        'heroStats',
-        JSON.stringify(Object.values(objectResponse)),
-        cb
-      );
-    }
-  );
+    },
+  });
+  // Build object keyed by hero_id for each result array
+  const objectResponse = JSON.parse(JSON.stringify(constants.heroes));
+  Object.keys(result).forEach((key) => {
+    result[key].rows.forEach((row: any) => {
+      objectResponse[row.hero_id] = {
+        ...objectResponse[row.hero_id],
+        ...(key === 'publicHeroes'
+          ? {
+              [`${row.rank_tier}_pick`]: row.pick,
+              [`${row.rank_tier}_win`]: row.win,
+            }
+          : row),
+      };
+    });
+  });
+  await redis.set('heroStats', JSON.stringify(Object.values(objectResponse)));
+  return;
 }
-invokeInterval(doHeroStats, 60 * 60 * 1000);
+invokeIntervalAsync(doHeroStats, 60 * 60 * 1000);

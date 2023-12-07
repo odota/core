@@ -4,7 +4,11 @@ import async from 'async';
 import redis from '../store/redis';
 import { insertMatchPromise } from '../store/queries';
 import config from '../config.js';
-import { generateJob, getData } from '../util/utility';
+import {
+  generateJob,
+  getData,
+  invokeIntervalAsync,
+} from '../util/utility';
 const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);
@@ -82,20 +86,10 @@ function processPlayer(accountId: string, cb: ErrorCb) {
     }
   );
 }
-function start(err?: any) {
-  if (err) {
-    throw err;
+async function doBackupScanner() {
+  const ids = await redis.zrange('tracked', 0, -1);
+  if (ids) {
+    await async.eachLimit(ids, parallelism, processPlayer);
   }
-  console.log('starting backupscanner loop');
-  setTimeout(() => {
-    redis.zrange('tracked', 0, -1, (err, ids) => {
-      if (err) {
-        throw err;
-      }
-      if (ids) {
-        async.eachLimit(ids, parallelism, processPlayer, start);
-      }
-    });
-  }, 1000);
 }
-start();
+invokeIntervalAsync(doBackupScanner, 1000);

@@ -6,6 +6,7 @@ import redis from '../store/redis';
 import db from '../store/db';
 import config from '../config.js';
 import { invokeInterval } from '../util/utility';
+
 function doLiveGames(cb: ErrorCb) {
   // Get the list of pro players
   db.select()

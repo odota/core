@@ -4,7 +4,7 @@ import async from 'async';
 import constants from 'dotaconstants';
 import db from '../store/db';
 import redis from '../store/redis';
-import { invokeInterval } from '../util/utility';
+import { invokeIntervalAsync } from '../util/utility';
 
 const sql: StringDict = {};
 const sqlq = fs.readdirSync('./sql');
@@ -54,28 +54,20 @@ function loadData(
     return cb(err, mapFunc(results));
   });
 }
-function doDistributions(cb: ErrorCb) {
-  async.parallel(
-    {
-      country_mmr(cb) {
-        loadData('country_mmr', mapCountry, cb);
-      },
-      mmr(cb) {
-        loadData('mmr', mapMmr, cb);
-      },
-      ranks(cb) {
-        loadData('ranks', mapMmr, cb);
-      },
+async function doDistributions() {
+  const result: any = await async.parallel({
+    country_mmr(cb) {
+      loadData('country_mmr', mapCountry, cb);
     },
-    (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      Object.keys(result).forEach((key) => {
-        redis.set(`distribution:${key}`, JSON.stringify(result[key]));
-      });
-      return cb(err);
-    }
-  );
+    mmr(cb) {
+      loadData('mmr', mapMmr, cb);
+    },
+    ranks(cb) {
+      loadData('ranks', mapMmr, cb);
+    },
+  });
+  Object.keys(result).forEach((key) => {
+    redis.set(`distribution:${key}`, JSON.stringify(result[key]));
+  });
 }
-invokeInterval(doDistributions, 6 * 60 * 60 * 1000);
+invokeIntervalAsync(doDistributions, 6 * 60 * 60 * 1000);

@@ -839,6 +839,24 @@ export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
     });
   })();
 }
+/**
+ * Same as invokeInterval but for async functions
+ * Note: This doesn't catch the exception and lets it bubble up for visibility
+ * @param func
+ * @param delay
+ */
+export async function invokeIntervalAsync(
+  func: () => Promise<void>,
+  delay: number
+) {
+  while (true) {
+    console.log('running %s', func.name);
+    console.time(func.name);
+    await func();
+    console.timeEnd(func.name);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+}
 
 /*
  * Promise replacement for async.eachLimit
