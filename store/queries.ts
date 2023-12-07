@@ -1236,10 +1236,14 @@ export async function doArchive(matchId: string) {
   }
   const match = await getMatchData(matchId, false);
   const playerMatches = await getPlayerMatchData(matchId);
+  if (!match) {
+    return;
+  }
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches })
   );
   const result = await archivePut(matchId, blob);
+  redisCount(redis, 'match_archive_write');
   if (result) {
     // Mark the match archived
     await db.raw(

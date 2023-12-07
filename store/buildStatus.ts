@@ -62,6 +62,9 @@ export async function buildStatus() {
     match_archive_read_last_day(cb) {
       getRedisCountDay(redis, 'match_archive_read', cb);
     },
+    match_archive_write_last_day(cb) {
+      getRedisCountDay(redis, 'match_archive_write', cb);
+    },
     build_match_last_day(cb) {
       getRedisCountDay(redis, 'build_match', cb);
     },
