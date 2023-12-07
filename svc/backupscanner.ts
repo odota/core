@@ -4,11 +4,7 @@ import async from 'async';
 import redis from '../store/redis';
 import { insertMatchPromise } from '../store/queries';
 import config from '../config.js';
-import {
-  generateJob,
-  getData,
-  invokeIntervalAsync,
-} from '../util/utility';
+import { generateJob, getData, invokeIntervalAsync } from '../util/utility';
 const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
 const parallelism = Math.min(apiHosts.length * 1, apiKeys.length);

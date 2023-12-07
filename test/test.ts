@@ -161,7 +161,7 @@ describe('replay parse', function () {
     await new Promise((resolve) => setTimeout(resolve, 20000));
     console.log('checking parsed match');
     // ensure parse data got inserted
-    const match = await buildMatch(tests[key].match_id.toString(), false);
+    const match = await buildMatch(tests[key].match_id.toString(), {});
     // console.log(match.players[0]);
     assert.ok(match.players);
     assert.ok(match.players[0]);
