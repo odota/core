@@ -1,0 +1,205 @@
+import "steamnetworkingsockets_messages_certs.proto";
+
+option optimize_for = SPEED;
+option cc_generic_services = false;
+
+enum ESteamNetworkingSocketsCipher {
+	k_ESteamNetworkingSocketsCipher_INVALID = 0;
+	k_ESteamNetworkingSocketsCipher_NULL = 1;
+	k_ESteamNetworkingSocketsCipher_AES_256_GCM = 2;
+}
+
+message CMsgSteamDatagramSessionCryptInfo {
+	enum EKeyType {
+		INVALID = 0;
+		CURVE25519 = 1;
+	}
+
+	optional .CMsgSteamDatagramSessionCryptInfo.EKeyType key_type = 1 [default = INVALID];
+	optional bytes key_data = 2;
+	optional fixed64 nonce = 3;
+	optional uint32 protocol_version = 4;
+	repeated .ESteamNetworkingSocketsCipher ciphers = 5;
+}
+
+message CMsgSteamDatagramSessionCryptInfoSigned {
+	optional bytes info = 1;
+	optional bytes signature = 2;
+}
+
+message CMsgSteamDatagramDiagnostic {
+	optional uint32 severity = 1;
+	optional string text = 2;
+}
+
+message CMsgSteamDatagramLinkInstantaneousStats {
+	optional uint32 out_packets_per_sec_x10 = 1;
+	optional uint32 out_bytes_per_sec = 2;
+	optional uint32 in_packets_per_sec_x10 = 3;
+	optional uint32 in_bytes_per_sec = 4;
+	optional uint32 ping_ms = 5;
+	optional uint32 packets_dropped_pct = 6;
+	optional uint32 packets_weird_sequence_pct = 7;
+	optional uint32 peak_jitter_usec = 8;
+}
+
+message CMsgSteamDatagramLinkLifetimeStats {
+	optional uint32 connected_seconds = 2;
+	optional uint64 packets_sent = 3;
+	optional uint64 kb_sent = 4;
+	optional uint64 packets_recv = 5;
+	optional uint64 kb_recv = 6;
+	optional uint64 packets_recv_sequenced = 7;
+	optional uint64 packets_recv_dropped = 8;
+	optional uint64 packets_recv_out_of_order = 9;
+	optional uint64 packets_recv_out_of_order_corrected = 15;
+	optional uint64 packets_recv_duplicate = 10;
+	optional uint64 packets_recv_lurch = 11;
+	repeated uint64 multipath_packets_recv_sequenced = 12;
+	repeated uint64 multipath_packets_recv_later = 13;
+	optional uint32 multipath_send_enabled = 14;
+	optional uint32 quality_histogram_100 = 21;
+	optional uint32 quality_histogram_99 = 22;
+	optional uint32 quality_histogram_97 = 23;
+	optional uint32 quality_histogram_95 = 24;
+	optional uint32 quality_histogram_90 = 25;
+	optional uint32 quality_histogram_75 = 26;
+	optional uint32 quality_histogram_50 = 27;
+	optional uint32 quality_histogram_1 = 28;
+	optional uint32 quality_histogram_dead = 29;
+	optional uint32 quality_ntile_2nd = 30;
+	optional uint32 quality_ntile_5th = 31;
+	optional uint32 quality_ntile_25th = 32;
+	optional uint32 quality_ntile_50th = 33;
+	optional uint32 ping_histogram_25 = 41;
+	optional uint32 ping_histogram_50 = 42;
+	optional uint32 ping_histogram_75 = 43;
+	optional uint32 ping_histogram_100 = 44;
+	optional uint32 ping_histogram_125 = 45;
+	optional uint32 ping_histogram_150 = 46;
+	optional uint32 ping_histogram_200 = 47;
+	optional uint32 ping_histogram_300 = 48;
+	optional uint32 ping_histogram_max = 49;
+	optional uint32 ping_ntile_5th = 50;
+	optional uint32 ping_ntile_50th = 51;
+	optional uint32 ping_ntile_75th = 52;
+	optional uint32 ping_ntile_95th = 53;
+	optional uint32 ping_ntile_98th = 54;
+	optional uint32 jitter_histogram_negligible = 61;
+	optional uint32 jitter_histogram_1 = 62;
+	optional uint32 jitter_histogram_2 = 63;
+	optional uint32 jitter_histogram_5 = 64;
+	optional uint32 jitter_histogram_10 = 65;
+	optional uint32 jitter_histogram_20 = 66;
+	optional uint32 txspeed_max = 67;
+	optional uint32 txspeed_histogram_16 = 68;
+	optional uint32 txspeed_histogram_32 = 69;
+	optional uint32 txspeed_histogram_64 = 70;
+	optional uint32 txspeed_histogram_128 = 71;
+	optional uint32 txspeed_histogram_256 = 72;
+	optional uint32 txspeed_histogram_512 = 73;
+	optional uint32 txspeed_histogram_1024 = 74;
+	optional uint32 txspeed_histogram_max = 75;
+	optional uint32 txspeed_ntile_5th = 76;
+	optional uint32 txspeed_ntile_50th = 77;
+	optional uint32 txspeed_ntile_75th = 78;
+	optional uint32 txspeed_ntile_95th = 79;
+	optional uint32 txspeed_ntile_98th = 80;
+	optional uint32 rxspeed_max = 81;
+	optional uint32 rxspeed_histogram_16 = 82;
+	optional uint32 rxspeed_histogram_32 = 83;
+	optional uint32 rxspeed_histogram_64 = 84;
+	optional uint32 rxspeed_histogram_128 = 85;
+	optional uint32 rxspeed_histogram_256 = 86;
+	optional uint32 rxspeed_histogram_512 = 87;
+	optional uint32 rxspeed_histogram_1024 = 88;
+	optional uint32 rxspeed_histogram_max = 89;
+	optional uint32 rxspeed_ntile_5th = 90;
+	optional uint32 rxspeed_ntile_50th = 91;
+	optional uint32 rxspeed_ntile_75th = 92;
+	optional uint32 rxspeed_ntile_95th = 93;
+	optional uint32 rxspeed_ntile_98th = 94;
+}
+
+message CMsgSteamDatagramConnectionQuality {
+	optional .CMsgSteamDatagramLinkInstantaneousStats instantaneous = 1;
+	optional .CMsgSteamDatagramLinkLifetimeStats lifetime = 2;
+}
+
+message CMsgICECandidate {
+	optional string candidate = 3;
+}
+
+message CMsgICERendezvous {
+	message Auth {
+		optional string pwd_frag = 1;
+	}
+
+	optional .CMsgICERendezvous.Auth auth = 2;
+	optional .CMsgICECandidate add_candidate = 1;
+}
+
+message CMsgSteamNetworkingP2PRendezvous {
+	message ConnectRequest {
+		optional .CMsgSteamDatagramSessionCryptInfoSigned crypt = 6;
+		optional .CMsgSteamDatagramCertificateSigned cert = 7;
+		optional uint32 to_virtual_port = 9;
+		optional uint32 from_virtual_port = 10;
+		optional string from_fakeip = 11;
+	}
+
+	message ConnectOK {
+		optional .CMsgSteamDatagramSessionCryptInfoSigned crypt = 5;
+		optional .CMsgSteamDatagramCertificateSigned cert = 6;
+	}
+
+	message ConnectionClosed {
+		optional string debug = 5;
+		optional uint32 reason_code = 6;
+	}
+
+	message ReliableMessage {
+		optional .CMsgICERendezvous ice = 1;
+	}
+
+	message ApplicationMessage {
+		optional bytes data = 1;
+		optional uint64 msg_num = 2;
+		optional uint32 flags = 3;
+		optional uint32 lane_idx = 4;
+	}
+
+	optional string from_identity = 8;
+	optional fixed32 from_connection_id = 9;
+	optional string to_identity = 10;
+	optional fixed32 to_connection_id = 1;
+	optional bytes sdr_routes = 2;
+	optional uint32 ack_peer_routes_revision = 3;
+	optional bool ice_enabled = 7;
+	optional bytes hosted_server_ticket = 14;
+	optional .CMsgSteamNetworkingP2PRendezvous.ConnectRequest connect_request = 4;
+	optional .CMsgSteamNetworkingP2PRendezvous.ConnectOK connect_ok = 5;
+	optional .CMsgSteamNetworkingP2PRendezvous.ConnectionClosed connection_closed = 6;
+	optional uint32 ack_reliable_msg = 11;
+	optional uint32 first_reliable_msg = 12;
+	repeated .CMsgSteamNetworkingP2PRendezvous.ReliableMessage reliable_messages = 13;
+	repeated .CMsgSteamNetworkingP2PRendezvous.ApplicationMessage application_messages = 15;
+}
+
+message CMsgSteamNetworkingICESessionSummary {
+	optional uint32 failure_reason_code = 7;
+	optional uint32 local_candidate_types = 1;
+	optional uint32 remote_candidate_types = 2;
+	optional uint32 initial_route_kind = 3;
+	optional uint32 initial_ping = 4;
+	optional uint32 initial_score = 6;
+	optional uint32 negotiation_ms = 5;
+	optional uint32 best_route_kind = 16;
+	optional uint32 best_ping = 17;
+	optional uint32 best_score = 18;
+	optional uint32 best_time = 19;
+	optional uint32 selected_seconds = 12;
+	optional uint32 user_settings = 13;
+	optional uint32 ice_enable_var = 14;
+	optional uint32 local_candidate_types_allowed = 15;
+}

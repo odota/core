@@ -1,0 +1,15 @@
+import "networkbasetypes.proto";
+import "usercmd.proto";
+
+message CDota2UserCmdPB {
+	optional .CBaseUserCmdPB base = 1;
+	optional int32 spectator_query_unit_entindex = 2;
+	optional .CMsgVector crosshairtrace = 3;
+	optional int32 cameraposition_x = 4;
+	optional int32 cameraposition_y = 5;
+	optional uint32 clickbehavior = 6;
+	optional uint32 statspanel = 7;
+	optional uint32 shoppanel = 8;
+	optional uint32 stats_dropdown = 9;
+	optional uint32 stats_dropdown_sort = 10;
+}

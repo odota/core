@@ -1,0 +1,533 @@
+import "steamnetworkingsockets_messages_certs.proto";
+import "steamnetworkingsockets_messages.proto";
+
+option optimize_for = SPEED;
+option cc_generic_services = false;
+
+enum ESteamDatagramMsgID {
+	k_ESteamDatagramMsg_Invalid = 0;
+	k_ESteamDatagramMsg_RouterPingRequest = 1;
+	k_ESteamDatagramMsg_RouterPingReply = 2;
+	k_ESteamDatagramMsg_GameserverPingRequest = 3;
+	k_ESteamDatagramMsg_GameserverSessionRequest = 5;
+	k_ESteamDatagramMsg_GameserverSessionEstablished = 6;
+	k_ESteamDatagramMsg_NoSession = 7;
+	k_ESteamDatagramMsg_Diagnostic = 8;
+	k_ESteamDatagramMsg_DataClientToRouter = 9;
+	k_ESteamDatagramMsg_DataRouterToServer = 10;
+	k_ESteamDatagramMsg_DataServerToRouter = 11;
+	k_ESteamDatagramMsg_DataRouterToClient = 12;
+	k_ESteamDatagramMsg_Stats = 13;
+	k_ESteamDatagramMsg_ClientPingSampleRequest = 14;
+	k_ESteamDatagramMsg_ClientPingSampleReply = 15;
+	k_ESteamDatagramMsg_ClientToRouterSwitchedPrimary = 16;
+	k_ESteamDatagramMsg_RelayHealth = 17;
+	k_ESteamDatagramMsg_ConnectRequest = 18;
+	k_ESteamDatagramMsg_ConnectOK = 19;
+	k_ESteamDatagramMsg_ConnectionClosed = 20;
+	k_ESteamDatagramMsg_NoConnection = 21;
+	k_ESteamDatagramMsg_TicketDecryptRequest = 22;
+	k_ESteamDatagramMsg_TicketDecryptReply = 23;
+	k_ESteamDatagramMsg_P2PSessionRequest = 24;
+	k_ESteamDatagramMsg_P2PSessionEstablished = 25;
+	k_ESteamDatagramMsg_P2PStatsClient = 26;
+	k_ESteamDatagramMsg_P2PStatsRelay = 27;
+	k_ESteamDatagramMsg_P2PBadRoute = 28;
+	k_ESteamDatagramMsg_GameserverPingReply = 29;
+	k_ESteamDatagramMsg_LegacyGameserverRegistration = 30;
+	k_ESteamDatagramMsg_SetSecondaryAddressRequest = 31;
+	k_ESteamDatagramMsg_SetSecondaryAddressResult = 32;
+	k_ESteamDatagramMsg_RelayToRelayPingRequest = 33;
+	k_ESteamDatagramMsg_RelayToRelayPingReply = 34;
+}
+
+message CMsgSteamNetworkingIPAddress {
+	optional fixed32 v4 = 1;
+	optional bytes v6 = 2;
+}
+
+message CMsgSteamDatagramSignedMessageGeneric {
+	optional .CMsgSteamDatagramCertificateSigned cert = 1;
+	optional bytes signed_data = 2;
+	optional bytes signature = 3;
+	optional bytes dummy_pad = 1023;
+}
+
+message CMsgSteamDatagramRouterPingReply {
+	message RouteException {
+		optional fixed32 data_center_id = 1;
+		optional uint32 flags = 2;
+		optional uint32 penalty = 3;
+	}
+
+	message AltAddress {
+		enum Protocol {
+			DefaultProtocol = 0;
+			NetworkNext = 1;
+		}
+
+		optional fixed32 ipv4 = 1;
+		optional uint32 port = 2;
+		optional uint32 penalty = 3;
+		optional .CMsgSteamDatagramRouterPingReply.AltAddress.Protocol protocol = 4 [default = DefaultProtocol];
+		optional string id = 5;
+	}
+
+	enum Flags {
+		FLAG_MAYBE_MORE_DATA_CENTERS = 1;
+		FLAG_MAYBE_MORE_ALT_ADDRESSES = 2;
+	}
+
+	optional fixed32 client_timestamp = 1;
+	repeated fixed32 latency_datacenter_ids = 2 [packed = true];
+	repeated uint32 latency_ping_ms = 3 [packed = true];
+	repeated fixed32 latency_datacenter_ids_p2p = 14 [packed = true];
+	repeated uint32 latency_ping_ms_p2p = 15 [packed = true];
+	optional fixed32 your_public_ip = 4;
+	optional fixed32 your_public_port = 11;
+	optional fixed32 server_time = 5;
+	optional fixed64 challenge = 6;
+	optional uint32 seconds_until_shutdown = 7;
+	optional fixed32 client_cookie = 8;
+	optional uint32 scoring_penalty_relay_cluster = 9;
+	optional uint32 flags = 12;
+	repeated .CMsgSteamDatagramRouterPingReply.RouteException route_exceptions = 10;
+	repeated .CMsgSteamDatagramRouterPingReply.AltAddress alt_addresses = 13;
+	optional bytes dummy_pad = 99;
+}
+
+message CMsgSteamDatagramGameserverPingRequestBody {
+	optional fixed32 relay_popid = 1;
+	optional .CMsgSteamNetworkingIPAddress your_public_ip = 2;
+	optional uint32 your_public_port = 3;
+	optional uint64 relay_unix_time = 4;
+	optional fixed64 routing_secret = 5;
+	repeated .CMsgSteamNetworkingIPAddress my_ips = 6;
+	optional bytes echo = 8;
+}
+
+message CMsgSteamDatagramGameserverPingRequestEnvelope {
+	optional .CMsgSteamDatagramCertificateSigned cert = 6;
+	optional bytes signed_data = 7;
+	optional bytes signature = 8;
+	optional fixed32 legacy_your_public_ip = 1;
+	optional fixed32 legacy_your_public_port = 5;
+	optional fixed32 legacy_relay_unix_time = 2;
+	optional fixed64 legacy_challenge = 3;
+	optional fixed32 legacy_router_timestamp = 4;
+	optional bytes dummy_pad = 1023;
+}
+
+message CMsgSteamDatagramGameserverPingReplyData {
+	optional fixed32 echo_relay_unix_time = 2;
+	optional bytes echo = 8;
+	optional fixed64 legacy_challenge = 3;
+	optional fixed32 legacy_router_timestamp = 4;
+	optional fixed32 data_center_id = 5;
+	optional uint32 appid = 6;
+	optional uint32 protocol_version = 7;
+	optional string build = 9;
+	optional uint64 network_config_version = 10;
+	optional fixed32 my_unix_time = 11;
+}
+
+message CMsgSteamDatagramNoSessionRelayToClient {
+	optional fixed32 connection_id = 7;
+	optional fixed32 your_public_ip = 2;
+	optional fixed32 your_public_port = 6;
+	optional fixed32 server_time = 3;
+	optional fixed64 challenge = 4;
+	optional uint32 seconds_until_shutdown = 5;
+}
+
+message CMsgSteamDatagramNoSessionRelayToPeer {
+	optional uint32 legacy_relay_session_id = 1;
+	optional fixed32 from_relay_session_id = 2;
+	optional fixed32 from_connection_id = 7;
+	optional fixed64 kludge_pad = 99;
+}
+
+message CMsgSteamDatagramClientPingSampleRequest {
+	optional fixed32 connection_id = 1;
+}
+
+message CMsgSteamDatagramClientPingSampleReply {
+	message POP {
+		message AltAddress {
+			optional string id = 1;
+			optional uint32 front_ping_ms = 2;
+			optional uint32 penalty = 3;
+		}
+
+		optional fixed32 pop_id = 1;
+		optional uint32 default_front_ping_ms = 2;
+		optional uint32 cluster_penalty = 4;
+		repeated .CMsgSteamDatagramClientPingSampleReply.POP.AltAddress alt_addresses = 7;
+		optional uint32 default_e2e_ping_ms = 3;
+		optional uint32 default_e2e_score = 5;
+		optional fixed32 p2p_via_peer_relay_pop_id = 6;
+		optional uint32 best_dc_ping_ms = 9;
+		optional uint32 best_dc_score = 10;
+		optional fixed32 best_dc_via_relay_pop_id = 11;
+		optional uint32 default_dc_ping_ms = 12;
+		optional uint32 default_dc_score = 13;
+		optional fixed32 default_dc_via_relay_pop_id = 14;
+		optional uint32 test_dc_ping_ms = 15;
+		optional uint32 test_dc_score = 16;
+		optional fixed32 test_dc_via_relay_pop_id = 17;
+	}
+
+	message LegacyDataCenter {
+		optional fixed32 data_center_id = 1;
+		optional fixed32 best_dc_via_relay_pop_id = 2;
+		optional uint32 best_dc_ping_ms = 3;
+	}
+
+	optional fixed32 connection_id = 1;
+	optional bool relay_override_active = 5;
+	repeated .CMsgSteamDatagramClientPingSampleReply.POP pops = 2;
+	repeated .CMsgSteamDatagramClientPingSampleReply.LegacyDataCenter legacy_data_centers = 3;
+}
+
+message CMsgSteamDatagramClientSwitchedPrimary {
+	message RouterQuality {
+		optional uint32 score = 1;
+		optional uint32 front_ping = 2;
+		optional uint32 back_ping = 3;
+		optional uint32 seconds_until_down = 4;
+	}
+
+	optional fixed32 connection_id = 1;
+	optional fixed32 from_ip = 2;
+	optional uint32 from_port = 3;
+	optional fixed32 from_router_cluster = 4;
+	optional uint32 from_active_time = 5;
+	optional uint32 from_active_packets_recv = 6;
+	optional string from_dropped_reason = 7;
+	optional uint32 gap_ms = 8;
+	optional .CMsgSteamDatagramClientSwitchedPrimary.RouterQuality from_quality_now = 9;
+	optional .CMsgSteamDatagramClientSwitchedPrimary.RouterQuality to_quality_now = 10;
+	optional .CMsgSteamDatagramClientSwitchedPrimary.RouterQuality from_quality_then = 11;
+	optional .CMsgSteamDatagramClientSwitchedPrimary.RouterQuality to_quality_then = 12;
+}
+
+message CMsgSteamDatagramConnectRequest {
+	optional fixed32 connection_id = 1;
+	optional fixed64 my_timestamp = 4;
+	optional uint32 ping_est_ms = 5;
+	optional uint32 virtual_port = 9;
+	optional uint32 gameserver_relay_session_id = 2;
+	optional .CMsgSteamDatagramSessionCryptInfoSigned crypt = 6;
+	optional .CMsgSteamDatagramCertificateSigned cert = 7;
+	optional fixed64 routing_secret = 10;
+	optional fixed64 legacy_client_steam_id = 3;
+}
+
+message CMsgSteamDatagramConnectOK {
+	optional fixed32 client_connection_id = 1;
+	optional fixed32 server_connection_id = 7;
+	optional fixed64 your_timestamp = 3;
+	optional uint32 delay_time_usec = 4;
+	optional uint32 gameserver_relay_session_id = 2;
+	optional .CMsgSteamDatagramSessionCryptInfoSigned crypt = 5;
+	optional .CMsgSteamDatagramCertificateSigned cert = 6;
+}
+
+message CMsgSteamNetworkingP2PSDRRoutingSummary {
+	optional uint32 initial_ping = 1;
+	optional uint32 initial_ping_front_local = 2;
+	optional uint32 initial_ping_front_remote = 3;
+	optional uint32 initial_score = 4;
+	optional fixed32 initial_pop_local = 5;
+	optional fixed32 initial_pop_remote = 6;
+	optional uint32 best_ping = 11;
+	optional uint32 best_ping_front_local = 12;
+	optional uint32 best_ping_front_remote = 13;
+	optional uint32 best_score = 14;
+	optional fixed32 best_pop_local = 15;
+	optional fixed32 best_pop_remote = 16;
+	optional uint32 best_time = 17;
+	optional uint32 negotiation_ms = 7;
+	optional uint32 selected_seconds = 8;
+}
+
+message CMsgSteamDatagramP2PRoutingSummary {
+	optional .CMsgSteamNetworkingICESessionSummary ice = 2;
+	optional .CMsgSteamNetworkingP2PSDRRoutingSummary sdr = 3;
+}
+
+message CMsgSteamDatagramConnectionClosed {
+	enum ERelayMode {
+		None = 0;
+		EndToEnd = 1;
+		ClosedByPeer = 2;
+	}
+
+	optional fixed32 to_connection_id = 7;
+	optional fixed32 from_connection_id = 8;
+	optional string from_identity_string = 15;
+	optional .CMsgSteamNetworkingIdentityLegacyBinary legacy_from_identity_binary = 13;
+	optional fixed64 legacy_from_steam_id = 3;
+	optional uint32 legacy_gameserver_relay_session_id = 2;
+	optional fixed32 to_relay_session_id = 9;
+	optional fixed32 from_relay_session_id = 10;
+	optional bytes forward_target_relay_routing_token = 11;
+	optional uint32 forward_target_revision = 12;
+	optional .CMsgSteamDatagramConnectionClosed.ERelayMode relay_mode = 4 [default = None];
+	optional string debug = 5;
+	optional uint32 reason_code = 6;
+	optional fixed64 routing_secret = 14;
+	optional bool not_primary_session = 16;
+	optional bool not_primary_transport = 19;
+	optional bool relay_override_active = 22;
+	optional .CMsgSteamDatagramConnectionQuality quality_relay = 17;
+	optional .CMsgSteamDatagramConnectionQuality quality_e2e = 18;
+	optional .CMsgSteamDatagramP2PRoutingSummary p2p_routing_summary = 21;
+}
+
+message CMsgSteamDatagramNoConnection {
+	optional fixed32 to_connection_id = 5;
+	optional fixed32 from_connection_id = 6;
+	optional uint32 legacy_gameserver_relay_session_id = 2;
+	optional fixed32 to_relay_session_id = 9;
+	optional fixed32 from_relay_session_id = 10;
+	optional string from_identity_string = 7;
+	optional fixed64 legacy_from_steam_id = 3;
+	optional bool end_to_end = 4;
+	optional bool not_primary_session = 12;
+	optional bool not_primary_transport = 15;
+	optional bool relay_override_active = 17;
+	optional .CMsgSteamDatagramConnectionQuality quality_relay = 13;
+	optional .CMsgSteamDatagramConnectionQuality quality_e2e = 14;
+	optional .CMsgSteamDatagramP2PRoutingSummary p2p_routing_summary = 16;
+	optional fixed64 routing_secret = 11;
+	optional fixed32 dummy_pad = 1023;
+}
+
+message CMsgSteamDatagramGameserverSessionRequest {
+	optional bytes ticket = 1;
+	optional fixed32 challenge_time = 3;
+	optional fixed64 challenge = 4;
+	optional fixed32 client_connection_id = 5;
+	optional fixed32 server_connection_id = 8;
+	optional uint64 network_config_version = 6;
+	optional uint32 protocol_version = 7;
+	optional string platform = 9;
+	optional string build = 10;
+	optional string dev_gameserver_identity = 100;
+	optional .CMsgSteamDatagramCertificateSigned dev_client_cert = 101;
+}
+
+message CMsgSteamDatagramGameserverSessionEstablished {
+	optional fixed32 connection_id = 1;
+	optional string gameserver_identity_string = 2;
+	optional uint32 seconds_until_shutdown = 4;
+	optional uint32 seq_num_r2c = 6;
+	optional bytes dummy_legacy_identity_binary = 7;
+	optional fixed64 legacy_gameserver_steamid = 3;
+}
+
+message CMsgSteamDatagramConnectionStatsClientToRouter {
+	enum Flags {
+		ACK_REQUEST_RELAY = 1;
+		ACK_REQUEST_E2E = 2;
+		ACK_REQUEST_IMMEDIATE = 4;
+		NOT_PRIMARY_SESSION = 8;
+		CLIENT_RELAY_OVERRIDE = 32;
+	}
+
+	optional .CMsgSteamDatagramConnectionQuality quality_relay = 1;
+	optional .CMsgSteamDatagramConnectionQuality quality_e2e = 2;
+	repeated fixed32 ack_relay = 4;
+	repeated fixed32 legacy_ack_e2e = 5;
+	optional uint32 flags = 6;
+	optional fixed32 client_connection_id = 8;
+	optional uint32 seq_num_c2r = 9;
+	optional uint32 seq_num_e2e = 10;
+}
+
+message CMsgSteamDatagramConnectionStatsRouterToClient {
+	enum Flags {
+		ACK_REQUEST_RELAY = 1;
+		ACK_REQUEST_E2E = 2;
+		ACK_REQUEST_IMMEDIATE = 4;
+	}
+
+	optional .CMsgSteamDatagramConnectionQuality quality_relay = 1;
+	optional .CMsgSteamDatagramConnectionQuality quality_e2e = 2;
+	optional uint32 seconds_until_shutdown = 6;
+	optional fixed32 migrate_request_ip = 10;
+	optional uint32 migrate_request_port = 11;
+	optional uint32 scoring_penalty_relay_cluster = 12;
+	repeated fixed32 ack_relay = 13;
+	repeated fixed32 legacy_ack_e2e = 14;
+	optional uint32 flags = 15;
+	optional fixed32 client_connection_id = 7;
+	optional uint32 seq_num_r2c = 8;
+	optional uint32 seq_num_e2e = 9;
+}
+
+message CMsgSteamDatagramConnectionStatsRouterToServer {
+	enum Flags {
+		ACK_REQUEST_RELAY = 1;
+		ACK_REQUEST_E2E = 2;
+		ACK_REQUEST_IMMEDIATE = 4;
+	}
+
+	optional .CMsgSteamDatagramConnectionQuality quality_relay = 1;
+	optional .CMsgSteamDatagramConnectionQuality quality_e2e = 2;
+	repeated fixed32 ack_relay = 10;
+	repeated fixed32 legacy_ack_e2e = 11;
+	optional uint32 flags = 12;
+	optional uint32 seq_num_r2s = 5;
+	optional uint32 seq_num_e2e = 6;
+	optional string client_identity_string = 15;
+	optional fixed64 legacy_client_steam_id = 7;
+	optional uint32 relay_session_id = 8;
+	optional fixed32 client_connection_id = 9;
+	optional fixed32 server_connection_id = 13;
+	optional fixed64 routing_secret = 14;
+}
+
+message CMsgSteamDatagramConnectionStatsServerToRouter {
+	enum Flags {
+		ACK_REQUEST_RELAY = 1;
+		ACK_REQUEST_E2E = 2;
+		ACK_REQUEST_IMMEDIATE = 4;
+	}
+
+	optional .CMsgSteamDatagramConnectionQuality quality_relay = 1;
+	optional .CMsgSteamDatagramConnectionQuality quality_e2e = 2;
+	repeated fixed32 ack_relay = 8;
+	repeated fixed32 legacy_ack_e2e = 9;
+	optional uint32 flags = 10;
+	optional uint32 seq_num_s2r = 3;
+	optional uint32 seq_num_e2e = 4;
+	optional uint32 relay_session_id = 6;
+	optional fixed32 client_connection_id = 7;
+	optional fixed32 server_connection_id = 11;
+}
+
+message CMsgSteamDatagramP2PSessionRequestBody {
+	message EncryptedData {
+		optional string peer_identity_string = 1;
+	}
+
+	optional fixed32 challenge_time = 1;
+	optional fixed64 challenge = 2;
+	optional fixed32 client_connection_id = 3;
+	optional fixed64 legacy_peer_steam_id = 4;
+	optional string peer_identity_string = 11;
+	optional fixed32 peer_connection_id = 5;
+	optional bytes encrypted_data = 14;
+	optional uint32 encryption_your_public_key_lead_byte = 15;
+	optional bytes encryption_my_ephemeral_public_key = 16;
+	optional uint32 protocol_version = 8;
+	optional uint64 network_config_version = 9;
+	optional string platform = 12;
+	optional string build = 13;
+}
+
+message CMsgSteamDatagramP2PSessionRequest {
+	optional .CMsgSteamDatagramCertificateSigned cert = 1;
+	optional bytes body = 2;
+	optional bytes signature = 3;
+}
+
+message CMsgSteamDatagramP2PSessionEstablished {
+	optional fixed32 connection_id = 1;
+	optional uint32 seconds_until_shutdown = 3;
+	optional bytes relay_routing_token = 4;
+	optional uint32 seq_num_r2c = 5;
+}
+
+message CMsgSteamDatagramConnectionStatsP2PClientToRouter {
+	enum Flags {
+		ACK_REQUEST_RELAY = 1;
+		ACK_REQUEST_E2E = 2;
+		ACK_REQUEST_IMMEDIATE = 4;
+		NOT_PRIMARY_SESSION = 8;
+		NOT_PRIMARY_TRANSPORT_E2E = 16;
+		CLIENT_RELAY_OVERRIDE = 32;
+	}
+
+	optional .CMsgSteamDatagramConnectionQuality quality_relay = 1;
+	optional .CMsgSteamDatagramConnectionQuality quality_e2e = 2;
+	optional .CMsgSteamDatagramP2PRoutingSummary p2p_routing_summary = 14;
+	repeated fixed32 ack_relay = 3;
+	repeated fixed32 legacy_ack_e2e = 4;
+	optional uint32 flags = 5;
+	optional bytes forward_target_relay_routing_token = 6;
+	optional uint32 forward_target_revision = 7;
+	optional bytes routes = 8;
+	optional uint32 ack_peer_routes_revision = 9;
+	optional fixed32 connection_id = 10;
+	optional uint32 seq_num_c2r = 11;
+	optional uint32 seq_num_e2e = 12;
+}
+
+message CMsgSteamDatagramConnectionStatsP2PRouterToClient {
+	enum Flags {
+		ACK_REQUEST_RELAY = 1;
+		ACK_REQUEST_E2E = 2;
+		ACK_REQUEST_IMMEDIATE = 4;
+		NOT_PRIMARY_TRANSPORT_E2E = 16;
+	}
+
+	optional .CMsgSteamDatagramConnectionQuality quality_relay = 1;
+	optional .CMsgSteamDatagramConnectionQuality quality_e2e = 2;
+	optional uint32 seconds_until_shutdown = 3;
+	optional fixed32 migrate_request_ip = 4;
+	optional uint32 migrate_request_port = 5;
+	optional uint32 scoring_penalty_relay_cluster = 6;
+	repeated fixed32 ack_relay = 7;
+	repeated fixed32 legacy_ack_e2e = 8;
+	optional uint32 flags = 9;
+	optional uint32 ack_forward_target_revision = 10;
+	optional bytes routes = 11;
+	optional uint32 ack_peer_routes_revision = 12;
+	optional fixed32 connection_id = 13;
+	optional uint32 seq_num_r2c = 14;
+	optional uint32 seq_num_e2e = 15;
+}
+
+message CMsgSteamDatagramP2PBadRouteRouterToClient {
+	optional fixed32 connection_id = 1;
+	optional bytes failed_relay_routing_token = 2;
+	optional uint32 ack_forward_target_revision = 3;
+	optional fixed64 kludge_pad = 99;
+}
+
+message CMsgSteamDatagramP2PRoutes {
+	message RelayCluster {
+		optional fixed32 pop_id = 1;
+		optional uint32 ping_ms = 2;
+		optional uint32 score_penalty = 3;
+		optional bytes session_relay_routing_token = 4;
+	}
+
+	message Route {
+		optional fixed32 my_pop_id = 1;
+		optional fixed32 your_pop_id = 2;
+		optional uint32 legacy_score = 3;
+		optional uint32 interior_score = 4;
+	}
+
+	repeated .CMsgSteamDatagramP2PRoutes.RelayCluster relay_clusters = 1;
+	repeated .CMsgSteamDatagramP2PRoutes.Route routes = 2;
+	optional uint32 revision = 3;
+}
+
+message CMsgSteamDatagramSetSecondaryAddressRequest {
+	optional fixed32 client_main_ip = 1;
+	optional fixed32 client_main_port = 2;
+	optional fixed32 client_connection_id = 3;
+	optional string client_identity = 4;
+	optional bool request_send_duplication = 5;
+	optional bytes kludge_pad = 99;
+}
+
+message CMsgSteamDatagramSetSecondaryAddressResult {
+	optional bool success = 1;
+	optional string message = 2;
+}

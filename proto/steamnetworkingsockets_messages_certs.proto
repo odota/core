@@ -1,0 +1,39 @@
+option optimize_for = SPEED;
+option cc_generic_services = false;
+
+message CMsgSteamNetworkingIdentityLegacyBinary {
+	optional fixed64 steam_id = 16;
+	optional string xbox_pairwise_id = 17;
+	optional bytes generic_bytes = 2;
+	optional string generic_string = 3;
+	optional bytes ipv6_and_port = 4;
+}
+
+message CMsgSteamDatagramCertificate {
+	enum EKeyType {
+		INVALID = 0;
+		ED25519 = 1;
+	}
+
+	optional .CMsgSteamDatagramCertificate.EKeyType key_type = 1 [default = INVALID];
+	optional bytes key_data = 2;
+	optional fixed64 legacy_steam_id = 4;
+	optional .CMsgSteamNetworkingIdentityLegacyBinary legacy_identity_binary = 11;
+	optional string identity_string = 12;
+	repeated fixed32 gameserver_datacenter_ids = 5;
+	optional fixed32 time_created = 8;
+	optional fixed32 time_expiry = 9;
+	repeated uint32 app_ids = 10;
+	repeated string ip_addresses = 13;
+}
+
+message CMsgSteamDatagramCertificateSigned {
+	optional bytes cert = 4;
+	optional fixed64 ca_key_id = 5;
+	optional bytes ca_signature = 6;
+	optional bytes private_key_data = 1;
+}
+
+message CMsgSteamDatagramCertificateRequest {
+	optional .CMsgSteamDatagramCertificate cert = 1;
+}

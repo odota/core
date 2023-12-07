@@ -1,0 +1,376 @@
+import "steammessages.proto";
+import "gcsdk_gcmessages.proto";
+import "dota_shared_enums.proto";
+import "dota_gcmessages_common.proto";
+import "dota_match_metadata.proto";
+
+enum ETeamFanContentStatus {
+	TEAM_FAN_CONTENT_STATUS_INVALID = 0;
+	TEAM_FAN_CONTENT_STATUS_PENDING = 1;
+	TEAM_FAN_CONTENT_STATUS_EVALUATED = 2;
+}
+
+enum ETeamFanContentAssetType {
+	k_eFanContentAssetType_LogoPNG = 1;
+	k_eFanContentAssetType_LogoSVG = 2;
+	k_eFanContentAssetType_Logo3D = 3;
+	k_eFanContentAssetType_Players = 4;
+	k_eFanContentAssetType_Sprays = 5;
+	k_eFanContentAssetType_Wallpapers = 6;
+	k_eFanContentAssetType_Emoticons = 7;
+	k_eFanContentAssetType_VoiceLines = 8;
+	k_eFanContentAssetType_Localization = 9;
+}
+
+enum ETeamFanContentAssetStatus {
+	k_eFanContentAssetStatus_None = 0;
+	k_eFanContentAssetStatus_Approved = 1;
+	k_eFanContentAssetStatus_Rejected = 2;
+}
+
+message CMsgArcanaVotes {
+	message Match {
+		optional uint32 match_id = 1;
+		optional uint32 hero_id_0 = 2;
+		optional uint32 hero_id_1 = 3;
+		optional uint32 hero_seeding_0 = 4;
+		optional uint32 hero_seeding_1 = 5;
+		optional uint32 vote_count_0 = 6;
+		optional uint32 vote_count_1 = 7;
+		optional uint32 voting_state = 8;
+		optional uint32 round_number = 9;
+		optional bool is_votes_hidden = 10;
+		optional uint32 calibration_time_remaining = 11;
+	}
+
+	enum VotingState {
+		FINISHED = 0;
+		IN_PROGRESS = 1;
+		IN_FUTURE = 2;
+	}
+
+	repeated .CMsgArcanaVotes.Match matches = 1;
+	optional uint32 round_time_remaining = 2;
+	optional uint32 round_number = 3;
+	optional uint32 voting_state = 4;
+	optional bool is_current_round_calibrating = 5;
+	optional uint32 closest_active_match_id = 6;
+	optional uint32 event_id = 7;
+	optional uint32 voting_start_time = 8;
+}
+
+message CMsgDOTADPCFeed {
+	message Element {
+		optional .CMsgDOTADPCFeed.EFeedElementType type = 1 [default = FEED_SERIES_RESULT];
+		optional uint32 timestamp = 2;
+		optional uint32 series_id = 3;
+		optional uint64 match_id = 4;
+		optional uint32 team_id = 5;
+		optional uint32 account_id = 6;
+		optional uint32 league_id = 7;
+		optional uint32 node_id = 8;
+		optional uint64 server_steam_id = 13;
+		optional uint32 data_1 = 9;
+		optional uint32 data_2 = 10;
+		optional uint32 data_3 = 11;
+		optional uint32 data_4 = 12;
+	}
+
+	enum EFeedElementType {
+		FEED_SERIES_RESULT = 1;
+		FEED_MATCH_POPULAR = 2;
+		FEED_TEAM_UPCOMING_MATCH = 3;
+		FEED_TEAM_LEAGUE_RESULT = 4;
+		FEED_TEAM_ADD_PLAYER = 5;
+		FEED_TEAM_REMOVE_PLAYER = 6;
+		FEED_TEAM_DISBAND = 7;
+		FEED_LEAGUE_UPCOMING = 8;
+		FEED_LEAGUE_CONCLUDED = 9;
+		FEED_DPC_STANDINGS = 10;
+		FEED_ALERT_PREDICTIONS = 11;
+		FEED_ALERT_FANTASY = 12;
+		FEED_LEAGUE_LIVE_MATCH = 13;
+		FEED_LEAGUE_INPROGRESS_SERIES = 14;
+	}
+
+	repeated .CMsgDOTADPCFeed.Element elements = 1;
+}
+
+message CMsgDOTADPCUserInfo {
+	optional bool is_plus_subscriber = 1;
+}
+
+message CMsgDraftTrivia {
+	message DraftTriviaHeroInfo {
+		optional uint32 hero_id = 1;
+		optional uint32 role = 2;
+	}
+
+	message DraftTriviaMatchInfo {
+		repeated .CMsgDraftTrivia.DraftTriviaHeroInfo radiant_heroes = 1;
+		repeated .CMsgDraftTrivia.DraftTriviaHeroInfo dire_heroes = 2;
+	}
+
+	message PreviousResult {
+		optional bool voted_correctly = 1;
+		optional bool voted_radiant = 2;
+		optional .CMsgDraftTrivia.DraftTriviaMatchInfo match_hero_info = 3;
+		optional uint32 match_rank_tier = 4;
+		optional uint32 end_time = 5;
+		optional uint64 match_id = 6;
+	}
+
+	optional bool has_valid_match = 1;
+	optional .CMsgDraftTrivia.DraftTriviaMatchInfo match_hero_info = 2;
+	optional uint32 match_rank_tier = 3;
+	optional uint32 end_time = 4;
+	optional uint32 event_id = 5;
+	optional bool current_match_voted_radiant = 6;
+	optional .CMsgDraftTrivia.PreviousResult previous_result = 7;
+	optional uint32 current_streak = 8;
+}
+
+message CMsgTeamFanContentAssetStatus {
+	optional .ETeamFanContentAssetType asset_type = 1 [default = k_eFanContentAssetType_LogoPNG];
+	optional uint32 asset_index = 2;
+	optional .ETeamFanContentAssetStatus asset_status = 3 [default = k_eFanContentAssetStatus_None];
+	optional uint32 crc = 4;
+}
+
+message CMsgTeamFanContentAssetStatusResponse {
+	enum EResult {
+		k_eSuccess = 0;
+		k_eInternalError = 1;
+	}
+
+	optional .CMsgTeamFanContentAssetStatusResponse.EResult result = 1 [default = k_eSuccess];
+}
+
+message CMsgTeamFanContentStatus {
+	message TeamStatus {
+		optional string name = 1;
+		optional uint32 team_id = 2;
+		optional string logo_url = 3;
+		optional .ETeamFanContentStatus status = 4 [default = TEAM_FAN_CONTENT_STATUS_INVALID];
+		optional uint32 timestamp = 5;
+		optional uint64 ugc_logo = 7;
+		optional uint32 workshop_account_id = 8;
+		optional string abbreviation = 9;
+		optional uint32 voiceline_count = 10;
+		optional uint32 spray_count = 11;
+		optional uint32 emoticon_count = 12;
+		optional uint32 wallpaper_count = 13;
+		optional string comment = 14;
+		optional uint32 comment_timestamp = 15;
+		repeated .CMsgTeamFanContentAssetStatus asset_status = 16;
+		optional uint32 email_timestamp = 17;
+		optional uint32 email_tier = 18;
+		optional string languages = 19;
+	}
+
+	repeated .CMsgTeamFanContentStatus.TeamStatus team_status_list = 1;
+}
+
+message CMsgTeamFanContentAutographStatus {
+	message AutographStatus {
+		optional string pro_name = 1;
+		optional uint32 account_id = 2;
+		optional uint32 timestamp = 3;
+		optional string file = 4;
+	}
+
+	message TeamStatus {
+		optional string name = 1;
+		optional uint32 team_id = 2;
+		repeated .CMsgTeamFanContentAutographStatus.AutographStatus autographs = 3;
+		optional uint32 workshop_account_id = 4;
+	}
+
+	repeated .CMsgTeamFanContentAutographStatus.TeamStatus team_autographs = 1;
+}
+
+message CMsgDPCEvent {
+	message PhaseInfo {
+		optional .CMsgDPCEvent.ELeagueEventPhase phase = 1 [default = PHASE_INVALID];
+		optional uint32 node_group_id = 2;
+	}
+
+	message League {
+		optional .ELeagueRegion region = 1 [default = LEAGUE_REGION_UNSET];
+		optional .ELeagueDivision division = 2 [default = LEAGUE_DIVISION_UNSET];
+		optional uint32 league_id = 3;
+		repeated .CMsgDPCEvent.PhaseInfo phases = 4;
+	}
+
+	enum ELeagueEvent {
+		EVENT_INVALID = 0;
+		SPRING_2021_LEAGUE = 1;
+		SPRING_2021_MAJOR = 2;
+		INTERNATIONAL_2021_QUALIFIERS = 3;
+		INTERNATIONAL_2021 = 4;
+		WINTER_2021_LEAGUE = 5;
+		WINTER_2021_LEAGUE_FINALS = 6;
+		SPRING_2022_LEAGUE = 7;
+		SPRING_2022_MAJOR = 8;
+		SUMMER_2022_LEAGUE = 9;
+		SUMMER_2022_MAJOR = 10;
+		INTERNATIONAL_2022 = 11;
+		CHINA_REGIONAL_FINALS = 12;
+		INTERNATIONAL_2022_REGIONAL_QUALIFIERS = 13;
+		INTERNATIONAL_2022_LAST_CHANCE_QUALIFIERS = 14;
+		WINTER_2023_LEAGUE = 15;
+		WINTER_2023_MAJOR = 16;
+		SPRING_2023_LEAGUE = 17;
+		SPRING_2023_MAJOR = 18;
+		SUMMER_2023_LEAGUE = 19;
+		SUMMER_2023_MAJOR = 20;
+		INTERNATIONAL_2023 = 21;
+	}
+
+	enum ELeagueEventPhase {
+		PHASE_INVALID = 0;
+		WILD_CARD = 1;
+		GROUP_STAGE = 2;
+		GROUP_A = 3;
+		GROUP_B = 4;
+		OVERALL = 5;
+		PLAYOFF = 6;
+		RESULTS = 7;
+		DPC_POINT_STANDINGS = 8;
+		GROUP_C = 9;
+		GROUP_D = 10;
+		PLACEMENT = 11;
+	}
+
+	enum ELeagueEventType {
+		UNKNOWN = 0;
+		LEAGUE = 1;
+		MAJOR = 2;
+		INTERNATIONAL_QUALIFIERS = 3;
+		INTERNATIONAL = 4;
+		LEAGUE_FINALS = 5;
+	}
+
+	enum ETour {
+		TOUR_NONE = 0;
+		TOUR_1 = 1;
+		TOUR_2 = 2;
+		TOUR_3 = 3;
+	}
+
+	optional .CMsgDPCEvent.ELeagueEvent event = 1 [default = EVENT_INVALID];
+	optional .CMsgDPCEvent.ELeagueEventType event_type = 2 [default = UNKNOWN];
+	repeated .CMsgDPCEvent.League leagues = 3;
+	optional uint32 registration_period = 4;
+	optional bool is_event_upcoming = 5;
+	optional bool is_event_completed = 6;
+	optional string event_name = 7;
+	optional uint32 multicast_league_id = 8;
+	repeated uint32 multicast_streams = 9;
+	optional .CMsgDPCEvent.ETour tour = 10 [default = TOUR_NONE];
+	optional uint32 timestamp_drop_lock = 12;
+	optional uint32 timestamp_add_lock = 13;
+	optional uint32 timestamp_content_deadline = 14;
+	optional bool is_fantasy_enabled = 15;
+	optional uint32 timestamp_content_review_deadline = 16;
+}
+
+message CMsgDPCEventList {
+	repeated .CMsgDPCEvent events = 1;
+}
+
+message CMsgDOTAFantasyCardLineup {
+	message CardBonus {
+		optional uint32 bonus_stat = 1;
+		optional uint32 bonus_value = 2;
+	}
+
+	message Card {
+		optional uint32 player_account_id = 1;
+		optional string player_name = 2;
+		optional uint32 team_id = 3;
+		optional string team_name = 4;
+		optional uint32 role = 5;
+		repeated .CMsgDOTAFantasyCardLineup.CardBonus bonuses = 6;
+		optional float score = 7;
+		optional bool finalized = 8;
+		optional uint64 item_id = 9;
+	}
+
+	message League {
+		optional uint32 league_id = 1;
+		repeated .CMsgDOTAFantasyCardLineup.Card cards = 2;
+		optional float score = 3;
+	}
+
+	message Period {
+		optional uint32 fantasy_period = 1 [default = 4294967295];
+		optional uint32 timestamp_start = 2;
+		optional uint32 timestamp_end = 3;
+		repeated .CMsgDOTAFantasyCardLineup.League leagues = 4;
+	}
+
+	repeated .CMsgDOTAFantasyCardLineup.Period periods = 1;
+}
+
+message CMsgDOTAFantasyCardList {
+	message CardBonus {
+		optional uint32 bonus_stat = 1;
+		optional uint32 bonus_value = 2;
+	}
+
+	message Card {
+		optional uint32 player_account_id = 1;
+		optional string player_name = 2;
+		optional uint32 team_id = 3;
+		optional string team_name = 4;
+		optional uint32 role = 5;
+		repeated .CMsgDOTAFantasyCardList.CardBonus bonuses = 6;
+		optional uint64 item_id = 8;
+	}
+
+	repeated .CMsgDOTAFantasyCardList.Card cards = 1;
+}
+
+message CMsgChatToxicityToxicPlayerMatchesReport {
+	message IndividualRow {
+		optional uint32 player_account_id = 1;
+		optional uint32 num_matches_seen = 2;
+		optional uint32 num_messages = 3;
+		optional uint32 num_messages_toxic = 4;
+		optional uint64 first_match_seen = 5;
+		optional uint64 last_match_seen = 6;
+	}
+
+	repeated .CMsgChatToxicityToxicPlayerMatchesReport.IndividualRow rows = 1;
+}
+
+message CMsgChatToxicityReport {
+	optional uint32 num_matches_seen = 1;
+	optional uint32 num_messages = 2;
+	optional uint32 num_messages_ml_thinks_toxic = 4;
+	optional string status = 5;
+	optional uint32 result = 6;
+	optional string message = 7;
+}
+
+message CMsgGetTeamAuditInformation {
+	message Action {
+		optional uint32 registration_period = 1;
+		optional uint32 account_id = 2;
+		optional uint32 action = 3;
+		optional uint32 timestamp = 4;
+		optional string player_name = 5;
+		optional string player_real_name = 6;
+	}
+
+	optional uint32 team_id = 1;
+	optional string team_name = 2;
+	repeated .CMsgGetTeamAuditInformation.Action actions = 3;
+	optional uint32 last_updated = 4;
+}
+
+message CMsgDOTADPCMatch {
+	optional .CMsgDOTAMatch match = 1;
+	optional .CDOTAMatchMetadata metadata = 2;
+}

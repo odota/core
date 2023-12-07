@@ -1,0 +1,332 @@
+import "google/protobuf/descriptor.proto";
+
+option optimize_for = SPEED;
+option cc_generic_services = true;
+option (force_php_generation) = true;
+
+extend .google.protobuf.MessageOptions {
+	optional int32 msgpool_soft_limit = 50000 [default = 32];
+	optional int32 msgpool_hard_limit = 50001 [default = 384];
+}
+
+extend .google.protobuf.FileOptions {
+	optional bool force_php_generation = 50000 [default = false];
+}
+
+extend .google.protobuf.FieldOptions {
+	optional bool php_output_always_number = 50020 [default = false];
+	optional bool allow_field_named_steam_id = 50024 [default = false];
+}
+
+enum EBanContentCheckResult {
+	k_EBanContentCheckResult_NotScanned = 0;
+	k_EBanContentCheckResult_Reset = 1;
+	k_EBanContentCheckResult_NeedsChecking = 2;
+	k_EBanContentCheckResult_VeryUnlikely = 5;
+	k_EBanContentCheckResult_Unlikely = 30;
+	k_EBanContentCheckResult_Possible = 50;
+	k_EBanContentCheckResult_Likely = 75;
+	k_EBanContentCheckResult_VeryLikely = 100;
+}
+
+enum EProtoClanEventType {
+	k_EClanOtherEvent = 1;
+	k_EClanGameEvent = 2;
+	k_EClanPartyEvent = 3;
+	k_EClanMeetingEvent = 4;
+	k_EClanSpecialCauseEvent = 5;
+	k_EClanMusicAndArtsEvent = 6;
+	k_EClanSportsEvent = 7;
+	k_EClanTripEvent = 8;
+	k_EClanChatEvent = 9;
+	k_EClanGameReleaseEvent = 10;
+	k_EClanBroadcastEvent = 11;
+	k_EClanSmallUpdateEvent = 12;
+	k_EClanPreAnnounceMajorUpdateEvent = 13;
+	k_EClanMajorUpdateEvent = 14;
+	k_EClanDLCReleaseEvent = 15;
+	k_EClanFutureReleaseEvent = 16;
+	k_EClanESportTournamentStreamEvent = 17;
+	k_EClanDevStreamEvent = 18;
+	k_EClanFamousStreamEvent = 19;
+	k_EClanGameSalesEvent = 20;
+	k_EClanGameItemSalesEvent = 21;
+	k_EClanInGameBonusXPEvent = 22;
+	k_EClanInGameLootEvent = 23;
+	k_EClanInGamePerksEvent = 24;
+	k_EClanInGameChallengeEvent = 25;
+	k_EClanInGameContestEvent = 26;
+	k_EClanIRLEvent = 27;
+	k_EClanNewsEvent = 28;
+	k_EClanBetaReleaseEvent = 29;
+	k_EClanInGameContentReleaseEvent = 30;
+	k_EClanFreeTrial = 31;
+	k_EClanSeasonRelease = 32;
+	k_EClanSeasonUpdate = 33;
+	k_EClanCrosspostEvent = 34;
+	k_EClanInGameEventGeneral = 35;
+}
+
+enum PartnerEventNotificationType {
+	k_EEventStart = 0;
+	k_EEventBroadcastStart = 1;
+	k_EEventMatchStart = 2;
+	k_EEventPartnerMaxType = 3;
+}
+
+message CMsgIPAddress {
+	oneof ip {
+		fixed32 v4 = 1;
+		bytes v6 = 2;
+	}
+}
+
+message CMsgIPAddressBucket {
+	optional .CMsgIPAddress original_ip_address = 1;
+	optional fixed64 bucket = 2;
+}
+
+message CMsgGCRoutingProtoBufHeader {
+	optional uint64 dst_gcid_queue = 1;
+	optional uint32 dst_gc_dir_index = 2;
+}
+
+message CMsgProtoBufHeader {
+	enum ESessionDisposition {
+		k_ESessionDispositionNormal = 0;
+		k_ESessionDispositionDisconnect = 1;
+	}
+
+	optional fixed64 steamid = 1;
+	optional int32 client_sessionid = 2;
+	optional uint32 routing_appid = 3;
+	optional fixed64 jobid_source = 10 [default = 18446744073709551615];
+	optional fixed64 jobid_target = 11 [default = 18446744073709551615];
+	optional string target_job_name = 12;
+	optional int32 seq_num = 24;
+	optional int32 eresult = 13 [default = 2];
+	optional string error_message = 14;
+	optional uint32 auth_account_flags = 16;
+	optional uint32 token_source = 22;
+	optional bool admin_spoofing_user = 23;
+	optional int32 transport_error = 17 [default = 1];
+	optional uint64 messageid = 18 [default = 18446744073709551615];
+	optional uint32 publisher_group_id = 19;
+	optional uint32 sysid = 20;
+	optional uint64 trace_tag = 21;
+	optional uint32 webapi_key_id = 25;
+	optional bool is_from_external_source = 26;
+	repeated uint32 forward_to_sysid = 27;
+	optional uint32 cm_sysid = 28;
+	optional uint32 launcher_type = 31 [default = 0];
+	optional uint32 realm = 32 [default = 0];
+	optional int32 timeout_ms = 33 [default = -1];
+	optional string debug_source = 34;
+	optional uint32 debug_source_string_index = 35;
+	optional uint64 token_id = 36;
+	optional .CMsgGCRoutingProtoBufHeader routing_gc = 37;
+	optional .CMsgProtoBufHeader.ESessionDisposition session_disposition = 38 [default = k_ESessionDispositionNormal];
+	optional string wg_token = 39;
+	optional string webui_auth_key = 40;
+
+	oneof ip_addr {
+		uint32 ip = 15;
+		bytes ip_v6 = 29;
+	}
+}
+
+message CMsgMulti {
+	optional uint32 size_unzipped = 1;
+	optional bytes message_body = 2;
+}
+
+message CMsgProtobufWrapped {
+	optional bytes message_body = 1;
+}
+
+message CMsgAuthTicket {
+	optional uint32 estate = 1;
+	optional uint32 eresult = 2 [default = 2];
+	optional fixed64 steamid = 3;
+	optional fixed64 gameid = 4;
+	optional uint32 h_steam_pipe = 5;
+	optional uint32 ticket_crc = 6;
+	optional bytes ticket = 7;
+	optional bytes server_secret = 8;
+	optional uint32 ticket_type = 9;
+}
+
+message CCDDBAppDetailCommon {
+	optional uint32 appid = 1;
+	optional string name = 2;
+	optional string icon = 3;
+	optional bool tool = 6;
+	optional bool demo = 7;
+	optional bool media = 8;
+	optional bool community_visible_stats = 9;
+	optional string friendly_name = 10;
+	optional string propagation = 11;
+	optional bool has_adult_content = 12;
+	optional bool is_visible_in_steam_china = 13;
+	optional uint32 app_type = 14;
+	optional bool has_adult_content_sex = 15;
+	optional bool has_adult_content_violence = 16;
+	repeated uint32 content_descriptorids = 17;
+}
+
+message CMsgAppRights {
+	optional bool edit_info = 1;
+	optional bool publish = 2;
+	optional bool view_error_data = 3;
+	optional bool download = 4;
+	optional bool upload_cdkeys = 5;
+	optional bool generate_cdkeys = 6;
+	optional bool view_financials = 7;
+	optional bool manage_ceg = 8;
+	optional bool manage_signing = 9;
+	optional bool manage_cdkeys = 10;
+	optional bool edit_marketing = 11;
+	optional bool economy_support = 12;
+	optional bool economy_support_supervisor = 13;
+	optional bool manage_pricing = 14;
+	optional bool broadcast_live = 15;
+	optional bool view_marketing_traffic = 16;
+	optional bool edit_store_display_content = 17;
+}
+
+message CCuratorPreferences {
+	optional uint32 supported_languages = 1;
+	optional bool platform_windows = 2;
+	optional bool platform_mac = 3;
+	optional bool platform_linux = 4;
+	optional bool vr_content = 5;
+	optional bool adult_content_violence = 6;
+	optional bool adult_content_sex = 7;
+	optional uint32 timestamp_updated = 8;
+	repeated uint32 tagids_curated = 9;
+	repeated uint32 tagids_filtered = 10;
+	optional string website_title = 11;
+	optional string website_url = 12;
+	optional string discussion_url = 13;
+	optional bool show_broadcast = 14;
+}
+
+message CLocalizationToken {
+	optional uint32 language = 1;
+	optional string localized_string = 2;
+}
+
+message CClanEventUserNewsTuple {
+	optional uint32 clanid = 1;
+	optional fixed64 event_gid = 2;
+	optional fixed64 announcement_gid = 3;
+	optional uint32 rtime_start = 4;
+	optional uint32 rtime_end = 5;
+	optional uint32 priority_score = 6;
+	optional uint32 type = 7;
+	optional uint32 clamp_range_slot = 8;
+	optional uint32 appid = 9;
+	optional uint32 rtime32_last_modified = 10;
+}
+
+message CClanMatchEventByRange {
+	optional uint32 rtime_before = 1;
+	optional uint32 rtime_after = 2;
+	optional uint32 qualified = 3;
+	repeated .CClanEventUserNewsTuple events = 4;
+}
+
+message CCommunity_ClanAnnouncementInfo {
+	optional uint64 gid = 1;
+	optional uint64 clanid = 2;
+	optional uint64 posterid = 3;
+	optional string headline = 4;
+	optional uint32 posttime = 5;
+	optional uint32 updatetime = 6;
+	optional string body = 7;
+	optional int32 commentcount = 8;
+	repeated string tags = 9;
+	optional int32 language = 10;
+	optional bool hidden = 11;
+	optional fixed64 forum_topic_id = 12;
+	optional fixed64 event_gid = 13;
+	optional int32 voteupcount = 14;
+	optional int32 votedowncount = 15;
+	optional .EBanContentCheckResult ban_check_result = 16 [default = k_EBanContentCheckResult_NotScanned];
+	optional bool banned = 17;
+}
+
+message CClanEventData {
+	optional fixed64 gid = 1;
+	optional fixed64 clan_steamid = 2;
+	optional string event_name = 3;
+	optional .EProtoClanEventType event_type = 4 [default = k_EClanOtherEvent];
+	optional uint32 appid = 5;
+	optional string server_address = 6;
+	optional string server_password = 7;
+	optional uint32 rtime32_start_time = 8;
+	optional uint32 rtime32_end_time = 9;
+	optional int32 comment_count = 10;
+	optional fixed64 creator_steamid = 11;
+	optional fixed64 last_update_steamid = 12;
+	optional string event_notes = 13;
+	optional string jsondata = 14;
+	optional .CCommunity_ClanAnnouncementInfo announcement_body = 15;
+	optional bool published = 16;
+	optional bool hidden = 17;
+	optional uint32 rtime32_visibility_start = 18;
+	optional uint32 rtime32_visibility_end = 19;
+	optional uint32 broadcaster_accountid = 20;
+	optional uint32 follower_count = 21;
+	optional uint32 ignore_count = 22;
+	optional fixed64 forum_topic_id = 23;
+	optional uint32 rtime32_last_modified = 24;
+	optional fixed64 news_post_gid = 25;
+	optional uint32 rtime_mod_reviewed = 26;
+	optional uint32 featured_app_tagid = 27;
+	repeated uint32 referenced_appids = 28;
+	optional uint32 build_id = 29;
+	optional string build_branch = 30;
+}
+
+message CBilling_Address {
+	optional string first_name = 1;
+	optional string last_name = 2;
+	optional string address1 = 3;
+	optional string address2 = 4;
+	optional string city = 5;
+	optional string us_state = 6;
+	optional string country_code = 7;
+	optional string postcode = 8;
+	optional int32 zip_plus4 = 9;
+	optional string phone = 10;
+}
+
+message CPackageReservationStatus {
+	optional uint32 packageid = 1;
+	optional int32 reservation_state = 2;
+	optional int32 queue_position = 3;
+	optional int32 total_queue_size = 4;
+	optional string reservation_country_code = 5;
+	optional bool expired = 6;
+	optional uint32 time_expires = 7;
+	optional uint32 time_reserved = 8;
+}
+
+message CMsgKeyValuePair {
+	optional string name = 1;
+	optional string value = 2;
+}
+
+message CMsgKeyValueSet {
+	repeated .CMsgKeyValuePair pairs = 1;
+}
+
+message UserContentDescriptorPreferences {
+	message ContentDescriptor {
+		optional uint32 content_descriptorid = 1;
+		optional uint32 timestamp_added = 2;
+	}
+
+	repeated .UserContentDescriptorPreferences.ContentDescriptor content_descriptors_to_exclude = 1;
+}

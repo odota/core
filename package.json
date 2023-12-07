@@ -52,6 +52,7 @@
     "passport": "^0.4.1",
     "passport-steam": "^1.0.18",
     "pg": "^8.11.3",
+    "protobufjs": "^7.2.5",
     "request": "^2.88.2",
     "simple-vdf": "^1.1.1",
     "steam": "github:odota/node-steam-npm",

@@ -1,0 +1,275 @@
+import "dota_shared_enums.proto";
+
+enum ETeamInviteResult {
+	TEAM_INVITE_SUCCESS = 0;
+	TEAM_INVITE_FAILURE_INVITE_REJECTED = 1;
+	TEAM_INVITE_FAILURE_INVITE_TIMEOUT = 2;
+	TEAM_INVITE_ERROR_TEAM_AT_MEMBER_LIMIT = 3;
+	TEAM_INVITE_ERROR_TEAM_LOCKED = 4;
+	TEAM_INVITE_ERROR_INVITEE_NOT_AVAILABLE = 5;
+	TEAM_INVITE_ERROR_INVITEE_BUSY = 6;
+	TEAM_INVITE_ERROR_INVITEE_ALREADY_MEMBER = 7;
+	TEAM_INVITE_ERROR_INVITEE_AT_TEAM_LIMIT = 8;
+	TEAM_INVITE_ERROR_INVITEE_INSUFFICIENT_PLAY_TIME = 9;
+	TEAM_INVITE_ERROR_INVITER_INVALID_ACCOUNT_TYPE = 10;
+	TEAM_INVITE_ERROR_INVITER_NOT_ADMIN = 11;
+	TEAM_INVITE_ERROR_INCORRECT_USER_RESPONDED = 12;
+	TEAM_INVITE_ERROR_UNSPECIFIED = 13;
+}
+
+message CMsgDOTATeamInfo {
+	message HeroStats {
+		optional uint32 hero_id = 1;
+		optional uint32 picks = 2;
+		optional uint32 wins = 3;
+		optional uint32 bans = 4;
+		optional float avg_kills = 5;
+		optional float avg_deaths = 6;
+		optional float avg_assists = 7;
+		optional float avg_gpm = 8;
+		optional float avg_xpm = 9;
+	}
+
+	message MemberStats {
+		optional uint32 account_id = 1;
+		optional uint32 wins_with_team = 2;
+		optional uint32 losses_with_team = 3;
+		repeated .CMsgDOTATeamInfo.HeroStats top_heroes = 4;
+		optional float avg_kills = 5;
+		optional float avg_deaths = 6;
+		optional float avg_assists = 7;
+	}
+
+	message TeamStats {
+		repeated .CMsgDOTATeamInfo.HeroStats played_heroes = 1;
+		optional float farming = 2;
+		optional float fighting = 3;
+		optional float versatility = 4;
+		optional float avg_kills = 5;
+		optional float avg_deaths = 6;
+		optional float avg_duration = 7;
+	}
+
+	message DPCResult {
+		optional uint32 league_id = 1;
+		optional uint32 standing = 2;
+		optional uint32 points = 3;
+		optional uint32 earnings = 4;
+		optional uint32 timestamp = 5;
+	}
+
+	message Member {
+		optional uint32 account_id = 1;
+		optional uint32 time_joined = 2;
+		optional bool admin = 3;
+		optional string pro_name = 6;
+		optional .Fantasy_Roles role = 8 [default = FANTASY_ROLE_UNDEFINED];
+		optional string real_name = 9;
+	}
+
+	message AuditEntry {
+		optional uint32 audit_action = 1;
+		optional uint32 timestamp = 2;
+		optional uint32 account_id = 3;
+	}
+
+	repeated .CMsgDOTATeamInfo.Member members = 1;
+	optional uint32 team_id = 2;
+	optional string name = 3;
+	optional string tag = 4;
+	optional uint32 time_created = 5;
+	optional bool pro = 6;
+	optional bool pickup_team = 8;
+	optional uint64 ugc_logo = 9;
+	optional uint64 ugc_base_logo = 10;
+	optional uint64 ugc_banner_logo = 11;
+	optional uint64 ugc_sponsor_logo = 12;
+	optional string country_code = 13;
+	optional string url = 14;
+	optional uint32 wins = 15;
+	optional uint32 losses = 16;
+	optional uint32 games_played_total = 19;
+	optional uint32 games_played_matchmaking = 20;
+	optional string url_logo = 24;
+	repeated uint32 registered_member_account_ids = 30;
+	optional uint32 coach_account_id = 36;
+	repeated .CMsgDOTATeamInfo.AuditEntry audit_entries = 31;
+	optional .ELeagueRegion region = 29 [default = LEAGUE_REGION_UNSET];
+	optional string abbreviation = 32;
+	repeated .CMsgDOTATeamInfo.MemberStats member_stats = 33;
+	optional .CMsgDOTATeamInfo.TeamStats team_stats = 34;
+	repeated .CMsgDOTATeamInfo.DPCResult dpc_results = 35;
+	optional string color_primary = 37;
+	optional string color_secondary = 38;
+	optional uint32 team_captain = 39;
+}
+
+message CMsgDOTATeamsInfo {
+	optional uint32 league_id = 1;
+	repeated .CMsgDOTATeamInfo teams = 2;
+}
+
+message CMsgDOTATeamInfoList {
+	repeated .CMsgDOTATeamInfo teams = 1;
+}
+
+message CMsgDOTATeamInfoCache {
+	optional uint32 cache_timestamp = 1;
+	optional .CMsgDOTATeamInfoList team_list = 2;
+}
+
+message CMsgDOTAMyTeamInfoRequest {
+}
+
+message CMsgDOTACreateTeam {
+	optional string name = 1;
+	optional string tag = 2;
+	optional uint64 logo = 3;
+	optional uint64 base_logo = 4;
+	optional uint64 banner_logo = 5;
+	optional uint64 sponsor_logo = 6;
+	optional string country_code = 7;
+	optional string url = 8;
+	optional bool pickup_team = 9;
+	optional string abbreviation = 10;
+}
+
+message CMsgDOTACreateTeamResponse {
+	enum Result {
+		INVALID = -1;
+		SUCCESS = 0;
+		NAME_EMPTY = 1;
+		NAME_BAD_CHARACTERS = 2;
+		NAME_TAKEN = 3;
+		NAME_TOO_LONG = 4;
+		TAG_EMPTY = 5;
+		TAG_BAD_CHARACTERS = 6;
+		TAG_TAKEN = 7;
+		TAG_TOO_LONG = 8;
+		CREATOR_BUSY = 9;
+		UNSPECIFIED_ERROR = 10;
+		CREATOR_TEAM_LIMIT_REACHED = 11;
+		NO_LOGO = 12;
+		CREATOR_TEAM_CREATION_COOLDOWN = 13;
+		LOGO_UPLOAD_FAILED = 14;
+		NAME_CHANGED_TOO_RECENTLY = 15;
+		CREATOR_INSUFFICIENT_LEVEL = 16;
+		INVALID_ACCOUNT_TYPE = 17;
+	}
+
+	optional .CMsgDOTACreateTeamResponse.Result result = 1 [default = INVALID];
+	optional uint32 team_id = 2;
+}
+
+message CMsgDOTAEditTeamDetails {
+	optional uint32 team_id = 1;
+	optional string name = 2;
+	optional string tag = 3;
+	optional uint64 logo = 4;
+	optional uint64 base_logo = 5;
+	optional uint64 banner_logo = 6;
+	optional uint64 sponsor_logo = 7;
+	optional string country_code = 8;
+	optional string url = 9;
+	optional bool in_use_by_party = 10;
+	optional string abbreviation = 11;
+}
+
+message CMsgDOTAEditTeamDetailsResponse {
+	enum Result {
+		SUCCESS = 0;
+		FAILURE_INVALID_ACCOUNT_TYPE = 1;
+		FAILURE_NOT_MEMBER = 2;
+		FAILURE_TEAM_LOCKED = 3;
+		FAILURE_UNSPECIFIED_ERROR = 4;
+	}
+
+	optional .CMsgDOTAEditTeamDetailsResponse.Result result = 1 [default = SUCCESS];
+}
+
+message CMsgDOTATeamInvite_InviterToGC {
+	optional uint32 account_id = 1;
+	optional uint32 team_id = 2;
+}
+
+message CMsgDOTATeamInvite_GCImmediateResponseToInviter {
+	optional .ETeamInviteResult result = 1 [default = TEAM_INVITE_SUCCESS];
+	optional string invitee_name = 2;
+	optional uint32 required_play_time = 3;
+}
+
+message CMsgDOTATeamInvite_GCRequestToInvitee {
+	optional uint32 inviter_account_id = 1;
+	optional string team_name = 2;
+	optional string team_tag = 3;
+	optional uint64 logo = 4;
+}
+
+message CMsgDOTATeamInvite_InviteeResponseToGC {
+	optional .ETeamInviteResult result = 1 [default = TEAM_INVITE_SUCCESS];
+}
+
+message CMsgDOTATeamInvite_GCResponseToInviter {
+	optional .ETeamInviteResult result = 1 [default = TEAM_INVITE_SUCCESS];
+	optional string invitee_name = 2;
+}
+
+message CMsgDOTATeamInvite_GCResponseToInvitee {
+	optional .ETeamInviteResult result = 1 [default = TEAM_INVITE_SUCCESS];
+	optional string team_name = 2;
+}
+
+message CMsgDOTAKickTeamMember {
+	optional uint32 account_id = 1;
+	optional uint32 team_id = 2;
+}
+
+message CMsgDOTAKickTeamMemberResponse {
+	enum Result {
+		SUCCESS = 0;
+		FAILURE_INVALID_ACCOUNT_TYPE = 1;
+		FAILURE_KICKER_NOT_ADMIN = 2;
+		FAILURE_KICKEE_NOT_MEMBER = 3;
+		FAILURE_TEAM_LOCKED = 4;
+		FAILURE_UNSPECIFIED_ERROR = 5;
+	}
+
+	optional .CMsgDOTAKickTeamMemberResponse.Result result = 1 [default = SUCCESS];
+}
+
+message CMsgDOTATransferTeamAdmin {
+	optional uint32 new_admin_account_id = 1;
+	optional uint32 team_id = 2;
+}
+
+message CMsgDOTATransferTeamAdminResponse {
+	enum Result {
+		SUCCESS = 0;
+		FAILURE_INVALID_ACCOUNT_TYPE = 1;
+		FAILURE_NOT_ADMIN = 2;
+		FAILURE_SAME_ACCOUNT = 3;
+		FAILURE_NOT_MEMBER = 4;
+		FAILURE_UNSPECIFIED_ERROR = 5;
+	}
+
+	optional .CMsgDOTATransferTeamAdminResponse.Result result = 1 [default = SUCCESS];
+}
+
+message CMsgDOTALeaveTeam {
+	optional uint32 team_id = 1;
+}
+
+message CMsgDOTALeaveTeamResponse {
+	enum Result {
+		SUCCESS = 0;
+		FAILURE_NOT_MEMBER = 1;
+		FAILURE_TEAM_LOCKED = 2;
+		FAILURE_UNSPECIFIED_ERROR = 3;
+	}
+
+	optional .CMsgDOTALeaveTeamResponse.Result result = 1 [default = SUCCESS];
+}
+
+message CMsgDOTABetaParticipation {
+	optional uint32 access_rights = 1;
+}

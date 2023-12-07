@@ -1,0 +1,203 @@
+import "dota_gcmessages_common.proto";
+
+message CSourceTVGameSmall {
+	message Player {
+		optional uint32 account_id = 1;
+		optional uint32 hero_id = 2;
+	}
+
+	optional uint32 activate_time = 1;
+	optional uint32 deactivate_time = 2;
+	optional uint64 server_steam_id = 3;
+	optional uint64 lobby_id = 4;
+	optional uint32 league_id = 5;
+	optional uint32 lobby_type = 6;
+	optional int32 game_time = 7;
+	optional uint32 delay = 8;
+	optional uint32 spectators = 9;
+	optional uint32 game_mode = 10;
+	optional uint32 average_mmr = 11;
+	optional uint64 match_id = 12;
+	optional uint32 series_id = 13;
+	optional string team_name_radiant = 15;
+	optional string team_name_dire = 16;
+	optional fixed64 team_logo_radiant = 24;
+	optional fixed64 team_logo_dire = 25;
+	optional uint32 team_id_radiant = 30;
+	optional uint32 team_id_dire = 31;
+	optional uint32 sort_score = 17;
+	optional float last_update_time = 18;
+	optional int32 radiant_lead = 19;
+	optional uint32 radiant_score = 20;
+	optional uint32 dire_score = 21;
+	repeated .CSourceTVGameSmall.Player players = 22;
+	optional fixed32 building_state = 23;
+	optional uint32 weekend_tourney_tournament_id = 26;
+	optional uint32 weekend_tourney_division = 27;
+	optional uint32 weekend_tourney_skill_level = 28;
+	optional uint32 weekend_tourney_bracket_round = 29;
+	optional uint32 custom_game_difficulty = 32;
+}
+
+message CMsgClientToGCFindTopSourceTVGames {
+	optional string search_key = 1;
+	optional uint32 league_id = 2;
+	optional uint32 hero_id = 3;
+	optional uint32 start_game = 4;
+	optional uint32 game_list_index = 5;
+	repeated uint64 lobby_ids = 6;
+}
+
+message CMsgGCToClientFindTopSourceTVGamesResponse {
+	optional string search_key = 1;
+	optional uint32 league_id = 2;
+	optional uint32 hero_id = 3;
+	optional uint32 start_game = 4;
+	optional uint32 num_games = 5;
+	optional uint32 game_list_index = 6;
+	repeated .CSourceTVGameSmall game_list = 7;
+	optional bool specific_games = 8;
+	optional .CSourceTVGameSmall bot_game = 9;
+}
+
+message CMsgGCToClientTopWeekendTourneyGames {
+	repeated .CSourceTVGameSmall live_games = 1;
+}
+
+message CMsgClientToGCTopLeagueMatchesRequest {
+}
+
+message CMsgClientToGCTopFriendMatchesRequest {
+}
+
+message CMsgClientToGCMatchesMinimalRequest {
+	repeated uint64 match_ids = 1;
+}
+
+message CMsgClientToGCMatchesMinimalResponse {
+	repeated .CMsgDOTAMatchMinimal matches = 1;
+	optional bool last_match = 2;
+}
+
+message CMsgGCToClientTopLeagueMatchesResponse {
+	repeated .CMsgDOTAMatchMinimal matches = 2;
+}
+
+message CMsgGCToClientTopFriendMatchesResponse {
+	repeated .CMsgDOTAMatchMinimal matches = 1;
+}
+
+message CMsgSpectateFriendGame {
+	optional fixed64 steam_id = 1;
+	optional bool live = 2;
+}
+
+message CMsgSpectateFriendGameResponse {
+	enum EWatchLiveResult {
+		SUCCESS = 0;
+		ERROR_GENERIC = 1;
+		ERROR_NO_PLUS = 2;
+		ERROR_NOT_FRIENDS = 3;
+		ERROR_LOBBY_NOT_FOUND = 4;
+		ERROR_SPECTATOR_IN_A_LOBBY = 5;
+		ERROR_LOBBY_IS_LAN = 6;
+		ERROR_WRONG_LOBBY_TYPE = 7;
+		ERROR_WRONG_LOBBY_STATE = 8;
+		ERROR_PLAYER_NOT_PLAYER = 9;
+		ERROR_TOO_MANY_SPECTATORS = 10;
+		ERROR_SPECTATOR_SWITCHED_TEAMS = 11;
+		ERROR_FRIENDS_ON_BOTH_SIDES = 12;
+		ERROR_SPECTATOR_IN_THIS_LOBBY = 13;
+		ERROR_LOBBY_IS_LEAGUE = 14;
+	}
+
+	optional fixed64 server_steamid = 4;
+	optional .CMsgSpectateFriendGameResponse.EWatchLiveResult watch_live_result = 5 [default = SUCCESS];
+}
+
+message CDOTAReplayDownloadInfo {
+	message Highlight {
+		optional uint32 timestamp = 1;
+		optional string description = 2;
+	}
+
+	optional .CMsgDOTAMatchMinimal match = 1;
+	optional string title = 2;
+	optional string description = 3;
+	optional uint32 size = 4;
+	repeated string tags = 5;
+	optional bool exists_on_disk = 6;
+}
+
+message CMsgWatchGame {
+	optional fixed64 server_steamid = 1;
+	optional uint32 client_version = 2;
+	optional fixed64 watch_server_steamid = 3;
+	optional uint64 lobby_id = 4;
+	repeated uint32 regions = 5;
+}
+
+message CMsgCancelWatchGame {
+}
+
+message CMsgWatchGameResponse {
+	enum WatchGameResult {
+		PENDING = 0;
+		READY = 1;
+		GAMESERVERNOTFOUND = 2;
+		UNAVAILABLE = 3;
+		CANCELLED = 4;
+		INCOMPATIBLEVERSION = 5;
+		MISSINGLEAGUESUBSCRIPTION = 6;
+		LOBBYNOTFOUND = 7;
+	}
+
+	optional .CMsgWatchGameResponse.WatchGameResult watch_game_result = 1 [default = PENDING];
+	optional uint32 source_tv_public_addr = 2;
+	optional uint32 source_tv_private_addr = 3;
+	optional uint32 source_tv_port = 4;
+	optional fixed64 game_server_steamid = 5;
+	optional fixed64 watch_server_steamid = 6;
+	optional fixed64 watch_tv_unique_secret_code = 7;
+}
+
+message CMsgPartyLeaderWatchGamePrompt {
+	optional fixed64 game_server_steamid = 5;
+}
+
+message CDOTABroadcasterInfo {
+	optional uint32 account_id = 1;
+	optional fixed64 server_steam_id = 2;
+	optional bool live = 3;
+	optional string team_name_radiant = 4;
+	optional string team_name_dire = 5;
+	optional uint32 series_game = 7;
+	optional uint32 upcoming_broadcast_timestamp = 9;
+	optional bool allow_live_video = 10;
+	optional uint32 node_type = 11;
+	optional string node_name = 12;
+}
+
+message CMsgDOTASeries {
+	message TeamInfo {
+		optional uint32 team_id = 1;
+		optional string team_name = 2;
+		optional string team_logo_url = 3;
+		optional uint32 wager_count = 4;
+	}
+
+	message LiveGame {
+		optional fixed64 server_steam_id = 1;
+		optional .CMsgDOTASeries.TeamInfo team_radiant = 2;
+		optional .CMsgDOTASeries.TeamInfo team_dire = 3;
+		optional uint32 team_radiant_score = 4;
+		optional uint32 team_dire_score = 5;
+	}
+
+	optional uint32 series_id = 1;
+	optional uint32 series_type = 2;
+	optional .CMsgDOTASeries.TeamInfo team_1 = 3;
+	optional .CMsgDOTASeries.TeamInfo team_2 = 4;
+	repeated .CMsgDOTAMatchMinimal match_minimal = 5;
+	optional .CMsgDOTASeries.LiveGame live_game = 6;
+}

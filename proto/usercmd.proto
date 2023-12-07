@@ -1,0 +1,38 @@
+import "networkbasetypes.proto";
+
+message CInButtonStatePB {
+	optional uint64 buttonstate1 = 1;
+	optional uint64 buttonstate2 = 2;
+	optional uint64 buttonstate3 = 3;
+}
+
+message CSubtickMoveStep {
+	optional uint64 button = 1;
+	optional bool pressed = 2;
+	optional float when = 3;
+}
+
+message CBaseUserCmdPB {
+	optional int32 command_number = 1;
+	optional int32 tick_count = 2;
+	optional .CInButtonStatePB buttons_pb = 3;
+	optional .CMsgQAngle viewangles = 4;
+	optional float forwardmove = 5;
+	optional float leftmove = 6;
+	optional float upmove = 7;
+	optional int32 impulse = 8;
+	optional int32 weaponselect = 9;
+	optional int32 random_seed = 10;
+	optional int32 mousedx = 11;
+	optional int32 mousedy = 12;
+	optional bool hasbeenpredicted = 13;
+	optional uint32 pawn_entity_handle = 14 [default = 16777215];
+	repeated .CSubtickMoveStep subtick_moves = 18;
+	optional bytes move_crc = 19;
+	optional uint32 consumed_server_angle_changes = 20;
+	optional int32 cmd_flags = 21;
+}
+
+message CUserCmdBasePB {
+	optional .CBaseUserCmdPB base = 1;
+}

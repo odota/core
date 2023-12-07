@@ -1,0 +1,651 @@
+import "dota_shared_enums.proto";
+
+enum EGuildAuditAction {
+	k_EGuildAuditAction_Invalid = 0;
+	k_EGuildAuditAction_GuildCreated = 1;
+	k_EGuildAuditAction_GuildLanguageChanged = 2;
+	k_EGuildAuditAction_GuildFlagsChanged = 3;
+	k_EGuildAuditAction_GuildMemberJoined = 5;
+	k_EGuildAuditAction_GuildMemberLeft = 6;
+	k_EGuildAuditAction_GuildMemberKicked = 7;
+	k_EGuildAuditAction_GuildMemberRoleChanged = 8;
+	k_EGuildAuditAction_GuildLogoChanged = 9;
+	k_EGuildAuditAction_GuildRegionChanged = 10;
+	k_EGuildAuditAction_GuildDescriptionChanged = 11;
+	k_EGuildAuditAction_GuildPrimaryColorChanged = 12;
+	k_EGuildAuditAction_GuildSecondaryColorChanged = 13;
+	k_EGuildAuditAction_GuildPatternChanged = 14;
+	k_EGuildAuditAction_AdminClearedLogo = 15;
+	k_EGuildAuditAction_GuildRequiredRankChanged = 16;
+	k_EGuildAuditAction_GuildMotDChanged = 18;
+	k_EGuildAuditAction_AdminResetName = 19;
+	k_EGuildAuditAction_AdminResetTag = 20;
+	k_EGuildAuditAction_AdminLock = 21;
+	k_EGuildAuditAction_GuildNameChanged = 22;
+	k_EGuildAuditAction_GuildTagChanged = 23;
+	k_EGuildAuditAction_AdminPermitted = 24;
+	k_EGuildAuditAction_AdminBlocked = 25;
+	k_EGuildAuditAction_AdminBannedUser = 26;
+	k_EGuildAuditAction_AdminExonerated = 27;
+}
+
+enum EGuildChatType {
+	k_EGuildChatType_Unspecified = 0;
+	k_EGuildChatType_SteamChatGroup = 1;
+	k_EGuildChatType_GC = 2;
+}
+
+message CMsgGuildInfo {
+	optional string guild_name = 1;
+	optional string guild_tag = 2;
+	optional uint32 created_timestamp = 3;
+	optional uint32 guild_language = 4;
+	optional uint32 guild_flags = 5;
+	optional uint64 guild_logo = 7;
+	optional uint32 guild_region = 8;
+	optional uint64 guild_chat_group_id = 9;
+	optional string guild_description = 10;
+	optional uint64 default_chat_channel_id = 11;
+	optional uint32 guild_primary_color = 12;
+	optional uint32 guild_secondary_color = 13;
+	optional uint32 guild_pattern = 14;
+	optional uint32 guild_refresh_time_offset = 15;
+	optional uint32 guild_required_rank_tier = 16;
+	optional uint32 guild_motd_timestamp = 17;
+	optional string guild_motd = 18;
+}
+
+message CMsgGuildSummary {
+	message EventPoints {
+		optional uint32 event_id = 1;
+		optional uint32 guild_points = 2;
+		optional uint32 guild_rank = 3;
+		optional uint32 guild_weekly_rank = 4;
+		optional uint32 guild_weekly_percentile = 5;
+		optional uint32 guild_current_percentile = 6;
+	}
+
+	optional .CMsgGuildInfo guild_info = 1;
+	optional uint32 member_count = 2;
+	repeated .CMsgGuildSummary.EventPoints event_points = 3;
+}
+
+message CMsgGuildRole {
+	optional uint32 role_id = 1;
+	optional string role_name = 2;
+	optional uint32 role_flags = 3;
+	optional uint32 role_order = 4;
+}
+
+message CMsgGuildMember {
+	optional uint32 member_account_id = 1;
+	optional uint32 member_role_id = 2;
+	optional uint32 member_joined_timestamp = 3;
+	optional uint32 member_last_active_timestamp = 4;
+}
+
+message CMsgGuildInvite {
+	optional uint32 requester_account_id = 1;
+	optional uint32 target_account_id = 2;
+	optional uint32 timestamp_sent = 3;
+}
+
+message CMsgGuildData {
+	optional uint32 guild_id = 1;
+	optional .CMsgGuildInfo guild_info = 2;
+	repeated .CMsgGuildRole guild_roles = 3;
+	repeated .CMsgGuildMember guild_members = 4;
+	repeated .CMsgGuildInvite guild_invites = 5;
+}
+
+message CMsgAccountGuildInvite {
+	optional uint32 guild_id = 1;
+	optional uint32 requester_account_id = 2;
+	optional uint32 timestamp_sent = 3;
+}
+
+message CMsgAccountGuildMemberships {
+	repeated uint32 guild_ids = 1;
+	repeated .CMsgAccountGuildInvite guild_invites = 2;
+}
+
+message CMsgGuildPersonaInfo {
+	optional uint32 guild_id = 1;
+	optional string guild_tag = 2;
+	optional uint32 guild_flags = 3;
+}
+
+message CMsgAccountGuildsPersonaInfo {
+	repeated .CMsgGuildPersonaInfo guild_persona_infos = 1;
+}
+
+message CMsgGuildFeedEvent {
+	optional uint64 feed_event_id = 1;
+	optional uint32 timestamp = 2;
+	optional uint32 event_type = 3;
+	optional uint32 param_uint_1 = 4;
+	optional uint32 param_uint_2 = 5;
+	optional uint32 param_uint_3 = 6;
+}
+
+message CMsgClientToGCCreateGuild {
+	optional .CMsgGuildInfo guild_info = 1;
+	optional .EGuildChatType guild_chat_type = 2 [default = k_EGuildChatType_Unspecified];
+}
+
+message CMsgClientToGCCreateGuildResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidName = 5;
+		k_eNameAlreadyUsed = 6;
+		k_eInvalidTag = 7;
+		k_eTagAlreadyUsed = 8;
+		k_eInvalidDescription = 9;
+		k_eInvalidRegion = 10;
+		k_eInvalidLogo = 11;
+		k_eDoesNotOwnEvent = 12;
+		k_eGuildLimit = 13;
+		k_eInvalidMotD = 14;
+		k_eBlocked = 15;
+		k_eFreeTrialNotAllowed = 16;
+	}
+
+	optional .CMsgClientToGCCreateGuildResponse.EResponse result = 1 [default = k_eInternalError];
+	optional uint32 guild_id = 2;
+}
+
+message CMsgClientToGCSetGuildInfo {
+	optional uint32 guild_id = 1;
+	optional .CMsgGuildInfo guild_info = 2;
+	optional .EGuildChatType guild_chat_type = 3 [default = k_EGuildChatType_Unspecified];
+}
+
+message CMsgClientToGCSetGuildInfoResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNotMember = 6;
+		k_eNoPermission = 7;
+		k_eMotDTooLong = 8;
+		k_eNameChangeNoPermissions = 9;
+		k_eTagChangeNoPermissions = 10;
+		k_eNameInvalid = 11;
+		k_eTagInvalid = 12;
+		k_eDescriptionInvalid = 13;
+		k_eBlocked = 14;
+	}
+
+	optional .CMsgClientToGCSetGuildInfoResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCRequestGuildData {
+	optional uint32 guild_id = 1;
+}
+
+message CMsgClientToGCRequestGuildDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNotMember = 6;
+	}
+
+	optional .CMsgClientToGCRequestGuildDataResponse.EResponse result = 1 [default = k_eInternalError];
+	optional .CMsgGuildData guild_data = 2;
+}
+
+message CMsgGCToClientGuildDataUpdated {
+	optional .CMsgGuildData guild_data = 1;
+	optional uint32 update_flags = 2;
+}
+
+message CMsgGCToClientGuildMembersDataUpdated {
+	optional uint32 guild_id = 1;
+	repeated .CMsgGuildMember members_data = 2;
+}
+
+message CMsgClientToGCRequestGuildMembership {
+}
+
+message CMsgClientToGCRequestGuildMembershipResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+	}
+
+	optional .CMsgClientToGCRequestGuildMembershipResponse.EResponse result = 1 [default = k_eInternalError];
+	optional .CMsgAccountGuildMemberships guild_memberships = 2;
+}
+
+message CMsgGCToClientGuildMembershipUpdated {
+	optional .CMsgAccountGuildMemberships guild_memberships = 1;
+}
+
+message CMsgClientToGCJoinGuild {
+	optional uint32 guild_id = 1;
+}
+
+message CMsgClientToGCJoinGuildResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eGuildFull = 6;
+		k_eAlreadyMember = 7;
+		k_eGuildLimit = 8;
+		k_eGuildRequiresInvite = 9;
+		k_eGuildRankTooLow = 10;
+	}
+
+	optional .CMsgClientToGCJoinGuildResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCLeaveGuild {
+	optional uint32 guild_id = 1;
+}
+
+message CMsgClientToGCLeaveGuildResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNotMember = 6;
+		k_eLastAdmin = 7;
+	}
+
+	optional .CMsgClientToGCLeaveGuildResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCKickGuildMember {
+	optional uint32 guild_id = 1;
+	optional uint32 target_account_id = 2;
+}
+
+message CMsgClientToGCKickGuildMemberResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eRequesterNotMember = 6;
+		k_eTargetNotMember = 7;
+		k_eNoPermission = 8;
+		k_eCantKickSelf = 9;
+	}
+
+	optional .CMsgClientToGCKickGuildMemberResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCSetGuildMemberRole {
+	optional uint32 guild_id = 1;
+	optional uint32 target_account_id = 2;
+	optional uint32 target_role_id = 3;
+}
+
+message CMsgClientToGCSetGuildMemberRoleResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eRequesterNotMember = 6;
+		k_eTargetNotMember = 7;
+		k_eNoPermission = 8;
+		k_eInvalidRole = 9;
+		k_eAdminViolation = 10;
+	}
+
+	optional .CMsgClientToGCSetGuildMemberRoleResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCInviteToGuild {
+	optional uint32 guild_id = 1;
+	optional uint32 target_account_id = 2;
+}
+
+message CMsgClientToGCInviteToGuildResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eGuildFull = 6;
+		k_eRequesterNotMember = 7;
+		k_eAlreadyAMember = 8;
+		k_eAlreadyInvited = 9;
+		k_eNoInvitePermissions = 10;
+		k_eTooManyInvites = 11;
+		k_eInvalidUser = 12;
+	}
+
+	optional .CMsgClientToGCInviteToGuildResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCDeclineInviteToGuild {
+	optional uint32 guild_id = 1;
+}
+
+message CMsgClientToGCDeclineInviteToGuildResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNoInviteFound = 6;
+	}
+
+	optional .CMsgClientToGCDeclineInviteToGuildResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCAcceptInviteToGuild {
+	optional uint32 guild_id = 1;
+}
+
+message CMsgClientToGCAcceptInviteToGuildResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNoInviteFound = 6;
+		k_eGuildFull = 7;
+		k_eGuildLimit = 8;
+		k_eInvalidInviter = 9;
+		k_eAlreadyInGuild = 10;
+	}
+
+	optional .CMsgClientToGCAcceptInviteToGuildResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCCancelInviteToGuild {
+	optional uint32 guild_id = 1;
+	optional uint32 target_account_id = 2;
+}
+
+message CMsgClientToGCCancelInviteToGuildResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNoInviteFound = 6;
+		k_eNoPermissions = 7;
+	}
+
+	optional .CMsgClientToGCCancelInviteToGuildResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCAddGuildRole {
+	optional uint32 guild_id = 1;
+	optional string role_name = 2;
+	optional uint32 role_flags = 3;
+}
+
+message CMsgClientToGCAddGuildRoleResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNameAlreadyUsed = 6;
+		k_eNoPermissions = 7;
+		k_eInvalidFlags = 8;
+		k_eInvalidName = 9;
+		k_eAdminViolation = 10;
+		k_eTooManyRoles = 11;
+		k_eBlocked = 12;
+	}
+
+	optional .CMsgClientToGCAddGuildRoleResponse.EResponse result = 1 [default = k_eInternalError];
+	optional uint32 role_id = 2;
+}
+
+message CMsgClientToGCModifyGuildRole {
+	optional uint32 guild_id = 1;
+	optional uint32 role_id = 2;
+	optional string role_name = 3;
+	optional uint32 role_flags = 4;
+}
+
+message CMsgClientToGCModifyGuildRoleResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eInvalidRole = 6;
+		k_eNameAlreadyUsed = 7;
+		k_eInvalidFlags = 8;
+		k_eInvalidName = 9;
+		k_eNoPermissions = 10;
+		k_eAdminViolation = 11;
+		k_eBlocked = 12;
+	}
+
+	optional .CMsgClientToGCModifyGuildRoleResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCRemoveGuildRole {
+	optional uint32 guild_id = 1;
+	optional uint32 role_id = 2;
+}
+
+message CMsgClientToGCRemoveGuildRoleResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eInvalidRole = 6;
+		k_eRoleNotEmpty = 7;
+		k_eNoPermissions = 8;
+		k_eAdminViolation = 9;
+		k_eCantRemoveDefaultRole = 10;
+	}
+
+	optional .CMsgClientToGCRemoveGuildRoleResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCSetGuildRoleOrder {
+	optional uint32 guild_id = 1;
+	repeated uint32 requested_role_ids = 2;
+	repeated uint32 previous_role_ids = 3;
+}
+
+message CMsgClientToGCSetGuildRoleOrderResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eInvalidRole = 6;
+		k_eInvalidOrder = 7;
+		k_eNoPermissions = 8;
+		k_eAdminViolation = 9;
+	}
+
+	optional .CMsgClientToGCSetGuildRoleOrderResponse.EResponse result = 1 [default = k_eInternalError];
+	repeated uint32 confirmed_role_ids = 2;
+}
+
+message CMsgClientToGCGuildFeedRequest {
+	optional uint32 guild_id = 1;
+	optional uint64 last_seen_id = 2;
+}
+
+message CMsgClientToGCRequestGuildFeedResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNoPermissions = 6;
+	}
+
+	optional .CMsgClientToGCRequestGuildFeedResponse.EResponse result = 1 [default = k_eInternalError];
+	optional uint32 guild_id = 2;
+	repeated .CMsgGuildFeedEvent feed_events = 3;
+}
+
+message CMsgGCToClientGuildFeedUpdated {
+	optional uint32 guild_id = 1;
+}
+
+message CMsgClientToGCAddPlayerToGuildChat {
+	optional uint32 guild_id = 1;
+}
+
+message CMsgClientToGCAddPlayerToGuildChatResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidGuild = 5;
+		k_eNotMember = 6;
+		k_eSteamChatNotEnabled = 7;
+	}
+
+	optional .CMsgClientToGCAddPlayerToGuildChatResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgFindGuildByTagResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidTag = 5;
+		k_eGuildNotFound = 6;
+	}
+
+	optional .CMsgFindGuildByTagResponse.EResponse result = 1 [default = k_eInternalError];
+	optional uint32 guild_id = 2;
+	optional .CMsgGuildSummary guild_summary = 3;
+}
+
+message CMsgSearchForOpenGuildsResponse {
+	message SearchResult {
+		optional uint32 guild_id = 1;
+		optional .CMsgGuildSummary guild_summary = 2;
+	}
+
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+	}
+
+	optional .CMsgSearchForOpenGuildsResponse.EResponse result = 1 [default = k_eInternalError];
+	repeated .CMsgSearchForOpenGuildsResponse.SearchResult search_results = 2;
+	optional bool use_whitelist = 3;
+}
+
+message CMsgClientToGCReportGuildContent {
+	enum EContentFlags {
+		k_eNone = 0;
+		k_eInappropriateName = 1;
+		k_eInappropriateTag = 2;
+		k_eInappropriateLogo = 4;
+		k_eValidFlags = 7;
+	}
+
+	optional uint32 guild_id = 1;
+	optional uint32 guild_content_flags = 2;
+}
+
+message CMsgClientToGCReportGuildContentResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eGuildNotFound = 5;
+		k_eFlagsInvalid = 6;
+	}
+
+	optional .CMsgClientToGCReportGuildContentResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCRequestAccountGuildPersonaInfo {
+	optional uint32 account_id = 1;
+}
+
+message CMsgClientToGCRequestAccountGuildPersonaInfoResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidAccount = 5;
+	}
+
+	optional .CMsgClientToGCRequestAccountGuildPersonaInfoResponse.EResponse result = 1 [default = k_eInternalError];
+	optional .CMsgAccountGuildsPersonaInfo persona_info = 2;
+}
+
+message CMsgClientToGCRequestAccountGuildPersonaInfoBatch {
+	repeated uint32 account_ids = 1;
+}
+
+message CMsgClientToGCRequestAccountGuildPersonaInfoBatchResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidRequest = 5;
+	}
+
+	optional .CMsgClientToGCRequestAccountGuildPersonaInfoBatchResponse.EResponse result = 1 [default = k_eInternalError];
+	repeated .CMsgAccountGuildsPersonaInfo persona_infos = 2;
+}

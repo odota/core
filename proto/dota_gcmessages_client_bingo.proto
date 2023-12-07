@@ -1,0 +1,108 @@
+import "steammessages.proto";
+import "dota_shared_enums.proto";
+import "dota_gcmessages_common.proto";
+import "dota_gcmessages_webapi.proto";
+import "gcsdk_gcmessages.proto";
+import "base_gcmessages.proto";
+import "econ_gcmessages.proto";
+import "dota_gcmessages_client.proto";
+import "valveextensions.proto";
+
+message CMsgBingoSquare {
+	optional uint32 stat_id = 1;
+	optional int32 stat_threshold = 2;
+}
+
+message CMsgBingoUserData {
+	repeated .CMsgBingoSquare squares = 1;
+}
+
+message CMsgClientToGCBingoGetUserData {
+	optional uint32 league_id = 1;
+	optional uint32 league_phase = 2;
+}
+
+message CMsgClientToGCBingoGetUserDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+	}
+
+	optional .CMsgClientToGCBingoGetUserDataResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgBingoUserData user_data = 2;
+}
+
+message CMsgBingoIndividualStatData {
+	optional uint32 stat_id = 1;
+	optional int32 stat_value = 2;
+}
+
+message CMsgBingoStatsData {
+	repeated .CMsgBingoIndividualStatData stats_data = 1;
+}
+
+message CMsgClientToGCBingoGetStatsData {
+	optional uint32 league_id = 1;
+	optional uint32 league_phase = 2;
+}
+
+message CMsgClientToGCBingoGetStatsDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+	}
+
+	optional .CMsgClientToGCBingoGetStatsDataResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgBingoStatsData stats_data = 2;
+}
+
+message CMsgGCToClientBingoUserDataUpdated {
+	optional uint32 league_id = 1;
+	optional uint32 league_phase = 2;
+	optional .CMsgBingoUserData user_data = 3;
+}
+
+message CMsgClientToGCBingoClaimRow {
+	optional uint32 league_id = 1;
+	optional uint32 league_phase = 2;
+	optional uint32 row_index = 3;
+}
+
+message CMsgClientToGCBingoClaimRowResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidRow = 5;
+		k_eExpiredCard = 6;
+	}
+
+	optional .CMsgClientToGCBingoClaimRowResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCBingoDevRerollCard {
+	optional uint32 league_id = 1;
+	optional uint32 league_phase = 2;
+}
+
+message CMsgClientToGCBingoDevRerollCardResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eExpiredCard = 6;
+		k_eNotAllowed = 7;
+	}
+
+	optional .CMsgClientToGCBingoDevRerollCardResponse.EResponse response = 1 [default = k_eInternalError];
+}

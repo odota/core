@@ -1,0 +1,438 @@
+import "steammessages.proto";
+import "dota_shared_enums.proto";
+import "dota_gcmessages_common.proto";
+import "dota_gcmessages_webapi.proto";
+import "gcsdk_gcmessages.proto";
+import "base_gcmessages.proto";
+import "econ_gcmessages.proto";
+import "dota_gcmessages_client.proto";
+import "valveextensions.proto";
+
+enum EShowcaseType {
+	k_eShowcaseType_Invalid = 0;
+	k_eShowcaseType_Profile = 1;
+	k_eShowcaseType_MiniProfile = 2;
+}
+
+enum EShowcaseItemState {
+	k_eShowcaseItemState_Ok = 0;
+	k_eShowcaseItemState_MinorModifications = 1;
+	k_eShowcaseItemState_ValidityUnknown = 2;
+	k_eShowcaseItemState_PartiallyInvalid = 3;
+	k_eShowcaseItemState_Invalid = 4;
+	k_eShowcaseItemState_Failure = 5;
+}
+
+enum EShowcaseAuditAction {
+	k_eShowcaseAuditAction_Invalid = 0;
+	k_eShowcaseAuditAction_ShowcaseChanged = 1;
+	k_eShowcaseAuditAction_AdminShowcaseReset = 2;
+	k_eShowcaseAuditAction_AdminShowcaseAccountLocked = 3;
+	k_eShowcaseAuditAction_AdminShowcaseExonerated = 4;
+	k_eShowcaseAuditAction_AdminShowcaseConvicted = 5;
+}
+
+enum EShowcaseItemFlag {
+	k_eShowcaseItemFlag_None = 0;
+	k_eShowcaseItemFlag_FlipHorizontally = 1;
+}
+
+enum EShowcaseItemFlag_Hero {
+	k_eShowcaseItemFlag_Hero_None = 0;
+	k_eShowcaseItemFlag_Hero_ShowPedestal = 1;
+	k_eShowcaseItemFlag_Hero_UseCurrentLoadout = 2;
+}
+
+message CMsgShowcaseEconItemReference {
+	optional uint64 id = 1;
+	optional uint64 original_id = 2;
+	optional uint32 definition_index = 3;
+	optional int32 equipment_slot_index = 4 [default = -1];
+}
+
+message CMsgShowcaseItem_Trophy {
+	message Data {
+		optional uint32 trophy_score = 1;
+	}
+
+	optional .CMsgShowcaseItem_Trophy.Data data = 1;
+	optional uint32 trophy_id = 2;
+}
+
+message CMsgShowcaseItem_EconItem {
+	message Data {
+		optional .CSOEconItem econ_item = 1;
+	}
+
+	optional .CMsgShowcaseItem_EconItem.Data data = 1;
+	optional .CMsgShowcaseEconItemReference ref = 2;
+}
+
+message CMsgShowcaseItem_Hero {
+	message Data {
+		repeated .CSOEconItem econ_items = 1;
+		optional uint32 actual_hero_id = 2;
+	}
+
+	optional .CMsgShowcaseItem_Hero.Data data = 1;
+	optional uint32 hero_id = 2;
+	repeated .CMsgShowcaseEconItemReference econ_item_refs = 3;
+	optional uint32 rotation = 4;
+	optional uint32 flags = 5;
+}
+
+message CMsgShowcaseItem_HeroIcon {
+	message Data {
+	}
+
+	optional .CMsgShowcaseItem_HeroIcon.Data data = 1;
+	optional uint32 hero_id = 2;
+}
+
+message CMsgShowcaseItem_PlayerMatch {
+	message Data {
+		optional uint32 hero_id = 1;
+		optional uint32 timestamp = 2;
+		optional uint32 duration = 3;
+		optional .DOTA_GameMode game_mode = 4 [default = DOTA_GAMEMODE_NONE];
+		optional .CMsgShowcaseItem_PlayerMatch.EPlayerOutcome outcome = 5 [default = k_eInvalid];
+		optional uint32 kills = 6;
+		optional uint32 deaths = 7;
+		optional uint32 assists = 8;
+	}
+
+	enum EPlayerOutcome {
+		k_eInvalid = 0;
+		k_eWin = 1;
+		k_eLoss = 2;
+		k_eNotScored = 3;
+	}
+
+	optional .CMsgShowcaseItem_PlayerMatch.Data data = 1;
+	optional uint64 match_id = 2;
+	optional uint32 player_slot = 3;
+}
+
+message CMsgShowcaseItem_ChatWheel {
+	message Data {
+	}
+
+	optional .CMsgShowcaseItem_ChatWheel.Data data = 1;
+	optional uint32 chat_wheel_message_id = 2 [default = 4294967295];
+}
+
+message CMsgShowcaseItem_Emoticon {
+	message Data {
+	}
+
+	optional .CMsgShowcaseItem_Emoticon.Data data = 1;
+	optional uint32 emoticon_id = 2;
+}
+
+message CMsgShowcaseItem_SpiderGraph {
+	message Data {
+	}
+
+	optional .CMsgShowcaseItem_SpiderGraph.Data data = 1;
+}
+
+message CMsgShowcaseItem_UserFeed {
+	message Data {
+	}
+
+	optional .CMsgShowcaseItem_UserFeed.Data data = 1;
+}
+
+message CMsgShowcaseItem_Stat {
+	message Data {
+		optional uint32 stat_score = 1;
+	}
+
+	optional .CMsgShowcaseItem_Stat.Data data = 1;
+	optional .CMsgDOTAProfileCard.EStatID stat_id = 2 [default = k_eStat_Wins];
+}
+
+message CMsgShowcaseBackground {
+	message Data {
+		optional .CSOEconItem loading_screen = 1;
+	}
+
+	optional .CMsgShowcaseBackground.Data data = 1;
+	optional .CMsgShowcaseEconItemReference loading_screen_ref = 2;
+	optional uint32 dim = 3;
+	optional uint32 blur = 4;
+	optional uint32 background_id = 5;
+}
+
+message CMsgShowcaseItemData {
+	oneof item {
+		.CMsgShowcaseItem_Trophy trophy = 1;
+		.CMsgShowcaseItem_EconItem econ_item_icon = 2;
+		.CMsgShowcaseItem_EconItem sticker = 3;
+		.CMsgShowcaseItem_Hero hero_model = 4;
+		.CMsgShowcaseItem_PlayerMatch player_match = 5;
+		.CMsgShowcaseItem_ChatWheel chat_wheel = 6;
+		.CMsgShowcaseItem_ChatWheel spray = 7;
+		.CMsgShowcaseItem_Emoticon emoticon = 8;
+		.CMsgShowcaseItem_EconItem courier = 10;
+		.CMsgShowcaseItem_EconItem ward = 11;
+		.CMsgShowcaseItem_HeroIcon hero_icon = 12;
+		.CMsgShowcaseItem_SpiderGraph spider_graph = 13;
+		.CMsgShowcaseItem_UserFeed user_feed = 14;
+		.CMsgShowcaseItem_Stat stat = 15;
+		.CMsgShowcaseBackground background = 100;
+	}
+}
+
+message CMsgShowcaseItemPosition {
+	optional int32 position_x = 1;
+	optional int32 position_y = 2;
+	optional uint32 scale = 3;
+	optional uint32 width = 4;
+	optional uint32 height = 5;
+	optional uint32 rotation = 6;
+}
+
+message CMsgShowcaseItem {
+	optional uint32 showcase_item_id = 1;
+	optional .CMsgShowcaseItemPosition item_position = 2;
+	optional .CMsgShowcaseItemData item_data = 3;
+	optional .EShowcaseItemState state = 4 [default = k_eShowcaseItemState_Ok];
+	optional uint32 flags = 5;
+}
+
+message CMsgShowcase {
+	repeated .CMsgShowcaseItem showcase_items = 1;
+	optional .CMsgShowcaseItem background = 3;
+}
+
+message CMsgClientToGCShowcaseGetUserData {
+	optional uint32 account_id = 1;
+	optional .EShowcaseType showcase_type = 2 [default = k_eShowcaseType_Invalid];
+}
+
+message CMsgClientToGCShowcaseGetUserDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eUnknownShowcase = 5;
+	}
+
+	optional .CMsgClientToGCShowcaseGetUserDataResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgShowcase showcase = 2;
+}
+
+message CMsgClientToGCShowcaseSetUserData {
+	optional .EShowcaseType showcase_type = 1 [default = k_eShowcaseType_Invalid];
+	optional .CMsgShowcase showcase = 2;
+	optional uint32 format_version = 3;
+}
+
+message CMsgClientToGCShowcaseSetUserDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalid = 5;
+		k_eLockedFromEditing = 6;
+		k_eBudgetExceeded = 7;
+		k_eCommunicationScoreTooLow = 8;
+	}
+
+	optional .CMsgClientToGCShowcaseSetUserDataResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgShowcase validated_showcase = 2;
+	optional uint32 locked_until_timestamp = 3;
+}
+
+message CMsgClientToGCShowcaseSubmitReport {
+	optional uint32 target_account_id = 1;
+	optional .EShowcaseType showcase_type = 2 [default = k_eShowcaseType_Invalid];
+	optional string report_comment = 3;
+}
+
+message CMsgClientToGCShowcaseSubmitReportResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eAlreadyReported = 5;
+	}
+
+	optional .CMsgClientToGCShowcaseSubmitReportResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgShowcaseReportsRollupInfo {
+	optional uint32 rollup_id = 1;
+	optional uint32 start_timestamp = 2;
+	optional uint32 end_timestamp = 3;
+}
+
+message CMsgShowcaseReportsRollupList {
+	repeated .CMsgShowcaseReportsRollupInfo rollups = 1;
+}
+
+message CMsgShowcaseReportsRollupEntry {
+	optional uint32 account_id = 1;
+	optional .EShowcaseType showcase_type = 2 [default = k_eShowcaseType_Invalid];
+	optional uint32 report_count = 3;
+}
+
+message CMsgShowcaseReportsRollup {
+	optional .CMsgShowcaseReportsRollupInfo rollup_info = 1;
+	repeated .CMsgShowcaseReportsRollupEntry rollup_entries = 2;
+}
+
+message CMsgClientToGCShowcaseAdminGetReportsRollupList {
+}
+
+message CMsgClientToGCShowcaseAdminGetReportsRollupListResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNoPermission = 5;
+	}
+
+	optional .CMsgClientToGCShowcaseAdminGetReportsRollupListResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgShowcaseReportsRollupList rollup_list = 2;
+}
+
+message CMsgClientToGCShowcaseAdminGetReportsRollup {
+	optional uint32 rollup_id = 1;
+}
+
+message CMsgClientToGCShowcaseAdminGetReportsRollupResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNoPermission = 5;
+		k_eNotFound = 6;
+	}
+
+	optional .CMsgClientToGCShowcaseAdminGetReportsRollupResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgShowcaseReportsRollup rollup = 2;
+}
+
+message CMsgShowcaseAuditEntry {
+	optional .EShowcaseType showcase_type = 1 [default = k_eShowcaseType_Invalid];
+	optional .EShowcaseAuditAction audit_action = 2 [default = k_eShowcaseAuditAction_Invalid];
+	optional uint64 audit_data = 3;
+	optional uint32 timestamp = 4;
+}
+
+message CMsgShowcaseReport {
+	optional uint32 reporter_account_id = 1;
+	optional .EShowcaseType showcase_type = 2 [default = k_eShowcaseType_Invalid];
+	optional uint32 report_timestamp = 3;
+	optional string report_comment = 4;
+}
+
+message CMsgShowcaseAdminUserDetails {
+	optional uint32 locked_until_timestamp = 1;
+	repeated .CMsgShowcaseAuditEntry audit_entries = 2;
+	repeated .CMsgShowcaseReport reports = 3;
+}
+
+message CMsgClientToGCShowcaseAdminGetUserDetails {
+	optional uint32 account_id = 1;
+}
+
+message CMsgClientToGCShowcaseAdminGetUserDetailsResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNoPermission = 5;
+	}
+
+	optional .CMsgClientToGCShowcaseAdminGetUserDetailsResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgShowcaseAdminUserDetails user_details = 2;
+}
+
+message CMsgClientToGCShowcaseAdminReset {
+	optional uint32 target_account_id = 1;
+	optional .EShowcaseType showcase_type = 2 [default = k_eShowcaseType_Invalid];
+}
+
+message CMsgClientToGCShowcaseAdminResetResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNoPermission = 5;
+	}
+
+	optional .CMsgClientToGCShowcaseAdminResetResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCShowcaseAdminLockAccount {
+	optional uint32 target_account_id = 1;
+	optional uint32 locked_until_timestamp = 2;
+}
+
+message CMsgClientToGCShowcaseAdminLockAccountResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNoPermission = 5;
+	}
+
+	optional .CMsgClientToGCShowcaseAdminLockAccountResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCShowcaseAdminConvict {
+	optional uint32 target_account_id = 1;
+	optional .EShowcaseType showcase_type = 2 [default = k_eShowcaseType_Invalid];
+}
+
+message CMsgClientToGCShowcaseAdminConvictResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNoPermission = 5;
+		k_eAlreadyConvicted = 6;
+	}
+
+	optional .CMsgClientToGCShowcaseAdminConvictResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCShowcaseAdminExonerate {
+	optional uint32 target_account_id = 1;
+	optional .EShowcaseType showcase_type = 2 [default = k_eShowcaseType_Invalid];
+}
+
+message CMsgClientToGCShowcaseAdminExonerateResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNoPermission = 5;
+		k_eAlreadyExonerated = 6;
+	}
+
+	optional .CMsgClientToGCShowcaseAdminExonerateResponse.EResponse response = 1 [default = k_eInternalError];
+}

@@ -1,0 +1,75 @@
+import "steamnetworkingsockets_messages_certs.proto";
+import "steamnetworkingsockets_messages.proto";
+
+option optimize_for = SPEED;
+option cc_generic_services = false;
+
+enum ESteamNetworkingUDPMsgID {
+	k_ESteamNetworkingUDPMsg_ChallengeRequest = 32;
+	k_ESteamNetworkingUDPMsg_ChallengeReply = 33;
+	k_ESteamNetworkingUDPMsg_ConnectRequest = 34;
+	k_ESteamNetworkingUDPMsg_ConnectOK = 35;
+	k_ESteamNetworkingUDPMsg_ConnectionClosed = 36;
+	k_ESteamNetworkingUDPMsg_NoConnection = 37;
+}
+
+message CMsgSteamSockets_UDP_ChallengeRequest {
+	optional fixed32 connection_id = 1;
+	optional fixed64 my_timestamp = 3;
+	optional uint32 protocol_version = 4;
+}
+
+message CMsgSteamSockets_UDP_ChallengeReply {
+	optional fixed32 connection_id = 1;
+	optional fixed64 challenge = 2;
+	optional fixed64 your_timestamp = 3;
+	optional uint32 protocol_version = 4;
+}
+
+message CMsgSteamSockets_UDP_ConnectRequest {
+	optional fixed32 client_connection_id = 1;
+	optional fixed64 challenge = 2;
+	optional fixed64 my_timestamp = 5;
+	optional uint32 ping_est_ms = 6;
+	optional .CMsgSteamDatagramSessionCryptInfoSigned crypt = 7;
+	optional .CMsgSteamDatagramCertificateSigned cert = 4;
+	optional uint32 legacy_protocol_version = 8;
+	optional string identity_string = 10;
+	optional fixed64 legacy_client_steam_id = 3;
+	optional .CMsgSteamNetworkingIdentityLegacyBinary legacy_identity_binary = 9;
+}
+
+message CMsgSteamSockets_UDP_ConnectOK {
+	optional fixed32 client_connection_id = 1;
+	optional fixed32 server_connection_id = 5;
+	optional fixed64 your_timestamp = 3;
+	optional uint32 delay_time_usec = 4;
+	optional .CMsgSteamDatagramSessionCryptInfoSigned crypt = 7;
+	optional .CMsgSteamDatagramCertificateSigned cert = 8;
+	optional string identity_string = 11;
+	optional fixed64 legacy_server_steam_id = 2;
+	optional .CMsgSteamNetworkingIdentityLegacyBinary legacy_identity_binary = 10;
+}
+
+message CMsgSteamSockets_UDP_ConnectionClosed {
+	optional fixed32 to_connection_id = 4;
+	optional fixed32 from_connection_id = 5;
+	optional string debug = 2;
+	optional uint32 reason_code = 3;
+}
+
+message CMsgSteamSockets_UDP_NoConnection {
+	optional fixed32 from_connection_id = 2;
+	optional fixed32 to_connection_id = 3;
+}
+
+message CMsgSteamSockets_UDP_Stats {
+	enum Flags {
+		ACK_REQUEST_E2E = 2;
+		ACK_REQUEST_IMMEDIATE = 4;
+		NOT_PRIMARY_TRANSPORT_E2E = 16;
+	}
+
+	optional .CMsgSteamDatagramConnectionQuality stats = 1;
+	optional uint32 flags = 3;
+}

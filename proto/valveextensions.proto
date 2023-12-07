@@ -1,0 +1,17 @@
+import "google/protobuf/descriptor.proto";
+
+extend .google.protobuf.FieldOptions {
+	optional bool valve_map_field = 61000 [default = false];
+	optional bool valve_map_key = 61001 [default = false];
+	optional int32 diff_encode_field = 61002 [default = 0];
+	optional bool delta_ignore = 61003 [default = false];
+	optional uint32 steamml_max_entries = 61004 [default = 0];
+	optional bool steamml_is_timestamp = 61005 [default = false];
+	optional uint32 steamlearn_count = 61006 [default = 0];
+}
+
+extend .google.protobuf.EnumValueOptions {
+	optional string schema_friendly_name = 1000;
+	optional string schema_description = 1001;
+	optional bool schema_suppress_enumerator = 1002;
+}

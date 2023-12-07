@@ -1,0 +1,65 @@
+import "steamnetworkingsockets_messages_certs.proto";
+
+option optimize_for = SPEED;
+option cc_generic_services = false;
+
+message CMsgSteamDatagramRelayAuthTicket {
+	message ExtraField {
+		optional string name = 1;
+		optional string string_value = 2;
+		optional sint64 int64_value = 3;
+		optional fixed64 fixed64_value = 5;
+	}
+
+	optional fixed32 time_expiry = 1;
+	optional string authorized_client_identity_string = 14;
+	optional string gameserver_identity_string = 15;
+	optional fixed32 authorized_public_ip = 3;
+	optional bytes gameserver_address = 11;
+	optional uint32 app_id = 7;
+	optional uint32 virtual_port = 10;
+	repeated .CMsgSteamDatagramRelayAuthTicket.ExtraField extra_fields = 8;
+	optional fixed64 legacy_authorized_steam_id = 2;
+	optional fixed64 legacy_gameserver_steam_id = 4;
+	optional fixed32 legacy_gameserver_pop_id = 9;
+	optional bytes legacy_authorized_client_identity_binary = 12;
+	optional bytes legacy_gameserver_identity_binary = 13;
+}
+
+message CMsgSteamDatagramSignedRelayAuthTicket {
+	optional fixed64 reserved_do_not_use = 1;
+	optional bytes ticket = 3;
+	optional bytes signature = 4;
+	optional fixed64 key_id = 2;
+	repeated .CMsgSteamDatagramCertificateSigned certs = 5;
+}
+
+message CMsgSteamDatagramCachedCredentialsForApp {
+	optional bytes private_key = 1;
+	optional bytes cert = 2;
+	repeated bytes relay_tickets = 3;
+}
+
+message CMsgSteamDatagramGameCoordinatorServerLogin {
+	optional uint32 time_generated = 1;
+	optional uint32 appid = 2;
+	optional bytes routing = 3;
+	optional bytes appdata = 4;
+	optional bytes legacy_identity_binary = 5;
+	optional string identity_string = 6;
+	optional fixed64 dummy_steam_id = 99;
+}
+
+message CMsgSteamDatagramSignedGameCoordinatorServerLogin {
+	optional .CMsgSteamDatagramCertificateSigned cert = 1;
+	optional bytes login = 2;
+	optional bytes signature = 3;
+}
+
+message CMsgSteamDatagramHostedServerAddressPlaintext {
+	optional fixed32 ipv4 = 1;
+	optional bytes ipv6 = 2;
+	optional uint32 port = 3;
+	optional fixed64 routing_secret = 4;
+	optional uint32 protocol_version = 5;
+}

@@ -1,0 +1,231 @@
+import "dota_shared_enums.proto";
+
+enum EGuildEventAuditAction {
+	k_EGuildEventAuditAction_Invalid = 0;
+	k_EGuildEventAuditAction_DevGrant = 1;
+	k_EGuildEventAuditAction_CompleteContract = 2;
+	k_EGuildEventAuditAction_CompleteChallenge = 3;
+	k_EGuildEventAuditAction_CompleteMatch_Winner = 4;
+	k_EGuildEventAuditAction_ChallengeProgress = 5;
+	k_EGuildEventAuditAction_CompleteMatch_Loser = 6;
+	k_EGuildEventAuditAction_WeeklyLeaderboard = 7;
+	k_EGuildEventAuditAction_ManualGrant = 8;
+}
+
+message CMsgGuildContract {
+	optional uint64 contract_id = 1;
+	optional uint32 challenge_instance_id = 2;
+	optional uint32 challenge_parameter = 3;
+	optional uint32 challenge_timestamp = 4;
+	optional uint32 assigned_account_id = 5;
+	optional uint32 contract_flags = 6;
+}
+
+message CMsgGuildContractSlot {
+	optional .CMsgGuildContract contract = 1;
+}
+
+message CMsgAccountGuildEventData {
+	optional uint32 guild_points = 1;
+	optional uint32 contracts_refreshed_timestamp = 2;
+	repeated .CMsgGuildContractSlot contract_slots = 3;
+	optional uint32 completed_challenge_count = 4;
+	optional uint32 challenges_refresh_timestamp = 5;
+	optional uint32 guild_weekly_percentile = 6;
+	optional uint32 guild_weekly_last_timestamp = 7;
+	optional uint32 last_weekly_claim_time = 8;
+	optional uint32 guild_current_percentile = 9;
+}
+
+message CMsgGuildActiveContracts {
+	optional uint32 contracts_refreshed_timestamp = 1;
+	repeated .CMsgGuildContract contracts = 2;
+}
+
+message CMsgGuildChallenge {
+	optional uint32 challenge_instance_id = 1;
+	optional uint32 challenge_parameter = 2;
+	optional uint32 challenge_timestamp = 3;
+	optional uint32 challenge_progress = 4;
+	optional uint32 challenge_flags = 5;
+}
+
+message CMsgGuildEventMember {
+	optional uint32 account_id = 1;
+	optional uint32 guild_points_earned = 2;
+}
+
+message CMsgClientToGCRequestAccountGuildEventData {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+}
+
+message CMsgClientToGCRequestAccountGuildEventDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidEvent = 5;
+		k_eInvalidGuild = 6;
+		k_eNotMember = 7;
+		k_eInvalidGuildEvent = 8;
+	}
+
+	optional .CMsgClientToGCRequestAccountGuildEventDataResponse.EResponse result = 1 [default = k_eInternalError];
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+	optional .CMsgAccountGuildEventData event_data = 3;
+}
+
+message CMsgGCToClientAccountGuildEventDataUpdated {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+	optional uint32 update_flags = 3;
+	optional .CMsgAccountGuildEventData guild_event_data = 4;
+	optional bool contracts_updated = 5;
+}
+
+message CMsgClientToGCRequestActiveGuildContracts {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+}
+
+message CMsgClientToGCRequestActiveGuildContractsResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidEvent = 5;
+		k_eInvalidGuild = 6;
+		k_eNotMember = 7;
+		k_eInvalidGuildEvent = 8;
+	}
+
+	optional .CMsgClientToGCRequestActiveGuildContractsResponse.EResponse result = 1 [default = k_eInternalError];
+	optional .CMsgGuildActiveContracts active_contracts = 2;
+	optional .CMsgGuildChallenge active_challenges = 3;
+}
+
+message CMsgGCToClientActiveGuildContractsUpdated {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+}
+
+message CMsgClientToGCSelectGuildContract {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+	optional uint64 contract_id = 3;
+	optional uint32 contract_slot = 4;
+}
+
+message CMsgClientToGCSelectGuildContractResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidEvent = 5;
+		k_eInvalidGuild = 6;
+		k_eNotMember = 7;
+		k_eInvalidGuildEvent = 8;
+		k_eInvalidContractID = 9;
+		k_eAlreadyAssigned = 10;
+		k_eInvalidContractSlot = 11;
+		k_eContractSlotLockedGuild = 12;
+		k_eContractSlotCooldown = 13;
+		k_eContractDuplicate = 14;
+		k_eContractSlotTimeError = 15;
+		k_eContractSlotLockedDotaPlus = 16;
+	}
+
+	optional .CMsgClientToGCSelectGuildContractResponse.EResponse result = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCRequestActiveGuildChallenge {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+}
+
+message CMsgClientToGCRequestActiveGuildChallengeResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidEvent = 5;
+		k_eInvalidGuild = 6;
+		k_eNotMember = 7;
+		k_eInvalidGuildEvent = 8;
+	}
+
+	optional .CMsgClientToGCRequestActiveGuildChallengeResponse.EResponse result = 1 [default = k_eInternalError];
+	optional .CMsgGuildChallenge active_challenge = 2;
+}
+
+message CMsgGCToClientActiveGuildChallengeUpdated {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+	optional .CMsgGuildChallenge active_challenge = 3;
+}
+
+message CMsgClientToGCRequestGuildEventMembers {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+}
+
+message CMsgClientToGCRequestGuildEventMembersResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidEvent = 5;
+		k_eInvalidGuild = 6;
+		k_eNotMember = 7;
+		k_eInvalidGuildEvent = 8;
+	}
+
+	optional .CMsgClientToGCRequestGuildEventMembersResponse.EResponse result = 1 [default = k_eInternalError];
+	repeated .CMsgGuildEventMember members = 2;
+}
+
+message CMsgGuildLeaderboardCombinedResponse {
+	optional .EEvent event_id = 1 [default = EVENT_ID_NONE];
+	optional uint32 region = 2;
+	optional uint32 last_updated = 3;
+	repeated uint32 guild_id = 4 [packed = true];
+	repeated uint32 rank = 5 [packed = true];
+	repeated uint32 current_percentile = 6 [packed = true];
+	repeated uint32 weekly_percentile = 7 [packed = true];
+	repeated uint32 points = 8 [packed = true];
+}
+
+message CMsgClientToGCClaimLeaderboardRewards {
+	optional uint32 guild_id = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+}
+
+message CMsgClientToGCClaimLeaderboardRewardsResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidEvent = 5;
+		k_eInvalidGuild = 6;
+		k_eNotMember = 7;
+		k_eInvalidGuildEvent = 8;
+		k_eDoesNotQualify = 9;
+		k_eAlreadyClaimed = 10;
+	}
+
+	optional .CMsgClientToGCClaimLeaderboardRewardsResponse.EResponse result = 1 [default = k_eInternalError];
+	optional uint32 event_points = 2;
+}

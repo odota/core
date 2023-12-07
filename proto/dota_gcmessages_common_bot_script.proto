@@ -1,0 +1,294 @@
+import "valveextensions.proto";
+
+message CMsgBotWorldState {
+	message Vector {
+		optional float x = 1;
+		optional float y = 2;
+		optional float z = 3;
+	}
+
+	message Player {
+		optional int32 player_id = 1 [(valve_map_key) = true];
+		optional uint32 hero_id = 2;
+		optional bool is_alive = 3;
+		optional float respawn_time = 4;
+		optional uint32 kills = 5;
+		optional uint32 deaths = 6;
+		optional uint32 assists = 7;
+		optional uint32 team_id = 8;
+		optional uint32 primary_unit_handle = 9 [default = 4294967295];
+		optional int32 mmr = 10;
+		optional .CMsgBotWorldState.Vector location = 11;
+	}
+
+	message Ability {
+		optional uint32 handle = 1 [(valve_map_key) = true];
+		optional int32 ability_id = 2 [default = -1];
+		optional uint32 slot = 3;
+		optional uint32 caster_handle = 5 [default = 4294967295];
+		optional uint32 level = 6;
+		optional uint32 cast_range = 10;
+		optional float channel_time = 11;
+		optional float cooldown_remaining = 12 [default = 0];
+		optional bool is_activated = 20;
+		optional bool is_toggled = 21;
+		optional bool is_in_ability_phase = 22;
+		optional bool is_channeling = 23;
+		optional bool is_stolen = 24;
+		optional bool is_fully_castable = 25;
+		optional uint32 charges = 30;
+		optional uint32 secondary_charges = 31;
+		optional bool is_combined_locked = 40;
+		optional int32 power_treads_stat = 50 [default = -1];
+	}
+
+	message DroppedItem {
+		optional int32 item_id = 1 [default = -1];
+		optional .CMsgBotWorldState.Vector location = 2;
+	}
+
+	message RuneInfo {
+		optional int32 type = 1;
+		optional .CMsgBotWorldState.Vector location = 2;
+		optional uint32 status = 3;
+		optional float time_since_seen = 4;
+	}
+
+	message TeleportInfo {
+		optional int32 player_id = 1;
+		optional .CMsgBotWorldState.Vector location = 2;
+		optional float time_remaining = 3;
+	}
+
+	message Modifier {
+		optional uint32 handle = 7 [(valve_map_key) = true];
+		optional string name = 1;
+		optional uint32 stack_count = 2;
+		optional uint32 ability_handle = 3 [default = 4294967295];
+		optional int32 ability_id = 4 [default = -1];
+		optional float remaining_duration = 5;
+		repeated uint32 auxiliary_units_handles = 6;
+	}
+
+	message LinearProjectile {
+		optional uint32 handle = 1 [(valve_map_key) = true];
+		optional uint32 caster_handle = 2 [default = 4294967295];
+		optional .CMsgBotWorldState.UnitType caster_unit_type = 9 [default = INVALID];
+		optional int32 caster_player_id = 3;
+		optional uint32 ability_handle = 4 [default = 4294967295];
+		optional int32 ability_id = 5 [default = -1];
+		optional .CMsgBotWorldState.Vector location = 6;
+		optional .CMsgBotWorldState.Vector velocity = 7;
+		optional uint32 radius = 8;
+	}
+
+	message TrackingProjectile {
+		optional uint32 handle = 10 [(valve_map_key) = true];
+		optional uint32 caster_handle = 1 [default = 4294967295];
+		optional .CMsgBotWorldState.UnitType caster_unit_type = 9 [default = INVALID];
+		optional int32 caster_player_id = 2;
+		optional uint32 ability_handle = 3 [default = 4294967295];
+		optional int32 ability_id = 4 [default = -1];
+		optional .CMsgBotWorldState.Vector location = 5;
+		optional uint32 velocity = 6;
+		optional bool is_dodgeable = 7;
+		optional bool is_attack = 8;
+	}
+
+	message AvoidanceZone {
+		optional .CMsgBotWorldState.Vector location = 1;
+		optional uint32 caster_handle = 2 [default = 4294967295];
+		optional .CMsgBotWorldState.UnitType caster_unit_type = 7 [default = INVALID];
+		optional int32 caster_player_id = 3;
+		optional uint32 ability_handle = 4 [default = 4294967295];
+		optional int32 ability_id = 5 [default = -1];
+		optional uint32 radius = 6;
+	}
+
+	message Courier {
+		optional uint32 handle = 1 [(valve_map_key) = true];
+		optional .CMsgBotWorldState.CourierState state = 2 [default = COURIER_STATE_INIT];
+		optional int32 player_id = 3;
+	}
+
+	message EventAbility {
+		optional int32 ability_id = 1 [default = -1];
+		optional int32 player_id = 2;
+		optional uint32 unit_handle = 3 [default = 4294967295];
+		optional .CMsgBotWorldState.Vector location = 4;
+		optional bool is_channel_start = 5;
+	}
+
+	message EventDamage {
+		optional uint32 damage = 1;
+		optional int32 victim_player_id = 2;
+		optional uint32 victim_unit_handle = 3 [default = 4294967295];
+		optional int32 attacker_player_id = 4;
+		optional uint32 attacker_unit_handle = 5 [default = 4294967295];
+		optional int32 ability_id = 6 [default = -1];
+	}
+
+	message EventCourierKilled {
+		optional uint32 team_id = 1;
+		optional uint32 courier_unit_handle = 2 [default = 4294967295];
+		optional int32 killer_player_id = 3;
+		optional uint32 killer_unit_handle = 4 [default = 4294967295];
+	}
+
+	message EventRoshanKilled {
+		optional int32 killer_player_id = 1;
+		optional uint32 killer_unit_handle = 2 [default = 4294967295];
+	}
+
+	message EventTree {
+		optional uint32 tree_id = 1;
+		optional bool destroyed = 2;
+		optional bool respawned = 3;
+		optional .CMsgBotWorldState.Vector location = 4;
+		optional bool delayed = 5;
+	}
+
+	message Unit {
+		optional uint32 handle = 1 [(valve_map_key) = true];
+		optional .CMsgBotWorldState.UnitType unit_type = 2 [default = INVALID];
+		optional string name = 3;
+		optional uint32 team_id = 4;
+		optional uint32 level = 5;
+		optional .CMsgBotWorldState.Vector location = 6;
+		optional bool is_alive = 7;
+		optional int32 player_id = 8;
+		optional int32 bounding_radius = 10;
+		optional int32 facing = 11;
+		optional uint32 ground_height = 12;
+		optional uint32 vision_range_daytime = 15;
+		optional uint32 vision_range_nighttime = 16;
+		optional int32 health = 20;
+		optional int32 health_max = 21;
+		optional float health_regen = 22;
+		optional int32 mana = 25;
+		optional int32 mana_max = 26;
+		optional float mana_regen = 27;
+		optional int32 base_movement_speed = 30;
+		optional int32 current_movement_speed = 31;
+		optional int32 anim_activity = 35;
+		optional float anim_cycle = 36;
+		optional int32 base_damage = 40;
+		optional int32 base_damage_variance = 41;
+		optional int32 bonus_damage = 42;
+		optional int32 attack_damage = 43;
+		optional int32 attack_range = 44;
+		optional float attack_speed = 45;
+		optional float attack_anim_point = 46;
+		optional int32 attack_acquisition_range = 47;
+		optional int32 attack_projectile_speed = 48;
+		optional uint32 attack_target_handle = 49 [default = 4294967295];
+		optional string attack_target_name = 52;
+		optional int32 attacks_per_second = 50 [default = -1];
+		optional float last_attack_time = 51 [default = -1];
+		optional uint32 bounty_xp = 60;
+		optional uint32 bounty_gold_min = 61;
+		optional uint32 bounty_gold_max = 62;
+		optional bool is_channeling = 65;
+		optional uint32 active_ability_handle = 66 [default = 4294967295];
+		optional bool is_attack_immune = 70;
+		optional bool is_blind = 71;
+		optional bool is_block_disabled = 72;
+		optional bool is_disarmed = 73;
+		optional bool is_dominated = 74;
+		optional bool is_evade_disabled = 75;
+		optional bool is_hexed = 76;
+		optional bool is_invisible = 77;
+		optional bool is_invulnerable = 78;
+		optional bool is_magic_immune = 79;
+		optional bool is_muted = 80;
+		optional bool is_nightmared = 82;
+		optional bool is_rooted = 83;
+		optional bool is_silenced = 84;
+		optional bool is_specially_deniable = 85;
+		optional bool is_stunned = 86;
+		optional bool is_unable_to_miss = 87;
+		optional bool has_scepter = 88;
+		optional bool is_specially_undeniable = 94;
+		repeated .CMsgBotWorldState.Ability abilities = 90 [(valve_map_field) = true];
+		repeated .CMsgBotWorldState.Ability items = 91 [(valve_map_field) = true];
+		repeated .CMsgBotWorldState.Modifier modifiers = 92 [(valve_map_field) = true];
+		repeated .CMsgBotWorldState.TrackingProjectile incoming_tracking_projectiles = 93 [(valve_map_field) = true];
+		optional uint32 action_type = 100;
+		optional uint32 ability_target_handle = 101 [default = 4294967295];
+		optional string ability_target_name = 103;
+		optional bool is_using_ability = 102;
+		optional uint32 primary_attribute = 110;
+		optional bool is_illusion = 111;
+		optional float respawn_time = 112;
+		optional uint32 buyback_cost = 113;
+		optional float buyback_cooldown = 114;
+		optional float spell_amplification = 115;
+		optional float armor = 116;
+		optional float magic_resist = 117;
+		optional float evasion = 118;
+		optional uint32 xp_needed_to_level = 120;
+		optional uint32 ability_points = 121;
+		optional int32 reliable_gold = 122 [default = -1];
+		optional int32 unreliable_gold = 123 [default = -1];
+		optional uint32 last_hits = 124;
+		optional uint32 denies = 125;
+		optional uint32 net_worth = 126;
+		optional uint32 strength = 127;
+		optional uint32 agility = 128;
+		optional uint32 intelligence = 129;
+		optional float remaining_lifespan = 130;
+		optional bool flying_courier = 140;
+		optional float shrine_cooldown = 150;
+		optional bool is_shrine_healing = 151;
+	}
+
+	enum UnitType {
+		INVALID = 0;
+		HERO = 1;
+		CREEP_HERO = 2;
+		LANE_CREEP = 3;
+		JUNGLE_CREEP = 4;
+		ROSHAN = 5;
+		TOWER = 6;
+		BARRACKS = 7;
+		SHRINE = 8;
+		FORT = 9;
+		BUILDING = 10;
+		COURIER = 11;
+		WARD = 12;
+	}
+
+	enum CourierState {
+		COURIER_STATE_INIT = -1;
+		COURIER_STATE_IDLE = 0;
+		COURIER_STATE_AT_BASE = 1;
+		COURIER_STATE_MOVING = 2;
+		COURIER_STATE_DELIVERING_ITEMS = 3;
+		COURIER_STATE_RETURNING_TO_BASE = 4;
+		COURIER_STATE_DEAD = 5;
+	}
+
+	optional uint32 team_id = 1;
+	optional float game_time = 2;
+	optional float dota_time = 3;
+	optional uint32 game_state = 4;
+	optional uint32 hero_pick_state = 5;
+	optional float time_of_day = 6;
+	optional float glyph_cooldown = 7;
+	optional float glyph_cooldown_enemy = 8;
+	repeated .CMsgBotWorldState.Player players = 10 [(valve_map_field) = true];
+	repeated .CMsgBotWorldState.Unit units = 11 [(valve_map_field) = true];
+	repeated .CMsgBotWorldState.DroppedItem dropped_items = 12 [(diff_encode_field) = 112];
+	repeated int32 dropped_items_deltas = 112;
+	repeated .CMsgBotWorldState.RuneInfo rune_infos = 13 [(diff_encode_field) = 113];
+	repeated int32 rune_infos_deltas = 113;
+	repeated .CMsgBotWorldState.TeleportInfo incoming_teleports = 14;
+	repeated .CMsgBotWorldState.LinearProjectile linear_projectiles = 15 [(valve_map_field) = true];
+	repeated .CMsgBotWorldState.AvoidanceZone avoidance_zones = 16;
+	repeated .CMsgBotWorldState.Courier couriers = 17 [(valve_map_field) = true];
+	repeated .CMsgBotWorldState.EventAbility ability_events = 20;
+	repeated .CMsgBotWorldState.EventDamage damage_events = 21;
+	repeated .CMsgBotWorldState.EventCourierKilled courier_killed_events = 22;
+	repeated .CMsgBotWorldState.EventRoshanKilled roshan_killed_events = 23;
+	repeated .CMsgBotWorldState.EventTree tree_events = 24;
+}

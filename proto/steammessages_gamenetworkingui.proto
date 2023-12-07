@@ -1,0 +1,42 @@
+import "steamnetworkingsockets_messages.proto";
+import "steamdatagram_messages_sdr.proto";
+
+option optimize_for = SPEED;
+option cc_generic_services = true;
+
+message CGameNetworkingUI_GlobalState {
+}
+
+message CGameNetworkingUI_ConnectionState {
+	optional string connection_key = 1;
+	optional uint32 appid = 2;
+	optional fixed32 connection_id_local = 3;
+	optional string identity_local = 4;
+	optional string identity_remote = 5;
+	optional uint32 connection_state = 10;
+	optional uint32 start_time = 12;
+	optional uint32 close_time = 13;
+	optional uint32 close_reason = 14;
+	optional string close_message = 15;
+	optional string status_loc_token = 16;
+	optional uint32 transport_kind = 20;
+	optional string sdrpopid_local = 21;
+	optional string sdrpopid_remote = 22;
+	optional string address_remote = 23;
+	optional .CMsgSteamDatagramP2PRoutingSummary p2p_routing = 24;
+	optional uint32 ping_interior = 25;
+	optional uint32 ping_remote_front = 26;
+	optional uint32 ping_default_internet_route = 27;
+	optional .CMsgSteamDatagramConnectionQuality e2e_quality_local = 30;
+	optional .CMsgSteamDatagramConnectionQuality e2e_quality_remote = 31;
+	optional uint64 e2e_quality_remote_instantaneous_time = 32;
+	optional uint64 e2e_quality_remote_lifetime_time = 33;
+	optional .CMsgSteamDatagramConnectionQuality front_quality_local = 40;
+	optional .CMsgSteamDatagramConnectionQuality front_quality_remote = 41;
+	optional uint64 front_quality_remote_instantaneous_time = 42;
+	optional uint64 front_quality_remote_lifetime_time = 43;
+}
+
+message CGameNetworkingUI_Message {
+	repeated .CGameNetworkingUI_ConnectionState connection_state = 1;
+}

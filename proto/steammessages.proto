@@ -1,0 +1,108 @@
+import "google/protobuf/descriptor.proto";
+
+extend .google.protobuf.FieldOptions {
+	optional bool key_field = 60000 [default = false];
+}
+
+extend .google.protobuf.MessageOptions {
+	optional int32 msgpool_soft_limit = 60000 [default = 32];
+	optional int32 msgpool_hard_limit = 60001 [default = 384];
+}
+
+enum EGCPlatform {
+	k_eGCPlatform_None = 0;
+	k_eGCPlatform_PC = 1;
+	k_eGCPlatform_Mac = 2;
+	k_eGCPlatform_Linux = 3;
+	k_eGCPlatform_Android = 4;
+	k_eGCPlatform_iOS = 5;
+}
+
+enum GCProtoBufMsgSrc {
+	GCProtoBufMsgSrc_Unspecified = 0;
+	GCProtoBufMsgSrc_FromSystem = 1;
+	GCProtoBufMsgSrc_FromSteamID = 2;
+	GCProtoBufMsgSrc_FromGC = 3;
+	GCProtoBufMsgSrc_ReplySystem = 4;
+	GCProtoBufMsgSrc_SpoofedSteamID = 5;
+}
+
+message CMsgProtoBufHeader {
+	option (msgpool_soft_limit) = 256;
+	option (msgpool_hard_limit) = 1024;
+
+	optional fixed64 client_steam_id = 1;
+	optional int32 client_session_id = 2;
+	optional uint32 source_app_id = 3;
+	optional fixed64 job_id_source = 10 [default = 18446744073709551615];
+	optional fixed64 job_id_target = 11 [default = 18446744073709551615];
+	optional string target_job_name = 12;
+	optional int32 eresult = 13 [default = 2];
+	optional string error_message = 14;
+	optional .GCProtoBufMsgSrc gc_msg_src = 200 [default = GCProtoBufMsgSrc_Unspecified];
+	optional int32 gc_dir_index_source = 201 [default = -1];
+}
+
+message CGCSystemMsg_GetAccountDetails {
+	option (msgpool_soft_limit) = 128;
+	option (msgpool_hard_limit) = 512;
+
+	optional fixed64 steamid = 1;
+	optional uint32 appid = 2;
+}
+
+message CGCSystemMsg_GetAccountDetails_Response {
+	option (msgpool_soft_limit) = 128;
+	option (msgpool_hard_limit) = 512;
+
+	optional uint32 eresult_deprecated = 1 [default = 2];
+	optional string account_name = 2;
+	optional string persona_name = 3;
+	optional bool is_profile_created = 26;
+	optional bool is_profile_public = 4;
+	optional bool is_inventory_public = 5;
+	optional bool is_vac_banned = 7;
+	optional bool is_cyber_cafe = 8;
+	optional bool is_school_account = 9;
+	optional bool is_limited = 10;
+	optional bool is_subscribed = 11;
+	optional uint32 package = 12;
+	optional bool is_free_trial_account = 13;
+	optional uint32 free_trial_expiration = 14;
+	optional bool is_low_violence = 15;
+	optional bool is_account_locked_down = 16;
+	optional bool is_community_banned = 17;
+	optional bool is_trade_banned = 18;
+	optional uint32 trade_ban_expiration = 19;
+	optional uint32 accountid = 20;
+	optional uint32 suspension_end_time = 21;
+	optional string currency = 22;
+	optional uint32 steam_level = 23;
+	optional uint32 friend_count = 24;
+	optional uint32 account_creation_time = 25;
+	optional bool is_steamguard_enabled = 27;
+	optional bool is_phone_verified = 28;
+	optional bool is_two_factor_auth_enabled = 29;
+	optional uint32 two_factor_enabled_time = 30;
+	optional uint32 phone_verification_time = 31;
+	optional uint64 phone_id = 33;
+	optional bool is_phone_identifying = 34;
+	optional uint32 rt_identity_linked = 35;
+	optional uint32 rt_birth_date = 36;
+	optional string txn_country_code = 37;
+	optional bool has_accepted_china_ssa = 38;
+	optional bool is_banned_steam_china = 39;
+}
+
+message CIPLocationInfo {
+	optional uint32 ip = 1;
+	optional float latitude = 2;
+	optional float longitude = 3;
+	optional string country = 4;
+	optional string state = 5;
+	optional string city = 6;
+}
+
+message CGCMsgGetIPLocationResponse {
+	repeated .CIPLocationInfo infos = 1;
+}

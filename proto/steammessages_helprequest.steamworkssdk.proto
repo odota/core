@@ -1,0 +1,22 @@
+import "steammessages_unified_base.steamworkssdk.proto";
+
+option cc_generic_services = true;
+
+message CHelpRequestLogs_UploadUserApplicationLog_Request {
+	optional uint32 appid = 1;
+	optional string log_type = 2;
+	optional string version_string = 3;
+	optional string log_contents = 4;
+}
+
+message CHelpRequestLogs_UploadUserApplicationLog_Response {
+	optional uint64 id = 1;
+}
+
+service HelpRequestLogs {
+	option (service_description) = "Service for dealing with user-submitted logs";
+
+	rpc UploadUserApplicationLog (.CHelpRequestLogs_UploadUserApplicationLog_Request) returns (.CHelpRequestLogs_UploadUserApplicationLog_Response) {
+		option (method_description) = "User uploading application logs";
+	}
+}
