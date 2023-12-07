@@ -1240,6 +1240,9 @@ export async function doArchive(matchId: string) {
   if (!match) {
     return;
   }
+  if (!match.can_be_archived) {
+    throw new Error('not eligible for archive: ' + match.match_id);
+  }
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches })
   );
@@ -1385,6 +1388,7 @@ export async function getMatchData(
         };
       }),
     };
+    final.can_be_archived = Boolean(api && gcdata && parsed);
     return final;
   }
   const result = await cassandra.execute(
@@ -1397,7 +1401,12 @@ export async function getMatchData(
     }
   );
   const deserializedResult = result.rows.map((m) => deserialize(m));
-  return deserializedResult[0];
+  const final: ParsedMatch | null = deserializedResult[0];
+  if (!final) {
+    return null;
+  }
+  final.can_be_archived = Boolean(final.version);
+  return final;
 }
 export async function getPlayerMatchData(
   matchId: string

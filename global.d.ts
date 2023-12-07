@@ -65,6 +65,9 @@ type Match = {
   // heroes is just pgroup alias?
   heroes: any;
   average_rank?: number | null;
+
+  // Determine if match has all data and can be archived
+  can_be_archived: boolean;
 };
 
 interface LiveMatch extends Match {
