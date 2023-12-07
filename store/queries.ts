@@ -14,7 +14,7 @@ import { es, INDEX } from './elasticsearch';
 import cassandra from './cassandra';
 import { getKeys, clearCache } from './cacheFunctions';
 import { benchmarks } from '../util/benchmarksUtil';
-import { archiveGet } from './archive';
+import { archiveGet, archivePut } from './archive';
 import knex from 'knex';
 import type { Client } from 'cassandra-driver';
 import type { Redis } from 'ioredis';
@@ -1118,6 +1118,14 @@ export async function insertMatchPromise(
   async function decideMetaParse() {
     // metaQueue.add()
   }
+  async function archiveMatch() {
+    // If type is parsed, we have all the data
+    // If it was deleted before and we might be trying with incomplete (no gcdata), then it's archived and is a no-op
+    // Later we can add more validation to ensure this
+    // if (options.type === 'parsed') {
+    //   await doArchive(match.match_id.toString());
+    // }
+  }
   async function decideReplayParse() {
     // Params like skipParse and forceParse determine whether we want to parse or not
     // Otherwise this assumes a fresh match and checks to see if pro or tracked player
@@ -1185,9 +1193,60 @@ export async function insertMatchPromise(
   await decideGcData();
   await decideScenarios();
   await decideMetaParse();
+  await archiveMatch();
   const parseJob = await decideReplayParse();
   return parseJob;
 }
+
+/**
+ * Archives old match blobs to s3 compatible storage
+ * @param matchId 
+ * @returns The result of the archive operation
+ */
+export async function doArchive(matchId: string) {
+  if (!config.MATCH_ARCHIVE_S3_ENDPOINT) {
+    return;
+  }
+  // We want to avoid re-archiving a match if it gets re-added to the blobstore
+  // This is because it might have less data once we start cleanup
+  // e.g. we archive a pro match with full data, it gets cleaned and then request it for parse
+  // We'll have api and parse data but not gcdata since we don't refetch it
+  // We can set a flag to make sure we never re-archive a match
+  // Also we can use this flag to determine whether to fetch from archive or blobstore
+  const isArchived = Boolean(
+    (
+      await db.raw('select match_id from parsed_matches where match_id = ? and is_archived IS TRUE', [
+        matchId,
+      ])
+    ).rows[0]
+  );
+  if (isArchived) {
+    return;
+  }
+  const match = await getMatchData(matchId);
+  const playerMatches = await getPlayerMatchData(matchId);
+  const blob = Buffer.from(
+    JSON.stringify({ ...match, players: match.players || playerMatches })
+  );
+  const result = await archivePut(matchId, blob);
+  if (result) {
+    // Mark the match archived
+    await db.raw(`UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`, [matchId]);
+    // TODO (howard) Delete from Cassandra after success
+    // await cassandra.execute(
+    //   "DELETE from player_matches where match_id = ?",
+    //   [id],
+    //   {
+    //     prepare: true,
+    //   }
+    // );
+    // await cassandra.execute("DELETE from matches where match_id = ?", [id], {
+    //   prepare: true,
+    // });
+  }
+  return result;
+}
+
 export function getItemTimings(req: Request, cb: ErrorCb) {
   const heroId = req.query.hero_id || 0;
   const item = req.query.item || '';

@@ -2,10 +2,8 @@
 import crypto from 'crypto';
 import cassandra from '../store/cassandra';
 import db from '../store/db';
-import { archivePut } from '../store/archive';
-import { getMatchData, getPlayerMatchData } from '../store/queries';
+import { doArchive } from '../store/queries';
 import { eachLimit } from '../util/utility';
-import config from '../config.js';
 
 function genRandomNumber(byteCount: number, radix: number): string {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`).toString(
@@ -68,10 +66,8 @@ async function start() {
           })
         )
       );
-      if (config.MATCH_ARCHIVE_S3_ENDPOINT) {
-        const funcs = parsedIds.map((id) => () => doArchive(id));
-        await eachLimit(funcs, 10);
-      }
+      const funcs = parsedIds.map((id) => () => doArchive(id));
+      await eachLimit(funcs, 10);
       // TODO (howard) remove insert once backfill complete
       await Promise.all(
         parsedIds.map((id) =>
@@ -85,51 +81,5 @@ async function start() {
       console.log(e);
     }
   }
-}
-// TODO (howard) Can we archive on insertMatch if it's parsed?
-/**
- * Archives old match blobs to s3 compatible storage
- * @param matchId 
- * @returns The result of the archive operation
- */
-async function doArchive(matchId: string) {
-  // We want to avoid re-archiving a match if it gets re-added to the blobstore
-  // This is because it might have less data
-  // e.g. we archive a pro match with full data, it gets cleaned and then request it for parse
-  // We'll have api and parse data but not gcdata since we don't refetch it
-  // We can set a flag to make sure we never re-archive a match
-  // Also we can use this flag to determine whether to fetch from archive or blobstore
-  const isArchived = Boolean(
-    (
-      await db.raw('select match_id from parsed_matches where match_id = ? and is_archived IS TRUE', [
-        matchId,
-      ])
-    ).rows[0]
-  );
-  if (isArchived) {
-    return;
-  }
-  const match = await getMatchData(matchId);
-  const playerMatches = await getPlayerMatchData(matchId);
-  const blob = Buffer.from(
-    JSON.stringify({ ...match, players: playerMatches })
-  );
-  const result = await archivePut(matchId, blob);
-  if (result) {
-    // Mark the match archived
-    await db.raw(`UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`, [matchId]);
-    // TODO (howard) Delete from Cassandra after archival
-    // await cassandra.execute(
-    //   "DELETE from player_matches where match_id = ?",
-    //   [matchId],
-    //   {
-    //     prepare: true,
-    //   }
-    // );
-    // await cassandra.execute("DELETE from matches where match_id = ?", [matchId], {
-    //   prepare: true,
-    // });
-  }
-  return result;
 }
 start();
