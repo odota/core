@@ -41,7 +41,6 @@ async function getGcDataFromRetriever(match: GcDataJob) {
     party_size: body.match.players.filter(
       (matchPlayer: GcPlayer) => matchPlayer.party_id?.low === p.party_id?.low
     ).length,
-    net_worth: p.net_worth,
   }));
   const matchToInsert = {
     match_id: match.match_id,
@@ -82,7 +81,7 @@ export default async function getGcData(match: GcDataJob) {
     [match.match_id]
   );
   const gcdata = saved.rows[0];
-  if (gcdata) {
+  if (config.NODE_ENV !== 'development' && gcdata) {
     // console.log('found cached gcdata for %s', matchId);
     redisCount(redis, 'cached_gcdata');
     return gcdata;
