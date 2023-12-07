@@ -77,21 +77,13 @@ async function runReliableQueue(
   });
 }
 
-function addJob(queueName: 'mmrQueue', job: MmrJob): Promise<number>;
-function addJob(queueName: 'countsQueue', job: CountsJob): Promise<number>;
-function addJob(queueName: 'fhQueue', job: FullHistoryJob): Promise<number>;
-function addJob(queueName: 'gcQueue', job: GcDataJob): Promise<number>;
-function addJob(queueName: 'scenariosQueue', job: ScenariosJob): Promise<number>;
-async function addJob(queueName: QueueName, job: QueueJob) {
-  return await redis.rpush(queueName, JSON.stringify(job));
+async function addJob(input: QueueInput) {
+  const { name, data } = input;
+  return await redis.rpush(name, JSON.stringify(data));
 }
 
-function addReliableJob(queueName: 'parse', job: { data: ParseJob }, options: ReliableQueueOptions): Promise<ReliableQueueRow>;
-async function addReliableJob(
-  queueName: QueueName,
-  job: { data: QueueJob },
-  options: ReliableQueueOptions
-) {
+async function addReliableJob(input: QueueInput, options: ReliableQueueOptions) {
+  const { name, data } = input;
   const result = await db.raw<{
     rows: ReliableQueueRow[];
   }>(
@@ -99,10 +91,10 @@ async function addReliableJob(
   VALUES (?, ?, ?, ?, ?, ?) 
   RETURNING *`,
     [
-      queueName,
+      name,
       new Date(),
       options.attempts || 1,
-      JSON.stringify(job.data),
+      JSON.stringify(data),
       new Date(),
       options.priority || 10,
     ]

@@ -1000,7 +1000,7 @@ export async function insertMatchPromise(
       return;
     }
     if (options.origin === 'scanner' && options.type === 'api') {
-      await queue.addJob('countsQueue', match as Match);
+      await queue.addJob({ name: 'countsQueue', data: match as Match});
     }
   }
   async function decideMmr() {
@@ -1017,10 +1017,10 @@ export async function insertMatchPromise(
     });
     await Promise.all(
       arr.map((p) =>
-        queue.addJob('mmrQueue', {
+        queue.addJob({name: 'mmrQueue', data: {
           match_id: match.match_id,
           account_id: p.account_id,
-        })
+        }})
       )
     );
   }
@@ -1057,10 +1057,20 @@ export async function insertMatchPromise(
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      await queue.addJob('gcQueue', {
+      await queue.addJob({name: 'gcQueue', data: {
         match_id: match.match_id,
         pgroup: match.pgroup,
-      });
+      }});
+    }
+  }
+  async function decideScenarios() {
+    // Decide if we want to do scenarios (requires parsed match)
+    // Only if it originated from scanner to avoid triggering on requests
+    if (
+      options.origin === 'scanner' &&
+      match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
+    ) {
+      await queue.addJob({name: 'scenariosQueue', data: match.match_id.toString()});
     }
   }
   async function decideMetaParse() {
@@ -1094,8 +1104,8 @@ export async function insertMatchPromise(
       priority = -2;
     }
     const job = await queue.addReliableJob(
-      'parse',
       {
+        name: 'parse',
         data: {
           match_id: match.match_id,
           // leagueid to determine whether to upsert Postgres after parse
@@ -1105,12 +1115,11 @@ export async function insertMatchPromise(
           duration: match.duration,
           pgroup: match.pgroup,
           origin: options.origin,
-        },
-      },
-      {
-        priority,
-        attempts: options.attempts || 20,
-      }
+        } 
+      }, {
+          priority,
+          attempts: options.attempts || 20,
+        }
     );
     if (
       options.origin === 'scanner' &&
@@ -1133,6 +1142,7 @@ export async function insertMatchPromise(
   await decideMmr();
   await decideProfile();
   await decideGcData();
+  await decideScenarios();
   await decideMetaParse();
   const parseJob = await decideReplayParse();
   return parseJob;

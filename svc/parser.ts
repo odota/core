@@ -45,20 +45,13 @@ async function parseProcessor(job: ParseJob) {
   await insertMatchPromise(result, {
     type: 'parsed',
     skipParse: true,
+    origin: job.origin,
   });
   // Mark this match parsed
   await db.raw(
     'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
     [Number(match.match_id)]
   );
-  // Decide if we want to do scenarios (requires parsed match)
-  // Only if it originated from scanner to avoid triggering on requests
-  if (
-    match.origin === 'scanner' &&
-    match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
-  ) {
-    await queue.addJob('scenariosQueue', match.match_id.toString());
-  }
   console.log('[PARSER] completed parse of match %s', match.match_id);
   return true;
 }

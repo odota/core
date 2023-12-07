@@ -359,7 +359,7 @@ app.use(
     redisCount(redis, '500_error');
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       // default express handler
-      return cb(err);
+      return cb(JSON.stringify(err));
     }
     console.error(err.stack);
     return res.status(500).json({

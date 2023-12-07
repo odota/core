@@ -43,7 +43,7 @@ type StringErrorCb = (
   result?: string | null | undefined
 ) => void;
 
-interface Match {
+type Match = {
   match_id: number;
   players: Player[];
   start_time: number;
@@ -86,7 +86,7 @@ interface GcMatch extends Partial<Match> {
   players: GcPlayer[];
 }
 
-interface Player {
+type Player = {
   player_slot: number;
   account_id: number;
   hero_id: number;
@@ -200,7 +200,7 @@ type PlayerMatch = Player & Match & { players?: Player[] };
 type ParsedPlayerMatch = ParsedPlayer &
   ParsedMatch & { players?: ParsedPlayer[] };
 
-interface User {
+type User = {
   account_id: number;
   fh_unavailable: boolean;
   steamid: string;
@@ -214,13 +214,13 @@ interface User {
   status: number;
 }
 
-interface PlayerRating {
+type PlayerRating = {
   account_id: number;
   rank_tier: number;
   leaderboard_rank: number;
 }
 
-interface FullHistoryJob {
+type FullHistoryJob = {
   account_id: number;
   short_history?: boolean;
 
@@ -228,12 +228,12 @@ interface FullHistoryJob {
   fh_unavailable?: boolean;
 }
 
-interface MmrJob {
+type MmrJob = {
   account_id: number;
   match_id: number;
 }
 
-interface GcDataJob {
+type GcDataJob = {
   match_id: number;
   pgroup: any;
   useGcDataArr?: boolean;
@@ -243,7 +243,7 @@ interface GcDataJob {
 type CountsJob = Match;
 type ScenariosJob = string;
 
-interface ParseJob {
+type ParseJob = {
   match_id: number;
   pgroup: any;
   leagueid?: number;
@@ -252,7 +252,27 @@ interface ParseJob {
   duration?: number;
 }
 
-type QueueJob = GcDataJob | MmrJob | FullHistoryJob | CountsJob | ScenariosJob;
+type QueueJob = QueueInput["data"];
+type QueueName = QueueInput["name"];
+type QueueInput = {
+  name: 'mmrQueue';
+  data: MmrJob;
+} | {
+  name: 'countsQueue';
+  data: CountsJob;
+} | {
+  name: 'fhQueue';
+  data: FullHistoryJob;
+} | {
+  name: 'scenariosQueue';
+  data: ScenariosJob;
+} | {
+  name: 'parse';
+  data: ParseJob;
+} | {
+  name: 'gcQueue';
+  data: GcDataJob;
+}
 
 type ReliableQueueRow = {
   id: number;
@@ -266,18 +286,10 @@ type ReliableQueueRow = {
 
 type ReliableQueueOptions = { attempts: number; priority?: number };
 
-interface ProPlayer {
+type ProPlayer = {
   name: string;
   account_id: number;
 }
-
-type QueueName =
-  | 'mmrQueue'
-  | 'countsQueue'
-  | 'fhQueue'
-  | 'scenariosQueue'
-  | 'parse'
-  | 'gcQueue';
 
 type DataType = 'api' | 'parsed' | 'gcdata' | 'meta';
 type DataOrigin = 'scanner';
