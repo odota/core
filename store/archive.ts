@@ -56,6 +56,9 @@ export async function archivePut(key: string, blob: Buffer) {
   if (!client) {
     return null;
   }
+  if (blob.length < 1000) {
+    throw new Error('[ARCHIVE] Tried to archive less than 1kb so something is probably wrong');
+  }
   try {
     const data = gzipSync(blob);
     const command = new PutObjectCommand({
