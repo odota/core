@@ -195,6 +195,15 @@ CREATE TABLE IF NOT EXISTS player_caches (
   average_rank int,
 );
 
+CREATE TABLE IF NOT EXISTS match_blobs (
+  PRIMARY KEY (match_id),
+  match_id bigint,
+  api text,
+  gcdata text,
+  parsed text,
+);
+
 ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
 ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
+ALTER TABLE match_blobs WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };

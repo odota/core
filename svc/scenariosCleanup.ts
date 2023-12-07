@@ -43,7 +43,6 @@ function clearScenariosTables(cb: ErrorCb) {
           'delete from hero_search where match_id < (select max(match_id) - 150000000 from hero_search)'
         ).asCallback(cb);
       },
-      // TODO (howard) Implement a cleanup for the blobstore
     ],
     cb
   );

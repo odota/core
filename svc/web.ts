@@ -355,13 +355,12 @@ app.use((req, res) =>
 // 500 route
 app.use(
   (err: Error, req: express.Request, res: express.Response, cb: ErrorCb) => {
-    console.log('[ERR]', req.originalUrl);
+    console.log('[ERR]', req.originalUrl, err);
     redisCount(redis, '500_error');
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       // default express handler
       return cb(JSON.stringify(err));
     }
-    console.error(err.stack);
     return res.status(500).json({
       error: 'Internal Server Error',
     });

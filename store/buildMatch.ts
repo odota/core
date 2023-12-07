@@ -1,4 +1,5 @@
 import constants from 'dotaconstants';
+import fs from 'fs';
 import config from '../config.js';
 import { computeMatchData } from '../util/compute';
 import {
@@ -94,7 +95,7 @@ async function backfill(matchId: string) {
   // Count for logging
   redisCount(redis, 'steam_api_backfill');
 }
-async function getMatch(matchId: string) {
+async function getMatch(matchId: string, useBlobStore: boolean) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
@@ -110,20 +111,21 @@ async function getMatch(matchId: string) {
   let match: ParsedMatch | null = null;
   if (isArchived) {
     // Fallback to blobstore if we don't have it
-    match = (await getArchivedMatch(matchId)) || (await getMatchData(matchId));
+    match = (await getArchivedMatch(matchId)) || (await getMatchData(matchId, useBlobStore));
   } else {
     // Fetch from blobstore
-    match = await getMatchData(matchId);
+    match = await getMatchData(matchId, useBlobStore);
   }
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
     await backfill(matchId);
-    match = await getMatchData(matchId);
+    match = await getMatchData(matchId, useBlobStore);
   }
   if (!match) {
     // Still don't have it
     return null;
   }
+  // config.NODE_ENV === 'development' && fs.writeFileSync('./build/test.json', JSON.stringify(match));
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
   // If we fetched from archive or blobstore we already have players
@@ -145,7 +147,7 @@ async function getMatch(matchId: string) {
         ON players.account_id = notable_players.account_id
         WHERE players.account_id = ?
       `,
-          [r.account_id]
+          [r.account_id ?? null]
         )
         .then((names) => ({ ...r, ...names.rows[0] }))
     )
@@ -211,17 +213,14 @@ async function getMatch(matchId: string) {
   };
   return Promise.resolve(matchResult);
 }
-async function buildMatch(matchId: string) {
+async function buildMatch(matchId: string, useBlobStore: boolean) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {
     return JSON.parse(reply);
   }
-  const match = await getMatch(matchId);
-  if (!match) {
-    return null;
-  }
-  if (match.version && config.ENABLE_MATCH_CACHE) {
+  const match = await getMatch(matchId, useBlobStore);
+  if (match && match.version && config.ENABLE_MATCH_CACHE) {
     await redis.setex(key, config.MATCH_CACHE_SECONDS, JSON.stringify(match));
   }
   return match;

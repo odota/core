@@ -68,6 +68,7 @@ async function start() {
       );
       const funcs = parsedIds.map((id) => () => doArchive(id));
       await eachLimit(funcs, 10);
+
       // TODO (howard) remove insert once backfill complete
       await Promise.all(
         parsedIds.map((id) =>
@@ -77,6 +78,7 @@ async function start() {
           )
         )
       );
+      // TODO (howard) Implement a cleanup for the blobstore to remove unparsed matches
     } catch (e) {
       console.log(e);
     }

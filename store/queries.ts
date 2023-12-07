@@ -910,6 +910,7 @@ export async function insertMatchPromise(
     await updateTeamRankings(match as Match, options);
   }
   async function upsertMatchCassandra() {
+    // TODO (howard) we can remove this function once blobstore is populated
     // We do this regardless of type (with different sets of fields)
     const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
     const obj: any = serialize(cleaned);
@@ -966,7 +967,7 @@ export async function insertMatchPromise(
     await insertPlayerCache(copy);
   }
   async function upsertMatchBlobs() {
-    // TODO (howard) this function is meant to replace the cassandra match/player_match tables
+    // This is meant to eventually replace the cassandra match/player_match tables
     // It's a table holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces
@@ -991,7 +992,9 @@ export async function insertMatchPromise(
       // We added the match_id to each player for insertion, so remove it here
       delete p.match_id;
     });
-    // TODO (howard) insert the data to blobstore
+    await cassandra.execute(`INSERT INTO match_blobs(match_id, ${options.type}) VALUES(?, ?)`, [copy.match_id, JSON.stringify(copy)], {
+      prepare: true,
+    });
     // fs.writeFileSync('./build/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy));
   }
   async function telemetry() {
@@ -1122,9 +1125,11 @@ export async function insertMatchPromise(
     // If type is parsed, we have all the data
     // If it was deleted before and we might be trying with incomplete (no gcdata), then it's archived and is a no-op
     // Later we can add more validation to ensure this
-    // if (options.type === 'parsed') {
-    //   await doArchive(match.match_id.toString());
-    // }
+    return;
+    // TODO (howard) enable this to start archiving matches on insert
+    if (options.type === 'parsed') {
+      await doArchive(match.match_id.toString());
+    }
   }
   async function decideReplayParse() {
     // Params like skipParse and forceParse determine whether we want to parse or not
@@ -1199,7 +1204,7 @@ export async function insertMatchPromise(
 }
 
 /**
- * Archives old match blobs to s3 compatible storage
+ * Archives old match blobs to s3 compatible storage and removes from blobstore
  * @param matchId 
  * @returns The result of the archive operation
  */
@@ -1221,9 +1226,10 @@ export async function doArchive(matchId: string) {
     ).rows[0]
   );
   if (isArchived) {
+    await deleteFromBlobStore(matchId);
     return;
   }
-  const match = await getMatchData(matchId);
+  const match = await getMatchData(matchId, false);
   const playerMatches = await getPlayerMatchData(matchId);
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches })
@@ -1232,19 +1238,27 @@ export async function doArchive(matchId: string) {
   if (result) {
     // Mark the match archived
     await db.raw(`UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`, [matchId]);
-    // TODO (howard) Delete from Cassandra after success
-    // await cassandra.execute(
-    //   "DELETE from player_matches where match_id = ?",
-    //   [id],
-    //   {
-    //     prepare: true,
-    //   }
-    // );
-    // await cassandra.execute("DELETE from matches where match_id = ?", [id], {
-    //   prepare: true,
-    // });
+    await deleteFromBlobStore(matchId);
   }
   return result;
+}
+
+async function deleteFromBlobStore(id: string) {
+  if (true) {
+    return;
+  }
+  // TODO (howard) Enable deletion after testing
+  await cassandra.execute(
+    "DELETE from player_matches where match_id = ?",
+    [id],
+    {
+      prepare: true,
+    }
+  );
+  await cassandra.execute("DELETE from matches where match_id = ?", [id], {
+    prepare: true,
+  });
+  await cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [id]);
 }
 
 export function getItemTimings(req: Request, cb: ErrorCb) {
@@ -1317,8 +1331,38 @@ export function getMetadata(req: Request, cb: ErrorCb) {
     cb
   );
 }
-export async function getMatchData(matchId: string): Promise<ParsedMatch> {
-  // TODO (howard) Implement parameter to construct from blobstore instead
+export async function getMatchData(matchId: string, useBlobStore: boolean): Promise<ParsedMatch | null> {
+  if (useBlobStore) {
+    const result = await cassandra.execute('SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?', [Number(matchId)], {
+      prepare: true,
+      fetchSize: 1,
+      autoPage: true,
+    });
+    const row = result.rows[0];
+    if (!row) {
+      return null;
+    }
+    Object.keys(row).forEach(key => {
+      row[key] = JSON.parse(row[key]);
+    });
+    const { api, gcdata, parsed } = row; 
+    // Merge the results together
+    const final: ParsedMatch = {
+      ...api,
+      ...gcdata,
+      ...parsed,
+      players: api?.players.map((apiPlayer: any) => {
+        const gcPlayer = gcdata?.players.find((gcp: any) => gcp.player_slot === apiPlayer.player_slot);
+        const parsedPlayer = parsed?.players.find((pp: any) => pp.player_slot === apiPlayer.player_slot);
+        return {
+          ...apiPlayer,
+          ...gcPlayer,
+          ...parsedPlayer,
+        }
+      }),
+    };
+    return final;
+  }
   const result = await cassandra.execute(
     'SELECT * FROM matches where match_id = ?',
     [Number(matchId)],
