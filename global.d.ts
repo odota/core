@@ -126,6 +126,7 @@ type Player = {
   scaled_hero_healing?: number;
   aghanims_shard?: number;
   aghanims_scepter?: number;
+  moonshard?: number;
 
   // Added in buildMatch for display
   is_subscriber: boolean;

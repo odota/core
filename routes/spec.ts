@@ -1739,8 +1739,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     type: 'api',
                     attempts: 1,
                     priority: req.query.api_key ? 2 : 1,
-                    // Reduce load: only actually reprocess the replay for league matches
-                    forceParse: Boolean(match.leagueid) || !isParsed,
+                    // Reduce load: only reparse the replay for league matches
+                    forceParse: config.NODE_ENV === 'development' || (Boolean(match.leagueid) || !isParsed),
                   });
                   exitWithJob(null, job);
                 } catch (e) {

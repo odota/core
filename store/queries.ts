@@ -2,6 +2,7 @@ import async from 'async';
 import moment from 'moment';
 import constants from 'dotaconstants';
 import util from 'util';
+import fs from 'fs';
 import config from '../config.js';
 import queue from './queue';
 import su from '../util/scenariosUtil';
@@ -716,6 +717,10 @@ async function updateTeamRankings(match: Match, options: InsertMatchOptions) {
   }
 }
 function createMatchCopy(match: any, players: any[]): Match {
+  // Makes a deep copy of the match
+  // This takes match and players separately since we might have applied changes to players without mutating the original match
+  // e.g. deleting anonymous account_ids
+  // This ensures we get a copy with the changes applied
   const copy = JSON.parse(JSON.stringify(match));
   copy.players = JSON.parse(JSON.stringify(players));
   return copy;
@@ -727,6 +732,8 @@ export async function insertMatchPromise(
   // We currently can call this function from many places
   // There is a type to indicate source: api, gcdata, parsed
   // Also an origin to indicate the context: scanner (fresh match) or request
+
+  // Make a copy of the players if they exist (always should)
   const players: ParsedPlayer[] = match.players
     ? JSON.parse(JSON.stringify(match.players))
     : undefined;
@@ -747,7 +754,8 @@ export async function insertMatchPromise(
         }
       });
     }
-    // if we have a pgroup from earlier, use it to fill out hero_ids (used after parse)
+    // this is for the parsed case
+    // if we have a pgroup from earlier, use it to fill out hero_ids (used when inserting parsed data since we don't have hero_id from parser)
     if (players && match.pgroup) {
       players.forEach((p) => {
         if (match.pgroup[p.player_slot]) {
@@ -755,7 +763,8 @@ export async function insertMatchPromise(
         }
       });
     }
-    // build match.pgroup so after parse we can figure out the account_ids for each slot
+    // this is an API insert
+    // build match.pgroup so after parse we can figure out the account/hero ids for each slot
     if (players && !match.pgroup) {
       match.pgroup = {};
       players.forEach((p) => {
@@ -766,7 +775,7 @@ export async function insertMatchPromise(
         };
       });
     }
-    // ability_upgrades_arr
+    // Reduce the abiilty upgrades info into ability_upgrades_arr (just an array of numbers)
     if (players) {
       players.forEach((p) => {
         if (p.ability_upgrades) {
@@ -958,11 +967,32 @@ export async function insertMatchPromise(
   }
   async function upsertMatchBlobs() {
     // TODO (howard) this function is meant to eventually replace the cassandra match/player_match tables
-    // NOTE: remove pgroup since we don't actually need it stored
     // It's a temporary store (postgres table) holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces
-    // After some retention period we stick the data in match archive and delete it
+    // After some retention period we stick the assembled blob in match archive and delete it
+    const copy = createMatchCopy(match, players);
+    // NOTE: remove pgroup since we don't actually need it stored
+    // player_caches stores it as a field called heroes used for heroes/players played with/against aggregation
+    delete copy.pgroup;
+    copy.players.forEach(p => {
+      // We only store the _arr version to save space
+      delete p.ability_upgrades;
+      
+      // There are a bunch of fields in the API response we also don't use, e.g. "scaled_hero_damage"
+      delete p.scaled_hero_damage;
+      delete p.scaled_tower_damage;
+      delete p.scaled_hero_healing;
+      // We can keep scepter/shard/moonshard from API and then we're not as reliant on permanent_buffs from GC
+      // delete p.aghanims_scepter;
+      // delete p.aghanims_shard;
+      // delete p.moonshard;
+
+      // We added the match_id to each player for insertion, so remove it here
+      delete p.match_id;
+    });
+    // TODO insert the data to temp table
+    // fs.writeFileSync('./build/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy));
   }
   async function telemetry() {
     // Publish to log stream
@@ -988,7 +1018,7 @@ export async function insertMatchPromise(
   }
   async function clearRedisPlayer() {
     const arr: { key: string; account_id: string }[] = [];
-    match.players.forEach((player) => {
+    players.forEach((player) => {
       getKeys().forEach((key) => {
         if (player.account_id) {
           arr.push({ key, account_id: player.account_id?.toString() });
@@ -1008,7 +1038,7 @@ export async function insertMatchPromise(
   }
   async function decideMmr() {
     // We only do this if fresh match and ranked
-    const arr = match.players.filter((p) => {
+    const arr = players.filter((p) => {
       return (
         options.origin === 'scanner' &&
         options.type === 'api' &&
@@ -1024,7 +1054,7 @@ export async function insertMatchPromise(
           name: 'mmrQueue',
           data: {
             match_id: match.match_id,
-            account_id: p.account_id,
+            account_id: p.account_id as number,
           },
         })
       )
@@ -1032,7 +1062,7 @@ export async function insertMatchPromise(
   }
   async function decideProfile() {
     // We only do this if fresh match
-    const arr = match.players.filter((p) => {
+    const arr = players.filter((p) => {
       return (
         match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) &&
         options.origin === 'scanner' &&
@@ -1049,7 +1079,7 @@ export async function insertMatchPromise(
           db,
           'players',
           { account_id: p.account_id },
-          { account_id: p.account_id }
+          { account_id: p.account_id as number }
         )
       )
     );
@@ -1099,7 +1129,7 @@ export async function insertMatchPromise(
     }
     // determine if any player in the match is tracked
     const trackedScores = await Promise.all(
-      match.players.map((p) => {
+      players.map((p) => {
         return redis.zscore('tracked', String(p.account_id));
       })
     );
