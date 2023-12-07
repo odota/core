@@ -1281,7 +1281,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
           db.raw(
             `
-          SELECT * FROM parsed_matches
+          SELECT match_id FROM parsed_matches
           WHERE match_id < ?
           ORDER BY match_id DESC
           LIMIT 100

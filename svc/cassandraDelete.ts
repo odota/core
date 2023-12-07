@@ -86,26 +86,38 @@ async function start() {
     }
   }
 }
+// TODO (howard) Can we archive on insertMatch if it's parsed?
+/**
+ * Archives old match blobs to s3 compatible storage
+ * @param matchId 
+ * @returns The result of the archive operation
+ */
 async function doArchive(matchId: string) {
-  // archive old parsed match blobs to s3 compatible storage
-  // TODO make sure we haven't archived it already
+  // We want to avoid re-archiving a match if it gets re-added to the blobstore
+  // This is because it might have less data
+  // e.g. we archive a pro match with full data, it gets cleaned and then request it for parse
+  // We'll have api and parse data but not gcdata since we don't refetch it
+  // We can set a flag to make sure we never re-archive a match
+  // Also we can use this flag to determine whether to fetch from archive or blobstore
+  const isArchived = Boolean(
+    (
+      await db.raw('select match_id from parsed_matches where match_id = ? and is_archived IS TRUE', [
+        matchId,
+      ])
+    ).rows[0]
+  );
+  if (isArchived) {
+    return;
+  }
   const match = await getMatchData(matchId);
   const playerMatches = await getPlayerMatchData(matchId);
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: playerMatches })
   );
-  const result = await archivePut(matchId.toString(), blob);
+  const result = await archivePut(matchId, blob);
   if (result) {
-    // TODO (howard) currently it's possible to re-archive with less data
-    // because we don't make another gcdata call if we already have replay info
-    // e.g. we archive a pro match with full data, it gets deleted and then request it for parse
-    // We'll have api and parse data but not gcdata since we don't refetch it
-    // But currently we archive anything that's parsed, so we can overwrite with less data
-    // Need to find a solution for this before starting deletion
-    // We can mark backfilled matches ineligible for archival (but then we can never archive missed matches from scanner)
-    // We could ensure that all of api/gcdata/parsed is present (But then we won't archive older matches that don't have gcdata)
-    // We could set a flag to make sure we never re-archive a match
-    // Also we can check the DB to determine whether to fetch from archive or cassandra
+    // Mark the match archived
+    await db.raw(`UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`, [matchId]);
     // TODO (howard) Delete from Cassandra after archival
     // await cassandra.execute(
     //   "DELETE from player_matches where match_id = ?",
@@ -117,9 +129,7 @@ async function doArchive(matchId: string) {
     // await cassandra.execute("DELETE from matches where match_id = ?", [matchId], {
     //   prepare: true,
     // });
-    // Mark the match archived
-    // await db.raw(`UPDATE parsed_matches SET is_archived = TRUE`);
   }
-  return;
+  return result;
 }
 start();

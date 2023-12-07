@@ -1,6 +1,6 @@
 import constants from 'dotaconstants';
 import config from '../config.js';
-import compute from '../util/compute';
+import { computeMatchData } from '../util/compute';
 import {
   generateJob,
   getDataPromise,
@@ -17,8 +17,8 @@ import {
   getArchivedMatch,
   getMatchBenchmarks,
 } from './queries';
-const { computeMatchData } = compute;
-async function extendPlayerData(player: ParsedPlayerMatch, match: ParsedMatch) {
+
+async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
   const p = {
     ...player,
     radiant_win: match.radiant_win,
@@ -29,7 +29,7 @@ async function extendPlayerData(player: ParsedPlayerMatch, match: ParsedMatch) {
     game_mode: match.game_mode,
     is_contributor: player.account_id && isContributor(player.account_id),
   };
-  computeMatchData(p);
+  computeMatchData(p as unknown as ParsedPlayerMatch);
   const row = await db
     .first()
     .from('rank_tier')
@@ -98,20 +98,22 @@ async function getMatch(matchId: string) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
-  // Check if the match is parsed
-  // if so we prefer the archive since Cassandra may contain an unparsed version
-  const isParsed = Boolean(
+  // check if the match is archived
+  // if so we prefer the archive since the blobstore may have less data
+  const isArchived = Boolean(
     (
-      await db.raw('select match_id from parsed_matches where match_id = ?', [
+      await db.raw('select match_id from parsed_matches where match_id = ? and is_archived IS TRUE', [
         matchId,
       ])
     ).rows[0]
   );
   let match: ParsedMatch | null = null;
-  if (isParsed) {
+  if (isArchived) {
+    // Fallback to blobstore if we don't have it
     match = (await getArchivedMatch(matchId)) || (await getMatchData(matchId));
   } else {
-    match = (await getMatchData(matchId)) || (await getArchivedMatch(matchId));
+    // Fetch from blobstore
+    match = await getMatchData(matchId);
   }
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
@@ -123,8 +125,8 @@ async function getMatch(matchId: string) {
     return null;
   }
   redisCount(redis, 'build_match');
-  let playersMatchData = [];
-  // If we fetched from archive we already have players
+  let playersMatchData: ParsedPlayer[] = [];
+  // If we fetched from archive or blobstore we already have players
   playersMatchData = match.players || (await getPlayerMatchData(matchId));
   if (playersMatchData.length === 0) {
     // Could be due to partial deletion where we only finished deleting players

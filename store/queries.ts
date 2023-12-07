@@ -966,8 +966,8 @@ export async function insertMatchPromise(
     await insertPlayerCache(copy);
   }
   async function upsertMatchBlobs() {
-    // TODO (howard) this function is meant to eventually replace the cassandra match/player_match tables
-    // It's a temporary store (postgres table) holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
+    // TODO (howard) this function is meant to replace the cassandra match/player_match tables
+    // It's a table holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces
     // After some retention period we stick the assembled blob in match archive and delete it
@@ -991,7 +991,7 @@ export async function insertMatchPromise(
       // We added the match_id to each player for insertion, so remove it here
       delete p.match_id;
     });
-    // TODO insert the data to temp table
+    // TODO (howard) insert the data to blobstore
     // fs.writeFileSync('./build/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy));
   }
   async function telemetry() {
@@ -1259,6 +1259,7 @@ export function getMetadata(req: Request, cb: ErrorCb) {
   );
 }
 export async function getMatchData(matchId: string): Promise<ParsedMatch> {
+  // TODO (howard) Implement parameter to construct from blobstore instead
   const result = await cassandra.execute(
     'SELECT * FROM matches where match_id = ?',
     [Number(matchId)],
@@ -1271,7 +1272,7 @@ export async function getMatchData(matchId: string): Promise<ParsedMatch> {
   const deserializedResult = result.rows.map((m) => deserialize(m));
   return deserializedResult[0];
 }
-export async function getPlayerMatchData(matchId: string) {
+export async function getPlayerMatchData(matchId: string): Promise<ParsedPlayer[]> {
   const result = await cassandra.execute(
     'SELECT * FROM player_matches where match_id = ?',
     [Number(matchId)],

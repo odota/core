@@ -435,7 +435,8 @@ CREATE INDEX IF NOT EXISTS hero_search_teamB_idx_gin ON hero_search USING GIN(te
 
 CREATE TABLE IF NOT EXISTS parsed_matches (
   PRIMARY KEY (match_id),
-  match_id bigint
+  match_id bigint,
+  is_archived boolean
 );
 
 CREATE TABLE IF NOT EXISTS subscriber (
@@ -450,7 +451,7 @@ CREATE TABLE IF NOT EXISTS match_blobs (
   match_id bigint,
   api json,
   gcdata json,
-  replay json
+  parsed json
 );
 
 DO $$
