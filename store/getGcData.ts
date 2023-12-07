@@ -48,6 +48,7 @@ async function getGcDataFromRetriever(match: GcDataJob) {
     players,
     series_id: body.match.series_id,
     series_type: body.match.series_type,
+    replay_salt: body.match.replay_salt,
   };
   const gcdata = {
     match_id: Number(match.match_id),
