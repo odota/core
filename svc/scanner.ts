@@ -84,3 +84,10 @@ async function start() {
   }
 }
 start();
+
+process.on('unhandledRejection', (reason, p) => {
+  // We sometimes seem to get db/cassandra errors that stall the scanner
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  redisCount(redis, 'scanner_exception');
+  process.exit(1);
+});

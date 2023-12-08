@@ -89,6 +89,9 @@ export async function buildStatus() {
     api_hits_ui_last_day(cb) {
       getRedisCountDay(redis, 'api_hits_ui', cb);
     },
+    scanner_exception_last_day(cb) {
+      getRedisCountDay(redis, 'scanner_exception', cb);
+    },
     seqNumDelay(cb) {
       // It's slow to query Steam API so use the value saved by monitor
       redis.hget('health', 'seqNumDelay', (err, data) => {
