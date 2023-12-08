@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsx index",
     "test": "NODE_ENV=test mocha test/test.ts --exit --node-option import=tsx",
-    "build": "npm install && npm run typecheck",
+    "build": "npm install && npm run tsc",
     "tsc": "tsc --project tsconfig.json --noEmit false --allowImportingTsExtensions false",
     "typecheck": "tsc --project tsconfig.json",
     "lint": "eslint . --ext .js,.mjs --ignore-path .gitignore",

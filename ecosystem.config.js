@@ -116,7 +116,12 @@ arr = arr.filter((app) => !config.GROUP || app.group === config.GROUP);
 
 const apps = arr.map((app) => {
   const dev = config.NODE_ENV === 'development';
-  const script = `svc/${app.name}.ts`;
+  // In production, we can use the built files directly
+  // This makes the pm2 memory metrics work
+  const prod = config.NODE_ENV === 'production';
+  const prodScript = `build/svc/${app.name}.js`;
+  const devScript = `svc/${app.name}.ts`;
+  const script = prod ? prodScript : devScript;
   return {
     ...app,
     watch: dev ? true : false,
