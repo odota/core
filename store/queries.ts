@@ -1217,12 +1217,10 @@ export async function doArchive(matchId: string) {
   if (!config.MATCH_ARCHIVE_S3_ENDPOINT) {
     return;
   }
-  // We want to avoid re-archiving a match if it gets re-added to the blobstore
-  // This is because it might have less data once we start cleanup
-  // e.g. we archive a pro match with full data, it gets cleaned and then request it for parse
-  // We'll have api and parse data but not gcdata since we don't refetch it
-  // We can set a flag to make sure we never re-archive a match
-  // Also we can use this flag to determine whether to fetch from archive or blobstore
+  // Right now we avoid re-archiving a match by setting a flag in db
+  // What if we update the parser to extract new data and want to update the archive?
+  // Then we can manually clear is_archived from parsed_matches
+  // and request a reparse and we'll update the archive blob with full data
   const isArchived = Boolean(
     (
       await db.raw(
@@ -1260,10 +1258,7 @@ export async function doArchive(matchId: string) {
 }
 
 async function deleteFromBlobStore(id: string) {
-  if (true) {
-    return;
-  }
-  // TODO (howard) Enable deletion after testing
+  // TODO (howard) (blobstore) Remove the deletes to player_matches and matches once tables are dropped
   await Promise.all([
     cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
       prepare: true,
@@ -1271,7 +1266,9 @@ async function deleteFromBlobStore(id: string) {
     cassandra.execute('DELETE from matches where match_id = ?', [id], {
       prepare: true,
     }),
-    cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [id]),
+    cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [id], {
+      prepare: true,
+    }),
   ]);
 }
 
