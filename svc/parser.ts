@@ -28,11 +28,14 @@ app.listen(PORT || PARSER_PORT);
 
 async function parseProcessor(job: ParseJob) {
   const start = Date.now();
+  let gcTime = 0;
+  let parseTime = 0;
+  let insertTime = 0;
   const match = job;
   try {
     const gcStart = Date.now();
     const gcdata = await getGcData(match);
-    const gcEnd = Date.now();
+    gcTime = Date.now() - gcStart;
 
     let url = buildReplayUrl(
       gcdata.match_id,
@@ -54,7 +57,7 @@ async function parseProcessor(job: ParseJob) {
       //@ts-ignore
       { shell: true, maxBuffer: 10 * 1024 * 1024 }
     );
-    const parseEnd = Date.now();
+    parseTime = Date.now() - parseStart;
 
     const insertStart = Date.now();
     const result = { ...JSON.parse(stdout), ...match };
@@ -63,13 +66,13 @@ async function parseProcessor(job: ParseJob) {
       skipParse: true,
       origin: job.origin,
     });
-    const insertEnd = Date.now();
+    insertTime = Date.now() - insertStart;
 
     // Log successful parse and timing
     const end = Date.now();
     const message = `[${new Date().toISOString()}] [parser] ${
       match.match_id
-    } [success: ${end - start}ms] [gcdata: ${gcEnd - gcStart}ms] [parse: ${parseEnd - parseStart}ms] [insert: ${insertEnd - insertStart}ms]`;
+    } [success: ${end - start}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms]`;
     redis.publish('parsed', message);
     console.log(message);
     return true;
@@ -78,7 +81,7 @@ async function parseProcessor(job: ParseJob) {
     // Log failed parse and timing
     const message = `[${new Date().toISOString()}] [parser] [${
       match.match_id
-    }] [fail: ${end - start}ms]`;
+    }] [fail: ${end - start}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms]`;
     redis.publish('parsed', message);
     console.log(message);
     // Rethrow the exception
