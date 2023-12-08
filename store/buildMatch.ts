@@ -83,26 +83,6 @@ async function prodataInfo(matchId: string) {
   });
 }
 
-async function loadMeta(matchId: string) {
-  // Check if we have the info in match_gcdata to construct url
-  const saved = await db.raw(
-    'select match_id, cluster, replay_salt from match_gcdata where match_id = ?',
-    [matchId]
-  );
-  const gcdata = saved.rows[0];
-  if (!gcdata) {
-    return null;
-  }
-  const url = buildReplayUrl(gcdata.match_id, gcdata.cluster, gcdata.replay_salt, true);
-  // Parse it from url
-  // This takes about 50ms of CPU time per match
-  const message = await getMeta(url);
-  // Count the number of meta parses
-  redisCount(redis, 'meta_parse');
-  // Return the info, it may be null if we failed at any step or meta isn't available
-  return message;
-}
-
 async function backfill(matchId: string) {
   const matchObj = {
     match_id: Number(matchId),
@@ -191,8 +171,7 @@ async function doBuildMatch(matchId: string, options: { blob?: string, meta?: st
     )
   );
   const prodataPromise = prodataInfo(matchId);
-  console.log(options.meta);
-  const metadataPromise = Boolean(options.meta) ? loadMeta(matchId): Promise.resolve(null);
+  const metadataPromise = Boolean(options.meta) ? getMeta(matchId): Promise.resolve(null);
   const [players, gcdata, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,
     gcdataPromise,
