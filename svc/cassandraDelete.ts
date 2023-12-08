@@ -67,8 +67,12 @@ async function start() {
           })
         )
       );
-      const funcs = parsedIds.map((id) => () => doArchive(id));
-      await eachLimit(funcs, 10);
+
+      if (false) {
+        // TODO (howard) enable this to start archiving old matches
+        const funcs = parsedIds.map((id) => () => doArchive(id));
+        await eachLimit(funcs, 10);
+      }
 
       // TODO (howard) remove insert once backfill complete
       await Promise.all(

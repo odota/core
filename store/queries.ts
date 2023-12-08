@@ -1124,8 +1124,6 @@ export async function insertMatchPromise(
     }
   }
   async function archiveMatch() {
-    return;
-    // TODO (howard) enable this to start archiving matches on insert
     // Currently, parsed gets inserted last so we have all the data (api/gcdata/parsed)
     // However after adding cleanup we might get here with no gcdata
     // But if it was cleaned up then it was already archived and we don't rearchive
