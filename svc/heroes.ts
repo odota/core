@@ -22,7 +22,7 @@ async function doHeroes() {
     return;
   }
   for (let i = 0; i < body.result.heroes.length; i++) {
-    const hero = body.result.heroes.length;
+    const hero = body.result.heroes[i];
     const heroDataHero = heroData[hero.id] || {};
     await upsertPromise(
       db,
