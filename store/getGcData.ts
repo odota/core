@@ -74,19 +74,19 @@ export async function ensureGcData(match: GcDataJob): Promise<void> {
     cluster: body.match.cluster,
     replay_salt: body.match.replay_salt,
   };
-  // Put extra fields in matches/player_matches
-  await insertMatchPromise(matchToInsert, {
-    type: 'gcdata',
-    skipParse: true,
+  // Persist GC data to database, we'll read it back from here for consumers
+  await upsertPromise(db, 'match_gcdata', gcdata, {
+    match_id: match.match_id,
   });
   // Update series id and type for pro match
   await db.raw(
     'UPDATE matches SET series_id = ?, series_type = ? WHERE match_id = ?',
     [matchToInsert.series_id, matchToInsert.series_type, match.match_id]
   );
-  // Persist GC data to database, we'll read it back from here for consumers
-  await upsertPromise(db, 'match_gcdata', gcdata, {
-    match_id: match.match_id,
+  // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
+  await insertMatchPromise(matchToInsert, {
+    type: 'gcdata',
+    skipParse: true,
   });
   return;
 }
