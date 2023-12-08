@@ -13,6 +13,7 @@ import config from '../config.js';
 import queue from '../store/queue';
 import { insertMatchPromise } from '../store/queries';
 import { promisify } from 'util';
+import c from 'ansi-colors';
 import { buildReplayUrl } from '../util/utility';
 import redis from '../store/redis';
 
@@ -70,22 +71,22 @@ async function parseProcessor(job: ParseJob) {
 
     // Log successful parse and timing
     const end = Date.now();
-    const message = `[${new Date().toISOString()}] [parser] [success: ${
+    const message = c.green(`[${new Date().toISOString()}] [parser] [success: ${
       end - start
     }ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
       match.match_id
-    }`;
+    }`);
     redis.publish('parsed', message);
     console.log(message);
     return true;
   } catch (e) {
     const end = Date.now();
     // Log failed parse and timing
-    const message = `[${new Date().toISOString()}] [parser] [fail: ${
+    const message = c.red(`[${new Date().toISOString()}] [parser] [fail: ${
       end - start
     }ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
       match.match_id
-    }`;
+    }`);
     redis.publish('parsed', message);
     console.log(message);
     // Rethrow the exception
