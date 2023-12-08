@@ -1261,17 +1261,19 @@ async function deleteFromBlobStore(id: string) {
     return;
   }
   // TODO (howard) Enable deletion after testing
-  await cassandra.execute(
-    'DELETE from player_matches where match_id = ?',
-    [id],
-    {
+  await Promise.all([
+    cassandra.execute(
+      'DELETE from player_matches where match_id = ?',
+      [id],
+      {
+        prepare: true,
+      }
+    ),
+    cassandra.execute('DELETE from matches where match_id = ?', [id], {
       prepare: true,
-    }
-  );
-  await cassandra.execute('DELETE from matches where match_id = ?', [id], {
-    prepare: true,
-  });
-  await cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [id]);
+    }),
+    cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [id]),
+  ]);
 }
 
 export function getItemTimings(req: Request, cb: ErrorCb) {
@@ -1348,6 +1350,7 @@ export async function getMatchData(
   matchId: string,
   useBlobStore: boolean
 ): Promise<ParsedMatch | null> {
+  // TODO (howard) Remove the option here once blobstore is default
   if (useBlobStore) {
     const result = await cassandra.execute(
       'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',

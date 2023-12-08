@@ -18,7 +18,7 @@ import {
   getArchivedMatch,
   getMatchBenchmarks,
 } from './queries';
-import { getMeta } from './getMeta.ts';
+import { getMeta } from './getMeta';
 
 async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
   const p = {
@@ -136,7 +136,7 @@ async function doBuildMatch(
   // config.NODE_ENV === 'development' && fs.writeFileSync('./build/test.json', JSON.stringify(match));
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
-  // If we fetched from archive or blobstore we already have players
+  // TODO (howard) If we fetched from archive or blobstore we already have players and we can delete getPlayerMatchData
   playersMatchData = match.players || (await getPlayerMatchData(matchId));
   if (playersMatchData.length === 0) {
     // Could be due to partial deletion where we only finished deleting players
