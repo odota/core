@@ -12,7 +12,18 @@ async function runQueue(
       const job = await redis.blpop(queueName, '0');
       if (job) {
         const jobData = JSON.parse(job[1]);
-        await processor(jobData);
+        try {
+          await processor(jobData);
+        } catch(e) {
+          // We failed in the unreliable queue, so we won't reprocess the job
+          // Log the error
+          console.error(e);
+          // If parallelism is 1, we can crash and get restarted
+          // If parallelism is > 1, we don't want to interrupt other jobs so just continue
+          if (parallelism === 1) {
+            process.exit(1);
+          }
+        }
       }
     }
   };
