@@ -33,7 +33,7 @@ async function parseProcessor(job: ParseJob) {
   }
   console.log('[PARSER] parsing replay at:', url);
   const { stdout } = await execPromise(
-    `curl --max-time 180 --fail ${url} | ${
+    `curl --max-time 180 --fail -L ${url} | ${
       url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
     } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${
       match.match_id

@@ -1123,9 +1123,6 @@ export async function insertMatchPromise(
       });
     }
   }
-  async function decideMetaParse() {
-    // metaQueue.add()
-  }
   async function archiveMatch() {
     return;
     // TODO (howard) enable this to start archiving matches on insert
@@ -1203,7 +1200,6 @@ export async function insertMatchPromise(
   await decideProfile();
   await decideGcData();
   await decideScenarios();
-  await decideMetaParse();
   await archiveMatch();
   const parseJob = await decideReplayParse();
   return parseJob;

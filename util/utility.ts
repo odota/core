@@ -522,14 +522,19 @@ export function getPatchIndex(startTime: number) {
 export function buildReplayUrl(
   matchId: number,
   cluster: number,
-  replaySalt: number
+  replaySalt: number,
+  meta?: boolean
 ) {
-  const suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
+  let suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
+  if (meta) {
+    suffix = '.meta.bz2';
+  }
   if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
   }
   return `http://replay${cluster}.valve.net/570/${matchId}_${replaySalt}${suffix}`;
 }
+
 /**
  * Computes the expected winrate given an input array of winrates
  * */
@@ -854,7 +859,7 @@ export async function invokeIntervalAsync(
     console.time(func.name);
     await func();
     console.timeEnd(func.name);
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 }
 

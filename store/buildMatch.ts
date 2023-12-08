@@ -18,6 +18,7 @@ import {
   getArchivedMatch,
   getMatchBenchmarks,
 } from './queries';
+import { getMeta } from './getMeta.ts';
 
 async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
   const p = {
@@ -81,6 +82,7 @@ async function prodataInfo(matchId: string) {
     series_type: result.series_type,
   });
 }
+
 async function backfill(matchId: string) {
   const matchObj = {
     match_id: Number(matchId),
@@ -95,7 +97,7 @@ async function backfill(matchId: string) {
   // Count for logging
   redisCount(redis, 'steam_api_backfill');
 }
-async function getMatch(matchId: string, useBlobStore: boolean) {
+async function doBuildMatch(matchId: string, options: { blob?: string, meta?: string }) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
@@ -114,15 +116,15 @@ async function getMatch(matchId: string, useBlobStore: boolean) {
     // Fallback to blobstore if we don't have it
     match =
       (await getArchivedMatch(matchId)) ||
-      (await getMatchData(matchId, useBlobStore));
+      (await getMatchData(matchId, Boolean(options.blob)));
   } else {
     // Fetch from blobstore
-    match = await getMatchData(matchId, useBlobStore);
+    match = await getMatchData(matchId, Boolean(options.blob));
   }
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
     await backfill(matchId);
-    match = await getMatchData(matchId, useBlobStore);
+    match = await getMatchData(matchId, Boolean(options.blob));
   }
   if (!match) {
     // Still don't have it
@@ -169,16 +171,19 @@ async function getMatch(matchId: string, useBlobStore: boolean) {
     )
   );
   const prodataPromise = prodataInfo(matchId);
-  const [players, gcdata, prodata, cosmetics] = await Promise.all([
+  const metadataPromise = Boolean(options.meta) ? getMeta(matchId): Promise.resolve(null);
+  const [players, gcdata, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,
     gcdataPromise,
     prodataPromise,
     cosmeticsPromise,
+    metadataPromise,
   ]);
   let matchResult = {
     ...match,
     ...gcdata,
     ...prodata,
+    metadata,
     players,
   };
   if (cosmetics) {
@@ -216,13 +221,13 @@ async function getMatch(matchId: string, useBlobStore: boolean) {
   };
   return Promise.resolve(matchResult);
 }
-async function buildMatch(matchId: string, useBlobStore: boolean) {
+async function buildMatch(matchId: string, options: { blob?: string, meta?: string }) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {
     return JSON.parse(reply);
   }
-  const match = await getMatch(matchId, useBlobStore);
+  const match = await doBuildMatch(matchId, options);
   if (match && match.version && config.ENABLE_MATCH_CACHE) {
     await redis.setex(key, config.MATCH_CACHE_SECONDS, JSON.stringify(match));
   }

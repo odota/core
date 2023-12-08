@@ -66,6 +66,9 @@ type Match = {
   heroes: any;
   average_rank?: number | null;
 
+  // Parsed match metadata from .meta file
+  metadata: any;
+
   // Determine if match has all data and can be archived
   can_be_archived: boolean;
 };
