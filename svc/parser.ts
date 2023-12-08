@@ -8,7 +8,7 @@
 import { exec } from 'child_process';
 import os from 'os';
 import express from 'express';
-import getGcData from '../store/getGcData';
+import { getGcData } from '../store/getGcData';
 import config from '../config.js';
 import queue from '../store/queue';
 import { insertMatchPromise } from '../store/queries';

@@ -1,6 +1,6 @@
 // Processes a queue of requests for gcdata (replay salts) without parsing
 // The parser will also request gcdata if needed
-import getGcData from '../store/getGcData';
+import { ensureGcData } from '../store/getGcData';
 import queue from '../store/queue';
 import config from '../config.js';
 import { getRetrieverArr } from '../util/utility';
@@ -9,7 +9,7 @@ const retrieverArr = getRetrieverArr();
 
 async function processGcData(job: GcDataJob) {
   job.useGcDataArr = true;
-  await getGcData(job);
+  await ensureGcData(job);
 }
 
 console.log('[GCDATA] starting');
