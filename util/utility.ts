@@ -829,8 +829,13 @@ export function getRedisCountHour(
   }
   redis.pfcount(...keyArr, cb);
 }
+/**
+ * invokes a function immediately, waits for callback, waits the delay, and then calls it again
+ * Ignores exceptions, but logs them
+ * @param func 
+ * @param delay 
+ */
 export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
-  // invokes the function immediately, waits for callback, waits the delay, and then calls it again
   (function invoker() {
     console.log('running %s', func.name);
     console.time(func.name);
@@ -846,7 +851,7 @@ export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
 }
 /**
  * Same as invokeInterval but for async functions
- * Note: This doesn't catch the exception and lets it bubble up for visibility
+ * On exceptions, exits the process
  * @param func
  * @param delay
  */
@@ -854,6 +859,11 @@ export async function invokeIntervalAsync(
   func: () => Promise<void>,
   delay: number
 ) {
+  process.on('unhandledRejection', (reason, p) => {
+    // In production pm2 doesn't appear to auto restart unless we exit the process here
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    process.exit(1);
+  });
   while (true) {
     console.log('running %s', func.name);
     console.time(func.name);
