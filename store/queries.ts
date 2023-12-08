@@ -1123,12 +1123,17 @@ export async function insertMatchPromise(
       });
     }
   }
-  async function archiveMatch() {
-    // Currently, parsed gets inserted last so we have all the data (api/gcdata/parsed)
-    // However after adding cleanup we might get here with no gcdata
-    // But if it was cleaned up then it was already archived and we don't rearchive
-    // Later, we can use the blobstore to verify we have all data (since meta parsing might happen after replay parse)
+  async function postParsedMatch() {
     if (options.type === 'parsed') {
+      // Mark this match parsed
+      await db.raw(
+        'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
+        [Number(match.match_id)]
+      );
+      // Currently, parsed gets inserted last so we have all the data (api/gcdata/parsed)
+      // However after adding cleanup we might get here with no gcdata
+      // But if it was cleaned up then it was already archived and we don't rearchive
+      // Later, we can use the blobstore to verify we have all data (since meta parsing might happen after replay parse)
       await doArchive(match.match_id.toString());
     }
   }
@@ -1198,7 +1203,7 @@ export async function insertMatchPromise(
   await decideProfile();
   await decideGcData();
   await decideScenarios();
-  await archiveMatch();
+  await postParsedMatch();
   const parseJob = await decideReplayParse();
   return parseJob;
 }

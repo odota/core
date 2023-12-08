@@ -47,11 +47,6 @@ async function parseProcessor(job: ParseJob) {
     skipParse: true,
     origin: job.origin,
   });
-  // Mark this match parsed
-  await db.raw(
-    'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
-    [Number(match.match_id)]
-  );
   console.log('[PARSER] completed parse of match %s', match.match_id);
   return true;
 }
