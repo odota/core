@@ -33,7 +33,7 @@ async function parseProcessor(job: ParseJob) {
     const gcStart = Date.now();
     const gcdata = await getGcData(match);
     const gcEnd = Date.now();
-    const gcMessage = `[${new Date().toISOString()}] [parser] [gcdata] ${match.match_id} in ${gcEnd - gcStart}ms`;
+    const gcMessage = `[${new Date().toISOString()}] [parser] [stage:gcdata] ${match.match_id} in ${gcEnd - gcStart}ms`;
     redis.publish('parsed', gcMessage);
     console.log(gcMessage);
 
@@ -54,7 +54,7 @@ async function parseProcessor(job: ParseJob) {
       { shell: true, maxBuffer: 10 * 1024 * 1024 }
     );
     const parseEnd = Date.now();
-    const parseMessage = `[${new Date().toISOString()}] [parser] [parse] ${match.match_id} in ${parseEnd - parseStart}ms`;
+    const parseMessage = `[${new Date().toISOString()}] [parser] [stage:parse] ${match.match_id} in ${parseEnd - parseStart}ms`;
     redis.publish('parsed', parseMessage);
     console.log(parseMessage);
 
@@ -67,14 +67,14 @@ async function parseProcessor(job: ParseJob) {
     
     // Log successful parse and timing
     const end = Date.now();
-    const message = `[${new Date().toISOString()}] [parser] [success] ${match.match_id} in ${end - start}ms`;
+    const message = `[${new Date().toISOString()}] [parser] [stage:success] ${match.match_id} in ${end - start}ms`;
     redis.publish('parsed', message);
     console.log(message);
     return true;
   } catch(e) {
     const end = Date.now();
     // Log failed parse and timing
-    const message = `[${new Date().toISOString()}] [parser] [fail] ${match.match_id} in ${end - start}ms`
+    const message = `[${new Date().toISOString()}] [parser] [stage:fail] ${match.match_id} in ${end - start}ms`
     redis.publish('parsed', message);
     console.log(message);
     // Rethrow the exception
