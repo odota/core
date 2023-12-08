@@ -27,7 +27,12 @@ export async function getMeta(matchId: string) {
   if (!gcdata) {
     return null;
   }
-  const url = buildReplayUrl(gcdata.match_id, gcdata.cluster, gcdata.replay_salt, true);
+  const url = buildReplayUrl(
+    gcdata.match_id,
+    gcdata.cluster,
+    gcdata.replay_salt,
+    true
+  );
   // Parse it from url
   // This takes about 50ms of CPU time per match
   const message = await getMetaFromUrl(url);
@@ -41,6 +46,9 @@ export async function getMeta(matchId: string) {
 
 export async function getMetaFromUrl(url: string) {
   try {
+    // From testing it seems download takes about 1s and unzip about 9ms
+    // We pipeline them here for efficiency
+    // If we want to cache meta files, we can cache the bz2 versions and it won't add very much parse time
     console.time('[METAPARSE]: download/bunzip');
     const { stdout } = await execPromise(
       `curl -L ${url} | bunzip2`,

@@ -97,7 +97,10 @@ async function backfill(matchId: string) {
   // Count for logging
   redisCount(redis, 'steam_api_backfill');
 }
-async function doBuildMatch(matchId: string, options: { blob?: string, meta?: string }) {
+async function doBuildMatch(
+  matchId: string,
+  options: { blob?: string; meta?: string }
+) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
@@ -171,7 +174,9 @@ async function doBuildMatch(matchId: string, options: { blob?: string, meta?: st
     )
   );
   const prodataPromise = prodataInfo(matchId);
-  const metadataPromise = Boolean(options.meta) ? getMeta(matchId): Promise.resolve(null);
+  const metadataPromise = Boolean(options.meta)
+    ? getMeta(matchId)
+    : Promise.resolve(null);
   const [players, gcdata, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,
     gcdataPromise,
@@ -221,7 +226,10 @@ async function doBuildMatch(matchId: string, options: { blob?: string, meta?: st
   };
   return Promise.resolve(matchResult);
 }
-async function buildMatch(matchId: string, options: { blob?: string, meta?: string }) {
+async function buildMatch(
+  matchId: string,
+  options: { blob?: string; meta?: string }
+) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {
