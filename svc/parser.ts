@@ -33,11 +33,17 @@ async function parseProcessor(job: ParseJob) {
     const gcStart = Date.now();
     const gcdata = await getGcData(match);
     const gcEnd = Date.now();
-    const gcMessage = `[${new Date().toISOString()}] [parser] [stage:gcdata] ${match.match_id} in ${gcEnd - gcStart}ms`;
+    const gcMessage = `[${new Date().toISOString()}] [parser] [stage:gcdata] ${
+      match.match_id
+    } in ${gcEnd - gcStart}ms`;
     redis.publish('parsed', gcMessage);
     console.log(gcMessage);
 
-    let url = buildReplayUrl(gcdata.match_id, gcdata.cluster, gcdata.replay_salt);
+    let url = buildReplayUrl(
+      gcdata.match_id,
+      gcdata.cluster,
+      gcdata.replay_salt
+    );
     if (NODE_ENV === 'test') {
       url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
     }
@@ -54,7 +60,9 @@ async function parseProcessor(job: ParseJob) {
       { shell: true, maxBuffer: 10 * 1024 * 1024 }
     );
     const parseEnd = Date.now();
-    const parseMessage = `[${new Date().toISOString()}] [parser] [stage:parse] ${match.match_id} in ${parseEnd - parseStart}ms`;
+    const parseMessage = `[${new Date().toISOString()}] [parser] [stage:parse] ${
+      match.match_id
+    } in ${parseEnd - parseStart}ms`;
     redis.publish('parsed', parseMessage);
     console.log(parseMessage);
 
@@ -64,17 +72,21 @@ async function parseProcessor(job: ParseJob) {
       skipParse: true,
       origin: job.origin,
     });
-    
+
     // Log successful parse and timing
     const end = Date.now();
-    const message = `[${new Date().toISOString()}] [parser] [stage:success] ${match.match_id} in ${end - start}ms`;
+    const message = `[${new Date().toISOString()}] [parser] [stage:success] ${
+      match.match_id
+    } in ${end - start}ms`;
     redis.publish('parsed', message);
     console.log(message);
     return true;
-  } catch(e) {
+  } catch (e) {
     const end = Date.now();
     // Log failed parse and timing
-    const message = `[${new Date().toISOString()}] [parser] [stage:fail] ${match.match_id} in ${end - start}ms`
+    const message = `[${new Date().toISOString()}] [parser] [stage:fail] ${
+      match.match_id
+    } in ${end - start}ms`;
     redis.publish('parsed', message);
     console.log(message);
     // Rethrow the exception

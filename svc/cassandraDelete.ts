@@ -32,7 +32,7 @@ async function start() {
         }
       );
       // Put the ones that don't have parsed data or are too old into an array
-      // TODO (howard) Once blobstore is default, we can remove limit to delete more recent data from matches/player_matches before dropping table
+      // TODO (howard) (blobstore) Once blobstore is default, we can remove limit to delete more recent data from matches/player_matches before dropping table
       const unparsedIds = result.rows
         .filter((result) => result.version == null && result.match_id < limit)
         .map((result) => result.match_id);
@@ -83,8 +83,8 @@ async function start() {
         const funcs = parsedIds.map((id) => () => doArchive(id));
         await eachLimit(funcs, 10);
       }
-      
-      // TODO (howard) Implement a cleanup for the blobstore to remove unparsed matches
+
+      // TODO (howard) (blobstore) Implement a cleanup for the blobstore to remove unparsed matches
     } catch (e) {
       console.log(e);
     }

@@ -136,7 +136,7 @@ async function doBuildMatch(
   // config.NODE_ENV === 'development' && fs.writeFileSync('./build/test.json', JSON.stringify(match));
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
-  // TODO (howard) If we fetched from archive or blobstore we already have players and we can delete getPlayerMatchData
+  // TODO (howard) (blobstore) after blobstore is default we already have players and can delete getPlayerMatchData
   playersMatchData = match.players || (await getPlayerMatchData(matchId));
   if (playersMatchData.length === 0) {
     // Could be due to partial deletion where we only finished deleting players

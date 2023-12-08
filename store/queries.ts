@@ -910,7 +910,7 @@ export async function insertMatchPromise(
     await updateTeamRankings(match as Match, options);
   }
   async function upsertMatchCassandra() {
-    // TODO (howard) we can remove this function once blobstore is populated
+    // TODO (howard) (blobstore) delete function once blobstore is default
     // We do this regardless of type (with different sets of fields)
     const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
     const obj: any = serialize(cleaned);
@@ -1265,13 +1265,9 @@ async function deleteFromBlobStore(id: string) {
   }
   // TODO (howard) Enable deletion after testing
   await Promise.all([
-    cassandra.execute(
-      'DELETE from player_matches where match_id = ?',
-      [id],
-      {
-        prepare: true,
-      }
-    ),
+    cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
+      prepare: true,
+    }),
     cassandra.execute('DELETE from matches where match_id = ?', [id], {
       prepare: true,
     }),
@@ -1353,7 +1349,7 @@ export async function getMatchData(
   matchId: string,
   useBlobStore: boolean
 ): Promise<ParsedMatch | null> {
-  // TODO (howard) Remove the option here once blobstore is default
+  // TODO (howard) (blobstore) Remove the option parameter once blobstore is default
   if (useBlobStore) {
     const result = await cassandra.execute(
       'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
