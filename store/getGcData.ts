@@ -18,7 +18,11 @@ export async function ensureGcData(match: GcDataJob): Promise<void> {
   // if we do that we want to refetch the gcdata so the data is complete on re-archival
   // (otherwise e.g. pro matches might be missing permanent_buffs and party ids)
   // because that match still has match_gcdata values
-  const result = await cassandra.execute('SELECT gcdata FROM match_blobs WHERE match_id = ?', [Number(match.match_id)], { prepare: true, fetchSize: 1, autoPage: true });
+  const result = await cassandra.execute(
+    'SELECT gcdata FROM match_blobs WHERE match_id = ?',
+    [Number(match.match_id)],
+    { prepare: true, fetchSize: 1, autoPage: true }
+  );
   const row = result.rows[0];
   const saved = Boolean(row?.gcdata);
   if (saved) {
@@ -90,9 +94,14 @@ export async function ensureGcData(match: GcDataJob): Promise<void> {
   });
   return;
 }
-export async function getGcData(match: GcDataJob): Promise<{ match_id: number, cluster: number, replay_salt: number }> {
+export async function getGcData(
+  match: GcDataJob
+): Promise<{ match_id: number; cluster: number; replay_salt: number }> {
   await ensureGcData(match);
   // Read the result from match_gcdata
-  const dbResult = await db.raw('select match_id, cluster, replay_salt from match_gcdata where match_id = ?', [match.match_id]);
+  const dbResult = await db.raw(
+    'select match_id, cluster, replay_salt from match_gcdata where match_id = ?',
+    [match.match_id]
+  );
   return dbResult.rows[0];
 }

@@ -70,18 +70,22 @@ async function parseProcessor(job: ParseJob) {
 
     // Log successful parse and timing
     const end = Date.now();
-    const message = `[${new Date().toISOString()}] [parser] ${
+    const message = `[${new Date().toISOString()}] [parser] [success: ${
+      end - start
+    }ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
       match.match_id
-    } [success: ${end - start}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms]`;
+    }`;
     redis.publish('parsed', message);
     console.log(message);
     return true;
   } catch (e) {
     const end = Date.now();
     // Log failed parse and timing
-    const message = `[${new Date().toISOString()}] [parser] [${
+    const message = `[${new Date().toISOString()}] [parser] [fail: ${
+      end - start
+    }ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
       match.match_id
-    }] [fail: ${end - start}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms]`;
+    }`;
     redis.publish('parsed', message);
     console.log(message);
     // Rethrow the exception
