@@ -85,8 +85,10 @@ async function start() {
 }
 start();
 
+// This is the only process that isn't a webserver, queue consumer (runQueue), or run on an interval (invokeIntervalAsync)
+// so it needs its own exception handler
 process.on('unhandledRejection', (reason, p) => {
-  // We sometimes seem to get db/cassandra errors that stall the scanner
+  // In production pm2 doesn't appear to auto restart unless we exit the process here
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
   redisCount(redis, 'scanner_exception');
   process.exit(1);
