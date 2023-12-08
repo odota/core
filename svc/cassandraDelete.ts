@@ -14,7 +14,6 @@ async function start() {
   // Get the current max_match_id from postgres, subtract 200000000
   const max = (await db.raw('select max(match_id) from public_matches'))
     ?.rows?.[0]?.max;
-  // TODO (howard) Once blobstore is default, we can remove limit to delete more recent data from matches/player_matches before dropping table
   const limit = max - 200000000;
   while (true) {
     // delete older unparsed match/player_match rows
@@ -33,6 +32,7 @@ async function start() {
         }
       );
       // Put the ones that don't have parsed data or are too old into an array
+      // TODO (howard) Once blobstore is default, we can remove limit to delete more recent data from matches/player_matches before dropping table
       const unparsedIds = result.rows
         .filter((result) => result.version == null && result.match_id < limit)
         .map((result) => result.match_id);

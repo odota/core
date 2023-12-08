@@ -13,8 +13,9 @@ import config from '../config.js';
 import queue from '../store/queue';
 import { insertMatchPromise } from '../store/queries';
 import { promisify } from 'util';
-import db from '../store/db';
 import { buildReplayUrl } from '../util/utility';
+import redis from '../store/redis';
+
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, NODE_ENV, PARSER_HOST, PARSER_PARALLELISM } = config;
 const numCPUs = os.cpus().length;
@@ -24,31 +25,43 @@ app.get('/healthz', (req, res) => {
   res.end('ok');
 });
 app.listen(PORT || PARSER_PORT);
+
 async function parseProcessor(job: ParseJob) {
+  const start = Date.now();
   const match = job;
-  const gcdata = await getGcData(match);
-  let url = buildReplayUrl(gcdata.match_id, gcdata.cluster, gcdata.replay_salt);
-  if (NODE_ENV === 'test') {
-    url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
+  try {
+    const gcdata = await getGcData(match);
+    let url = buildReplayUrl(gcdata.match_id, gcdata.cluster, gcdata.replay_salt);
+    if (NODE_ENV === 'test') {
+      url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
+    }
+    console.log('[PARSER] parsing replay at:', url);
+    const { stdout } = await execPromise(
+      `curl --max-time 60 --fail -L ${url} | ${
+        url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
+      } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${
+        match.match_id
+      }`,
+      //@ts-ignore
+      { shell: true, maxBuffer: 10 * 1024 * 1024 }
+    );
+    const result = { ...JSON.parse(stdout), ...match };
+    await insertMatchPromise(result, {
+      type: 'parsed',
+      skipParse: true,
+      origin: job.origin,
+    });
+    const end = Date.now();
+    // Log successful parse and timing
+    redis.publish('parsed', `[${new Date().toISOString()}] [parser] [success] ${match.match_id} in ${end - start}ms`);
+    return true;
+  } catch(e) {
+    const end = Date.now();
+    // Log failed parse and timing
+    redis.publish('parsed', `[${new Date().toISOString()}] [parser] [fail] ${match.match_id} in ${end - start}ms`);
+    // Rethrow the exception
+    throw e;
   }
-  console.log('[PARSER] parsing replay at:', url);
-  const { stdout } = await execPromise(
-    `curl --max-time 180 --fail -L ${url} | ${
-      url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
-    } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${
-      match.match_id
-    }`,
-    //@ts-ignore
-    { shell: true, maxBuffer: 10 * 1024 * 1024 }
-  );
-  const result = { ...JSON.parse(stdout), ...match };
-  await insertMatchPromise(result, {
-    type: 'parsed',
-    skipParse: true,
-    origin: job.origin,
-  });
-  console.log('[PARSER] completed parse of match %s', match.match_id);
-  return true;
 }
 runReliableQueue(
   'parse',
