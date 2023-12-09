@@ -814,8 +814,8 @@ export async function insertMatchPromise(
           [match.leagueid]
         )
       : null;
-    const pass = result?.rows?.length > 0;
-    if (!pass) {
+    currentProMatch = result?.rows?.length > 0;
+    if (!currentProMatch) {
       // Skip this if not a pro match
       return;
     }
@@ -1154,7 +1154,7 @@ export async function insertMatchPromise(
       })
     );
     let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
-    const doParse = hasTrackedPlayer || options.forceParse;
+    const doParse = hasTrackedPlayer || currentProMatch || options.forceParse;
     if (!doParse) {
       return null;
     }
@@ -1190,6 +1190,7 @@ export async function insertMatchPromise(
     return job;
   }
 
+  let currentProMatch = false;
   await preprocess();
   await getAverageRank();
   await upsertMatchPostgres();
