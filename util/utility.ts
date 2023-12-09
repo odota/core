@@ -201,7 +201,7 @@ type GetDataOptions = {
   raw?: boolean;
   noRetry?: boolean;
 };
-export function getData(url: string | GetDataOptions, cb: ErrorCb) {
+function getData(url: string | GetDataOptions, cb: ErrorCb) {
   let u: string;
   let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
@@ -832,8 +832,8 @@ export function getRedisCountHour(
 /**
  * invokes a function immediately, waits for callback, waits the delay, and then calls it again
  * Ignores exceptions, but logs them
- * @param func 
- * @param delay 
+ * @param func
+ * @param delay
  */
 export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
   (function invoker() {

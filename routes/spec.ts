@@ -12,7 +12,7 @@ import {
   checkIfInExperiment,
   countPeers,
   generateJob,
-  getData,
+  getDataPromise,
   isContributor,
   isRadiant,
   matchupToString,
@@ -1692,11 +1692,50 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/request/:match_id',
-        func: (req, res) => {
+        func: async (req, res) => {
           const matchId = req.params.match_id;
-          const match = {
+          const input = {
             match_id: Number(matchId),
           };
+          try {
+            if (input && input.match_id) {
+              // match id request, get data from API
+              const body = await getDataPromise(
+                generateJob('api_details', input).url
+              );
+              // Count this request
+              redisCount(redis, 'request');
+              if (req.query.api_key) {
+                redisCount(redis, 'request_api_key');
+              }
+              // match details response
+              const match = body.result;
+              // Check if match is already parsed
+              const isParsed = Boolean(
+                (
+                  await db.raw(
+                    'select match_id from parsed_matches where match_id = ?',
+                    [match.match_id]
+                  )
+                ).rows[0]
+              );
+              const job = await insertMatchPromise(match, {
+                type: 'api',
+                attempts: 1,
+                priority: req.query.api_key ? 2 : 1,
+                // Reduce load: only reparse the replay for league matches
+                forceParse:
+                  config.NODE_ENV === 'development' ||
+                  Boolean(match.leagueid) ||
+                  !isParsed,
+              });
+              exitWithJob(null, job);
+            } else {
+              return exitWithJob('invalid input');
+            }
+          } catch (e) {
+            return exitWithJob(e);
+          }
           function exitWithJob(
             err: Error | string | null | unknown,
             parseJob?: { id: number } | null
@@ -1713,50 +1752,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               },
             });
           }
-          if (match && match.match_id) {
-            // match id request, get data from API
-            return getData(
-              generateJob('api_details', match).url,
-              async (err, body) => {
-                if (err) {
-                  // couldn't get data from api, non-retryable
-                  return exitWithJob(JSON.stringify(err));
-                }
-                // Count this request
-                redisCount(redis, 'request');
-                if (req.query.api_key) {
-                  redisCount(redis, 'request_api_key');
-                }
-                // match details response
-                const match = body.result;
-                try {
-                  // Check if match is already parsed
-                  const isParsed = Boolean(
-                    (
-                      await db.raw(
-                        'select match_id from parsed_matches where match_id = ?',
-                        [match.match_id]
-                      )
-                    ).rows[0]
-                  );
-                  const job = await insertMatchPromise(match, {
-                    type: 'api',
-                    attempts: 1,
-                    priority: req.query.api_key ? 2 : 1,
-                    // Reduce load: only reparse the replay for league matches
-                    forceParse:
-                      config.NODE_ENV === 'development' ||
-                      Boolean(match.leagueid) ||
-                      !isParsed,
-                  });
-                  exitWithJob(null, job);
-                } catch (e) {
-                  exitWithJob(e);
-                }
-              }
-            );
-          }
-          return exitWithJob('invalid input');
         },
       },
     },

@@ -4,7 +4,6 @@ import { promisify } from 'util';
 import config from '../config.js';
 import {
   redisCount,
-  getData,
   getDataPromise,
   generateJob,
   eachLimit,
@@ -62,45 +61,40 @@ async function processFullHistory(job: FullHistoryJob) {
     hero_id: heroId,
     matches_requested: 100,
   });
-  const getApiMatchPage = (
+  const getApiMatchPage = async (
     player: FullHistoryJob,
-    url: string,
-    cb: ErrorCb
-  ) => {
-    getData(url, (err: any, body: any) => {
-      if (err) {
-        // non-retryable error, probably the user's account is private
-        return cb(err);
-      }
-      // if !body.result, retry
-      if (!body.result) {
-        return getApiMatchPage(player, url, cb);
-      }
-      // response for match history for single player
-      const resp = body.result.matches;
-      let startId = 0;
-      resp.forEach((match: any) => {
-        // add match ids on each page to match_ids
-        const matchId = match.match_id;
-        match_ids[matchId] = true;
-        startId = match.match_id;
-      });
-      const rem = body.result.results_remaining;
-
-      if (rem === 0 || player.short_history) {
-        // no more pages
-        return cb();
-      }
-      // paginate through to max 500 games if necessary with start_at_match_id=
-      const parse = urllib.parse(url, true);
-      parse.query.start_at_match_id = (startId - 1).toString();
-      parse.search = null;
-      url = urllib.format(parse);
-      return getApiMatchPage(player, url, cb);
+    url: string
+  ): Promise<void> => {
+    const body = await getDataPromise(url);
+    // if !body.result, retry
+    if (!body.result) {
+      return getApiMatchPage(player, url);
+    }
+    // response for match history for single player
+    const resp = body.result.matches;
+    let startId = 0;
+    resp.forEach((match: any) => {
+      // add match ids on each page to match_ids
+      const matchId = match.match_id;
+      match_ids[matchId] = true;
+      startId = match.match_id;
     });
+    const rem = body.result.results_remaining;
+
+    if (rem === 0 || player.short_history) {
+      // no more pages
+      return;
+    }
+    // paginate through to max 500 games if necessary with start_at_match_id=
+    const parse = urllib.parse(url, true);
+    parse.query.start_at_match_id = (startId - 1).toString();
+    parse.search = null;
+    url = urllib.format(parse);
+    return getApiMatchPage(player, url);
   };
   try {
-    await promisify(getApiMatchPage)(player, container.url);
+    // Fetches 1-5 pages of matches for the players and updates the match_ids object
+    await getApiMatchPage(player, container.url);
   } catch (err) {
     // non-retryable error while scanning, user had a private account
     console.log('error: %s', JSON.stringify(err));
