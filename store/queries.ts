@@ -1218,9 +1218,9 @@ export async function doArchive(matchId: string) {
     return;
   }
   // Right now we avoid re-archiving a match by setting a flag in db
-  // What if we update the parser to extract new data and want to update the archive?
-  // Then we can manually clear is_archived from parsed_matches
-  // and request a reparse and we'll update the archive blob with full data
+  // This flag also lets us know to look for the match in archive on read
+  // What if we update the parser to extract new data and want to update the archive (mostly pro games since otherwise the replay will be lost)?
+  // We can add an option to forceArchive and pass it into the reparse request
   const isArchived = Boolean(
     (
       await db.raw(
@@ -1238,7 +1238,7 @@ export async function doArchive(matchId: string) {
   if (!match) {
     return;
   }
-  if (!match.can_be_archived) {
+  if (!match.version) {
     throw new Error('not eligible for archive: ' + match.match_id);
   }
   const blob = Buffer.from(
@@ -1384,7 +1384,6 @@ export async function getMatchData(
         };
       }),
     };
-    final.can_be_archived = Boolean(api && gcdata && parsed);
     return final;
   }
   const result = await cassandra.execute(
@@ -1401,7 +1400,6 @@ export async function getMatchData(
   if (!final) {
     return null;
   }
-  final.can_be_archived = Boolean(final.version);
   return final;
 }
 export async function getPlayerMatchData(
@@ -1419,10 +1417,10 @@ export async function getPlayerMatchData(
   const deserializedResult = result.rows.map((m) => deserialize(m));
   return deserializedResult;
 }
-export async function getArchivedMatch(matchId: string) {
+export async function getArchivedMatch(matchId: string): Promise<ParsedMatch | null> {
   try {
     const blob = await archiveGet(matchId.toString());
-    const result = blob ? JSON.parse(blob.toString()) : null;
+    const result: ParsedMatch | null = blob ? JSON.parse(blob.toString()) : null;
     if (result) {
       redisCount(redis, 'match_archive_read');
       return result;

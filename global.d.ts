@@ -69,8 +69,8 @@ type Match = {
   // Parsed match metadata from .meta file
   metadata: any;
 
-  // Determine if match has all data and can be archived
-  can_be_archived: boolean;
+  // Which storage backend the data came from
+  od_storage?: 'archive' | 'blob' | 'cassandra';
 };
 
 interface LiveMatch extends Match {

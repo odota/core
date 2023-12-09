@@ -116,11 +116,13 @@ async function doBuildMatch(
   );
   let match: ParsedMatch | null = null;
   if (isArchived) {
-    // Fallback to blobstore if we don't have it
     match =
-      (await getArchivedMatch(matchId)) ||
-      (await getMatchData(matchId, Boolean(options.blob)));
-  } else {
+      (await getArchivedMatch(matchId));
+    if (match) {
+      match.od_storage = 'archive';
+    }
+  }
+  if (!match) {
     // Fetch from blobstore
     match = await getMatchData(matchId, Boolean(options.blob));
   }
@@ -133,7 +135,9 @@ async function doBuildMatch(
     // Still don't have it
     return null;
   }
-  // config.NODE_ENV === 'development' && fs.writeFileSync('./build/test.json', JSON.stringify(match));
+  if (!match.od_storage) {
+    match.od_storage = options.blob ? 'blob' : 'cassandra';
+  }
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
   // TODO (howard) (blobstore) after blobstore is default we already have players and can delete getPlayerMatchData
