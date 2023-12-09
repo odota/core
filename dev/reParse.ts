@@ -5,8 +5,9 @@ import { getDataPromise, generateJob } from '../util/utility';
 
 async function start() {
     const matches = await db.raw('select match_id from matches where version IS NULL');
-    for (let i = 0; i < matches.length; i++) {
-        const input = matches[i];
+    console.log(matches.rows.length);
+    for (let i = 0; i < matches.rows.length; i++) {
+        const input = matches.rows[i];
         // match id request, get data from API
         const body: any = await getDataPromise(
         generateJob('api_details', input).url
