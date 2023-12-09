@@ -1130,12 +1130,11 @@ export async function insertMatchPromise(
         'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
         [Number(match.match_id)]
       );
+      // Considered doing an archive here since the data is now complete
       // Currently, parsed gets inserted last so we have all the data (api/gcdata/parsed)
-      // However after adding cleanup we might get here with no gcdata
-      // But if it was cleaned up then it was already archived and we don't rearchive
-      // Later, we can use the blobstore to verify we have all data (since meta parsing might happen after replay parse)
-      // TODO (howard) (blobstore) Once we stop writing to old store, we need to start archiving new matches from blobstore
-      await doArchive(match.match_id.toString(), false);
+      // But there's a potential race condition where the cleanup process cleans up the api/gcdata before we insert the parse data
+      // We might then archive only the parsed data (not api/gcdata) unless we do another validation on it
+      // Seems safer to just let the cleanup do the archiving
     }
   }
   async function decideReplayParse() {
@@ -1348,7 +1347,7 @@ export async function getMatchData(
   matchId: string,
   useBlobStore: boolean
 ): Promise<ParsedMatch | null> {
-  // TODO (howard) (blobstore) Remove the option parameter once blobstore is default
+  // TODO (howard) (blobstore) Remove the option parameter when old tables are dropped
   if (useBlobStore) {
     const result = await cassandra.execute(
       'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
