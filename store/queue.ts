@@ -14,7 +14,7 @@ async function runQueue(
         const jobData = JSON.parse(job[1]);
         try {
           await processor(jobData);
-        } catch(e) {
+        } catch (e) {
           // We failed in the unreliable queue, so we won't reprocess the job
           // Log the error
           console.error(e);

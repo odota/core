@@ -116,8 +116,7 @@ async function doBuildMatch(
   );
   let match: ParsedMatch | null = null;
   if (isArchived) {
-    match =
-      (await getArchivedMatch(matchId));
+    match = await getArchivedMatch(matchId);
     if (match) {
       match.od_storage = 'archive';
     }

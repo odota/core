@@ -1417,10 +1417,14 @@ export async function getPlayerMatchData(
   const deserializedResult = result.rows.map((m) => deserialize(m));
   return deserializedResult;
 }
-export async function getArchivedMatch(matchId: string): Promise<ParsedMatch | null> {
+export async function getArchivedMatch(
+  matchId: string
+): Promise<ParsedMatch | null> {
   try {
     const blob = await archiveGet(matchId.toString());
-    const result: ParsedMatch | null = blob ? JSON.parse(blob.toString()) : null;
+    const result: ParsedMatch | null = blob
+      ? JSON.parse(blob.toString())
+      : null;
     if (result) {
       redisCount(redis, 'match_archive_read');
       return result;

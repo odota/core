@@ -1,10 +1,14 @@
 import cassandra from '../store/cassandra';
 let i = 0;
-cassandra.stream('select match_id from match_blobs', [], { prepare: true, autoPage: true })
+cassandra
+  .stream('select match_id from match_blobs', [], {
+    prepare: true,
+    autoPage: true,
+  })
   .on('readable', function () {
     // readable is emitted as soon a row is received and parsed
     let row;
-    while (row = this.read()) {
+    while ((row = this.read())) {
       // process row
       i += 1;
       console.log(i, row.match_id.toString());
