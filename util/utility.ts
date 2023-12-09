@@ -798,7 +798,7 @@ export function getRetrieverArr(useGcDataArr?: boolean) {
   return output;
 }
 export async function redisCount(redis: Redis | null, prefix: string) {
-  const redisToUse = redis ?? (await import('../store/redis.ts' + '')).default as unknown as Redis;
+  const redisToUse = redis ?? (await import('../store/redis' + '')).default as unknown as Redis;
   const key = `${prefix}:${moment().startOf('hour').format('X')}`;
   await redisToUse?.pfadd(key, uuid.v4());
   await redisToUse?.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
