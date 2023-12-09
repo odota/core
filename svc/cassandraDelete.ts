@@ -79,7 +79,8 @@ async function start() {
       );
 
       // TODO (howard) enable this to start archiving old matches
-      // const funcs = parsedIds.map((id) => () => doArchive(id));
+      // We always archive from old store here since this is a migration
+      // const funcs = parsedIds.map((id) => () => doArchive(id, false));
       // await eachLimit(funcs, 10);
 
       // TODO (howard) (blobstore) Implement a cleanup for the blobstore to remove unparsed matches

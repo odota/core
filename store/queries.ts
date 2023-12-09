@@ -1134,7 +1134,8 @@ export async function insertMatchPromise(
       // However after adding cleanup we might get here with no gcdata
       // But if it was cleaned up then it was already archived and we don't rearchive
       // Later, we can use the blobstore to verify we have all data (since meta parsing might happen after replay parse)
-      await doArchive(match.match_id.toString());
+      // TODO (howard) (blobstore) Once we stop writing to old store, we need to start archiving from blobstore
+      await doArchive(match.match_id.toString(), false);
     }
   }
   async function decideReplayParse() {
@@ -1213,7 +1214,7 @@ export async function insertMatchPromise(
  * @param matchId
  * @returns The result of the archive operation
  */
-export async function doArchive(matchId: string) {
+export async function doArchive(matchId: string, useBlobStore: boolean) {
   if (!config.MATCH_ARCHIVE_S3_ENDPOINT) {
     return;
   }
@@ -1233,7 +1234,7 @@ export async function doArchive(matchId: string) {
     await deleteFromBlobStore(matchId);
     return;
   }
-  const match = await getMatchData(matchId, false);
+  const match = await getMatchData(matchId, useBlobStore);
   const playerMatches = await getPlayerMatchData(matchId);
   if (!match) {
     return;
