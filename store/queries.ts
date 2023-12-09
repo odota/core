@@ -7,7 +7,7 @@ import config from '../config.js';
 import queue from './queue';
 import su from '../util/scenariosUtil';
 import { filterMatches } from '../util/filter';
-import compute from '../util/compute';
+import { computeMatchData } from '../util/compute';
 import db from './db';
 import redis from './redis';
 import { es, INDEX } from './elasticsearch';
@@ -35,7 +35,6 @@ import {
   redisCount,
 } from '../util/utility';
 
-const { computeMatchData } = compute;
 const columnInfo: AnyDict = {};
 const cassandraColumnInfo: AnyDict = {};
 
@@ -1214,7 +1213,7 @@ export async function insertMatchPromise(
  * @param matchId
  * @returns The result of the archive operation
  */
-export async function doArchive(matchId: string, useBlobStore: boolean) {
+export async function doArchive(matchId: string) {
   if (!config.MATCH_ARCHIVE_S3_ENDPOINT) {
     return;
   }
@@ -1234,7 +1233,10 @@ export async function doArchive(matchId: string, useBlobStore: boolean) {
     await deleteFromBlobStore(matchId);
     return;
   }
-  const match = await getMatchData(matchId, useBlobStore);
+  // TODO (howard) For now, we don't clean/archive match_blobs so this will always be false
+  // One day we'll want to add cleanup and switch it
+  // At that point we want to verify the archives from legacy and blob are compatible
+  const match = await getMatchData(matchId, false);
   const playerMatches = await getPlayerMatchData(matchId);
   if (!match) {
     return;

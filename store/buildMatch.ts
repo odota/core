@@ -20,6 +20,7 @@ import {
 import { getMeta } from './getMeta';
 
 async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
+  // NOTE: This adds match specific properties into the player object, which leads to some unnecessary duplication in the output
   const p = {
     ...player,
     radiant_win: match.radiant_win,
@@ -123,18 +124,29 @@ async function doBuildMatch(
   if (!match) {
     // Fetch from blobstore
     match = await getMatchData(matchId, true);
+    if (match) {
+      match.od_storage = 'blob';
+    }
+  }
+  if (!match) {
+    // Fetch from legacy
+    match = await getMatchData(matchId, false);
+    if (match) {
+      match.od_storage = 'cassandra';
+    }
   }
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
+    // Once backfilled it'll be in blobstore
     await backfill(matchId);
     match = await getMatchData(matchId, true);
+    if (match) {
+      match.od_storage = 'backfill';
+    }
   }
   if (!match) {
     // Still don't have it
     return null;
-  }
-  if (!match.od_storage) {
-    match.od_storage = options.blob ? 'blob' : 'cassandra';
   }
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
@@ -222,6 +234,7 @@ async function doBuildMatch(
   };
   return Promise.resolve(matchResult);
 }
+
 async function buildMatch(
   matchId: string,
   options: { blob?: string; meta?: string }

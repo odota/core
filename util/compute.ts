@@ -49,7 +49,7 @@ function countWords(
 /**
  * Computes additional properties from a match/player_match
  * */
-function computeMatchData(pm: ParsedPlayerMatch) {
+export function computeMatchData(pm: ParsedPlayerMatch) {
   const selfHero = constants.heroes[pm.hero_id];
   // Compute patch based on start_time
   if (pm.start_time) {
@@ -246,7 +246,3 @@ function computeMatchData(pm: ParsedPlayerMatch) {
     pm.life_state_dead = (pm.life_state[1] || 0) + (pm.life_state[2] || 0);
   }
 }
-export { computeMatchData };
-export default {
-  computeMatchData,
-};
