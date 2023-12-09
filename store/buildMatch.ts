@@ -12,7 +12,6 @@ import {
 import redis from './redis';
 import db from './db';
 import {
-  getPlayerMatchData,
   getMatchData,
   insertMatchPromise,
   getArchivedMatch,
@@ -123,12 +122,12 @@ async function doBuildMatch(
   }
   if (!match) {
     // Fetch from blobstore
-    match = await getMatchData(matchId, Boolean(options.blob));
+    match = await getMatchData(matchId, true);
   }
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
     await backfill(matchId);
-    match = await getMatchData(matchId, Boolean(options.blob));
+    match = await getMatchData(matchId, true);
   }
   if (!match) {
     // Still don't have it
@@ -139,13 +138,7 @@ async function doBuildMatch(
   }
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
-  // TODO (howard) (blobstore) after blobstore is default we already have players and can delete getPlayerMatchData
-  playersMatchData = match.players || (await getPlayerMatchData(matchId));
-  if (playersMatchData.length === 0) {
-    // Could be due to partial deletion where we only finished deleting players
-    await backfill(matchId);
-    playersMatchData = await getPlayerMatchData(matchId);
-  }
+  playersMatchData = match.players;
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(
     playersMatchData.map((r) =>

@@ -910,7 +910,7 @@ export async function insertMatchPromise(
     await updateTeamRankings(match as Match, options);
   }
   async function upsertMatchCassandra() {
-    // TODO (howard) (blobstore) delete function once blobstore is default
+    // TODO (howard) (blobstore) stop writes to old store once blobstore is default
     // We do this regardless of type (with different sets of fields)
     const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
     const obj: any = serialize(cleaned);
