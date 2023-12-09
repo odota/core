@@ -70,7 +70,7 @@ type Match = {
   metadata: any;
 
   // Which storage backend the data came from
-  od_storage?: 'archive' | 'blob' | 'cassandra';
+  od_storage?: 'archive' | 'blob' | 'cassandra' | 'backfill';
 };
 
 interface LiveMatch extends Match {
