@@ -1233,17 +1233,20 @@ export async function doArchive(matchId: string) {
     await deleteFromBlobStore(matchId);
     return;
   }
-  // TODO (howard) For now, we don't clean/archive match_blobs so this will always be false
+  // TODO (howard) For now, we don't clean/archive match_blobs so always archive from cassandra
   // One day we'll want to add cleanup and switch it
   // At that point we want to verify the archives from legacy and blob are compatible
-  const match = await getMatchData(matchId, false);
-  const playerMatches = await getPlayerMatchData(matchId);
+  const [match, metadata] = await getMatchDataInternal(matchId, 'cassandra');
+  if (!metadata.can_be_archived) {
+    throw new Error('not eligible for archive: ' + matchId);
+  }
   if (!match) {
+    // We couldn't find this match from cassandra for some reason so just skip it
+    // Don't call delete here to avoid affecting blobstore
     return;
   }
-  if (!match.version) {
-    throw new Error('not eligible for archive: ' + match.match_id);
-  }
+  const playerMatches = await getPlayerMatchData(matchId);
+
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches })
   );
@@ -1345,12 +1348,23 @@ export function getMetadata(req: Request, cb: ErrorCb) {
     cb
   );
 }
+
 export async function getMatchData(
   matchId: string,
-  useBlobStore: boolean
+  source: 'archive' | 'blob' | 'cassandra'
 ): Promise<ParsedMatch | null> {
-  // TODO (howard) (blobstore) Remove the option parameter when old tables are dropped
-  if (useBlobStore) {
+  const data = await getMatchDataInternal(matchId, source);
+  // Return just the match object without metadata
+  return data[0];
+}
+
+export async function getMatchDataInternal(
+  matchId: string,
+  source: 'archive' | 'blob' | 'cassandra'
+): Promise<[ParsedMatch | null, { can_be_archived: boolean }]> {
+  if (source === 'archive') {
+    return [await getArchivedMatch(matchId), { can_be_archived: true }];
+  } else if (source === 'blob') {
     const result = await cassandra.execute(
       'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
       [Number(matchId)],
@@ -1362,7 +1376,7 @@ export async function getMatchData(
     );
     const row = result.rows[0];
     if (!row) {
-      return null;
+      return [null, { can_be_archived: false }];
     }
     Object.keys(row).forEach((key) => {
       row[key] = JSON.parse(row[key]);
@@ -1387,23 +1401,25 @@ export async function getMatchData(
         };
       }),
     };
-    return final;
-  }
-  const result = await cassandra.execute(
-    'SELECT * FROM matches where match_id = ?',
-    [Number(matchId)],
-    {
-      prepare: true,
-      fetchSize: 1,
-      autoPage: true,
+    return [final, { can_be_archived: Boolean(api && gcdata && parsed)}];
+  } else if (source === 'cassandra') {
+    const result = await cassandra.execute(
+      'SELECT * FROM matches where match_id = ?',
+      [Number(matchId)],
+      {
+        prepare: true,
+        fetchSize: 1,
+        autoPage: true,
+      }
+    );
+    const deserializedResult = result.rows.map((m) => deserialize(m));
+    const final: ParsedMatch | null = deserializedResult[0];
+    if (!final) {
+      return [null, { can_be_archived: false}];
     }
-  );
-  const deserializedResult = result.rows.map((m) => deserialize(m));
-  const final: ParsedMatch | null = deserializedResult[0];
-  if (!final) {
-    return null;
+    return [final, { can_be_archived: Boolean(final.version)}];
   }
-  return final;
+  return [null, { can_be_archived: false }];
 }
 export async function getPlayerMatchData(
   matchId: string

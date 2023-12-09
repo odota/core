@@ -14,7 +14,6 @@ import db from './db';
 import {
   getMatchData,
   insertMatchPromise,
-  getArchivedMatch,
   getMatchBenchmarks,
 } from './queries';
 import { getMeta } from './getMeta';
@@ -105,7 +104,8 @@ async function doBuildMatch(
     return null;
   }
   // check if the match is archived
-  // if so we prefer the archive since the blobstore may have less data
+  // the blobstore may have te match but missing gcdata/parse if it was backfilled after deletion
+  // Also most matches won't be in the archive so it's more efficient not to always try
   const isArchived = Boolean(
     (
       await db.raw(
@@ -116,21 +116,21 @@ async function doBuildMatch(
   );
   let match: ParsedMatch | null = null;
   if (isArchived) {
-    match = await getArchivedMatch(matchId);
+    match = await getMatchData(matchId, 'archive');
     if (match) {
       match.od_storage = 'archive';
     }
   }
   if (!match) {
     // Fetch from blobstore
-    match = await getMatchData(matchId, true);
+    match = await getMatchData(matchId, 'blob');
     if (match) {
       match.od_storage = 'blob';
     }
   }
   if (!match) {
     // Fetch from legacy
-    match = await getMatchData(matchId, false);
+    match = await getMatchData(matchId, 'cassandra');
     if (match) {
       match.od_storage = 'cassandra';
     }
@@ -139,7 +139,7 @@ async function doBuildMatch(
     // if we still don't have it, try backfilling it from Steam API and then check again
     // Once backfilled it'll be in blobstore
     await backfill(matchId);
-    match = await getMatchData(matchId, true);
+    match = await getMatchData(matchId, 'blob');
     if (match) {
       match.od_storage = 'backfill';
     }
