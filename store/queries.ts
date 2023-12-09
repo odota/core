@@ -1134,7 +1134,7 @@ export async function insertMatchPromise(
       // However after adding cleanup we might get here with no gcdata
       // But if it was cleaned up then it was already archived and we don't rearchive
       // Later, we can use the blobstore to verify we have all data (since meta parsing might happen after replay parse)
-      // TODO (howard) (blobstore) Once we stop writing to old store, we need to start archiving from blobstore
+      // TODO (howard) (blobstore) Once we stop writing to old store, we need to start archiving new matches from blobstore
       await doArchive(match.match_id.toString(), false);
     }
   }
@@ -1181,7 +1181,7 @@ export async function insertMatchPromise(
       },
       {
         priority,
-        attempts: options.attempts || 20,
+        attempts: options.attempts || 30,
       }
     );
     if (options.origin === 'scanner' && options.type === 'api') {

@@ -1156,7 +1156,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           leagueid, leagues.name as league_name,
           series_id, series_type,
           radiant_score, dire_score,
-          radiant_win
+          radiant_win, version
           FROM matches
           LEFT JOIN teams radiant
           ON radiant.team_id = matches.radiant_team_id
