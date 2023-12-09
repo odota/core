@@ -192,7 +192,7 @@ async function updateHeroSearch(match: Match) {
   const teamB = inverted ? radiant : dire;
   const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
   return await db.raw(
-    'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?)',
+    'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
     [match.match_id, teamA, teamB, teamAWin, match.start_time]
   );
 }
