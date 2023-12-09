@@ -59,6 +59,9 @@ export async function buildStatus() {
     requests_api_key_last_day(cb) {
       getRedisCountDay(redis, 'request_api_key', cb);
     },
+    steam_api_calls_last_day(cb) {
+      getRedisCountDay(redis, 'steam_api_call', cb);
+    },
     steam_api_backfill_last_day(cb) {
       getRedisCountDay(redis, 'steam_api_backfill', cb);
     },

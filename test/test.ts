@@ -820,10 +820,8 @@ async function initCassandra() {
 
 async function startServices() {
   console.log('starting services');
-  //@ts-ignore
-  app = (await import('../svc/web.ts')).default;
-  //@ts-ignore
-  await import('../svc/parser.ts');
+  app = (await import('../svc/web.ts' + '')).default as unknown as Express;
+  await import('../svc/parser.ts' + '');
 }
 
 async function loadMatches() {

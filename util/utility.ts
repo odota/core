@@ -230,6 +230,7 @@ function getData(url: string | GetDataOptions, cb: ErrorCb) {
     // choose a steam api host
     const apiHosts = config.STEAM_API_HOST.split(',');
     parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
+    redisCount(null, 'steam_api_call');
   }
   const target = urllib.format(parse);
   console.log('%s - getData: %s', new Date(), target);
@@ -796,10 +797,11 @@ export function getRetrieverArr(useGcDataArr?: boolean) {
   });
   return output;
 }
-export function redisCount(redis: Redis, prefix: string) {
+export async function redisCount(redis: Redis | null, prefix: string) {
+  const redisToUse = redis ?? (await import('../store/redis.ts' + '')).default as unknown as Redis;
   const key = `${prefix}:${moment().startOf('hour').format('X')}`;
-  redis.pfadd(key, uuid.v4());
-  redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
+  await redisToUse?.pfadd(key, uuid.v4());
+  await redisToUse?.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
 export function getRedisCountDay(
   redis: Redis,

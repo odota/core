@@ -1,6 +1,8 @@
 import moment from 'moment';
 import redis from './redis';
 import db from './db';
+import { Redis } from 'ioredis';
+import config from '../config.js';
 
 async function runQueue(
   queueName: QueueName,
@@ -8,8 +10,11 @@ async function runQueue(
   processor: (job: any) => Promise<void>
 ) {
   const executor = async () => {
+    // Since this may block, we need a separate client for each parallelism!
+    // Otherwise the workers cannot issue redis commands since something is waiting for redis to return a job
+    const consumer = new Redis(config.REDIS_URL);
     while (true) {
-      const job = await redis.blpop(queueName, '0');
+      const job = await consumer.blpop(queueName, '0');
       if (job) {
         const jobData = JSON.parse(job[1]);
         try {
