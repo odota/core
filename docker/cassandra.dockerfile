@@ -1,7 +1,7 @@
 FROM cassandra:4
 
-COPY wait-cassandra.sh /
-COPY prepend.sh /usr/local/bin/prepend
+COPY ./docker/wait-cassandra.sh /
+COPY ./docker/prepend.sh /usr/local/bin/prepend
 
 RUN head --lines=-2 /docker-entrypoint.sh > /docker-entrypoint.tmp; \
     echo '/wait-cassandra.sh &' >> /docker-entrypoint.tmp; \
