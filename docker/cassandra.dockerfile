@@ -1,4 +1,5 @@
 FROM cassandra:3
+# Note: CI doesn't seem to work with 4 for some reason
 
 COPY ./docker/wait-cassandra.sh /
 COPY ./docker/prepend.sh /usr/local/bin/prepend

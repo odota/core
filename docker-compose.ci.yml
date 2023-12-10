@@ -9,11 +9,14 @@ services:
     environment:
       POSTGRES_DB: yasp
       POSTGRES_PASSWORD: postgres
+  # cassandra:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/cassandra.dockerfile
+  #   image: odota/cassandra
+  #   container_name: odota-cassandra
   cassandra:
-    build:
-      context: .
-      dockerfile: docker/cassandra.dockerfile
-    image: odota/cassandra
+    image: cassandra:3
     container_name: odota-cassandra
   scylla:
     image: scylladb/scylla:5.4
