@@ -29,7 +29,7 @@ export async function buildStatus() {
     matches_last_day(cb) {
       getRedisCountDay(redis, 'added_match', cb);
     },
-    matches_last_hour(cb) {
+    matches_prev_hour(cb) {
       getRedisCountHour(redis, 'added_match', cb);
     },
     auto_parse_last_day(cb) {

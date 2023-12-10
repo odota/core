@@ -35,7 +35,7 @@ async function scenariosCleanup() {
       ).asCallback(cb);
     },
     // gcData: (cb) => {
-      // db.raw('delete from match_gcdata where match_id not in (select match_id from matches) and match_id < (select max(match_id) - 50000000 from match_gcdata)').asCallback(cb);
+    // db.raw('delete from match_gcdata where match_id not in (select match_id from matches) and match_id < (select max(match_id) - 50000000 from match_gcdata)').asCallback(cb);
     // },
     heroSearch: (cb) => {
       db.raw(

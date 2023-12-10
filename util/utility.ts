@@ -797,7 +797,7 @@ export function getRetrieverArr(useGcDataArr?: boolean) {
   });
   return output;
 }
-export async function redisCount(redis: Redis | null, prefix: string) {
+export async function redisCount(redis: Redis | null, prefix: MetricName) {
   const redisToUse =
     redis ?? (require('../store/redis' + '').default as unknown as Redis);
   const key = `${prefix}:${moment().startOf('hour').format('X')}`;
@@ -809,7 +809,7 @@ export async function redisCount(redis: Redis | null, prefix: string) {
 }
 export function getRedisCountDay(
   redis: Redis,
-  prefix: string,
+  prefix: MetricName,
   cb: NonUnknownErrorCb
 ) {
   // Get counts for last 24 hour keys (including current partial hour)
@@ -823,10 +823,10 @@ export function getRedisCountDay(
 }
 export function getRedisCountHour(
   redis: Redis,
-  prefix: string,
+  prefix: MetricName,
   cb: NonUnknownErrorCb
 ) {
-  // Get counts for previous full hour
+  // Get counts for previous full hour (not current)
   const keyArr = [];
   for (let i = 1; i < 2; i += 1) {
     keyArr.push(

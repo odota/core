@@ -354,3 +354,28 @@ type OpenAPISpec = {
     };
   };
 };
+
+type MetricName =
+  | 'parsed'
+  | 'steam_api_call'
+  | 'web_crash'
+  | '500_error'
+  | 'api_hits_ui'
+  | 'api_hits'
+  | 'scanner_exception'
+  | 'skip_seq_num'
+  | 'retriever_player'
+  | 'fullhistory'
+  | 'match_archive_read'
+  | 'match_archive_write'
+  | 'auto_parse'
+  | 'added_match'
+  | 'parser'
+  | 'meta_parse'
+  | 'retriever'
+  | 'cached_gcdata'
+  | 'build_match'
+  | 'steam_api_backfill'
+  | 'request_api_key'
+  | 'request'
+  | 'reparse';
