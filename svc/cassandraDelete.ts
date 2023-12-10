@@ -32,10 +32,10 @@ async function start() {
         }
       );
       // Put the ones that don't have parsed data into an array
-      const unparsedIds = result.rows
+      const unparsedIds: number[] = result.rows
         .filter((result) => result.version == null)
         .map((result) => result.match_id);
-      const parsedIds = result.rows
+      const parsedIds: number[] = result.rows
         .filter((result) => result.version != null)
         .map((result) => result.match_id);
       console.log(
@@ -77,8 +77,7 @@ async function start() {
         )
       );
 
-      // TODO (howard) enable this to start archiving old matches
-      const funcs = parsedIds.map((id) => () => doArchive(id));
+      const funcs = parsedIds.map((id) => () => doArchive(id.toString()));
       await eachLimit(funcs, 1);
 
       // TODO (howard) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
