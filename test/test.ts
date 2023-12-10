@@ -198,19 +198,18 @@ describe('replay parse', function () {
   });
 });
 describe('teamRanking', () => {
-  it('should have team rankings', (cb) => {
-    db.select(['team_id', 'rating', 'wins', 'losses'])
-      .from('team_rating')
-      .asCallback((err: Error | null, rows: any[]) => {
-        // We inserted the pro match twice so expect to update the ratings twice
-        const loser = rows.find((row) => row.team_id === 4251435);
-        const winner = rows.find((row) => row.team_id === 1375614);
-        console.log(loser.rating, winner.rating);
-        assert(loser.losses === 2);
-        assert(winner.wins === 2);
-        assert(loser.rating < winner.rating);
-        return cb(err);
-      });
+  it('should have team rankings', async () => {
+    const rows = await db
+      .select(['team_id', 'rating', 'wins', 'losses'])
+      .from('team_rating');
+    // We inserted the pro match twice so expect to update the ratings twice
+    const loser = rows.find((row) => row.team_id === 4251435);
+    const winner = rows.find((row) => row.team_id === 1375614);
+    console.log(loser.rating, winner.rating);
+    assert(loser.losses === 2);
+    assert(winner.wins === 2);
+    assert(loser.rating < winner.rating);
+    return;
   });
 });
 // TODO also test on unparsed match to catch exceptions caused by code expecting parsed data

@@ -6,8 +6,8 @@ import { epochWeek, invokeIntervalAsync } from '../util/utility';
 
 async function scenariosCleanup() {
   const currentWeek = epochWeek();
-  await async.parallel([
-    (cb) => {
+  const cleanupResult = await async.parallel({
+    teamScenarios: (cb) => {
       db('team_scenarios')
         .whereNull('epoch_week')
         .orWhere(
@@ -18,7 +18,7 @@ async function scenariosCleanup() {
         .del()
         .asCallback(cb);
     },
-    (cb) => {
+    scenarios: (cb) => {
       db('scenarios')
         .whereNull('epoch_week')
         .orWhere(
@@ -29,20 +29,21 @@ async function scenariosCleanup() {
         .del()
         .asCallback(cb);
     },
-    (cb) => {
+    publicMatches: (cb) => {
       db.raw(
         "DELETE from public_matches where start_time < extract(epoch from now() - interval '6 month')::int"
       ).asCallback(cb);
     },
-    (cb) => {
+    // gcData: (cb) => {
       // db.raw('delete from match_gcdata where match_id not in (select match_id from matches) and match_id < (select max(match_id) - 50000000 from match_gcdata)').asCallback(cb);
-    },
-    (cb) => {
+    // },
+    heroSearch: (cb) => {
       db.raw(
         'delete from hero_search where match_id < (select max(match_id) - 150000000 from hero_search)'
       ).asCallback(cb);
     },
-  ]);
+  });
+  console.log('[CLEANUP]', cleanupResult);
   return;
 }
 invokeIntervalAsync(scenariosCleanup, 1000 * 60 * 60 * 6);
