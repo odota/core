@@ -43,8 +43,8 @@ const {
   SCYLLA_URL,
 } = config;
 const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
-const initCassandraHost = url.parse(CASSANDRA_URL).host;
-const initScyllaHost = url.parse(SCYLLA_URL).host;
+const initCassandraHost = url.parse(CASSANDRA_URL).host as string;
+const initScyllaHost = url.parse(SCYLLA_URL).host as string;
 
 let app: Express;
 // fake api responses
