@@ -47,6 +47,9 @@ export async function buildStatus() {
     parsed_matches_last_day(cb) {
       getRedisCountDay(redis, 'parser', cb);
     },
+    reparse_last_day(cb) {
+      getRedisCountDay(redis, 'reparse', cb);
+    },
     meta_parsed_last_day(cb) {
       getRedisCountDay(redis, 'meta_parse', cb);
     },
