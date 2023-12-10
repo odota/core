@@ -32,18 +32,21 @@ import buildMatch from '../store/buildMatch';
 import { es } from '../store/elasticsearch';
 import redis from '../store/redis';
 import cassandra from '../store/cassandra';
+import scylla from '../store/scylla';
 import db from '../store/db';
 
 const { Pool } = pg;
 const {
   INIT_POSTGRES_HOST,
   INIT_CASSANDRA_HOST,
+  INIT_SCYLLA_HOST,
   RETRIEVER_HOST,
   STRIPE_SECRET,
   POSTGRES_URL,
 } = config;
 const initPostgresHost = `postgres://postgres:postgres@${INIT_POSTGRES_HOST}/postgres`;
 const initCassandraHost = INIT_CASSANDRA_HOST;
+const initScyllaHost = INIT_SCYLLA_HOST;
 
 let app: Express;
 // fake api responses
@@ -83,6 +86,7 @@ before(async function setup() {
   await initElasticsearch();
   await initRedis();
   await initCassandra();
+  await initScylla();
   await startServices();
   await loadMatches();
   await loadPlayers();
@@ -815,6 +819,27 @@ async function initCassandra() {
   for (let i = 0; i < tables.length; i++) {
     const cql = tables[i];
     await cassandra.execute(cql);
+  }
+}
+
+async function initScylla() {
+  const client = new Client({
+    contactPoints: [initScyllaHost],
+    localDataCenter: 'datacenter1',
+  });
+  console.log('drop scylla test keyspace');
+  await client.execute('DROP KEYSPACE IF EXISTS yasp_test');
+  console.log('create scylla test keyspace');
+  await client.execute(
+    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };"
+  );
+  // ready to create client
+  const tables = readFileSync('./sql/create_tables.cql', 'utf8')
+    .split(';')
+    .filter((cql) => cql.length > 1);
+  for (let i = 0; i < tables.length; i++) {
+    const cql = tables[i];
+    await scylla.execute(cql);
   }
 }
 

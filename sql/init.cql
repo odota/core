@@ -1,1 +1,1 @@
-CREATE KEYSPACE yasp WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };
+CREATE KEYSPACE IF NOT EXISTS yasp WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };

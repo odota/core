@@ -13,11 +13,29 @@ services:
       POSTGRES_DB: yasp
       POSTGRES_PASSWORD: postgres
   cassandra:
-    build:
-      context: .
-      dockerfile: docker/cassandra.dockerfile
-    image: odota/cassandra
+    image: cassandra:4
     container_name: odota-cassandra
+  cassandrainit:
+    image: cassandra
+    depends_on:
+      - cassandra
+    # restart: "no"
+    volumes:
+      - .:/usr/src
+    container_name: odota-cassandrainit
+    entrypoint: [ "bash", "-c", "sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra" ]
+  scylla:
+    image: scylladb/scylla:5.4
+    container_name: odota-scylla
+  scyllainit:
+    image: scylladb/scylla
+    depends_on:
+      - scylla
+    # restart: "no"
+    volumes:
+      - .:/usr/src
+    container_name: odota-scyllainit
+    entrypoint: [ "bash", "-c", "sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla" ]
   redis:
     image: redis:5
     container_name: odota-redis
@@ -56,9 +74,12 @@ services:
       REDIS_TEST_URL: redis://odota-redis:6379/1
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
       CASSANDRA_TEST_URL: cassandra://odota-cassandra/yasp_test
+      SCYLLA_URL: scylla://odota-scylla/yasp
+      SCYLLA_TEST_URL: scylla://odota-scylla/yasp_test
       ELASTICSEARCH_URL: odota-elasticsearch:9200
       INIT_POSTGRES_HOST: odota-postgres
       INIT_CASSANDRA_HOST: odota-cassandra
+      INIT_SCYLLA_HOST: odota-scylla
     volumes:
       - .:/usr/src
     links:
@@ -67,4 +88,5 @@ services:
       - redis
       - elasticsearch
       - parser
+      - scylla
     container_name: odota-core
