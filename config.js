@@ -26,14 +26,10 @@ const defaults = {
   PROXY_URLS: '', // comma separated list of proxy urls to use
   STEAM_API_HOST: 'api.steampowered.com', // comma separated list of hosts to fetch Steam API data from
   POSTGRES_URL: 'postgresql://postgres:postgres@localhost/yasp', // connection string for PostgreSQL
-  POSTGRES_TEST_URL: 'postgresql://postgres:postgres@localhost/yasp_test',
   READONLY_POSTGRES_URL: 'postgresql://readonly:readonly@localhost/yasp', // readonly connection string for PostgreSQL
   REDIS_URL: 'redis://127.0.0.1:6379/0', // connection string for Redis
-  REDIS_TEST_URL: 'redis://127.0.0.1:6379/1',
   CASSANDRA_URL: 'cassandra://localhost/yasp', // connection string for Cassandra
-  CASSANDRA_TEST_URL: 'cassandra://localhost/yasp_test',
   SCYLLA_URL: 'scylla://localhost/yasp', // connection string for Scylla
-  SCYLLA_TEST_URL: 'scylla://localhost/yasp_test',
   ELASTICSEARCH_URL: 'localhost:9200',
   INIT_POSTGRES_HOST: 'localhost',
   INIT_CASSANDRA_HOST: 'localhost',
@@ -87,10 +83,10 @@ if (process.env.NODE_ENV === 'development') {
 }
 if (process.env.NODE_ENV === 'test') {
   process.env.PORT = ''; // use service defaults
-  process.env.POSTGRES_URL = process.env.POSTGRES_TEST_URL;
-  process.env.CASSANDRA_URL = process.env.CASSANDRA_TEST_URL;
-  process.env.SCYLLA_URL = process.env.SCYLLA_TEST_URL;
-  process.env.REDIS_URL = process.env.REDIS_TEST_URL;
+  process.env.POSTGRES_URL = process.env.POSTGRES_URL + '_test';
+  process.env.CASSANDRA_URL = process.env.CASSANDRA_URL + '_test';
+  process.env.SCYLLA_URL = process.env.SCYLLA_URL + '_test';
+  process.env.REDIS_URL = process.env.REDIS_URL.slice(0, -1) + '1';
   process.env.SESSION_SECRET = 'testsecretvalue';
   process.env.ENABLE_MATCH_CACHE = 1;
   process.env.FRONTEND_PORT = 5001;

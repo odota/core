@@ -31,8 +31,6 @@ import {
 import buildMatch from '../store/buildMatch';
 import { es } from '../store/elasticsearch';
 import redis from '../store/redis';
-import cassandra from '../store/cassandra';
-import scylla from '../store/scylla';
 import db from '../store/db';
 
 const { Pool } = pg;
