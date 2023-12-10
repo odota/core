@@ -31,8 +31,9 @@ const defaults = {
   REDIS_URL: 'redis://127.0.0.1:6379/0', // connection string for Redis
   REDIS_TEST_URL: 'redis://127.0.0.1:6379/1',
   CASSANDRA_URL: 'cassandra://localhost/yasp', // connection string for Cassandra
-  SCYLLA_URL: 'scylla://localhost/yasp', // connection string for Scylla
   CASSANDRA_TEST_URL: 'cassandra://localhost/yasp_test',
+  SCYLLA_URL: 'scylla://localhost/yasp', // connection string for Scylla
+  SCYLLA_TEST_URL: 'scylla://localhost/yasp_test',
   ELASTICSEARCH_URL: 'localhost:9200',
   INIT_POSTGRES_HOST: 'localhost',
   INIT_CASSANDRA_HOST: 'localhost',

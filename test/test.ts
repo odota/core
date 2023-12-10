@@ -85,8 +85,6 @@ before(async function setup() {
   await initPostgres();
   await initElasticsearch();
   await initRedis();
-  // Wait for Cassandra to come up
-  await new Promise(resolve => setTimeout(resolve, 30000));
   await initCassandra();
   await initScylla();
   await startServices();
