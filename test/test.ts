@@ -798,8 +798,6 @@ async function initPostgres() {
 }
 
 async function initCassandra() {
-  // Wait for Cassandra to come up
-  await new Promise(resolve => setTimeout(resolve, 15000));
   const client = new Client({
     contactPoints: [initCassandraHost],
     localDataCenter: 'datacenter1',
