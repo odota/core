@@ -12,6 +12,7 @@ import stripeLib from 'stripe';
 import pg from 'pg';
 import { readFileSync } from 'fs';
 import util from 'util';
+import url from 'url';
 import { Client } from 'cassandra-driver';
 import swaggerParser from '@apidevtools/swagger-parser';
 import config from '../config.js';
@@ -35,16 +36,15 @@ import db from '../store/db';
 
 const { Pool } = pg;
 const {
-  INIT_POSTGRES_HOST,
-  INIT_CASSANDRA_HOST,
-  INIT_SCYLLA_HOST,
   RETRIEVER_HOST,
   STRIPE_SECRET,
   POSTGRES_URL,
+  CASSANDRA_URL,
+  SCYLLA_URL,
 } = config;
-const initPostgresHost = `postgres://postgres:postgres@${INIT_POSTGRES_HOST}/postgres`;
-const initCassandraHost = INIT_CASSANDRA_HOST;
-const initScyllaHost = INIT_SCYLLA_HOST;
+const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
+const initCassandraHost = url.parse(CASSANDRA_URL).host;
+const initScyllaHost = url.parse(SCYLLA_URL).host;
 
 let app: Express;
 // fake api responses

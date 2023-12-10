@@ -52,9 +52,6 @@ services:
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
       SCYLLA_URL: scylla://odota-scylla/yasp
       ELASTICSEARCH_URL: odota-elasticsearch:9200
-      INIT_POSTGRES_HOST: odota-postgres
-      INIT_CASSANDRA_HOST: odota-cassandra
-      INIT_SCYLLA_HOST: odota-scylla
     links:
       - postgres
       - cassandra
