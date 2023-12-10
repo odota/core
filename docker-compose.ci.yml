@@ -10,7 +10,7 @@ services:
       POSTGRES_DB: yasp
       POSTGRES_PASSWORD: postgres
   cassandra:
-    image: cassandra:4
+    image: cassandra:3
     # CI doesn't work with the cassandra:4 image for some reason? Maybe need to sleep longer
     container_name: odota-cassandra
   scylla:
