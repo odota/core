@@ -1379,7 +1379,7 @@ export async function getMatchDataInternal(
       return [null, { can_be_archived: false }];
     }
     Object.keys(row).forEach((key) => {
-      row[key] = JSON.parse(row[key]);
+      row[key] = row[key] ? JSON.parse(row[key]) : null;
     });
     const { api, gcdata, parsed } = row;
     // Merge the results together
