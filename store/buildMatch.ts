@@ -151,6 +151,7 @@ async function doBuildMatch(
   }
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
+  // TODO (howard) remove this backfill once matches/player_matches deleted
   playersMatchData = match.players || await getPlayerMatchData(matchId);
   if (playersMatchData.length === 0) {
     await backfill(matchId);
