@@ -99,7 +99,7 @@ async function backfill(matchId: string) {
 }
 async function doBuildMatch(
   matchId: string,
-  options: { source?: MatchStorage, meta?: string }
+  options: { source?: MatchStorage; meta?: string }
 ) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return null;
@@ -130,7 +130,7 @@ async function doBuildMatch(
     }
   }
   if (!match || options.source === 'blob') {
-    // Fetch from blobstore 
+    // Fetch from blobstore
     // TODO (howard) want to make this primary, but we have to archive old parsed matches first, otherwise we may show unparsed data even if parsed
     match = await getMatchData(matchId, 'blob');
     if (match) {
@@ -153,7 +153,7 @@ async function doBuildMatch(
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
   // TODO (howard) remove this backfill once matches/player_matches deleted
-  playersMatchData = match.players || await getPlayerMatchData(matchId);
+  playersMatchData = match.players || (await getPlayerMatchData(matchId));
   if (playersMatchData.length === 0) {
     await backfill(matchId);
     playersMatchData = await getPlayerMatchData(matchId);
@@ -244,7 +244,7 @@ async function doBuildMatch(
 
 async function buildMatch(
   matchId: string,
-  options: { source?: MatchStorage, meta?: string }
+  options: { source?: MatchStorage; meta?: string }
 ) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);

@@ -17,16 +17,15 @@ function gaussianRandom(mean, std) {
   return randByCentralLimitTheorem() * std + mean;
 }
 
-db.from('players').asCallback((err, players) => {
-  players.forEach((p) => {
-    const fake = {
-      match_id: p.account_id,
-      account_id: p.account_id,
-      solo_competitive_rank: Math.floor(gaussianRandom(4000, 1000)),
-      competitive_rank: p.account_id % 8000,
-      time: new Date(),
-    };
-    console.log(fake.account_id, fake.solo_competitive_rank);
-    db.insert(fake).into('player_ratings').asCallback(cb);
-  });
+const players = await db.from('players');
+players.forEach((p) => {
+  const fake = {
+    match_id: p.account_id,
+    account_id: p.account_id,
+    solo_competitive_rank: Math.floor(gaussianRandom(4000, 1000)),
+    competitive_rank: p.account_id % 8000,
+    time: new Date(),
+  };
+  console.log(fake.account_id, fake.solo_competitive_rank);
+  db.insert(fake).into('player_ratings');
 });

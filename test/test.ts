@@ -812,8 +812,8 @@ async function initCassandra() {
   );
   console.log('create cassandra tables');
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-  .split(';')
-  .filter((cql) => cql.length > 1);
+    .split(';')
+    .filter((cql) => cql.length > 1);
   for (let i = 0; i < tables.length; i++) {
     const cql = tables[i];
     await init.execute('USE yasp_test');
@@ -835,8 +835,8 @@ async function initScylla() {
   );
   console.log('create scylla tables');
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-  .split(';')
-  .filter((cql) => cql.length > 1);
+    .split(';')
+    .filter((cql) => cql.length > 1);
   for (let i = 0; i < tables.length; i++) {
     const cql = tables[i];
     await init.execute('USE yasp_test');

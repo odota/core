@@ -4,20 +4,21 @@ import { generateJob, getDataPromise } from '../util/utility';
 
 // const leagueUrl = generateJob('api_leagues', {}).url;
 
-async function getPage(url, leagueid, cb) {
-  const data = await getDataPromise(url);
+async function getPage(url, leagueid) {
+  const data: any = await getDataPromise(url);
   console.log(
     leagueid,
     data.result.total_results,
     data.result.results_remaining
   );
-  data.result.matches.forEach((match) => {
+  for (let i = 0; i < data.result.matches.length; i++) {
+    const match = data.results.matches[i];
     console.log(match.match_id);
     const job = generateJob('api_details', {
       match_id: match.match_id,
     });
     const { url } = job;
-    const body = await getDataPromise({
+    const body: any = await getDataPromise({
       url,
       delay: 200,
     });
@@ -25,35 +26,32 @@ async function getPage(url, leagueid, cb) {
       const match = body.result;
       await insertMatchPromise(match, { skipParse: true });
     }
-  });
+  }
   if (data.result.results_remaining) {
     const url2 = generateJob('api_history', {
       leagueid,
       start_at_match_id:
         data.result.matches[data.result.matches.length - 1].match_id - 1,
     }).url;
-    getPage(url2, leagueid, cb);
+    return getPage(url2, leagueid);
   }
 }
 
 // From DB
-db.select('leagueid')
+const data = await db
+  .select('leagueid')
   .from('leagues')
   .where('tier', 'professional')
-  .orWhere('tier', 'premium')
-  .asCallback((err, data) => {
-    if (err) {
-      throw err;
-    }
-    const leagueIds = data.map((l) => l.leagueid);
-    leagueIds.forEach((leagueid) => {
-      const { url } = generateJob('api_history', {
-        leagueid,
-      });
-      return getPage(url, leagueid, cb);
-    });
-    process.exit(Number(err));
+  .orWhere('tier', 'premium');
+const leagueIds = data.map((l) => l.leagueid);
+// NOTE: there could be a lot of leagueids
+leagueIds.forEach(async (leagueid) => {
+  const { url } = generateJob('api_history', {
+    leagueid,
   });
+  return await getPage(url, leagueid);
+});
+process.exit(0);
 // From API
 /*
 const data = await getDataPromise(leagueUrl);

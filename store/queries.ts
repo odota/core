@@ -1401,7 +1401,7 @@ export async function getMatchDataInternal(
         };
       }),
     };
-    return [final, { can_be_archived: Boolean(api && gcdata && parsed)}];
+    return [final, { can_be_archived: Boolean(api && gcdata && parsed) }];
   } else if (source === 'cassandra') {
     const result = await cassandra.execute(
       'SELECT * FROM matches where match_id = ?',
@@ -1415,9 +1415,9 @@ export async function getMatchDataInternal(
     const deserializedResult = result.rows.map((m) => deserialize(m));
     const final: ParsedMatch | null = deserializedResult[0];
     if (!final) {
-      return [null, { can_be_archived: false}];
+      return [null, { can_be_archived: false }];
     }
-    return [final, { can_be_archived: Boolean(final.version)}];
+    return [final, { can_be_archived: Boolean(final.version) }];
   }
   return [null, { can_be_archived: false }];
 }
