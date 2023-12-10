@@ -1,4 +1,4 @@
-FROM cassandra:3
+FROM scylladb/scylla
 # Note: CI doesn't seem to work with 4 for some reason
 
 COPY ./docker/wait-cassandra.sh /
@@ -14,11 +14,6 @@ RUN head --lines=-2 /docker-entrypoint.sh > /docker-entrypoint.tmp; \
 # This is what would go to child images
 # However, that fails if user wants to add files via some other means. Hence, it's commented out.
 #ONBUILD COPY cassandra-fixtures/* /docker-entrypoint-init.d/
-
-# Lower cassandra memory limits
-ENV MAX_HEAP_SIZE=128M
-ENV HEAP_NEWSIZE=24M
-ENV CASSANDRA_LISTEN_ADDRESS=127.0.0.1
 
 COPY sql/init.cql /docker-entrypoint-init.d/10-init.cql
 COPY sql/create_tables.cql /docker-entrypoint-init.d/20-create-tables.cql
