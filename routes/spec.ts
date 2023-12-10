@@ -138,6 +138,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         func: async (req, res, cb) => {
           try {
             const match = await buildMatch(req.params.match_id, {
+              source: req.query.source,
               meta: req.query.meta,
             });
             if (!match) {
