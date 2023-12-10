@@ -152,6 +152,10 @@ async function doBuildMatch(
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
   playersMatchData = match.players || await getPlayerMatchData(matchId);
+  if (playersMatchData.length === 0) {
+    await backfill(matchId);
+    playersMatchData = await getPlayerMatchData(matchId);
+  }
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(
     playersMatchData.map((r) =>
