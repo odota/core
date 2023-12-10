@@ -21,14 +21,4 @@ updates:
           - 8.142.0
           - 8.143.0
           - 8.145.0
-      - dependency-name: redis
-        versions:
-          - 3.0.2
-          - 3.1.0
-          - 3.1.1
-      - dependency-name: pg-query-stream
-        versions:
-          - 4.0.0
-      - dependency-name: pg
-        versions:
-          - 8.5.1
+

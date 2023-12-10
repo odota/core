@@ -802,44 +802,47 @@ async function initPostgres() {
 }
 
 async function initCassandra() {
-  const client = new Client({
+  const init = new Client({
     contactPoints: [initCassandraHost],
     localDataCenter: 'datacenter1',
   });
   console.log('drop cassandra test keyspace');
-  await client.execute('DROP KEYSPACE IF EXISTS yasp_test');
+  await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
   console.log('create cassandra test keyspace');
-  await client.execute(
+  await init.execute(
     "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };"
   );
-  // ready to create client
+  console.log('create cassandra tables');
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-    .split(';')
-    .filter((cql) => cql.length > 1);
+  .split(';')
+  .filter((cql) => cql.length > 1);
   for (let i = 0; i < tables.length; i++) {
     const cql = tables[i];
-    await cassandra.execute(cql);
+    await init.execute('USE yasp_test');
+    await init.execute(cql);
   }
 }
 
 async function initScylla() {
-  const client = new Client({
+  const init = new Client({
     contactPoints: [initScyllaHost],
     localDataCenter: 'datacenter1',
   });
+  console.log(initScyllaHost);
   console.log('drop scylla test keyspace');
-  await client.execute('DROP KEYSPACE IF EXISTS yasp_test');
+  await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
   console.log('create scylla test keyspace');
-  await client.execute(
+  await init.execute(
     "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };"
   );
-  // ready to create client
+  console.log('create scylla tables');
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-    .split(';')
-    .filter((cql) => cql.length > 1);
+  .split(';')
+  .filter((cql) => cql.length > 1);
   for (let i = 0; i < tables.length; i++) {
     const cql = tables[i];
-    await scylla.execute(cql);
+    await init.execute('USE yasp_test');
+    await init.execute(cql);
   }
 }
 
