@@ -80,9 +80,9 @@ nock(`http://${RETRIEVER_HOST}`)
 before(async function setup() {
   this.timeout(60000);
   await initPostgres();
-  await initCassandra();
   await initElasticsearch();
   await initRedis();
+  await initCassandra();
   await startServices();
   await loadMatches();
   await loadPlayers();
@@ -798,6 +798,8 @@ async function initPostgres() {
 }
 
 async function initCassandra() {
+  // Wait for Cassandra to come up
+  await new Promise(resolve => setTimeout(resolve, 15000));
   const client = new Client({
     contactPoints: [initCassandraHost],
     localDataCenter: 'datacenter1',
