@@ -1,4 +1,18 @@
-FROM daerdemandt/cassandra-init-manual
+FROM cassandra:4
+
+COPY wait-cassandra.sh /
+COPY prepend.sh /usr/local/bin/prepend
+
+RUN head --lines=-2 /docker-entrypoint.sh > /docker-entrypoint.tmp; \
+    echo '/wait-cassandra.sh &' >> /docker-entrypoint.tmp; \
+    tail --lines=2 /docker-entrypoint.sh >> /docker-entrypoint.tmp; \
+    mv /docker-entrypoint.tmp /docker-entrypoint.sh; \
+    chmod +x /docker-entrypoint.sh; \
+    mkdir /docker-entrypoint-init.d
+
+# This is what would go to child images
+# However, that fails if user wants to add files via some other means. Hence, it's commented out.
+#ONBUILD COPY cassandra-fixtures/* /docker-entrypoint-init.d/
 
 # Lower cassandra memory limits
 ENV MAX_HEAP_SIZE=128M

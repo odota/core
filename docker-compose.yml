@@ -15,15 +15,15 @@ services:
   cassandra:
     image: cassandra:4
     container_name: odota-cassandra
-  cassandrainit:
-    image: cassandra
-    depends_on:
-      - cassandra
-    # restart: "no"
-    volumes:
-      - .:/usr/src
-    container_name: odota-cassandrainit
-    entrypoint: [ "bash", "-c", "sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra" ]
+  # cassandrainit:
+  #   image: cassandra
+  #   depends_on:
+  #     - cassandra
+  #   # restart: "no"
+  #   volumes:
+  #     - .:/usr/src
+  #   container_name: odota-cassandrainit
+  #   entrypoint: [ "bash", "-c", "sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra" ]
   scylla:
     image: scylladb/scylla:5.4
     container_name: odota-scylla
