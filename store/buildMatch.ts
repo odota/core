@@ -98,7 +98,7 @@ async function backfill(matchId: string) {
 }
 async function doBuildMatch(
   matchId: string,
-  options: { blob?: string; meta?: string }
+  options: { meta?: string }
 ) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return null;
@@ -122,17 +122,17 @@ async function doBuildMatch(
     }
   }
   if (!match) {
-    // Fetch from blobstore
-    match = await getMatchData(matchId, 'blob');
-    if (match) {
-      match.od_storage = 'blob';
-    }
-  }
-  if (!match) {
     // Fetch from legacy
     match = await getMatchData(matchId, 'cassandra');
     if (match) {
       match.od_storage = 'cassandra';
+    }
+  }
+  if (!match) {
+    // Fetch from blobstore
+    match = await getMatchData(matchId, 'blob');
+    if (match) {
+      match.od_storage = 'blob';
     }
   }
   if (!match) {
@@ -237,7 +237,7 @@ async function doBuildMatch(
 
 async function buildMatch(
   matchId: string,
-  options: { blob?: string; meta?: string }
+  options: { meta?: string }
 ) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
