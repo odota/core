@@ -1,4 +1,4 @@
-FROM cassandra:4
+FROM cassandra:3
 
 COPY ./docker/wait-cassandra.sh /
 COPY ./docker/prepend.sh /usr/local/bin/prepend
