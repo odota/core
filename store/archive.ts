@@ -77,7 +77,7 @@ export async function archivePut(key: string, blob: Buffer) {
     );
     return result;
   } catch (e: any) {
-    console.error('[ARCHIVE] put error:', e.Code);
+    console.error('[ARCHIVE] put error:', e.Code || e);
     return null;
   }
 }
