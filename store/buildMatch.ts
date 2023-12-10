@@ -130,7 +130,8 @@ async function doBuildMatch(
     }
   }
   if (!match || options.source === 'blob') {
-    // Fetch from blobstore
+    // Fetch from blobstore 
+    // TODO (howard) want to make this primary, but we have to archive old parsed matches first, otherwise we may show unparsed data even if parsed
     match = await getMatchData(matchId, 'blob');
     if (match) {
       match.od_storage = 'blob';

@@ -1129,11 +1129,11 @@ export async function insertMatchPromise(
         'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
         [Number(match.match_id)]
       );
-      // Considered doing an archive here since the data is now complete
-      // Currently, parsed gets inserted last so we have all the data (api/gcdata/parsed)
-      // But there's a potential race condition where the cleanup process cleans up the api/gcdata before we insert the parse data
-      // We might then archive only the parsed data (not api/gcdata) unless we do another validation on it
-      // Seems safer to just let the cleanup do the archiving
+      // TODO (howard) invalidate archive here to allow updating archive with reparse/fixed data
+      // Currently, parsed gets inserted last so we should have all the data (api/gcdata/parsed)
+      // We can mark is_archived false to invalidate the archive and serve the new data from blobstore
+      // Don't do this before deprecating legacy store to avoid rearchival issues with incomplete data
+      // A later cleanup will re-archive the data
     }
   }
   async function decideReplayParse() {

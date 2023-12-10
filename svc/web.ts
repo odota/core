@@ -2,6 +2,7 @@
  * Provides the OpenDota API and serves web requests
  * Also supports login through Steam
  * */
+import async from 'async';
 import request from 'request';
 import compression from 'compression';
 import session from 'cookie-session';
@@ -26,6 +27,7 @@ import {
   redisCount,
 } from '../util/utility';
 
+const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
@@ -340,6 +342,107 @@ app.route('/manageSub').post(async (req, res) => {
     return_url: req.body?.return_url,
   });
   return res.json(session);
+});
+// Admin endpoints middleware
+api.use('/admin*', (req, res, cb) => {
+  if (req.user && admins.includes(req.user.account_id)) {
+    return cb();
+  }
+  return res.status(403).json({
+    error: 'Access Denied',
+  });
+});
+api.get('/admin/apiMetrics', (req, res) => {
+  const startTime = moment().startOf('month').format('YYYY-MM-DD');
+  const endTime = moment().endOf('month').format('YYYY-MM-DD');
+  async.parallel(
+    {
+      topAPI: (cb) => {
+        db.raw(
+          `
+        SELECT
+            account_id,
+            ARRAY_AGG(DISTINCT api_key) as api_keys,
+            SUM(usage) as usage_count
+        FROM (
+            SELECT
+            account_id,
+            api_key,
+            ip,
+            MAX(usage_count) as usage
+            FROM api_key_usage
+            WHERE
+            timestamp >= ?
+            AND timestamp <= ?
+            GROUP BY account_id, api_key, ip
+        ) as t1
+        GROUP BY account_id
+        ORDER BY usage_count DESC
+        LIMIT 10
+        `,
+          [startTime, endTime]
+        ).asCallback((err: Error | null, res: any) =>
+          cb(err, err ? null : res.rows)
+        );
+      },
+      topAPIIP: (cb) => {
+        db.raw(
+          `
+        SELECT
+            ip,
+            ARRAY_AGG(DISTINCT account_id) as account_ids,
+            ARRAY_AGG(DISTINCT api_key) as api_keys,
+            SUM(usage) as usage_count
+        FROM (
+            SELECT
+            account_id,
+            api_key,
+            ip,
+            MAX(usage_count) as usage
+            FROM api_key_usage
+            WHERE
+            timestamp >= ?
+            AND timestamp <= ?
+            GROUP BY account_id, api_key, ip
+        ) as t1
+        GROUP BY ip
+        ORDER BY usage_count DESC
+        LIMIT 10
+        `,
+          [startTime, endTime]
+        ).asCallback((err: Error | null, res: any) =>
+          cb(err, err ? null : res.rows)
+        );
+      },
+      numAPIUsers: (cb) => {
+        db.raw(
+          `
+        SELECT
+            COUNT(DISTINCT account_id)
+        FROM api_key_usage
+        WHERE
+            timestamp >= ?
+            AND timestamp <= ?
+        `,
+          [startTime, endTime]
+        ).asCallback((err: Error | null, res: any) =>
+          cb(err, err ? null : res.rows)
+        );
+      },
+      topUsersIP: (cb) => {
+        redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
+      },
+      numUsersIP: (cb) => {
+        redis.zcard('user_usage_count', cb);
+      },
+    },
+    (err, result) => {
+      if (err) {
+        return res.status(500).send(err.message);
+      }
+      return res.json(result);
+    }
+  );
 });
 app.use('/api', api);
 // CORS Preflight for API keys

@@ -81,7 +81,7 @@ async function start() {
       // const funcs = parsedIds.map((id) => () => doArchive(id));
       // await eachLimit(funcs, 10);
 
-      // TODO (howard) Implement a cleanup for the blobstore to remove unparsed matches
+      // TODO (howard) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
     } catch (e) {
       console.log(e);
     }
