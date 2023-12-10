@@ -14,10 +14,7 @@ services:
     # CI doesn't work with the cassandra:4 image for some reason
     container_name: odota-cassandra
   scylla:
-    build:
-      context: .
-      dockerfile: docker/scylla.dockerfile
-    image: scylladb/scylla:5.4
+    image: scylladb/scylla:4
     container_name: odota-scylla
   redis:
     image: redis:5
