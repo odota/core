@@ -89,6 +89,7 @@ if (process.env.NODE_ENV === 'test') {
   process.env.PORT = ''; // use service defaults
   process.env.POSTGRES_URL = process.env.POSTGRES_TEST_URL;
   process.env.CASSANDRA_URL = process.env.CASSANDRA_TEST_URL;
+  process.env.SCYLLA_URL = process.env.SCYLLA_TEST_URL;
   process.env.REDIS_URL = process.env.REDIS_TEST_URL;
   process.env.SESSION_SECRET = 'testsecretvalue';
   process.env.ENABLE_MATCH_CACHE = 1;
