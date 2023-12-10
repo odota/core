@@ -15,6 +15,7 @@ import {
   getMatchData,
   insertMatchPromise,
   getMatchBenchmarks,
+  getPlayerMatchData,
 } from './queries';
 import { getMeta } from './getMeta';
 
@@ -150,7 +151,7 @@ async function doBuildMatch(
   }
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = [];
-  playersMatchData = match.players;
+  playersMatchData = match.players || await getPlayerMatchData(matchId);
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(
     playersMatchData.map((r) =>
