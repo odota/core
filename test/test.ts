@@ -85,8 +85,19 @@ before(async function setup() {
   await initPostgres();
   await initElasticsearch();
   await initRedis();
-  await initCassandra();
-  await initScylla();
+  // Cassandra and Scylla might take a while to start, so loop
+  let tries = 0;
+  while (tries <= 10) {
+    tries += 1;
+    try {
+      await initCassandra();
+      await initScylla();
+      break;
+    } catch(e) {
+      console.error(e);
+      await new Promise(resolve => setTimeout(resolve, 30000));
+    }
+  }
   await startServices();
   await loadMatches();
   await loadPlayers();
