@@ -78,8 +78,8 @@ async function start() {
       );
 
       // TODO (howard) enable this to start archiving old matches
-      // const funcs = parsedIds.map((id) => () => doArchive(id));
-      // await eachLimit(funcs, 10);
+      const funcs = parsedIds.map((id) => () => doArchive(id));
+      await eachLimit(funcs, 10);
 
       // TODO (howard) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
     } catch (e) {

@@ -1219,8 +1219,6 @@ export async function doArchive(matchId: string) {
   }
   // Right now we avoid re-archiving a match by setting a flag in db
   // This flag also lets us know to look for the match in archive on read
-  // What if we update the parser to extract new data and want to update the archive (mostly pro games since otherwise the replay will be lost)?
-  // We can add an option to forceArchive and pass it into the reparse request
   const isArchived = Boolean(
     (
       await db.raw(
@@ -1230,7 +1228,7 @@ export async function doArchive(matchId: string) {
     ).rows[0]
   );
   if (isArchived) {
-    await deleteFromBlobStore(matchId);
+    await deleteFromStore(matchId);
     return;
   }
   // TODO (howard) For now, we don't clean/archive match_blobs so always archive from cassandra
@@ -1258,12 +1256,12 @@ export async function doArchive(matchId: string) {
       `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
       [matchId]
     );
-    await deleteFromBlobStore(matchId);
+    await deleteFromStore(matchId);
   }
   return result;
 }
 
-async function deleteFromBlobStore(id: string) {
+async function deleteFromStore(id: string) {
   // TODO (howard) (blobstore) Remove the deletes to player_matches and matches once tables are dropped
   await Promise.all([
     cassandra.execute('DELETE from player_matches where match_id = ?', [id], {

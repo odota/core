@@ -105,7 +105,7 @@ async function doBuildMatch(
     return null;
   }
   // check if the match is archived
-  // the blobstore may have te match but missing gcdata/parse if it was backfilled after deletion
+  // the blobstore may have the match but missing gcdata/parse if it was backfilled after deletion
   // Also most matches won't be in the archive so it's more efficient not to always try
   const isArchived = Boolean(
     (
