@@ -1223,7 +1223,7 @@ export async function doArchive(matchId: string) {
     (
       await db.raw(
         'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-        [matchId]
+        [Number(matchId)]
       )
     ).rows[0]
   );
@@ -1254,7 +1254,7 @@ export async function doArchive(matchId: string) {
     // Mark the match archived
     await db.raw(
       `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
-      [matchId]
+      [Number(matchId)]
     );
     await deleteFromStore(matchId);
   }
