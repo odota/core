@@ -1130,10 +1130,6 @@ export async function insertMatchPromise(
         'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
         [Number(match.match_id)]
       );
-      // TODO (howard) invalidate archive here to allow showing reparse/fixed data
-      // We can mark is_archived false to invalidate the archive and serve the new parse from blobstore
-      // Don't do this before deprecating legacy store to avoid rearchival issues with incomplete data
-      // A later cleanup will re-archive the data from blobstore back to archive
     }
   }
   async function decideReplayParse() {
@@ -1233,7 +1229,8 @@ export async function doArchiveFromLegacy(matchId: string) {
   }
   // For now, we don't archive blobstore so this always gets data from cassandra
   // TODO (archiveblob) After we start archiving from blobstore, we can validate api && gcdata && parsed
-  const match = await getMatchData(matchId, 'cassandra', false);
+  // const [match, metadata] = await getMatchDataFromBlobInternal(matchId, false)
+  const match = await getMatchDataFromCassandra(matchId);
   if (!isDataComplete(match)) {
     // We can probably just delete it, but throw an error now for investigation
     throw new Error('not eligible for archive: ' + matchId);
@@ -1350,12 +1347,10 @@ export function getMetadata(req: Request, cb: ErrorCb) {
   );
 }
 
-export async function getMatchData(
+export async function getMatchDataFromBlob(
   matchId: string,
-  source: 'blob' | 'cassandra',
   useArchive: boolean,
 ): Promise<Partial<ParsedMatch> | null> {
-  if (source === 'blob') {
     const result = await cassandra.execute(
       'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
       [Number(matchId)],
@@ -1418,24 +1413,23 @@ export async function getMatchData(
       }),
     };
     return final;
-  } else if (source === 'cassandra') {
-    const result = await cassandra.execute(
-      'SELECT * FROM matches where match_id = ?',
-      [Number(matchId)],
-      {
-        prepare: true,
-        fetchSize: 1,
-        autoPage: true,
-      }
-    );
-    const deserializedResult = result.rows.map((m) => deserialize(m));
-    const final: ParsedMatch | null = deserializedResult[0];
-    if (!final) {
-      return null;
+}
+export async function getMatchDataFromCassandra(matchId: string): Promise<Partial<ParsedMatch> | null> {
+  const result = await cassandra.execute(
+    'SELECT * FROM matches where match_id = ?',
+    [Number(matchId)],
+    {
+      prepare: true,
+      fetchSize: 1,
+      autoPage: true,
     }
-    return final;
+  );
+  const deserializedResult = result.rows.map((m) => deserialize(m));
+  const final: ParsedMatch | null = deserializedResult[0];
+  if (!final) {
+    return null;
   }
-  return null;
+  return final;
 }
 export async function getPlayerMatchData(
   matchId: string
