@@ -75,9 +75,11 @@ type Match = {
 
   // Which storage backend the data came from
   od_storage?: MatchStorage;
+  od_archive?: boolean;
+  od_backfill?: boolean;
 };
 
-type MatchStorage = 'archive' | 'blob' | 'cassandra' | 'backfill_blob';
+type MatchStorage = 'blob' | 'cassandra';
 
 interface LiveMatch extends Match {
   lobby_id: string;
