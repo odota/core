@@ -76,7 +76,7 @@
     "@types/qs": "^6.9.10",
     "@types/request": "^2.48.12",
     "@types/supertest": "^2.0.16",
-    "eslint": "^8.54.0",
+    "eslint": "^8.55.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-import": "^2.29.0",
