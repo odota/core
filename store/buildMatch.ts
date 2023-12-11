@@ -8,15 +8,13 @@ import {
   buildReplayUrl,
   isContributor,
   redisCount,
-  isDataComplete,
 } from '../util/utility';
 import redis from './redis';
 import db from './db';
 import {
-  getMatchData,
+  getMatchDataFromBlob,
   insertMatchPromise,
   getMatchBenchmarks,
-  getPlayerMatchData,
 } from './queries';
 import { getMeta } from './getMeta';
 
@@ -108,7 +106,7 @@ async function doBuildMatch(
   let match: Partial<ParsedMatch> | null = null;
   if (!match) {
     // Fetch from blobstore
-    match = await getMatchData(matchId, 'blob', true);
+    match = await getMatchDataFromBlob(matchId, true);
     if (match) {
       match.od_storage = 'blob';
     }
@@ -117,7 +115,7 @@ async function doBuildMatch(
     // if we still don't have it, try backfilling it from Steam API and then check again
     // Once backfilled it'll be in blobstore
     await backfill(matchId);
-    match = await getMatchData(matchId, 'blob', true);
+    match = await getMatchDataFromBlob(matchId, true);
     if (match) {
       match.od_storage = 'blob';
       match.od_backfill = true;
