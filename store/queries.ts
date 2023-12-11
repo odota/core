@@ -1224,7 +1224,7 @@ export async function doArchiveFromLegacy(matchId: string) {
     ).rows[0]
   );
   if (isArchived) {
-    await deleteFromStore(matchId);
+    await deleteFromLegacy(matchId);
     return;
   }
   const match = await getMatchDataFromCassandra(matchId);
@@ -1261,7 +1261,7 @@ export async function doArchiveFromLegacy(matchId: string) {
       `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
       [Number(matchId)]
     );
-    await deleteFromStore(matchId);
+    await deleteFromLegacy(matchId);
   }
   return result;
 }
@@ -1277,12 +1277,14 @@ export async function doArchiveFromBlob(matchId: string) {
     return;
   }
   if (metadata?.has_api && !metadata?.has_gcdata && !metadata?.has_parsed) {
-    // if it only contains API data, delete it
-    await deleteFromStore(matchId);
+    // if it only contains API data, delete the entire row
+    await cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [Number(matchId)], {
+      prepare: true,
+    });
     return;
   }
-  if (metadata?.has_api && metadata?.has_gcdata && metadata?.has_parsed) {
-    // if it's complete (contains api/gcdata/parsed, archive it and then delete)
+  if (metadata?.has_parsed) {
+    // Archive the data since it's parsed. This might also contain api and gcdata
     const blob = Buffer.from(
       JSON.stringify(match)
     );
@@ -1294,7 +1296,11 @@ export async function doArchiveFromBlob(matchId: string) {
         `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
         [Number(matchId)]
       );
-      await deleteFromStore(matchId);
+      // Delete the row (there might be gcdata, but we'll have it in the archive blob)
+      // This will also cause future parse requests to get new gcdata
+      await cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [Number(matchId)], {
+        prepare: true,
+      });
     }
     return result;
   }
@@ -1302,8 +1308,7 @@ export async function doArchiveFromBlob(matchId: string) {
   return;
 }
 
-async function deleteFromStore(id: string) {
-  // TODO (blobstore) Remove the deletes to player_matches and matches once tables are dropped
+async function deleteFromLegacy(id: string) {
   await Promise.all([
     cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
       prepare: true,
@@ -1311,9 +1316,6 @@ async function deleteFromStore(id: string) {
     cassandra.execute('DELETE from matches where match_id = ?', [id], {
       prepare: true,
     }),
-    // cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [id], {
-    //   prepare: true,
-    // }),
   ]);
 }
 
