@@ -1275,9 +1275,9 @@ async function deleteFromStore(id: string) {
     cassandra.execute('DELETE from matches where match_id = ?', [id], {
       prepare: true,
     }),
-    cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [id], {
-      prepare: true,
-    }),
+    // cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [id], {
+    //   prepare: true,
+    // }),
   ]);
 }
 
