@@ -910,7 +910,7 @@ export async function insertMatchPromise(
     await updateTeamRankings(match as Match, options);
   }
   async function upsertMatchCassandra() {
-    // TODO (howard) (blobstore) delete this when we verify all old match data in matches/player_matches has been archived
+    // TODO (blobstore) delete this when we verify all old match data in matches/player_matches has been archived
     // We do this regardless of type (with different sets of fields)
     const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
     const obj: any = serialize(cleaned);
@@ -1227,9 +1227,6 @@ export async function doArchiveFromLegacy(matchId: string) {
     await deleteFromStore(matchId);
     return;
   }
-  // For now, we don't archive blobstore so this always gets data from cassandra
-  // TODO (archiveblob) After we start archiving from blobstore, we can validate api && gcdata && parsed
-  // const [match, metadata] = await getMatchDataFromBlobInternal(matchId, false)
   const match = await getMatchDataFromCassandra(matchId);
   if (!isDataComplete(match)) {
     // We can probably just delete it, but throw an error now for investigation
@@ -1259,6 +1256,42 @@ export async function doArchiveFromLegacy(matchId: string) {
     await deleteFromStore(matchId);
   }
   return result;
+}
+
+export async function doArchiveFromBlob(matchId: string) {
+  if (!config.MATCH_ARCHIVE_S3_ENDPOINT) {
+    return;
+  }
+  // Don't use the archive when determining whether to archive
+  const [match, metadata] = await getMatchDataFromBlobWithMetadata(matchId, false)
+  if (!match) {
+    // Invalid/not found, skip
+    return;
+  }
+  if (metadata?.has_api && !metadata?.has_gcdata && !metadata?.has_parsed) {
+    // if it only contains API data, delete it
+    await deleteFromStore(matchId);
+    return;
+  }
+  if (metadata?.has_api && metadata?.has_gcdata && metadata?.has_parsed) {
+    // if it's complete (contains api/gcdata/parsed, archive it and then delete)
+    const blob = Buffer.from(
+      JSON.stringify(match)
+    );
+    const result = await archivePut(matchId, blob);
+    redisCount(redis, 'match_archive_write');
+    if (result) {
+      // Mark the match archived
+      await db.raw(
+        `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
+        [Number(matchId)]
+      );
+      await deleteFromStore(matchId);
+    }
+    return result;
+  }
+  // if it's something else, e.g. contains api and gcdata only, leave it for now
+  return;
 }
 
 async function deleteFromStore(id: string) {
@@ -1351,68 +1384,74 @@ export async function getMatchDataFromBlob(
   matchId: string,
   useArchive: boolean,
 ): Promise<Partial<ParsedMatch> | null> {
-    const result = await cassandra.execute(
-      'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
-      [Number(matchId)],
-      {
-        prepare: true,
-        fetchSize: 1,
-        autoPage: true,
-      }
-    );
-    const row = result.rows[0];
-    if (!row) {
-      return null;
+  return (await getMatchDataFromBlobWithMetadata(matchId, useArchive))[0];
+}
+async function getMatchDataFromBlobWithMetadata(
+  matchId: string,
+  useArchive: boolean,
+): Promise<[Partial<ParsedMatch> | null, { has_api: boolean, has_gcdata: boolean, has_parsed: boolean } | null]> {
+  const result = await cassandra.execute(
+    'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
+    [Number(matchId)],
+    {
+      prepare: true,
+      fetchSize: 1,
+      autoPage: true,
     }
-    Object.keys(row).forEach((key) => {
-      row[key] = row[key] ? JSON.parse(row[key]) : null;
-    });
-    let api: Match | null = row.api;
-    let gcdata: GcMatch | null = row.gcdata;
-    let parsed: ParsedMatch | null = row.parsed;
+  );
+  const row = result.rows[0];
+  if (!row) {
+    return [null, null];
+  }
+  Object.keys(row).forEach((key) => {
+    row[key] = row[key] ? JSON.parse(row[key]) : null;
+  });
+  let api: Match | null = row.api;
+  let gcdata: GcMatch | null = row.gcdata;
+  let parsed: ParsedMatch | null = row.parsed;
 
-    if (!api) {
-      // Return null if we don't have API data for some reason (maybe due to cleanup followed by parse?)
-      return null;
-    }
-    if (!parsed && useArchive) {
-      // Check if the parsed data is archived
-      // Most matches won't be in the archive so it's more efficient not to always try
-      const isArchived = Boolean(
-        (
-          await db.raw(
-            'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-            [matchId]
-          )
-        ).rows[0]
-      );
-      if (isArchived) {
-        parsed = await getArchivedMatch(matchId);
-        if (parsed) {
-          parsed.od_archive = true;
-        }
+  if (!api) {
+    // Return null if we don't have API data for some reason (maybe due to cleanup followed by parse?)
+    return [null, null];
+  }
+  if (!parsed && useArchive) {
+    // Check if the parsed data is archived
+    // Most matches won't be in the archive so it's more efficient not to always try
+    const isArchived = Boolean(
+      (
+        await db.raw(
+          'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
+          [matchId]
+        )
+      ).rows[0]
+    );
+    if (isArchived) {
+      parsed = await getArchivedMatch(matchId);
+      if (parsed) {
+        parsed.od_archive = true;
       }
     }
-    // Merge the results together
-    const final: Partial<ParsedMatch> = {
-      ...parsed,
-      ...gcdata,
-      ...api,
-      players: api?.players.map((apiPlayer: any) => {
-        const gcPlayer = gcdata?.players.find(
-          (gcp: any) => gcp.player_slot === apiPlayer.player_slot
-        );
-        const parsedPlayer = parsed?.players.find(
-          (pp: any) => pp.player_slot === apiPlayer.player_slot
-        );
-        return {
-          ...parsedPlayer,
-          ...gcPlayer,
-          ...apiPlayer,
-        };
-      }),
-    };
-    return final;
+  }
+  // Merge the results together
+  const final: Partial<ParsedMatch> = {
+    ...parsed,
+    ...gcdata,
+    ...api,
+    players: api?.players.map((apiPlayer: any) => {
+      const gcPlayer = gcdata?.players.find(
+        (gcp: any) => gcp.player_slot === apiPlayer.player_slot
+      );
+      const parsedPlayer = parsed?.players.find(
+        (pp: any) => pp.player_slot === apiPlayer.player_slot
+      );
+      return {
+        ...parsedPlayer,
+        ...gcPlayer,
+        ...apiPlayer,
+      };
+    }),
+  };
+  return [final, {has_api: Boolean(api), has_gcdata: Boolean(gcdata), has_parsed: Boolean(parsed)}];
 }
 export async function getMatchDataFromCassandra(matchId: string): Promise<Partial<ParsedMatch> | null> {
   const result = await cassandra.execute(
