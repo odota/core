@@ -107,9 +107,6 @@ async function doBuildMatch(
   if (!match) {
     // Fetch from blobstore
     match = await getMatchDataFromBlob(matchId, true);
-    if (match) {
-      match.od_storage = 'blob';
-    }
   }
   if (!match) {
     // if we still don't have it, try backfilling it from Steam API and then check again
@@ -117,7 +114,6 @@ async function doBuildMatch(
     await backfill(matchId);
     match = await getMatchDataFromBlob(matchId, true);
     if (match) {
-      match.od_storage = 'blob';
       match.od_backfill = true;
     }
   }
