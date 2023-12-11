@@ -134,7 +134,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             },
           },
         },
-        route: () => '/matches/:match_id/:info?',
+        route: () => '/matches/:match_id',
         func: async (req, res, cb) => {
           try {
             const match = await buildMatch(req.params.match_id, {
@@ -146,7 +146,11 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               return cb();
             }
             return res.json(match);
-          } catch (err) {
+          } catch (err: any) {
+            if (err?.result?.error === 'Match ID not found') {
+              // Steam API reported this ID doesn't exist, return 404 instead of 500
+              return cb();
+            }
             return cb(err);
           }
         },

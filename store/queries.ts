@@ -1250,7 +1250,6 @@ export async function doArchiveFromLegacy(matchId: string) {
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches })
   );
-  console.log('archiving match ' + matchId);
   const result = await archivePut(matchId, blob);
   redisCount(redis, 'match_archive_write');
   if (result) {
