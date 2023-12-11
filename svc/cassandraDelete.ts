@@ -2,7 +2,7 @@
 import crypto from 'crypto';
 import cassandra from '../store/cassandra';
 import db from '../store/db';
-import { doArchive } from '../store/queries';
+import { doArchiveFromLegacy } from '../store/queries';
 import { eachLimit } from '../util/utility';
 
 function genRandomNumber(byteCount: number, radix: number): string {
@@ -77,8 +77,8 @@ async function start() {
         )
       );
 
-      const funcs = parsedIds.map((id) => () => doArchive(id.toString()));
-      await eachLimit(funcs, 1);
+      const funcs = parsedIds.map((id) => () => doArchiveFromLegacy(id.toString()));
+      await eachLimit(funcs, 10);
 
       // TODO (howard) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
     } catch (e) {

@@ -909,7 +909,7 @@ export async function insertMatchPromise(
     await updateTeamRankings(match as Match, options);
   }
   async function upsertMatchCassandra() {
-    // TODO (howard) (blobstore) stop writes to old store once blobstore is default
+    // TODO (howard) (blobstore) delete this when we verify all old match data in matches/player_matches has been archived
     // We do this regardless of type (with different sets of fields)
     const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
     const obj: any = serialize(cleaned);
@@ -1213,7 +1213,7 @@ export async function insertMatchPromise(
  * @param matchId
  * @returns The result of the archive operation
  */
-export async function doArchive(matchId: string) {
+export async function doArchiveFromLegacy(matchId: string) {
   if (!config.MATCH_ARCHIVE_S3_ENDPOINT) {
     return;
   }
@@ -1231,19 +1231,21 @@ export async function doArchive(matchId: string) {
     await deleteFromStore(matchId);
     return;
   }
-  // TODO (howard) For now, we don't clean/archive match_blobs so always archive from cassandra
-  // One day we'll want to add cleanup and switch it
-  // At that point we want to verify the archives from legacy and blob are compatible
+  // For now, we don't archive blobstore so this always gets data from cassandra
   const [match, metadata] = await getMatchDataInternal(matchId, 'cassandra');
-  if (!metadata.can_be_archived) {
+  if (metadata.can_be_archived === false) {
+    // We can probably just delete it. We might lose gcdata but that can be backfilled on request
     throw new Error('not eligible for archive: ' + matchId);
   }
   if (!match) {
-    // We couldn't find this match from cassandra for some reason so just skip it
-    // Don't call delete here to avoid affecting blobstore
+    // We couldn't find this match so just skip it
     return;
   }
   const playerMatches = await getPlayerMatchData(matchId);
+  if (!playerMatches.length) {
+    // We couldn't find players for this match so just skip it
+    return;
+  }
 
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches })
