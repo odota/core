@@ -8,6 +8,7 @@ cassandra
   .on('readable', function () {
     // readable is emitted as soon a row is received and parsed
     let row;
+    //@ts-ignore
     while ((row = this.read())) {
       // process row
       i += 1;

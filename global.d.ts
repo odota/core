@@ -6,14 +6,18 @@ declare module 'steam';
 declare module 'dota2';
 declare module 'passport-steam';
 declare module 'uuid';
+declare module 'JSONStream';
+declare module 'ws';
 
 declare namespace Express {
-  export interface Request {
+  type ExpressRequest = import('express').Request;
+  interface ExtRequest extends ExpressRequest {
+    query: any;
     originalQuery: string;
     queryObj: QueryObj;
-    user: {
-      account_id: number;
-    };
+  }
+  interface User {
+    account_id: string;
   }
 }
 
@@ -184,7 +188,6 @@ interface ParsedPlayer extends Player {
   purchase_time: NumberDict;
   first_purchase_time: NumberDict;
   lane: number | undefined | null;
-  is_roaming: boolean;
   lane_efficiency: number;
   lane_efficiency_pct: number;
   buyback_count: number;
@@ -339,7 +342,7 @@ type PathVerbSpec = {
     };
   };
   route: () => string;
-  func: (req: express.Request, res: express.Response, cb: ErrorCb) => void;
+  func: (req: Express.ExtRequest, res: import('express').Response, cb: ErrorCb) => void;
 };
 
 type HttpVerb = 'get' | 'post';

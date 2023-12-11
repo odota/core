@@ -1,4 +1,5 @@
-import db from '../store/db';
+import dbImport from '../store/db.js';
+const db = dbImport.default;
 
 function randByCentralLimitTheorem() {
   let v = 0;
@@ -8,7 +9,7 @@ function randByCentralLimitTheorem() {
   return v - 6;
 }
 
-function gaussianRandom(mean, std) {
+function gaussianRandom(mean: number, std: number) {
   if (mean === undefined || std === undefined) {
     throw new Error(
       'Gaussian random needs 2 arguments (mean, standard deviation)'

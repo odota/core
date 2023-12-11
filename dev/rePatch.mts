@@ -2,9 +2,11 @@
  * Recalculate patch ID for matches in match table
  * */
 import constants from 'dotaconstants';
-import db from '../store/db';
-import { upsertPromise } from '../store/queries';
-import { getPatchIndex } from '../util/utility';
+import dbImport from '../store/db.js';
+import { upsertPromise } from '../store/queries.js';
+import { getPatchIndex } from '../util/utility.js';
+
+const db = dbImport.default;
 
 const matchIds = await db
   .select(['match_id', 'start_time'])

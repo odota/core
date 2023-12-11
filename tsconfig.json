@@ -7,13 +7,12 @@
     "esModuleInterop": true,
     "outDir": "./build",
     "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
     "noEmit": true
   },
   "include": [
     "index.ts",
     "global.d.ts",
+    "dev",
     "processors",
     "routes",
     "store",

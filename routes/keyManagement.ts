@@ -52,7 +52,7 @@ keys
   .route('/')
   .all(async (req, res, next) => {
     const rows = await db.from('api_keys').where({
-      account_id: req.user.account_id,
+      account_id: req.user?.account_id,
     });
     res.locals.keyRecord = getActiveKey(rows);
     res.locals.allKeyRecords = rows;
@@ -130,7 +130,7 @@ keys
             [
               moment().subtract(5, 'month').startOf('month'),
               moment().endOf('month'),
-              req.user.account_id,
+              req.user?.account_id,
             ]
           ).asCallback((err: Error | null, results: { rows: any[] }) =>
             cb(err, err ? null : results.rows)
@@ -158,7 +158,7 @@ keys
     await db
       .from('api_keys')
       .where({
-        account_id: req.user.account_id,
+        account_id: req.user?.account_id,
         subscription_id,
       })
       .update({
@@ -183,7 +183,7 @@ keys
     const { token } = req.body;
     let customer_id;
     if (hasActiveKey(keyRecord)) {
-      console.log('Active key exists for', req.user.account_id);
+      console.log('Active key exists for', req.user?.account_id);
       return res.sendStatus(200);
     }
     // returning customer
@@ -193,7 +193,7 @@ keys
       if (invoices.length > 0) {
         console.log(
           'Open invoices exist for',
-          req.user.account_id,
+          req.user?.account_id,
           'customer',
           customer_id
         );
@@ -216,7 +216,7 @@ keys
           source: token.id,
           email: token.email,
           metadata: {
-            account_id: req.user.account_id,
+            account_id: req.user?.account_id,
           },
         });
         customer_id = customer.id;
@@ -242,7 +242,7 @@ keys
         api_key = ?, customer_id = ?, subscription_id = ?
       `,
       [
-        req.user.account_id,
+        req.user?.account_id,
         apiKey,
         sub.customer,
         sub.id,

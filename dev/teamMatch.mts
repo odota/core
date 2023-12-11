@@ -1,10 +1,12 @@
-import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import dbImport from '../store/db.js';
+import { upsertPromise } from '../store/queries.js';
+
+const db = dbImport.default;
 
 const matches = await db
   .select(['radiant_team_id', 'dire_team_id', 'match_id'])
   .from('matches');
-matches.forEach((match) => {
+matches.forEach((match: any) => {
   console.log(match.match_id);
   const arr: any[] = [];
   if (match.radiant_team_id) {

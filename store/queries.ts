@@ -412,7 +412,7 @@ export function getPlayer(db: knex.Knex, accountId: number, cb: ErrorCb) {
 export function getPeers(
   db: knex.Knex,
   input: AnyDict,
-  player: { account_id: number },
+  player: { account_id: string },
   cb: ErrorCb
 ) {
   if (!input) {
@@ -480,7 +480,7 @@ export function getPeers(
 export function getProPeers(
   db: knex.Knex,
   input: AnyDict,
-  player: { account_id: number },
+  player: { account_id: string },
   cb: ErrorCb
 ) {
   if (!input) {

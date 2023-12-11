@@ -18,7 +18,7 @@ client.on('connected', () => {
   console.log('[STEAM] Trying to log on with %s,%s', user, pass);
   client.steamUser.logOn(logOnDetails);
 });
-client.on('logOnResponse', (logOnResp) => {
+client.on('logOnResponse', (logOnResp: any) => {
   if (logOnResp.eresult !== Steam.EResult.OK) {
     // try logging on again
     console.error(logOnResp);

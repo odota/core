@@ -13,7 +13,7 @@ const { ancients } = constants;
  * - messages: the messages to create the counts over
  * - player_filter: if non-null, only count that player's messages
  * */
-function countWords(
+export function countWords(
   playerMatch: ParsedPlayerMatch,
   playerFilter: { player_slot: number } | null
 ) {

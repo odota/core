@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { RequestHandler, Router } from 'express';
 import playerFields from './playerFields';
 import { filterDeps } from '../util/filterDeps';
 import spec from './spec';
@@ -36,7 +36,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (Number.isNaN(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
-  req.originalQuery = JSON.parse(JSON.stringify(req.query));
+  (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(JSON.stringify(req.query));
   // Enable significance filter by default, disable it if 0 is passed
   if (req.query.significant === '0') {
     delete req.query.significant;
@@ -52,7 +52,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
     // build array of required projections due to filters
     filterCols = filterCols.concat(filterDeps[key] || []);
   });
-  req.queryObj = {
+  (req as unknown as Express.ExtRequest).queryObj = {
     project: ['match_id', 'player_slot', 'radiant_win']
       .concat(filterCols)
       .concat(
@@ -94,7 +94,7 @@ Object.keys(spec.paths).forEach((path) => {
       : path.replace(/{/g, ':').replace(/}/g, '');
     // Check if the callback function is defined before adding the route..
     if (typeof func === 'function') {
-      api[verb as HttpVerb](routePath, func);
+      api[verb as HttpVerb](routePath, func as RequestHandler);
     } else {
       // If the function is missing, log a warning message with the problematic route path and verb
       console.warn(

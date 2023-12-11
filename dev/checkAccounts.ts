@@ -19,7 +19,7 @@ client.connect();
 client.on('connected', () => {
   client.steamUser.logOn(logOnDetails);
 });
-client.on('logOnResponse', (logOnResp) => {
+client.on('logOnResponse', (logOnResp: any) => {
   if (logOnResp.eresult === Steam.EResult.AccountDisabled) {
     console.error(index, user, 'failed', logOnResp.eresult);
   } else if (logOnResp.eresult === Steam.EResult.InvalidPassword) {
@@ -28,5 +28,4 @@ client.on('logOnResponse', (logOnResp) => {
     console.error(index, user, 'passed', logOnResp.eresult);
   }
   client.disconnect();
-  setTimeout(cb, 500);
 });

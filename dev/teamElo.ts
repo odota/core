@@ -5,10 +5,10 @@ import JSONStream from 'JSONStream';
 import db from '../store/db';
 
 // Keep each team's rating in memory and update
-const teams = {};
-const wins = {};
-const losses = {};
-const startTimes = {};
+const teams: any = {};
+const wins: any = {};
+const losses: any = {};
+const startTimes: any = {};
 const kFactor = 32;
 // Read a stream from the database
 const stream = db

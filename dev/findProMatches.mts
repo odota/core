@@ -1,10 +1,12 @@
-import { insertMatchPromise } from '../store/queries';
-import db from '../store/db';
-import { generateJob, getDataPromise } from '../util/utility';
+import { insertMatchPromise } from '../store/queries.js';
+import dbImport from '../store/db.js';
+import { generateJob, getDataPromise } from '../util/utility.js';
+
+const db = dbImport.default;
 
 // const leagueUrl = generateJob('api_leagues', {}).url;
 
-async function getPage(url, leagueid) {
+async function getPage(url: string, leagueid: number) {
   const data: any = await getDataPromise(url);
   console.log(
     leagueid,
@@ -24,7 +26,7 @@ async function getPage(url, leagueid) {
     });
     if (body.result) {
       const match = body.result;
-      await insertMatchPromise(match, { skipParse: true });
+      await insertMatchPromise(match, { type: 'api', skipParse: true });
     }
   }
   if (data.result.results_remaining) {
@@ -38,14 +40,14 @@ async function getPage(url, leagueid) {
 }
 
 // From DB
-const data = await db
+const data: any = await db
   .select('leagueid')
   .from('leagues')
   .where('tier', 'professional')
   .orWhere('tier', 'premium');
-const leagueIds = data.map((l) => l.leagueid);
+const leagueIds = data.map((l: any) => l.leagueid);
 // NOTE: there could be a lot of leagueids
-leagueIds.forEach(async (leagueid) => {
+leagueIds.forEach(async (leagueid: number) => {
   const { url } = generateJob('api_history', {
     leagueid,
   });

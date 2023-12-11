@@ -44,7 +44,7 @@ async function processMatch(matchId: string) {
 
 async function processFullHistory(job: FullHistoryJob) {
   const player = job;
-  if (Number(player.account_id) === 0) {
+  if (Number(player.account_id) === 0 || Number.isNaN(Number(player.account_id))) {
     return;
   }
   console.time('doFullHistory: ' + player.account_id.toString());

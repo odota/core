@@ -376,7 +376,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 'kills',
                 'deaths',
                 'assists',
-                'skill',
                 'average_rank',
                 'xp_per_min',
                 'gold_per_min',
@@ -708,7 +707,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             };
           });
           req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(subkeys)
+            Object.keys(subkeys) as (keyof ParsedPlayerMatch)[]
           );
           getPlayerMatches(
             req.params.account_id,
@@ -762,7 +761,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             result[key] = {};
           });
           req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(countCats)
+            Object.keys(countCats) as (keyof ParsedPlayerMatch)[]
           );
           getPlayerMatches(
             req.params.account_id,
@@ -831,7 +830,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
-          const { field }: { field: keyof ParsedPlayerMatch } = req.params;
+          const field = req.params.field as keyof ParsedPlayerMatch;
           req.queryObj.project = req.queryObj.project
             .concat('radiant_win', 'player_slot')
             .concat([field].filter((f) => subkeys[f]));
@@ -902,7 +901,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             sen: {},
           };
           req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(result)
+            Object.keys(result) as (keyof ParsedPlayerMatch)[]
           );
           getPlayerMatches(
             req.params.account_id,
@@ -954,7 +953,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             all_word_counts: {},
           };
           req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(result)
+            Object.keys(result) as (keyof ParsedPlayerMatch)[]
           );
           getPlayerMatches(
             req.params.account_id,
@@ -1075,7 +1074,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             const length = await queue.addJob({
               name: 'fhQueue',
               data: {
-                account_id: req.params.account_id || '1',
+                account_id: Number(req.params.account_id),
               },
             });
             return res.json({

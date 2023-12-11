@@ -1,6 +1,6 @@
 import redis from './redis';
 import config from '../config.js';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 
 export const getKeys = () => ['wl', 'heroes', 'peers', 'counts'];
 export const readCache = async (input: { key: string; account_id: string }) => {
@@ -14,7 +14,7 @@ export const clearCache = async (input: {
   await redis.del(`cache:${input.key}:${input.account_id}`);
 };
 export const sendDataWithCache = (
-  req: Request,
+  req: Express.ExtRequest,
   res: Response,
   data: any,
   key: string

@@ -110,7 +110,7 @@ if (config.NODE_ENV === 'test') {
   app.use((req, res, cb) => {
     if (req.query.loggedin) {
       req.user = {
-        account_id: 1,
+        account_id: '1',
       };
     }
     cb();
@@ -293,7 +293,7 @@ app.route('/return').get(
   }),
   (req, res) => {
     if (config.UI_HOST) {
-      return res.redirect(`${config.UI_HOST}/players/${req.user.account_id}`);
+      return res.redirect(req.user ? `${config.UI_HOST}/players/${req.user.account_id}` : config.UI_HOST);
     }
     return res.redirect('/api');
   }
@@ -345,7 +345,7 @@ app.route('/manageSub').post(async (req, res) => {
 });
 // Admin endpoints middleware
 api.use('/admin*', (req, res, cb) => {
-  if (req.user && admins.includes(req.user.account_id)) {
+  if (req.user && admins.includes(Number(req.user.account_id))) {
     return cb();
   }
   return res.status(403).json({
