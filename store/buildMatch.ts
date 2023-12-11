@@ -98,7 +98,7 @@ async function backfill(matchId: string) {
 }
 async function doBuildMatch(
   matchId: string,
-  options: { source?: MatchStorage; meta?: string }
+  options: { meta?: string }
 ) {
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return null;
@@ -213,7 +213,7 @@ async function doBuildMatch(
 
 async function buildMatch(
   matchId: string,
-  options: { source?: MatchStorage; meta?: string }
+  options: { meta?: string }
 ) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
