@@ -33,6 +33,7 @@ import {
   isRadiant,
   getPatchIndex,
   redisCount,
+  isDataComplete,
 } from '../util/utility';
 
 const columnInfo: AnyDict = {};
@@ -1134,6 +1135,8 @@ export async function insertMatchPromise(
       // We can mark is_archived false to invalidate the archive and serve the new data from blobstore
       // Don't do this before deprecating legacy store to avoid rearchival issues with incomplete data
       // A later cleanup will re-archive the data
+      // Also currently, if a match is archived, requesting a parse will not fix missing permanent_buffs since we'll still serve the archive
+      // This was already happening today though since we wouldn't re-insert gcdata if it was in match_gcdata
     }
   }
   async function decideReplayParse() {
@@ -1232,9 +1235,9 @@ export async function doArchiveFromLegacy(matchId: string) {
     return;
   }
   // For now, we don't archive blobstore so this always gets data from cassandra
-  const [match, metadata] = await getMatchDataInternal(matchId, 'cassandra');
-  if (metadata.can_be_archived === false) {
-    // We can probably just delete it. We might lose gcdata but that can be backfilled on request
+  const match = await getMatchData(matchId, 'cassandra');
+  if (!isDataComplete(match)) {
+    // We can probably just delete it, but throw an error now for investigation
     throw new Error('not eligible for archive: ' + matchId);
   }
   if (!match) {
@@ -1353,17 +1356,8 @@ export async function getMatchData(
   matchId: string,
   source: 'archive' | 'blob' | 'cassandra'
 ): Promise<ParsedMatch | null> {
-  const data = await getMatchDataInternal(matchId, source);
-  // Return just the match object without metadata
-  return data[0];
-}
-
-export async function getMatchDataInternal(
-  matchId: string,
-  source: 'archive' | 'blob' | 'cassandra'
-): Promise<[ParsedMatch | null, { can_be_archived: boolean }]> {
   if (source === 'archive') {
-    return [await getArchivedMatch(matchId), { can_be_archived: true }];
+    return await getArchivedMatch(matchId);
   } else if (source === 'blob') {
     const result = await cassandra.execute(
       'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
@@ -1376,12 +1370,16 @@ export async function getMatchDataInternal(
     );
     const row = result.rows[0];
     if (!row) {
-      return [null, { can_be_archived: false }];
+      return null;
     }
     Object.keys(row).forEach((key) => {
       row[key] = row[key] ? JSON.parse(row[key]) : null;
     });
     const { api, gcdata, parsed } = row;
+    if (!api) {
+      // Return null if we don't have API data for some reason (maybe due to cleanup followed by parse?)
+      return null;
+    }
     // Merge the results together
     const final: ParsedMatch = {
       ...api,
@@ -1401,7 +1399,7 @@ export async function getMatchDataInternal(
         };
       }),
     };
-    return [final, { can_be_archived: Boolean(api && gcdata && parsed) }];
+    return final;
   } else if (source === 'cassandra') {
     const result = await cassandra.execute(
       'SELECT * FROM matches where match_id = ?',
@@ -1415,11 +1413,11 @@ export async function getMatchDataInternal(
     const deserializedResult = result.rows.map((m) => deserialize(m));
     const final: ParsedMatch | null = deserializedResult[0];
     if (!final) {
-      return [null, { can_be_archived: false }];
+      return null;
     }
-    return [final, { can_be_archived: Boolean(final.version) }];
+    return final;
   }
-  return [null, { can_be_archived: false }];
+  return null;
 }
 export async function getPlayerMatchData(
   matchId: string

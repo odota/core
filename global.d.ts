@@ -381,4 +381,5 @@ type MetricName =
   | 'steam_api_backfill'
   | 'request_api_key'
   | 'request'
-  | 'reparse';
+  | 'reparse'
+  | 'incomplete_archive';

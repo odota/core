@@ -914,3 +914,8 @@ export function checkIfInExperiment(ip: string, mod: number) {
     crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );
 }
+export function isDataComplete(match: ParsedMatch | null) {
+  // Check for a field from API and from parse
+  // Once we are archiving from blobstore we could also check for replay_salt
+  return Boolean(match && match.start_time && match.version);
+}

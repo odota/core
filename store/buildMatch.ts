@@ -8,6 +8,7 @@ import {
   buildReplayUrl,
   isContributor,
   redisCount,
+  isDataComplete,
 } from '../util/utility';
 import redis from './redis';
 import db from './db';
@@ -118,6 +119,11 @@ async function doBuildMatch(
   let match: ParsedMatch | null = null;
   if (isArchived || options.source === 'archive') {
     match = await getMatchData(matchId, 'archive');
+    // Validate the archive is good
+    if (!isDataComplete(match)) {
+      redisCount(redis, 'incomplete_archive');
+      match = null;
+    }
     if (match) {
       match.od_storage = 'archive';
     }
