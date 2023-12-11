@@ -1130,13 +1130,10 @@ export async function insertMatchPromise(
         'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
         [Number(match.match_id)]
       );
-      // TODO (howard) invalidate archive here to allow updating archive with reparse/fixed data
-      // Currently, parsed gets inserted last so we should have all the data (api/gcdata/parsed)
-      // We can mark is_archived false to invalidate the archive and serve the new data from blobstore
+      // TODO (howard) invalidate archive here to allow showing reparse/fixed data
+      // We can mark is_archived false to invalidate the archive and serve the new parse from blobstore
       // Don't do this before deprecating legacy store to avoid rearchival issues with incomplete data
-      // A later cleanup will re-archive the data
-      // Also currently, if a match is archived, requesting a parse will not fix missing permanent_buffs since we'll still serve the archive
-      // This was already happening today though since we wouldn't re-insert gcdata if it was in match_gcdata
+      // A later cleanup will re-archive the data from blobstore back to archive
     }
   }
   async function decideReplayParse() {
@@ -1235,7 +1232,8 @@ export async function doArchiveFromLegacy(matchId: string) {
     return;
   }
   // For now, we don't archive blobstore so this always gets data from cassandra
-  const match = await getMatchData(matchId, 'cassandra');
+  // TODO (archiveblob) After we start archiving from blobstore, we can validate api && gcdata && parsed
+  const match = await getMatchData(matchId, 'cassandra', false);
   if (!isDataComplete(match)) {
     // We can probably just delete it, but throw an error now for investigation
     console.log('data incomplete for match: ' + matchId);
@@ -1275,7 +1273,7 @@ export async function doArchiveFromLegacy(matchId: string) {
 }
 
 async function deleteFromStore(id: string) {
-  // TODO (howard) (blobstore) Remove the deletes to player_matches and matches once tables are dropped
+  // TODO (blobstore) Remove the deletes to player_matches and matches once tables are dropped
   await Promise.all([
     cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
       prepare: true,
@@ -1362,11 +1360,10 @@ export function getMetadata(req: Request, cb: ErrorCb) {
 
 export async function getMatchData(
   matchId: string,
-  source: 'archive' | 'blob' | 'cassandra'
-): Promise<ParsedMatch | null> {
-  if (source === 'archive') {
-    return await getArchivedMatch(matchId);
-  } else if (source === 'blob') {
+  source: 'blob' | 'cassandra',
+  useArchive: boolean,
+): Promise<Partial<ParsedMatch> | null> {
+  if (source === 'blob') {
     const result = await cassandra.execute(
       'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
       [Number(matchId)],
@@ -1383,16 +1380,37 @@ export async function getMatchData(
     Object.keys(row).forEach((key) => {
       row[key] = row[key] ? JSON.parse(row[key]) : null;
     });
-    const { api, gcdata, parsed } = row;
+    let api: Match | null = row.api;
+    let gcdata: GcMatch | null = row.gcdata;
+    let parsed: ParsedMatch | null = row.parsed;
+
     if (!api) {
       // Return null if we don't have API data for some reason (maybe due to cleanup followed by parse?)
       return null;
     }
+    if (!parsed && useArchive) {
+      // Check if the parsed data is archived
+      // Most matches won't be in the archive so it's more efficient not to always try
+      const isArchived = Boolean(
+        (
+          await db.raw(
+            'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
+            [matchId]
+          )
+        ).rows[0]
+      );
+      if (isArchived) {
+        parsed = await getArchivedMatch(matchId);
+        if (parsed) {
+          parsed.od_archive = true;
+        }
+      }
+    }
     // Merge the results together
-    const final: ParsedMatch = {
-      ...api,
-      ...gcdata,
+    const final: Partial<ParsedMatch> = {
       ...parsed,
+      ...gcdata,
+      ...api,
       players: api?.players.map((apiPlayer: any) => {
         const gcPlayer = gcdata?.players.find(
           (gcp: any) => gcp.player_slot === apiPlayer.player_slot
@@ -1401,9 +1419,9 @@ export async function getMatchData(
           (pp: any) => pp.player_slot === apiPlayer.player_slot
         );
         return {
-          ...apiPlayer,
-          ...gcPlayer,
           ...parsedPlayer,
+          ...gcPlayer,
+          ...apiPlayer,
         };
       }),
     };

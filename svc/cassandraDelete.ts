@@ -80,7 +80,7 @@ async function start() {
       const funcs = parsedIds.map((id) => () => doArchiveFromLegacy(id.toString()));
       await eachLimit(funcs, 10);
 
-      // TODO (howard) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
+      // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
     } catch (e) {
       console.log(e);
     }

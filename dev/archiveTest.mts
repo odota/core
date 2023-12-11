@@ -7,7 +7,7 @@ import {
 
 // Read some match data
 const match = {
-  ...(await getMatchData('7465883253', 'cassandra')),
+  ...(await getMatchData('7465883253', 'cassandra', false)),
   players: await getPlayerMatchData('7465883253'),
 };
 const blob = Buffer.from(JSON.stringify(match));

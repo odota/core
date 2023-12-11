@@ -105,40 +105,10 @@ async function doBuildMatch(
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
-  // check if the match is archived
-  // the blobstore may have the match but missing gcdata/parse if it was backfilled after deletion
-  // Also most matches won't be in the archive so it's more efficient not to always try
-  const isArchived = Boolean(
-    (
-      await db.raw(
-        'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-        [matchId]
-      )
-    ).rows[0]
-  );
-  let match: ParsedMatch | null = null;
-  if (isArchived || options.source === 'archive') {
-    match = await getMatchData(matchId, 'archive');
-    // Validate the archive is good
-    if (!isDataComplete(match)) {
-      redisCount(redis, 'incomplete_archive');
-      match = null;
-    }
-    if (match) {
-      match.od_storage = 'archive';
-    }
-  }
-  if (!match || options.source === 'cassandra') {
-    // Fetch from legacy
-    match = await getMatchData(matchId, 'cassandra');
-    if (match) {
-      match.od_storage = 'cassandra';
-    }
-  }
-  if (!match || options.source === 'blob') {
+  let match: Partial<ParsedMatch> | null = null;
+  if (!match) {
     // Fetch from blobstore
-    // TODO (howard) want to make this primary, but we have to archive old parsed matches first, otherwise we may show unparsed data even if parsed
-    match = await getMatchData(matchId, 'blob');
+    match = await getMatchData(matchId, 'blob', true);
     if (match) {
       match.od_storage = 'blob';
     }
@@ -147,9 +117,10 @@ async function doBuildMatch(
     // if we still don't have it, try backfilling it from Steam API and then check again
     // Once backfilled it'll be in blobstore
     await backfill(matchId);
-    match = await getMatchData(matchId, 'blob');
+    match = await getMatchData(matchId, 'blob', true);
     if (match) {
-      match.od_storage = 'backfill_blob';
+      match.od_storage = 'blob';
+      match.od_backfill = true;
     }
   }
   if (!match) {
@@ -157,13 +128,7 @@ async function doBuildMatch(
     return null;
   }
   redisCount(redis, 'build_match');
-  let playersMatchData: ParsedPlayer[] = [];
-  // TODO (howard) remove this backfill once matches/player_matches deleted
-  playersMatchData = match.players || (await getPlayerMatchData(matchId));
-  if (playersMatchData.length === 0) {
-    await backfill(matchId);
-    playersMatchData = await getPlayerMatchData(matchId);
-  }
+  let playersMatchData: ParsedPlayer[] = match.players!;
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(
     playersMatchData.map((r) =>
