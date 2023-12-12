@@ -1281,6 +1281,7 @@ export async function doArchiveFromBlob(matchId: string) {
     await cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [Number(matchId)], {
       prepare: true,
     });
+    console.log('DELETE match %s, apionly', matchId);
     return;
   }
   if (metadata?.has_parsed) {
@@ -1297,14 +1298,16 @@ export async function doArchiveFromBlob(matchId: string) {
         [Number(matchId)]
       );
       // Delete the row (there might be gcdata, but we'll have it in the archive blob)
-      // This will also cause future parse requests to get new gcdata
+      // This will also also clear the gcdata cache for this match
       await cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [Number(matchId)], {
         prepare: true,
       });
+      console.log('ARCHIVE match %s, parsed', matchId);
     }
     return result;
   }
   // if it's something else, e.g. contains api and gcdata only, leave it for now
+  console.log('SKIP match %s, other', matchId);
   return;
 }
 
