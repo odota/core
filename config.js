@@ -70,6 +70,7 @@ const defaults = {
   MATCH_ARCHIVE_S3_ENDPOINT: '', // S3-compatible endpoint to archive parsed match blobs
   MATCH_ARCHIVE_S3_BUCKET: 'opendota', // name of the S3 bucket to archive parsed match blobs
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
+  DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
