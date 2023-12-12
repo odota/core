@@ -1712,18 +1712,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               // match details response
               const match = body.result;
-              // Check if match is already parsed
-              const isParsed = Boolean(
-                (
-                  await db.raw(
-                    'select match_id from parsed_matches where match_id = ?',
-                    [match.match_id]
-                  )
-                ).rows[0]
-              );
-              if (isParsed) {
-                redisCount(redis, 'reparse');
-              }
               const job = await insertMatchPromise(match, {
                 type: 'api',
                 attempts: 1,
