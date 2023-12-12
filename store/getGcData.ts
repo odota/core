@@ -7,27 +7,27 @@ import cassandra from './cassandra';
 import { getDataPromise, getRetrieverArr, redisCount } from '../util/utility';
 const secret = config.RETRIEVER_SECRET;
 
-export async function ensureGcData(match: GcDataJob): Promise<void> {
+export async function ensureGcData(match: GcDataJob, force: boolean): Promise<void> {
   const matchId = match.match_id;
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     throw new Error('invalid match_id');
   }
-  // Check if we have gcdata already in blobstore
-  // NOTE: We don't check against match_gcdata here
-  // This is because we write data to blobstore as part of this and we might want to dump the blobs table periodically or clean it up
-  // if we do that we want to refetch the gcdata so the data is complete on re-archival
-  // (otherwise e.g. pro matches might be missing permanent_buffs and party ids)
-  // because that match still has match_gcdata values
-  const result = await cassandra.execute(
-    'SELECT gcdata FROM match_blobs WHERE match_id = ?',
-    [Number(match.match_id)],
-    { prepare: true, fetchSize: 1, autoPage: true }
-  );
-  const row = result.rows[0];
-  const saved = Boolean(row?.gcdata);
-  if (saved) {
-    redisCount(redis, 'cached_gcdata');
-    return;
+  if (!force) {
+    // Unless forcing update, check if we have gcdata already in blobstore
+    // NOTE: We don't check against match_gcdata here
+    // This is because we write data to blobstore as part of this and match_gcdata may have data that blobstore does not
+    // and this is the source of the party id/permanent buffs for match call
+    const result = await cassandra.execute(
+      'SELECT gcdata FROM match_blobs WHERE match_id = ?',
+      [Number(match.match_id)],
+      { prepare: true, fetchSize: 1, autoPage: true }
+    );
+    const row = result.rows[0];
+    const saved = Boolean(row?.gcdata);
+    if (saved) {
+      redisCount(redis, 'cached_gcdata');
+      return;
+    }
   }
   // Make the GC call to populate the data
   const retrieverArr = getRetrieverArr(match.useGcDataArr);
@@ -94,14 +94,28 @@ export async function ensureGcData(match: GcDataJob): Promise<void> {
   });
   return;
 }
-export async function getGcData(
+
+type GcDataRow = { match_id: number; cluster: number; replay_salt: number };
+
+export async function readGcData(
   match: GcDataJob
-): Promise<{ match_id: number; cluster: number; replay_salt: number }> {
-  await ensureGcData(match);
-  // Read the result from match_gcdata
+): Promise<GcDataRow> {
   const dbResult = await db.raw(
     'select match_id, cluster, replay_salt from match_gcdata where match_id = ?',
     [match.match_id]
   );
   return dbResult.rows[0];
+}
+
+export async function getGcData(
+  match: GcDataJob
+): Promise<GcDataRow> {
+  await ensureGcData(match, false);
+  let row = await readGcData(match);
+  if (row) {
+    return row;
+  }
+  // Force an update and then return it
+  await ensureGcData(match, true);
+  return await readGcData(match);
 }
