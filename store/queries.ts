@@ -999,7 +999,7 @@ export async function insertMatchPromise(
         prepare: true,
       }
     );
-    // fs.writeFileSync('./build/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy));
+    // fs.writeFileSync('./build/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy, null, 2));
   }
   async function telemetry() {
     // Publish to log stream

@@ -14,8 +14,9 @@ import queue from '../store/queue';
 import { insertMatchPromise } from '../store/queries';
 import { promisify } from 'util';
 import c from 'ansi-colors';
-import { buildReplayUrl } from '../util/utility';
+import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
+import db from '../store/db';
 
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, NODE_ENV, PARSER_HOST, PARSER_PARALLELISM } = config;
@@ -34,6 +35,22 @@ async function parseProcessor(job: ParseJob) {
   let insertTime = 0;
   const match = job;
   try {
+      // Check if match is already parsed
+      const isParsed = Boolean(
+      (
+        await db.raw(
+          'select match_id from parsed_matches where match_id = ?',
+          [match.match_id]
+        )
+      ).rows[0]
+    );
+    if (isParsed) {
+      redisCount(redis, 'reparse');
+      if (config.DISABLE_REPARSE) {
+        // If high load, we can disable parsing already parsed matches
+        return true;
+      }
+    }
     const gcStart = Date.now();
     const gcdata = await getGcData(match);
     gcTime = Date.now() - gcStart;

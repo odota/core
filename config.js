@@ -69,6 +69,7 @@ const defaults = {
   MATCH_ARCHIVE_S3_KEY_SECRET: '', // S3-compatible key secret to archive parsed match blobs
   MATCH_ARCHIVE_S3_ENDPOINT: '', // S3-compatible endpoint to archive parsed match blobs
   MATCH_ARCHIVE_S3_BUCKET: 'opendota', // name of the S3 bucket to archive parsed match blobs
+  DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value
 Object.keys(defaults).forEach((key) => {
