@@ -63,8 +63,8 @@ async function fetchGcData(match: GcDataJob): Promise<void> {
   });
   // Update series id and type for pro match
   await db.raw(
-    'UPDATE matches SET series_id = ?, series_type = ? WHERE match_id = ?',
-    [matchToInsert.series_id, matchToInsert.series_type, match.match_id]
+    'UPDATE matches SET series_id = ?, series_type = ?, cluster = ?, replay_salt = ? WHERE match_id = ?',
+    [matchToInsert.series_id, matchToInsert.series_type, matchToInsert.cluster, matchToInsert.replay_salt, match.match_id]
   );
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatchPromise(matchToInsert, {
