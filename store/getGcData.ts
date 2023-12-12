@@ -7,28 +7,7 @@ import cassandra from './cassandra';
 import { getDataPromise, getRetrieverArr, redisCount } from '../util/utility';
 const secret = config.RETRIEVER_SECRET;
 
-export async function ensureGcData(match: GcDataJob, force: boolean): Promise<void> {
-  const matchId = match.match_id;
-  if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
-    throw new Error('invalid match_id');
-  }
-  if (!force) {
-    // Unless forcing update, check if we have gcdata already in blobstore
-    // NOTE: We don't check against match_gcdata here
-    // This is because we write data to blobstore as part of this and match_gcdata may have data that blobstore does not
-    // and this is the source of the party id/permanent buffs for match call
-    const result = await cassandra.execute(
-      'SELECT gcdata FROM match_blobs WHERE match_id = ?',
-      [Number(match.match_id)],
-      { prepare: true, fetchSize: 1, autoPage: true }
-    );
-    const row = result.rows[0];
-    const saved = Boolean(row?.gcdata);
-    if (saved) {
-      redisCount(redis, 'cached_gcdata');
-      return;
-    }
-  }
+async function fetchGcData(match: GcDataJob): Promise<void> {
   // Make the GC call to populate the data
   const retrieverArr = getRetrieverArr(match.useGcDataArr);
   // make array of retriever urls and use a random one on each retry
@@ -97,9 +76,9 @@ export async function ensureGcData(match: GcDataJob, force: boolean): Promise<vo
 
 type GcDataRow = { match_id: number; cluster: number; replay_salt: number };
 
-export async function readGcData(
+async function readGcData(
   match: GcDataJob
-): Promise<GcDataRow> {
+): Promise<GcDataRow | undefined> {
   const dbResult = await db.raw(
     'select match_id, cluster, replay_salt from match_gcdata where match_id = ?',
     [match.match_id]
@@ -110,12 +89,38 @@ export async function readGcData(
 export async function getGcData(
   match: GcDataJob
 ): Promise<GcDataRow> {
-  await ensureGcData(match, false);
-  let row = await readGcData(match);
-  if (row) {
-    return row;
+  const matchId = match.match_id;
+  if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
+    throw new Error('invalid match_id');
   }
-  // Force an update and then return it
-  await ensureGcData(match, true);
-  return await readGcData(match);
+  let final: GcDataRow | undefined;
+  if (config.DISABLE_REGCDATA) {
+    // If we disabled refetching, check if we have gcdata cached in blobstore
+    // NOTE: We don't check against match_gcdata here
+    // This is because we write data to blobstore as part of this and match_gcdata may have data that blobstore does not
+    // and this is the source of the party id/permanent buffs for match call
+    const result = await cassandra.execute(
+      'SELECT gcdata FROM match_blobs WHERE match_id = ?',
+      [Number(match.match_id)],
+      { prepare: true, fetchSize: 1, autoPage: true }
+    );
+    const row = result.rows[0];
+    const saved = Boolean(row?.gcdata);
+    if (saved) {
+      redisCount(redis, 'cached_gcdata');
+      // We can read it immediately without fetching
+      final = await readGcData(match);
+      if (final) {
+        return final;
+      }
+    }
+  }
+  // If we got here we don't have it saved, fetch it and then read it
+  await fetchGcData(match);
+  final = await readGcData(match);
+  if (final) {
+    return final;
+  } else {
+    throw new Error('[GCDATA]: Could not get GC data for match ' + match.match_id);
+  }
 }
