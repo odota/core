@@ -20,7 +20,7 @@ import { getMeta } from './getMeta';
 
 async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
   // NOTE: This adds match specific properties into the player object, which leads to some unnecessary duplication in the output
-  const p = {
+  const p: Partial<ParsedPlayerMatch> = {
     ...player,
     radiant_win: match.radiant_win,
     start_time: match.start_time,
@@ -28,9 +28,9 @@ async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
     cluster: match.cluster,
     lobby_type: match.lobby_type,
     game_mode: match.game_mode,
-    is_contributor: player.account_id && isContributor(player.account_id),
+    is_contributor: Boolean(player.account_id && isContributor(player.account_id)),
   };
-  computeMatchData(p as unknown as ParsedPlayerMatch);
+  computeMatchData(p as ParsedPlayerMatch);
   const row = await db
     .first()
     .from('rank_tier')
@@ -51,6 +51,8 @@ async function prodataInfo(matchId: string) {
       'leagueid',
       'series_id',
       'series_type',
+      'cluster',
+      'replay_salt',
     ])
     .from('matches')
     .where({
@@ -79,6 +81,8 @@ async function prodataInfo(matchId: string) {
     dire_team: direTeam,
     series_id: result.series_id,
     series_type: result.series_type,
+    cluster: result.cluster,
+    replay_salt: result.replay_salt,
   });
 }
 

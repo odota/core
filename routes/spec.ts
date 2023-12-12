@@ -215,20 +215,18 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const accountId = Number(req.params.account_id);
-          async.parallel(
+          try {
+            const playerData = await getPlayer(db, accountId);
+            if (!playerData) {
+              // 404 error
+              return cb();
+            }
+          const result = await async.parallel(
             {
               profile(cb) {
-                getPlayer(db, accountId, (err, playerData) => {
-                  if (playerData !== null && playerData !== undefined) {
-                    playerData.is_contributor = isContributor(
-                      accountId.toString()
-                    );
-                    playerData.is_subscriber = Boolean(playerData?.status);
-                  }
-                  cb(err as any, playerData);
-                });
+                cb(null, playerData);
               },
               solo_competitive_rank(cb) {
                 db.first()
@@ -270,14 +268,11 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                     }
                   );
               },
-            },
-            (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            }
-          );
+            });
+            return res.json(result);
+        } catch(e) {
+          return cb(e);
+        }
         },
       },
     },

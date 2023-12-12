@@ -462,7 +462,7 @@ app.use(
     redisCount(redis, '500_error');
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       // default express handler
-      return cb(JSON.stringify(err));
+      return cb(err?.message || JSON.stringify(err));
     }
     return res.status(500).json({
       error: 'Internal Server Error',

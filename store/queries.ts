@@ -378,9 +378,8 @@ export function getPlayerHeroRankings(accountId: string, cb: ErrorCb) {
     [accountId]
   ).asCallback(cb);
 }
-export function getPlayer(db: knex.Knex, accountId: number, cb: ErrorCb) {
-  if (!Number.isNaN(Number(accountId))) {
-    db.first(
+export async function getPlayer(db: knex.Knex, accountId: number): Promise<User | undefined> {
+  const playerData: User | undefined = await db.first(
       'players.account_id',
       'personaname',
       'name',
@@ -404,11 +403,14 @@ export function getPlayer(db: knex.Knex, accountId: number, cb: ErrorCb) {
       .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
       .where({
         'players.account_id': Number(accountId),
-      })
-      .asCallback(cb);
-  } else {
-    cb();
-  }
+      });
+      if (playerData) {
+        playerData.is_contributor = isContributor(
+          accountId.toString()
+        );
+        playerData.is_subscriber = Boolean(playerData?.status);
+      }
+      return playerData;
 }
 export function getPeers(
   db: knex.Knex,

@@ -215,7 +215,7 @@ interface GcPlayer extends Player {
 
 type PlayerMatch = Player & Match & { players?: Player[] };
 type ParsedPlayerMatch = ParsedPlayer &
-  ParsedMatch & { players?: ParsedPlayer[] };
+  ParsedMatch & { players?: ParsedPlayer[], is_contributor?: boolean };
 
 type User = {
   account_id: number;
