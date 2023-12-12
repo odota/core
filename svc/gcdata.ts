@@ -9,7 +9,7 @@ const retrieverArr = getRetrieverArr();
 
 async function processGcData(job: GcDataJob) {
   job.useGcDataArr = true;
-  await ensureGcData(job);
+  await ensureGcData(job, false);
 }
 
 console.log('[GCDATA] starting');
