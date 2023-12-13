@@ -65,10 +65,16 @@ const defaults = {
   STRIPE_SECRET: 'rk_test_gRqwhv4xqv0a1olp8kk8fZ94', // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: 'plan_CgLthOgwrDgz2K', // plan id for stripe metering
   ES_SEARCH_PERCENT: 0, // % of users to roll out elasticsearch to
+  ENABLE_MATCH_ARCHIVE: '', // Allow reading/writing parsed match blobs to S3 storage
   MATCH_ARCHIVE_S3_KEY_ID: '', // S3-compatible key ID to archive parsed match blobs
   MATCH_ARCHIVE_S3_KEY_SECRET: '', // S3-compatible key secret to archive parsed match blobs
   MATCH_ARCHIVE_S3_ENDPOINT: '', // S3-compatible endpoint to archive parsed match blobs
   MATCH_ARCHIVE_S3_BUCKET: 'opendota', // name of the S3 bucket to archive parsed match blobs
+  ENABLE_PLAYER_ARCHIVE: '', // Allow reading/writing player match blobs to S3 storage
+  PLAYER_ARCHIVE_S3_KEY_ID: '', // S3-compatible key ID to archive player match blobs
+  PLAYER_ARCHIVE_S3_KEY_SECRET: '', // S3-compatible key secret to archive player match blobs
+  PLAYER_ARCHIVE_S3_ENDPOINT: '', // S3-compatible endpoint to archive player match blobs
+  PLAYER_ARCHIVE_S3_BUCKET: 'opendota-players', // name of the S3 bucket to archive player match blobs
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
 };

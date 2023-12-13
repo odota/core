@@ -5,18 +5,7 @@ import {
   PutObjectCommand,
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
-const client = config.MATCH_ARCHIVE_S3_ENDPOINT
-  ? new S3Client({
-      region: 'us-east-1',
-      credentials: {
-        accessKeyId: config.MATCH_ARCHIVE_S3_KEY_ID,
-        secretAccessKey: config.MATCH_ARCHIVE_S3_KEY_SECRET,
-      },
-      endpoint: 'https://' + config.MATCH_ARCHIVE_S3_ENDPOINT,
-      // any other options are passed to new AWS.S3()
-      // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property
-    })
-  : null;
+
 async function stream2buffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const _buf: any[] = [];
@@ -25,16 +14,47 @@ async function stream2buffer(stream: any): Promise<Buffer> {
     stream.on('error', (err: any) => reject(err));
   });
 }
-export async function archiveGet(key: string) {
-  if (!client) {
+
+export class Archive {
+  private endpoint: string = '';
+  private accessKeyId: string = '';
+  private secretAccessKey: string = '';
+  private bucket: string = '';
+  private client: S3Client | null = null;
+  constructor(type: 'match' | 'player') {
+    if (type === 'match') {
+      this.endpoint = config.MATCH_ARCHIVE_S3_ENDPOINT;
+      this.accessKeyId = config.MATCH_ARCHIVE_S3_KEY_ID;
+      this.secretAccessKey = config.MATCH_ARCHIVE_S3_KEY_SECRET;
+      this.bucket = config.MATCH_ARCHIVE_S3_BUCKET;
+    } else if (type === 'player') {
+      this.endpoint = config.PLAYER_ARCHIVE_S3_ENDPOINT;
+      this.accessKeyId = config.PLAYER_ARCHIVE_S3_KEY_ID;
+      this.secretAccessKey = config.PLAYER_ARCHIVE_S3_KEY_SECRET;
+      this.bucket = config.PLAYER_ARCHIVE_S3_BUCKET;
+    }
+    this.client = new S3Client({
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: this.accessKeyId,
+        secretAccessKey: this.secretAccessKey,
+      },
+      endpoint: 'https://' + this.endpoint,
+      // any other options are passed to new AWS.S3()
+      // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property
+    });
+  }
+
+  public archiveGet = async (key: string) => {
+  if (!this.client) {
     return null;
   }
   const command = new GetObjectCommand({
-    Bucket: config.MATCH_ARCHIVE_S3_BUCKET,
+    Bucket: this.bucket,
     Key: key,
   });
   try {
-    const data = await client.send(command);
+    const data = await this.client.send(command);
     if (!data.Body) {
       return null;
     }
@@ -51,9 +71,9 @@ export async function archiveGet(key: string) {
     console.error('[ARCHIVE] get error:', e.Code);
     return null;
   }
-}
-export async function archivePut(key: string, blob: Buffer) {
-  if (!client) {
+  }
+  public archivePut = async (key: string, blob: Buffer) => {
+  if (!this.client) {
     return null;
   }
   if (blob.length < 1000) {
@@ -64,11 +84,11 @@ export async function archivePut(key: string, blob: Buffer) {
   try {
     const data = gzipSync(blob);
     const command = new PutObjectCommand({
-      Bucket: config.MATCH_ARCHIVE_S3_BUCKET,
+      Bucket: this.bucket,
       Key: key,
       Body: data,
     });
-    const result = await client.send(command);
+    const result = await this.client.send(command);
     console.log(
       '[ARCHIVE] %s: original %s bytes, archived %s bytes',
       key,
@@ -81,7 +101,4 @@ export async function archivePut(key: string, blob: Buffer) {
     return null;
   }
 }
-export default {
-  archiveGet,
-  archivePut,
-};
+}

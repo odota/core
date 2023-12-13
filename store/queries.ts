@@ -14,7 +14,7 @@ import { es, INDEX } from './elasticsearch';
 import cassandra from './cassandra';
 import { getKeys, clearCache } from './cacheFunctions';
 import { benchmarks } from '../util/benchmarksUtil';
-import { archiveGet, archivePut } from './archive';
+import { Archive } from './archive';
 import knex from 'knex';
 import type { Client } from 'cassandra-driver';
 import type { Redis } from 'ioredis';
@@ -35,9 +35,12 @@ import {
   redisCount,
   isDataComplete,
 } from '../util/utility';
+import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 
 const columnInfo: AnyDict = {};
 const cassandraColumnInfo: AnyDict = {};
+const matchArchive = new Archive('match');
+const playerArchive = new Archive('player');
 
 function doCleanRow(schema: StringDict, row: AnyDict) {
   const obj: AnyDict = {};
@@ -298,7 +301,7 @@ export function getPlayerMatches(
 export async function getPlayerMatchesPromise(
   accountId: string,
   queryObj: QueryObj
-) {
+): Promise<ParsedPlayerMatch[]> {
   // Validate accountId
   if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
     return [];
@@ -314,11 +317,12 @@ export async function getPlayerMatchesPromise(
       ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
     `,
     // Only allow selecting fields present in column names data
-    queryObj.project
-      .filter((f: string) => cassandraColumnInfo.player_caches[f])
+    queryObj.projectAll ? '*' : queryObj.project
+      .filter((f: string) => cassandraColumnInfo.player_caches?.[f])
       .join(',')
   );
-  const matches: ParsedPlayerMatch[] = [];
+  let matches: ParsedPlayerMatch[] = [];
+  console.time('cassandra');
   await new Promise<void>((resolve, reject) => {
     cassandra.eachRow(
       query,
@@ -330,9 +334,7 @@ export async function getPlayerMatchesPromise(
       },
       (n, row) => {
         const m = deserialize(row) as any;
-        if (filterMatches([m], queryObj.filter).length) {
-          matches.push(m);
-        }
+        matches.push(m);
       },
       (err) => {
         if (err) {
@@ -342,14 +344,88 @@ export async function getPlayerMatchesPromise(
       }
     );
   });
+  console.timeEnd('cassandra');
+
+  if (config.ENABLE_PLAYER_ARCHIVE) {
+  // TODO parallelize cassandra and archive read?
+  // TODO (howard) for dbLimit (recentMatches) do we want to skip the archive and just return 20 most recent from cassandra?
+  console.time('archive');
+  const archivedMatches = await getArchivedPlayerMatches(accountId);
+  // read matches from player archive
+  const reducedMatches = archivedMatches.map(m => {
+    // Only pick selected columns from those matches
+    const pick: Partial<ParsedPlayerMatch> = {};
+    const keys = queryObj.projectAll ? Object.keys(cassandraColumnInfo.player_caches) as (keyof ParsedPlayerMatch)[] : queryObj.project;
+    keys.forEach(key => {
+      pick[key] = m[key] || null;
+    });
+    return pick as ParsedPlayerMatch;
+  });
+    // Add any that we don't already have to the array
+    const matchIdSet = new Set(matches.map(m => m.match_id));
+    reducedMatches.forEach(m => {
+      if (!matchIdSet.has(m.match_id)) {
+        matches.push(m);
+      }
+    });
+  console.timeEnd('archive');
+  }
+
+  console.time('process');
+  matches = filterMatches(matches, queryObj.filter);
   const sort = queryObj.sort;
   if (sort) {
     matches.sort((a, b) => b[sort] - a[sort]);
+  } else {
+    // Default sort by match_id desc
+    matches.sort((a, b) => b.match_id - a.match_id);
   }
   const offset = matches.slice(queryObj.offset || 0);
   const result = offset.slice(0, queryObj.limit || offset.length);
+  console.timeEnd('process');
   return result;
 }
+
+export async function getFullPlayerMatches(accountId: string): Promise<ParsedPlayerMatch[]> {
+  return await getPlayerMatchesPromise(accountId, { project: [], projectAll: true });
+}
+
+export async function getArchivedPlayerMatches(accountId: string): Promise<ParsedPlayerMatch[]> {
+  const blob = await playerArchive.archiveGet(accountId);
+  if (!blob) {
+    return [];
+  }
+  const arr = JSON.parse(blob.toString());
+  return arr;
+}
+
+export async function doArchivePlayerMatches(accountId: string): Promise<PutObjectCommandOutput | null> {
+  if (!config.ENABLE_PLAYER_ARCHIVE) {
+    return null;
+  }
+  // Fetch our combined list of archive and current, selecting all fields
+  const toArchive = await getFullPlayerMatches(accountId);
+  toArchive.forEach((m, i) => {
+    Object.keys(m).forEach((key) => {
+      if (m[key as keyof ParsedPlayerMatch] === null) {
+        // Remove any null values from the matches for storage
+        delete m[key as keyof ParsedPlayerMatch];
+      }
+    });
+  });
+  // TODO (howard) Make sure the new list is longer than the old list
+  // Make sure we're archiving at least 1 match
+  if (!toArchive.length) {
+    return null;
+  }
+  // Put the blob
+  return await playerArchive.archivePut(accountId, Buffer.from(JSON.stringify(toArchive)));
+  // TODO (howard) delete the archived values from player_caches
+  // TODO (howard) keep the 20 highest match IDs for recentMatches
+  // TODO (howard) mark the user archived so we don't need to query archive on every request
+  // TODO (howard) add redis counts
+}
+
 export async function getPlayerRatings(accountId: string) {
   if (!Number.isNaN(Number(accountId))) {
     return await db
@@ -1213,7 +1289,7 @@ export async function insertMatchPromise(
  * @returns The result of the archive operation
  */
 export async function doArchiveFromLegacy(matchId: string) {
-  if (!config.MATCH_ARCHIVE_S3_ENDPOINT) {
+  if (!config.ENABLE_MATCH_ARCHIVE) {
     return;
   }
   // Right now we avoid re-archiving a match by setting a flag in db
@@ -1256,7 +1332,7 @@ export async function doArchiveFromLegacy(matchId: string) {
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches })
   );
-  const result = await archivePut(matchId, blob);
+  const result = await matchArchive.archivePut(matchId, blob);
   redisCount(redis, 'match_archive_write');
   if (result) {
     // Mark the match archived
@@ -1270,7 +1346,7 @@ export async function doArchiveFromLegacy(matchId: string) {
 }
 
 export async function doArchiveFromBlob(matchId: string) {
-  if (!config.MATCH_ARCHIVE_S3_ENDPOINT) {
+  if (!config.ENABLE_MATCH_ARCHIVE) {
     return;
   }
   // Don't use the archive when determining whether to archive
@@ -1292,7 +1368,7 @@ export async function doArchiveFromBlob(matchId: string) {
     const blob = Buffer.from(
       JSON.stringify(match)
     );
-    const result = await archivePut(matchId, blob);
+    const result = await matchArchive.archivePut(matchId, blob);
     redisCount(redis, 'match_archive_write');
     if (result) {
       // Mark the match archived
@@ -1430,7 +1506,7 @@ async function getMatchDataFromBlobWithMetadata(
     // Return null if we don't have API data for some reason (maybe due to cleanup followed by parse?)
     return [null, null];
   }
-  if (!parsed && useArchive) {
+  if (!parsed && useArchive && config.ENABLE_MATCH_ARCHIVE) {
     // Check if the parsed data is archived
     // Most matches won't be in the archive so it's more efficient not to always try
     const isArchived = Boolean(
@@ -1505,7 +1581,7 @@ export async function getArchivedMatch(
   matchId: string
 ): Promise<ParsedMatch | null> {
   try {
-    const blob = await archiveGet(matchId.toString());
+    const blob = await matchArchive.archiveGet(matchId.toString());
     const result: ParsedMatch | null = blob
       ? JSON.parse(blob.toString())
       : null;

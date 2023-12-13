@@ -1,9 +1,10 @@
-import { archivePut } from '../store/archive.js';
+import archiveImport from '../store/archive.js';
 import {
   getArchivedMatch,
   getMatchDataFromCassandra,
   getPlayerMatchData,
 } from '../store/queries.js';
+const { Archive } = archiveImport;
 
 // Read some match data
 const match = {
@@ -12,8 +13,9 @@ const match = {
 };
 const blob = Buffer.from(JSON.stringify(match));
 
+const archive = new Archive('match');
 // Archive it
-const putRes = await archivePut(match.match_id?.toString() ?? '', blob);
+const putRes = await archive.archivePut(match.match_id?.toString() ?? '', blob);
 console.log(putRes);
 
 // Read it back
