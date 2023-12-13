@@ -35,8 +35,21 @@ async function parseProcessor(job: ParseJob) {
   let insertTime = 0;
   const match = job;
   try {
-      // Check if match is already parsed
-      const isParsed = Boolean(
+    // Fetch the gcdata and construct a replay URL
+    const gcStart = Date.now();
+    const gcdata = await getGcData(match);
+    gcTime = Date.now() - gcStart;
+    let url = buildReplayUrl(
+      gcdata.match_id,
+      gcdata.cluster,
+      gcdata.replay_salt
+    );
+    if (NODE_ENV === 'test') {
+      url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
+    }
+
+    // Check if match is already parsed
+    const isParsed = Boolean(
       (
         await db.raw(
           'select match_id from parsed_matches where match_id = ?',
@@ -50,18 +63,6 @@ async function parseProcessor(job: ParseJob) {
         // If high load, we can disable parsing already parsed matches
         return true;
       }
-    }
-    const gcStart = Date.now();
-    const gcdata = await getGcData(match);
-    gcTime = Date.now() - gcStart;
-
-    let url = buildReplayUrl(
-      gcdata.match_id,
-      gcdata.cluster,
-      gcdata.replay_salt
-    );
-    if (NODE_ENV === 'test') {
-      url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
     }
 
     const parseStart = Date.now();

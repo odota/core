@@ -56,7 +56,7 @@ type Match = {
   radiant_win: boolean;
   lobby_type: number;
   game_mode: number;
-  cluster?: number;
+  cluster: number;
   patch?: number;
   region?: number;
   radiant_team_id?: number;
@@ -65,13 +65,13 @@ type Match = {
   human_players: number;
 
   // Computed field
-  pgroup: any;
+  pgroup: PGroup;
   // heroes is just pgroup alias?
-  heroes: any;
+  heroes: PGroup;
   average_rank?: number | null;
 
   // Parsed match metadata from .meta file
-  metadata: any;
+  metadata?: any;
 
   // Which storage backend the data came from
   od_archive?: boolean;
@@ -91,15 +91,9 @@ interface ParsedMatch extends Match {
   radiant_gold_adv: number[];
 }
 
-interface GcMatch extends Partial<Match> {
-  match_id: number;
-  pgroup: any;
-  players: GcPlayer[];
-}
-
 type Player = {
   player_slot: number;
-  account_id?: number;
+  account_id?: number | null;
   hero_id: number;
   kills: number;
   deaths: number;
@@ -162,8 +156,7 @@ interface ParsedPlayer extends Player {
   sen: any;
   lane_role: number | null;
 
-  //Added by GC
-  party_size: number;
+  party_size?: number;
 
   // Computed
   is_roaming?: boolean | null;
@@ -207,11 +200,31 @@ interface ParsedPlayer extends Player {
   rank_tier?: number;
 }
 
-interface GcPlayer extends Player {
-  // From GC
-  party_id: { low: number; high: number };
+interface GcMatch extends Partial<Match> {
+  // Most properties are not present except for a few
+  match_id: number;
+  pgroup: PGroup;
+  players: GcPlayer[];
+  series_id: number;
+  series_type: number;
+  cluster: number;
+  replay_salt: number;
+}
+
+interface GcPlayer extends Partial<Player> {
+  party_id: number;
+  party_size: number;
   permanent_buffs: any[];
-  net_worth: number;
+}
+
+// Data to save from GC, can be read out
+type GcData = {
+  match_id: number;
+  cluster: number;
+  replay_salt: number;
+  series_type: number;
+  series_id: number;
+  players: GcPlayer[]
 }
 
 type PlayerMatch = Player & Match & { players?: Player[] };
@@ -219,7 +232,7 @@ type ParsedPlayerMatch = ParsedPlayer &
   ParsedMatch & { players?: ParsedPlayer[], is_contributor?: boolean };
 
 type User = {
-  account_id: number;
+  account_id: number | null;
   fh_unavailable: boolean;
   steamid: string;
   personaname: string;
@@ -253,7 +266,7 @@ type MmrJob = {
 
 type GcDataJob = {
   match_id: number;
-  pgroup: any;
+  pgroup: PGroup;
   useGcDataArr?: boolean;
   noRetry?: boolean;
 };
@@ -263,7 +276,7 @@ type ScenariosJob = string;
 
 type ParseJob = {
   match_id: number;
-  pgroup: any;
+  pgroup: PGroup;
   leagueid?: number;
   origin?: DataOrigin;
   start_time?: number;
@@ -382,3 +395,13 @@ type MetricName =
   | 'request'
   | 'reparse'
   | 'incomplete_archive';
+
+// Object to map player_slot to basic info
+type PGroup = {
+  [player_slot: string]: {
+    // Optional because some players are anonymous
+    account_id?: number | null,
+    hero_id: number,
+    player_slot: number,
+  }
+}

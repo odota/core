@@ -977,6 +977,7 @@ export async function insertMatchPromise(
     const copy = createMatchCopy(match, players);
     // NOTE: remove pgroup since we don't actually need it stored
     // player_caches stores it as a field called heroes used for heroes/players played with/against aggregation
+    //@ts-ignore
     delete copy.pgroup;
     copy.players.forEach((p) => {
       // We only store the _arr version to save space
