@@ -91,8 +91,15 @@ export async function tryReadGcData(
     { prepare: true, fetchSize: 1, autoPage: true }
   );
   const row = result.rows[0];
-  const gcData: GcData = row?.gcdata ? JSON.parse(row.gcdata) : undefined;
-  return { match_id: gcData.match_id, cluster: gcData.cluster, replay_salt: gcData.replay_salt };
+  const gcData = row?.gcdata ? JSON.parse(row.gcdata) as GcData : undefined;
+  if (!gcData) {
+    return;
+  }
+  const { match_id, cluster, replay_salt } = gcData;
+  if (!match_id || !cluster || !replay_salt) {
+    return;
+  }
+  return { match_id, cluster, replay_salt };
 }
 
 /**
