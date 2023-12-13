@@ -24,6 +24,7 @@ declare namespace Express {
 type ArrayifiedFilters = { [key: string]: number[] };
 type QueryObj = {
   project: (keyof ParsedPlayerMatch)[];
+  projectAll?: boolean;
   filter?: ArrayifiedFilters;
   sort?: keyof ParsedPlayerMatch;
   // Number of results to return after client filter/sort

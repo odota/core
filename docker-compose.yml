@@ -13,13 +13,15 @@ services:
       POSTGRES_DB: yasp
       POSTGRES_PASSWORD: postgres
   cassandra:
-    image: cassandra:4
+    image: cassandra:3
     container_name: odota-cassandra
+    environment:
+      MAX_HEAP_SIZE: 128M
+      HEAP_NEWSIZE: 24M
   cassandrainit:
     image: cassandra
     depends_on:
       - cassandra
-    # restart: "no"
     volumes:
       - .:/usr/src
     container_name: odota-cassandrainit
@@ -27,7 +29,7 @@ services:
       [
         'bash',
         '-c',
-        'sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+        'sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
       ]
   scylla:
     image: scylladb/scylla:5.4
@@ -36,7 +38,6 @@ services:
     image: scylladb/scylla
     depends_on:
       - scylla
-    # restart: "no"
     volumes:
       - .:/usr/src
     container_name: odota-scyllainit
@@ -44,7 +45,7 @@ services:
       [
         'bash',
         '-c',
-        'sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
+        'sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
       ]
   redis:
     image: redis:5
