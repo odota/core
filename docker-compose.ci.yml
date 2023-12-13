@@ -1,13 +1,9 @@
 version: '2'
 services:
   postgres:
-    build:
-      context: .
-      dockerfile: docker/postgres.dockerfile
-    image: odota/postgres
+    image: postgres:9.5
     container_name: odota-postgres
     environment:
-      POSTGRES_DB: yasp
       POSTGRES_PASSWORD: postgres
   cassandra:
     image: cassandra:3
