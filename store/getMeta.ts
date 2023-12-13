@@ -3,9 +3,9 @@ import axios from 'axios';
 import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import db from './db';
 import redis from './redis';
 import { buildReplayUrl, redisCount } from '../util/utility';
+import { tryReadGcData } from './getGcData';
 const execPromise = promisify(exec);
 
 // Get a sample meta file
@@ -18,12 +18,8 @@ const builder = root.loadSync('./proto/dota_match_metadata.proto', {
 const Message = builder.lookupType('CDOTAMatchMetadataFile');
 
 export async function getMeta(matchId: string) {
-  // Check if we have the info in match_gcdata to construct url
-  const saved = await db.raw(
-    'select match_id, cluster, replay_salt from match_gcdata where match_id = ?',
-    [matchId]
-  );
-  const gcdata = saved.rows[0];
+  // Check if we have the info to construct url
+  const gcdata = await tryReadGcData(Number(matchId));
   if (!gcdata) {
     return null;
   }

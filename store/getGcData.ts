@@ -34,15 +34,15 @@ async function fetchGcData(match: GcDataJob): Promise<void> {
   );
   // NOTE: account ids are not anonymous in this call so we don't include it in the data to insert
   // We could start storing this data but then the API also needs to respect the user's match history setting
-  const players = body.match.players.map((p: GcPlayer, i: number) => ({
+  const players = body.match.players.map((p: any, i: number): GcPlayer => ({
     player_slot: p.player_slot,
     party_id: p.party_id?.low,
     permanent_buffs: p.permanent_buffs,
     party_size: body.match.players.filter(
-      (matchPlayer: GcPlayer) => matchPlayer.party_id?.low === p.party_id?.low
+      (matchPlayer: any) => matchPlayer.party_id?.low === p.party_id?.low
     ).length,
   }));
-  const matchToInsert = {
+  const matchToInsert: GcMatch = {
     match_id: match.match_id,
     pgroup: match.pgroup,
     players,
@@ -57,6 +57,7 @@ async function fetchGcData(match: GcDataJob): Promise<void> {
     cluster: body.match.cluster,
     replay_salt: body.match.replay_salt,
   };
+  // TODO (howard) deprecate match_gcdata once we have transferGcData for pro matches
   // Persist GC data to database, we'll read it back from here for consumers
   await upsertPromise(db, 'match_gcdata', gcdata, {
     match_id: match.match_id,
@@ -76,16 +77,30 @@ async function fetchGcData(match: GcDataJob): Promise<void> {
 
 type GcDataRow = { match_id: number; cluster: number; replay_salt: number };
 
-async function readGcData(
-  match: GcDataJob
+/**
+ * Tries to return GC data by reading it without fetching.
+ * @param matchId 
+ * @returns 
+ */
+export async function tryReadGcData(
+  matchId: number
 ): Promise<GcDataRow | undefined> {
-  const dbResult = await db.raw(
-    'select match_id, cluster, replay_salt from match_gcdata where match_id = ?',
-    [match.match_id]
+  const result = await cassandra.execute(
+    'SELECT gcdata FROM match_blobs WHERE match_id = ?',
+    [matchId],
+    { prepare: true, fetchSize: 1, autoPage: true }
   );
-  return dbResult.rows[0];
+  const row = result.rows[0];
+  const gcData: GcData = row?.gcdata ? JSON.parse(row.gcdata) : undefined;
+  return { match_id: gcData.match_id, cluster: gcData.cluster, replay_salt: gcData.replay_salt };
 }
 
+/**
+ * Returns GC data, fetching and saving it if we don't have it already.
+ * Throws if we can't find it
+ * @param match 
+ * @returns 
+ */
 export async function getGcData(
   match: GcDataJob
 ): Promise<GcDataRow> {
@@ -93,34 +108,20 @@ export async function getGcData(
   if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
     throw new Error('invalid match_id');
   }
-  let final: GcDataRow | undefined;
-  if (config.DISABLE_REGCDATA) {
-    // If we disabled refetching, check if we have gcdata cached in blobstore
-    // NOTE: We don't check against match_gcdata here
-    // This is because we write data to blobstore as part of this and match_gcdata may have data that blobstore does not
-    // and this is the source of the party id/permanent buffs for match call
-    const result = await cassandra.execute(
-      'SELECT gcdata FROM match_blobs WHERE match_id = ?',
-      [Number(match.match_id)],
-      { prepare: true, fetchSize: 1, autoPage: true }
-    );
-    const row = result.rows[0];
-    const saved = Boolean(row?.gcdata);
-    if (saved) {
-      redisCount(redis, 'cached_gcdata');
-      // We can read it immediately without fetching
-      final = await readGcData(match);
-      if (final) {
-        return final;
-      }
+  // Check if we have gcdata cached
+  const saved = await tryReadGcData(matchId);
+  if (saved) {
+    redisCount(redis, 'cached_gcdata');
+    if (config.DISABLE_REGCDATA) {
+      // use the saved value
+      return saved;
     }
   }
-  // If we got here we don't have it saved, fetch it and then read it
+  // If we got here we don't have it saved or want to refetch
   await fetchGcData(match);
-  final = await readGcData(match);
-  if (final) {
-    return final;
-  } else {
+  const result = await tryReadGcData(matchId);
+  if (!result) {
     throw new Error('[GCDATA]: Could not get GC data for match ' + match.match_id);
   }
+  return result;
 }
