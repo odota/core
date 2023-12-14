@@ -388,12 +388,12 @@ type MetricName =
   | 'parser'
   | 'meta_parse'
   | 'retriever'
-  | 'cached_gcdata'
   | 'build_match'
   | 'steam_api_backfill'
   | 'request_api_key'
   | 'request'
   | 'reparse'
+  | 'regcdata'
   | 'incomplete_archive';
 
 // Object to map player_slot to basic info
