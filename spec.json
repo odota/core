@@ -3579,10 +3579,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "items": {
-                      "$ref": "#/components/schemas/PlayerRecentMatchesResponse"
-                    }
+                    "$ref": "#/components/schemas/PlayerRecentMatchesResponse"
                   }
                 }
               }
