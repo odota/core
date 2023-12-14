@@ -13,13 +13,14 @@ import {
   countPeers,
   generateJob,
   getDataPromise,
+  getPatchIndex,
   isContributor,
   isRadiant,
   matchupToString,
   mergeObjects,
   redisCount,
 } from '../util/utility';
-import playerFields from './playerFields';
+import { subkeys } from './playerFields';
 import db from '../store/db';
 import redis from '../store/redis';
 import packageJson from '../package.json';
@@ -44,8 +45,8 @@ import {
   getPlayerMatches,
   getItemTimings,
 } from '../store/queries';
+import { FilterType, filterDeps } from '../util/filter';
 const { Client } = pg;
-const { subkeys, countCats } = playerFields;
 const parameters = Object.values(params).reduce<any>(
   (acc, category: any) => ({ ...acc, ...category }),
   {}
@@ -693,7 +694,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/players/:account_id/totals',
         func: (req, res, cb) => {
           const result: AnyDict = {};
-          Object.keys(subkeys).forEach((key) => {
+          subkeys.forEach((key) => {
             result[key] = {
               field: key,
               n: 0,
@@ -701,7 +702,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             };
           });
           req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(subkeys) as (keyof ParsedPlayerMatch)[]
+           subkeys
           );
           getPlayerMatches(
             req.params.account_id,
@@ -711,14 +712,14 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               cache.forEach((m) => {
-                Object.keys(subkeys).forEach((key) => {
+                subkeys.forEach((key) => {
                   if (
-                    m[key as keyof ParsedPlayerMatch] !== null &&
-                    m[key as keyof ParsedPlayerMatch] !== undefined
+                    m[key] !== null &&
+                    m[key] !== undefined
                   ) {
                     result[key].n += 1;
                     result[key].sum += Number(
-                      m[key as keyof ParsedPlayerMatch]
+                      m[key]
                     );
                   }
                 });
@@ -751,11 +752,21 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/players/:account_id/counts',
         func: (req, res, cb) => {
           const result: AnyDict = {};
-          Object.keys(countCats).forEach((key) => {
+          const countCats: FilterType[] = [
+            'leaver_status',
+            'game_mode',
+            'lobby_type',
+            'lane_role',
+            'region',
+            'patch',
+            'is_radiant',
+          ];
+          countCats.forEach((key) => {
             result[key] = {};
           });
+          const deps = countCats.map(name => filterDeps[name]).flat();
           req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(countCats) as (keyof ParsedPlayerMatch)[]
+            deps
           );
           getPlayerMatches(
             req.params.account_id,
@@ -765,23 +776,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 return cb(err);
               }
               cache.forEach((m) => {
+                // Compute the needed fields
                 m.is_radiant = isRadiant(m);
-                Object.keys(countCats).forEach((key) => {
+                m.patch = getPatchIndex(m.start_time);
+                m.region = constants.cluster[m.cluster];
+                countCats.forEach((key) => {
+                  // TODO the filtertype doesn't actually overlap with the keys
+                  // But we computed the ones that don't match above so direct indexing works
+                  const typedKey = key as keyof ParsedPlayerMatch;
                   if (
-                    !result[key][Math.floor(m[key as keyof ParsedPlayerMatch])]
+                    !result[key][Math.floor(m[typedKey])]
                   ) {
-                    result[key][Math.floor(m[key as keyof ParsedPlayerMatch])] =
+                    result[key][Math.floor(m[typedKey])] =
                       {
                         games: 0,
                         win: 0,
                       };
                   }
                   result[key][
-                    Math.floor(m[key as keyof ParsedPlayerMatch])
+                    Math.floor(m[typedKey])
                   ].games += 1;
                   const won = Number(m.radiant_win === isRadiant(m));
                   result[key][
-                    Math.floor(m[key as keyof ParsedPlayerMatch])
+                    Math.floor(m[typedKey])
                   ].win += won;
                 });
               });
@@ -824,10 +841,14 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
-          const field = req.params.field as keyof ParsedPlayerMatch;
           req.queryObj.project = req.queryObj.project
-            .concat('radiant_win', 'player_slot')
-            .concat([field].filter((f) => subkeys[f]));
+          .concat('radiant_win', 'player_slot');
+          const field = subkeys.find(key => key === req.params.field);
+          if (field) {
+            req.queryObj.project = req.queryObj.project.concat(field);
+          } else {
+            return res.json([]);
+          }
           getPlayerMatches(
             req.params.account_id,
             req.queryObj,

@@ -59,7 +59,7 @@ module.exports = {
   patchParam: {
     name: 'patch',
     in: 'query',
-    description: 'Patch ID',
+    description: 'Patch ID, from dotaconstants',
     required: false,
     schema: {
       type: 'integer',
