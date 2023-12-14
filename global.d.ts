@@ -395,6 +395,7 @@ type MetricName =
   | 'request'
   | 'reparse'
   | 'regcdata'
+  | 'parser_fail'
   | 'incomplete_archive';
 
 // Object to map player_slot to basic info
