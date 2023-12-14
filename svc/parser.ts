@@ -111,6 +111,7 @@ async function parseProcessor(job: ParseJob) {
     );
     redis.publish('parsed', message);
     console.log(message);
+    redisCount(redis, 'parser_fail');
     // Rethrow the exception
     throw e;
   }
