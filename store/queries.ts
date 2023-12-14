@@ -15,7 +15,7 @@ import cassandra from './cassandra';
 import { getKeys, clearCache } from './cacheFunctions';
 import { benchmarks } from '../util/benchmarksUtil';
 import { Archive } from './archive';
-import knex from 'knex';
+import type knex from 'knex';
 import type { Client } from 'cassandra-driver';
 import type { Redis } from 'ioredis';
 import type { Request } from 'express';

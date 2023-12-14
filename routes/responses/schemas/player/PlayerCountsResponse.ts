@@ -30,7 +30,7 @@ module.exports = {
         type: 'object',
       },
       patch: {
-        description: 'patch',
+        description: 'Patch ID, from dotaconstants',
         type: 'object',
       },
     },

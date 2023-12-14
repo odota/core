@@ -1,12 +1,10 @@
 import { RequestHandler, Router } from 'express';
-import playerFields from './playerFields';
-import { filterDeps } from '../util/filterDeps';
+import { FilterType, filterDeps } from '../util/filter';
 import spec from './spec';
 import { readCache } from '../store/cacheFunctions';
 
 //@ts-ignore
 const api: Router = new Router();
-const { subkeys } = playerFields;
 // Player caches middleware
 api.use('/players/:account_id/:info?', async (req, res, cb) => {
   // Check cache
@@ -50,18 +48,13 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
       .concat(req.query[key] as [])
       .map((e) => (Number.isNaN(Number(e)) ? e : Number(e))) as any;
     // build array of required projections due to filters
-    filterCols = filterCols.concat(filterDeps[key] || []);
+    filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
   });
+  const sortArr = (req.query.sort || []) as (keyof ParsedPlayerMatch)[];
   (req as unknown as Express.ExtRequest).queryObj = {
-    project: ['match_id', 'player_slot', 'radiant_win']
-      .concat(filterCols)
-      .concat(
-        ((req.query.sort as []) || []).filter(
-          (f: keyof ParsedPlayerMatch) => subkeys[f]
-        )
-      ) as (keyof ParsedPlayerMatch)[],
+    project: ['match_id', 'player_slot', 'radiant_win', ...filterCols, ...sortArr],
     filter: (req.query || {}) as unknown as ArrayifiedFilters,
-    sort: req.query.sort as keyof ParsedPlayerMatch,
+    sort: sortArr[0],
     limit: Number(req.query.limit),
     offset: Number(req.query.offset),
     having: Number(req.query.having),

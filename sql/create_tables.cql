@@ -134,8 +134,6 @@ CREATE TABLE IF NOT EXISTS player_caches (
   start_time text,
   duration text,
   cluster text,
-  region text,
-  patch text,
   lobby_type text,
   game_mode text,
   level text,

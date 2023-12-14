@@ -696,8 +696,7 @@ module.exports = {
               type: 'integer',
             },
             patch: {
-              description:
-                'Integer representing the patch the game was played on',
+              description: 'Patch ID, from dotaconstants',
               type: 'integer',
             },
             region: {
@@ -914,7 +913,7 @@ module.exports = {
         },
       },
       patch: {
-        description: 'Information on the patch version the game is played on',
+        description: 'Patch ID, from dotacconstants',
         type: 'integer',
       },
       region: {
