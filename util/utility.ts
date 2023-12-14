@@ -283,7 +283,7 @@ function getData(url: string | GetDataOptions, cb: ErrorCb) {
             body.result.error === 'Match ID not found' ||
             (body.result.status === 2 &&
               body.result.statusDetail === 'Error retrieving match data.' &&
-              Math.random() < 0.4)
+              Math.random() < 0.1)
           ) {
             // private match history or attempting to get practice match/invalid id, don't retry
             // non-retryable
