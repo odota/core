@@ -752,7 +752,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/players/:account_id/counts',
         func: (req, res, cb) => {
           const result: AnyDict = {};
-          const countCats: FilterType[] = [
+          const countCats = [
             'leaver_status',
             'game_mode',
             'lobby_type',
@@ -760,7 +760,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'region',
             'patch',
             'is_radiant',
-          ];
+          ] as const;
           countCats.forEach((key) => {
             result[key] = {};
           });
@@ -777,28 +777,31 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               cache.forEach((m) => {
                 // Compute the needed fields
-                m.is_radiant = isRadiant(m);
-                m.patch = getPatchIndex(m.start_time);
-                m.region = constants.cluster[m.cluster];
+                const record: Record<typeof countCats[number], number | boolean | null> = {
+                  is_radiant: isRadiant(m),
+                  patch: getPatchIndex(m.start_time),
+                  region: constants.cluster[m.cluster],
+                  leaver_status: m.leaver_status,
+                  game_mode: m.game_mode,
+                  lobby_type: m.lobby_type,
+                  lane_role: m.lane_role,
+                };
                 countCats.forEach((key) => {
-                  // TODO the filtertype doesn't actually overlap with the keys
-                  // But we computed the ones that don't match above so direct indexing works
-                  const typedKey = key as keyof ParsedPlayerMatch;
                   if (
-                    !result[key][Math.floor(m[typedKey])]
+                    !result[key][Math.floor(Number(record[key]))]
                   ) {
-                    result[key][Math.floor(m[typedKey])] =
+                    result[key][Math.floor(Number(record[key]))] =
                       {
                         games: 0,
                         win: 0,
                       };
                   }
                   result[key][
-                    Math.floor(m[typedKey])
+                    Math.floor(Number(record[key]))
                   ].games += 1;
                   const won = Number(m.radiant_win === isRadiant(m));
                   result[key][
-                    Math.floor(m[typedKey])
+                    Math.floor(Number(record[key]))
                   ].win += won;
                 });
               });

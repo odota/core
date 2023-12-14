@@ -17,6 +17,7 @@ import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
 import db from '../store/db';
+import axios from 'axios';
 
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, NODE_ENV, PARSER_HOST, PARSER_PARALLELISM } = config;
@@ -64,6 +65,19 @@ async function parseProcessor(job: ParseJob) {
         return true;
       }
     }
+
+    // try {
+    //   // Make a HEAD request for the replay to see if it's available
+    //   await axios.head(url);
+    // } catch(e: any) {
+    //   // If 404 the replay can't be found, too soon or it's expired
+    //   // return false to fail the job without throwing exception
+    //   if (e.response.status === 404) {
+    //     return false;
+    //   } else {
+    //     throw e;
+    //   }
+    // }
 
     const parseStart = Date.now();
     console.log('[PARSER] parsing replay at:', url);
