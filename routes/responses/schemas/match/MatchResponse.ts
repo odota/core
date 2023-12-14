@@ -913,7 +913,7 @@ module.exports = {
         },
       },
       patch: {
-        description: 'Patch ID, from dotacconstants',
+        description: 'Patch ID, from dotaconstants',
         type: 'integer',
       },
       region: {
