@@ -47,14 +47,14 @@ export async function buildStatus() {
     parsed_matches_last_day(cb) {
       getRedisCountDay(redis, 'parser', cb);
     },
-    reparse_last_day(cb) {
-      getRedisCountDay(redis, 'reparse', cb);
-    },
     meta_parsed_last_day(cb) {
       getRedisCountDay(redis, 'meta_parse', cb);
     },
-    cached_gcdata_last_day(cb) {
-      getRedisCountDay(redis, 'cached_gcdata', cb);
+    reparse_last_day(cb) {
+      getRedisCountDay(redis, 'reparse', cb);
+    },
+    regcdata_last_day(cb) {
+      getRedisCountDay(redis, 'regcdata', cb);
     },
     requests_last_day(cb) {
       getRedisCountDay(redis, 'request', cb);

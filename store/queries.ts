@@ -347,7 +347,7 @@ export async function getPlayerMatchesPromise(
   console.timeEnd('cassandra');
 
   if (config.ENABLE_PLAYER_ARCHIVE) {
-  // TODO parallelize cassandra and archive read?
+  // TODO (howard) parallelize cassandra and archive read?
   // TODO (howard) for dbLimit (recentMatches) do we want to skip the archive and just return 20 most recent from cassandra?
   console.time('archive');
   const archivedMatches = await getArchivedPlayerMatches(accountId);

@@ -118,9 +118,9 @@ export async function getGcData(
   // Check if we have gcdata cached
   const saved = await tryReadGcData(matchId);
   if (saved) {
-    redisCount(redis, 'cached_gcdata');
+    redisCount(redis, 'regcdata');
     if (config.DISABLE_REGCDATA) {
-      // use the saved value
+      // If high load, we can disable refetching gcdata
       return saved;
     }
   }
