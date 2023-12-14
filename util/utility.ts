@@ -919,3 +919,17 @@ export function isDataComplete(match: Partial<ParsedMatch> | null) {
   // Once we are archiving from blobstore we could also check for replay_salt
   return Boolean(match && match.start_time && match.version);
 }
+
+/**
+ * Picks keys from an object and returns a copy with those keys, with nulls if the property doesn't exist
+ * @param obj An object to pick keys from
+ * @param keys An array of strings (object property names)
+ * @returns 
+ */
+export function pick(obj: any, keys: string[]) {
+  const pick: any = {};
+  keys.forEach(key => {
+    pick[key] = obj[key] || null;
+  });
+  return pick;
+}

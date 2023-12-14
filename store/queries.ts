@@ -34,6 +34,7 @@ import {
   getPatchIndex,
   redisCount,
   isDataComplete,
+  pick,
 } from '../util/utility';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 
@@ -298,13 +299,22 @@ export function getPlayerMatches(
     .then((cache) => cb(null, cache))
     .catch((err) => cb(err, []));
 }
+
 export async function getPlayerMatchesPromise(
   accountId: string,
   queryObj: QueryObj
 ): Promise<ParsedPlayerMatch[]> {
+  return (await getPlayerMatchesPromiseWithMetadata(accountId, queryObj))[0];
+}
+
+type PlayerMatchesMetadata = { finalLength: number, localLength: number, archivedLength: number, mergedLength: number };
+export async function getPlayerMatchesPromiseWithMetadata(
+  accountId: string,
+  queryObj: QueryObj
+): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
   // Validate accountId
   if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
-    return [];
+    return [[], null];
   }
   // call clean method to ensure we have column info cached
   await cleanRowCassandra(cassandra, 'player_caches', {});
@@ -321,9 +331,10 @@ export async function getPlayerMatchesPromise(
       .filter((f: string) => cassandraColumnInfo.player_caches?.[f])
       .join(',')
   );
-  let matches: ParsedPlayerMatch[] = [];
-  console.time('cassandra');
-  await new Promise<void>((resolve, reject) => {
+  const [localMatches, archivedMatches] = await Promise.all([
+    new Promise<ParsedPlayerMatch[]>((resolve, reject) => {
+    console.time('cassandra');
+    let localMatches: ParsedPlayerMatch[] = [];
     cassandra.eachRow(
       query,
       [accountId],
@@ -333,69 +344,91 @@ export async function getPlayerMatchesPromise(
         autoPage: true,
       },
       (n, row) => {
-        const m = deserialize(row) as any;
-        matches.push(m);
+        const m = deserialize(row);
+        localMatches.push(m);
       },
       (err) => {
+        console.timeEnd('cassandra');
         if (err) {
           return reject(err);
         }
-        return resolve();
+        return resolve(localMatches);
       }
     );
-  });
-  console.timeEnd('cassandra');
+  }),
+  // for dbLimit (recentMatches), skip the archive and just return 20 most recent
+  (config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit) ? getArchivedPlayerMatches(accountId) : Promise.resolve([]),
+  ]);
+  const localLength = localMatches.length;
+  const archivedLength = archivedMatches.length;
 
-  if (config.ENABLE_PLAYER_ARCHIVE) {
-  // TODO (howard) parallelize cassandra and archive read?
-  // TODO (howard) for dbLimit (recentMatches) do we want to skip the archive and just return 20 most recent from cassandra?
-  console.time('archive');
-  const archivedMatches = await getArchivedPlayerMatches(accountId);
-  // read matches from player archive
-  const reducedMatches = archivedMatches.map(m => {
-    // Only pick selected columns from those matches
-    const pick: Partial<ParsedPlayerMatch> = {};
+  let matches = localMatches;
+  if (archivedMatches.length) {
+    console.time('merge');
     const keys = queryObj.projectAll ? Object.keys(cassandraColumnInfo.player_caches) as (keyof ParsedPlayerMatch)[] : queryObj.project;
-    keys.forEach(key => {
-      pick[key] = m[key] || null;
-    });
-    return pick as ParsedPlayerMatch;
-  });
-    // Add any that we don't already have to the array
-    const matchIdSet = new Set(matches.map(m => m.match_id));
-    reducedMatches.forEach(m => {
-      if (!matchIdSet.has(m.match_id)) {
-        matches.push(m);
+    // Merge together the results
+    // Sort both lists into descending order
+    localMatches.sort((a, b) => b.match_id - a.match_id);
+    archivedMatches.sort((a, b) => b.match_id - a.match_id);
+    matches = [];
+    while(localMatches.length || archivedMatches.length) {
+      const localMatch = localMatches[0];
+      const archivedMatch = archivedMatches[0];
+      // If the IDs of the first elements match, pop both and then merge them together
+      if (localMatch?.match_id === archivedMatch?.match_id) {
+        // Only pick selected columns from those matches
+        // Local match has the desired columns
+        Object.keys(localMatch).forEach(key => {
+          const typedKey = key as keyof ParsedPlayerMatch;
+          // For each key prefer nonnull value, with precedence to local store
+          //@ts-ignore
+          localMatch[typedKey] = localMatch[typedKey] ?? archivedMatch[typedKey] ?? null;
+        });
+        // Output the merged version
+        matches.push(localMatch);
+        // Pop both from array
+        localMatches.shift();
+        archivedMatches.shift();
+      } else {
+        // Otherwise just push the higher ID element into the merge
+        if ((localMatch?.match_id ?? 0) > (archivedMatch?.match_id ?? 0)) {
+          matches.push(localMatches.shift()!);
+        } else {
+          // Pick only specified columns of the archived match
+          matches.push(pick(archivedMatches.shift(), keys));
+        }
       }
-    });
-  console.timeEnd('archive');
+    }
+    console.timeEnd('merge');
   }
 
   console.time('process');
-  matches = filterMatches(matches, queryObj.filter);
+  const filtered = filterMatches(matches, queryObj.filter);
   const sort = queryObj.sort;
   if (sort) {
-    matches.sort((a, b) => b[sort] - a[sort]);
+    filtered.sort((a, b) => b[sort] - a[sort]);
   } else {
     // Default sort by match_id desc
-    matches.sort((a, b) => b.match_id - a.match_id);
+    filtered.sort((a, b) => b.match_id - a.match_id);
   }
-  const offset = matches.slice(queryObj.offset || 0);
-  const result = offset.slice(0, queryObj.limit || offset.length);
+  const offset = filtered.slice(queryObj.offset || 0);
+  const final = offset.slice(0, queryObj.limit || offset.length);
   console.timeEnd('process');
-  return result;
+  return [final, { finalLength: final.length, localLength, archivedLength, mergedLength: matches.length }];
 }
 
-export async function getFullPlayerMatches(accountId: string): Promise<ParsedPlayerMatch[]> {
-  return await getPlayerMatchesPromise(accountId, { project: [], projectAll: true });
+export async function getFullPlayerMatchesWithMetadata(accountId: string): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
+  return await getPlayerMatchesPromiseWithMetadata(accountId, { project: [], projectAll: true });
 }
 
 export async function getArchivedPlayerMatches(accountId: string): Promise<ParsedPlayerMatch[]> {
+  console.time('archive');
   const blob = await playerArchive.archiveGet(accountId);
   if (!blob) {
     return [];
   }
   const arr = JSON.parse(blob.toString());
+  console.timeEnd('archive');
   return arr;
 }
 
@@ -404,7 +437,9 @@ export async function doArchivePlayerMatches(accountId: string): Promise<PutObje
     return null;
   }
   // Fetch our combined list of archive and current, selecting all fields
-  const toArchive = await getFullPlayerMatches(accountId);
+  const full = await getFullPlayerMatchesWithMetadata(accountId);
+  const toArchive = full[0];
+  console.log(full[1]);
   toArchive.forEach((m, i) => {
     Object.keys(m).forEach((key) => {
       if (m[key as keyof ParsedPlayerMatch] === null) {

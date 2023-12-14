@@ -1,6 +1,6 @@
-process.env.ENABLE_PLAYER_ARCHIVE = '1';
 import queries from '../store/queries.js';
-const { doArchivePlayerMatches, getArchivedPlayerMatches, getPlayerMatchesPromise } = queries;
+import fs from 'fs';
+const { doArchivePlayerMatches, getArchivedPlayerMatches, getPlayerMatchesPromiseWithMetadata } = queries;
 
 // Write player blob to archive
 await doArchivePlayerMatches('88367253');
@@ -9,7 +9,9 @@ await doArchivePlayerMatches('88367253');
 // await getArchivedPlayerMatches('88367253');
 
 // Check the combined getPlayerMatches results
-await getPlayerMatchesPromise('88367253', { project: [], projectAll: true });
+const readBack = await getPlayerMatchesPromiseWithMetadata('88367253', { project: [], projectAll: true });
+console.log(readBack[1]);
 
 // There shouldn't be any duplicate match IDs
 // The data should be the same
+fs.writeFileSync('./build/88367253,json', JSON.stringify(readBack[0], null, 2));
