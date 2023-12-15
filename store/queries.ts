@@ -135,14 +135,10 @@ export async function getDistributions() {
   return result;
 }
 
-export function getHeroRankings(
-  db: knex.Knex,
-  redis: Redis,
+export async function getHeroRankings(
   heroId: string,
-  options: AnyDict,
-  cb: ErrorCb
 ) {
-  db.raw(
+  const result = await db.raw(
     `
   SELECT players.account_id, score, personaname, name, avatar, last_login, rating as rank_tier
   from hero_ranking
@@ -154,25 +150,16 @@ export function getHeroRankings(
   LIMIT 100
   `,
     [heroId || 0]
-  ).asCallback((err: Error | null, result: any) => {
-    if (err) {
-      return cb(err);
-    }
-    const entries = result.rows;
-    return cb(err, {
-      hero_id: Number(heroId),
-      rankings: entries,
-    });
-  });
+  );
+  return {
+    hero_id: Number(heroId),
+    rankings: result.rows,
+  };
 }
-export function getHeroItemPopularity(
-  db: knex.Knex,
-  redis: Redis,
+export async function getHeroItemPopularity(
   heroId: string,
-  options: AnyDict,
-  cb: ErrorCb
 ) {
-  db.raw(
+  const purchaseLogs: { rows: any[]} = await db.raw(
     `
   SELECT purchase_log
   FROM player_matches
@@ -182,10 +169,7 @@ export function getHeroItemPopularity(
   LIMIT 100
   `,
     [heroId || 0]
-  ).asCallback((err: Error | null, purchaseLogs: { rows: any[] }) => {
-    if (err) {
-      return cb(err);
-    }
+  );
     const items = purchaseLogs.rows
       .flatMap((purchaseLog) => purchaseLog.purchase_log)
       .filter((item) => item && item.key && item.time != null)
@@ -211,13 +195,12 @@ export function getHeroItemPopularity(
     const lateGameItems = countItemPopularity(
       items.filter((item) => item.time >= 60 * 25 && item.cost >= 2000)
     );
-    return cb(null, {
+    return {
       start_game_items: startGameItems,
       early_game_items: earlyGameItems,
       mid_game_items: midGameItems,
       late_game_items: lateGameItems,
-    });
-  });
+    };
 }
 export function getHeroBenchmarks(
   db: knex.Knex,
@@ -470,8 +453,8 @@ export async function getPlayerRatings(accountId: string) {
     return null;
   }
 }
-export function getPlayerHeroRankings(accountId: string, cb: ErrorCb) {
-  db.raw(
+export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
+  const result = await db.raw(
     `
   SELECT
   hero_id,
@@ -484,7 +467,8 @@ export function getPlayerHeroRankings(accountId: string, cb: ErrorCb) {
   ORDER BY percent_rank desc
   `,
     [accountId]
-  ).asCallback(cb);
+  );
+  return result.rows;
 }
 export async function getPlayer(db: knex.Knex, accountId: number): Promise<User | undefined> {
   const playerData: User | undefined = await db.first(
@@ -1431,10 +1415,10 @@ async function deleteFromLegacy(id: string) {
   ]);
 }
 
-export function getItemTimings(req: Request, cb: ErrorCb) {
+export async function getItemTimings(req: Request): Promise<any[]> {
   const heroId = req.query.hero_id || 0;
   const item = req.query.item || '';
-  db.raw(
+  const result = await db.raw(
     `SELECT hero_id, item, time, sum(games) games, sum(wins) wins
      FROM scenarios
      WHERE item IS NOT NULL
@@ -1443,12 +1427,13 @@ export function getItemTimings(req: Request, cb: ErrorCb) {
      GROUP BY hero_id, item, time ORDER BY time, hero_id, item
      LIMIT 1600`,
     { heroId, item }
-  ).asCallback(cb);
+  );
+  return result.rows;
 }
-export function getLaneRoles(req: Request, cb: ErrorCb) {
+export async function getLaneRoles(req: Request): Promise<any[]> {
   const heroId = req.query.hero_id || 0;
   const lane = req.query.lane_role || 0;
-  db.raw(
+  const result = await db.raw(
     `SELECT hero_id, lane_role, time, sum(games) games, sum(wins) wins
      FROM scenarios
      WHERE lane_role IS NOT NULL
@@ -1457,24 +1442,26 @@ export function getLaneRoles(req: Request, cb: ErrorCb) {
      GROUP BY hero_id, lane_role, time ORDER BY hero_id, time, lane_role
      LIMIT 1200`,
     { heroId, lane }
-  ).asCallback(cb);
+  );
+  return result.rows;
 }
-export function getTeamScenarios(req: Request, cb: ErrorCb) {
+export async function getTeamScenarios(req: Request): Promise<any[]> {
   const scenario =
     (su.teamScenariosQueryParams.includes(req.query.scenario as string) &&
       req.query.scenario) ||
     '';
-  db.raw(
+  const result = await db.raw(
     `SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins
      FROM team_scenarios
      WHERE ('' = :scenario OR scenario = :scenario)
      GROUP BY scenario, is_radiant, region ORDER BY scenario
      LIMIT 1000`,
     { scenario }
-  ).asCallback(cb);
+  );
+  return result.rows;
 }
-export function getMetadata(req: Request, cb: ErrorCb) {
-  async.parallel(
+export async function getMetadata(req: Request) {
+  return await async.parallel(
     {
       scenarios(cb) {
         cb(null, su.metadata);
@@ -1497,8 +1484,7 @@ export function getMetadata(req: Request, cb: ErrorCb) {
           cb(null, false);
         }
       },
-    },
-    cb
+    }
   );
 }
 

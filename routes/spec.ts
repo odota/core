@@ -1040,13 +1040,12 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/rankings',
-        func: (req, res, cb) => {
-          getPlayerHeroRankings(req.params.account_id, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+        func: async (req, res, cb) => {
+          try {
+            return res.json(await getPlayerHeroRankings(req.params.account_id));
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
@@ -1376,13 +1375,12 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/metadata',
-        func: (req, res, cb) => {
-          getMetadata(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+        func: async (req, res, cb) => {
+          try {
+            return res.json(await getMetadata(req));
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
@@ -1503,13 +1501,12 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/rankings',
-        func: (req, res, cb) => {
-          getHeroRankings(db, redis, req.query.hero_id, {}, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+        func: async (req, res, cb) => {
+          try {
+            return res.json(await getHeroRankings(req.query.hero_id));
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
@@ -2168,14 +2165,14 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/itemPopularity',
-        func: (req, res, cb) => {
-          const heroId = req.params.hero_id;
-          getHeroItemPopularity(db, redis, heroId, {}, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
+        func: async (req, res, cb) => {
+          try {
+            const heroId = req.params.hero_id;
+            const result = await getHeroItemPopularity(heroId);
             return res.json(result);
-          });
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
@@ -2718,13 +2715,13 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/itemTimings',
-        func: (req, res, cb) => {
-          getItemTimings(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+        func: async (req, res, cb) => {
+          try {
+            const result = await getItemTimings(req);
+            return res.json(result);
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
@@ -2762,13 +2759,13 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/laneRoles',
-        func: (req, res, cb) => {
-          getLaneRoles(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+        func: async (req, res, cb) => {
+          try {
+            const result = await getLaneRoles(req);
+            return res.json(result);
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
@@ -2795,13 +2792,13 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/misc',
-        func: (req, res, cb) => {
-          getTeamScenarios(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+        func: async (req, res, cb) => {
+          try {
+            const result = await getTeamScenarios(req);
+            return res.json(result);
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },
