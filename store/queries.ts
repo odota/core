@@ -424,10 +424,7 @@ export async function getFullPlayerMatchesWithMetadata(accountId: string): Promi
 export async function getArchivedPlayerMatches(accountId: string): Promise<ParsedPlayerMatch[]> {
   console.time('archive');
   const blob = await playerArchive.archiveGet(accountId);
-  if (!blob) {
-    return [];
-  }
-  const arr = JSON.parse(blob.toString());
+  const arr = blob ? JSON.parse(blob.toString()) : [];
   console.timeEnd('archive');
   return arr;
 }
