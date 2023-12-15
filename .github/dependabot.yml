@@ -5,19 +5,4 @@ updates:
     schedule:
       interval: daily
     open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: stripe
-        versions:
-          - 8.132.0
-          - 8.133.0
-          - 8.134.0
-          - 8.135.0
-          - 8.136.0
-          - 8.137.0
-          - 8.138.0
-          - 8.139.0
-          - 8.140.0
-          - 8.141.0
-          - 8.142.0
-          - 8.143.0
-          - 8.145.0
+
