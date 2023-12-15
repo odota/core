@@ -1,6 +1,6 @@
 // Updates the list of leagues in the database
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/queries';
 import {
   generateJob,
   getDataPromise,
@@ -27,7 +27,7 @@ async function doLeagues() {
     league.ticket = null;
     league.banner = null;
     league.leagueid = league.league_id;
-    await upsertPromise(db, 'leagues', league, {
+    await upsert(db, 'leagues', league, {
       leagueid: league.league_id,
     });
   }

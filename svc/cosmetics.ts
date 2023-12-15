@@ -1,7 +1,7 @@
 // Updates game cosmetic items in the database
 import vdf from 'simple-vdf';
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/queries';
 import {
   cleanItemSchema,
   eachLimit,
@@ -39,7 +39,7 @@ async function doCosmetics() {
         item.image_path = icons[iconname];
       }
     }
-    await upsertPromise(db, 'cosmetics', item, {
+    await upsert(db, 'cosmetics', item, {
       item_id: item.item_id,
     });
   }

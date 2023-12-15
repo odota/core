@@ -1,6 +1,6 @@
 // Updates the list of pro players in the database
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/queries';
 import {
   generateJob,
   getDataPromise,
@@ -12,7 +12,7 @@ async function doProPlayers() {
   const body = await getDataPromise(container.url);
   await Promise.all(
     body.player_infos.map((p: ProPlayer) =>
-      upsertPromise(db, 'notable_players', p, {
+      upsert(db, 'notable_players', p, {
         account_id: p.account_id,
       })
     )

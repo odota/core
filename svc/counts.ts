@@ -6,7 +6,7 @@ import {
   getMatchRankTier,
   insertPlayerPromise,
   bulkIndexPlayer,
-  upsertPromise,
+  upsert,
 } from '../store/queries';
 import queue from '../store/queue';
 import config from '../config.js';
@@ -74,13 +74,13 @@ async function upsertMatchSample(match: Match) {
         num_rank_tier: num || null,
       };
       const newMatch = { ...match, ...matchMmrData };
-      await upsertPromise(trx, 'public_matches', newMatch, {
+      await upsert(trx, 'public_matches', newMatch, {
         match_id: newMatch.match_id,
       });
       await Promise.all(
         (match.players || []).map((pm) => {
           pm.match_id = match.match_id;
-          return upsertPromise(trx, 'public_player_matches', pm, {
+          return upsert(trx, 'public_player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
           });

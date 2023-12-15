@@ -1,6 +1,6 @@
 // Updates the heroes in the database
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/queries';
 import {
   generateJob,
   getDataPromise,
@@ -24,7 +24,7 @@ async function doHeroes() {
   for (let i = 0; i < body.result.heroes.length; i++) {
     const hero = body.result.heroes[i];
     const heroDataHero = heroData[hero.id] || {};
-    await upsertPromise(
+    await upsert(
       db,
       'heroes',
       {
