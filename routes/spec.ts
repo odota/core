@@ -229,26 +229,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               profile(cb) {
                 cb(null, playerData);
               },
-              solo_competitive_rank(cb) {
-                db.first()
-                  .from('solo_competitive_rank')
-                  .where({ account_id: accountId })
-                  .asCallback(
-                    (err: Error | null, row: { rating: string } | null) => {
-                      cb(err, row ? row.rating : null);
-                    }
-                  );
-              },
-              competitive_rank(cb) {
-                db.first()
-                  .from('competitive_rank')
-                  .where({ account_id: accountId })
-                  .asCallback(
-                    (err: Error | null, row: { rating: string } | null) => {
-                      cb(err, row ? row.rating : null);
-                    }
-                  );
-              },
+              // solo_competitive_rank(cb) {
+              //   db.first()
+              //     .from('solo_competitive_rank')
+              //     .where({ account_id: accountId })
+              //     .asCallback(
+              //       (err: Error | null, row: { rating: string } | null) => {
+              //         cb(err, row ? row.rating : null);
+              //       }
+              //     );
+              // },
+              // competitive_rank(cb) {
+              //   db.first()
+              //     .from('competitive_rank')
+              //     .where({ account_id: accountId })
+              //     .asCallback(
+              //       (err: Error | null, row: { rating: string } | null) => {
+              //         cb(err, row ? row.rating : null);
+              //       }
+              //     );
+              // },
               rank_tier(cb) {
                 db.first()
                   .from('rank_tier')

@@ -503,7 +503,8 @@ export async function getPlayer(db: knex.Knex, accountId: number): Promise<User 
       'profileurl',
       'last_login',
       'loccountrycode',
-      'subscriber.status'
+      'subscriber.status',
+      'fh_unavailable',
     )
       .from('players')
       .leftJoin(
