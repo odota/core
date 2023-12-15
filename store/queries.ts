@@ -1197,12 +1197,8 @@ export async function insertMatchPromise(
     // We could also queue a profile job here but seems like a lot to update name after each match
     await Promise.all(
       arr.map((p) =>
-        upsert(
-          db,
-          'players',
-          { account_id: p.account_id },
-          { account_id: p.account_id as number }
-        )
+        // Avoid extraneous writes to player table by not using upsert function
+        db.raw('INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING', [p.account_id])
       )
     );
   }
