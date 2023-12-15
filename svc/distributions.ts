@@ -56,12 +56,12 @@ function loadData(
 }
 async function doDistributions() {
   const result: any = await async.parallel({
-    country_mmr(cb) {
-      loadData('country_mmr', mapCountry, cb);
-    },
-    mmr(cb) {
-      loadData('mmr', mapMmr, cb);
-    },
+    // country_mmr(cb) {
+    //   loadData('country_mmr', mapCountry, cb);
+    // },
+    // mmr(cb) {
+    //   loadData('mmr', mapMmr, cb);
+    // },
     ranks(cb) {
       loadData('ranks', mapMmr, cb);
     },
