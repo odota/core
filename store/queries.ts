@@ -734,7 +734,7 @@ export async function insertPlayerCache(match: Match) {
     players.forEach((p) => {
       if (match.pgroup[p.player_slot]) {
         // add account id to each player so we know what caches to update
-        p.account_id = match.pgroup[p.player_slot].account_id;
+        p.account_id = match.pgroup[p.player_slot].account_id ?? p.account_id;
         // add hero_id to each player so we update records with hero played
         p.hero_id = match.pgroup[p.player_slot].hero_id;
       }
@@ -916,6 +916,9 @@ export async function insertMatchPromise(
   }
   async function upsertMatchPostgres() {
     // Insert the pro match data: We do this if api or parser
+    if (options.type !== 'api' && options.type !== 'parsed') {
+      return;
+    }
     if (options.type === 'api' && !isProMatch(match as Match)) {
       // Check whether we care about this match for pro purposes
       // We need the basic match data to run the check, so only do it if type is api
@@ -940,8 +943,8 @@ export async function insertMatchPromise(
     }
     async function upsertPlayerMatches() {
       await Promise.all(
-        (players || []).map((pm) => {
-          pm.match_id = match.match_id;
+        (players || []).map((p) => {
+          const pm = {...p, match_id: match.match_id};
           // Add lane data
           if (pm.lane_pos) {
             const laneData = getLaneFromPosData(pm.lane_pos, isRadiant(pm));
@@ -959,12 +962,10 @@ export async function insertMatchPromise(
     async function upsertPicksBans() {
       await Promise.all(
         (match.picks_bans || []).map((p) => {
-          // order is a reserved keyword
-          p.ord = p.order;
-          p.match_id = match.match_id;
-          return upsert(trx, 'picks_bans', p, {
-            match_id: p.match_id,
-            ord: p.ord,
+          // order is a reserved keyword in postgres
+          return upsert(trx, 'picks_bans', {...p, ord: p.order, match_id: match.match_id}, {
+            match_id: 1,
+            ord: 1,
           });
         })
       );
@@ -1045,8 +1046,8 @@ export async function insertMatchPromise(
       prepare: true,
     });
     await Promise.all(
-      players.map(async (pm) => {
-        pm.match_id = match.match_id;
+      players.map(async (p) => {
+        const pm = {...p, match_id: match.match_id};
         const cleanedPm = await cleanRowCassandra(
           cassandra,
           'player_matches',
