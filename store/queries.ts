@@ -81,7 +81,7 @@ async function cleanRowCassandra(
  * Benchmarks a match against stored data in Redis
  * */
 export async function getMatchBenchmarks(m: Match) {
-  return await Promise.all(
+  return Promise.all(
     m.players.map(async (p) => {
       p.benchmarks = {};
       for (let i = 0; i < Object.keys(benchmarks).length; i++) {
@@ -401,7 +401,7 @@ export async function getPlayerMatchesPromiseWithMetadata(
 }
 
 export async function getFullPlayerMatchesWithMetadata(accountId: string): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
-  return await getPlayerMatchesPromiseWithMetadata(accountId, { project: [], projectAll: true });
+  return getPlayerMatchesPromiseWithMetadata(accountId, { project: [], projectAll: true });
 }
 
 export async function getArchivedPlayerMatches(accountId: string): Promise<ParsedPlayerMatch[]> {
@@ -434,7 +434,7 @@ export async function doArchivePlayerMatches(accountId: string): Promise<PutObje
     return null;
   }
   // Put the blob
-  return await playerArchive.archivePut(accountId, Buffer.from(JSON.stringify(toArchive)));
+  return playerArchive.archivePut(accountId, Buffer.from(JSON.stringify(toArchive)));
   // TODO (howard) delete the archived values from player_caches
   // TODO (howard) keep the 20 highest match IDs for recentMatches
   // TODO (howard) mark the user archived so we don't need to query archive on every request
@@ -442,16 +442,12 @@ export async function doArchivePlayerMatches(accountId: string): Promise<PutObje
 }
 
 export async function getPlayerRatings(accountId: string) {
-  if (!Number.isNaN(Number(accountId))) {
-    return await db
-      .from('player_ratings')
-      .where({
-        account_id: Number(accountId),
-      })
-      .orderBy('time', 'asc');
-  } else {
-    return null;
-  }
+  return db
+    .from('player_ratings')
+    .where({
+      account_id: Number(accountId),
+    })
+    .orderBy('time', 'asc');
 }
 export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
   const result = await db.raw(
@@ -641,7 +637,7 @@ export async function upsert(
     Object.keys(conflict).join(','),
     update.join(',')
   );
-  return await db.raw(
+  return db.raw(
     query,
     Object.keys(row).map((key) => row[key])
   );
@@ -673,7 +669,7 @@ export async function upsertPlayer(
       },
     });
   }
-  return await upsert(db, 'players', player, {
+  return upsert(db, 'players', player, {
     account_id: player.account_id,
   });
 }
@@ -1461,7 +1457,7 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
   return result.rows;
 }
 export async function getMetadata(req: Request) {
-  return await async.parallel(
+  return async.parallel(
     {
       scenarios(cb) {
         cb(null, su.metadata);

@@ -5,7 +5,7 @@ import type { Response } from 'express';
 export const getKeys = () => ['wl', 'heroes', 'peers', 'counts'];
 export const readCache = async (input: { key: string; account_id: string }) => {
   // console.log(`[READCACHE] cache:${req.key}:${req.account_id}`);
-  return await redis.get(`cache:${input.key}:${input.account_id}`);
+  return redis.get(`cache:${input.key}:${input.account_id}`);
 };
 export const clearCache = async (input: {
   key: string;

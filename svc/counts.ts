@@ -50,7 +50,7 @@ async function updateHeroRankings(match: Match) {
       const e1 = r1 / (r1 + r2);
       const ratingDiff1 = kFactor * (win - e1);
       const newScore = currRating1 + ratingDiff1;
-      return await db.raw(
+      return db.raw(
         'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
         [player.account_id, player.hero_id, newScore, newScore]
       );
@@ -191,7 +191,7 @@ async function updateHeroSearch(match: Match) {
   const teamA = inverted ? dire : radiant;
   const teamB = inverted ? radiant : dire;
   const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
-  return await db.raw(
+  return db.raw(
     'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
     [match.match_id, teamA, teamB, teamAWin, match.start_time]
   );

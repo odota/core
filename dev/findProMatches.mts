@@ -51,7 +51,7 @@ leagueIds.forEach(async (leagueid: number) => {
   const { url } = generateJob('api_history', {
     leagueid,
   });
-  return await getPage(url, leagueid);
+  return getPage(url, leagueid);
 });
 process.exit(0);
 // From API
