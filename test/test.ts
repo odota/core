@@ -27,7 +27,7 @@ import spec from '../routes/spec';
 import {
   getPlayerMatchesPromise,
   insertMatchPromise,
-  insertPlayerPromise,
+  upsertPlayer,
 } from '../store/queries';
 import buildMatch from '../store/buildMatch';
 import { es } from '../store/elasticsearch';
@@ -865,7 +865,7 @@ async function loadMatches() {
 async function loadPlayers() {
   console.log('loading players');
   await Promise.all(
-    summariesApi.response.players.map((p) => insertPlayerPromise(db, p, true))
+    summariesApi.response.players.map((p) => upsertPlayer(db, p, true))
   );
 }
 
