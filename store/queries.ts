@@ -641,7 +641,7 @@ export async function getMatchRankTier(match: Match) {
   return { avg, num: filt.length };
 }
 
-export async function upsertPromise(
+export async function upsert(
   db: knex.Knex,
   table: string,
   insert: AnyDict,
@@ -692,7 +692,7 @@ export async function insertPlayerPromise(
       },
     });
   }
-  return await upsertPromise(db, 'players', player, {
+  return await upsert(db, 'players', player, {
     account_id: player.account_id,
   });
 }
@@ -708,7 +708,7 @@ export async function bulkIndexPlayer(bulkActions: any[]) {
 }
 export async function insertPlayerRating(row: PlayerRating) {
   if (row.rank_tier) {
-    await upsertPromise(
+    await upsert(
       db,
       'rank_tier',
       { account_id: row.account_id, rating: row.rank_tier },
@@ -716,7 +716,7 @@ export async function insertPlayerRating(row: PlayerRating) {
     );
   }
   if (row.leaderboard_rank) {
-    await upsertPromise(
+    await upsert(
       db,
       'leaderboard_rank',
       {
@@ -934,7 +934,7 @@ export async function insertMatchPromise(
       return;
     }
     async function upsertMatch() {
-      await upsertPromise(trx, 'matches', match, {
+      await upsert(trx, 'matches', match, {
         match_id: match.match_id,
       });
     }
@@ -949,7 +949,7 @@ export async function insertMatchPromise(
             pm.lane_role = laneData.lane_role || null;
             pm.is_roaming = laneData.is_roaming || null;
           }
-          return upsertPromise(trx, 'player_matches', pm, {
+          return upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
           });
@@ -962,7 +962,7 @@ export async function insertMatchPromise(
           // order is a reserved keyword
           p.ord = p.order;
           p.match_id = match.match_id;
-          return upsertPromise(trx, 'picks_bans', p, {
+          return upsert(trx, 'picks_bans', p, {
             match_id: p.match_id,
             ord: p.ord,
           });
@@ -971,7 +971,7 @@ export async function insertMatchPromise(
     }
     async function upsertMatchPatch() {
       if (match.start_time) {
-        await upsertPromise(
+        await upsert(
           trx,
           'match_patch',
           {
@@ -1002,7 +1002,7 @@ export async function insertMatchPromise(
       }
       await Promise.all(
         arr.map((tm) => {
-          return upsertPromise(trx, 'team_match', tm, {
+          return upsert(trx, 'team_match', tm, {
             team_id: tm.team_id,
             match_id: tm.match_id,
           });
@@ -1197,7 +1197,7 @@ export async function insertMatchPromise(
     // We could also queue a profile job here but seems like a lot to update name after each match
     await Promise.all(
       arr.map((p) =>
-        upsertPromise(
+        upsert(
           db,
           'players',
           { account_id: p.account_id },

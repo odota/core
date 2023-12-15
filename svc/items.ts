@@ -1,6 +1,6 @@
 // NOT WORKING: Updates game items in the database
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/queries';
 import {
   generateJob,
   getDataPromise,
@@ -18,7 +18,7 @@ async function doItems() {
   }
   await Promise.all(
     body.result.items.map((item: any) =>
-      upsertPromise(db, 'items', item, {
+      upsert(db, 'items', item, {
         id: item.id,
       })
     )

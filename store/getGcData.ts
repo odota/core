@@ -1,6 +1,6 @@
 import moment from 'moment';
 import config from '../config.js';
-import { insertMatchPromise, upsertPromise } from './queries';
+import { insertMatchPromise, upsert } from './queries';
 import db from './db';
 import redis from './redis';
 import cassandra from './cassandra';
@@ -59,7 +59,7 @@ async function fetchGcData(match: GcDataJob): Promise<void> {
   };
   // TODO (howard) deprecate match_gcdata once we have transferGcData for pro matches
   // Persist GC data to database, we'll read it back from here for consumers
-  await upsertPromise(db, 'match_gcdata', gcdata, {
+  await upsert(db, 'match_gcdata', gcdata, {
     match_id: match.match_id,
   });
   // Update series id and type for pro match

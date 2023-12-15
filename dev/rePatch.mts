@@ -3,7 +3,7 @@
  * */
 import constants from 'dotaconstants';
 import dbImport from '../store/db.js';
-import { upsertPromise } from '../store/queries.js';
+import { upsert } from '../store/queries.js';
 import { getPatchIndex } from '../util/utility.js';
 
 const db = dbImport.default;
@@ -16,7 +16,7 @@ for (let i = 0; i < matchIds.length; i++) {
   const match = matchIds[i];
   const patch = constants.patch[getPatchIndex(match.start_time)].name;
   console.log(match.match_id, patch);
-  await upsertPromise(
+  await upsert(
     db,
     'match_patch',
     {

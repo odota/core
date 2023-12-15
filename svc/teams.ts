@@ -1,6 +1,6 @@
 // Updates the list of teams in the database
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/queries';
 import {
   generateJob,
   getDataPromise,
@@ -58,7 +58,7 @@ async function doTeams() {
         t.team_id = m.team_id;
         t.logo_url = cdnJob.url;
         // console.log('[TEAMS] cdn: ', t);
-        await upsertPromise(db, 'teams', t, {
+        await upsert(db, 'teams', t, {
           team_id: m.team_id,
         });
         continue;
@@ -76,7 +76,7 @@ async function doTeams() {
           t.logo_url = ugcBody.data.url;
         }
         // console.log('[TEAMS] ugc: ', t);
-        await upsertPromise(db, 'teams', t, {
+        await upsert(db, 'teams', t, {
           team_id: m.team_id,
         });
       } catch (e) {
