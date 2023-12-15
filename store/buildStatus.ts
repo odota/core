@@ -19,7 +19,7 @@ function generatePercentiles(arr: string[]) {
 }
 
 export async function buildStatus() {
-  return await async.parallel({
+  return async.parallel({
     user_players(cb) {
       redis.zcard('visitors', cb);
     },

@@ -101,7 +101,7 @@ async function runReliableQueue(
 
 async function addJob(input: QueueInput) {
   const { name, data } = input;
-  return await redis.rpush(name, JSON.stringify(data));
+  return redis.rpush(name, JSON.stringify(data));
 }
 
 async function addReliableJob(
