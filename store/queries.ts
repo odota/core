@@ -665,7 +665,7 @@ export async function upsert(
     Object.keys(row).map((key) => row[key])
   );
 }
-export async function insertPlayerPromise(
+export async function upsertPlayer(
   db: knex.Knex,
   player: Partial<User>,
   indexPlayer: boolean

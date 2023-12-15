@@ -4,7 +4,7 @@ import redis from '../store/redis';
 import db from '../store/db';
 import {
   getMatchRankTier,
-  insertPlayerPromise,
+  upsertPlayer,
   bulkIndexPlayer,
   upsert,
 } from '../store/queries';
@@ -151,7 +151,7 @@ async function updateLastPlayed(match: Match) {
   bulkIndexPlayer(bulkUpdate);
   await Promise.all(
     filteredPlayers.map((player) =>
-      insertPlayerPromise(
+      upsertPlayer(
         db,
         {
           account_id: player.account_id,

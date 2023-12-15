@@ -1,5 +1,5 @@
 // Updates Steam profile data for players periodically
-import { insertPlayerPromise, bulkIndexPlayer } from '../store/queries';
+import { upsertPlayer, bulkIndexPlayer } from '../store/queries';
 import db from '../store/db';
 import {
   getDataPromise,
@@ -42,7 +42,7 @@ async function doProfiler() {
   }, []);
   await bulkIndexPlayer(bulkUpdate);
   await Promise.all(
-    results.map((player: User) => insertPlayerPromise(db, player, false))
+    results.map((player: User) => upsertPlayer(db, player, false))
   );
 }
 invokeIntervalAsync(doProfiler, 5000);

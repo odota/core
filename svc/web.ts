@@ -17,7 +17,7 @@ import { Redis } from 'ioredis';
 import { WebSocketServer, WebSocket } from 'ws';
 import keys from '../routes/keyManagement';
 import api from '../routes/api';
-import { insertPlayerPromise } from '../store/queries';
+import { upsertPlayer } from '../store/queries';
 import db from '../store/db';
 import redis from '../store/redis';
 import config from '../config.js';
@@ -73,7 +73,7 @@ passport.use(
       const player = profile._json;
       player.last_login = new Date();
       try {
-        await insertPlayerPromise(db, player, true);
+        await upsertPlayer(db, player, true);
         cb(null, player);
       } catch (e) {
         cb(e);
