@@ -683,9 +683,12 @@ export function countPeers(matches: PlayerMatch[]) {
   const teammates: AnyDict = {};
   matches.forEach((m) => {
     const playerWin = isRadiant(m) === m.radiant_win;
-    const group = m.heroes || {};
+    const group: PGroup = m.heroes || {};
     Object.keys(group).forEach((key) => {
       const tm = group[key];
+      if (!tm.account_id) {
+        return;
+      }
       // count teammate players
       if (!teammates[tm.account_id]) {
         teammates[tm.account_id] = {
@@ -707,7 +710,7 @@ export function countPeers(matches: PlayerMatch[]) {
       // played with
       teammates[tm.account_id].games += 1;
       teammates[tm.account_id].win += playerWin ? 1 : 0;
-      if (isRadiant(tm) === isRadiant(m)) {
+      if (isRadiant(tm as Player) === isRadiant(m)) {
         // played with
         teammates[tm.account_id].with_games += 1;
         teammates[tm.account_id].with_win += playerWin ? 1 : 0;
