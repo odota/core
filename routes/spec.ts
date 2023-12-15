@@ -1895,12 +1895,49 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/heroStats',
         func: async (req, res, cb) => {
-          // fetch from cached redis value
           try {
-            const result = await redis.get('heroStats');
-            return res.json(result ? JSON.parse(result) : null);
+            // Assemble the result for each hero
+            const result = await Promise.all(Object.values(constants.heroes).map(hero => getHeroStat(hero)));
+            return res.json(result);
           } catch (e) {
             return cb(e);
+          }
+
+          async function getHeroStat(hero: any) {
+            const final = {...hero};
+            // Add all the count properties
+            const names = ['pick', 'win', 'ban'];
+            const tiers = ['1', '2', '3', '4', '5', '6', '7', '8', 'turbo', 'pro', 'pub'];
+            for (let i = 0; i < tiers.length; i++) {
+              const tier = tiers[i];
+              for (let j = 0; j < names.length; j++) {
+                const name = names[j];
+                if (name === 'ban' && tier !== 'pro') {
+                  // Only pro has ban counts
+                  continue;
+                }
+                const heroId = hero.id;
+                const keyArr = [];
+                for (let i = 6; i >= 0; i -= 1) {
+                  keyArr.push(
+                    // Redis keys are in the format `${heroId}:${tier}:${name}:${timestamp}`
+                    // Get the unix timestamps for the start of the last 7 days
+                    `${heroId}:${tier}:${name}:${moment().startOf('day').subtract(i, 'day').format('X')}`
+                  );
+                }
+                // mget the 7 keys for this hero and sum them
+                const counts = await redis.mget(...keyArr);
+                const sum = counts.reduce((a, b) => Number(a) + Number(b), 0)
+                // Object keys are in the format `${tier}_${name}`
+                // For compatibility, turbo has s on the end (picks/wins)
+                const objKey = `${tier}_${name}${tier === 'turbo' ? 's' : ''}`;
+                final[objKey] = sum;
+                if (tier === 'pub' || tier === 'turbo') {
+                  final[objKey + '_trend'] = counts.map(Number);
+                }
+              }
+            }
+            return final;
           }
         },
       },

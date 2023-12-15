@@ -196,21 +196,65 @@ async function updateHeroSearch(match: Match) {
     [match.match_id, teamA, teamB, teamAWin, match.start_time]
   );
 }
-async function updateTurbo(match: Match) {
-  if (match.game_mode === 23) {
-    for (let i = 0; i < match.players.length; i += 1) {
-      const player = match.players[i];
-      const heroId = player.hero_id;
-      if (heroId) {
-        const win = Number(isRadiant(player) === match.radiant_win);
-        redis.hincrby('turboPicks', heroId.toString(), 1);
+async function updateHeroCounts(match: Match) {
+  // If match has leagueid, update pro picks and wins
+  // If turbo, update picks and wins
+  // Otherwise, update pub picks and wins if significant
+  // If none of the above, skip
+  // If pub and we have a rank tier, also update the 1-8 rank pick/win
+  let tier: string | null = null;
+  let rank: number | null = null;
+  if (match.leagueid) {
+    tier = 'pro';
+  } else if (match.game_mode === 23) {
+    tier = 'turbo';
+  } else if (isSignificant(match)) {
+    tier = 'pub';
+    let { avg } = await getMatchRankTier(match);
+    if (avg) {
+      rank = Math.floor(avg / 10);
+    }
+  }
+  if (!tier) {
+    return;
+  }
+  const timestamp = moment().startOf('day').unix();
+  const expire = moment().startOf('day').add(8, 'day').unix();
+  for (let i = 0; i < match.players.length; i += 1) {
+    const player = match.players[i];
+    const heroId = player.hero_id;
+    if (heroId) {
+      const win = Number(isRadiant(player) === match.radiant_win);
+      const updateKeys = (prefix: string) => {
+        const rKey = `${heroId}:${prefix}:pick:${timestamp}`;
+        redis.incr(rKey);
+        redis.expireat(rKey, expire);
         if (win) {
-          redis.hincrby('turboWins', heroId.toString(), 1);
+          const rKeyWin = `${heroId}:${prefix}:win:${timestamp}`;
+          redis.incr(rKeyWin);
+          redis.expireat(rKeyWin, expire);
         }
       }
+      if (tier) {
+        // pro, pub, or turbo
+        updateKeys(tier);
+      }
+      if (rank) {
+        // 1 to 8 based on the average level of the match
+        updateKeys(rank.toString());
+      }
     }
-    redis.expireat('turboPicks', moment().endOf('month').unix());
-    redis.expireat('turboWins', moment().endOf('month').unix());
+  }
+  // Do bans for pro
+  if (match.leagueid) {
+    match.picks_bans?.forEach(pb => {
+      if (pb.is_pick === false) {
+        const heroId = pb.hero_id;
+        const rKey = `${heroId}:pro:ban:${timestamp}`;
+        redis.incr(rKey);
+        redis.expireat(rKey, expire);
+      }
+    });
   }
 }
 
@@ -284,7 +328,7 @@ async function processCounts(match: Match) {
   await updateRecords(match);
   await updateLastPlayed(match);
   await updateHeroSearch(match);
-  await updateTurbo(match);
+  await updateHeroCounts(match);
   await updateBenchmarks(match);
 }
 queue.runQueue('countsQueue', 1, processCounts);

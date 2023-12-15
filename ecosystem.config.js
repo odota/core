@@ -65,10 +65,10 @@ let arr = [
     name: 'heroes',
     group: 'backend',
   },
-  {
-    name: 'herostats',
-    group: 'backend',
-  },
+  // {
+  //   name: 'herostats',
+  //   group: 'backend',
+  // },
   // {
   //   name: 'items',
   //   group: 'backend',
