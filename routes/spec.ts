@@ -302,10 +302,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             win: 0,
             lose: 0,
           };
-          req.queryObj.project = req.queryObj.project.concat(
-            'player_slot',
-            'radiant_win'
-          );
           getPlayerMatches(
             req.params.account_id,
             req.queryObj,
@@ -363,8 +359,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 'hero_id',
                 'start_time',
                 'duration',
-                'player_slot',
-                'radiant_win',
                 'game_mode',
                 'lobby_type',
                 'version',
@@ -434,8 +428,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'hero_id',
             'start_time',
             'duration',
-            'player_slot',
-            'radiant_win',
             'game_mode',
             'lobby_type',
             'version',
@@ -505,8 +497,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'heroes',
             'account_id',
             'start_time',
-            'player_slot',
-            'radiant_win'
           );
           getPlayerMatches(
             req.params.account_id,
@@ -517,13 +507,13 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               cache.forEach((m) => {
                 const playerWin = isRadiant(m) === m.radiant_win;
-                const group = m.heroes || {};
+                const group: PGroup = m.heroes || {};
                 Object.keys(group).forEach((key) => {
                   const tm = group[key];
                   const tmHero = tm.hero_id;
                   // don't count invalid heroes
                   if (tmHero in heroes) {
-                    if (isRadiant(tm) === isRadiant(m)) {
+                    if (isRadiant(tm as Player) === isRadiant(m)) {
                       if (tm.account_id === m.account_id) {
                         heroes[tmHero].games += 1;
                         heroes[tmHero].win += playerWin ? 1 : 0;
@@ -582,8 +572,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           req.queryObj.project = req.queryObj.project.concat(
             'heroes',
             'start_time',
-            'player_slot',
-            'radiant_win',
             'gold_per_min',
             'xp_per_min'
           );
@@ -640,8 +628,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           req.queryObj.project = req.queryObj.project.concat(
             'heroes',
             'start_time',
-            'player_slot',
-            'radiant_win'
           );
           getPlayerMatches(
             req.params.account_id,
@@ -844,8 +830,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/histograms/:field',
         func: (req, res, cb) => {
-          req.queryObj.project = req.queryObj.project
-          .concat('radiant_win', 'player_slot');
           const field = subkeys.find(key => key === req.params.field);
           if (field) {
             req.queryObj.project = req.queryObj.project.concat(field);
