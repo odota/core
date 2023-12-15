@@ -3,18 +3,22 @@ import moment from 'moment';
 import redis from '../store/redis';
 import db from '../store/db';
 import { invokeIntervalAsync } from '../util/utility';
+import contributors from '../CONTRIBUTORS';
 
 async function doBuildSets() {
   const docs = await db
     .select(['account_id'])
     .from('subscriber')
     .where('status', '=', 'active');
-  console.log('[BUILDSETS] %s tracked players', docs.length);
+  const contribs = Object.keys(contributors).map(id => ({
+    account_id: id
+  }));
+  console.log('[BUILDSETS] %s subscribers, %s contributors', docs.length, contribs.length);
   const command = redis.multi();
   command.del('tracked');
-  // Refresh donators with expire date in the future
+  // Refresh donators and contribs with expire date in the future
   await Promise.all(
-    docs.map((player) =>
+    [...docs, ...contribs].map((player) =>
       command.zadd(
         'tracked',
         moment().add(1, 'day').format('X'),
