@@ -23,6 +23,7 @@ import heroesApi from './data/heroes_api.json';
 import leaguesApi from './data/leagues_api.json';
 import retrieverPlayer from './data/retriever_player.json';
 import detailsApiPro from './data/details_api_pro.json';
+import retrieverMatch from './data/retriever_match.json';
 import spec from '../routes/spec';
 import {
   getPlayerMatchesPromise,
@@ -75,10 +76,13 @@ nock('http://api.steampowered.com')
   .get('/IDOTA2Match_570/GetLeagueListing/v0001/')
   .query(true)
   .reply(200, leaguesApi);
-// fake mmr response
 nock(`http://${RETRIEVER_HOST}`)
+  // fake mmr response
   .get('/?account_id=88367253')
-  .reply(200, retrieverPlayer);
+  .reply(200, retrieverPlayer)
+  // fake GC match details
+  .get('/?key=&match_id=1781962623')
+  .reply(200, retrieverMatch);
 before(async function setup() {
   this.timeout(60000);
   await initPostgres();
@@ -128,44 +132,26 @@ describe('player_caches', async () => {
 });
 describe('replay parse', async function() {
   this.timeout(120000);
-  const tests = {
+  const tests: AnyDict = {
     '1781962623_1.dem': detailsApi.result,
   };
-  const key = '1781962623_1.dem';
+  const key = Object.keys(tests)[0];
   before(async () => {
     const matchData = tests[key];
     // Fake being a league match so we ingest into postgres
     // We could do this with a real pro match but we'd have to upload a new replay file
     matchData.leagueid = 5399;
-    nock(`http://${RETRIEVER_HOST}`)
-      .get('/')
-      .query(true)
-      .reply(200, {
-        match: {
-          match_id: matchData.match_id,
-          cluster: matchData.cluster,
-          replay_salt: 1,
-          series_id: 0,
-          series_type: 0,
-          players: [],
-        },
-      });
-    console.log('inserting match and requesting parse');
-    try {
-      const job = await insertMatch(matchData as unknown as Match, {
-        type: 'api',
-        forceParse: true,
-        attempts: 1,
-      });
-      assert.ok(job);
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
+    console.log('inserting and parsing match');
+    const job = await insertMatch(matchData, {
+      type: 'api',
+      forceParse: true,
+      attempts: 1,
+    });
+    assert.ok(job);
     console.log('waiting for replay parse');
     await new Promise((resolve) => setTimeout(resolve, 20000));
   });
-  it('should have match data in buildMatch', async () => {
+  it('should have parse data in buildMatch', async () => {
     // ensure parse data got inserted
     const match = await buildMatch(tests[key].match_id.toString(), {});
     // console.log(match.players[0]);
@@ -180,7 +166,7 @@ describe('replay parse', async function() {
     assert.ok(match.radiant_gold_adv);
     assert.ok(match.radiant_gold_adv.length);
   });
-  it('should have pro match data in postgres', async () => {
+  it('should have parse match data in postgres', async () => {
     // Assert that the pro data (with parsed info) is in postgres
     const proMatch = await db.raw('select * from matches where match_id = ?', [
       tests[key].match_id,
@@ -201,7 +187,7 @@ describe('replay parse', async function() {
     assert.equal(teamMatch.rows.length, 2);
     assert.equal(teamRankings.rows.length, 2);
   });
-  it('should have parsed data for non-anonymous players in player_caches', async () => {
+  it('should have parse data for non-anonymous players in player_caches', async () => {
     const result = await cassandra.execute('SELECT * from player_caches WHERE match_id = 1781962623 ALLOW FILTERING');
     // Assert that parsed data is in player_caches
     assert.ok(result.rows[0].stuns);

@@ -45,9 +45,6 @@ async function parseProcessor(job: ParseJob) {
       gcdata.cluster,
       gcdata.replay_salt
     );
-    if (NODE_ENV === 'test') {
-      url = `https://odota.github.io/testfiles/${match.match_id}_1.dem`;
-    }
 
     // Check if match is already parsed
     const isParsed = Boolean(
