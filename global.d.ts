@@ -40,12 +40,8 @@ type StringArrayDict = { [key: string]: string[] };
 type AnyDict = { [key: string]: any };
 type NumberDict = { [key: string]: number };
 type BooleanDict = { [key: string]: boolean };
-type ErrorCb = (err?: Error | null | undefined | unknown, result?: any) => void;
+type ErrorCb = (err?: Error | null | undefined | string | unknown, result?: any) => void;
 type NonUnknownErrorCb = (err?: Error | null | undefined, result?: any) => void;
-type StringErrorCb = (
-  err?: Error | null | undefined | unknown,
-  result?: string | null | undefined
-) => void;
 
 type Match = {
   match_id: number;
