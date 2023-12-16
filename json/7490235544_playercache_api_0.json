@@ -28,9 +28,6 @@
   "cluster": 153,
   "lobby_type": 1,
   "game_mode": 2,
-  "patch": 53,
-  "region": 5,
-  "kda": 10,
   "heroes": {
     "0": {
       "account_id": 124801257,
@@ -82,5 +79,8 @@
       "hero_id": 110,
       "player_slot": 132
     }
-  }
+  },
+  "patch": 53,
+  "region": 5,
+  "kda": 10
 }

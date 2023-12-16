@@ -706,7 +706,7 @@ export async function insertPlayerRating(row: PlayerRating) {
   }
 }
 
-export async function insertPlayerCache(match: Match, pgroup: PGroup) {
+export async function insertPlayerCache(match: Match, pgroup: PGroup, type: string) {
   const { players } = match;
   await Promise.all(
     players.map(async (p) => {
@@ -717,7 +717,11 @@ export async function insertPlayerCache(match: Match, pgroup: PGroup) {
       if (!playerMatch.account_id || playerMatch.account_id === getAnonymousAccountId()) {
         return;
       }
-      playerMatch.heroes = pgroup;
+      if (type === 'api') {
+        // We only need this once on the original API insert
+        // In the future we might update it with the improved version from gc
+        playerMatch.heroes = pgroup;
+      }
       computeMatchData(playerMatch as ParsedPlayerMatch);
       const cleanedMatch = await cleanRowCassandra(
         cassandra,
@@ -737,12 +741,6 @@ export async function insertPlayerCache(match: Match, pgroup: PGroup) {
         prepare: true,
       });
       if (config.NODE_ENV === 'development' && cleanedMatch.player_slot === 0) {
-        let type = 'api';
-        if (cleanedMatch.stuns) {
-          type = 'parsed';
-        } else if (cleanedMatch.party_size) {
-          type = 'gcdata';
-        }
         fs.writeFileSync('./json/' + match.match_id + `_playercache_${type}_${playerMatch.player_slot}.json`, JSON.stringify(cleanedMatch, null, 2));
       }
     })
@@ -996,7 +994,10 @@ export async function insertMatch(
     // Add the 10 player_match rows indexed by player
     // We currently do this on all types
     const copy = createMatchCopy(match);
-    await insertPlayerCache({...copy, average_rank}, pgroup);
+    if (average_rank) {
+      copy.average_rank = average_rank;
+    }
+    await insertPlayerCache(copy, pgroup, options.type);
   }
   async function upsertMatchBlobs() {
     // This is meant to eventually replace the cassandra match/player_match tables
