@@ -125,7 +125,7 @@ const apps = arr.map((app) => {
   return {
     ...app,
     watch: dev ? true : false,
-    ignore_watch: ['.git', 'node_modules', 'build'],
+    ignore_watch: ['.git', 'node_modules', 'build', 'json'],
     exec_mode: 'fork',
     instances: 1,
     script,
