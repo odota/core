@@ -3041,8 +3041,7 @@
         "primal_beast_rock_throw": 286
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 54
+      "pred_vict": false
     },
     {
       "player_slot": 1,
@@ -4315,8 +4314,7 @@
         "phoenix_supernova": 411
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 17
+      "pred_vict": false
     },
     {
       "player_slot": 2,
@@ -5420,8 +5418,7 @@
         "lion_finger_of_death": 566
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 135
+      "pred_vict": false
     },
     {
       "player_slot": 3,
@@ -7339,8 +7336,7 @@
         "stormcrafter": 519
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 138
+      "pred_vict": false
     },
     {
       "player_slot": 4,
@@ -9401,8 +9397,7 @@
         "primal_beast_uproar": 740
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 84
+      "pred_vict": false
     },
     {
       "player_slot": 128,
@@ -10409,8 +10404,7 @@
         "ogre_magi_smash": 538
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 109
+      "pred_vict": false
     },
     {
       "player_slot": 129,
@@ -11523,8 +11517,7 @@
         "muerta_gunslinger": 225
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 7
+      "pred_vict": false
     },
     {
       "player_slot": 130,
@@ -12682,8 +12675,7 @@
         "witch_blade": 348
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 137
+      "pred_vict": false
     },
     {
       "player_slot": 131,
@@ -13986,8 +13978,7 @@
         "muerta_gunslinger": 88
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 26
+      "pred_vict": false
     },
     {
       "player_slot": 132,
@@ -16729,8 +16720,7 @@
         "muerta_gunslinger": 314
       },
       "randomed": false,
-      "pred_vict": false,
-      "hero_id": 110
+      "pred_vict": false
     }
   ],
   "leagueid": 15910,
