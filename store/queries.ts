@@ -749,6 +749,15 @@ export async function insertPlayerCache(match: Match) {
       await cassandra.execute(query, arr, {
         prepare: true,
       });
+      if (config.NODE_ENV === 'development' && cleanedMatch.player_slot === 0) {
+        let type = 'api';
+        if (cleanedMatch.stuns) {
+          type = 'parsed';
+        } else if (cleanedMatch.party_size) {
+          type = 'gcdata';
+        }
+        fs.writeFileSync('./json/' + match.match_id + `_playercache_${type}_${playerMatch.player_slot}.json`, JSON.stringify(cleanedMatch, null, 2));
+      }
     })
   );
 }
