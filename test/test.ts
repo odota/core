@@ -26,7 +26,7 @@ import detailsApiPro from './data/details_api_pro.json';
 import spec from '../routes/spec';
 import {
   getPlayerMatchesPromise,
-  insertMatchPromise,
+  insertMatch,
   upsertPlayer,
 } from '../store/queries';
 import buildMatch from '../store/buildMatch';
@@ -149,7 +149,7 @@ describe('replay parse', function () {
       });
     console.log('inserting match and requesting parse');
     try {
-      const job = await insertMatchPromise(matchData as unknown as Match, {
+      const job = await insertMatch(matchData as unknown as Match, {
         type: 'api',
         forceParse: true,
         attempts: 1,
@@ -854,7 +854,7 @@ async function loadMatches() {
   const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
   for (let i = 0; i < arr.length; i++) {
     const m = arr[i];
-    await insertMatchPromise(m as unknown as Match, {
+    await insertMatch(m as unknown as Match, {
       type: 'api',
       origin: 'scanner',
       skipParse: true,

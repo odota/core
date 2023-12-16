@@ -1,6 +1,6 @@
 import moment from 'moment';
 import config from '../config.js';
-import { insertMatchPromise, upsert } from './queries';
+import { insertMatch, upsert } from './queries';
 import db from './db';
 import redis from './redis';
 import cassandra from './cassandra';
@@ -72,7 +72,7 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
     [matchToInsert.series_id, matchToInsert.series_type, matchToInsert.cluster, matchToInsert.replay_salt, job.match_id]
   );
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
-  await insertMatchPromise(matchToInsert, {
+  await insertMatch(matchToInsert, {
     type: 'gcdata',
     skipParse: true,
   });

@@ -1,7 +1,7 @@
 // Alternative to scanner if seq match data endpoint isn't available
 // Works by repeatedly checking match histories for players
 import redis from '../store/redis';
-import { insertMatchPromise } from '../store/queries';
+import { insertMatch } from '../store/queries';
 import config from '../config.js';
 import {
   generateJob,
@@ -29,7 +29,7 @@ async function processMatch(matchId: number) {
     return;
   }
   const match = body.result;
-  await insertMatchPromise(match, {
+  await insertMatch(match, {
     type: 'api',
     origin: 'scanner',
     skipCounts: false,

@@ -1,7 +1,7 @@
 // Fetches new matches from the Steam API using the sequential endpoint
 import config from '../config.js';
 import redis from '../store/redis';
-import { insertMatchPromise } from '../store/queries';
+import { insertMatch } from '../store/queries';
 import { generateJob, getDataPromise, redisCount } from '../util/utility';
 
 const delay = Number(config.SCANNER_DELAY);
@@ -62,7 +62,7 @@ async function processMatch(match: Match) {
   if (result) {
     return;
   }
-  await insertMatchPromise(match, {
+  await insertMatch(match, {
     type: 'api',
     origin: 'scanner',
   });

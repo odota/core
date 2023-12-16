@@ -29,7 +29,7 @@ import params from './requests/importParams';
 import responses from './responses/schemas/importResponseSchemas';
 import generateOperationId from './generateOperationId';
 import {
-  insertMatchPromise,
+  insertMatch,
   getDistributions,
   getPlayerRatings,
   getHeroBenchmarks,
@@ -1712,7 +1712,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
               }
               // match details response
               const match = body.result;
-              const job = await insertMatchPromise(match, {
+              const job = await insertMatch(match, {
                 type: 'api',
                 attempts: 1,
                 priority: req.query.api_key ? 2 : 1,

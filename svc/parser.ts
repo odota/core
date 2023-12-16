@@ -11,7 +11,7 @@ import express from 'express';
 import { getGcData } from '../store/getGcData';
 import config from '../config.js';
 import queue from '../store/queue';
-import { insertMatchPromise } from '../store/queries';
+import { insertMatch } from '../store/queries';
 import { promisify } from 'util';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
@@ -94,7 +94,7 @@ async function parseProcessor(job: ParseJob) {
 
     const insertStart = Date.now();
     const result = { ...JSON.parse(stdout), ...match };
-    await insertMatchPromise(result, {
+    await insertMatch(result, {
       type: 'parsed',
       skipParse: true,
       origin: job.origin,
