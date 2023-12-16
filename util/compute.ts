@@ -82,9 +82,6 @@ export function computeMatchData(pm: ParsedPlayerMatch) {
   if (pm.leaver_status !== undefined) {
     pm.abandons = Number(pm.leaver_status >= 2);
   }
-  if (pm.pgroup) {
-    pm.heroes = pm.pgroup;
-  }
   if (pm.chat) {
     // word counts for this player and all players
     // aggregation of all words in all chat this player has experienced

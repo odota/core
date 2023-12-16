@@ -34,11 +34,10 @@ async function parseProcessor(job: ParseJob) {
   let gcTime = 0;
   let parseTime = 0;
   let insertTime = 0;
-  const match = job;
   try {
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
-    const gcdata = await getGcData(match);
+    const gcdata = await getGcData(job);
     gcTime = Date.now() - gcStart;
     let url = buildReplayUrl(
       gcdata.match_id,
@@ -51,7 +50,7 @@ async function parseProcessor(job: ParseJob) {
       (
         await db.raw(
           'select match_id from parsed_matches where match_id = ?',
-          [match.match_id]
+          [job.match_id]
         )
       ).rows[0]
     );
@@ -82,7 +81,7 @@ async function parseProcessor(job: ParseJob) {
       `curl --max-time 60 --fail -L ${url} | ${
         url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
       } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${
-        match.match_id
+        job.match_id
       }`,
       //@ts-ignore
       { shell: true, maxBuffer: 10 * 1024 * 1024 }
@@ -90,11 +89,13 @@ async function parseProcessor(job: ParseJob) {
     parseTime = Date.now() - parseStart;
 
     const insertStart = Date.now();
-    const result = { ...JSON.parse(stdout), ...match };
+    // const { getParseSchema } = await import('../processors/parseSchema.mjs');
+    const result: ParserMatch = { ...JSON.parse(stdout), match_id: job.match_id, leagueid: job.leagueid, start_time: job.start_time, duration: job.duration };
     await insertMatch(result, {
       type: 'parsed',
       skipParse: true,
       origin: job.origin,
+      pgroup: job.pgroup,
     });
     insertTime = Date.now() - insertStart;
 
@@ -104,7 +105,7 @@ async function parseProcessor(job: ParseJob) {
       `[${new Date().toISOString()}] [parser] [success: ${
         end - start
       }ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
-        match.match_id
+        job.match_id
       }`
     );
     redis.publish('parsed', message);
@@ -117,7 +118,7 @@ async function parseProcessor(job: ParseJob) {
       `[${new Date().toISOString()}] [parser] [fail: ${
         end - start
       }ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
-        match.match_id
+        job.match_id
       }`
     );
     redis.publish('parsed', message);
