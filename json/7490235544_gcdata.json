@@ -1,0 +1,121 @@
+{
+  "match_id": 7490235544,
+  "players": [
+    {
+      "player_slot": 0,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 2670
+        }
+      ],
+      "party_size": 10
+    },
+    {
+      "player_slot": 1,
+      "party_id": 0,
+      "permanent_buffs": [],
+      "party_size": 10
+    },
+    {
+      "player_slot": 2,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 2221
+        }
+      ],
+      "party_size": 10
+    },
+    {
+      "player_slot": 3,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 2979
+        },
+        {
+          "permanent_buff": 15,
+          "stack_count": 4,
+          "grant_time": 3160
+        }
+      ],
+      "party_size": 10
+    },
+    {
+      "player_slot": 4,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 2342
+        }
+      ],
+      "party_size": 10
+    },
+    {
+      "player_slot": 128,
+      "party_id": 0,
+      "permanent_buffs": [],
+      "party_size": 10
+    },
+    {
+      "player_slot": 129,
+      "party_id": 0,
+      "permanent_buffs": [],
+      "party_size": 10
+    },
+    {
+      "player_slot": 130,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 2346
+        }
+      ],
+      "party_size": 10
+    },
+    {
+      "player_slot": 131,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 7,
+          "stack_count": 3,
+          "grant_time": 1544
+        },
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 1739
+        }
+      ],
+      "party_size": 10
+    },
+    {
+      "player_slot": 132,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 1783
+        }
+      ],
+      "party_size": 10
+    }
+  ],
+  "series_id": 834995,
+  "series_type": 1,
+  "cluster": 153,
+  "replay_salt": 447089001
+}

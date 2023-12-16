@@ -1093,7 +1093,9 @@ export async function insertMatch(
         prepare: true,
       }
     );
-    // fs.writeFileSync('./build/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy, null, 2));
+    if (config.NODE_ENV === 'development') {
+      fs.writeFileSync('./json/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy, null, 2));
+    }
   }
   async function telemetry() {
     // Publish to log stream
