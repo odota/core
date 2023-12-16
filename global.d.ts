@@ -119,7 +119,7 @@ type Player = {
   kills_per_min: number;
   kda: number;
   abandons: number;
-  heroes: any;
+  heroes: PGroup;
   benchmarks: AnyDict;
 
   // In Steam API that we're manually removing

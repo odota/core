@@ -311,7 +311,7 @@ export const getDataPromise = promisify(getData);
 /**
  * Determines if a player is radiant
  * */
-export function isRadiant(player: Player) {
+export function isRadiant(player: { player_slot: number }) {
   return player.player_slot < 128;
 }
 /**
