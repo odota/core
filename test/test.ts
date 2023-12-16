@@ -4,7 +4,7 @@
  * */
 process.env.NODE_ENV = 'test';
 import type { Express } from 'express';
-import { eachSeries, timesSeries } from 'async';
+import async from 'async';
 import nock from 'nock';
 import assert from 'assert';
 import supertest from 'supertest';
@@ -33,6 +33,7 @@ import buildMatch from '../store/buildMatch';
 import { es } from '../store/elasticsearch';
 import redis from '../store/redis';
 import db from '../store/db';
+import cassandra from '../store/cassandra.js';
 
 const { Pool } = pg;
 const {
@@ -113,23 +114,25 @@ describe('swagger schema', async function testSwaggerSchema() {
     );
   });
 });
-describe('player_caches', () => {
-  it('should have data in player_caches', async () => {
-    // Test fetching matches for first player
-    const data = await getPlayerMatchesPromise('120269134', {
+describe('player_caches', async () => {
+  // Test fetching matches for first player
+  let data = null;
+  before(async () => {
+    data = await getPlayerMatchesPromise('120269134', {
       project: ['match_id'],
     });
-    // We should have one result
+  });
+  it('should have one row in player_caches', async () => {
     assert.equal(data.length, 1);
   });
 });
-describe('replay parse', function () {
+describe('replay parse', async function() {
   this.timeout(120000);
   const tests = {
     '1781962623_1.dem': detailsApi.result,
   };
   const key = '1781962623_1.dem';
-  it(`should parse replay ${key}`, async () => {
+  before(async () => {
     const matchData = tests[key];
     // Fake being a league match so we ingest into postgres
     // We could do this with a real pro match but we'd have to upload a new replay file
@@ -161,7 +164,8 @@ describe('replay parse', function () {
     }
     console.log('waiting for replay parse');
     await new Promise((resolve) => setTimeout(resolve, 20000));
-    console.log('checking parsed match');
+  });
+  it('should have match data in buildMatch', async () => {
     // ensure parse data got inserted
     const match = await buildMatch(tests[key].match_id.toString(), {});
     // console.log(match.players[0]);
@@ -175,7 +179,8 @@ describe('replay parse', function () {
     assert.ok(match.draft_timings);
     assert.ok(match.radiant_gold_adv);
     assert.ok(match.radiant_gold_adv.length);
-
+  });
+  it('should have pro match data in postgres', async () => {
     // Assert that the pro data (with parsed info) is in postgres
     const proMatch = await db.raw('select * from matches where match_id = ?', [
       tests[key].match_id,
@@ -196,6 +201,14 @@ describe('replay parse', function () {
     assert.equal(teamMatch.rows.length, 2);
     assert.equal(teamRankings.rows.length, 2);
   });
+  it('should have parsed data for non-anonymous players in player_caches', async () => {
+    const result = await cassandra.execute('SELECT * from player_caches WHERE match_id = 1781962623 ALLOW FILTERING');
+    // Assert that parsed data is in player_caches
+    assert.ok(result.rows[0].stuns);
+
+    // There should be 7 rows in player_caches for this match since there are 3 anonymous players
+    assert.equal(result.rows.length, 7);
+  });
 });
 describe('teamRanking', () => {
   it('should have team rankings', async () => {
@@ -209,63 +222,60 @@ describe('teamRanking', () => {
     assert(loser.losses === 2);
     assert(winner.wins === 2);
     assert(loser.rating < winner.rating);
-    return;
   });
 });
-// TODO also test on unparsed match to catch exceptions caused by code expecting parsed data
-describe('api', () => {
-  it('should get API spec', function testAPISpec(cb) {
-    this.timeout(5000);
-    supertest(app)
-      .get('/api')
-      .end((err, res) => {
-        if (err) {
-          return cb(err);
-        }
-        const spec = res.body;
-        return eachSeries(
-          Object.keys(spec.paths),
-          (path, cb) => {
-            const replacedPath = path
-              .replace(/{match_id}/, '1781962623')
-              .replace(/{account_id}/, '120269134')
-              .replace(/{team_id}/, '15')
-              .replace(/{hero_id}/, '1')
-              .replace(/{league_id}/, '1')
-              .replace(/{field}/, 'kills')
-              .replace(/{resource}/, 'heroes');
-            eachSeries(
-              Object.keys(spec.paths[path]),
-              (verb, cb) => {
-                if (
-                  path.indexOf('/explorer') === 0 ||
-                  path.indexOf('/request') === 0
-                ) {
-                  return cb(err);
-                }
-                return supertest(app)
-                  [verb as HttpVerb](`/api${replacedPath}?q=testsearch`)
-                  .end((err, res) => {
-                    if (err || res.statusCode !== 200) {
-                      console.error(verb, replacedPath, res.body);
-                    }
-                    if (replacedPath.startsWith('/admin')) {
-                      assert.equal(res.statusCode, 403);
-                    } else if (replacedPath.startsWith('/subscribeSuccess')) {
-                      assert.equal(res.statusCode, 400);
-                    } else {
-                      assert.equal(res.statusCode, 200);
-                    }
-                    return cb(err);
-                  });
-              },
-              cb
-            );
-          },
-          cb
-        );
-      });
+describe('api routes', async function () {
+  this.timeout(5000);
+  before(async () => {
+  const tests: string[][] = [];
+  console.log('getting API spec and setting up tests');
+  const res = await supertest(app).get('/api');
+  const spec = res.body;
+  Object.keys(spec.paths).forEach(path => {
+    Object.keys(spec.paths[path]).forEach(verb => {
+      const replacedPath = path
+      .replace(/{match_id}/, '1781962623')
+      .replace(/{account_id}/, '120269134')
+      .replace(/{team_id}/, '15')
+      .replace(/{hero_id}/, '1')
+      .replace(/{league_id}/, '1')
+      .replace(/{field}/, 'kills')
+      .replace(/{resource}/, 'heroes');
+      tests.push([path, verb, replacedPath]);
+      if (path.includes('{match_id}')) {
+        // Also test an unparsed match ID
+        tests.push([path, verb, path.replace(/{match_id}/, '3254426673')]);
+      }
+    });
   });
+  for(let i = 0; i < tests.length; i++) {
+    const test = tests[i];
+    const [path, verb, replacedPath] = test;
+    if (
+      path.indexOf('/explorer') === 0 ||
+      path.indexOf('/request') === 0
+    ) {
+      continue;
+    }
+    const newTest = it(`should visit ${replacedPath}`, async () => {
+      const res = await supertest(app)[verb as HttpVerb](`/api${replacedPath}?q=testsearch`);
+      if (res.statusCode !== 200) {
+        console.error(verb, replacedPath, res.body);
+      }
+      if (replacedPath.startsWith('/admin')) {
+        assert.equal(res.statusCode, 403);
+      } else if (replacedPath.startsWith('/subscribeSuccess')) {
+        assert.equal(res.statusCode, 400);
+      } else {
+        assert.equal(res.statusCode, 200);
+      }
+    });
+    this.addTest(newTest);
+  }
+});
+it('placeholder', () => {
+  assert(true);
+});
 });
 describe('api management', () => {
   beforeEach(function getApiRecord(done) {
@@ -598,13 +608,12 @@ describe('api limits', () => {
   });
 
   function testWhiteListedRoutes(done: ErrorCb, key: string) {
-    eachSeries(
+    async.eachSeries(
       [
         `/api${key}`, // Docs
         `/api/metadata${key}`, // Login status
         `/keys${key}`, // API Key management
       ],
-
       (i, cb) => {
         supertest(app)
           .get(i)
@@ -623,7 +632,7 @@ describe('api limits', () => {
   }
 
   function testRateCheckedRoute(done: ErrorCb) {
-    timesSeries(
+    async.timesSeries(
       10,
       (i, cb) => {
         setTimeout(() => {
@@ -673,7 +682,7 @@ describe('api limits', () => {
 
   it('should be able to make more than 10 calls when using API KEY', function testAPIKeyLimitsAndCounting(done) {
     this.timeout(25000);
-    timesSeries(
+    async.timesSeries(
       25,
       (i, cb) => {
         supertest(app)
