@@ -600,9 +600,9 @@ export function getProPeers(
     });
 }
 
-export async function getMatchRankTier(match: Match) {
+export async function getMatchRankTier(players: { account_id?: number | null }[]) {
   const result = await Promise.all(
-    match.players.map(async (player) => {
+    players.map(async (player) => {
       if (!player.account_id) {
         return;
       }
@@ -706,31 +706,18 @@ export async function insertPlayerRating(row: PlayerRating) {
   }
 }
 
-export async function insertPlayerCache(match: Match) {
+export async function insertPlayerCache(match: Match, pgroup: PGroup) {
   const { players } = match;
-  if (match.pgroup && players) {
-    players.forEach((p) => {
-      if (match.pgroup[p.player_slot]) {
-        // add account id to each player so we know what caches to update
-        p.account_id = match.pgroup[p.player_slot].account_id ?? p.account_id;
-        // add hero_id to each player so we update records with hero played
-        p.hero_id = match.pgroup[p.player_slot].hero_id;
-      }
-    });
-  }
-  const arr = players.filter(
-    (playerMatch) =>
-      playerMatch.account_id &&
-      playerMatch.account_id !== getAnonymousAccountId()
-  );
   await Promise.all(
-    arr.map(async (playerMatch) => {
+    players.map(async (p) => {
+      // add account id to each player so we know what caches to update
+      const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
       // join player with match to form player_match
-      Object.keys(match).forEach((key) => {
-        if (key !== 'players') {
-          (playerMatch as any)[key] = match[key as keyof Match];
-        }
-      });
+      const playerMatch: Partial<ParsedPlayerMatch> = {...p, ...match, account_id, players: undefined }
+      if (!playerMatch.account_id || playerMatch.account_id === getAnonymousAccountId()) {
+        return;
+      }
+      playerMatch.heroes = pgroup;
       computeMatchData(playerMatch as ParsedPlayerMatch);
       const cleanedMatch = await cleanRowCassandra(
         cassandra,
@@ -817,90 +804,33 @@ async function updateTeamRankings(match: Match, options: InsertMatchOptions) {
     ]);
   }
 }
-function createMatchCopy(match: any, players: any[]): Match {
-  // Makes a deep copy of the match
-  // This takes match and players separately since we might have applied changes to players without mutating the original match
-  // e.g. deleting anonymous account_ids
-  // This ensures we get a copy with the changes applied
+function createMatchCopy(match: any): Match {
+  // Makes a deep copy of the original match
   const copy = JSON.parse(JSON.stringify(match));
-  copy.players = JSON.parse(JSON.stringify(players));
   return copy;
 }
+
+function getPGroup(players: Player[]): PGroup {
+  // This works if we are an API insert, but not for parsed and we don't currently construct it for gcdata
+  // Also, if coming from gcdata we can construct a better pgroup with account IDs
+  const result: PGroup = {};
+  players.forEach((p) => {
+    result[p.player_slot] = {
+      account_id: p.account_id || null,
+      hero_id: p.hero_id,
+      player_slot: p.player_slot,
+    };
+  });
+  return result;
+}
+
+// We currently can call this function from many places
+// There is a type to indicate source: api, gcdata, parsed
+// Also an origin to indicate the context: scanner (fresh match) or request
 export async function insertMatch(
-  match: Match | ParsedMatch | GcMatch,
+  origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions
 ) {
-  // We currently can call this function from many places
-  // There is a type to indicate source: api, gcdata, parsed
-  // Also an origin to indicate the context: scanner (fresh match) or request
-
-  // Make a copy of the players if they exist (always should)
-  const players: ParsedPlayer[] = match.players
-    ? JSON.parse(JSON.stringify(match.players))
-    : undefined;
-  const abilityUpgrades = [];
-  const savedAbilityLvls = {
-    5288: 'track',
-    5368: 'greevils_greed',
-  };
-
-  async function preprocess() {
-    // We always do this
-    // don't insert anonymous account id
-    if (players) {
-      players.forEach((p) => {
-        if (p.account_id === getAnonymousAccountId()) {
-          //@ts-ignore
-          delete p.account_id;
-        }
-      });
-    }
-    // this is for the parsed case
-    // if we have a pgroup from earlier, use it to fill out hero_ids (used when inserting parsed data since we don't have hero_id from parser)
-    if (players && match.pgroup) {
-      players.forEach((p) => {
-        if (match.pgroup[p.player_slot]) {
-          p.hero_id = match.pgroup[p.player_slot].hero_id;
-        }
-      });
-    }
-    // this is an API insert
-    // build match.pgroup so after parse we can figure out the account/hero ids for each slot
-    if (players && !match.pgroup) {
-      match.pgroup = {};
-      players.forEach((p) => {
-        match.pgroup[p.player_slot] = {
-          account_id: p.account_id || null,
-          hero_id: p.hero_id,
-          player_slot: p.player_slot,
-        };
-      });
-    }
-    // Reduce the abiilty upgrades info into ability_upgrades_arr (just an array of numbers)
-    if (players) {
-      players.forEach((p) => {
-        if (p.ability_upgrades) {
-          p.ability_upgrades_arr = p.ability_upgrades.map((au) => au.ability);
-          const abilityLvls: NumberDict = {};
-          p.ability_upgrades.forEach((au) => {
-            if (au.ability in savedAbilityLvls) {
-              abilityLvls[au.ability] = (abilityLvls[au.ability] || 0) + 1;
-              const abilityUpgrade = { ...au, level: abilityLvls[au.ability] };
-              abilityUpgrades.push(abilityUpgrade);
-            }
-          });
-        }
-      });
-    }
-  }
-  async function getAverageRank() {
-    // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
-    // We currently only store this in the player_caches table, not in the match itself
-    if (options.origin === 'scanner' && options.type === 'api') {
-      const { avg } = await getMatchRankTier(match as Match);
-      match.average_rank = avg || null;
-    }
-  }
   async function upsertMatchPostgres() {
     // Insert the pro match data: We do this if api or parser
     if (options.type !== 'api' && options.type !== 'parsed') {
@@ -930,8 +860,8 @@ export async function insertMatch(
     }
     async function upsertPlayerMatches() {
       await Promise.all(
-        (players || []).map((p) => {
-          const pm = {...p, match_id: match.match_id};
+        match.players.map((p) => {
+          const pm = {...p, match_id: match.match_id} as ParsedPlayerMatch;
           // Add lane data
           if (pm.lane_pos) {
             const laneData = getLaneFromPosData(pm.lane_pos, isRadiant(pm));
@@ -1033,7 +963,7 @@ export async function insertMatch(
       prepare: true,
     });
     await Promise.all(
-      players.map(async (p) => {
+      match.players.map(async (p) => {
         const pm = {...p, match_id: match.match_id};
         const cleanedPm = await cleanRowCassandra(
           cassandra,
@@ -1065,8 +995,8 @@ export async function insertMatch(
   async function updateCassandraPlayerCaches() {
     // Add the 10 player_match rows indexed by player
     // We currently do this on all types
-    const copy = createMatchCopy(match, players);
-    await insertPlayerCache(copy);
+    const copy = createMatchCopy(match);
+    await insertPlayerCache({...copy, average_rank}, pgroup);
   }
   async function upsertMatchBlobs() {
     // This is meant to eventually replace the cassandra match/player_match tables
@@ -1074,15 +1004,11 @@ export async function insertMatch(
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces
     // After some retention period we stick the assembled blob in match archive and delete it
-    const copy = createMatchCopy(match, players);
-    // NOTE: remove pgroup since we don't actually need it stored
-    // player_caches stores it as a field called heroes used for heroes/players played with/against aggregation
-    //@ts-ignore
-    delete copy.pgroup;
+    const copy = createMatchCopy(match);
+    if (average_rank) {
+      copy.average_rank = average_rank;
+    }
     copy.players.forEach((p) => {
-      // We only store the _arr version to save space
-      delete p.ability_upgrades;
-
       // There are a bunch of fields in the API response we also don't use, e.g. "scaled_hero_damage"
       delete p.scaled_hero_damage;
       delete p.scaled_tower_damage;
@@ -1091,9 +1017,6 @@ export async function insertMatch(
       // delete p.aghanims_scepter;
       // delete p.aghanims_shard;
       // delete p.moonshard;
-
-      // We added the match_id to each player for insertion, so remove it here
-      delete p.match_id;
     });
     await cassandra.execute(
       `INSERT INTO match_blobs(match_id, ${options.type}) VALUES(?, ?)`,
@@ -1130,7 +1053,7 @@ export async function insertMatch(
   }
   async function clearRedisPlayer() {
     const arr: { key: string; account_id: string }[] = [];
-    players.forEach((player) => {
+    match.players.forEach((player) => {
       getKeys().forEach((key) => {
         if (player.account_id) {
           arr.push({ key, account_id: player.account_id?.toString() });
@@ -1150,7 +1073,7 @@ export async function insertMatch(
   }
   async function decideMmr() {
     // We only do this if fresh match and ranked
-    const arr = players.filter((p) => {
+    const arr = match.players.filter((p) => {
       return (
         options.origin === 'scanner' &&
         options.type === 'api' &&
@@ -1174,7 +1097,7 @@ export async function insertMatch(
   }
   async function decideProfile() {
     // We only do this if fresh match
-    const arr = players.filter((p) => {
+    const arr = match.players.filter((p) => {
       return (
         match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) &&
         options.origin === 'scanner' &&
@@ -1205,7 +1128,7 @@ export async function insertMatch(
         name: 'gcQueue',
         data: {
           match_id: match.match_id,
-          pgroup: match.pgroup,
+          pgroup,
         },
       });
     }
@@ -1244,7 +1167,7 @@ export async function insertMatch(
     }
     // determine if any player in the match is tracked
     const trackedScores = await Promise.all(
-      players.map((p) => {
+      match.players.map((p) => {
         return redis.zscore('tracked', String(p.account_id));
       })
     );
@@ -1268,9 +1191,9 @@ export async function insertMatch(
           // leagueid to determine whether to upsert Postgres after parse
           leagueid: match.leagueid,
           // start_time and duration for logging
-          start_time: match.start_time,
-          duration: match.duration,
-          pgroup: match.pgroup,
+          start_time: match.start_time!,
+          duration: match.duration!,
+          pgroup,
           origin: options.origin,
         },
       },
@@ -1286,8 +1209,37 @@ export async function insertMatch(
   }
 
   let currentProMatch = false;
-  await preprocess();
-  await getAverageRank();
+
+  // Make a copy of the match with some modifications
+  const match: Readonly<InsertMatchInput> = {
+    ...origMatch as Match, 
+    players: origMatch.players.map((p) => {
+      const newP = {...p} as Player;
+      if (p.account_id === getAnonymousAccountId()) {
+        // don't insert anonymous account id
+        delete newP.account_id;
+      }
+      if (p.ability_upgrades) {
+        // Reduce the ability upgrades info into ability_upgrades_arr (just an array of numbers)
+        newP.ability_upgrades_arr = p.ability_upgrades.map((au: any) => au.ability);
+        delete newP.ability_upgrades;
+      }
+      return newP;
+    }),
+  };
+  // Use the passed pgroup if gcdata or parsed, otherwise build it
+  const pgroup = options.pgroup ?? getPGroup(match.players);
+  
+  let average_rank: number | undefined = undefined;
+  // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
+  // We currently only store this in the player_caches table, not in the match itself
+  if (options.origin === 'scanner' && options.type === 'api') {
+    const { avg } = await getMatchRankTier(match.players);
+    if (avg) {
+      average_rank = avg;
+    }
+  }
+
   await upsertMatchPostgres();
   await upsertMatchCassandra();
   await updateCassandraPlayerCaches();

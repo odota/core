@@ -22,7 +22,7 @@ async function updateHeroRankings(match: Match) {
   if (!isSignificant(match)) {
     return;
   }
-  const { avg } = await getMatchRankTier(match);
+  const { avg } = await getMatchRankTier(match.players);
   const matchScore = avg && !Number.isNaN(Number(avg)) ? avg * 100 : undefined;
   if (!matchScore) {
     return;
@@ -63,7 +63,7 @@ async function upsertMatchSample(match: Match) {
     isSignificant(match) &&
     match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT
   ) {
-    const { avg, num } = await getMatchRankTier(match);
+    const { avg, num } = await getMatchRankTier(match.players);
     if (!avg || num < 2) {
       return;
     }
@@ -210,7 +210,7 @@ async function updateHeroCounts(match: Match) {
     tier = 'turbo';
   } else if (isSignificant(match)) {
     tier = 'pub';
-    let { avg } = await getMatchRankTier(match);
+    let { avg } = await getMatchRankTier(match.players);
     if (avg) {
       rank = Math.floor(avg / 10);
     }

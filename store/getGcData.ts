@@ -48,7 +48,6 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
   }));
   const matchToInsert: GcMatch = {
     match_id: job.match_id,
-    pgroup: job.pgroup,
     players,
     series_id: body.match.series_id,
     series_type: body.match.series_type,
@@ -75,6 +74,7 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
   await insertMatch(matchToInsert, {
     type: 'gcdata',
     skipParse: true,
+    pgroup: job.pgroup,
   });
   return;
 }

@@ -61,11 +61,8 @@ type Match = {
   picks_bans?: any[];
   human_players: number;
 
-  // Computed field
-  pgroup: PGroup;
-  // heroes is just pgroup alias?
   heroes: PGroup;
-  average_rank?: number | null;
+  average_rank?: number;
 
   // Parsed match metadata from .meta file
   metadata?: any;
@@ -132,12 +129,14 @@ type Player = {
 
   // Added in buildMatch for display
   is_subscriber: boolean;
+
+  // For storing in player_caches
+  average_rank?: number;
 };
 
 interface ParsedPlayer extends Player {
   kills_log: any[];
   obs_log: any[];
-  purchases: any;
   purchase_log: any[];
   pings: any;
   purchase: NumberDict;
@@ -200,7 +199,6 @@ interface ParsedPlayer extends Player {
 interface GcMatch extends Partial<Match> {
   // Most properties are not present except for a few
   match_id: number;
-  pgroup: PGroup;
   players: GcPlayer[];
   series_id: number;
   series_type: number;
@@ -209,6 +207,7 @@ interface GcMatch extends Partial<Match> {
 }
 
 interface GcPlayer extends Partial<Player> {
+  player_slot: number;
   party_id: number;
   party_size: number;
   permanent_buffs: any[];
@@ -223,6 +222,26 @@ type GcData = {
   series_id: number;
   players: GcPlayer[]
 }
+
+interface ParserMatch extends Partial<Match> {
+  match_id: number;
+  start_time: number;
+  duration: number;
+  version: number;
+  chat: any[];
+  cosmetics: any;
+  objectives: any[];
+  radiant_gold_adv: number[];
+  players: ParserPlayer[];
+}
+
+interface ParserPlayer extends Partial<Player> {
+  player_slot: number;
+  kills_log: any[];
+  // plus more parsed properties
+}
+
+type InsertMatchInput = Match | ParserMatch | GcMatch;
 
 type PlayerMatch = Player & Match & { players?: Player[] };
 type ParsedPlayerMatch = ParsedPlayer &
@@ -276,8 +295,8 @@ type ParseJob = {
   pgroup: PGroup;
   leagueid?: number;
   origin?: DataOrigin;
-  start_time?: number;
-  duration?: number;
+  start_time: number;
+  duration: number;
 };
 
 type QueueJob = QueueInput['data'];
@@ -336,6 +355,7 @@ type InsertMatchOptions = {
   skipParse?: boolean;
   priority?: number;
   attempts?: number;
+  pgroup?: PGroup;
 };
 
 type PathVerbSpec = {
