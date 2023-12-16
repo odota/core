@@ -1,6 +1,6 @@
 // Issues reparse requests for all matches in postgres that aren't parsed
 import db from '../store/db';
-import { insertMatchPromise } from '../store/queries';
+import { insertMatch } from '../store/queries';
 import { getDataPromise, generateJob } from '../util/utility';
 
 async function start() {
@@ -16,7 +16,7 @@ async function start() {
     );
     // match details response
     const match = body.result;
-    const job = await insertMatchPromise(match, {
+    const job = await insertMatch(match, {
       type: 'api',
       attempts: 1,
       priority: 1,

@@ -13,7 +13,7 @@ import redis from './redis';
 import db from './db';
 import {
   getMatchDataFromBlob,
-  insertMatchPromise,
+  insertMatch,
   getMatchBenchmarks,
 } from './queries';
 import { getMeta } from './getMeta';
@@ -93,7 +93,7 @@ async function backfill(matchId: string) {
   const body = await getDataPromise(generateJob('api_details', matchObj).url);
   // match details response
   const match = body.result;
-  await insertMatchPromise(match, {
+  await insertMatch(match, {
     type: 'api',
     skipParse: true,
   });

@@ -817,7 +817,7 @@ function createMatchCopy(match: any, players: any[]): Match {
   copy.players = JSON.parse(JSON.stringify(players));
   return copy;
 }
-export async function insertMatchPromise(
+export async function insertMatch(
   match: Match | ParsedMatch | GcMatch,
   options: InsertMatchOptions
 ) {

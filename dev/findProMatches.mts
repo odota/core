@@ -1,4 +1,4 @@
-import { insertMatchPromise } from '../store/queries.js';
+import { insertMatch } from '../store/queries.js';
 import dbImport from '../store/db.js';
 import { generateJob, getDataPromise } from '../util/utility.js';
 
@@ -26,7 +26,7 @@ async function getPage(url: string, leagueid: number) {
     });
     if (body.result) {
       const match = body.result;
-      await insertMatchPromise(match, { type: 'api', skipParse: true });
+      await insertMatch(match, { type: 'api', skipParse: true });
     }
   }
   if (data.result.results_remaining) {

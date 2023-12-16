@@ -11,7 +11,7 @@ import {
 import db from '../store/db';
 import redis from '../store/redis';
 import queue from '../store/queue';
-import { insertMatchPromise, getPlayerMatchesPromise } from '../store/queries';
+import { insertMatch, getPlayerMatchesPromise } from '../store/queries';
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once
 const parallelism = Math.min(40, apiKeys.length);
@@ -36,7 +36,7 @@ async function processMatch(matchId: string) {
   });
   const body = await getDataPromise(container.url);
   const match = body.result;
-  await insertMatchPromise(match, {
+  await insertMatch(match, {
     type: 'api',
     skipParse: true,
   });
