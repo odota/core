@@ -6,7 +6,7 @@ import {
   redisCount,
   getDataPromise,
   generateJob,
-  eachLimit,
+  eachLimitPromise,
 } from '../util/utility';
 import db from '../store/db';
 import redis from '../store/redis';
@@ -126,7 +126,7 @@ async function processFullHistory(job: FullHistoryJob) {
   const promiseFuncs = Object.keys(match_ids).map(
     (matchId) => () => processMatch(matchId)
   );
-  await eachLimit(promiseFuncs, parallelism);
+  await eachLimitPromise(promiseFuncs, parallelism);
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
