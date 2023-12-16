@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import cassandra from '../store/cassandra';
 import db from '../store/db';
 import { doArchiveFromLegacy } from '../store/queries';
-import { eachLimit } from '../util/utility';
+import { eachLimitPromise } from '../util/utility';
 
 function genRandomNumber(byteCount: number, radix: number): string {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`).toString(
@@ -78,7 +78,7 @@ async function start() {
       );
 
       const funcs = parsedIds.map((id) => () => doArchiveFromLegacy(id.toString()));
-      await eachLimit(funcs, 10);
+      await eachLimitPromise(funcs, 10);
 
       // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
     } catch (e) {

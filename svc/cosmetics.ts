@@ -4,7 +4,7 @@ import db from '../store/db';
 import { upsert } from '../store/queries';
 import {
   cleanItemSchema,
-  eachLimit,
+  eachLimitPromise,
   getDataPromise,
   invokeIntervalAsync,
 } from '../util/utility';
@@ -47,6 +47,6 @@ async function doCosmetics() {
   const promiseFuncs = Object.keys(itemData.items_game.items).map(
     (i) => () => processItem(i)
   );
-  await eachLimit(promiseFuncs, 10);
+  await eachLimitPromise(promiseFuncs, 10);
 }
 invokeIntervalAsync(doCosmetics, 12 * 60 * 60 * 1000);

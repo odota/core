@@ -887,7 +887,7 @@ export async function invokeIntervalAsync(
  * Takes an array of functions that return promises
  * Note this doesn't work on an array of promises as that will start all of them
  */
-export async function eachLimit(
+export async function eachLimitPromise(
   funcs: Array<() => Promise<any>>,
   limit: number
 ) {
@@ -901,6 +901,20 @@ export async function eachLimit(
       }
     })
   );
+}
+
+/**
+ * Promise replacement for async.parallel
+ * @param obj An object mapping key names to functions returning promises
+ */
+export async function parallelPromise<T>(obj: Record<keyof T, () => Promise<any>>): Promise<T> {
+  const result = {} as T;
+  await Promise.all(Object.entries<() => Promise<any>>(obj).map(async ([key, func]) => {
+    const val = await func();
+    result[key as keyof T] = val;
+    return;
+  }));
+  return result;
 }
 
 /**

@@ -35,6 +35,7 @@ import {
   redisCount,
   isDataComplete,
   pick,
+  parallelPromise,
 } from '../util/utility';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 
@@ -1457,31 +1458,23 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
   return result.rows;
 }
 export async function getMetadata(req: Request) {
-  return async.parallel(
-    {
-      scenarios(cb) {
-        cb(null, su.metadata);
-      },
-      banner(cb) {
-        redis.get('banner', cb);
-      },
-      user(cb) {
-        cb(null, req.user);
-      },
-      isSubscriber(cb) {
-        if (req.user) {
-          db.raw(
-            "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
-            [req.user.account_id]
-          ).asCallback((err: Error | null, result: { rows: any[] }) => {
-            cb(err, Boolean(result?.rows?.[0]));
-          });
-        } else {
-          cb(null, false);
-        }
-      },
-    }
-  );
+  const obj = {
+    scenarios: async () => su.metadata,
+    banner: async () => redis.get('banner'),
+    user: async () => req.user,
+    isSubscriber: async () => {
+      if (req.user) {
+        const result: {rows: any[]} = await db.raw(
+          "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
+          [req.user.account_id]
+        );
+        return Boolean(result?.rows?.[0]);
+      }
+      return false;
+    },
+  };
+  // A bit convoluted to support proper typing and parallel, but testing this out
+  return parallelPromise<{[P in keyof typeof obj]: Awaited<ReturnType<typeof obj[P]>>}>(obj);
 }
 
 export async function getMatchDataFromBlob(

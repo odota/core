@@ -7,7 +7,7 @@ import {
   generateJob,
   getDataPromise,
   invokeIntervalAsync,
-  eachLimit,
+  eachLimitPromise,
 } from '../util/utility';
 const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
@@ -62,6 +62,6 @@ async function processPlayer(accountId: string) {
 async function doBackupScanner() {
   const ids = await redis.zrange('tracked', 0, -1);
   const promises = ids.map((id) => () => processPlayer(id));
-  await eachLimit(promises, parallelism);
+  await eachLimitPromise(promises, parallelism);
 }
 invokeIntervalAsync(doBackupScanner, 1000);
