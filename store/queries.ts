@@ -173,7 +173,7 @@ export async function getHeroItemPopularity(
   );
     const items = purchaseLogs.rows
       .flatMap((purchaseLog) => purchaseLog.purchase_log)
-      .filter((item) => item && item.key && item.time != null)
+      .filter((item) => item && item.key && item.time != null && constants.items[item.key])
       .map((item) => {
         const time = parseInt(item.time, 10);
         const { cost, id } = constants.items[item.key];
