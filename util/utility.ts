@@ -803,40 +803,34 @@ export function getRetrieverArr(useGcDataArr?: boolean) {
 export async function redisCount(redis: Redis | null, prefix: MetricName) {
   const redisToUse =
     redis ?? (require('../store/redis' + '').default as unknown as Redis);
-  const key = `${prefix}:${moment().startOf('hour').format('X')}`;
-  await redisToUse?.pfadd(key, uuid.v4());
+  const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
+  await redisToUse?.incr(key);
   await redisToUse?.expireat(
     key,
     moment().startOf('hour').add(1, 'day').format('X')
   );
 }
-export function getRedisCountDay(
+export async function getRedisCountDay(
   redis: Redis,
   prefix: MetricName,
-  cb: NonUnknownErrorCb
 ) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(
-      `${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`
+      `${prefix}:v2:${moment().startOf('hour').subtract(i, 'hour').format('X')}`
     );
   }
-  redis.pfcount(...keyArr, cb);
+  const counts = await redis.mget(...keyArr);
+  return counts.reduce((a, b) => Number(a) + Number(b), 0);
 }
-export function getRedisCountHour(
+export async function getRedisCountHour(
   redis: Redis,
   prefix: MetricName,
-  cb: NonUnknownErrorCb
 ) {
   // Get counts for previous full hour (not current)
-  const keyArr = [];
-  for (let i = 1; i < 2; i += 1) {
-    keyArr.push(
-      `${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`
-    );
-  }
-  redis.pfcount(...keyArr, cb);
+  const result = await redis.get(`${prefix}:v2:${moment().startOf('hour').subtract(1, 'hour').format('X')}`);
+  return Number(result);
 }
 /**
  * invokes a function immediately, waits for callback, waits the delay, and then calls it again
