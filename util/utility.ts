@@ -526,11 +526,13 @@ export function buildReplayUrl(
   replaySalt: number,
   meta?: boolean
 ) {
-  let suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
+  let suffix = '.dem.bz2';
   if (meta) {
     suffix = '.meta.bz2';
   }
-  if (cluster === 236) {
+  if (config.NODE_ENV === 'test') {
+    return  `https://odota.github.io/testfiles/${matchId}_${replaySalt}${suffix.replace('.bz2', '')}`;
+  } else if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
   }
   return `http://replay${cluster}.valve.net/570/${matchId}_${replaySalt}${suffix}`;
