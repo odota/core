@@ -11,11 +11,13 @@ import retrieverMatch from '../test/data/retriever_match.json';
 async function fetchGcData(job: GcDataJob): Promise<void> {
   const matchId = job.match_id;
   const noRetry = job.noRetry;
+  let retryCount = 0;
   const url = getRandomRetrieverUrl({ matchId });
   let body: typeof retrieverMatch | undefined = undefined;
   do {
     try {
-      console.log(url);
+      retryCount += 1;
+      console.log(url, 'attempt:', retryCount);
       const { data } = await axios.get(url, { timeout: 5000 });
       body = data;
     } catch(e) {
