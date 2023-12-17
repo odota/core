@@ -85,6 +85,7 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
     type: 'gcdata',
     skipParse: true,
     pgroup: job.pgroup,
+    endedAt: body.match.starttime + body.match.duration,
   });
   return;
 }

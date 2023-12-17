@@ -109,12 +109,14 @@ async function parseProcessor(job: ParseJob) {
 
     const insertStart = Date.now();
     // const { getParseSchema } = await import('../processors/parseSchema.mjs');
+    // start_time and duration used for calculating dust adjustments and APM
     const result: ParserMatch = { ...JSON.parse(stdout), match_id: job.match_id, leagueid, start_time, duration };
     await insertMatch(result, {
       type: 'parsed',
       skipParse: true,
       origin: job.origin,
       pgroup,
+      endedAt: start_time + duration,
     });
     insertTime = Date.now() - insertStart;
 

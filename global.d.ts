@@ -207,9 +207,7 @@ type GcData = {
 
 // Data to pass to insertMatch from GC
 interface GcMatch extends GcData {
-  // Not currently passed but we just use it for logging
-  start_time?: number;
-  duration?: number;
+  // No additional fields currently
 }
 
 interface GcPlayer {
@@ -234,10 +232,6 @@ interface ParserMatch {
   objectives: any[];
   radiant_gold_adv: number[];
   players: ParserPlayer[];
-
-  // Just used for logging
-  start_time: number;
-  duration: number;
 }
 
 interface ParserPlayer extends Partial<Player> {
@@ -354,6 +348,7 @@ type InsertMatchOptions = {
   priority?: number;
   attempts?: number;
   pgroup?: PGroup;
+  endedAt?: number;
 };
 
 type PathVerbSpec = {
