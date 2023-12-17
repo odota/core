@@ -224,15 +224,20 @@ interface GcPlayer {
 
 interface ParserMatch {
   match_id: number;
+  // Needed to determine whether to insert pro match data
   leagueid: number;
-  start_time: number;
-  duration: number;
+
+  // Parsed fields
   version: number;
   chat: any[];
   cosmetics: any;
   objectives: any[];
   radiant_gold_adv: number[];
   players: ParserPlayer[];
+
+  // Just used for logging
+  start_time: number;
+  duration: number;
 }
 
 interface ParserPlayer extends Partial<Player> {
@@ -289,11 +294,7 @@ type ScenariosJob = string;
 
 type ParseJob = {
   match_id: number;
-  pgroup: PGroup;
-  leagueid?: number;
   origin?: DataOrigin;
-  start_time: number;
-  duration: number;
 };
 
 type QueueJob = QueueInput['data'];

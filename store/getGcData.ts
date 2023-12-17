@@ -124,7 +124,7 @@ export async function getGcData(
   match: GcDataJob
 ): Promise<GcDataRow> {
   const matchId = match.match_id;
-  if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
+  if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     throw new Error('invalid match_id');
   }
   // Check if we have gcdata cached

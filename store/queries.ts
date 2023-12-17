@@ -299,7 +299,7 @@ export async function getPlayerMatchesPromiseWithMetadata(
   queryObj: QueryObj
 ): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
   // Validate accountId
-  if (!accountId || Number.isNaN(Number(accountId)) || Number(accountId) <= 0) {
+  if (!accountId || !Number.isInteger(Number(accountId)) || Number(accountId) <= 0) {
     return [[], null];
   }
   // call clean method to ensure we have column info cached
@@ -810,7 +810,7 @@ function createMatchCopy(match: any): Match {
   return copy;
 }
 
-function getPGroup(match: ApiMatch): PGroup {
+export function getPGroup(match: ApiMatch): PGroup {
   // This works if we are an API insert, but not for parsed and we don't currently construct it for gcdata
   // Also, if coming from gcdata we can construct a better pgroup with account IDs
   const result: PGroup = {};
@@ -1194,12 +1194,6 @@ export async function insertMatch(
         name: 'parse',
         data: {
           match_id: match.match_id,
-          // leagueid to determine whether to upsert Postgres after parse
-          leagueid: match.leagueid,
-          // start_time and duration for logging
-          start_time: match.start_time!,
-          duration: match.duration!,
-          pgroup,
           origin: options.origin,
         },
       },

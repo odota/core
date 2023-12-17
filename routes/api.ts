@@ -31,7 +31,7 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
 });
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
-  if (Number.isNaN(Number(req.params.account_id))) {
+  if (!Number.isInteger(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
   (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(JSON.stringify(req.query));
@@ -62,13 +62,13 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   return cb();
 });
 api.use('/teams/:team_id/:info?', (req, res, cb) => {
-  if (Number.isNaN(Number(req.params.team_id))) {
+  if (!Number.isInteger(Number(req.params.team_id))) {
     return res.status(400).json({ error: 'invalid team id' });
   }
   return cb();
 });
 api.use('/request/:jobId', (req, res, cb) => {
-  if (Number.isNaN(Number(req.params.jobId))) {
+  if (!Number.isInteger(Number(req.params.jobId))) {
     return res.status(400).json({ error: 'invalid job id' });
   }
   return cb();

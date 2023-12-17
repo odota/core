@@ -51,7 +51,7 @@ const initScyllaHost = url.parse(SCYLLA_URL).host as string;
 let app: Express;
 // fake api responses
 nock('http://api.steampowered.com')
-  // fake 500 error
+  // fake 500 error to test error handling
   .get('/IDOTA2Match_570/GetMatchDetails/V001/')
   .query(true)
   .reply(500, {})
@@ -138,9 +138,8 @@ describe('replay parse', async function() {
   const key = Object.keys(tests)[0];
   before(async () => {
     const matchData = tests[key];
-    // Fake being a league match so we ingest into postgres
+    // This match is not a pro match, but we set the leagueid to 5399 so we get data in postgres
     // We could do this with a real pro match but we'd have to upload a new replay file
-    matchData.leagueid = 5399;
     console.log('inserting and parsing match');
     const job = await insertMatch(matchData, {
       type: 'api',

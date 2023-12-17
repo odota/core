@@ -1694,52 +1694,34 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/request/:match_id',
-        func: async (req, res) => {
-          const matchId = req.params.match_id;
-          const input = {
-            match_id: Number(matchId),
-          };
+        func: async (req, res, cb) => {
           try {
-            if (input && input.match_id) {
-              // match id request, get data from API
-              const body = await getDataPromise(
-                generateJob('api_details', input).url
-              );
+            const matchId = req.params.match_id;
+            if (matchId && Number.isInteger(Number(matchId)) && Number(matchId) > 0) {
               // Count this request
               redisCount(redis, 'request');
               if (req.query.api_key) {
                 redisCount(redis, 'request_api_key');
               }
-              // match details response
-              const match = body.result;
-              const job = await insertMatch(match, {
-                type: 'api',
+              const parseJob = await queue.addReliableJob({
+                name: 'parse',
+                data: { match_id: Number(matchId) },
+              }, {
                 attempts: 1,
                 priority: req.query.api_key ? 2 : 1,
-                forceParse: true,
               });
-              exitWithJob(null, job);
+              return res.status(200).json({
+                job: {
+                  jobId: parseJob.id,
+                },
+              });
             } else {
-              return exitWithJob('invalid input');
+              return res.status(400).json({
+                error: 'Invalid input',
+              });
             }
           } catch (e) {
-            return exitWithJob(e);
-          }
-          function exitWithJob(
-            err: Error | string | null | unknown,
-            parseJob?: { id: number } | null
-          ) {
-            if (err) {
-              console.error(err);
-              return res.status(400).json({
-                error: err,
-              });
-            }
-            return res.status(200).json({
-              job: {
-                jobId: parseJob && parseJob.id,
-              },
-            });
+            return cb(e);
           }
         },
       },

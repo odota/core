@@ -104,7 +104,7 @@ async function doBuildMatch(
   matchId: string,
   options: { meta?: string }
 ) {
-  if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
+  if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
   let match: Partial<ParsedMatch> | null = null;
