@@ -748,62 +748,7 @@ export async function insertPlayerCache(match: Match, pgroup: PGroup, type: stri
     })
   );
 }
-async function updateTeamRankings(match: Match, options: InsertMatchOptions) {
-  if (
-    options.origin === 'scanner' &&
-    options.type === 'api' &&
-    match.radiant_team_id &&
-    match.dire_team_id &&
-    match.radiant_win !== undefined
-  ) {
-    const team1 = match.radiant_team_id;
-    const team2 = match.dire_team_id;
-    const team1Win = Number(match.radiant_win);
-    const kFactor = 32;
-    const data1 = await db
-      .select('rating')
-      .from('team_rating')
-      .where({ team_id: team1 });
-    const data2 = await db
-      .select('rating')
-      .from('team_rating')
-      .where({ team_id: team2 });
-    const currRating1 = Number((data1 && data1[0] && data1[0].rating) || 1000);
-    const currRating2 = Number((data2 && data2[0] && data2[0].rating) || 1000);
-    const r1 = 10 ** (currRating1 / 400);
-    const r2 = 10 ** (currRating2 / 400);
-    const e1 = r1 / (r1 + r2);
-    const e2 = r2 / (r1 + r2);
-    const win1 = team1Win;
-    const win2 = Number(!team1Win);
-    const ratingDiff1 = kFactor * (win1 - e1);
-    const ratingDiff2 = kFactor * (win2 - e2);
-    const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
-    ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?`;
-    await db.raw(query, [
-      team1,
-      currRating1 + ratingDiff1,
-      win1,
-      Number(!win1),
-      match.start_time,
-      ratingDiff1,
-      win1,
-      Number(!win1),
-      match.start_time,
-    ]);
-    await db.raw(query, [
-      team2,
-      currRating2 + ratingDiff2,
-      win2,
-      Number(!win2),
-      match.start_time,
-      ratingDiff2,
-      win2,
-      Number(!win2),
-      match.start_time,
-    ]);
-  }
-}
+
 function createMatchCopy(match: any): Match {
   // Makes a deep copy of the original match
   const copy = JSON.parse(JSON.stringify(match));
@@ -930,6 +875,62 @@ export async function insertMatch(
         })
       );
     }
+    async function updateTeamRankings() {
+      if (
+        options.origin === 'scanner' &&
+        options.type === 'api' &&
+        match.radiant_team_id &&
+        match.dire_team_id &&
+        match.radiant_win !== undefined
+      ) {
+        const team1 = match.radiant_team_id;
+        const team2 = match.dire_team_id;
+        const team1Win = Number(match.radiant_win);
+        const kFactor = 32;
+        const data1 = await trx
+          .select('rating')
+          .from('team_rating')
+          .where({ team_id: team1 });
+        const data2 = await trx
+          .select('rating')
+          .from('team_rating')
+          .where({ team_id: team2 });
+        const currRating1 = Number((data1 && data1[0] && data1[0].rating) || 1000);
+        const currRating2 = Number((data2 && data2[0] && data2[0].rating) || 1000);
+        const r1 = 10 ** (currRating1 / 400);
+        const r2 = 10 ** (currRating2 / 400);
+        const e1 = r1 / (r1 + r2);
+        const e2 = r2 / (r1 + r2);
+        const win1 = team1Win;
+        const win2 = Number(!team1Win);
+        const ratingDiff1 = kFactor * (win1 - e1);
+        const ratingDiff2 = kFactor * (win2 - e2);
+        const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
+        ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?`;
+        await trx.raw(query, [
+          team1,
+          currRating1 + ratingDiff1,
+          win1,
+          Number(!win1),
+          match.start_time,
+          ratingDiff1,
+          win1,
+          Number(!win1),
+          match.start_time,
+        ]);
+        await db.raw(query, [
+          team2,
+          currRating2 + ratingDiff2,
+          win2,
+          Number(!win2),
+          match.start_time,
+          ratingDiff2,
+          win2,
+          Number(!win2),
+          match.start_time,
+        ]);
+      }
+    }
     const trx = await db.transaction();
     try {
       await upsertMatch();
@@ -937,12 +938,12 @@ export async function insertMatch(
       await upsertPicksBans();
       await upsertMatchPatch();
       await upsertTeamMatch();
+      await updateTeamRankings();
     } catch (e) {
       trx.rollback();
       throw e;
     }
     await trx.commit();
-    await updateTeamRankings(match as Match, options);
   }
   async function upsertMatchCassandra(match: InsertMatchInput) {
     // TODO (blobstore) delete this when we verify all old match data in matches/player_matches has been archived
