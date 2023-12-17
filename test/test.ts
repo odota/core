@@ -35,6 +35,7 @@ import { es } from '../store/elasticsearch';
 import redis from '../store/redis';
 import db from '../store/db';
 import cassandra from '../store/cassandra.js';
+import c from 'ansi-colors';
 
 const { Pool } = pg;
 const {
@@ -58,7 +59,8 @@ nock('http://api.steampowered.com')
   // fake match details
   .get('/IDOTA2Match_570/GetMatchDetails/V001/')
   .query(true)
-  .times(10)
+  // Once on insert call and once during parse processor
+  .times(2)
   .reply(200, detailsApi)
   // fake player summaries
   .get('/ISteamUser/GetPlayerSummaries/v0002/')
@@ -77,14 +79,16 @@ nock('http://api.steampowered.com')
   .query(true)
   .reply(200, leaguesApi);
 nock(`http://${RETRIEVER_HOST}`)
-  // fake mmr response
-  .get('/?account_id=88367253')
+.get(/\?key=&account_id=.*/)
+// fake mmr response up to 7 times for 7 non-anonymous players in test match
+  .times(7)
   .reply(200, retrieverPlayer)
   // fake GC match details
   .get('/?key=&match_id=1781962623')
   .reply(200, retrieverMatch);
 before(async function setup() {
   this.timeout(60000);
+  config.ENABLE_RANDOM_MMR_UPDATE = '1';
   await initPostgres();
   await initElasticsearch();
   await initRedis();
@@ -94,7 +98,7 @@ before(async function setup() {
   await loadMatches();
   await loadPlayers();
 });
-describe('swagger schema', async function testSwaggerSchema() {
+describe(c.blue('[TEST] swagger schema'), async function testSwaggerSchema() {
   this.timeout(2000);
   it('should be valid', (cb) => {
     const validOpts = {
@@ -118,7 +122,7 @@ describe('swagger schema', async function testSwaggerSchema() {
     );
   });
 });
-describe('player_caches', async () => {
+describe(c.blue('[TEST] player_caches'), async () => {
   // Test fetching matches for first player
   let data = null;
   before(async () => {
@@ -130,7 +134,13 @@ describe('player_caches', async () => {
     assert.equal(data.length, 1);
   });
 });
-describe('replay parse', async function() {
+describe(c.blue('[TEST] rank_tier'), async () => {
+  it('should have rank_tier data', async () => {
+    const row = await db.select('rating').from('rank_tier').where({ account_id: 120269134 }).first();
+    assert.equal(row.rating, 80);
+  });
+});
+describe(c.blue('[TEST] replay parse'), async function() {
   this.timeout(120000);
   const tests: AnyDict = {
     '1781962623_1.dem': detailsApi.result,
@@ -198,7 +208,7 @@ describe('replay parse', async function() {
     assert.equal(result.rows.length, 7);
   });
 });
-describe('teamRanking', () => {
+describe(c.blue('[TEST] teamRanking'), () => {
   it('should have team rankings', async () => {
     const rows = await db
       .select(['team_id', 'rating', 'wins', 'losses'])
@@ -212,7 +222,7 @@ describe('teamRanking', () => {
     assert(loser.rating < winner.rating);
   });
 });
-describe('api routes', async function () {
+describe(c.blue('[TEST] api routes'), async function () {
   this.timeout(5000);
   before(async () => {
   const tests: string[][] = [];
@@ -265,7 +275,7 @@ it('placeholder', () => {
   assert(true);
 });
 });
-describe('api management', () => {
+describe(c.blue('[TEST] api management'), () => {
   beforeEach(function getApiRecord(done) {
     db.from('api_keys')
       .where({
@@ -577,7 +587,7 @@ describe('api management', () => {
       .catch((err) => done(err));
   });
 });
-describe('api limits', () => {
+describe(c.blue('[TEST] api limits'), () => {
   before((done) => {
     config.ENABLE_API_LIMIT = '1';
     config.API_FREE_LIMIT = 10;
@@ -844,6 +854,7 @@ async function startServices() {
   console.log('starting services');
   app = (await import('../svc/web.ts' + '')).default as unknown as Express;
   await import('../svc/parser.ts' + '');
+  await import('../svc/mmr.ts' + '');
 }
 
 async function loadMatches() {
@@ -867,7 +878,7 @@ async function loadPlayers() {
 }
 
 /*
-describe('generateMatchups', () => {
+describe(c.blue('[TEST] generateMatchups'), () => {
   it('should generate matchups', (done) => {
     // in this sample match
     // 1,6,52,59,105:46,73,75,100,104:1
