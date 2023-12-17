@@ -77,6 +77,7 @@ async function start() {
   } else if (config.NODE_ENV !== 'production') {
     // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
     const container = generateJob('api_history', {});
+    // Just get the approximate current seq num
     const data = await getDataPromise(container.url);
     await scanApi(data.result.matches[0].match_seq_num);
   } else {
