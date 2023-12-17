@@ -172,12 +172,6 @@ const jobs = {
       type: 'api',
     };
   },
-  steam_cdn_team_logos(type: string, payload: any) {
-    return {
-      url: `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${payload.team_id}.png`,
-      type: 'steam_cdn',
-    };
-  },
 };
 /**
  * A wrapper around HTTP requests that handles:
@@ -187,7 +181,7 @@ const jobs = {
  * Errors from Steam API
  * */
 type GetDataOptions = {
-  url: string | string[];
+  url: string;
   delay?: number;
   timeout?: number;
   raw?: boolean;
@@ -198,13 +192,7 @@ function getData(url: string | GetDataOptions, cb: ErrorCb) {
   let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
   if (typeof url === 'object' && url && url.url) {
-    // options object
-    if (Array.isArray(url.url)) {
-      // select a random element if array
-      u = url.url[Math.floor(Math.random() * url.url.length)];
-    } else {
-      u = url.url;
-    }
+    u = url.url;
     delay = url.delay || delay;
     timeout = url.timeout || timeout;
   } else {
@@ -778,22 +766,31 @@ export function getLaneFromPosData(
     is_roaming: isRoaming,
   };
 }
-/**
- * Get array of retriever endpoints from config
- * */
-export function getRetrieverArr(useGcDataArr?: boolean) {
-  const parserHosts = useGcDataArr ? config.GCDATA_RETRIEVER_HOST : '';
-  const input = parserHosts || config.RETRIEVER_HOST;
-  const output: string[] = [];
-  const arr = input.split(',');
-  arr.forEach((element) => {
-    const parsedUrl = urllib.parse(`http://${element}`, true);
-    for (let i = 0; i < (Number(parsedUrl.query.size) || 1); i += 1) {
-      output.push(parsedUrl.host as string);
-    }
-  });
-  return output;
+
+// Generate a list of hosts to use for GC data retrieval. Supports weighting using the size URL query parameter
+const input = config.RETRIEVER_HOST;
+const RETRIEVER_ARRAY: string[] = [];
+const arr = input.split(',');
+arr.forEach((element) => {
+  const parsedUrl = urllib.parse(`http://${element}`, true);
+  for (let i = 0; i < (Number(parsedUrl.query.size) || 1); i += 1) {
+    RETRIEVER_ARRAY.push(parsedUrl.host as string);
+  }
+});
+export function getRetrieverCount() {
+  return RETRIEVER_ARRAY.length;
 }
+/**
+ * Return a URL to use for GC data retrieval.
+ * @returns 
+ */
+export function getRandomRetrieverUrl({accountId, matchId}: { accountId?: string | number, matchId?: string | number}): string {
+  const urls = RETRIEVER_ARRAY.map(
+    (r) => `http://${r}?key=${config.RETRIEVER_SECRET}${accountId ? `&account_id=${accountId}` : ''}${matchId ? `&match_id=${matchId}` : ''}`
+  );
+  return urls[Math.floor(Math.random() * urls.length)];
+}
+
 export async function redisCount(redis: Redis | null, prefix: MetricName) {
   const redisToUse =
     redis ?? (require('../store/redis' + '').default as unknown as Redis);

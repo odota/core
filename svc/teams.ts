@@ -1,4 +1,5 @@
 // Updates the list of teams in the database
+import axios from 'axios';
 import db from '../store/db';
 import { upsert } from '../store/queries';
 import {
@@ -45,24 +46,18 @@ async function doTeams() {
     const ugcJob = generateJob('api_get_ugc_file_details', {
       ugcid: logoUgc,
     });
-    const cdnJob = generateJob('steam_cdn_team_logos', {
-      team_id: m.team_id,
-    });
     // Steam's CDN sometimes has better versions of team logos available
     try {
-      const cdnBody = await getDataPromise({
-        url: cdnJob.url,
-        noRetry: true,
+      const cdnUrl = `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${m.team_id}.png`;
+      // Check if it exists
+      await axios.head(cdnUrl);
+      t.team_id = m.team_id;
+      t.logo_url = cdnUrl;
+      // console.log('[TEAMS] cdn: ', t);
+      await upsert(db, 'teams', t, {
+        team_id: m.team_id,
       });
-      if (cdnBody) {
-        t.team_id = m.team_id;
-        t.logo_url = cdnJob.url;
-        // console.log('[TEAMS] cdn: ', t);
-        await upsert(db, 'teams', t, {
-          team_id: m.team_id,
-        });
-        continue;
-      }
+      continue;
     } catch {
       // This is fine, we failed to get CDN image info
       // Try getting image from ugc

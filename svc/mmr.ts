@@ -4,15 +4,14 @@ import db from '../store/db';
 import redis from '../store/redis';
 import { insertPlayerRating, upsertPlayer } from '../store/queries';
 import config from '../config.js';
-import { getDataPromise, redisCount, getRetrieverArr } from '../util/utility';
-const retrieverArr = getRetrieverArr();
+import { getRetrieverCount, redisCount, getRandomRetrieverUrl } from '../util/utility';
+import axios from 'axios';
 
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
-  const urls = retrieverArr.map(
-    (r) => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
-  );
-  const data = await getDataPromise({ url: urls });
+  const url = getRandomRetrieverUrl({ accountId });
+  console.log(url);
+  const { data } = await axios.get(url);
   redisCount(redis, 'retriever_player');
   // NOTE: To reduce the number of updates on the player table
   // Only write it sometimes, unless we're in dev mode
@@ -37,6 +36,6 @@ async function processMmr(job: MmrJob) {
 }
 queue.runQueue(
   'mmrQueue',
-  config.MMR_PARALLELISM * retrieverArr.length,
+  config.MMR_PARALLELISM * getRetrieverCount(),
   processMmr
 );

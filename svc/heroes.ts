@@ -1,4 +1,5 @@
 // Updates the heroes in the database
+import axios from 'axios';
 import db from '../store/db';
 import { upsert } from '../store/queries';
 import {
@@ -15,9 +16,8 @@ async function doHeroes() {
   if (!body || !body.result || !body.result.heroes) {
     return;
   }
-  const heroData = await getDataPromise(
-    'https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json'
-  );
+  const heroResp = await axios.get('https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json');
+  const heroData = heroResp.data;
   if (!heroData) {
     return;
   }

@@ -3,12 +3,9 @@
 import { getGcData } from '../store/getGcData';
 import queue from '../store/queue';
 import config from '../config.js';
-import { getRetrieverArr } from '../util/utility';
-
-const retrieverArr = getRetrieverArr();
+import { getRetrieverCount } from '../util/utility';
 
 async function processGcData(job: GcDataJob) {
-  job.useGcDataArr = true;
   // We don't need the result, but we do want to respect the DISABLE_REGCDATA setting
   await getGcData(job);
 }
@@ -16,6 +13,6 @@ async function processGcData(job: GcDataJob) {
 console.log('[GCDATA] starting');
 queue.runQueue(
   'gcQueue',
-  Number(config.GCDATA_PARALLELISM) * retrieverArr.length,
+  Number(config.GCDATA_PARALLELISM) * getRetrieverCount(),
   processGcData
 );

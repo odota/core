@@ -282,7 +282,6 @@ type MmrJob = {
 type GcDataJob = {
   match_id: number;
   pgroup: PGroup;
-  useGcDataArr?: boolean;
   noRetry?: boolean;
 };
 

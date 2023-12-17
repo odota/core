@@ -4,21 +4,29 @@ import { insertMatch, upsert } from './queries';
 import db from './db';
 import redis from './redis';
 import cassandra from './cassandra';
-import { getDataPromise, getRetrieverArr, redisCount } from '../util/utility';
-const secret = config.RETRIEVER_SECRET;
+import { getRandomRetrieverUrl, redisCount } from '../util/utility';
+import axios from 'axios';
+import retrieverMatch from '../test/data/retriever_match.json';
 
 async function fetchGcData(job: GcDataJob): Promise<void> {
-  // Make the GC call to populate the data
-  const retrieverArr = getRetrieverArr(job.useGcDataArr);
-  // make array of retriever urls and use a random one on each retry
-  const urls = retrieverArr.map(
-    (r) => `http://${r}?key=${secret}&match_id=${job.match_id}`
-  );
-  const body = await getDataPromise({
-    url: urls,
-    noRetry: job.noRetry,
-    timeout: 5000,
-  });
+  const matchId = job.match_id;
+  const noRetry = job.noRetry;
+  const url = getRandomRetrieverUrl({ matchId });
+  let body: typeof retrieverMatch | undefined = undefined;
+  do {
+    try {
+      console.log(url);
+      const { data } = await axios.get(url, { timeout: 5000 });
+      body = data;
+    } catch(e) {
+      if (axios.isAxiosError(e)) {
+        console.log(e.toJSON())
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        throw e;
+      }
+    }
+  } while (!body || noRetry);
   if (!body || !body.match || !body.match.replay_salt || !body.match.players) {
     // non-retryable error
     // redis.lpush('nonRetryable', JSON.stringify({ matchId: match.match_id, body }));
@@ -39,7 +47,7 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
     player_slot: p.player_slot,
     party_id: p.party_id?.low,
     permanent_buffs: p.permanent_buffs,
-    party_size: body.match.players.filter(
+    party_size: body!.match.players.filter(
       (matchPlayer: any) => matchPlayer.party_id?.low === p.party_id?.low
     ).length,
     // If we want to start adding basic data for anonymous players in player_caches we can put k/d/a/hd/td etc here too

@@ -8,15 +8,15 @@ import {
   getDataPromise,
   invokeIntervalAsync,
 } from '../util/utility';
+import axios from 'axios';
 
 async function doCosmetics() {
-  const items = await getDataPromise({
-    url: 'https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt',
-    raw: true,
-  });
-  const icons = await getDataPromise(
+  const itemsResp = await axios.get('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt', {responseType: 'text'});
+  const items = itemsResp.data;
+  const iconsResp = await axios.get(
     'https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json'
   );
+  const icons = iconsResp.data;
   const itemData = vdf.parse(cleanItemSchema(items));
 
   async function processItem(itemId: string) {
