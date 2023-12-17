@@ -192,6 +192,9 @@ describe('replay parse', async function() {
     // Assert that parsed data is in player_caches
     assert.ok(result.rows[0].stuns);
 
+    // Assert that gc data is in player_caches
+    assert.ok(result.rows[0].party_size);
+
     // There should be 7 rows in player_caches for this match since there are 3 anonymous players
     assert.equal(result.rows.length, 7);
   });

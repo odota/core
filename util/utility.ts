@@ -172,14 +172,6 @@ const jobs = {
       type: 'api',
     };
   },
-  parse(type: string, payload: any) {
-    return {
-      title: [type, payload.match_id].join(),
-      type,
-      url: payload.url,
-      payload,
-    };
-  },
   steam_cdn_team_logos(type: string, payload: any) {
     return {
       url: `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${payload.team_id}.png`,
