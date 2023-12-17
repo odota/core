@@ -742,7 +742,7 @@ export async function insertPlayerCache(match: Match, pgroup: PGroup, type: stri
       await cassandra.execute(query, arr, {
         prepare: true,
       });
-      if (config.NODE_ENV === 'development' && cleanedMatch.player_slot === 0) {
+      if ((config.NODE_ENV === 'development' || config.NODE_ENV === 'test') && cleanedMatch.player_slot === 0) {
         fs.writeFileSync('./json/' + match.match_id + `_playercache_${type}_${playerMatch.player_slot}.json`, JSON.stringify(cleanedMatch, null, 2));
       }
     })
@@ -818,7 +818,6 @@ function getPGroup(match: ApiMatch): PGroup {
     result[p.player_slot] = {
       account_id: p.account_id,
       hero_id: p.hero_id,
-      player_slot: p.player_slot,
     };
   });
   return result;
@@ -1032,7 +1031,7 @@ export async function insertMatch(
         prepare: true,
       }
     );
-    if (config.NODE_ENV === 'development') {
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       fs.writeFileSync('./json/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy, null, 2));
     }
   }

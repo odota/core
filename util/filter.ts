@@ -94,7 +94,7 @@ const filterFuncs: {
       Object.keys(m.heroes || {}).forEach((key) => {
         if (
           m.heroes[key].account_id === k &&
-          isRadiant(m.heroes[key]) === isRadiant(m)
+          isRadiant({ player_slot: Number(key) }) === isRadiant(m)
         ) {
           passed = true;
         }
@@ -108,7 +108,7 @@ const filterFuncs: {
       Object.keys(m.heroes || {}).forEach((key) => {
         if (
           m.heroes[key].account_id === k &&
-          isRadiant(m.heroes[key]) !== isRadiant(m)
+          isRadiant({ player_slot: Number(key) }) !== isRadiant(m)
         ) {
           passed = true;
         }
@@ -122,7 +122,7 @@ const filterFuncs: {
       Object.keys(m.heroes || {}).forEach((key) => {
         if (
           m.heroes[key].hero_id === k &&
-          isRadiant(m.heroes[key]) === isRadiant(m)
+          isRadiant({ player_slot: Number(key) }) === isRadiant(m)
         ) {
           passed = true;
         }
@@ -136,7 +136,7 @@ const filterFuncs: {
       Object.keys(m.heroes || {}).forEach((key) => {
         if (
           m.heroes[key].hero_id === k &&
-          isRadiant(m.heroes[key]) !== isRadiant(m)
+          isRadiant({ player_slot: Number(key) }) !== isRadiant(m)
         ) {
           passed = true;
         }

@@ -417,6 +417,5 @@ type PGroup = {
     // Optional because some players are anonymous
     account_id?: number,
     hero_id: number,
-    player_slot: number,
   }
 }

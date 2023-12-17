@@ -1,0 +1,73 @@
+{
+  "account_id": 87382579,
+  "player_slot": 0,
+  "hero_id": 107,
+  "item_0": 0,
+  "item_1": 0,
+  "item_2": 0,
+  "item_3": 214,
+  "item_4": 181,
+  "item_5": 34,
+  "kills": 3,
+  "deaths": 6,
+  "assists": 5,
+  "leaver_status": 0,
+  "last_hits": 17,
+  "denies": 6,
+  "gold_per_min": 190,
+  "xp_per_min": 232,
+  "level": 12,
+  "hero_damage": 6815,
+  "tower_damage": 38,
+  "hero_healing": 0,
+  "radiant_win": false,
+  "duration": 1888,
+  "start_time": 1497678766,
+  "match_id": 3254426673,
+  "cluster": 225,
+  "lobby_type": 1,
+  "game_mode": 2,
+  "heroes": {
+    "0": {
+      "account_id": 87382579,
+      "hero_id": 107
+    },
+    "1": {
+      "account_id": 103735745,
+      "hero_id": 110
+    },
+    "2": {
+      "account_id": 86725175,
+      "hero_id": 18
+    },
+    "3": {
+      "account_id": 86700461,
+      "hero_id": 101
+    },
+    "4": {
+      "account_id": 38628747,
+      "hero_id": 41
+    },
+    "128": {
+      "account_id": 82327674,
+      "hero_id": 20
+    },
+    "129": {
+      "account_id": 149486894,
+      "hero_id": 94
+    },
+    "130": {
+      "account_id": 117281554,
+      "hero_id": 6
+    },
+    "131": {
+      "account_id": 87012746,
+      "hero_id": 13
+    },
+    "132": {
+      "account_id": 139876032,
+      "hero_id": 16
+    }
+  },
+  "kda": 1.14
+}
