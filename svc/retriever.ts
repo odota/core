@@ -20,8 +20,8 @@ const accountsToUse = 5;
 // maybe can do 1000 per IP now?
 const matchRequestLimit = 600;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 500;
-const matchRequestDelayStep = 3;
+const matchRequestDelay = 700;
+const matchRequestDelayStep = 1;
 let matchRequestDelayIncr = 0;
 let lastRequestTime: number | null = null;
 let matchRequests = 0;
