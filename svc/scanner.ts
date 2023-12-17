@@ -1,7 +1,7 @@
 // Fetches new matches from the Steam API using the sequential endpoint
 import config from '../config.js';
 import redis from '../store/redis';
-import { insertMatch } from '../store/queries';
+import { ApiMatch, insertMatch } from '../store/queries';
 import { generateJob, getDataPromise, redisCount } from '../util/utility';
 
 const delay = Number(config.SCANNER_DELAY);
@@ -34,7 +34,7 @@ async function scanApi(seqNum: number) {
     const resp =
       data && data.result && data.result.matches ? data.result.matches : [];
     console.log('[API] match_seq_num:%s, matches:%s', nextSeqNum, resp.length);
-    await Promise.all(resp.map((match: Match) => processMatch(match)));
+    await Promise.all(resp.map((match: ApiMatch) => processMatch(match)));
     // Completed inserting matches on this page so update redis
     if (resp.length) {
       nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
@@ -51,7 +51,7 @@ async function scanApi(seqNum: number) {
   }
 }
 
-async function processMatch(match: Match) {
+async function processMatch(match: ApiMatch) {
   // Optionally throttle inserts to prevent overload
   if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
     return;

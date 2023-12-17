@@ -60,7 +60,7 @@ type Match = {
   picks_bans?: any[];
   human_players: number;
 
-  heroes: PGroup;
+  // Added at insert
   average_rank?: number;
 
   // Parsed match metadata from .meta file
@@ -86,7 +86,7 @@ interface ParsedMatch extends Match {
 
 type Player = {
   player_slot: number;
-  account_id?: number | null;
+  account_id?: number;
   hero_id: number;
   kills: number;
   deaths: number;
@@ -195,23 +195,6 @@ interface ParsedPlayer extends Player {
   rank_tier?: number;
 }
 
-interface GcMatch extends Partial<Match> {
-  // Most properties are not present except for a few
-  match_id: number;
-  players: GcPlayer[];
-  series_id: number;
-  series_type: number;
-  cluster: number;
-  replay_salt: number;
-}
-
-interface GcPlayer extends Partial<Player> {
-  player_slot: number;
-  party_id: number;
-  party_size: number;
-  permanent_buffs: any[];
-}
-
 // Data to save from GC, can be read out
 type GcData = {
   match_id: number;
@@ -222,8 +205,26 @@ type GcData = {
   players: GcPlayer[]
 }
 
-interface ParserMatch extends Partial<Match> {
+// Data to pass to insertMatch from GC
+interface GcMatch extends GcData {
+  // Not currently passed but we just use it for logging
+  start_time?: number;
+  duration?: number;
+}
+
+interface GcPlayer {
+  player_slot: number;
+  party_id: number;
+  party_size: number;
+  permanent_buffs: any[];
+
+  // Currently not passed
+  account_id?: number;
+}
+
+interface ParserMatch {
   match_id: number;
+  leagueid: number;
   start_time: number;
   duration: number;
   version: number;
@@ -239,8 +240,6 @@ interface ParserPlayer extends Partial<Player> {
   kills_log: any[];
   // plus more parsed properties
 }
-
-type InsertMatchInput = Match | ParserMatch | GcMatch;
 
 type PlayerMatch = Player & Match & { players?: Player[] };
 type ParsedPlayerMatch = ParsedPlayer &
@@ -416,7 +415,7 @@ type MetricName =
 type PGroup = {
   [player_slot: string]: {
     // Optional because some players are anonymous
-    account_id?: number | null,
+    account_id?: number,
     hero_id: number,
     player_slot: number,
   }

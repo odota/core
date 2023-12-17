@@ -852,7 +852,7 @@ async function loadMatches() {
   const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
   for (let i = 0; i < arr.length; i++) {
     const m = arr[i];
-    await insertMatch(m as unknown as Match, {
+    await insertMatch(m, {
       type: 'api',
       origin: 'scanner',
       skipParse: true,

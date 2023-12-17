@@ -38,6 +38,8 @@ import {
   parallelPromise,
 } from '../util/utility';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
+import apiMatch from '../test/data/details_api.json';
+import apiMatchPro from '../test/data/details_api_pro.json';
 
 const columnInfo: AnyDict = {};
 const cassandraColumnInfo: AnyDict = {};
@@ -808,13 +810,13 @@ function createMatchCopy(match: any): Match {
   return copy;
 }
 
-function getPGroup(players: Player[]): PGroup {
+function getPGroup(match: ApiMatch): PGroup {
   // This works if we are an API insert, but not for parsed and we don't currently construct it for gcdata
   // Also, if coming from gcdata we can construct a better pgroup with account IDs
   const result: PGroup = {};
-  players.forEach((p) => {
+  match.players.forEach((p) => {
     result[p.player_slot] = {
-      account_id: p.account_id || null,
+      account_id: p.account_id,
       hero_id: p.hero_id,
       player_slot: p.player_slot,
     };
@@ -822,6 +824,10 @@ function getPGroup(players: Player[]): PGroup {
   return result;
 }
 
+export type ApiMatch = typeof apiMatch['result']
+type ApiMatchPro = typeof apiMatchPro['result'];
+type ApiPlayer = ApiMatch['players'][number] & { ability_upgrades_arr?: number[] };
+type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;
 // We currently can call this function from many places
 // There is a type to indicate source: api, gcdata, parsed
 // Also an origin to indicate the context: scanner (fresh match) or request
@@ -829,7 +835,7 @@ export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions
 ) {
-  async function upsertMatchPostgres() {
+  async function upsertMatchPostgres(match: ApiMatchPro | ParsedMatch) {
     // Insert the pro match data: We do this if api or parser
     if (options.type !== 'api' && options.type !== 'parsed') {
       return;
@@ -939,7 +945,7 @@ export async function insertMatch(
     await trx.commit();
     await updateTeamRankings(match as Match, options);
   }
-  async function upsertMatchCassandra() {
+  async function upsertMatchCassandra(match: InsertMatchInput) {
     // TODO (blobstore) delete this when we verify all old match data in matches/player_matches has been archived
     // We do this regardless of type (with different sets of fields)
     const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
@@ -990,7 +996,7 @@ export async function insertMatch(
       })
     );
   }
-  async function updateCassandraPlayerCaches() {
+  async function updateCassandraPlayerCaches(match: InsertMatchInput) {
     // Add the 10 player_match rows indexed by player
     // We currently do this on all types
     const copy = createMatchCopy(match);
@@ -999,7 +1005,7 @@ export async function insertMatch(
     }
     await insertPlayerCache(copy, pgroup, options.type);
   }
-  async function upsertMatchBlobs() {
+  async function upsertMatchBlobs(match: InsertMatchInput) {
     // This is meant to eventually replace the cassandra match/player_match tables
     // It's a table holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
@@ -1030,7 +1036,7 @@ export async function insertMatch(
       fs.writeFileSync('./json/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy, null, 2));
     }
   }
-  async function telemetry() {
+  async function telemetry(match: InsertMatchInput) {
     // Publish to log stream
     const name = process.env.name || process.env.ROLE || process.argv[1];
     const message = `[${new Date().toISOString()}] [${name}] insert [${
@@ -1048,11 +1054,11 @@ export async function insertMatch(
       redisCount(redis, 'added_match');
     }
   }
-  async function clearRedisMatch() {
+  async function clearRedisMatch(match: InsertMatchInput) {
     // Clear out the Redis caches, we do this regardless of insert type
     await redis.del(`match:${match.match_id}`);
   }
-  async function clearRedisPlayer() {
+  async function clearRedisPlayer(match: InsertMatchInput) {
     const arr: { key: string; account_id: string }[] = [];
     match.players.forEach((player) => {
       getKeys().forEach((key) => {
@@ -1063,16 +1069,16 @@ export async function insertMatch(
     });
     await Promise.all(arr.map((val) => clearCache(val)));
   }
-  async function decideCounts() {
+  async function decideCounts(match: ApiMatch) {
     // We only do this if fresh match
     if (options.skipCounts) {
       return;
     }
     if (options.origin === 'scanner' && options.type === 'api') {
-      await queue.addJob({ name: 'countsQueue', data: match as Match });
+      await queue.addJob({ name: 'countsQueue', data: match as unknown as Match });
     }
   }
-  async function decideMmr() {
+  async function decideMmr(match: ApiMatch) {
     // We only do this if fresh match and ranked
     const arr = match.players.filter((p) => {
       return (
@@ -1096,7 +1102,7 @@ export async function insertMatch(
       )
     );
   }
-  async function decideProfile() {
+  async function decideProfile(match: InsertMatchInput) {
     // We only do this if fresh match
     const arr = match.players.filter((p) => {
       return (
@@ -1116,7 +1122,7 @@ export async function insertMatch(
       )
     );
   }
-  async function decideGcData() {
+  async function decideGcData(match: ApiMatch) {
     // We only do this for fresh matches
     // Don't get replay URLs for event matches
     if (
@@ -1134,7 +1140,7 @@ export async function insertMatch(
       });
     }
   }
-  async function decideScenarios() {
+  async function decideScenarios(match: InsertMatchInput) {
     // Decide if we want to do scenarios (requires parsed match)
     // Only if it originated from scanner to avoid triggering on requests
     if (
@@ -1148,7 +1154,7 @@ export async function insertMatch(
       });
     }
   }
-  async function postParsedMatch() {
+  async function postParsedMatch(match: InsertMatchInput) {
     if (options.type === 'parsed') {
       // Mark this match parsed
       await db.raw(
@@ -1157,7 +1163,7 @@ export async function insertMatch(
       );
     }
   }
-  async function decideReplayParse() {
+  async function decideReplayParse(match: ApiMatch) {
     // Params like skipParse and forceParse determine whether we want to parse or not
     // Otherwise this assumes a fresh match and checks to see if pro or tracked player
     // Returns the created parse job (or null)
@@ -1213,23 +1219,24 @@ export async function insertMatch(
 
   // Make a copy of the match with some modifications
   const match: Readonly<InsertMatchInput> = {
-    ...origMatch as Match, 
+    ...origMatch, 
     players: origMatch.players.map((p) => {
-      const newP = {...p} as Player;
-      if (p.account_id === getAnonymousAccountId()) {
+      const newP = {...p} as Partial<ApiPlayer>;
+      if (newP.account_id === getAnonymousAccountId()) {
         // don't insert anonymous account id
         delete newP.account_id;
       }
-      if (p.ability_upgrades) {
+      if (newP.ability_upgrades) {
         // Reduce the ability upgrades info into ability_upgrades_arr (just an array of numbers)
-        newP.ability_upgrades_arr = p.ability_upgrades.map((au: any) => au.ability);
+        newP.ability_upgrades_arr = newP.ability_upgrades.map((au: any) => au.ability);
         delete newP.ability_upgrades;
       }
-      return newP;
+      return newP as any;
     }),
   };
   // Use the passed pgroup if gcdata or parsed, otherwise build it
-  const pgroup = options.pgroup ?? getPGroup(match.players);
+  // Do this after removing anonymous account IDs
+  const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
   
   let average_rank: number | undefined = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
@@ -1241,20 +1248,20 @@ export async function insertMatch(
     }
   }
 
-  await upsertMatchPostgres();
-  await upsertMatchCassandra();
-  await updateCassandraPlayerCaches();
-  await upsertMatchBlobs();
-  await clearRedisMatch();
-  await clearRedisPlayer();
-  await telemetry();
-  await decideCounts();
-  await decideMmr();
-  await decideProfile();
-  await decideGcData();
-  await decideScenarios();
-  await postParsedMatch();
-  const parseJob = await decideReplayParse();
+  await upsertMatchPostgres(match as ApiMatchPro | ParsedMatch);
+  await upsertMatchCassandra(match);
+  await updateCassandraPlayerCaches(match);
+  await upsertMatchBlobs(match);
+  await clearRedisMatch(match);
+  await clearRedisPlayer(match);
+  await telemetry(match);
+  await decideCounts(match as ApiMatch);
+  await decideMmr(match as ApiMatch);
+  await decideProfile(match);
+  await decideGcData(match as ApiMatch);
+  await decideScenarios(match);
+  await postParsedMatch(match);
+  const parseJob = await decideReplayParse(match as ApiMatch);
   return parseJob;
 }
 
