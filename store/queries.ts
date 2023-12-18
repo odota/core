@@ -222,6 +222,10 @@ export async function getPlayerMatchesWithMetadata(
   if (!accountId || !Number.isInteger(accountId) || accountId <= 0) {
     return [[], null];
   }
+  if (queryObj.isPrivate) {
+    // User disabled public match history from Dota, so don't return matches
+    return [[], null];
+  }
   redisCount(redis, 'player_matches');
   // call clean method to ensure we have column info cached
   await cleanRowCassandra(cassandra, 'player_caches', {});

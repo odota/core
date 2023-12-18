@@ -4,6 +4,7 @@ import spec from './spec';
 import { readCache } from '../store/cacheFunctions';
 import { redisCount } from '../util/utility';
 import redis from '../store/redis';
+import db from '../store/db';
 
 //@ts-ignore
 const api: Router = new Router();
@@ -32,7 +33,7 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
   }
 });
 // Player endpoints middleware
-api.use('/players/:account_id/:info?', (req, res, cb) => {
+api.use('/players/:account_id/:info?', async (req, res, cb) => {
   if (!Number.isInteger(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
@@ -55,6 +56,9 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
     filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
   });
   const sortArr = (req.query.sort || []) as (keyof ParsedPlayerMatch)[];
+  const privacy = await db.raw('SELECT fh_unavailable FROM players WHERE account_id = ?', [req.params.account_id]);
+  // User can view their own stats
+  const isPrivate = Boolean(privacy.rows[0]?.fh_unavailable) && req.user?.account_id !== req.params.account_id;
   (req as unknown as Express.ExtRequest).queryObj = {
     project: [
       'match_id',
@@ -68,6 +72,7 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
     limit: Number(req.query.limit),
     offset: Number(req.query.offset),
     having: Number(req.query.having),
+    isPrivate,
   };
   return cb();
 });

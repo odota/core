@@ -123,6 +123,23 @@ describe(c.blue('[TEST] player_caches'), async () => {
     assert.equal(data.length, 1);
   });
 });
+describe(c.blue('[TEST] privacy setting'), async () => {
+  it('should return one row due to default privacy setting', async () => {
+    await db.raw('UPDATE players SET fh_unavailable = NULL WHERE account_id = ?', ['120269134']);
+    const res = await supertest(app).get('/api/players/120269134/matches');
+    assert.equal(res.body.length, 1);
+  });
+  it('should return one row due to visible match data', async () => {
+    await db.raw('UPDATE players SET fh_unavailable = FALSE WHERE account_id = ?', ['120269134']);
+    const res = await supertest(app).get('/api/players/120269134/matches');
+    assert.equal(res.body.length, 1);
+  });
+  it('should return no rows due to hidden match data', async () => {
+    await db.raw('UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?', ['120269134']);
+    const res = await supertest(app).get('/api/players/120269134/matches');
+    assert.equal(res.body.length, 0);
+  });
+});
 describe(c.blue('[TEST] players'), async () => {
   let data: any = null;
   before(async () => {
