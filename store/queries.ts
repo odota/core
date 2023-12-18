@@ -127,8 +127,6 @@ export async function getDistributions() {
   const result: AnyDict = {};
   const keys = [
     'distribution:ranks',
-    'distribution:mmr',
-    'distribution:country_mmr',
   ];
   for (let i = 0; i < keys.length; i++) {
     const r = keys[i];

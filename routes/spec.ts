@@ -1,4 +1,3 @@
-import async from 'async';
 import constants from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
