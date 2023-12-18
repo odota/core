@@ -3,8 +3,8 @@ import moment from 'moment';
 import pg from 'pg';
 import config from '../config.js';
 import queue from '../store/queue';
-import search from '../store/search';
-import searchES from '../store/searchES';
+import { search } from '../store/search';
+import { searchES } from '../store/searchES';
 import buildMatch from '../store/buildMatch';
 import { buildStatus } from '../store/buildStatus';
 import {
@@ -1410,27 +1410,21 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/search',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           if (!req.query.q) {
             return res.status(400).json([]);
           }
-          if (
-            req.query.es ||
-            checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)
-          ) {
-            return searchES(req.query, (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
-          }
-          return search(req.query, (err, result) => {
-            if (err) {
-              return cb(err);
+          try {
+            let result = [];
+            if (config.DISABLE_ELASTICSEARCH || req.query.pg) {
+              result = await search(req.query.q);
+            } else {
+              result = await searchES(req.query.q);
             }
             return res.json(result);
-          });
+          } catch(e) {
+            return cb(e);
+          }
         },
       },
     },

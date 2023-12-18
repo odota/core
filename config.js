@@ -65,6 +65,7 @@ const defaults = {
   STRIPE_SECRET: 'rk_test_gRqwhv4xqv0a1olp8kk8fZ94', // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: 'plan_CgLthOgwrDgz2K', // plan id for stripe metering
   ES_SEARCH_PERCENT: 0, // % of users to roll out elasticsearch to
+  DISABLE_ELASTICSEARCH: '', // Fallback to Postgres trigram search instead of ElasticSearch
   ENABLE_MATCH_ARCHIVE: '', // Allow reading/writing parsed match blobs to S3 storage
   MATCH_ARCHIVE_S3_KEY_ID: '', // S3-compatible key ID to archive parsed match blobs
   MATCH_ARCHIVE_S3_KEY_SECRET: '', // S3-compatible key secret to archive parsed match blobs

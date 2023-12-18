@@ -1,80 +1,33 @@
-import async from 'async';
 import db from './db';
 import { es, INDEX } from './elasticsearch';
-/**
- * @param search - object for where parameter of query
- * @param cb - callback
- */
-function findPlayer(
-  search: { account_id: string | number },
-  cb: NonUnknownErrorCb
-) {
-  db.first(['account_id', 'personaname', 'avatarfull'])
-    .from('players')
-    .where(search)
-    .asCallback(cb);
-}
-function search(options: { q: string }, cb: ErrorCb) {
-  const query = options.q;
-  async.parallel(
+
+export async function searchES(query: string) {
+  const accountIdMatch = Number.isInteger(Number(query)) ? await db.select(['account_id', 'personaname', 'avatarfull'])
+  .from('players')
+  .where({ account_id: Number(query)}) : [];
+  
+  const { body } = await es.search(
     {
-      account_id: (cb) => {
-        if (Number.isNaN(Number(query))) {
-          return cb();
-        }
-        return findPlayer(
-          {
-            account_id: Number(query),
-          },
-          cb
-        );
-      },
-      personaname: (cb) => {
-        es.search(
-          {
-            index: INDEX,
-            size: 50,
-            body: {
-              query: {
-                match: {
-                  personaname: {
-                    query,
-                  },
-                },
-              },
-              sort: [{ _score: 'desc' }, { last_match_time: 'desc' }],
+      index: INDEX,
+      size: 50,
+      body: {
+        query: {
+          match: {
+            personaname: {
+              query,
             },
           },
-          (err, { body }) => {
-            if (err) {
-              return cb(err);
-            }
-            return cb(
-              null,
-              body.hits.hits.map((e: any) => ({
-                account_id: Number(e._id),
-                personaname: e._source.personaname,
-                avatarfull: e._source.avatarfull,
-                last_match_time: e._source.last_match_time,
-                similarity: e._score,
-              }))
-            );
-          }
-        );
+        },
+        sort: [{ _score: 'desc' }, { last_match_time: 'desc' }],
       },
-    },
-    (err, result) => {
-      if (err) {
-        return cb(err);
-      }
-      let ret: any[] = [];
-      Object.keys(result).forEach((key) => {
-        if (result[key]) {
-          ret = ret.concat(result[key]);
-        }
-      });
-      return cb(null, ret);
-    }
-  );
+    });
+  const esRows = body.hits.hits.map((e: any) => ({
+    account_id: Number(e._id),
+    personaname: e._source.personaname,
+    avatarfull: e._source.avatarfull,
+    last_match_time: e._source.last_match_time,
+    similarity: e._score,
+  }));
+
+  return [...accountIdMatch, ...esRows];
 }
-export default search;
