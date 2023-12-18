@@ -3,13 +3,18 @@ import uuid from 'uuid';
 import bodyParser from 'body-parser';
 import moment from 'moment';
 import async from 'async';
-import stripeLib from 'stripe';
+import { Stripe } from 'stripe';
 import db from '../store/db';
 import redis from '../store/redis';
+<<<<<<< HEAD
 import config from '../config';
 import { redisCount } from '../util/utility';
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
+=======
+import config from '../config.js';
+const stripe = new Stripe(config.STRIPE_SECRET);
+>>>>>>> upgrade stripe
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
 keys.use(bodyParser.json());
@@ -155,7 +160,7 @@ keys
     }
     const { api_key, subscription_id } = keyRecord;
     // Immediately bill the customer for any unpaid usage
-    await stripe.subscriptions.del(subscription_id, { invoice_now: true });
+    await stripe.subscriptions.cancel(subscription_id, { invoice_now: true });
     await db
       .from('api_keys')
       .where({
@@ -231,7 +236,7 @@ keys
           source: token.id,
           email: token.email,
           metadata: {
-            account_id: req.user?.account_id,
+            account_id: req.user?.account_id ?? '',
           },
         });
         customer_id = customer.id;
@@ -293,7 +298,7 @@ keys
       email,
     });
     await stripe.subscriptions.update(subscription_id, {
-      source: id,
+      default_source: id,
     });
     res.sendStatus(200);
   });

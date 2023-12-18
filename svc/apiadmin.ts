@@ -1,15 +1,14 @@
 // Runs background processes related to API keys and billing/usage
 import async from 'async';
 import moment from 'moment';
-import stripeLib from 'stripe';
+import { Stripe } from 'stripe';
 import redis from '../store/redis';
 import db from '../store/db';
 import config from '../config';
 import type { knex } from 'knex';
 import { invokeInterval } from '../util/utility';
 
-//@ts-ignore
-const stripe = stripeLib(config.STRIPE_SECRET);
+const stripe = new Stripe(config.STRIPE_SECRET);
 function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
@@ -89,7 +88,7 @@ async function updateStripeUsage(cb: ErrorCb) {
     // From the docs:
     // By default, returns a list of subscriptions that have not been canceled.
     // In order to list canceled subscriptions, specify status=canceled. Use all for completeness.
-    status: 'all',
+    status: 'all' as Stripe.Subscription.Status,
   };
   let num = 0;
   try {

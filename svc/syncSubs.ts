@@ -1,11 +1,15 @@
 // Syncs the list of subscribers from Stripe to the database
 import db from '../store/db';
+<<<<<<< HEAD
 import config from '../config';
 import stripeLib from 'stripe';
+=======
+import config from '../config.js';
+import { Stripe } from 'stripe';
+>>>>>>> upgrade stripe
 import { invokeIntervalAsync } from '../util/utility';
 
-//@ts-ignore
-const stripe = stripeLib(config.STRIPE_SECRET);
+const stripe = new Stripe(config.STRIPE_SECRET);
 async function doSyncSubs() {
   // Get list of current subscribers
   const result = [];

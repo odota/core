@@ -11,7 +11,7 @@ import passport from 'passport';
 import passportSteam from 'passport-steam';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import stripeLib from 'stripe';
+import { Stripe } from 'stripe';
 import { Redis } from 'ioredis';
 import { WebSocketServer, WebSocket } from 'ws';
 import keys from '../routes/keyManagement';
@@ -28,9 +28,14 @@ import {
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;
+<<<<<<< HEAD
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 export const app = express();
+=======
+const stripe = new Stripe(config.STRIPE_SECRET);
+const app = express();
+>>>>>>> upgrade stripe
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
 const sessOptions = {
@@ -317,8 +322,8 @@ app.route('/subscribeSuccess').get(async (req, res) => {
     return res.status(400).json({ error: 'no account ID' });
   }
   // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
-  const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-  const customer = await stripe.customers.retrieve(session.customer);
+  const session = await stripe.checkout.sessions.retrieve(req.query.session_id as string);
+  const customer = await stripe.customers.retrieve(session.customer as string);
   const accountId = req.user.account_id;
   // associate the customer id with the steam account ID (req.user.account_id)
   await db.raw(

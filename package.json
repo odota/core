@@ -56,7 +56,7 @@
     "simple-vdf": "^1.1.1",
     "steam": "github:odota/node-steam-npm",
     "steam-resources": "github:odota/node-steam-resources",
-    "stripe": "^9.12.0",
+    "stripe": "^14.9.0",
     "uuid": "^3.3.3",
     "ws": "^8.14.2"
   },
