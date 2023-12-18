@@ -364,7 +364,7 @@ type PathVerbSpec = {
     };
   };
   route: () => string;
-  func: (req: Express.ExtRequest, res: import('express').Response, cb: ErrorCb) => void;
+  func: (req: Express.ExtRequest, res: import('express').Response, cb: ErrorCb) => Promise<any>;
 };
 
 type HttpVerb = 'get' | 'post';
