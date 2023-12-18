@@ -31,7 +31,7 @@ keys.use((req, res, next) => {
   }
   return next();
 });
-// @param rows - query result from api_keys table
+// @param rows - query resut from api_keys table
 function getActiveKey(rows: any[]) {
   const notCanceled = rows.filter((row) => row.is_canceled != true);
   return notCanceled.length > 0 ? notCanceled[0] : null;
@@ -81,13 +81,13 @@ keys
           };
           stripe.customers
             .retrieve(customer_id)
-            .then((customer: any) => {
-              const source = customer.sources.data[0];
+            .then((customer) => {
+              const source = (customer as Stripe.Customer).default_source as Stripe.Card;
               toReturn.credit_brand = source?.brand;
               toReturn.credit_last4 = source?.last4;
               return stripe.subscriptions.retrieve(subscription_id);
             })
-            .then((sub: any) => {
+            .then((sub) => {
               toReturn.current_period_end = sub.current_period_end;
             })
             .then(() => cb(null, toReturn))
@@ -99,7 +99,7 @@ keys
           }
           const customer_id = allKeyRecords[0].customer_id;
           getOpenInvoices(customer_id).then((invoices) => {
-            const processed = invoices.map((i: any) => ({
+            const processed = invoices.map((i) => ({
               id: i.id,
               amountDue: i.amount_due,
               paymentLink: i.hosted_invoice_url,
