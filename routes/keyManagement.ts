@@ -80,7 +80,7 @@ keys
             api_key,
           };
           stripe.customers
-            .retrieve(customer_id)
+            .retrieve(customer_id, {expand: ['default_source']})
             .then((customer) => {
               const source = (customer as Stripe.Customer).default_source as Stripe.Card;
               toReturn.credit_brand = source?.brand;
