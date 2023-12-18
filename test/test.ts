@@ -4,7 +4,6 @@
  * */
 process.env.NODE_ENV = 'test';
 import type { Express } from 'express';
-import async from 'async';
 import nock from 'nock';
 import assert from 'assert';
 import supertest from 'supertest';
@@ -111,14 +110,7 @@ describe(c.blue('[TEST] swagger schema'), async function testSwaggerSchema() {
     swaggerParser.validate(
       JSON.parse(JSON.stringify(spec)),
       validOpts,
-      (err) => {
-        if (!err) {
-          assert(!err);
-        } else {
-          assert.fail(err.message);
-        }
-        cb();
-      }
+      cb,
     );
   });
 });
@@ -588,153 +580,48 @@ describe(c.blue('[TEST] api management'), () => {
   });
 });
 describe(c.blue('[TEST] api limits'), () => {
-  before((done) => {
+  before(async () => {
     config.ENABLE_API_LIMIT = '1';
     config.API_FREE_LIMIT = 10;
-    redis
+    await redis
       .multi()
       .del('user_usage_count')
       .del('usage_count')
       .sadd('api_keys', 'KEY')
-      .exec((err) => {
-        if (err) {
-          return done(err);
-        }
-
-        return done();
-      });
+      .exec();
   });
 
-  function testWhiteListedRoutes(done: ErrorCb, key: string) {
-    async.eachSeries(
-      [
-        `/api${key}`, // Docs
-        `/api/metadata${key}`, // Login status
-        `/keys${key}`, // API Key management
-      ],
-      (i, cb) => {
-        supertest(app)
-          .get(i)
-
-          .end((err, res) => {
-            if (err) {
-              return cb(err);
-            }
-
-            assert.notEqual(res.statusCode, 429);
-            return cb();
-          });
-      },
-      done
-    );
-  }
-
-  function testRateCheckedRoute(done: ErrorCb) {
-    async.timesSeries(
-      10,
-      (i, cb) => {
-        setTimeout(() => {
-          supertest(app)
-            .get('/api/matches/1781962623')
-            .end((err, res) => {
-              if (err) {
-                return cb(err);
-              }
-
-              assert.equal(res.statusCode, 200);
-              return cb();
-            });
-        }, i * 300);
-      },
-
-      done
-    );
-  }
-
-  it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', function testNoApiLimit(done) {
+  it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', async function testNoApiLimit() {
     this.timeout(25000);
-    testWhiteListedRoutes((err) => {
-      if (err) {
-        done(err);
-      } else {
-        testRateCheckedRoute((err) => {
-          if (err) {
-            done(err);
-          } else {
-            supertest(app)
-              .get('/api/matches/1781962623')
-              .end((err, res) => {
-                if (err) {
-                  done(err);
-                }
-                assert.equal(res.statusCode, 429);
-                assert.equal(res.body.error, 'monthly api limit exceeded');
-
-                testWhiteListedRoutes(done, '');
-              });
-          }
-        });
-      }
-    }, '');
+    await testWhiteListedRoutes('');
+    await testRateCheckedRoute();
+    const res = await supertest(app).get('/api/matches/1781962623');
+    assert.equal(res.statusCode, 429);
+    assert.equal(res.body.error, 'monthly api limit exceeded');
+    await testWhiteListedRoutes('');
   });
 
-  it('should be able to make more than 10 calls when using API KEY', function testAPIKeyLimitsAndCounting(done) {
+  it('should be able to make more than 10 calls when using API KEY', async function testAPIKeyLimitsAndCounting() {
     this.timeout(25000);
-    async.timesSeries(
-      25,
-      (i, cb) => {
-        supertest(app)
-          .get('/api/matches/1781962623?api_key=KEY')
-          .end((err, res) => {
-            if (err) {
-              return cb(err);
-            }
+    for (let i = 0; i < 25; i++) {
+      let regular = await supertest(app).get('/api/matches/1781962623?api_key=KEY');
+      assert.equal(regular.statusCode, 200);
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    // Try whitelisted routes. Should not increment usage.
+    await testWhiteListedRoutes('?api_key=KEY');
+    // Try a 429. Should not increment usage.
+    const tooMany = await supertest(app).get('/gen429');
+    assert.equal(tooMany.statusCode, 429);
+    // Try a 500. Should not increment usage.
+    const err = await supertest(app).get('/gen500');
+    assert.equal(err.statusCode, 500);
 
-            assert.equal(res.statusCode, 200);
-            return cb();
-          });
-      },
-      () => {
-        // Try whitelisted routes. Should not increment usage.
-        testWhiteListedRoutes((err) => {
-          if (err) {
-            done(err);
-          } else {
-            // Try a 429. Should not increment usage.
-            supertest(app)
-              .get('/gen429')
-              .end((err, res) => {
-                if (err) {
-                  done(err);
-                }
-                assert.equal(res.statusCode, 429);
-
-                // Try a 500. Should not increment usage.
-                supertest(app)
-                  .get('/gen500')
-                  .end((err, res) => {
-                    if (err) {
-                      done(err);
-                    }
-                    assert.equal(res.statusCode, 500);
-                    redis.hgetall('usage_count', (err, res) => {
-                      if (err) {
-                        done(err);
-                      } else if (!res) {
-                        done('no result from usage_count');
-                      } else {
-                        const keys = Object.keys(res);
-                        assert.equal(keys.length, 1);
-                        assert.equal(Number(res[keys[0]]), 25);
-                        done();
-                      }
-                    });
-                  });
-              });
-          }
-        }, '?api_key=KEY');
-      }
-    );
+    const res = await redis.hgetall('usage_count');
+    assert.ok(res);
+    const keys = Object.keys(res);
+    assert.equal(keys.length, 1);
+    assert.equal(Number(res[keys[0]]), 25);
   });
 
   after(() => {
@@ -742,6 +629,27 @@ describe(c.blue('[TEST] api limits'), () => {
     config.API_FREE_LIMIT = 50000;
   });
 });
+
+async function testWhiteListedRoutes(key: string) {
+  const routes = [
+    `/api${key}`, // Docs
+    `/api/metadata${key}`, // Login status
+    `/keys${key}`, // API Key management
+  ];
+  for (let i = 0; i < routes.length; i++) {
+    const route = routes[i];
+    const res = await supertest(app).get(route);
+    assert.notEqual(res.statusCode, 429);
+  }
+}
+
+async function testRateCheckedRoute() {
+  for (let i = 0; i < 10; i++) {
+    const res = await  supertest(app).get('/api/matches/1781962623');
+    assert.equal(res.statusCode, 200);
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+}
 
 async function initElasticsearch() {
   console.log('Create Elasticsearch Mapping');
@@ -891,54 +799,40 @@ describe(c.blue('[TEST] generateMatchups'), () => {
       redis.hincrby('matchups', k, 1);
     });
     const funcs = [
-      function zeroVzero(cb) {
-        supertest(app).get('/api/matchups').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 1);
-          assert.equal(res.body.t1, 0);
-          cb(err);
-        });
+      async function zeroVzero() {
+        const res = await supertest(app).get('/api/matchups').expect(200);
+        assert.equal(res.body.t0, 1);
+        assert.equal(res.body.t1, 0);
       },
-      function oneVzeroRight(cb) {
-        supertest(app).get('/api/matchups?t1=1').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 1);
-          assert.equal(res.body.t1, 0);
-          cb(err);
-        });
+      async function oneVzeroRight() {
+        const res = await supertest(app).get('/api/matchups?t1=1').expect(200);
+        assert.equal(res.body.t0, 1);
+        assert.equal(res.body.t1, 0);
       },
-      function oneVzero(cb) {
-        supertest(app).get('/api/matchups?t0=1').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 0);
-          assert.equal(res.body.t1, 1);
-          cb(err);
-        });
+      async function oneVzero() {
+        const res = await supertest(app).get('/api/matchups?t0=1').expect(200);
+        assert.equal(res.body.t0, 0);
+        assert.equal(res.body.t1, 1);
       },
-      function oneVzero2(cb) {
-        supertest(app).get('/api/matchups?t0=6').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 0);
-          assert.equal(res.body.t1, 1);
-          cb(err);
-        });
+      async function oneVzero2() {
+        const res = await supertest(app).get('/api/matchups?t0=6').expect(200);
+        assert.equal(res.body.t0, 0);
+        assert.equal(res.body.t1, 1);
       },
-      function oneVzero3(cb) {
-        supertest(app).get('/api/matchups?t0=46').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 1);
-          assert.equal(res.body.t1, 0);
-          cb(err);
-        });
+      async function oneVzero3() {
+        const res = await supertest(app).get('/api/matchups?t0=46').expect(200);
+        assert.equal(res.body.t0, 1);
+        assert.equal(res.body.t1, 0);
       },
-      function oneVone(cb) {
-        supertest(app).get('/api/matchups?t0=1&t1=46').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 0);
-          assert.equal(res.body.t1, 1);
-          cb(err);
-        });
+      async function oneVone() {
+        const res = await supertest(app).get('/api/matchups?t0=1&t1=46').expect(200);
+        assert.equal(res.body.t0, 0);
+        assert.equal(res.body.t1, 1);
       },
-      function oneVoneInvert(cb) {
-        supertest(app).get('/api/matchups?t0=46&t1=1').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 1);
-          assert.equal(res.body.t1, 0);
-          cb(err);
-        });
+      async function oneVoneInvert() {
+        const res = await supertest(app).get('/api/matchups?t0=46&t1=1').expect(200);
+        assert.equal(res.body.t0, 1);
+        assert.equal(res.body.t1, 0);
       },
     ];
     done();
