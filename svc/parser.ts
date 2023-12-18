@@ -38,11 +38,17 @@ async function parseProcessor(job: ParseJob) {
   try {
     // Fetch the API data
     const apiStart = Date.now();
-    // If Match ID is not found, this will throw
-    const body = await getSteamAPIData(
-      generateJob('api_details', { match_id: job.match_id }).url
-    );
-    const apiMatch: ApiMatch = body.result;
+    let apiMatch: ApiMatch;
+    try {
+      const body = await getSteamAPIData(
+        generateJob('api_details', { match_id: job.match_id }).url
+      );
+      apiMatch = body.result;
+    } catch(e) {
+      console.error(e);
+      // The Match ID is probably invalid, so fail without throwing
+      return false;
+    }
     await insertMatch(apiMatch, {
       type: 'api',
       // We're already in the parse context so don't queue another parse job
