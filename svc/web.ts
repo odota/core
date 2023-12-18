@@ -2,7 +2,6 @@
  * Provides the OpenDota API and serves web requests
  * Also supports login through Steam
  * */
-import async from 'async';
 import request from 'request';
 import compression from 'compression';
 import session from 'cookie-session';
