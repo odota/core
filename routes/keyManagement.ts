@@ -297,9 +297,7 @@ keys
     } = req.body;
     await stripe.customers.update(customer_id, {
       email,
-    });
-    await stripe.subscriptions.update(subscription_id, {
-      default_source: id,
+      source: id,
     });
     res.sendStatus(200);
   });
