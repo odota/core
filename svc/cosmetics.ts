@@ -5,7 +5,6 @@ import { upsert } from '../store/queries';
 import {
   cleanItemSchema,
   eachLimitPromise,
-  getDataPromise,
   invokeIntervalAsync,
 } from '../util/utility';
 import axios from 'axios';

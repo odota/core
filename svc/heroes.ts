@@ -4,7 +4,7 @@ import db from '../store/db';
 import { upsert } from '../store/queries';
 import {
   generateJob,
-  getDataPromise,
+  getSteamAPIData,
   invokeIntervalAsync,
 } from '../util/utility';
 
@@ -12,7 +12,7 @@ async function doHeroes() {
   const container = generateJob('api_heroes', {
     language: 'english',
   });
-  const body = await getDataPromise(container.url);
+  const body = await getSteamAPIData(container.url);
   if (!body || !body.result || !body.result.heroes) {
     return;
   }

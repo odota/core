@@ -1,15 +1,16 @@
 // Updates the list of leagues in the database
+import axios from 'axios';
 import db from '../store/db';
 import { upsert } from '../store/queries';
 import {
-  generateJob,
-  getDataPromise,
   invokeIntervalAsync,
 } from '../util/utility';
 
 async function doLeagues() {
-  const container = generateJob('api_leagues', {});
-  const apiLeagues = await getDataPromise(container.url);
+  const url = 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001';
+  const resp = await axios.get(url);
+  const apiLeagues = resp.data.infos;
+  console.log('[LEAGUES]', apiLeagues.length, 'leagues');
   for (let i = 0; i < apiLeagues.length; i++) {
     const league = apiLeagues[i];
     const openQualifierTier =

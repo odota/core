@@ -4,7 +4,7 @@ import db from '../store/db';
 import { upsert } from '../store/queries';
 import {
   generateJob,
-  getDataPromise,
+  getSteamAPIData,
   invokeIntervalAsync,
 } from '../util/utility';
 
@@ -27,7 +27,7 @@ async function doTeams() {
     const container = generateJob('api_team_info_by_team_id', {
       start_at_team_id: m.team_id,
     });
-    let body = await getDataPromise({
+    let body = await getSteamAPIData({
       url: container.url,
       raw: true,
     });
@@ -62,7 +62,7 @@ async function doTeams() {
       // This is fine, we failed to get CDN image info
       // Try getting image from ugc
       try {
-        const ugcBody = await getDataPromise({
+        const ugcBody = await getSteamAPIData({
           url: ugcJob.url,
           noRetry: true,
         });

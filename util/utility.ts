@@ -42,14 +42,14 @@ export function convert32to64(id: string) {
   return Long.fromString(id).add('76561197960265728').toString();
 }
 /**
- * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
+ * Helper to generate Steam API URLs
  * */
-export function generateJob(type: GenerateJobName, payload: any) {
+export function generateJob(type: SteamEndpointType, payload: any) {
   return jobs[type](type, payload);
 }
-type GenerateJobName = keyof typeof jobs;
+type SteamEndpointType = keyof typeof jobs;
 const apiUrl = 'http://api.steampowered.com';
-let apiKey: string;
+let apiKey = config.STEAM_API_KEY.split(',')[0];
 const jobs = {
   api_details(type: string, payload: { match_id: string }) {
     return {
@@ -110,25 +110,9 @@ const jobs = {
       type: 'api',
     };
   },
-  api_leagues(type: string, payload: any) {
-    return {
-      url: 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001',
-      title: [type].join(),
-      type: 'api',
-      payload,
-    };
-  },
   api_live(type: string, payload: any) {
     return {
       url: `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
-      title: [type].join(),
-      type: 'api',
-      payload,
-    };
-  },
-  api_notable(type: string, payload: any) {
-    return {
-      url: 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001',
       title: [type].join(),
       type: 'api',
       payload,
@@ -187,7 +171,7 @@ type GetDataOptions = {
   raw?: boolean;
   noRetry?: boolean;
 };
-function getData(url: string | GetDataOptions, cb: ErrorCb) {
+function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
   let u: string;
   let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
@@ -250,7 +234,7 @@ function getData(url: string | GetDataOptions, cb: ErrorCb) {
           // var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
           const backoff = 0;
           return setTimeout(() => {
-            getData(url, cb);
+            getSteamAPIDataCallback(url, cb);
           }, backoff);
         }
         if (body.result) {
@@ -279,7 +263,7 @@ function getData(url: string | GetDataOptions, cb: ErrorCb) {
               target,
               JSON.stringify(body)
             );
-            return getData(url, cb);
+            return getSteamAPIDataCallback(url, cb);
           }
         }
         return cb(null, body);
@@ -287,7 +271,7 @@ function getData(url: string | GetDataOptions, cb: ErrorCb) {
     );
   }, delay);
 }
-export const getDataPromise = promisify(getData);
+export const getSteamAPIData = promisify(getSteamAPIDataCallback);
 /**
  * Determines if a player is radiant
  * */

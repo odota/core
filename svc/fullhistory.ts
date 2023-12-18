@@ -4,7 +4,7 @@ import { promisify } from 'util';
 import config from '../config.js';
 import {
   redisCount,
-  getDataPromise,
+  getSteamAPIData,
   generateJob,
   eachLimitPromise,
 } from '../util/utility';
@@ -34,7 +34,7 @@ async function processMatch(matchId: string) {
   const container = generateJob('api_details', {
     match_id: Number(matchId),
   });
-  const body = await getDataPromise(container.url);
+  const body = await getSteamAPIData(container.url);
   const match = body.result;
   await insertMatch(match, {
     type: 'api',
@@ -65,7 +65,7 @@ async function processFullHistory(job: FullHistoryJob) {
     player: FullHistoryJob,
     url: string
   ): Promise<void> => {
-    const body = await getDataPromise(url);
+    const body = await getSteamAPIData(url);
     // if !body.result, retry
     if (!body.result) {
       return getApiMatchPage(player, url);

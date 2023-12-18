@@ -1,13 +1,11 @@
 import { insertMatch } from '../store/queries.js';
 import dbImport from '../store/db.js';
-import { generateJob, getDataPromise } from '../util/utility.js';
+import { generateJob, getSteamAPIData } from '../util/utility.js';
 
 const db = dbImport.default;
 
-// const leagueUrl = generateJob('api_leagues', {}).url;
-
 async function getPage(url: string, leagueid: number) {
-  const data: any = await getDataPromise(url);
+  const data: any = await getSteamAPIData(url);
   console.log(
     leagueid,
     data.result.total_results,
@@ -20,7 +18,7 @@ async function getPage(url: string, leagueid: number) {
       match_id: match.match_id,
     });
     const { url } = job;
-    const body: any = await getDataPromise({
+    const body: any = await getSteamAPIData({
       url,
       delay: 200,
     });

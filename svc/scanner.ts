@@ -2,7 +2,7 @@
 import config from '../config.js';
 import redis from '../store/redis';
 import { ApiMatch, insertMatch } from '../store/queries';
-import { generateJob, getDataPromise, redisCount } from '../util/utility';
+import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 
 const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;
@@ -16,7 +16,7 @@ async function scanApi(seqNum: number) {
     });
     let data = null;
     try {
-      data = await getDataPromise({
+      data = await getSteamAPIData({
         url: container.url,
         delay,
       });
@@ -78,7 +78,7 @@ async function start() {
     // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
     const container = generateJob('api_history', {});
     // Just get the approximate current seq num
-    const data = await getDataPromise(container.url);
+    const data = await getSteamAPIData(container.url);
     await scanApi(data.result.matches[0].match_seq_num);
   } else {
     throw new Error('failed to initialize sequence number');

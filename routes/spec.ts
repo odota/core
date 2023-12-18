@@ -11,10 +11,7 @@ import { buildStatus } from '../store/buildStatus';
 import {
   checkIfInExperiment,
   countPeers,
-  generateJob,
-  getDataPromise,
   getPatchIndex,
-  isContributor,
   isRadiant,
   matchupToString,
   mergeObjects,

@@ -4,7 +4,7 @@ import config from '../config.js';
 import { computeMatchData } from '../util/compute';
 import {
   generateJob,
-  getDataPromise,
+  getSteamAPIData,
   buildReplayUrl,
   isContributor,
   redisCount,
@@ -90,7 +90,7 @@ async function backfill(matchId: string) {
   const matchObj = {
     match_id: Number(matchId),
   };
-  const body = await getDataPromise(generateJob('api_details', matchObj).url);
+  const body = await getSteamAPIData(generateJob('api_details', matchObj).url);
   // match details response
   const match = body.result;
   await insertMatch(match, {

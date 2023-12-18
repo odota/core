@@ -5,7 +5,7 @@ import { insertMatch } from '../store/queries';
 import config from '../config.js';
 import {
   generateJob,
-  getDataPromise,
+  getSteamAPIData,
   invokeIntervalAsync,
   eachLimitPromise,
 } from '../util/utility';
@@ -21,7 +21,7 @@ async function processMatch(matchId: number) {
     match_id: matchId,
   });
   const { url } = job;
-  const body = await getDataPromise({
+  const body = await getSteamAPIData({
     url,
     delay,
   });
@@ -42,7 +42,7 @@ async function processPlayer(accountId: string) {
   const ajob = generateJob('api_history', {
     account_id: accountId,
   });
-  const body = await getDataPromise({
+  const body = await getSteamAPIData({
     url: ajob.url,
     delay,
   });

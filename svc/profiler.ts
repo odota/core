@@ -2,7 +2,7 @@
 import { upsertPlayer, bulkIndexPlayer } from '../store/queries';
 import db from '../store/db';
 import {
-  getDataPromise,
+  getSteamAPIData,
   generateJob,
   convert64to32,
   invokeIntervalAsync,
@@ -19,7 +19,7 @@ async function doProfiler() {
     players: result.rows,
   });
   // We can also queue a rank tier/MMR request for these players
-  const body = await getDataPromise(container.url);
+  const body = await getSteamAPIData(container.url);
   const results = body.response.players.filter(
     (player: User) => player.steamid
   );

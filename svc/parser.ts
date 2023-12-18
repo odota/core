@@ -14,7 +14,7 @@ import queue from '../store/queue';
 import { ApiMatch, getPGroup, insertMatch } from '../store/queries';
 import { promisify } from 'util';
 import c from 'ansi-colors';
-import { buildReplayUrl, generateJob, getDataPromise, redisCount } from '../util/utility';
+import { buildReplayUrl, generateJob, getSteamAPIData, redisCount } from '../util/utility';
 import redis from '../store/redis';
 import db from '../store/db';
 import axios from 'axios';
@@ -39,7 +39,7 @@ async function parseProcessor(job: ParseJob) {
     // Fetch the API data
     const apiStart = Date.now();
     // If Match ID is not found, this will throw
-    const body = await getDataPromise(
+    const body = await getSteamAPIData(
       generateJob('api_details', { match_id: job.match_id }).url
     );
     const apiMatch: ApiMatch = body.result;
