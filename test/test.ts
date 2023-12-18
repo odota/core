@@ -126,10 +126,22 @@ describe(c.blue('[TEST] player_caches'), async () => {
     assert.equal(data.length, 1);
   });
 });
-describe(c.blue('[TEST] rank_tier'), async () => {
+describe(c.blue('[TEST] players'), async () => {
+  let data: any = null;
+  before(async () => {
+    const res = await supertest(app).get('/api/players/120269134');
+    data = res.body;
+  });
+  it('should have profile data', async () => {
+    assert.equal(data.profile.account_id, 120269134);
+    assert.ok(data.profile.personaname);
+  });
   it('should have rank_tier data', async () => {
-    const row = await db.select('rating').from('rank_tier').where({ account_id: 120269134 }).first();
-    assert.equal(row.rating, 80);
+    assert.equal(data.rank_tier, 80);
+  });
+  it('should return 404 for nonexistent player', async () => {
+    const res = await supertest(app).get('/api/players/666');
+    assert.equal(res.statusCode, 404);
   });
 });
 describe(c.blue('[TEST] replay parse'), async function() {
