@@ -67,9 +67,10 @@ api.use('/teams/:team_id/:info?', (req, res, cb) => {
   }
   return cb();
 });
-api.use('/request/:jobId', (req, res, cb) => {
-  if (!Number.isInteger(Number(req.params.jobId))) {
-    return res.status(400).json({ error: 'invalid job id' });
+api.use('/request/:id', (req, res, cb) => {
+  // This can be a match ID (POST) or job ID (GET), but same validation
+  if (!Number.isInteger(Number(req.params.id)) || Number(req.params.id) <= 0) {
+    return res.status(400).json({ error: 'invalid id' });
   }
   return cb();
 });
@@ -87,7 +88,14 @@ Object.keys(spec.paths).forEach((path) => {
       : path.replace(/{/g, ':').replace(/}/g, '');
     // Check if the callback function is defined before adding the route..
     if (typeof func === 'function') {
-      api[verb as HttpVerb](routePath, func as unknown as RequestHandler);
+      api[verb as HttpVerb](routePath, async (req, res, cb) => {
+        // Wrap all the route handlers in try/catch so we don't have to do it individually
+        try {
+          await func(req as Express.ExtRequest, res, cb);
+        } catch(e) {
+          cb(e);
+        }
+      });
     } else {
       // If the function is missing, log a warning message with the problematic route path and verb
       console.warn(
