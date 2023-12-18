@@ -245,12 +245,6 @@ keys
         return res.status(402).json(err);
       }
     }
-    // Validate the payment source
-    const card = await stripe.sources.retrieve(token.id);
-    const BANNED_CARDS: string[] = [];
-    if (BANNED_CARDS.includes(card.card?.fingerprint ?? '')) {
-      return res.status(402).json({ error: 'This card is not allowed' });
-    }
 
     const apiKey = uuid.v4();
     const sub = await stripe.subscriptions.create({
