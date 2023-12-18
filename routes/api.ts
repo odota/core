@@ -87,7 +87,7 @@ Object.keys(spec.paths).forEach((path) => {
       : path.replace(/{/g, ':').replace(/}/g, '');
     // Check if the callback function is defined before adding the route..
     if (typeof func === 'function') {
-      api[verb as HttpVerb](routePath, func as RequestHandler);
+      api[verb as HttpVerb](routePath, func as unknown as RequestHandler);
     } else {
       // If the function is missing, log a warning message with the problematic route path and verb
       console.warn(
