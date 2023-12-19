@@ -405,7 +405,8 @@ type MetricName =
   | 'reparse'
   | 'regcdata'
   | 'parser_fail'
-  | 'incomplete_archive';
+  | 'incomplete_archive'
+  | 'gen_api_key_invalid';
 
 // Object to map player_slot to basic info
 type PGroup = {

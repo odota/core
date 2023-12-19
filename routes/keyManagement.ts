@@ -7,6 +7,7 @@ import stripeLib from 'stripe';
 import db from '../store/db';
 import redis from '../store/redis';
 import config from '../config.js';
+import { redisCount } from '../util/utility';
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const stripeAPIPlan = config.STRIPE_API_PLAN;
@@ -185,6 +186,15 @@ keys
     if (hasActiveKey(keyRecord)) {
       console.log('Active key exists for', req.user?.account_id);
       return res.sendStatus(200);
+    }
+    // Optionally verify the account_id
+    if (req.user?.account_id && config.API_KEY_GEN_THRESHOLD) {
+      const threshold = await db.first('account_id').from('players').orderBy('account_id', 'desc');
+      const fail = Number(req.user?.account_id) > threshold.account_id - Number(config.API_KEY_GEN_THRESHOLD);
+      if (fail) {
+        redisCount(redis, 'gen_api_key_invalid');
+        return res.sendStatus(400).json({ error: 'Failed validation' });
+      }
     }
     // returning customer
     if (allKeyRecords.length > 0) {

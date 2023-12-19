@@ -33,6 +33,7 @@ export async function buildStatus() {
     regcdata_last_day: async () => getRedisCountDay(redis, 'regcdata'),
     requests_last_day: async () => getRedisCountDay(redis, 'request'),
     requests_api_key_last_day: async () => getRedisCountDay(redis, 'request_api_key'),
+    gen_api_key_invalid_last_day: async () => getRedisCountDay(redis, 'gen_api_key_invalid'),
     steam_api_calls_last_day: async () => getRedisCountDay(redis, 'steam_api_call'),
     steam_api_backfill_last_day: async () => getRedisCountDay(redis, 'steam_api_backfill'),
     match_archive_read_last_day: async () => getRedisCountDay(redis, 'match_archive_read'),
