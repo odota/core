@@ -553,13 +553,13 @@ describe(c.blue('[TEST] api management'), () => {
         assert.equal(res.statusCode, 200);
         const stripe = new Stripe(STRIPE_SECRET);
 
+        const invoice = await stripe.invoices.create({
+          customer: this.previousCustomer,
+        });
         await stripe.invoiceItems.create({
           customer: this.previousCustomer,
           price: 'price_1Lm1siCHN72mG1oKkk3Jh1JT', // test $123 one time
-        });
-
-        const invoice = await stripe.invoices.create({
-          customer: this.previousCustomer,
+          invoice: invoice.id,
         });
 
         await stripe.invoices.finalizeInvoice(invoice.id);
