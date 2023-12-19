@@ -77,6 +77,7 @@ async function upsertMatchSample(match: Match) {
       await upsert(trx, 'public_matches', newMatch, {
         match_id: newMatch.match_id,
       });
+      // TODO (howard) deprecate public_player_matches
       await Promise.all(
         (match.players || []).map((pm) => {
           pm.match_id = match.match_id;
