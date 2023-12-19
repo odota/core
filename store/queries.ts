@@ -916,7 +916,7 @@ export async function insertMatch(
           Number(!win1),
           match.start_time,
         ]);
-        await db.raw(query, [
+        await trx.raw(query, [
           team2,
           currRating2 + ratingDiff2,
           win2,
