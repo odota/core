@@ -300,7 +300,7 @@ function updateCompositions(match) {
     VALUES (?, 1, ?)
     ON CONFLICT(composition)
     DO UPDATE SET games = compositions.games + 1, wins = compositions.wins + ?
-    `, [key, win, win]).asCallback(cb);
+    `, [key, win, win]);
     redis.hincrby('compositions', team, 1, cb);
   });
 }
@@ -312,7 +312,7 @@ function updateMatchups(match) {
     VALUES (?, 1)
     ON CONFLICT(matchup)
     DO UPDATE SET num = matchups.num + 1
-    `, [key]).asCallback(cb);
+    `, [key])
     cassandra.execute(`UPDATE matchups
     SET num = num + 1
     WHERE matchup = ?
