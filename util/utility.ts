@@ -676,7 +676,7 @@ export function countPeers(matches: PlayerMatch[]) {
       // played with
       teammates[tm.account_id].games += 1;
       teammates[tm.account_id].win += playerWin ? 1 : 0;
-      if (isRadiant(tm as Player) === isRadiant(m)) {
+      if (isRadiant({player_slot: Number(key)}) === isRadiant(m)) {
         // played with
         teammates[tm.account_id].with_games += 1;
         teammates[tm.account_id].with_win += playerWin ? 1 : 0;

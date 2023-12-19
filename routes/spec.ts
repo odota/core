@@ -472,7 +472,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                   const tmHero = tm.hero_id;
                   // don't count invalid heroes
                   if (tmHero in heroes) {
-                    if (isRadiant(tm as Player) === isRadiant(m)) {
+                    if (isRadiant({player_slot: Number(key)}) === isRadiant(m)) {
                       if (tm.account_id === m.account_id) {
                         heroes[tmHero].games += 1;
                         heroes[tmHero].win += playerWin ? 1 : 0;

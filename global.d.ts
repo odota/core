@@ -245,7 +245,7 @@ type ParsedPlayerMatch = ParsedPlayer &
   ParsedMatch & { players?: ParsedPlayer[], is_contributor?: boolean };
 
 type User = {
-  account_id: number | null;
+  account_id: number;
   fh_unavailable: boolean;
   steamid: string;
   personaname: string;
