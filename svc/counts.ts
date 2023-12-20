@@ -52,9 +52,9 @@ async function updateHeroRankings(match: Match) {
       const newScore = currRating1 + ratingDiff1;
       return db.raw(
         'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
-        [player.account_id, player.hero_id, newScore, newScore]
+        [player.account_id, player.hero_id, newScore, newScore],
       );
-    })
+    }),
   );
 }
 
@@ -85,7 +85,7 @@ async function upsertMatchSample(match: Match) {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
           });
-        })
+        }),
       );
     } catch (e) {
       await trx.rollback();
@@ -98,12 +98,12 @@ async function upsertMatchSample(match: Match) {
 async function updateRecord(
   field: keyof Match | keyof Player,
   match: Match,
-  player: Player
+  player: Player,
 ) {
   redis.zadd(
     `records:${field}`,
     match[field as keyof Match] || player[field as keyof Player],
-    [match.match_id, match.start_time, player.hero_id].join(':')
+    [match.match_id, match.start_time, player.hero_id].join(':'),
   );
   // Keep only 100 top scores
   redis.zremrangebyrank(`records:${field}`, '0', '-101');
@@ -130,7 +130,7 @@ async function updateRecords(match: Match) {
 async function updateLastPlayed(match: Match) {
   const filteredPlayers = (match.players || []).filter(
     (player) =>
-      player.account_id && player.account_id !== getAnonymousAccountId()
+      player.account_id && player.account_id !== getAnonymousAccountId(),
   );
   const lastMatchTime = new Date(match.start_time * 1000);
   const bulkUpdate = filteredPlayers.reduce<any>((acc, player) => {
@@ -145,7 +145,7 @@ async function updateLastPlayed(match: Match) {
           last_match_time: lastMatchTime,
         },
         doc_as_upsert: true,
-      }
+      },
     );
     return acc;
   }, []);
@@ -158,9 +158,9 @@ async function updateLastPlayed(match: Match) {
           account_id: player.account_id,
           last_match_time: lastMatchTime,
         },
-        false
-      )
-    )
+        false,
+      ),
+    ),
   );
 }
 /**
@@ -194,7 +194,7 @@ async function updateHeroSearch(match: Match) {
   const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
   return db.raw(
     'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
-    [match.match_id, teamA, teamB, teamAWin, match.start_time]
+    [match.match_id, teamA, teamB, teamAWin, match.start_time],
   );
 }
 async function updateHeroCounts(match: Match) {
@@ -235,7 +235,7 @@ async function updateHeroCounts(match: Match) {
           redis.incr(rKeyWin);
           redis.expireat(rKeyWin, expire);
         }
-      }
+      };
       if (tier) {
         // pro, pub, or turbo
         updateKeys(tier);
@@ -248,7 +248,7 @@ async function updateHeroCounts(match: Match) {
   }
   // Do bans for pro
   if (match.leagueid) {
-    match.picks_bans?.forEach(pb => {
+    match.picks_bans?.forEach((pb) => {
       if (pb.is_pick === false) {
         const heroId = pb.hero_id;
         const rKey = `${heroId}:pro:ban:${timestamp}`;
@@ -282,7 +282,7 @@ async function updateBenchmarks(match: Match) {
             // expire at time two epochs later (after prev/current cycle)
             const expiretime = getStartOfBlockMinutes(
               config.BENCHMARK_RETENTION_MINUTES,
-              2
+              2,
             );
             redis.expireat(rkey, expiretime);
           }

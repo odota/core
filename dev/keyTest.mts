@@ -7,7 +7,7 @@ const arr = config.STEAM_API_KEY.split(',');
 for (let i = 0; i < arr.length; i++) {
   const key = arr[i];
   const resp = await axios.get(
-    `http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key=${key}`
+    `http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key=${key}`,
   );
   console.log(key, resp.status);
   if (resp.status !== 200) {

@@ -66,7 +66,7 @@ app.use((req, res, cb) => {
     profileRequests,
     getUptime(),
     matchRequestDelay + matchRequestDelayIncr,
-    req.query
+    req.query,
   );
   const shouldRestart =
     // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
@@ -107,7 +107,7 @@ app.get('/', (req, res, cb) => {
           return cb(err);
         }
         return res.json(data);
-      }
+      },
     );
   } else if (req.query.account_id) {
     getPlayerProfile(
@@ -118,7 +118,7 @@ app.get('/', (req, res, cb) => {
           return cb(err);
         }
         return res.json(data);
-      }
+      },
     );
   } else {
     return res.json(genStats());
@@ -142,47 +142,54 @@ start();
 async function init() {
   // Some logins may fail, and sometimes the Steam CM never returns a response
   // So don't await this and we'll just make sure we have at least one working with noneReady
-  const logOns = Array.from(new Array(accountsToUse), (v, i) => chooseLoginInfo());
-  await Promise.allSettled(logOns.map(logOnDetails => new Promise<void>((resolve, reject) => {
-    const client = new Steam.SteamClient();
-    client.steamUser = new Steam.SteamUser(client);
-    // client.steamFriends = new Steam.SteamFriends(client);
-    client.Dota2 = new Dota2.Dota2Client(client, false);
-    client.Dota2.on('ready', () => {
-      console.log('%s ready', logOnDetails.account_name);
-      steamObj[client.steamID] = client;
-      resolve();
-    });
-    client.on('connected', () => {
-      console.log(
-        '[STEAM] Trying to log on with %s',
-        JSON.stringify(logOnDetails)
-      );
-      client.steamUser.logOn(logOnDetails);
-    });
-    client.on('logOnResponse', (logOnResp: any) => {
-      if (logOnResp.eresult !== Steam.EResult.OK) {
-        console.error(logOnResp);
-        reject(logOnResp.eresult);
-        // we can try again, but some errors are non-retryable
-        // client.connect();
-      } else if (client && client.steamID) {
-        console.log('[STEAM] Logged on %s', client.steamID);
-        // client.steamFriends.setPersonaName(client.steamID.toString());
-        client.Dota2.launch();
-      }
-    });
-    client.on('error', (err: any) => {
-      console.error(err);
-    });
-    client.on('loggedOff', () => {
-      console.log('relogging %s', JSON.stringify(logOnDetails));
-      setTimeout(()=> {
-        client.steamUser.logOn(logOnDetails)
-      }, 5000);
-    });
-    client.connect();
-  })));
+  const logOns = Array.from(new Array(accountsToUse), (v, i) =>
+    chooseLoginInfo(),
+  );
+  await Promise.allSettled(
+    logOns.map(
+      (logOnDetails) =>
+        new Promise<void>((resolve, reject) => {
+          const client = new Steam.SteamClient();
+          client.steamUser = new Steam.SteamUser(client);
+          // client.steamFriends = new Steam.SteamFriends(client);
+          client.Dota2 = new Dota2.Dota2Client(client, false);
+          client.Dota2.on('ready', () => {
+            console.log('%s ready', logOnDetails.account_name);
+            steamObj[client.steamID] = client;
+            resolve();
+          });
+          client.on('connected', () => {
+            console.log(
+              '[STEAM] Trying to log on with %s',
+              JSON.stringify(logOnDetails),
+            );
+            client.steamUser.logOn(logOnDetails);
+          });
+          client.on('logOnResponse', (logOnResp: any) => {
+            if (logOnResp.eresult !== Steam.EResult.OK) {
+              console.error(logOnResp);
+              reject(logOnResp.eresult);
+              // we can try again, but some errors are non-retryable
+              // client.connect();
+            } else if (client && client.steamID) {
+              console.log('[STEAM] Logged on %s', client.steamID);
+              // client.steamFriends.setPersonaName(client.steamID.toString());
+              client.Dota2.launch();
+            }
+          });
+          client.on('error', (err: any) => {
+            console.error(err);
+          });
+          client.on('loggedOff', () => {
+            console.log('relogging %s', JSON.stringify(logOnDetails));
+            setTimeout(() => {
+              client.steamUser.logOn(logOnDetails);
+            }, 5000);
+          });
+          client.connect();
+        }),
+    ),
+  );
 }
 function selfDestruct() {
   console.log('shutting down');
@@ -261,12 +268,12 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
       console.log('received match %s in %sms', matchId, end - start);
       clearTimeout(timeout);
       return cb(err, matchData);
-    }
+    },
   );
 }
 /**
  * Chooses a random login to use from the pool. Once selected, removes it from the list
- * @returns 
+ * @returns
  */
 function chooseLoginInfo() {
   const startIndex = Math.floor(Math.random() * users.length);
@@ -278,12 +285,14 @@ function chooseLoginInfo() {
 async function getSteamServers() {
   // For the latest list: https://api.steampowered.com/ISteamDirectory/GetCMList/v1/?format=json&cellid=0
   try {
-    const cmResp = await axios.get('https://api.steampowered.com/ISteamDirectory/GetCMList/v1/?format=json&cellid=0');
+    const cmResp = await axios.get(
+      'https://api.steampowered.com/ISteamDirectory/GetCMList/v1/?format=json&cellid=0',
+    );
     const cmList = cmResp.data.response.serverlist;
     return cmList.map((cm: string) => {
       const spl = cm.split(':');
       return { host: spl[0], port: spl[1] };
-  });
+    });
   } catch (e) {
     console.error(e);
   }

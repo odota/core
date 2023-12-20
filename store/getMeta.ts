@@ -27,7 +27,7 @@ export async function getMeta(matchId: string) {
     gcdata.match_id,
     gcdata.cluster,
     gcdata.replay_salt,
-    true
+    true,
   );
   // Parse it from url
   // This takes about 50ms of CPU time per match
@@ -49,7 +49,7 @@ export async function getMetaFromUrl(url: string) {
     const { stdout } = await execPromise(
       `curl -L ${url} | bunzip2`,
       //@ts-ignore
-      { shell: true, encoding: 'buffer', maxBuffer: 10 * 1024 * 1024 }
+      { shell: true, encoding: 'buffer', maxBuffer: 10 * 1024 * 1024 },
     );
     console.timeEnd('[METAPARSE]: download/bunzip');
     console.time('[METAPARSE]: parse');
@@ -75,7 +75,7 @@ export async function getMetaFromUrl(url: string) {
 // Fetch protos from https://github.com/SteamDatabase/GameTracking-Dota2/blob/master/Protobufs/dota_match_metadata.proto
 async function updateProtos() {
   const resp = await axios.get(
-    'https://api.github.com/repos/SteamDatabase/GameTracking-Dota2/git/trees/master?recursive=1'
+    'https://api.github.com/repos/SteamDatabase/GameTracking-Dota2/git/trees/master?recursive=1',
   );
   const files = resp.data.tree;
   for (let i = 0; i < files.length; i++) {
@@ -86,7 +86,7 @@ async function updateProtos() {
       const resp2 = await axios.get(
         'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/' +
           file.path,
-        { responseType: 'arraybuffer' }
+        { responseType: 'arraybuffer' },
       );
       fs.writeFileSync('./proto/' + name, resp2.data);
     }

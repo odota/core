@@ -2,9 +2,7 @@
 import axios from 'axios';
 import db from '../store/db';
 import { upsert } from '../store/queries';
-import {
-  invokeIntervalAsync,
-} from '../util/utility';
+import { invokeIntervalAsync } from '../util/utility';
 
 async function doProPlayers() {
   const url = 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001';
@@ -15,8 +13,8 @@ async function doProPlayers() {
     apiPros.map((p: ProPlayer) =>
       upsert(db, 'notable_players', p, {
         account_id: p.account_id,
-      })
-    )
+      }),
+    ),
   );
 }
 invokeIntervalAsync(doProPlayers, 30 * 60 * 1000);

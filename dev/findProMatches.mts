@@ -9,7 +9,7 @@ async function getPage(url: string, leagueid: number) {
   console.log(
     leagueid,
     data.result.total_results,
-    data.result.results_remaining
+    data.result.results_remaining,
   );
   for (let i = 0; i < data.result.matches.length; i++) {
     const match = data.results.matches[i];

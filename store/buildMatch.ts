@@ -28,7 +28,9 @@ async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
     cluster: match.cluster,
     lobby_type: match.lobby_type,
     game_mode: match.game_mode,
-    is_contributor: Boolean(player.account_id && isContributor(player.account_id)),
+    is_contributor: Boolean(
+      player.account_id && isContributor(player.account_id),
+    ),
   };
   computeMatchData(p as ParsedPlayerMatch);
   const row = await db
@@ -100,10 +102,7 @@ async function backfill(matchId: string) {
   // Count for logging
   redisCount(redis, 'steam_api_backfill');
 }
-async function doBuildMatch(
-  matchId: string,
-  options: { meta?: string }
-) {
+async function doBuildMatch(matchId: string, options: { meta?: string }) {
   if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
@@ -139,13 +138,13 @@ async function doBuildMatch(
         ON players.account_id = notable_players.account_id
         WHERE players.account_id = ?
       `,
-          [r.account_id ?? null]
+          [r.account_id ?? null],
         )
-        .then((names) => ({ ...r, ...names.rows[0] }))
-    )
+        .then((names) => ({ ...r, ...names.rows[0] })),
+    ),
   );
   const playersPromise = Promise.all(
-    playersMatchData.map((p) => extendPlayerData(p, match as ParsedMatch))
+    playersMatchData.map((p) => extendPlayerData(p, match as ParsedMatch)),
   );
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,
@@ -154,8 +153,8 @@ async function doBuildMatch(
     Object.keys(match.cosmetics || {}).map((itemId) =>
       db.first().from('cosmetics').where({
         item_id: itemId,
-      })
-    )
+      }),
+    ),
   );
   const prodataPromise = prodataInfo(matchId);
   const metadataPromise = Boolean(options.meta)
@@ -183,7 +182,7 @@ async function doBuildMatch(
         .filter(
           (c) =>
             match?.cosmetics[c.item_id] === p.player_slot &&
-            (!c.used_by_heroes || c.used_by_heroes === hero.name)
+            (!c.used_by_heroes || c.used_by_heroes === hero.name),
         );
       return {
         ...p,
@@ -200,7 +199,7 @@ async function doBuildMatch(
     matchResult.replay_url = buildReplayUrl(
       matchResult.match_id,
       matchResult.cluster,
-      matchResult.replay_salt
+      matchResult.replay_salt,
     );
   }
   const playersWithBenchmarks = await getMatchBenchmarks(matchResult);
@@ -211,10 +210,7 @@ async function doBuildMatch(
   return Promise.resolve(matchResult);
 }
 
-async function buildMatch(
-  matchId: string,
-  options: { meta?: string }
-) {
+async function buildMatch(matchId: string, options: { meta?: string }) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {

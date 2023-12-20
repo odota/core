@@ -157,7 +157,7 @@ const filterFuncs: {
 
 export function filterMatches(
   matches: ParsedPlayerMatch[],
-  filters?: ArrayifiedFilters
+  filters?: ArrayifiedFilters,
 ) {
   // Used for date filter
   const curtime = Math.floor(Date.now() / 1000);
@@ -167,13 +167,24 @@ export function filterMatches(
     let include = true;
     // verify the match passes each filter test
     Object.keys(filters || {}).forEach((key) => {
-      if (filterFuncs[key as FilterType] && filters && filters[key] && filters[key]?.length) {
+      if (
+        filterFuncs[key as FilterType] &&
+        filters &&
+        filters[key] &&
+        filters[key]?.length
+      ) {
         // earlier, we arrayified everything
         // pass the first element, as well as the full array
         // check that it passes all filters
         // pass the player_match, the first element of array, and the array itself
         include =
-          include && filterFuncs[key as FilterType](matches[i], filters[key][0], filters[key], curtime);
+          include &&
+          filterFuncs[key as FilterType](
+            matches[i],
+            filters[key][0],
+            filters[key],
+            curtime,
+          );
       }
     });
     // if we passed, push it

@@ -18,7 +18,7 @@ async function start() {
       },
       {
         match_id: match.match_id,
-      }
+      },
     );
   }
 }

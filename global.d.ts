@@ -40,7 +40,10 @@ type StringArrayDict = { [key: string]: string[] };
 type AnyDict = { [key: string]: any };
 type NumberDict = { [key: string]: number };
 type BooleanDict = { [key: string]: boolean };
-type ErrorCb = (err?: Error | null | undefined | string | unknown, result?: any) => void;
+type ErrorCb = (
+  err?: Error | null | undefined | string | unknown,
+  result?: any,
+) => void;
 
 type Match = {
   match_id: number;
@@ -201,8 +204,8 @@ type GcData = {
   replay_salt: number;
   series_type: number;
   series_id: number;
-  players: GcPlayer[]
-}
+  players: GcPlayer[];
+};
 
 // Data to pass to insertMatch from GC
 interface GcMatch extends GcData {
@@ -241,7 +244,7 @@ interface ParserPlayer extends Partial<Player> {
 
 type PlayerMatch = Player & Match & { players?: Player[] };
 type ParsedPlayerMatch = ParsedPlayer &
-  ParsedMatch & { players?: ParsedPlayer[], is_contributor?: boolean };
+  ParsedMatch & { players?: ParsedPlayer[]; is_contributor?: boolean };
 
 type User = {
   account_id: number;
@@ -363,7 +366,11 @@ type PathVerbSpec = {
     };
   };
   route: () => string;
-  func: (req: Express.ExtRequest, res: import('express').Response, cb: ErrorCb) => Promise<any>;
+  func: (
+    req: Express.ExtRequest,
+    res: import('express').Response,
+    cb: ErrorCb,
+  ) => Promise<any>;
 };
 
 type HttpVerb = 'get' | 'post';
@@ -411,7 +418,7 @@ type MetricName =
 type PGroup = {
   [player_slot: string]: {
     // Optional because some players are anonymous
-    account_id?: number,
-    hero_id: number,
-  }
-}
+    account_id?: number;
+    hero_id: number;
+  };
+};

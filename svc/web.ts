@@ -77,8 +77,8 @@ passport.use(
       } catch (e) {
         cb(e);
       }
-    }
-  )
+    },
+  ),
 );
 // Compression middleware
 app.use(compression());
@@ -180,7 +180,7 @@ app.use((req, res, cb) => {
     if (!res.locals.isAPIRequest) {
       res.set(
         'X-Rate-Limit-Remaining-Month',
-        (config.API_FREE_LIMIT - Number(prevUsage)).toString()
+        (config.API_FREE_LIMIT - Number(prevUsage)).toString(),
       );
     }
     if (Number(incrValue) > Number(rateLimit) && config.NODE_ENV !== 'test') {
@@ -215,7 +215,7 @@ app.use((req, res, cb) => {
       res.statusCode !== 500 &&
       res.statusCode !== 429 &&
       !whitelistedPaths.includes(
-        req.baseUrl + (req.path === '/' ? '' : req.path)
+        req.baseUrl + (req.path === '/' ? '' : req.path),
       ) &&
       elapsed < 10000
     ) {
@@ -240,15 +240,14 @@ app.use((req, res, cb) => {
       if (req.headers.origin === 'https://www.opendota.com') {
         redisCount(redis, 'api_hits_ui');
       }
-      const normPath = req.path.replace(/\d+/g, ':id').toLowerCase().replace(/\/+$/, '');
-      redis.zincrby(
-        'api_paths',
-        1,
-        req.method + ' ' + normPath,
-      );
+      const normPath = req.path
+        .replace(/\d+/g, ':id')
+        .toLowerCase()
+        .replace(/\/+$/, '');
+      redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
       redis.expireat(
         'api_paths',
-        moment().startOf('hour').add(1, 'hour').format('X')
+        moment().startOf('hour').add(1, 'hour').format('X'),
       );
     }
     if (req.user && req.user.account_id) {
@@ -279,13 +278,13 @@ app.use(
   cors({
     origin: true,
     credentials: true,
-  })
+  }),
 );
 app.use(bodyParser.json());
 app.route('/login').get(
   passport.authenticate('steam', {
     failureRedirect: '/api',
-  })
+  }),
 );
 app.route('/return').get(
   passport.authenticate('steam', {
@@ -293,10 +292,14 @@ app.route('/return').get(
   }),
   (req, res) => {
     if (config.UI_HOST) {
-      return res.redirect(req.user ? `${config.UI_HOST}/players/${req.user.account_id}` : config.UI_HOST);
+      return res.redirect(
+        req.user
+          ? `${config.UI_HOST}/players/${req.user.account_id}`
+          : config.UI_HOST,
+      );
     }
     return res.redirect('/api');
-  }
+  },
 );
 app.route('/logout').get((req, res) => {
   req.logout(() => {});
@@ -320,7 +323,7 @@ app.route('/subscribeSuccess').get(async (req, res) => {
   // associate the customer id with the steam account ID (req.user.account_id)
   await db.raw(
     'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
-    [accountId, customer.id, 'active']
+    [accountId, customer.id, 'active'],
   );
   // Send the user back to the subscribe page
   return res.redirect(`${config.UI_HOST}/subscribe`);
@@ -331,7 +334,7 @@ app.route('/manageSub').post(async (req, res) => {
   }
   const result = await db.raw(
     "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
-    [req.user.account_id]
+    [req.user.account_id],
   );
   const customer = result?.rows?.[0];
   if (!customer) {
@@ -354,11 +357,12 @@ api.use('/admin*', (req, res, cb) => {
 });
 api.get('/admin/apiMetrics', async (req, res, cb) => {
   try {
-  const startTime = moment().startOf('month').format('YYYY-MM-DD');
-  const endTime = moment().endOf('month').format('YYYY-MM-DD');
-  const [topAPI, topAPIIP, numAPIUsers, topUsersIP, numUsersIP] = await Promise.all([
-    db.raw(
-      `
+    const startTime = moment().startOf('month').format('YYYY-MM-DD');
+    const endTime = moment().endOf('month').format('YYYY-MM-DD');
+    const [topAPI, topAPIIP, numAPIUsers, topUsersIP, numUsersIP] =
+      await Promise.all([
+        db.raw(
+          `
     SELECT
         account_id,
         ARRAY_AGG(DISTINCT api_key) as api_keys,
@@ -379,10 +383,10 @@ api.get('/admin/apiMetrics', async (req, res, cb) => {
     ORDER BY usage_count DESC
     LIMIT 10
     `,
-      [startTime, endTime]
-    ),
-    db.raw(
-      `
+          [startTime, endTime],
+        ),
+        db.raw(
+          `
     SELECT
         ip,
         ARRAY_AGG(DISTINCT account_id) as account_ids,
@@ -404,10 +408,10 @@ api.get('/admin/apiMetrics', async (req, res, cb) => {
     ORDER BY usage_count DESC
     LIMIT 10
     `,
-      [startTime, endTime]
-    ),
-    db.raw(
-      `
+          [startTime, endTime],
+        ),
+        db.raw(
+          `
     SELECT
         COUNT(DISTINCT account_id)
     FROM api_key_usage
@@ -415,19 +419,19 @@ api.get('/admin/apiMetrics', async (req, res, cb) => {
         timestamp >= ?
         AND timestamp <= ?
     `,
-      [startTime, endTime]
-    ),
-    redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES'),
-    redis.zcard('user_usage_count'),
-  ]);
-  return res.json({
-    topAPI: topAPI.rows,
-    topAPIIP: topAPIIP.rows,
-    numAPIUsers: numAPIUsers.rows,
-    topUsersIP,
-    numUsersIP,
-  });
-  } catch(e) {
+          [startTime, endTime],
+        ),
+        redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES'),
+        redis.zcard('user_usage_count'),
+      ]);
+    return res.json({
+      topAPI: topAPI.rows,
+      topAPIIP: topAPIIP.rows,
+      numAPIUsers: numAPIUsers.rows,
+      topUsersIP,
+      numUsersIP,
+    });
+  } catch (e) {
     return cb(e);
   }
 });
@@ -440,7 +444,7 @@ app.use('/keys', keys);
 app.use((req, res) =>
   res.status(404).json({
     error: 'Not Found',
-  })
+  }),
 );
 // 500 route
 app.use(
@@ -454,7 +458,7 @@ app.use(
     return res.status(500).json({
       error: 'Internal Server Error',
     });
-  }
+  },
 );
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {

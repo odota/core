@@ -16,7 +16,7 @@ async function processScenarios(matchID: string) {
   const match = await buildMatch(matchID, {});
   if (!su.validateMatchProperties(match)) {
     console.error(
-      `Skipping scenario checks for match ${matchID}. Invalid match object.`
+      `Skipping scenario checks for match ${matchID}. Invalid match object.`,
     );
     return;
   }
@@ -40,11 +40,11 @@ async function processScenarios(matchID: string) {
             .filter((column) => column !== 'wins')
             .join(','),
           table,
-          table
+          table,
         );
         await db.raw(
           query,
-          Object.keys(row).map((key) => row[key])
+          Object.keys(row).map((key) => row[key]),
         );
       }
     });

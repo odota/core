@@ -10,10 +10,13 @@ import {
 import axios from 'axios';
 
 async function doCosmetics() {
-  const itemsResp = await axios.get('https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt', {responseType: 'text'});
+  const itemsResp = await axios.get(
+    'https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt',
+    { responseType: 'text' },
+  );
   const items = itemsResp.data;
   const iconsResp = await axios.get(
-    'https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json'
+    'https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json',
   );
   const icons = iconsResp.data;
   const itemData = vdf.parse(cleanItemSchema(items));
@@ -44,7 +47,7 @@ async function doCosmetics() {
   }
 
   const promiseFuncs = Object.keys(itemData.items_game.items).map(
-    (i) => () => processItem(i)
+    (i) => () => processItem(i),
   );
   await eachLimitPromise(promiseFuncs, 10);
 }

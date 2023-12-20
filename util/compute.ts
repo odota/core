@@ -15,7 +15,7 @@ const { ancients } = constants;
  * */
 export function countWords(
   playerMatch: ParsedPlayerMatch,
-  playerFilter: { player_slot: number } | null
+  playerFilter: { player_slot: number } | null,
 ) {
   const messages = playerMatch.chat;
   // extract the message strings from the message objects
@@ -176,7 +176,7 @@ export function computeMatchData(pm: ParsedPlayerMatch) {
         !(
           purchase.key.indexOf('recipe_') === 0 ||
           purchase.key === 'ward_dispenser'
-        )
+        ),
     );
     pm.purchase_time = {};
     pm.first_purchase_time = {};

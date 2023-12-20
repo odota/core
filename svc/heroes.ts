@@ -16,7 +16,9 @@ async function doHeroes() {
   if (!body || !body.result || !body.result.heroes) {
     return;
   }
-  const heroResp = await axios.get('https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json');
+  const heroResp = await axios.get(
+    'https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json',
+  );
   const heroData = heroResp.data;
   if (!heroData) {
     return;
@@ -36,7 +38,7 @@ async function doHeroes() {
       },
       {
         id: hero.id,
-      }
+      },
     );
   }
 }

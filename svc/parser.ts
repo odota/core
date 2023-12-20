@@ -14,7 +14,12 @@ import queue from '../store/queue';
 import { ApiMatch, getPGroup, insertMatch } from '../store/queries';
 import { promisify } from 'util';
 import c from 'ansi-colors';
-import { buildReplayUrl, generateJob, getSteamAPIData, redisCount } from '../util/utility';
+import {
+  buildReplayUrl,
+  generateJob,
+  getSteamAPIData,
+  redisCount,
+} from '../util/utility';
 import redis from '../store/redis';
 import db from '../store/db';
 import axios from 'axios';
@@ -41,10 +46,10 @@ async function parseProcessor(job: ParseJob) {
     let apiMatch: ApiMatch;
     try {
       const body = await getSteamAPIData(
-        generateJob('api_details', { match_id: job.match_id }).url
+        generateJob('api_details', { match_id: job.match_id }).url,
       );
       apiMatch = body.result;
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       // The Match ID is probably invalid, so fail without throwing
       return false;
@@ -67,17 +72,16 @@ async function parseProcessor(job: ParseJob) {
     let url = buildReplayUrl(
       gcdata.match_id,
       gcdata.cluster,
-      gcdata.replay_salt
+      gcdata.replay_salt,
     );
 
     // Check if match is already parsed
     const isParsed = Boolean(
       (
-        await db.raw(
-          'select match_id from parsed_matches where match_id = ?',
-          [job.match_id]
-        )
-      ).rows[0]
+        await db.raw('select match_id from parsed_matches where match_id = ?', [
+          job.match_id,
+        ])
+      ).rows[0],
     );
     if (isParsed) {
       redisCount(redis, 'reparse');
@@ -109,14 +113,20 @@ async function parseProcessor(job: ParseJob) {
         job.match_id
       }`,
       //@ts-ignore
-      { shell: true, maxBuffer: 10 * 1024 * 1024 }
+      { shell: true, maxBuffer: 10 * 1024 * 1024 },
     );
     parseTime = Date.now() - parseStart;
 
     const insertStart = Date.now();
     // const { getParseSchema } = await import('../processors/parseSchema.mjs');
     // start_time and duration used for calculating dust adjustments and APM
-    const result: ParserMatch = { ...JSON.parse(stdout), match_id: job.match_id, leagueid, start_time, duration };
+    const result: ParserMatch = {
+      ...JSON.parse(stdout),
+      match_id: job.match_id,
+      leagueid,
+      start_time,
+      duration,
+    };
     await insertMatch(result, {
       type: 'parsed',
       skipParse: true,
@@ -133,7 +143,7 @@ async function parseProcessor(job: ParseJob) {
         end - start
       }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
         job.match_id
-      }`
+      }`,
     );
     redis.publish('parsed', message);
     console.log(message);
@@ -146,7 +156,7 @@ async function parseProcessor(job: ParseJob) {
         end - start
       }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
         job.match_id
-      }`
+      }`,
     );
     redis.publish('parsed', message);
     console.log(message);
@@ -158,5 +168,5 @@ async function parseProcessor(job: ParseJob) {
 runReliableQueue(
   'parse',
   Number(PARSER_PARALLELISM) || numCPUs,
-  parseProcessor
+  parseProcessor,
 );

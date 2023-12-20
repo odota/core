@@ -25,6 +25,6 @@ for (let i = 0; i < matchIds.length; i++) {
     },
     {
       match_id: match.match_id,
-    }
+    },
   );
 }

@@ -46,59 +46,59 @@ export class Archive {
   }
 
   public archiveGet = async (key: string) => {
-  if (!this.client) {
-    return null;
-  }
-  const command = new GetObjectCommand({
-    Bucket: this.bucket,
-    Key: key,
-  });
-  try {
-    const data = await this.client.send(command);
-    if (!data.Body) {
+    if (!this.client) {
       return null;
     }
-    const buffer = await stream2buffer(data.Body);
-    const result = gunzipSync(buffer);
-    console.log(
-      '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
-      key,
-      buffer.length,
-      result.length
-    );
-    return result;
-  } catch (e: any) {
-    console.error('[ARCHIVE] get error:', e.Code);
-    return null;
-  }
-  }
-  public archivePut = async (key: string, blob: Buffer) => {
-  if (!this.client) {
-    return null;
-  }
-  if (blob.length < 1000) {
-    throw new Error(
-      '[ARCHIVE] Tried to archive less than 1kb so something is probably wrong'
-    );
-  }
-  try {
-    const data = gzipSync(blob);
-    const command = new PutObjectCommand({
+    const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: key,
-      Body: data,
     });
-    const result = await this.client.send(command);
-    console.log(
-      '[ARCHIVE] %s: original %s bytes, archived %s bytes',
-      key,
-      blob.length,
-      data.length
-    );
-    return result;
-  } catch (e: any) {
-    console.error('[ARCHIVE] put error:', e.Code || e);
-    return null;
-  }
-}
+    try {
+      const data = await this.client.send(command);
+      if (!data.Body) {
+        return null;
+      }
+      const buffer = await stream2buffer(data.Body);
+      const result = gunzipSync(buffer);
+      console.log(
+        '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
+        key,
+        buffer.length,
+        result.length,
+      );
+      return result;
+    } catch (e: any) {
+      console.error('[ARCHIVE] get error:', e.Code);
+      return null;
+    }
+  };
+  public archivePut = async (key: string, blob: Buffer) => {
+    if (!this.client) {
+      return null;
+    }
+    if (blob.length < 1000) {
+      throw new Error(
+        '[ARCHIVE] Tried to archive less than 1kb so something is probably wrong',
+      );
+    }
+    try {
+      const data = gzipSync(blob);
+      const command = new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: data,
+      });
+      const result = await this.client.send(command);
+      console.log(
+        '[ARCHIVE] %s: original %s bytes, archived %s bytes',
+        key,
+        blob.length,
+        data.length,
+      );
+      return result;
+    } catch (e: any) {
+      console.error('[ARCHIVE] put error:', e.Code || e);
+      return null;
+    }
+  };
 }

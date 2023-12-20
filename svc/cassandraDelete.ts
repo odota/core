@@ -7,7 +7,7 @@ import { eachLimitPromise } from '../util/utility';
 
 function genRandomNumber(byteCount: number, radix: number): string {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`).toString(
-    radix
+    radix,
   );
 }
 async function start() {
@@ -29,7 +29,7 @@ async function start() {
           prepare: true,
           fetchSize: 100,
           autoPage: true,
-        }
+        },
       );
       // Put the ones that don't have parsed data into an array
       const unparsedIds: number[] = result.rows
@@ -43,7 +43,7 @@ async function start() {
         unparsedIds.length,
         parsedIds.length,
         result.rows.length,
-        unparsedIds[0]?.toString()
+        unparsedIds[0]?.toString(),
       );
       // NOTE: Due to lack of transactions there might be some orphaned player_matches without match
       // Delete player_matches
@@ -54,17 +54,17 @@ async function start() {
             [id],
             {
               prepare: true,
-            }
-          )
-        )
+            },
+          ),
+        ),
       );
       // Delete matches
       await Promise.all(
         unparsedIds.map((id) =>
           cassandra.execute('DELETE from matches where match_id = ?', [id], {
             prepare: true,
-          })
-        )
+          }),
+        ),
       );
 
       // TODO (howard) remove insert once backfill complete
@@ -72,12 +72,14 @@ async function start() {
         parsedIds.map((id) =>
           db.raw(
             'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
-            [Number(id)]
-          )
-        )
+            [Number(id)],
+          ),
+        ),
       );
 
-      const funcs = parsedIds.map((id) => () => doArchiveFromLegacy(id.toString()));
+      const funcs = parsedIds.map(
+        (id) => () => doArchiveFromLegacy(id.toString()),
+      );
       await eachLimitPromise(funcs, 10);
 
       // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones

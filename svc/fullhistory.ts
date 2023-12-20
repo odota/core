@@ -44,7 +44,10 @@ async function processMatch(matchId: string) {
 
 async function processFullHistory(job: FullHistoryJob) {
   const player = job;
-  if (Number(player.account_id) === 0 || Number.isNaN(Number(player.account_id))) {
+  if (
+    Number(player.account_id) === 0 ||
+    Number.isNaN(Number(player.account_id))
+  ) {
     return;
   }
   console.time('doFullHistory: ' + player.account_id.toString());
@@ -63,7 +66,7 @@ async function processFullHistory(job: FullHistoryJob) {
   });
   const getApiMatchPage = async (
     player: FullHistoryJob,
-    url: string
+    url: string,
   ): Promise<void> => {
     const body = await getSteamAPIData(url);
     // if !body.result, retry
@@ -114,7 +117,7 @@ async function processFullHistory(job: FullHistoryJob) {
     '%s matches found, %s already in db, %s to add',
     Object.keys(match_ids).length,
     docs.length,
-    Object.keys(match_ids).length - docs.length
+    Object.keys(match_ids).length - docs.length,
   );
   // iterate through db results, delete match_id key if this player has this match already
   // will re-request and update matches where this player was previously anonymous
@@ -124,7 +127,7 @@ async function processFullHistory(job: FullHistoryJob) {
   }
   // make api_details requests for matches
   const promiseFuncs = Object.keys(match_ids).map(
-    (matchId) => () => processMatch(matchId)
+    (matchId) => () => processMatch(matchId),
   );
   await eachLimitPromise(promiseFuncs, parallelism);
   await updatePlayer(player);

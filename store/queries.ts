@@ -65,12 +65,12 @@ async function cleanRowPostgres(db: knex.Knex, table: string, row: AnyDict) {
 async function cleanRowCassandra(
   cassandra: Client,
   table: string,
-  row: AnyDict
+  row: AnyDict,
 ) {
   if (!cassandraColumnInfo[table]) {
     const result = await cassandra.execute(
       'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
-      [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table]
+      [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
     );
     cassandraColumnInfo[table] = {};
     result.rows.forEach((r) => {
@@ -120,14 +120,12 @@ export async function getMatchBenchmarks(m: Match) {
         }
       }
       return p;
-    })
+    }),
   );
 }
 export async function getDistributions() {
   const result: AnyDict = {};
-  const keys = [
-    'distribution:ranks',
-  ];
+  const keys = ['distribution:ranks'];
   for (let i = 0; i < keys.length; i++) {
     const r = keys[i];
     const blob = await redis.get(r);
@@ -136,9 +134,7 @@ export async function getDistributions() {
   return result;
 }
 
-export async function getHeroRankings(
-  heroId: string,
-) {
+export async function getHeroRankings(heroId: string) {
   const result = await db.raw(
     `
   SELECT players.account_id, score, personaname, name, avatar, last_login, rating as rank_tier
@@ -150,17 +146,15 @@ export async function getHeroRankings(
   ORDER BY score DESC
   LIMIT 100
   `,
-    [heroId || 0]
+    [heroId || 0],
   );
   return {
     hero_id: Number(heroId),
     rankings: result.rows,
   };
 }
-export async function getHeroItemPopularity(
-  heroId: string,
-) {
-  const purchaseLogs: { rows: any[]} = await db.raw(
+export async function getHeroItemPopularity(heroId: string) {
+  const purchaseLogs: { rows: any[] } = await db.raw(
     `
   SELECT purchase_log
   FROM player_matches
@@ -169,86 +163,85 @@ export async function getHeroItemPopularity(
   ORDER BY match_id DESC
   LIMIT 100
   `,
-    [heroId || 0]
+    [heroId || 0],
   );
-    const items = purchaseLogs.rows
-      .flatMap((purchaseLog) => purchaseLog.purchase_log)
-      .filter((item) => item && item.key && item.time != null && constants.items[item.key])
-      .map((item) => {
-        const time = parseInt(item.time, 10);
-        const { cost, id } = constants.items[item.key];
-        return { cost, id, time };
-      });
-    const startGameItems = countItemPopularity(
-      items.filter((item) => item.time <= 0 && item.cost <= 600)
-    );
-    const earlyGameItems = countItemPopularity(
-      items.filter(
-        (item) => item.time > 0 && item.time < 60 * 10 && item.cost >= 500
-      )
-    );
-    const midGameItems = countItemPopularity(
-      items.filter(
-        (item) =>
-          item.time >= 60 * 10 && item.time < 60 * 25 && item.cost >= 1000
-      )
-    );
-    const lateGameItems = countItemPopularity(
-      items.filter((item) => item.time >= 60 * 25 && item.cost >= 2000)
-    );
-    return {
-      start_game_items: startGameItems,
-      early_game_items: earlyGameItems,
-      mid_game_items: midGameItems,
-      late_game_items: lateGameItems,
-    };
+  const items = purchaseLogs.rows
+    .flatMap((purchaseLog) => purchaseLog.purchase_log)
+    .filter(
+      (item) =>
+        item && item.key && item.time != null && constants.items[item.key],
+    )
+    .map((item) => {
+      const time = parseInt(item.time, 10);
+      const { cost, id } = constants.items[item.key];
+      return { cost, id, time };
+    });
+  const startGameItems = countItemPopularity(
+    items.filter((item) => item.time <= 0 && item.cost <= 600),
+  );
+  const earlyGameItems = countItemPopularity(
+    items.filter(
+      (item) => item.time > 0 && item.time < 60 * 10 && item.cost >= 500,
+    ),
+  );
+  const midGameItems = countItemPopularity(
+    items.filter(
+      (item) =>
+        item.time >= 60 * 10 && item.time < 60 * 25 && item.cost >= 1000,
+    ),
+  );
+  const lateGameItems = countItemPopularity(
+    items.filter((item) => item.time >= 60 * 25 && item.cost >= 2000),
+  );
+  return {
+    start_game_items: startGameItems,
+    early_game_items: earlyGameItems,
+    mid_game_items: midGameItems,
+    late_game_items: lateGameItems,
+  };
 }
-export async function getHeroBenchmarks(
-  heroId: string,
-) {
+export async function getHeroBenchmarks(heroId: string) {
   const ret: AnyDict = {};
   const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
   const items: [metric: string, percentile: number][] = [];
-  Object.keys(benchmarks).forEach(metric => {
-    arr.forEach(percentile => {
+  Object.keys(benchmarks).forEach((metric) => {
+    arr.forEach((percentile) => {
       items.push([metric, percentile]);
     });
   });
-  await Promise.all(items.map(async([metric, percentile]) => {
-    // Use data from previous epoch
-    let key = [
-      'benchmarks',
-      getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1),
-      metric,
-      heroId,
-    ].join(':');
-    const backupKey = [
-      'benchmarks',
-      getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
-      metric,
-      heroId,
-    ].join(':');
-    const exists = await redis.exists(key);
-    if (exists === 0) {
-      // No data, use backup key (current epoch)
-      key = backupKey;
-    }
-    const card = await redis.zcard(key);
-    const position = Math.floor((card || 0) * percentile);
-    const result = await redis.zrange(
-          key,
-          position,
-          position,
-          'WITHSCORES');
-    const obj = {
-      percentile,
-      value: Number(result?.[1]),
-    };
-    if (!ret[metric]) {
-      ret[metric] = [];
-    }
-    ret[metric].push(obj);
-  }));
+  await Promise.all(
+    items.map(async ([metric, percentile]) => {
+      // Use data from previous epoch
+      let key = [
+        'benchmarks',
+        getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1),
+        metric,
+        heroId,
+      ].join(':');
+      const backupKey = [
+        'benchmarks',
+        getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+        metric,
+        heroId,
+      ].join(':');
+      const exists = await redis.exists(key);
+      if (exists === 0) {
+        // No data, use backup key (current epoch)
+        key = backupKey;
+      }
+      const card = await redis.zcard(key);
+      const position = Math.floor((card || 0) * percentile);
+      const result = await redis.zrange(key, position, position, 'WITHSCORES');
+      const obj = {
+        percentile,
+        value: Number(result?.[1]),
+      };
+      if (!ret[metric]) {
+        ret[metric] = [];
+      }
+      ret[metric].push(obj);
+    }),
+  );
   return {
     hero_id: Number(heroId),
     result: ret,
@@ -257,18 +250,27 @@ export async function getHeroBenchmarks(
 
 export async function getPlayerMatchesPromise(
   accountId: string,
-  queryObj: QueryObj
+  queryObj: QueryObj,
 ): Promise<ParsedPlayerMatch[]> {
   return (await getPlayerMatchesPromiseWithMetadata(accountId, queryObj))[0];
 }
 
-type PlayerMatchesMetadata = { finalLength: number, localLength: number, archivedLength: number, mergedLength: number };
+type PlayerMatchesMetadata = {
+  finalLength: number;
+  localLength: number;
+  archivedLength: number;
+  mergedLength: number;
+};
 export async function getPlayerMatchesPromiseWithMetadata(
   accountId: string,
-  queryObj: QueryObj
+  queryObj: QueryObj,
 ): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
   // Validate accountId
-  if (!accountId || !Number.isInteger(Number(accountId)) || Number(accountId) <= 0) {
+  if (
+    !accountId ||
+    !Number.isInteger(Number(accountId)) ||
+    Number(accountId) <= 0
+  ) {
     return [[], null];
   }
   // call clean method to ensure we have column info cached
@@ -282,37 +284,41 @@ export async function getPlayerMatchesPromiseWithMetadata(
       ${queryObj.dbLimit ? `LIMIT ${queryObj.dbLimit}` : ''}
     `,
     // Only allow selecting fields present in column names data
-    queryObj.projectAll ? '*' : queryObj.project
-      .filter((f: string) => cassandraColumnInfo.player_caches?.[f])
-      .join(',')
+    queryObj.projectAll
+      ? '*'
+      : queryObj.project
+          .filter((f: string) => cassandraColumnInfo.player_caches?.[f])
+          .join(','),
   );
   const [localMatches, archivedMatches] = await Promise.all([
     new Promise<ParsedPlayerMatch[]>((resolve, reject) => {
-    console.time('cassandra');
-    let localMatches: ParsedPlayerMatch[] = [];
-    cassandra.eachRow(
-      query,
-      [accountId],
-      {
-        prepare: true,
-        fetchSize: 5000,
-        autoPage: true,
-      },
-      (n, row) => {
-        const m = deserialize(row);
-        localMatches.push(m);
-      },
-      (err) => {
-        console.timeEnd('cassandra');
-        if (err) {
-          return reject(err);
-        }
-        return resolve(localMatches);
-      }
-    );
-  }),
-  // for dbLimit (recentMatches), skip the archive and just return 20 most recent
-  (config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit) ? getArchivedPlayerMatches(accountId) : Promise.resolve([]),
+      console.time('cassandra');
+      let localMatches: ParsedPlayerMatch[] = [];
+      cassandra.eachRow(
+        query,
+        [accountId],
+        {
+          prepare: true,
+          fetchSize: 5000,
+          autoPage: true,
+        },
+        (n, row) => {
+          const m = deserialize(row);
+          localMatches.push(m);
+        },
+        (err) => {
+          console.timeEnd('cassandra');
+          if (err) {
+            return reject(err);
+          }
+          return resolve(localMatches);
+        },
+      );
+    }),
+    // for dbLimit (recentMatches), skip the archive and just return 20 most recent
+    config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
+      ? getArchivedPlayerMatches(accountId)
+      : Promise.resolve([]),
   ]);
   const localLength = localMatches.length;
   const archivedLength = archivedMatches.length;
@@ -320,24 +326,29 @@ export async function getPlayerMatchesPromiseWithMetadata(
   let matches = localMatches;
   if (archivedMatches.length) {
     console.time('merge');
-    const keys = queryObj.projectAll ? Object.keys(cassandraColumnInfo.player_caches) as (keyof ParsedPlayerMatch)[] : queryObj.project;
+    const keys = queryObj.projectAll
+      ? (Object.keys(
+          cassandraColumnInfo.player_caches,
+        ) as (keyof ParsedPlayerMatch)[])
+      : queryObj.project;
     // Merge together the results
     // Sort both lists into descending order
     localMatches.sort((a, b) => b.match_id - a.match_id);
     archivedMatches.sort((a, b) => b.match_id - a.match_id);
     matches = [];
-    while(localMatches.length || archivedMatches.length) {
+    while (localMatches.length || archivedMatches.length) {
       const localMatch = localMatches[0];
       const archivedMatch = archivedMatches[0];
       // If the IDs of the first elements match, pop both and then merge them together
       if (localMatch?.match_id === archivedMatch?.match_id) {
         // Only pick selected columns from those matches
         // Local match has the desired columns
-        Object.keys(localMatch).forEach(key => {
+        Object.keys(localMatch).forEach((key) => {
           const typedKey = key as keyof ParsedPlayerMatch;
           // For each key prefer nonnull value, with precedence to local store
           //@ts-ignore
-          localMatch[typedKey] = localMatch[typedKey] ?? archivedMatch[typedKey] ?? null;
+          localMatch[typedKey] =
+            localMatch[typedKey] ?? archivedMatch[typedKey] ?? null;
         });
         // Output the merged version
         matches.push(localMatch);
@@ -369,14 +380,29 @@ export async function getPlayerMatchesPromiseWithMetadata(
   const offset = filtered.slice(queryObj.offset || 0);
   const final = offset.slice(0, queryObj.limit || offset.length);
   console.timeEnd('process');
-  return [final, { finalLength: final.length, localLength, archivedLength, mergedLength: matches.length }];
+  return [
+    final,
+    {
+      finalLength: final.length,
+      localLength,
+      archivedLength,
+      mergedLength: matches.length,
+    },
+  ];
 }
 
-export async function getFullPlayerMatchesWithMetadata(accountId: string): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
-  return getPlayerMatchesPromiseWithMetadata(accountId, { project: [], projectAll: true });
+export async function getFullPlayerMatchesWithMetadata(
+  accountId: string,
+): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
+  return getPlayerMatchesPromiseWithMetadata(accountId, {
+    project: [],
+    projectAll: true,
+  });
 }
 
-export async function getArchivedPlayerMatches(accountId: string): Promise<ParsedPlayerMatch[]> {
+export async function getArchivedPlayerMatches(
+  accountId: string,
+): Promise<ParsedPlayerMatch[]> {
   console.time('archive');
   const blob = await playerArchive.archiveGet(accountId);
   const arr = blob ? JSON.parse(blob.toString()) : [];
@@ -384,7 +410,9 @@ export async function getArchivedPlayerMatches(accountId: string): Promise<Parse
   return arr;
 }
 
-export async function doArchivePlayerMatches(accountId: string): Promise<PutObjectCommandOutput | null> {
+export async function doArchivePlayerMatches(
+  accountId: string,
+): Promise<PutObjectCommandOutput | null> {
   if (!config.ENABLE_PLAYER_ARCHIVE) {
     return null;
   }
@@ -406,7 +434,10 @@ export async function doArchivePlayerMatches(accountId: string): Promise<PutObje
     return null;
   }
   // Put the blob
-  return playerArchive.archivePut(accountId, Buffer.from(JSON.stringify(toArchive)));
+  return playerArchive.archivePut(
+    accountId,
+    Buffer.from(JSON.stringify(toArchive)),
+  );
   // TODO (howard) delete the archived values from player_caches
   // TODO (howard) keep the 20 highest match IDs for recentMatches
   // TODO (howard) mark the user archived so we don't need to query archive on every request
@@ -434,12 +465,16 @@ export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
   GROUP BY hero_id, playerscore.score
   ORDER BY percent_rank desc
   `,
-    [accountId]
+    [accountId],
   );
   return result.rows;
 }
-export async function getPlayer(db: knex.Knex, accountId: number): Promise<User | undefined> {
-  const playerData: User | undefined = await db.first(
+export async function getPlayer(
+  db: knex.Knex,
+  accountId: number,
+): Promise<User | undefined> {
+  const playerData: User | undefined = await db
+    .first(
       'players.account_id',
       'personaname',
       'name',
@@ -455,23 +490,21 @@ export async function getPlayer(db: knex.Knex, accountId: number): Promise<User 
       'subscriber.status',
       'fh_unavailable',
     )
-      .from('players')
-      .leftJoin(
-        'notable_players',
-        'players.account_id',
-        'notable_players.account_id'
-      )
-      .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
-      .where({
-        'players.account_id': Number(accountId),
-      });
-      if (playerData) {
-        playerData.is_contributor = isContributor(
-          accountId.toString()
-        );
-        playerData.is_subscriber = Boolean(playerData?.status);
-      }
-      return playerData;
+    .from('players')
+    .leftJoin(
+      'notable_players',
+      'players.account_id',
+      'notable_players.account_id',
+    )
+    .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
+    .where({
+      'players.account_id': Number(accountId),
+    });
+  if (playerData) {
+    playerData.is_contributor = isContributor(accountId.toString());
+    playerData.is_subscriber = Boolean(playerData?.status);
+  }
+  return playerData;
 }
 export async function getPeers(
   input: PeersCount,
@@ -495,28 +528,30 @@ export async function getPeers(
   teammatesArr.sort((a, b) => b.games - a.games);
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
-  return Promise.all(teammatesArr.map(async (t) => {
-    const row: AnyDict = await db.first(
-      'players.account_id',
-      'personaname',
-      'name',
-      'avatar',
-      'avatarfull',
-      'last_login',
-      'subscriber.status'
-    )
-      .from('players')
-      .leftJoin(
-        'notable_players',
-        'players.account_id',
-        'notable_players.account_id'
-      )
-      .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
-      .where({
-        'players.account_id': t.account_id,
-      });
+  return Promise.all(
+    teammatesArr.map(async (t) => {
+      const row: AnyDict = await db
+        .first(
+          'players.account_id',
+          'personaname',
+          'name',
+          'avatar',
+          'avatarfull',
+          'last_login',
+          'subscriber.status',
+        )
+        .from('players')
+        .leftJoin(
+          'notable_players',
+          'players.account_id',
+          'notable_players.account_id',
+        )
+        .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
+        .where({
+          'players.account_id': t.account_id,
+        });
       if (!row) {
-        return {...t};
+        return { ...t };
       }
       return {
         ...t,
@@ -528,21 +563,21 @@ export async function getPeers(
         avatar: row.avatar,
         avatarfull: row.avatarfull,
       };
-  }));
+    }),
+  );
 }
 export async function getProPeers(
   input: PeersCount,
   player: { account_id: string },
 ) {
   const teammates = input;
-  const { rows }: { rows: any[] } = await db
-    .raw(
-      `select *, notable_players.account_id
+  const { rows }: { rows: any[] } = await db.raw(
+    `select *, notable_players.account_id
           FROM notable_players
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
-          `
-    );
+          `,
+  );
   const arr: PeersCount[string][] = rows
     .map((r) => ({ ...r, ...teammates[r.account_id] }))
     .filter((r) => r.account_id !== player.account_id && r.games)
@@ -550,7 +585,9 @@ export async function getProPeers(
   return arr;
 }
 
-export async function getMatchRankTier(players: { account_id?: number | null }[]) {
+export async function getMatchRankTier(
+  players: { account_id?: number | null }[],
+) {
   const result = await Promise.all(
     players.map(async (player) => {
       if (!player.account_id) {
@@ -561,7 +598,7 @@ export async function getMatchRankTier(players: { account_id?: number | null }[]
         .from('rank_tier')
         .where({ account_id: player.account_id });
       return row ? row.rating : null;
-    })
+    }),
   );
   // Remove undefined/null values
   const filt = result.filter(Boolean);
@@ -573,12 +610,12 @@ export async function upsert(
   db: knex.Knex,
   table: string,
   insert: AnyDict,
-  conflict: NumberDict
+  conflict: NumberDict,
 ) {
   const row = await cleanRowPostgres(db, table, insert);
   const values = Object.keys(row).map(() => '?');
   const update = Object.keys(row).map((key) =>
-    util.format('%s=%s', key, `EXCLUDED.${key}`)
+    util.format('%s=%s', key, `EXCLUDED.${key}`),
   );
   const query = util.format(
     'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
@@ -586,17 +623,17 @@ export async function upsert(
     Object.keys(row).join(','),
     values.join(','),
     Object.keys(conflict).join(','),
-    update.join(',')
+    update.join(','),
   );
   return db.raw(
     query,
-    Object.keys(row).map((key) => row[key])
+    Object.keys(row).map((key) => row[key]),
   );
 }
 export async function upsertPlayer(
   db: knex.Knex,
   player: Partial<User>,
-  indexPlayer: boolean
+  indexPlayer: boolean,
 ) {
   if (player.steamid) {
     // this is a login, compute the account_id from steamid
@@ -640,7 +677,7 @@ export async function insertPlayerRating(row: PlayerRating) {
       db,
       'rank_tier',
       { account_id: row.account_id, rating: row.rank_tier },
-      { account_id: row.account_id }
+      { account_id: row.account_id },
     );
   }
   if (row.leaderboard_rank) {
@@ -651,20 +688,32 @@ export async function insertPlayerRating(row: PlayerRating) {
         account_id: row.account_id,
         rating: row.leaderboard_rank,
       },
-      { account_id: row.account_id }
+      { account_id: row.account_id },
     );
   }
 }
 
-export async function insertPlayerCache(match: Match, pgroup: PGroup, type: string) {
+export async function insertPlayerCache(
+  match: Match,
+  pgroup: PGroup,
+  type: string,
+) {
   const { players } = match;
   await Promise.all(
     players.map(async (p) => {
       // add account id to each player so we know what caches to update
       const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
       // join player with match to form player_match
-      const playerMatch: Partial<ParsedPlayerMatch> = {...p, ...match, account_id, players: undefined }
-      if (!playerMatch.account_id || playerMatch.account_id === getAnonymousAccountId()) {
+      const playerMatch: Partial<ParsedPlayerMatch> = {
+        ...p,
+        ...match,
+        account_id,
+        players: undefined,
+      };
+      if (
+        !playerMatch.account_id ||
+        playerMatch.account_id === getAnonymousAccountId()
+      ) {
         return;
       }
       if (type === 'api') {
@@ -676,7 +725,7 @@ export async function insertPlayerCache(match: Match, pgroup: PGroup, type: stri
       const cleanedMatch = await cleanRowCassandra(
         cassandra,
         'player_caches',
-        playerMatch
+        playerMatch,
       );
       const serializedMatch: any = serialize(cleanedMatch);
       const query = util.format(
@@ -684,16 +733,24 @@ export async function insertPlayerCache(match: Match, pgroup: PGroup, type: stri
         Object.keys(serializedMatch).join(','),
         Object.keys(serializedMatch)
           .map(() => '?')
-          .join(',')
+          .join(','),
       );
       const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
       await cassandra.execute(query, arr, {
         prepare: true,
       });
-      if ((config.NODE_ENV === 'development' || config.NODE_ENV === 'test') && cleanedMatch.player_slot === 0) {
-        fs.writeFileSync('./json/' + match.match_id + `_playercache_${type}_${playerMatch.player_slot}.json`, JSON.stringify(cleanedMatch, null, 2));
+      if (
+        (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
+        cleanedMatch.player_slot === 0
+      ) {
+        fs.writeFileSync(
+          './json/' +
+            match.match_id +
+            `_playercache_${type}_${playerMatch.player_slot}.json`,
+          JSON.stringify(cleanedMatch, null, 2),
+        );
       }
-    })
+    }),
   );
 }
 
@@ -716,16 +773,18 @@ export function getPGroup(match: ApiMatch): PGroup {
   return result;
 }
 
-export type ApiMatch = typeof apiMatch['result']
-type ApiMatchPro = typeof apiMatchPro['result'];
-type ApiPlayer = ApiMatch['players'][number] & { ability_upgrades_arr?: number[] };
+export type ApiMatch = (typeof apiMatch)['result'];
+type ApiMatchPro = (typeof apiMatchPro)['result'];
+type ApiPlayer = ApiMatch['players'][number] & {
+  ability_upgrades_arr?: number[];
+};
 type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;
 // We currently can call this function from many places
 // There is a type to indicate source: api, gcdata, parsed
 // Also an origin to indicate the context: scanner (fresh match) or request
 export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
-  options: InsertMatchOptions
+  options: InsertMatchOptions,
 ) {
   async function upsertMatchPostgres(match: ApiMatchPro | ParsedMatch) {
     // Insert the pro match data: We do this if api or parser
@@ -741,7 +800,7 @@ export async function insertMatch(
     const result = match.leagueid
       ? await db.raw(
           `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-          [match.leagueid]
+          [match.leagueid],
         )
       : null;
     currentProMatch = result?.rows?.length > 0;
@@ -757,7 +816,7 @@ export async function insertMatch(
     async function upsertPlayerMatches() {
       await Promise.all(
         match.players.map((p) => {
-          const pm = {...p, match_id: match.match_id} as ParsedPlayerMatch;
+          const pm = { ...p, match_id: match.match_id } as ParsedPlayerMatch;
           // Add lane data
           if (pm.lane_pos) {
             const laneData = getLaneFromPosData(pm.lane_pos, isRadiant(pm));
@@ -769,18 +828,23 @@ export async function insertMatch(
             match_id: pm.match_id,
             player_slot: pm.player_slot,
           });
-        })
+        }),
       );
     }
     async function upsertPicksBans() {
       await Promise.all(
         (match.picks_bans || []).map((p) => {
           // order is a reserved keyword in postgres
-          return upsert(trx, 'picks_bans', {...p, ord: p.order, match_id: match.match_id}, {
-            match_id: 1,
-            ord: 1,
-          });
-        })
+          return upsert(
+            trx,
+            'picks_bans',
+            { ...p, ord: p.order, match_id: match.match_id },
+            {
+              match_id: 1,
+              ord: 1,
+            },
+          );
+        }),
       );
     }
     async function upsertMatchPatch() {
@@ -794,7 +858,7 @@ export async function insertMatch(
           },
           {
             match_id: match.match_id,
-          }
+          },
         );
       }
     }
@@ -820,7 +884,7 @@ export async function insertMatch(
             team_id: tm.team_id,
             match_id: tm.match_id,
           });
-        })
+        }),
       );
     }
     async function updateTeamRankings() {
@@ -843,8 +907,12 @@ export async function insertMatch(
           .select('rating')
           .from('team_rating')
           .where({ team_id: team2 });
-        const currRating1 = Number((data1 && data1[0] && data1[0].rating) || 1000);
-        const currRating2 = Number((data2 && data2[0] && data2[0].rating) || 1000);
+        const currRating1 = Number(
+          (data1 && data1[0] && data1[0].rating) || 1000,
+        );
+        const currRating2 = Number(
+          (data2 && data2[0] && data2[0].rating) || 1000,
+        );
         const r1 = 10 ** (currRating1 / 400);
         const r2 = 10 ** (currRating2 / 400);
         const e1 = r1 / (r1 + r2);
@@ -906,21 +974,21 @@ export async function insertMatch(
       Object.keys(obj).join(','),
       Object.keys(obj)
         .map(() => '?')
-        .join(',')
+        .join(','),
     );
     const arr = Object.keys(obj).map((k) =>
-      obj[k] === 'true' || obj[k] === 'false' ? JSON.parse(obj[k]) : obj[k]
+      obj[k] === 'true' || obj[k] === 'false' ? JSON.parse(obj[k]) : obj[k],
     );
     await cassandra.execute(query, arr, {
       prepare: true,
     });
     await Promise.all(
       match.players.map(async (p) => {
-        const pm = {...p, match_id: match.match_id};
+        const pm = { ...p, match_id: match.match_id };
         const cleanedPm = await cleanRowCassandra(
           cassandra,
           'player_matches',
-          pm
+          pm,
         );
         const obj2: any = serialize(cleanedPm);
         if (!Object.keys(obj2).length) {
@@ -931,17 +999,17 @@ export async function insertMatch(
           Object.keys(obj2).join(','),
           Object.keys(obj2)
             .map(() => '?')
-            .join(',')
+            .join(','),
         );
         const arr2 = Object.keys(obj2).map((k) =>
           obj2[k] === 'true' || obj2[k] === 'false'
             ? JSON.parse(obj2[k])
-            : obj2[k]
+            : obj2[k],
         );
         await cassandra.execute(query2, arr2, {
           prepare: true,
         });
-      })
+      }),
     );
   }
   async function updateCassandraPlayerCaches(match: InsertMatchInput) {
@@ -978,10 +1046,13 @@ export async function insertMatch(
       [copy.match_id, JSON.stringify(copy)],
       {
         prepare: true,
-      }
+      },
     );
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      fs.writeFileSync('./json/' + match.match_id + '_' + options.type + '.json', JSON.stringify(copy, null, 2));
+      fs.writeFileSync(
+        './json/' + match.match_id + '_' + options.type + '.json',
+        JSON.stringify(copy, null, 2),
+      );
     }
   }
   async function telemetry(match: InsertMatchInput) {
@@ -989,7 +1060,9 @@ export async function insertMatch(
     const name = process.env.name || process.env.ROLE || process.argv[1];
     const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
-    }] for ${match.match_id} ended ${moment.unix(options.endedAt ?? 0).fromNow()}`;
+    }] for ${match.match_id} ended ${moment
+      .unix(options.endedAt ?? 0)
+      .fromNow()}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');
@@ -1019,7 +1092,10 @@ export async function insertMatch(
       return;
     }
     if (options.origin === 'scanner' && options.type === 'api') {
-      await queue.addJob({ name: 'countsQueue', data: match as unknown as Match });
+      await queue.addJob({
+        name: 'countsQueue',
+        data: match as unknown as Match,
+      });
     }
   }
   async function decideMmr(match: ApiMatch) {
@@ -1042,8 +1118,8 @@ export async function insertMatch(
             match_id: match.match_id,
             account_id: p.account_id as number,
           },
-        })
-      )
+        }),
+      ),
     );
   }
   async function decideProfile(match: InsertMatchInput) {
@@ -1062,8 +1138,11 @@ export async function insertMatch(
     await Promise.all(
       arr.map((p) =>
         // Avoid extraneous writes to player table by not using upsert function
-        db.raw('INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING', [p.account_id])
-      )
+        db.raw(
+          'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING',
+          [p.account_id],
+        ),
+      ),
     );
   }
   async function decideGcData(match: ApiMatch) {
@@ -1103,7 +1182,7 @@ export async function insertMatch(
       // Mark this match parsed
       await db.raw(
         'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
-        [Number(match.match_id)]
+        [Number(match.match_id)],
       );
     }
   }
@@ -1120,7 +1199,7 @@ export async function insertMatch(
     const trackedScores = await Promise.all(
       match.players.map((p) => {
         return redis.zscore('tracked', String(p.account_id));
-      })
+      }),
     );
     let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
     const doParse = hasTrackedPlayer || currentProMatch || options.forceParse;
@@ -1145,7 +1224,7 @@ export async function insertMatch(
       {
         priority,
         attempts: options.attempts || 30,
-      }
+      },
     );
     if (options.origin === 'scanner' && options.type === 'api') {
       redisCount(redis, 'auto_parse');
@@ -1157,16 +1236,18 @@ export async function insertMatch(
 
   // Make a copy of the match with some modifications
   const match: Readonly<InsertMatchInput> = {
-    ...origMatch, 
+    ...origMatch,
     players: origMatch.players.map((p) => {
-      const newP = {...p} as Partial<ApiPlayer>;
+      const newP = { ...p } as Partial<ApiPlayer>;
       if (newP.account_id === getAnonymousAccountId()) {
         // don't insert anonymous account id
         delete newP.account_id;
       }
       if (newP.ability_upgrades) {
         // Reduce the ability upgrades info into ability_upgrades_arr (just an array of numbers)
-        newP.ability_upgrades_arr = newP.ability_upgrades.map((au: any) => au.ability);
+        newP.ability_upgrades_arr = newP.ability_upgrades.map(
+          (au: any) => au.ability,
+        );
         delete newP.ability_upgrades;
       }
       return newP as any;
@@ -1175,7 +1256,7 @@ export async function insertMatch(
   // Use the passed pgroup if gcdata or parsed, otherwise build it
   // Do this after removing anonymous account IDs
   const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
-  
+
   let average_rank: number | undefined = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
   // We currently only store this in the player_caches table, not in the match itself
@@ -1218,9 +1299,9 @@ export async function doArchiveFromLegacy(matchId: string) {
     (
       await db.raw(
         'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-        [Number(matchId)]
+        [Number(matchId)],
       )
-    ).rows[0]
+    ).rows[0],
   );
   if (isArchived) {
     await deleteFromLegacy(matchId);
@@ -1250,7 +1331,7 @@ export async function doArchiveFromLegacy(matchId: string) {
   }
 
   const blob = Buffer.from(
-    JSON.stringify({ ...match, players: match.players || playerMatches })
+    JSON.stringify({ ...match, players: match.players || playerMatches }),
   );
   const result = await matchArchive.archivePut(matchId, blob);
   redisCount(redis, 'match_archive_write');
@@ -1258,7 +1339,7 @@ export async function doArchiveFromLegacy(matchId: string) {
     // Mark the match archived
     await db.raw(
       `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
-      [Number(matchId)]
+      [Number(matchId)],
     );
     await deleteFromLegacy(matchId);
   }
@@ -1270,37 +1351,46 @@ export async function doArchiveFromBlob(matchId: string) {
     return;
   }
   // Don't use the archive when determining whether to archive
-  const [match, metadata] = await getMatchDataFromBlobWithMetadata(matchId, false)
+  const [match, metadata] = await getMatchDataFromBlobWithMetadata(
+    matchId,
+    false,
+  );
   if (!match) {
     // Invalid/not found, skip
     return;
   }
   if (metadata?.has_api && !metadata?.has_gcdata && !metadata?.has_parsed) {
     // if it only contains API data, delete the entire row
-    await cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [Number(matchId)], {
-      prepare: true,
-    });
+    await cassandra.execute(
+      'DELETE from match_blobs WHERE match_id = ?',
+      [Number(matchId)],
+      {
+        prepare: true,
+      },
+    );
     console.log('DELETE match %s, apionly', matchId);
     return;
   }
   if (metadata?.has_parsed) {
     // Archive the data since it's parsed. This might also contain api and gcdata
-    const blob = Buffer.from(
-      JSON.stringify(match)
-    );
+    const blob = Buffer.from(JSON.stringify(match));
     const result = await matchArchive.archivePut(matchId, blob);
     redisCount(redis, 'match_archive_write');
     if (result) {
       // Mark the match archived
       await db.raw(
         `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
-        [Number(matchId)]
+        [Number(matchId)],
       );
       // Delete the row (there might be gcdata, but we'll have it in the archive blob)
       // This will also also clear the gcdata cache for this match
-      await cassandra.execute('DELETE from match_blobs WHERE match_id = ?', [Number(matchId)], {
-        prepare: true,
-      });
+      await cassandra.execute(
+        'DELETE from match_blobs WHERE match_id = ?',
+        [Number(matchId)],
+        {
+          prepare: true,
+        },
+      );
       console.log('ARCHIVE match %s, parsed', matchId);
     }
     return result;
@@ -1332,7 +1422,7 @@ export async function getItemTimings(req: Request): Promise<any[]> {
      AND ('' = :item OR item = :item)
      GROUP BY hero_id, item, time ORDER BY time, hero_id, item
      LIMIT 1600`,
-    { heroId, item }
+    { heroId, item },
   );
   return result.rows;
 }
@@ -1347,7 +1437,7 @@ export async function getLaneRoles(req: Request): Promise<any[]> {
      AND (0 = :lane OR lane_role = :lane)
      GROUP BY hero_id, lane_role, time ORDER BY hero_id, time, lane_role
      LIMIT 1200`,
-    { heroId, lane }
+    { heroId, lane },
   );
   return result.rows;
 }
@@ -1362,7 +1452,7 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
      WHERE ('' = :scenario OR scenario = :scenario)
      GROUP BY scenario, is_radiant, region ORDER BY scenario
      LIMIT 1000`,
-    { scenario }
+    { scenario },
   );
   return result.rows;
 }
@@ -1373,9 +1463,9 @@ export async function getMetadata(req: Request) {
     user: async () => req.user,
     isSubscriber: async () => {
       if (req.user) {
-        const result: {rows: any[]} = await db.raw(
+        const result: { rows: any[] } = await db.raw(
           "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
-          [req.user.account_id]
+          [req.user.account_id],
         );
         return Boolean(result?.rows?.[0]);
       }
@@ -1383,7 +1473,9 @@ export async function getMetadata(req: Request) {
     },
   };
   // A bit convoluted to support proper typing and parallel, but testing this out
-  return parallelPromise<{[P in keyof typeof obj]: Awaited<ReturnType<typeof obj[P]>>}>(obj);
+  return parallelPromise<{
+    [P in keyof typeof obj]: Awaited<ReturnType<(typeof obj)[P]>>;
+  }>(obj);
 }
 
 export async function getMatchDataFromBlob(
@@ -1395,7 +1487,12 @@ export async function getMatchDataFromBlob(
 async function getMatchDataFromBlobWithMetadata(
   matchId: string,
   useArchive: boolean,
-): Promise<[Partial<ParsedMatch> | null, { has_api: boolean, has_gcdata: boolean, has_parsed: boolean } | null]> {
+): Promise<
+  [
+    Partial<ParsedMatch> | null,
+    { has_api: boolean; has_gcdata: boolean; has_parsed: boolean } | null,
+  ]
+> {
   const result = await cassandra.execute(
     'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
     [Number(matchId)],
@@ -1403,7 +1500,7 @@ async function getMatchDataFromBlobWithMetadata(
       prepare: true,
       fetchSize: 1,
       autoPage: true,
-    }
+    },
   );
   const row = result.rows[0];
   if (!row) {
@@ -1427,9 +1524,9 @@ async function getMatchDataFromBlobWithMetadata(
       (
         await db.raw(
           'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-          [matchId]
+          [matchId],
         )
-      ).rows[0]
+      ).rows[0],
     );
     if (isArchived) {
       parsed = await getArchivedMatch(matchId);
@@ -1445,10 +1542,10 @@ async function getMatchDataFromBlobWithMetadata(
     ...api,
     players: api?.players.map((apiPlayer: any) => {
       const gcPlayer = gcdata?.players.find(
-        (gcp: any) => gcp.player_slot === apiPlayer.player_slot
+        (gcp: any) => gcp.player_slot === apiPlayer.player_slot,
       );
       const parsedPlayer = parsed?.players.find(
-        (pp: any) => pp.player_slot === apiPlayer.player_slot
+        (pp: any) => pp.player_slot === apiPlayer.player_slot,
       );
       return {
         ...parsedPlayer,
@@ -1457,9 +1554,18 @@ async function getMatchDataFromBlobWithMetadata(
       };
     }),
   };
-  return [final, {has_api: Boolean(api), has_gcdata: Boolean(gcdata), has_parsed: Boolean(parsed)}];
+  return [
+    final,
+    {
+      has_api: Boolean(api),
+      has_gcdata: Boolean(gcdata),
+      has_parsed: Boolean(parsed),
+    },
+  ];
 }
-export async function getMatchDataFromCassandra(matchId: string): Promise<Partial<ParsedMatch> | null> {
+export async function getMatchDataFromCassandra(
+  matchId: string,
+): Promise<Partial<ParsedMatch> | null> {
   const result = await cassandra.execute(
     'SELECT * FROM matches where match_id = ?',
     [Number(matchId)],
@@ -1467,7 +1573,7 @@ export async function getMatchDataFromCassandra(matchId: string): Promise<Partia
       prepare: true,
       fetchSize: 1,
       autoPage: true,
-    }
+    },
   );
   const deserializedResult = result.rows.map((m) => deserialize(m));
   const final: ParsedMatch | null = deserializedResult[0];
@@ -1477,7 +1583,7 @@ export async function getMatchDataFromCassandra(matchId: string): Promise<Partia
   return final;
 }
 export async function getPlayerMatchData(
-  matchId: string
+  matchId: string,
 ): Promise<ParsedPlayer[]> {
   const result = await cassandra.execute(
     'SELECT * FROM player_matches where match_id = ?',
@@ -1486,13 +1592,13 @@ export async function getPlayerMatchData(
       prepare: true,
       fetchSize: 24,
       autoPage: true,
-    }
+    },
   );
   const deserializedResult = result.rows.map((m) => deserialize(m));
   return deserializedResult;
 }
 export async function getArchivedMatch(
-  matchId: string
+  matchId: string,
 ): Promise<ParsedMatch | null> {
   try {
     const blob = await matchArchive.archiveGet(matchId.toString());

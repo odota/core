@@ -16,9 +16,9 @@
   "rank_tier_peak": null,
   "title": null,
   "favorite_team_packed": {
-  "low": 0,
-  "high": 0,
-  "unsigned": true
+    "low": 0,
+    "high": 0,
+    "unsigned": true
   },
   "lifetime_games": 5234
-  }
+}

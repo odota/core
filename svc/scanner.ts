@@ -46,7 +46,7 @@ async function scanApi(seqNum: number) {
     await redis.set('match_seq_num', nextSeqNum);
     // If not a full page, delay the next iteration
     await new Promise((resolve) =>
-      setTimeout(resolve, delayNextRequest ? 3000 : 0)
+      setTimeout(resolve, delayNextRequest ? 3000 : 0),
     );
   }
 }

@@ -3,7 +3,7 @@ import meta from '../store/getMeta.js';
 const { getMetaFromUrl } = meta;
 
 const message = await getMetaFromUrl(
-  'http://replay117.valve.net/570/7468445438_1951738768.meta.bz2'
+  'http://replay117.valve.net/570/7468445438_1951738768.meta.bz2',
 );
 // Stats: Original bzip2, 77kb, unzipped, 113kb, parsed JSON 816kb
 // fs.writeFileSync(

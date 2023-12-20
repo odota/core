@@ -229,7 +229,7 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
           console.error(
             '[INVALID] status: %s, retrying: %s',
             res ? res.statusCode : '',
-            target
+            target,
           );
           // var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
           const backoff = 0;
@@ -261,13 +261,13 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
             console.error(
               'invalid data, retrying: %s, %s',
               target,
-              JSON.stringify(body)
+              JSON.stringify(body),
             );
             return getSteamAPIDataCallback(url, cb);
           }
         }
         return cb(null, body);
-      }
+      },
     );
   }, delay);
 }
@@ -350,7 +350,9 @@ export function isSignificant(match: Match) {
       constants.lobby_type[match.lobby_type].balanced &&
       match.radiant_win !== undefined &&
       match.duration > 360 &&
-      (match.players || []).every((player) => (player.gold_per_min || 0) < 2500)
+      (match.players || []).every(
+        (player) => (player.gold_per_min || 0) < 2500,
+      ),
   );
 }
 /**
@@ -367,7 +369,7 @@ export function isProMatch(match: Match) {
       match.players &&
       match.players.every((player) => player.level > 1) &&
       match.players.every((player) => player.xp_per_min > 0) &&
-      match.players.every((player) => player.hero_id > 0)
+      match.players.every((player) => player.hero_id > 0),
   );
 }
 /**
@@ -435,7 +437,7 @@ export function average(data: number[]) {
  * */
 export function averageMedal(values: number[]) {
   const numStars = values.map(
-    (value) => Number(String(value)[0]) * 5 + (value % 10)
+    (value) => Number(String(value)[0]) * 5 + (value % 10),
   );
   const avgStars = numStars.reduce((a, b) => a + b, 0) / numStars.length;
   return Math.floor(avgStars / 5) * 10 + Math.max(1, Math.round(avgStars % 5));
@@ -488,14 +490,17 @@ export function buildReplayUrl(
   matchId: number,
   cluster: number,
   replaySalt: number,
-  meta?: boolean
+  meta?: boolean,
 ) {
   let suffix = '.dem.bz2';
   if (meta) {
     suffix = '.meta.bz2';
   }
   if (config.NODE_ENV === 'test') {
-    return  `https://odota.github.io/testfiles/${matchId}_${replaySalt}${suffix.replace('.bz2', '')}`;
+    return `https://odota.github.io/testfiles/${matchId}_${replaySalt}${suffix.replace(
+      '.bz2',
+      '',
+    )}`;
   } else if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
   }
@@ -512,7 +517,7 @@ export function expectedWin(rates: number[]) {
   // return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
   const adjustedRates = rates.reduce(
     (prev, curr) => (100 - curr * 100) * prev,
-    1
+    1,
   );
   const denominator = 50 ** (rates.length - 1);
   return 1 - (adjustedRates / denominator) * 100;
@@ -643,18 +648,20 @@ export function countItemPopularity(items: any[]) {
   }, {});
 }
 
-export type PeersCount = {[key: string]: {
-  account_id: number,
-  last_played: number,
-  win: number,
-  games: number,
-  with_win: number,
-  with_games: number,
-  against_win: number,
-  against_games: number,
-  with_gpm_sum: number,
-  with_xpm_sum: number,
-}};
+export type PeersCount = {
+  [key: string]: {
+    account_id: number;
+    last_played: number;
+    win: number;
+    games: number;
+    with_win: number;
+    with_games: number;
+    against_win: number;
+    against_games: number;
+    with_gpm_sum: number;
+    with_xpm_sum: number;
+  };
+};
 /**
  * Counts the peer account_ids in the input match array
  * */
@@ -689,7 +696,7 @@ export function countPeers(matches: PlayerMatch[]) {
       // played with
       teammates[tm.account_id].games += 1;
       teammates[tm.account_id].win += playerWin ? 1 : 0;
-      if (isRadiant({player_slot: Number(key)}) === isRadiant(m)) {
+      if (isRadiant({ player_slot: Number(key) }) === isRadiant(m)) {
         // played with
         teammates[tm.account_id].with_games += 1;
         teammates[tm.account_id].with_win += playerWin ? 1 : 0;
@@ -715,7 +722,7 @@ export function getAnonymousAccountId() {
  * */
 export function getLaneFromPosData(
   lanePos: { [key: string]: NumberDict },
-  isRadiant: boolean
+  isRadiant: boolean,
 ) {
   // compute lanes
   const lanes: number[] = [];
@@ -779,11 +786,20 @@ export function getRetrieverCount() {
 }
 /**
  * Return a URL to use for GC data retrieval.
- * @returns 
+ * @returns
  */
-export function getRandomRetrieverUrl({accountId, matchId}: { accountId?: string | number, matchId?: string | number}): string {
+export function getRandomRetrieverUrl({
+  accountId,
+  matchId,
+}: {
+  accountId?: string | number;
+  matchId?: string | number;
+}): string {
   const urls = RETRIEVER_ARRAY.map(
-    (r) => `http://${r}?key=${config.RETRIEVER_SECRET}${accountId ? `&account_id=${accountId}` : ''}${matchId ? `&match_id=${matchId}` : ''}`
+    (r) =>
+      `http://${r}?key=${config.RETRIEVER_SECRET}${
+        accountId ? `&account_id=${accountId}` : ''
+      }${matchId ? `&match_id=${matchId}` : ''}`,
   );
   return urls[Math.floor(Math.random() * urls.length)];
 }
@@ -795,29 +811,28 @@ export async function redisCount(redis: Redis | null, prefix: MetricName) {
   await redisToUse?.incr(key);
   await redisToUse?.expireat(
     key,
-    moment().startOf('hour').add(1, 'day').format('X')
+    moment().startOf('hour').add(1, 'day').format('X'),
   );
 }
-export async function getRedisCountDay(
-  redis: Redis,
-  prefix: MetricName,
-) {
+export async function getRedisCountDay(redis: Redis, prefix: MetricName) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(
-      `${prefix}:v2:${moment().startOf('hour').subtract(i, 'hour').format('X')}`
+      `${prefix}:v2:${moment()
+        .startOf('hour')
+        .subtract(i, 'hour')
+        .format('X')}`,
     );
   }
   const counts = await redis.mget(...keyArr);
   return counts.reduce((a, b) => Number(a) + Number(b), 0);
 }
-export async function getRedisCountHour(
-  redis: Redis,
-  prefix: MetricName,
-) {
+export async function getRedisCountHour(redis: Redis, prefix: MetricName) {
   // Get counts for previous full hour (not current)
-  const result = await redis.get(`${prefix}:v2:${moment().startOf('hour').subtract(1, 'hour').format('X')}`);
+  const result = await redis.get(
+    `${prefix}:v2:${moment().startOf('hour').subtract(1, 'hour').format('X')}`,
+  );
   return Number(result);
 }
 /**
@@ -848,7 +863,7 @@ export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
  */
 export async function invokeIntervalAsync(
   func: () => Promise<void>,
-  delay: number
+  delay: number,
 ) {
   process.on('unhandledRejection', (reason, p) => {
     // In production pm2 doesn't appear to auto restart unless we exit the process here
@@ -871,7 +886,7 @@ export async function invokeIntervalAsync(
  */
 export async function eachLimitPromise(
   funcs: Array<() => Promise<any>>,
-  limit: number
+  limit: number,
 ) {
   let rest = funcs.slice(limit);
   await Promise.all(
@@ -881,7 +896,7 @@ export async function eachLimitPromise(
         //@ts-ignore
         await rest.shift()();
       }
-    })
+    }),
   );
 }
 
@@ -889,13 +904,17 @@ export async function eachLimitPromise(
  * Promise replacement for async.parallel
  * @param obj An object mapping key names to functions returning promises
  */
-export async function parallelPromise<T>(obj: Record<keyof T, () => Promise<any>>): Promise<T> {
+export async function parallelPromise<T>(
+  obj: Record<keyof T, () => Promise<any>>,
+): Promise<T> {
   const result = {} as T;
-  await Promise.all(Object.entries<() => Promise<any>>(obj).map(async ([key, func]) => {
-    const val = await func();
-    result[key as keyof T] = val;
-    return;
-  }));
+  await Promise.all(
+    Object.entries<() => Promise<any>>(obj).map(async ([key, func]) => {
+      const val = await func();
+      result[key as keyof T] = val;
+      return;
+    }),
+  );
   return result;
 }
 
@@ -923,11 +942,11 @@ export function isDataComplete(match: Partial<ParsedMatch> | null) {
  * Picks keys from an object and returns a copy with those keys, with nulls if the property doesn't exist
  * @param obj An object to pick keys from
  * @param keys An array of strings (object property names)
- * @returns 
+ * @returns
  */
 export function pick(obj: any, keys: string[]) {
   const pick: any = {};
-  keys.forEach(key => {
+  keys.forEach((key) => {
     pick[key] = obj[key] || null;
   });
   return pick;

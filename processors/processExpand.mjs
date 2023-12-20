@@ -107,8 +107,8 @@ function processExpand(entries, meta) {
             unit: e.sourcename,
             key: computeIllusionString(e.targetname, e.targetillusion),
             type: 'healing',
-          }
-        )
+          },
+        ),
       );
     },
     DOTA_COMBATLOG_MODIFIER_ADD(e) {

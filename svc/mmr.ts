@@ -4,7 +4,11 @@ import db from '../store/db';
 import redis from '../store/redis';
 import { insertPlayerRating, upsertPlayer } from '../store/queries';
 import config from '../config.js';
-import { getRetrieverCount, redisCount, getRandomRetrieverUrl } from '../util/utility';
+import {
+  getRetrieverCount,
+  redisCount,
+  getRandomRetrieverUrl,
+} from '../util/utility';
 import axios from 'axios';
 
 async function processMmr(job: MmrJob) {
@@ -37,5 +41,5 @@ async function processMmr(job: MmrJob) {
 queue.runQueue(
   'mmrQueue',
   config.MMR_PARALLELISM * getRetrieverCount(),
-  processMmr
+  processMmr,
 );

@@ -20,8 +20,8 @@ async function doItems() {
     body.result.items.map((item: any) =>
       upsert(db, 'items', item, {
         id: item.id,
-      })
-    )
+      }),
+    ),
   );
 }
 invokeIntervalAsync(doItems, 60 * 60 * 1000);

@@ -17,7 +17,7 @@ export const sendDataWithCache = (
   req: Express.ExtRequest,
   res: Response,
   data: any,
-  key: string
+  key: string,
 ) => {
   if (
     config.ENABLE_PLAYER_CACHE &&
@@ -27,7 +27,7 @@ export const sendDataWithCache = (
     redis.setex(
       `cache:${key}:${req.params.account_id}`,
       config.PLAYER_CACHE_SECONDS,
-      JSON.stringify(data)
+      JSON.stringify(data),
     );
   }
   return res.json(data);

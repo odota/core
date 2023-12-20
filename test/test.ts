@@ -78,8 +78,8 @@ nock('http://api.steampowered.com')
   .query(true)
   .reply(200, leaguesApi);
 nock(`http://${RETRIEVER_HOST}`)
-.get(/\?key=&account_id=.*/)
-// fake mmr response up to 7 times for 7 non-anonymous players in test match
+  .get(/\?key=&account_id=.*/)
+  // fake mmr response up to 7 times for 7 non-anonymous players in test match
   .times(7)
   .reply(200, retrieverPlayer)
   // fake GC match details
@@ -107,11 +107,7 @@ describe(c.blue('[TEST] swagger schema'), async function testSwaggerSchema() {
       },
     };
     // We stringify and imediately parse the object in order to remove the route() and func() properties, which arent a part of the OpenAPI spec
-    swaggerParser.validate(
-      JSON.parse(JSON.stringify(spec)),
-      validOpts,
-      cb,
-    );
+    swaggerParser.validate(JSON.parse(JSON.stringify(spec)), validOpts, cb);
   });
 });
 describe(c.blue('[TEST] player_caches'), async () => {
@@ -144,7 +140,7 @@ describe(c.blue('[TEST] players'), async () => {
     assert.equal(res.statusCode, 404);
   });
 });
-describe(c.blue('[TEST] replay parse'), async function() {
+describe(c.blue('[TEST] replay parse'), async function () {
   this.timeout(120000);
   const tests: AnyDict = {
     '1781962623_1.dem': detailsApi.result,
@@ -186,7 +182,7 @@ describe(c.blue('[TEST] replay parse'), async function() {
     ]);
     const proMatchPlayers = await db.raw(
       'select * from player_matches where match_id = ?',
-      [tests[key].match_id]
+      [tests[key].match_id],
     );
     const picksBans = await db.raw('select * from picks_bans');
     const teamMatch = await db.raw('select * from team_match');
@@ -201,7 +197,9 @@ describe(c.blue('[TEST] replay parse'), async function() {
     assert.equal(teamRankings.rows.length, 2);
   });
   it('should have parse data for non-anonymous players in player_caches', async () => {
-    const result = await cassandra.execute('SELECT * from player_caches WHERE match_id = 1781962623 ALLOW FILTERING');
+    const result = await cassandra.execute(
+      'SELECT * from player_caches WHERE match_id = 1781962623 ALLOW FILTERING',
+    );
     // Assert that parsed data is in player_caches
     assert.ok(result.rows[0].stuns);
 
@@ -229,55 +227,54 @@ describe(c.blue('[TEST] teamRanking'), () => {
 describe(c.blue('[TEST] api routes'), async function () {
   this.timeout(5000);
   before(async () => {
-  const tests: string[][] = [];
-  console.log('getting API spec and setting up tests');
-  const res = await supertest(app).get('/api');
-  const spec = res.body;
-  Object.keys(spec.paths).forEach(path => {
-    Object.keys(spec.paths[path]).forEach(verb => {
-      const replacedPath = path
-      .replace(/{match_id}/, '1781962623')
-      .replace(/{account_id}/, '120269134')
-      .replace(/{team_id}/, '15')
-      .replace(/{hero_id}/, '1')
-      .replace(/{league_id}/, '1')
-      .replace(/{field}/, 'kills')
-      .replace(/{resource}/, 'heroes');
-      tests.push([path, verb, replacedPath]);
-      if (path.includes('{match_id}')) {
-        // Also test an unparsed match ID
-        tests.push([path, verb, path.replace(/{match_id}/, '3254426673')]);
-      }
+    const tests: string[][] = [];
+    console.log('getting API spec and setting up tests');
+    const res = await supertest(app).get('/api');
+    const spec = res.body;
+    Object.keys(spec.paths).forEach((path) => {
+      Object.keys(spec.paths[path]).forEach((verb) => {
+        const replacedPath = path
+          .replace(/{match_id}/, '1781962623')
+          .replace(/{account_id}/, '120269134')
+          .replace(/{team_id}/, '15')
+          .replace(/{hero_id}/, '1')
+          .replace(/{league_id}/, '1')
+          .replace(/{field}/, 'kills')
+          .replace(/{resource}/, 'heroes');
+        tests.push([path, verb, replacedPath]);
+        if (path.includes('{match_id}')) {
+          // Also test an unparsed match ID
+          tests.push([path, verb, path.replace(/{match_id}/, '3254426673')]);
+        }
+      });
     });
-  });
-  for(let i = 0; i < tests.length; i++) {
-    const test = tests[i];
-    const [path, verb, replacedPath] = test;
-    if (
-      path.indexOf('/explorer') === 0 ||
-      path.indexOf('/request') === 0
-    ) {
-      continue;
+    for (let i = 0; i < tests.length; i++) {
+      const test = tests[i];
+      const [path, verb, replacedPath] = test;
+      if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0) {
+        continue;
+      }
+      const newTest = it(`should visit ${replacedPath}`, async () => {
+        const res = await supertest(app)[verb as HttpVerb](
+          `/api${replacedPath}?q=testsearch`,
+        );
+        if (res.statusCode !== 200) {
+          console.error(verb, replacedPath, res.body);
+        }
+        if (replacedPath.startsWith('/admin')) {
+          assert.equal(res.statusCode, 403);
+        } else if (replacedPath.startsWith('/subscribeSuccess')) {
+          assert.equal(res.statusCode, 400);
+        } else {
+          assert.equal(res.statusCode, 200);
+        }
+      });
+      this.addTest(newTest);
     }
-    const newTest = it(`should visit ${replacedPath}`, async () => {
-      const res = await supertest(app)[verb as HttpVerb](`/api${replacedPath}?q=testsearch`);
-      if (res.statusCode !== 200) {
-        console.error(verb, replacedPath, res.body);
-      }
-      if (replacedPath.startsWith('/admin')) {
-        assert.equal(res.statusCode, 403);
-      } else if (replacedPath.startsWith('/subscribeSuccess')) {
-        assert.equal(res.statusCode, 400);
-      } else {
-        assert.equal(res.statusCode, 200);
-      }
-    });
-    this.addTest(newTest);
-  }
-});
-it('placeholder', () => {
-  assert(true);
-});
+  });
+  it('placeholder', () => {
+    assert(true);
+  });
 });
 describe(c.blue('[TEST] api management'), () => {
   beforeEach(function getApiRecord(done) {
@@ -349,7 +346,7 @@ describe(c.blue('[TEST] api management'), () => {
                   }
                   assert.equal(resp, 1);
                   return done();
-                }
+                },
               );
             }
           });
@@ -399,7 +396,7 @@ describe(c.blue('[TEST] api management'), () => {
                     assert.equal(
                       res.body.customer.credit_brand,
 
-                      previousCredit
+                      previousCredit,
                     );
                     assert.equal(res.body.customer.api_key, this.previousKey);
                     return done();
@@ -616,9 +613,11 @@ describe(c.blue('[TEST] api limits'), () => {
   it('should be able to make more than 10 calls when using API KEY', async function testAPIKeyLimitsAndCounting() {
     this.timeout(25000);
     for (let i = 0; i < 25; i++) {
-      let regular = await supertest(app).get('/api/matches/1781962623?api_key=KEY');
+      let regular = await supertest(app).get(
+        '/api/matches/1781962623?api_key=KEY',
+      );
       assert.equal(regular.statusCode, 200);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
     }
     // Try whitelisted routes. Should not increment usage.
     await testWhiteListedRoutes('?api_key=KEY');
@@ -657,16 +656,16 @@ async function testWhiteListedRoutes(key: string) {
 
 async function testRateCheckedRoute() {
   for (let i = 0; i < 10; i++) {
-    const res = await  supertest(app).get('/api/matches/1781962623');
+    const res = await supertest(app).get('/api/matches/1781962623');
     assert.equal(res.statusCode, 200);
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
   }
 }
 
 async function initElasticsearch() {
   console.log('Create Elasticsearch Mapping');
   const mapping = JSON.parse(
-    readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' })
+    readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
   );
   const exists = await es.indices.exists({
     index: 'dota-test', // Check if index already exists, in which case, delete it
@@ -721,7 +720,7 @@ async function initPostgres() {
   console.log('insert postgres test data');
   // populate the DB with this leagueid so we insert a pro match
   await db.raw(
-    "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')"
+    "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
   );
 }
 
@@ -734,7 +733,7 @@ async function initCassandra() {
   await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
   console.log('create cassandra test keyspace');
   await init.execute(
-    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };"
+    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
   );
   console.log('create cassandra tables');
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
@@ -757,7 +756,7 @@ async function initScylla() {
   await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
   console.log('create scylla test keyspace');
   await init.execute(
-    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };"
+    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
   );
   console.log('create scylla tables');
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
@@ -793,7 +792,7 @@ async function loadMatches() {
 async function loadPlayers() {
   console.log('loading players');
   await Promise.all(
-    summariesApi.response.players.map((p) => upsertPlayer(db, p, true))
+    summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
   );
 }
 

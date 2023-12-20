@@ -14,5 +14,5 @@ console.log('[GCDATA] starting');
 queue.runQueue(
   'gcQueue',
   Number(config.GCDATA_PARALLELISM) * getRetrieverCount(),
-  processGcData
+  processGcData,
 );

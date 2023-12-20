@@ -136,9 +136,7 @@
             }
           }
         },
-        "required": [
-          "id"
-        ]
+        "required": ["id"]
       },
       "HeroStatsResponse": {
         "title": "HeroStatsResponse",
@@ -3409,9 +3407,7 @@
         "operationId": "get_matches_by_match_id",
         "summary": "GET /matches/{match_id}",
         "description": "Match data",
-        "tags": [
-          "matches"
-        ],
+        "tags": ["matches"],
         "parameters": [
           {
             "$ref": "#/components/parameters/matchIdParam"
@@ -3436,9 +3432,7 @@
         "operationId": "get_players_by_rank",
         "summary": "GET /playersByRank",
         "description": "Players ordered by rank/medal tier",
-        "tags": [
-          "playersByRank"
-        ],
+        "tags": ["playersByRank"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3459,9 +3453,7 @@
         "operationId": "get_players_by_account_id",
         "summary": "GET /players/{account_id}",
         "description": "Player data",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -3486,9 +3478,7 @@
         "operationId": "get_players_by_account_id_select_wl",
         "summary": "GET /players/{account_id}/wl",
         "description": "Win/Loss count",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -3567,9 +3557,7 @@
         "operationId": "get_players_by_account_id_select_recent_matches",
         "summary": "GET /players/{account_id}/recentMatches",
         "description": "Recent matches played",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -3600,9 +3588,7 @@
         "operationId": "get_players_by_account_id_select_matches",
         "summary": "GET /players/{account_id}/matches",
         "description": "Matches played",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -3687,9 +3673,7 @@
         "operationId": "get_players_by_account_id_select_heroes",
         "summary": "GET /players/{account_id}/heroes",
         "description": "Heroes played",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -3771,9 +3755,7 @@
         "operationId": "get_players_by_account_id_select_peers",
         "summary": "GET /players/{account_id}/peers",
         "description": "Players played with",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -3855,9 +3837,7 @@
         "operationId": "get_players_by_account_id_select_pros",
         "summary": "GET /players/{account_id}/pros",
         "description": "Pro players played with",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -3939,9 +3919,7 @@
         "operationId": "get_players_by_account_id_select_totals",
         "summary": "GET /players/{account_id}/totals",
         "description": "Totals in stats",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -4023,9 +4001,7 @@
         "operationId": "get_players_by_account_id_select_counts",
         "summary": "GET /players/{account_id}/counts",
         "description": "Counts in categories",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -4104,9 +4080,7 @@
         "operationId": "get_players_by_account_id_histograms_by_field",
         "summary": "GET /players/{account_id}/histograms",
         "description": "Distribution of matches in a single stat",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -4192,9 +4166,7 @@
         "operationId": "get_players_by_account_id_select_wardmap",
         "summary": "GET /players/{account_id}/wardmap",
         "description": "Wards placed in matches played",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -4273,9 +4245,7 @@
         "operationId": "get_players_by_account_id_select_wordcloud",
         "summary": "GET /players/{account_id}/wordcloud",
         "description": "Words said/read in matches played",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -4354,9 +4324,7 @@
         "operationId": "get_players_by_account_id_select_ratings",
         "summary": "GET /players/{account_id}/ratings",
         "description": "Player rating history",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -4384,9 +4352,7 @@
         "operationId": "get_players_by_account_id_select_rankings",
         "summary": "GET /players/{account_id}/rankings",
         "description": "Player hero rankings",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -4414,9 +4380,7 @@
         "operationId": "post_refresh",
         "summary": "POST /players/{account_id}/refresh",
         "description": "Refresh player match history",
-        "tags": [
-          "players"
-        ],
+        "tags": ["players"],
         "parameters": [
           {
             "$ref": "#/components/parameters/accountIdParam"
@@ -4442,9 +4406,7 @@
         "operationId": "get_pro_players",
         "summary": "GET /proPlayers",
         "description": "Get list of pro players",
-        "tags": [
-          "pro players"
-        ],
+        "tags": ["pro players"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4468,9 +4430,7 @@
         "operationId": "get_pro_matches",
         "summary": "GET /proMatches",
         "description": "Get list of pro matches",
-        "tags": [
-          "pro matches"
-        ],
+        "tags": ["pro matches"],
         "parameters": [
           {
             "$ref": "#/components/parameters/lessThanMatchIdParam"
@@ -4498,9 +4458,7 @@
         "operationId": "get_public_matches",
         "summary": "GET /publicMatches",
         "description": "Get list of randomly sampled public matches",
-        "tags": [
-          "public matches"
-        ],
+        "tags": ["public matches"],
         "parameters": [
           {
             "$ref": "#/components/parameters/lessThanMatchIdParam"
@@ -4540,9 +4498,7 @@
         "operationId": "get_parsed_matches",
         "summary": "GET /parsedMatches",
         "description": "Get list of parsed match IDs",
-        "tags": [
-          "parsed matches"
-        ],
+        "tags": ["parsed matches"],
         "parameters": [
           {
             "$ref": "#/components/parameters/lessThanMatchIdParam"
@@ -4570,9 +4526,7 @@
         "operationId": "get_explorer",
         "summary": "GET /explorer",
         "description": "Submit arbitrary SQL queries to the database",
-        "tags": [
-          "explorer"
-        ],
+        "tags": ["explorer"],
         "parameters": [
           {
             "name": "sql",
@@ -4604,9 +4558,7 @@
         "operationId": "get_metadata",
         "summary": "GET /metadata",
         "description": "Site metadata",
-        "tags": [
-          "metadata"
-        ],
+        "tags": ["metadata"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4627,9 +4579,7 @@
         "operationId": "get_distributions",
         "summary": "GET /distributions",
         "description": "Distributions of MMR data by bracket and country",
-        "tags": [
-          "distributions"
-        ],
+        "tags": ["distributions"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4650,9 +4600,7 @@
         "operationId": "get_search",
         "summary": "GET /search",
         "description": "Search players by personaname.",
-        "tags": [
-          "search"
-        ],
+        "tags": ["search"],
         "parameters": [
           {
             "name": "q",
@@ -4686,9 +4634,7 @@
         "operationId": "get_rankings",
         "summary": "GET /rankings",
         "description": "Top players by hero",
-        "tags": [
-          "rankings"
-        ],
+        "tags": ["rankings"],
         "parameters": [
           {
             "name": "hero_id",
@@ -4719,9 +4665,7 @@
         "operationId": "get_benchmarks",
         "summary": "GET /benchmarks",
         "description": "Benchmarks of average stat values for a hero",
-        "tags": [
-          "benchmarks"
-        ],
+        "tags": ["benchmarks"],
         "parameters": [
           {
             "name": "hero_id",
@@ -4752,9 +4696,7 @@
         "operationId": "get_status",
         "summary": "GET /status",
         "description": "Get current service statistics",
-        "tags": [
-          "status"
-        ],
+        "tags": ["status"],
         "responses": {
           "200": {
             "description": "Success",
@@ -4775,9 +4717,7 @@
         "operationId": "get_health",
         "summary": "GET /health",
         "description": "Get service health data",
-        "tags": [
-          "health"
-        ],
+        "tags": ["health"],
         "responses": {
           "200": {
             "description": "Success",
@@ -4798,9 +4738,7 @@
         "operationId": "get_request_by_job_id",
         "summary": "GET /request/{jobId}",
         "description": "Get parse request state",
-        "tags": [
-          "request"
-        ],
+        "tags": ["request"],
         "parameters": [
           {
             "name": "jobId",
@@ -4832,9 +4770,7 @@
         "operationId": "post_request_by_job_id",
         "summary": "POST /request/{match_id}",
         "description": "Submit a new parse request",
-        "tags": [
-          "request"
-        ],
+        "tags": ["request"],
         "parameters": [
           {
             "$ref": "#/components/parameters/matchIdParam"
@@ -4860,9 +4796,7 @@
         "operationId": "get_find_matches",
         "summary": "GET /",
         "description": "Finds recent matches by heroes played",
-        "tags": [
-          "findMatches"
-        ],
+        "tags": ["findMatches"],
         "parameters": [
           {
             "name": "teamA",
@@ -4916,9 +4850,7 @@
         "operationId": "get_heroes",
         "summary": "GET /heroes",
         "description": "Get hero data",
-        "tags": [
-          "heroes"
-        ],
+        "tags": ["heroes"],
         "responses": {
           "200": {
             "description": "Success",
@@ -4941,9 +4873,7 @@
         "operationId": "get_hero_stats",
         "summary": "GET /heroStats",
         "description": "Get stats about hero performance in recent matches",
-        "tags": [
-          "hero stats"
-        ],
+        "tags": ["hero stats"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4967,9 +4897,7 @@
         "operationId": "get_heroes_by_hero_id_select_matches",
         "summary": "GET /heroes/{hero_id}/matches",
         "description": "Get recent matches with a hero",
-        "tags": [
-          "heroes"
-        ],
+        "tags": ["heroes"],
         "parameters": [
           {
             "$ref": "#/components/parameters/heroIdPathParam"
@@ -4997,9 +4925,7 @@
         "operationId": "get_heroes_by_hero_id_select_matchups",
         "summary": "GET /heroes/{hero_id}/matchups",
         "description": "Get results against other heroes for a hero",
-        "tags": [
-          "heroes"
-        ],
+        "tags": ["heroes"],
         "parameters": [
           {
             "$ref": "#/components/parameters/heroIdPathParam"
@@ -5027,9 +4953,7 @@
         "operationId": "get_heroes_by_hero_id_select_durations",
         "summary": "GET /heroes/{hero_id}/durations",
         "description": "Get hero performance over a range of match durations",
-        "tags": [
-          "heroes"
-        ],
+        "tags": ["heroes"],
         "parameters": [
           {
             "$ref": "#/components/parameters/heroIdPathParam"
@@ -5057,9 +4981,7 @@
         "operationId": "get_heroes_by_hero_id_select_players",
         "summary": "GET /heroes/{hero_id}/players",
         "description": "Get players who have played this hero",
-        "tags": [
-          "heroes"
-        ],
+        "tags": ["heroes"],
         "parameters": [
           {
             "$ref": "#/components/parameters/heroIdPathParam"
@@ -5090,9 +5012,7 @@
         "operationId": "get_heroes_by_hero_id_select_item_popularity",
         "summary": "GET /heroes/{hero_id}/itemPopularity",
         "description": "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
-        "tags": [
-          "heroes"
-        ],
+        "tags": ["heroes"],
         "parameters": [
           {
             "$ref": "#/components/parameters/heroIdPathParam"
@@ -5117,9 +5037,7 @@
         "operationId": "get_leagues",
         "summary": "GET /leagues",
         "description": "Get league data",
-        "tags": [
-          "leagues"
-        ],
+        "tags": ["leagues"],
         "responses": {
           "200": {
             "description": "Success",
@@ -5142,9 +5060,7 @@
         "operationId": "get_leagues_by_league_id",
         "summary": "GET /leagues/{league_id}",
         "description": "Get data for a league",
-        "tags": [
-          "leagues"
-        ],
+        "tags": ["leagues"],
         "parameters": [
           {
             "$ref": "#/components/parameters/leagueIdPathParam"
@@ -5172,9 +5088,7 @@
         "operationId": "get_leagues_by_league_id_select_matches",
         "summary": "GET /leagues/{league_id}/matches",
         "description": "Get matches for a team",
-        "tags": [
-          "leagues"
-        ],
+        "tags": ["leagues"],
         "parameters": [
           {
             "$ref": "#/components/parameters/leagueIdPathParam"
@@ -5199,9 +5113,7 @@
         "operationId": "get_leagues_by_league_id_select_teams",
         "summary": "GET /leagues/{league_id}/teams",
         "description": "Get teams for a league",
-        "tags": [
-          "leagues"
-        ],
+        "tags": ["leagues"],
         "parameters": [
           {
             "$ref": "#/components/parameters/leagueIdPathParam"
@@ -5226,9 +5138,7 @@
         "operationId": "get_teams",
         "summary": "GET /teams",
         "description": "Get team data",
-        "tags": [
-          "teams"
-        ],
+        "tags": ["teams"],
         "parameters": [
           {
             "name": "page",
@@ -5262,9 +5172,7 @@
         "operationId": "get_teams_by_team_id",
         "summary": "GET /teams/{team_id}",
         "description": "Get data for a team",
-        "tags": [
-          "teams"
-        ],
+        "tags": ["teams"],
         "parameters": [
           {
             "$ref": "#/components/parameters/teamIdPathParam"
@@ -5289,9 +5197,7 @@
         "operationId": "get_teams_by_team_id_select_matches",
         "summary": "GET /teams/{team_id}/matches",
         "description": "Get matches for a team",
-        "tags": [
-          "teams"
-        ],
+        "tags": ["teams"],
         "parameters": [
           {
             "$ref": "#/components/parameters/teamIdPathParam"
@@ -5316,9 +5222,7 @@
         "operationId": "get_teams_by_team_id_select_players",
         "summary": "GET /teams/{team_id}/players",
         "description": "Get players who have played for a team",
-        "tags": [
-          "teams"
-        ],
+        "tags": ["teams"],
         "parameters": [
           {
             "$ref": "#/components/parameters/teamIdPathParam"
@@ -5343,9 +5247,7 @@
         "operationId": "get_teams_by_team_id_select_heroes",
         "summary": "GET /teams/{team_id}/heroes",
         "description": "Get heroes for a team",
-        "tags": [
-          "teams"
-        ],
+        "tags": ["teams"],
         "parameters": [
           {
             "$ref": "#/components/parameters/teamIdPathParam"
@@ -5370,9 +5272,7 @@
         "operationId": "get_replays",
         "summary": "GET /replays",
         "description": "Get data to construct a replay URL with",
-        "tags": [
-          "replays"
-        ],
+        "tags": ["replays"],
         "parameters": [
           {
             "$ref": "#/components/parameters/matchIdParam"
@@ -5400,9 +5300,7 @@
         "operationId": "get_records_by_field",
         "summary": "GET /records/{field}",
         "description": "Get top performances in a stat",
-        "tags": [
-          "records"
-        ],
+        "tags": ["records"],
         "parameters": [
           {
             "name": "field",
@@ -5436,9 +5334,7 @@
         "operationId": "get_live",
         "summary": "GET /live",
         "description": "Get top currently ongoing live games",
-        "tags": [
-          "live"
-        ],
+        "tags": ["live"],
         "parameters": [],
         "responses": {
           "200": {
@@ -5464,9 +5360,7 @@
         "operationId": "get_scenarios_item_timings",
         "summary": "GET /scenarios/itemTimings",
         "description": "Win rates for certain item timings on a hero for items that cost at least 1400 gold",
-        "tags": [
-          "scenarios"
-        ],
+        "tags": ["scenarios"],
         "parameters": [
           {
             "name": "item",
@@ -5503,9 +5397,7 @@
         "operationId": "get_scenarios_lane_roles",
         "summary": "GET /scenarios/laneRoles",
         "description": "Win rates for heroes in certain lane roles",
-        "tags": [
-          "scenarios"
-        ],
+        "tags": ["scenarios"],
         "parameters": [
           {
             "name": "lane_role",
@@ -5542,9 +5434,7 @@
         "operationId": "get_scenarios_misc",
         "summary": "GET /scenarios/misc",
         "description": "Miscellaneous team scenarios",
-        "tags": [
-          "scenarios"
-        ],
+        "tags": ["scenarios"],
         "parameters": [
           {
             "$ref": "#/components/parameters/scenarioParam"
@@ -5572,9 +5462,7 @@
         "operationId": "get_schema",
         "summary": "GET /schema",
         "description": "Get database schema",
-        "tags": [
-          "schema"
-        ],
+        "tags": ["schema"],
         "parameters": [],
         "responses": {
           "200": {
@@ -5598,9 +5486,7 @@
         "operationId": "get_constants_by_resource",
         "summary": "GET /constants",
         "description": "Get static game data mirrored from the dotaconstants repository.",
-        "tags": [
-          "constants"
-        ],
+        "tags": ["constants"],
         "parameters": [
           {
             "name": "resource",
@@ -5655,9 +5541,7 @@
         "operationId": "get_constants",
         "summary": "GET /constants",
         "description": "Gets an array of available resources.",
-        "tags": [
-          "constants"
-        ],
+        "tags": ["constants"],
         "parameters": [],
         "responses": {
           "200": {

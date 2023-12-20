@@ -4,7 +4,7 @@
 import cp from 'child_process';
 if (process.env.PROVIDER === 'gce') {
   cp.execSync(
-    'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/.env'
+    'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/.env',
   );
 }
 async function start() {
@@ -18,7 +18,7 @@ async function start() {
       () => {
         cp.execSync('pm2 flush all');
       },
-      60 * 60 * 1000
+      60 * 60 * 1000,
     );
   } else {
     // Block indefinitely (keep process alive for Docker)

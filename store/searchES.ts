@@ -2,25 +2,27 @@ import db from './db';
 import { es, INDEX } from './elasticsearch';
 
 export async function searchES(query: string) {
-  const accountIdMatch = Number.isInteger(Number(query)) ? await db.select(['account_id', 'personaname', 'avatarfull'])
-  .from('players')
-  .where({ account_id: Number(query)}) : [];
-  
-  const { body } = await es.search(
-    {
-      index: INDEX,
-      size: 50,
-      body: {
-        query: {
-          match: {
-            personaname: {
-              query,
-            },
+  const accountIdMatch = Number.isInteger(Number(query))
+    ? await db
+        .select(['account_id', 'personaname', 'avatarfull'])
+        .from('players')
+        .where({ account_id: Number(query) })
+    : [];
+
+  const { body } = await es.search({
+    index: INDEX,
+    size: 50,
+    body: {
+      query: {
+        match: {
+          personaname: {
+            query,
           },
         },
-        sort: [{ _score: 'desc' }, { last_match_time: 'desc' }],
       },
-    });
+      sort: [{ _score: 'desc' }, { last_match_time: 'desc' }],
+    },
+  });
   const esRows = body.hits.hits.map((e: any) => ({
     account_id: Number(e._id),
     personaname: e._source.personaname,

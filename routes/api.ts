@@ -34,7 +34,9 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   if (!Number.isInteger(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
-  (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(JSON.stringify(req.query));
+  (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(
+    JSON.stringify(req.query),
+  );
   // Enable significance filter by default, disable it if 0 is passed
   if (req.query.significant === '0') {
     delete req.query.significant;
@@ -52,7 +54,13 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   });
   const sortArr = (req.query.sort || []) as (keyof ParsedPlayerMatch)[];
   (req as unknown as Express.ExtRequest).queryObj = {
-    project: ['match_id', 'player_slot', 'radiant_win', ...filterCols, ...sortArr],
+    project: [
+      'match_id',
+      'player_slot',
+      'radiant_win',
+      ...filterCols,
+      ...sortArr,
+    ],
     filter: (req.query || {}) as unknown as ArrayifiedFilters,
     sort: sortArr[0],
     limit: Number(req.query.limit),
@@ -92,14 +100,14 @@ Object.keys(spec.paths).forEach((path) => {
         // Wrap all the route handlers in try/catch so we don't have to do it individually
         try {
           await func(req as Express.ExtRequest, res, cb);
-        } catch(e) {
+        } catch (e) {
           cb(e);
         }
       });
     } else {
       // If the function is missing, log a warning message with the problematic route path and verb
       console.warn(
-        `Missing callback function for route ${routePath} using ${verb.toUpperCase()}`
+        `Missing callback function for route ${routePath} using ${verb.toUpperCase()}`,
       );
     }
   });

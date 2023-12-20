@@ -7,7 +7,7 @@ import config from '../config.js';
 async function runQueue(
   queueName: QueueName,
   parallelism: number,
-  processor: (job: any) => Promise<void>
+  processor: (job: any) => Promise<void>,
 ) {
   const executor = async () => {
     // Since this may block, we need a separate client for each parallelism!
@@ -45,7 +45,7 @@ async function runQueue(
 async function runReliableQueue(
   queueName: QueueName,
   parallelism: number,
-  processor: (job: any) => Promise<boolean>
+  processor: (job: any) => Promise<boolean>,
 ) {
   const executor = async () => {
     while (true) {
@@ -65,7 +65,7 @@ async function runReliableQueue(
       RETURNING *
       `,
         //@ts-ignore
-        [moment().add(5, 'minute'), queueName]
+        [moment().add(5, 'minute'), queueName],
       );
       const job = result && result.rows && result.rows[0];
       if (job) {
@@ -106,7 +106,7 @@ async function addJob(input: QueueInput) {
 
 async function addReliableJob(
   input: QueueInput,
-  options: ReliableQueueOptions
+  options: ReliableQueueOptions,
 ) {
   const { name, data } = input;
   const result = await db.raw<{
@@ -122,7 +122,7 @@ async function addReliableJob(
       JSON.stringify(data),
       new Date(),
       options.priority || 10,
-    ]
+    ],
   );
   return result.rows[0];
 }

@@ -10,7 +10,7 @@ import {
 
 async function doTeams() {
   const result = await db.raw(
-    'select distinct team_id from team_match order by team_id desc'
+    'select distinct team_id from team_match order by team_id desc',
   );
   for (let i = 0; i < result.rows.length; i++) {
     const m = result.rows[i];

@@ -20,10 +20,10 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
       console.log(url, 'attempt:', retryCount);
       const { data } = await axios.get(url, { timeout: 5000 });
       body = data;
-    } catch(e) {
+    } catch (e) {
       if (axios.isAxiosError(e)) {
-        console.log(e.toJSON())
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log(e.toJSON());
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } else {
         throw e;
       }
@@ -40,22 +40,24 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
   redis.zincrby('retrieverCounts', 1, 'retriever');
   redis.expireat(
     'retrieverCounts',
-    moment().startOf('hour').add(1, 'hour').format('X')
+    moment().startOf('hour').add(1, 'hour').format('X'),
   );
-  const players = body.match.players.map((p: any, i: number): GcPlayer => ({
-    // NOTE: account ids are not anonymous in this call so we don't include it in the data to insert
-    // We could start storing this data but then the API also needs to respect the user's match history setting
-    // account_id: p.account_id,
-    player_slot: p.player_slot,
-    party_id: p.party_id?.low,
-    permanent_buffs: p.permanent_buffs,
-    party_size: body!.match.players.filter(
-      (matchPlayer: any) => matchPlayer.party_id?.low === p.party_id?.low
-    ).length,
-    // If we want to start adding basic data for anonymous players in player_caches we can put k/d/a/hd/td etc here too
-    // There are some discrepancies in field names, e.g. starttime instead of start_time and item_7 instead of backpack_0
-    // We'll also want to remove the extra data from being stored in gcdata column to save space
-  }));
+  const players = body.match.players.map(
+    (p: any, i: number): GcPlayer => ({
+      // NOTE: account ids are not anonymous in this call so we don't include it in the data to insert
+      // We could start storing this data but then the API also needs to respect the user's match history setting
+      // account_id: p.account_id,
+      player_slot: p.player_slot,
+      party_id: p.party_id?.low,
+      permanent_buffs: p.permanent_buffs,
+      party_size: body!.match.players.filter(
+        (matchPlayer: any) => matchPlayer.party_id?.low === p.party_id?.low,
+      ).length,
+      // If we want to start adding basic data for anonymous players in player_caches we can put k/d/a/hd/td etc here too
+      // There are some discrepancies in field names, e.g. starttime instead of start_time and item_7 instead of backpack_0
+      // We'll also want to remove the extra data from being stored in gcdata column to save space
+    }),
+  );
   const matchToInsert: GcMatch = {
     match_id: job.match_id,
     players,
@@ -78,7 +80,13 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
   // Update series id and type for pro match
   await db.raw(
     'UPDATE matches SET series_id = ?, series_type = ?, cluster = ?, replay_salt = ? WHERE match_id = ?',
-    [matchToInsert.series_id, matchToInsert.series_type, matchToInsert.cluster, matchToInsert.replay_salt, job.match_id]
+    [
+      matchToInsert.series_id,
+      matchToInsert.series_type,
+      matchToInsert.cluster,
+      matchToInsert.replay_salt,
+      job.match_id,
+    ],
   );
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatch(matchToInsert, {
@@ -94,19 +102,19 @@ type GcDataRow = { match_id: number; cluster: number; replay_salt: number };
 
 /**
  * Tries to return GC data by reading it without fetching.
- * @param matchId 
- * @returns 
+ * @param matchId
+ * @returns
  */
 export async function tryReadGcData(
-  matchId: number
+  matchId: number,
 ): Promise<GcDataRow | undefined> {
   const result = await cassandra.execute(
     'SELECT gcdata FROM match_blobs WHERE match_id = ?',
     [matchId],
-    { prepare: true, fetchSize: 1, autoPage: true }
+    { prepare: true, fetchSize: 1, autoPage: true },
   );
   const row = result.rows[0];
-  const gcData = row?.gcdata ? JSON.parse(row.gcdata) as GcData : undefined;
+  const gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcData) : undefined;
   if (!gcData) {
     return;
   }
@@ -120,12 +128,10 @@ export async function tryReadGcData(
 /**
  * Returns GC data, fetching and saving it if we don't have it already.
  * Throws if we can't find it
- * @param match 
- * @returns 
+ * @param match
+ * @returns
  */
-export async function getGcData(
-  match: GcDataJob
-): Promise<GcDataRow> {
+export async function getGcData(match: GcDataJob): Promise<GcDataRow> {
   const matchId = match.match_id;
   if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     throw new Error('invalid match_id');
@@ -143,7 +149,9 @@ export async function getGcData(
   await fetchGcData(match);
   const result = await tryReadGcData(matchId);
   if (!result) {
-    throw new Error('[GCDATA]: Could not get GC data for match ' + match.match_id);
+    throw new Error(
+      '[GCDATA]: Could not get GC data for match ' + match.match_id,
+    );
   }
   return result;
 }

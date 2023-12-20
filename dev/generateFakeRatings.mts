@@ -12,7 +12,7 @@ function randByCentralLimitTheorem() {
 function gaussianRandom(mean: number, std: number) {
   if (mean === undefined || std === undefined) {
     throw new Error(
-      'Gaussian random needs 2 arguments (mean, standard deviation)'
+      'Gaussian random needs 2 arguments (mean, standard deviation)',
     );
   }
   return randByCentralLimitTheorem() * std + mean;

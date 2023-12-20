@@ -2,9 +2,7 @@
 import axios from 'axios';
 import db from '../store/db';
 import { upsert } from '../store/queries';
-import {
-  invokeIntervalAsync,
-} from '../util/utility';
+import { invokeIntervalAsync } from '../util/utility';
 
 async function doLeagues() {
   const url = 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001';
