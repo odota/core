@@ -1061,7 +1061,7 @@ export async function insertMatch(
     const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
     }] for ${match.match_id} ended ${moment
-      .unix(options.endedAt ?? 0)
+      .unix(endedAt ?? 0)
       .fromNow()}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
@@ -1256,6 +1256,7 @@ export async function insertMatch(
   // Use the passed pgroup if gcdata or parsed, otherwise build it
   // Do this after removing anonymous account IDs
   const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
+  const endedAt = options.endedAt ?? (match as ApiMatch).start_time + (match as ApiMatch).duration;
 
   let average_rank: number | undefined = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate

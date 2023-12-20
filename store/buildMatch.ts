@@ -106,13 +106,9 @@ async function doBuildMatch(matchId: string, options: { meta?: string }) {
   if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
-  let match: Partial<ParsedMatch> | null = null;
+  let match: Partial<ParsedMatch> | null = await getMatchDataFromBlob(matchId, true);
   if (!match) {
-    // Fetch from blobstore
-    match = await getMatchDataFromBlob(matchId, true);
-  }
-  if (!match) {
-    // if we still don't have it, try backfilling it from Steam API and then check again
+    // if we don't have it, try backfilling it from Steam API and then check again
     // Once backfilled it'll be in blobstore
     await backfill(matchId);
     match = await getMatchDataFromBlob(matchId, true);

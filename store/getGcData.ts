@@ -128,11 +128,11 @@ export async function tryReadGcData(
 /**
  * Returns GC data, fetching and saving it if we don't have it already.
  * Throws if we can't find it
- * @param match
+ * @param job
  * @returns
  */
-export async function getGcData(match: GcDataJob): Promise<GcDataRow> {
-  const matchId = match.match_id;
+export async function getGcData(job: GcDataJob): Promise<GcDataRow> {
+  const matchId = job.match_id;
   if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     throw new Error('invalid match_id');
   }
@@ -146,11 +146,11 @@ export async function getGcData(match: GcDataJob): Promise<GcDataRow> {
     }
   }
   // If we got here we don't have it saved or want to refetch
-  await fetchGcData(match);
+  await fetchGcData(job);
   const result = await tryReadGcData(matchId);
   if (!result) {
     throw new Error(
-      '[GCDATA]: Could not get GC data for match ' + match.match_id,
+      '[GCDATA]: Could not get GC data for match ' + job.match_id,
     );
   }
   return result;
