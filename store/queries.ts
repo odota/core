@@ -1,4 +1,3 @@
-import async from 'async';
 import moment from 'moment';
 import constants from 'dotaconstants';
 import util from 'util';
@@ -254,15 +253,6 @@ export async function getHeroBenchmarks(
     hero_id: Number(heroId),
     result: ret,
   };
-}
-export function getPlayerMatches(
-  accountId: string,
-  queryObj: QueryObj,
-  cb: (err: Error | null, cache: ParsedPlayerMatch[]) => void
-) {
-  getPlayerMatchesPromise(accountId, queryObj)
-    .then((cache) => cb(null, cache))
-    .catch((err) => cb(err, []));
 }
 
 export async function getPlayerMatchesPromise(
