@@ -19,16 +19,11 @@ import {
   pick,
   parallelPromise,
   PeersCount,
+  redisCount,
 } from '../util/utility';
-import {
-  ApiMatch,
-  cassandraColumnInfo,
-  cleanRowCassandra,
-  tryFillApiData,
-  tryFillGcData,
-} from './insert';
+import { ApiMatch, cassandraColumnInfo, cleanRowCassandra } from './insert';
 import { getArchivedPlayerMatches, readArchivedMatch } from './archiveHelpers';
-import { getPGroup } from './pgroup';
+import { tryFetchApiData } from './getApiData.js';
 
 /**
  * Benchmarks a match against stored data in Redis
@@ -608,8 +603,10 @@ export async function getMatchDataFromBlobWithMetadata(
   };
 
   if (!api && backfill) {
-    api = await tryFillApiData(matchId);
+    api = await tryFetchApiData(matchId);
     if (api) {
+      // Count for logging
+      redisCount(redis, 'steam_api_backfill');
       odData.backfill_api = true;
     }
   }
@@ -617,7 +614,9 @@ export async function getMatchDataFromBlobWithMetadata(
     return [null, null];
   }
   if (!gcdata && backfill) {
-    gcdata = await tryFillGcData(matchId, getPGroup(api));
+    redisCount(redis, 'steam_gc_backfill');
+    // TODO (howard) maybe turn this on after we get some data on how often it's called
+    // gcdata = await tryFetchGcData(matchId, getPGroup(api));
     if (gcdata) {
       odData.backfill_gc = true;
     }
@@ -685,50 +684,4 @@ export async function getPlayerMatchData(
   );
   const deserializedResult = result.rows.map((m) => deserialize(m));
   return deserializedResult;
-}
-
-/**
- * Return API data by reading it without fetching.
- * @param matchId
- * @returns
- */
-export async function readApiData(
-  matchId: number,
-): Promise<ApiMatch | undefined> {
-  const result = await cassandra.execute(
-    'SELECT api FROM match_blobs WHERE match_id = ?',
-    [matchId],
-    { prepare: true, fetchSize: 1, autoPage: true },
-  );
-  const row = result.rows[0];
-  const data = row?.api ? (JSON.parse(row.api) as ApiMatch) : undefined;
-  if (!data) {
-    return;
-  }
-  return data;
-}
-
-/**
- * Return GC data by reading it without fetching.
- * @param matchId
- * @returns
- */
-export async function readGcData(
-  matchId: number,
-): Promise<GcMatch | undefined> {
-  const result = await cassandra.execute(
-    'SELECT gcdata FROM match_blobs WHERE match_id = ?',
-    [matchId],
-    { prepare: true, fetchSize: 1, autoPage: true },
-  );
-  const row = result.rows[0];
-  const gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
-  if (!gcData) {
-    return;
-  }
-  const { match_id, cluster, replay_salt } = gcData;
-  if (!match_id || !cluster || !replay_salt) {
-    return;
-  }
-  return gcData;
 }

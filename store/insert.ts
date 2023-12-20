@@ -21,13 +21,10 @@ import {
   isRadiant,
   getPatchIndex,
   redisCount,
-  getSteamAPIData,
-  generateJob,
 } from '../util/utility';
 import apiMatch from '../test/data/details_api.json';
 import apiMatchPro from '../test/data/details_api_pro.json';
-import { fillGcData } from './getGcData';
-import { readGcData, readApiData, getMatchRankTier } from './queries';
+import { getMatchRankTier } from './queries';
 import { getPGroup } from './pgroup';
 
 const columnInfo: AnyDict = {};
@@ -216,49 +213,6 @@ export async function insertPlayerCache(
       }
     }),
   );
-}
-
-export async function tryFillApiData(
-  matchId: string,
-): Promise<ApiMatch | undefined> {
-  try {
-    // Try backfilling from steam API
-    // Could throw if not a valid ID
-    const body = await getSteamAPIData(
-      generateJob('api_details', {
-        match_id: Number(matchId),
-      }).url,
-    );
-    // match details response
-    const match = body.result;
-    await insertMatch(match, {
-      type: 'api',
-      skipParse: true,
-    });
-    // Count for logging
-    redisCount(redis, 'steam_api_backfill');
-    return readApiData(Number(matchId));
-  } catch (e) {
-    console.log(e);
-    return;
-  }
-}
-
-export async function tryFillGcData(
-  matchId: string,
-  pgroup: PGroup,
-): Promise<GcMatch | undefined> {
-  try {
-    // TODO (howard) maybe turn this on after we get some data on how often it's called
-    if (false) {
-      await fillGcData({ match_id: Number(matchId), pgroup, noRetry: true });
-      return readGcData(Number(matchId));
-    }
-    redisCount(redis, 'steam_gc_backfill');
-  } catch (e) {
-    console.log(e);
-    return;
-  }
 }
 
 function createMatchCopy(match: any): Match {

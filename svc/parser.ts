@@ -8,22 +8,18 @@
 import { exec } from 'child_process';
 import os from 'os';
 import express from 'express';
-import { getGcData } from '../store/getGcData';
+import { getOrFetchGcData } from '../store/getGcData';
 import config from '../config.js';
 import queue from '../store/queue';
 import { ApiMatch, insertMatch } from '../store/insert';
 import { promisify } from 'util';
 import c from 'ansi-colors';
-import {
-  buildReplayUrl,
-  generateJob,
-  getSteamAPIData,
-  redisCount,
-} from '../util/utility';
+import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
 import db from '../store/db';
 import axios from 'axios';
 import { getPGroup } from '../store/pgroup';
+import { getOrFetchApiData } from '../store/getApiData';
 
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, PARSER_HOST, PARSER_PARALLELISM } = config;
@@ -46,20 +42,12 @@ async function parseProcessor(job: ParseJob) {
     const apiStart = Date.now();
     let apiMatch: ApiMatch;
     try {
-      const body = await getSteamAPIData(
-        generateJob('api_details', { match_id: job.match_id }).url,
-      );
-      apiMatch = body.result;
+      apiMatch = await getOrFetchApiData(job.match_id.toString());
     } catch (e) {
       console.error(e);
       // The Match ID is probably invalid, so fail without throwing
       return false;
     }
-    await insertMatch(apiMatch, {
-      type: 'api',
-      // We're already in the parse context so don't queue another parse job
-      skipParse: true,
-    });
     apiTime = Date.now() - apiStart;
 
     // We need pgroup, start_time, duration, leagueid for the next jobs
@@ -68,7 +56,7 @@ async function parseProcessor(job: ParseJob) {
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
-    const gcdata = await getGcData({ match_id: job.match_id, pgroup });
+    const gcdata = await getOrFetchGcData({ match_id: job.match_id, pgroup });
     gcTime = Date.now() - gcStart;
     let url = buildReplayUrl(
       gcdata.match_id,

@@ -35,8 +35,9 @@ export async function buildStatus() {
     parsed_matches_last_day: async () => getRedisCountDay(redis, 'parser'),
     parse_fails_last_day: async () => getRedisCountDay(redis, 'parser_fail'),
     meta_parsed_last_day: async () => getRedisCountDay(redis, 'meta_parse'),
-    reparse_last_day: async () => getRedisCountDay(redis, 'reparse'),
+    reapi_last_day: async () => getRedisCountDay(redis, 'reapi'),
     regcdata_last_day: async () => getRedisCountDay(redis, 'regcdata'),
+    reparse_last_day: async () => getRedisCountDay(redis, 'reparse'),
     requests_last_day: async () => getRedisCountDay(redis, 'request'),
     requests_api_key_last_day: async () =>
       getRedisCountDay(redis, 'request_api_key'),

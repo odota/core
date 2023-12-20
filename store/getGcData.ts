@@ -1,19 +1,44 @@
 import moment from 'moment';
 import config from '../config.js';
-import { readGcData } from './queries';
 import db from './db';
 import redis from './redis';
+import cassandra from './cassandra';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch, upsert } from './insert';
 
 /**
+ * Return GC data by reading it without fetching.
+ * @param matchId
+ * @returns
+ */
+export async function readGcData(
+  matchId: number,
+): Promise<GcMatch | undefined> {
+  const result = await cassandra.execute(
+    'SELECT gcdata FROM match_blobs WHERE match_id = ?',
+    [matchId],
+    { prepare: true, fetchSize: 1, autoPage: true },
+  );
+  const row = result.rows[0];
+  const gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
+  if (!gcData) {
+    return;
+  }
+  const { match_id, cluster, replay_salt } = gcData;
+  if (!match_id || !cluster || !replay_salt) {
+    return;
+  }
+  return gcData;
+}
+
+/**
  * Requests GC data from the retriever (optionally with retry) and saves it locally
  * @param job
  * @returns
  */
-export async function fillGcData(job: GcDataJob): Promise<void> {
+async function saveGcData(job: GcDataJob): Promise<void> {
   const matchId = job.match_id;
   const noRetry = job.noRetry;
   let retryCount = 0;
@@ -104,12 +129,32 @@ export async function fillGcData(job: GcDataJob): Promise<void> {
 }
 
 /**
- * Returns GC data, fetching and saving it if we don't have it already.
+ * Attempts once to fetch the GC data and read it back
+ * @param matchId
+ * @param pgroup
+ * @returns The GC data, or nothing if we failed
+ */
+export async function tryFetchGcData(
+  matchId: string,
+  pgroup: PGroup,
+): Promise<GcMatch | undefined> {
+  try {
+    await saveGcData({ match_id: Number(matchId), pgroup, noRetry: true });
+    return readGcData(Number(matchId));
+  } catch (e) {
+    console.log(e);
+    return;
+  }
+}
+
+/**
+ * Returns GC data, reading the saved version.
+ * If not present, fills it and then reads it back.
  * Throws if we can't find it
  * @param job
  * @returns
  */
-export async function getGcData(job: GcDataJob): Promise<GcMatch> {
+export async function getOrFetchGcData(job: GcDataJob): Promise<GcMatch> {
   const matchId = job.match_id;
   if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     throw new Error('invalid match_id');
@@ -124,12 +169,10 @@ export async function getGcData(job: GcDataJob): Promise<GcMatch> {
     }
   }
   // If we got here we don't have it saved or want to refetch
-  await fillGcData(job);
+  await saveGcData(job);
   const result = await readGcData(matchId);
   if (!result) {
-    throw new Error(
-      '[GCDATA]: Could not get GC data for match ' + job.match_id,
-    );
+    throw new Error('[GCDATA]: Could not get GC data for match ' + matchId);
   }
   return result;
 }

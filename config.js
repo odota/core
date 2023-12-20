@@ -77,6 +77,7 @@ const defaults = {
   PLAYER_ARCHIVE_S3_BUCKET: 'opendota-players', // name of the S3 bucket to archive player match blobs
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
+  DISABLE_REAPI: '', // Disable refetching new API data on every request
   API_KEY_GEN_THRESHOLD: 0, // Account ID requirement (delta from max) for generating API keys
 };
 // ensure that process.env has all values in defaults, but prefer the process.env value

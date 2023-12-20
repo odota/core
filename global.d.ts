@@ -413,6 +413,7 @@ type MetricName =
   | 'request'
   | 'reparse'
   | 'regcdata'
+  | 'reapi'
   | 'parser_fail'
   | 'incomplete_archive'
   | 'gen_api_key_invalid';
