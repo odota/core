@@ -605,15 +605,9 @@ export async function getMatchDataFromBlobWithMetadata(
     },
   );
   const row = result.rows[0];
-  if (!row) {
-    return [null, null];
-  }
-  Object.keys(row).forEach((key) => {
-    row[key] = row[key] ? JSON.parse(row[key]) : null;
-  });
-  let api: ApiMatch | undefined = row.api;
-  let gcdata: GcMatch | undefined = row.gcdata;
-  let parsed: ParsedMatch | undefined = row.parsed;
+  let api: ApiMatch | undefined = row?.api ? JSON.parse(row.api) : undefined;
+  let gcdata: GcMatch | undefined = row?.gcdata ? JSON.parse(row.gccdata) : undefined;
+  let parsed: ParsedMatch | undefined = row?.parsed ? JSON.parse(row.parsed) : undefined;
 
   let odData: {
     od_backfill_api?: boolean;

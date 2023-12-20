@@ -38,7 +38,7 @@ services:
       [
         'bash',
         '-c',
-        'sleep 75 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+        'sleep 90 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
       ]
   scylla:
     image: scylladb/scylla:5.4
