@@ -1,4 +1,4 @@
-import { ApiMatch } from "./insert";
+import { ApiMatch } from './insert';
 
 export function getPGroup(match: ApiMatch): PGroup {
   // This works if we are an API insert, but not for parsed and we don't currently construct it for gcdata

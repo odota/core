@@ -67,6 +67,17 @@ type Match = {
 
   // Parsed match metadata from .meta file
   metadata?: any;
+
+  od_data: GetMatchDataMetadata | null;
+};
+
+type GetMatchDataMetadata = {
+  has_api: boolean;
+  has_gcdata: boolean;
+  has_parsed: boolean;
+  backfill_api?: boolean;
+  backfill_gc?: boolean;
+  archive?: boolean;
 };
 
 interface LiveMatch extends Match {

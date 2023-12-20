@@ -2,15 +2,11 @@ import constants from 'dotaconstants';
 import fs from 'fs';
 import config from '../config.js';
 import { computeMatchData } from '../util/compute';
-import {
-  buildReplayUrl,
-  isContributor,
-  redisCount,
-} from '../util/utility';
+import { buildReplayUrl, isContributor, redisCount } from '../util/utility';
 import redis from './redis';
 import db from './db';
 import {
-  getMatchDataFromBlob,
+  getMatchDataFromBlobWithMetadata,
   getMatchBenchmarks,
 } from './queries';
 import { getMeta } from './getMeta';
@@ -95,13 +91,14 @@ async function doBuildMatch(matchId: string, options: { meta?: string }) {
     return null;
   }
   // Attempt to fetch match and backfill what's needed
-  let match: Partial<ParsedMatch> | null = await getMatchDataFromBlob(
-    matchId,
-    true,
-  );
+  let [match, odData]: [
+    Partial<ParsedMatch> | null,
+    GetMatchDataMetadata | null,
+  ] = await getMatchDataFromBlobWithMetadata(matchId, true);
   if (!match) {
     return null;
   }
+  match.od_data = odData;
   redisCount(redis, 'build_match');
   let playersMatchData: ParsedPlayer[] = match.players!;
   // Get names, last login for players from DB

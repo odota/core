@@ -24,13 +24,8 @@ import retrieverPlayer from './data/retriever_player.json';
 import detailsApiPro from './data/details_api_pro.json';
 import retrieverMatch from './data/retriever_match.json';
 import spec from '../routes/spec';
-import {
-  getPlayerMatchesPromise,
-} from '../store/queries';
-import {
-  insertMatch,
-  upsertPlayer,
-} from '../store/insert';
+import { getPlayerMatchesPromise } from '../store/queries';
+import { insertMatch, upsertPlayer } from '../store/insert';
 import buildMatch from '../store/buildMatch';
 import { es } from '../store/elasticsearch';
 import redis from '../store/redis';

@@ -27,11 +27,7 @@ import {
 import apiMatch from '../test/data/details_api.json';
 import apiMatchPro from '../test/data/details_api_pro.json';
 import { fillGcData } from './getGcData';
-import {
-  readGcData,
-  readApiData,
-  getMatchRankTier,
-} from './queries';
+import { readGcData, readApiData, getMatchRankTier } from './queries';
 import { getPGroup } from './pgroup';
 
 const columnInfo: AnyDict = {};

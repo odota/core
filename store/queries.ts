@@ -579,22 +579,10 @@ export async function getMetadata(req: Request) {
   }>(obj);
 }
 
-export async function getMatchDataFromBlob(
-  matchId: string,
-  backfill: boolean,
-): Promise<Partial<ParsedMatch> | null> {
-  return (await getMatchDataFromBlobWithMetadata(matchId, backfill))[0];
-}
-
 export async function getMatchDataFromBlobWithMetadata(
   matchId: string,
   backfill: boolean,
-): Promise<
-  [
-    Partial<ParsedMatch> | null,
-    { has_api: boolean; has_gcdata: boolean; has_parsed: boolean } | null,
-  ]
-> {
+): Promise<[Partial<ParsedMatch> | null, GetMatchDataMetadata | null]> {
   const result = await cassandra.execute(
     'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
     [Number(matchId)],
@@ -606,19 +594,23 @@ export async function getMatchDataFromBlobWithMetadata(
   );
   const row = result.rows[0];
   let api: ApiMatch | undefined = row?.api ? JSON.parse(row.api) : undefined;
-  let gcdata: GcMatch | undefined = row?.gcdata ? JSON.parse(row.gcdata) : undefined;
-  let parsed: ParsedMatch | undefined = row?.parsed ? JSON.parse(row.parsed) : undefined;
+  let gcdata: GcMatch | undefined = row?.gcdata
+    ? JSON.parse(row.gcdata)
+    : undefined;
+  let parsed: ParsedMatch | undefined = row?.parsed
+    ? JSON.parse(row.parsed)
+    : undefined;
 
-  let odData: {
-    od_backfill_api?: boolean;
-    od_backfill_gc?: boolean;
-    od_archive?: boolean;
-  } = {};
+  let odData: GetMatchDataMetadata = {
+    has_api: Boolean(api),
+    has_gcdata: Boolean(gcdata),
+    has_parsed: Boolean(parsed),
+  };
 
   if (!api && backfill) {
     api = await tryFillApiData(matchId);
     if (api) {
-      odData.od_backfill_api = true;
+      odData.backfill_api = true;
     }
   }
   if (!api) {
@@ -627,19 +619,18 @@ export async function getMatchDataFromBlobWithMetadata(
   if (!gcdata && backfill) {
     gcdata = await tryFillGcData(matchId, getPGroup(api));
     if (gcdata) {
-      odData.od_backfill_gc = true;
+      odData.backfill_gc = true;
     }
   }
   if (!parsed && backfill) {
     parsed = await readArchivedMatch(matchId);
     if (parsed) {
-      odData.od_archive = true;
+      odData.archive = true;
     }
   }
 
   // Merge the results together
   const final: Partial<ParsedMatch> = {
-    ...odData,
     ...parsed,
     ...gcdata,
     ...api,
@@ -657,14 +648,7 @@ export async function getMatchDataFromBlobWithMetadata(
       };
     }),
   };
-  return [
-    final,
-    {
-      has_api: Boolean(api),
-      has_gcdata: Boolean(gcdata),
-      has_parsed: Boolean(parsed),
-    },
-  ];
+  return [final, odData];
 }
 
 export async function getMatchDataFromCassandra(
