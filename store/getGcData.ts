@@ -54,7 +54,7 @@ async function saveGcData(
       body = data;
     } catch (e) {
       if (axios.isAxiosError(e)) {
-        console.log(e.toJSON());
+        console.error(url, e.message);
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } else {
         throw e;

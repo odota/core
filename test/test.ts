@@ -79,8 +79,12 @@ nock(`http://${RETRIEVER_HOST}`)
   // fake mmr response up to 7 times for 7 non-anonymous players in test match
   .times(7)
   .reply(200, retrieverPlayer)
+  // fake error to test handling
+  .get('/?key=&match_id=1781962623')
+  .reply(500, {})
   // fake GC match details
   .get('/?key=&match_id=1781962623')
+  // We faked the replay salt to 1 to match the testfile name
   .reply(200, retrieverMatch);
 before(async function setup() {
   this.timeout(60000);
@@ -139,15 +143,14 @@ describe(c.blue('[TEST] players'), async () => {
 });
 describe(c.blue('[TEST] replay parse'), async function () {
   this.timeout(120000);
-  const tests: AnyDict = {
-    '1781962623_1.dem': detailsApi.result,
-  };
-  const key = Object.keys(tests)[0];
+  const tests = [
+    detailsApi.result
+  ];
+  const matchData = tests[0];
   before(async () => {
-    const matchData = tests[key];
     // This match is not a pro match, but we set the leagueid to 5399 so we get data in postgres
     // We could do this with a real pro match but we'd have to upload a new replay file
-    console.log('inserting and parsing match');
+    console.log('inserting and parsing:', matchData.match_id);
     const job = await insertMatch(matchData, {
       type: 'api',
       forceParse: true,
@@ -159,7 +162,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
   });
   it('should have api data in buildMatch', async () => {
     // ensure api data got inserted
-    const match = await buildMatch(tests[key].match_id.toString(), {});
+    const match = await buildMatch(matchData.match_id, {});
     assert.ok(match.players);
     assert.ok(match.players[0]);
     assert.equal(match.players[0].kills, 8);
@@ -167,7 +170,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
   });
   it('should have gcdata in buildMatch', async () => {
     // ensure gcdata got inserted
-    const match = await buildMatch(tests[key].match_id.toString(), {});
+    const match = await buildMatch(matchData.match_id, {});
     assert.ok(match.players);
     assert.ok(match.players[0]);
     assert.equal(match.players[0].party_size, 10);
@@ -175,7 +178,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
   });
   it('should have parse data in buildMatch', async () => {
     // ensure parse data got inserted
-    const match = await buildMatch(tests[key].match_id.toString(), {});
+    const match = await buildMatch(matchData.match_id, {});
     assert.ok(match.players);
     assert.ok(match.players[0]);
     assert.equal(match.players[0].killed.npc_dota_creep_badguys_melee, 46);
@@ -190,11 +193,11 @@ describe(c.blue('[TEST] replay parse'), async function () {
   it('should have parse match data in postgres', async () => {
     // Assert that the pro data (with parsed info) is in postgres
     const proMatch = await db.raw('select * from matches where match_id = ?', [
-      tests[key].match_id,
+      matchData.match_id,
     ]);
     const proMatchPlayers = await db.raw(
       'select * from player_matches where match_id = ?',
-      [tests[key].match_id],
+      [matchData.match_id],
     );
     const picksBans = await db.raw('select * from picks_bans');
     const teamMatch = await db.raw('select * from team_match');
@@ -210,7 +213,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
   });
   it('should have parse data for non-anonymous players in player_caches', async () => {
     const result = await cassandra.execute(
-      'SELECT * from player_caches WHERE match_id = 1781962623 ALLOW FILTERING',
+      'SELECT * from player_caches WHERE match_id = ? ALLOW FILTERING', [matchData.match_id], {prepare: true}
     );
     // Assert that parsed data is in player_caches
     assert.ok(result.rows[0].stuns);
