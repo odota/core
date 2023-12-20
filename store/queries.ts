@@ -36,6 +36,7 @@ import {
   isDataComplete,
   pick,
   parallelPromise,
+  PeersCount,
 } from '../util/utility';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import apiMatch from '../test/data/details_api.json';
@@ -502,16 +503,11 @@ export async function getPlayer(db: knex.Knex, accountId: number): Promise<User 
       }
       return playerData;
 }
-export function getPeers(
-  db: knex.Knex,
-  input: AnyDict,
+export async function getPeers(
+  input: PeersCount,
   player: { account_id: string },
-  cb: ErrorCb
 ) {
-  if (!input) {
-    return cb();
-  }
-  let teammatesArr: any[] = [];
+  let teammatesArr: PeersCount[string][] = [];
   const teammates = input;
   Object.keys(teammates).forEach((id) => {
     const tm = teammates[id];
@@ -529,75 +525,59 @@ export function getPeers(
   teammatesArr.sort((a, b) => b.games - a.games);
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
-  return async.each(
-    teammatesArr,
-    (t, cb) => {
-      db.first(
+  return Promise.all(teammatesArr.map(async (t) => {
+    const row: AnyDict = await db.first(
+      'players.account_id',
+      'personaname',
+      'name',
+      'avatar',
+      'avatarfull',
+      'last_login',
+      'subscriber.status'
+    )
+      .from('players')
+      .leftJoin(
+        'notable_players',
         'players.account_id',
-        'personaname',
-        'name',
-        'avatar',
-        'avatarfull',
-        'last_login',
-        'subscriber.status'
+        'notable_players.account_id'
       )
-        .from('players')
-        .leftJoin(
-          'notable_players',
-          'players.account_id',
-          'notable_players.account_id'
-        )
-        .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
-        .where({
-          'players.account_id': t.account_id,
-        })
-        .asCallback((err: Error | null, row: AnyDict) => {
-          if (err || !row) {
-            return cb(err);
-          }
-          t.personaname = row.personaname;
-          t.name = row.name;
-          t.is_contributor = isContributor(t.account_id);
-          t.is_subscriber = Boolean(row.status);
-          t.last_login = row.last_login;
-          t.avatar = row.avatar;
-          t.avatarfull = row.avatarfull;
-          return cb(err);
-        });
-    },
-    (err) => {
-      cb(err, teammatesArr);
-    }
-  );
+      .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
+      .where({
+        'players.account_id': t.account_id,
+      });
+      if (!row) {
+        return {...t};
+      }
+      return {
+        ...t,
+        personaname: row.personaname,
+        name: row.name,
+        is_contributor: isContributor(t.account_id),
+        is_subscriber: Boolean(row.status),
+        last_login: row.last_login,
+        avatar: row.avatar,
+        avatarfull: row.avatarfull,
+      };
+  }));
 }
-export function getProPeers(
-  db: knex.Knex,
-  input: AnyDict,
+export async function getProPeers(
+  input: PeersCount,
   player: { account_id: string },
-  cb: ErrorCb
 ) {
-  if (!input) {
-    return cb();
-  }
   const teammates = input;
-  return db
+  const { rows }: { rows: any[] } = await db
     .raw(
       `select *, notable_players.account_id
           FROM notable_players
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
           `
-    )
-    .asCallback((err: Error | null, result: { rows: any[] }) => {
-      if (err) {
-        return cb(err);
-      }
-      const arr = result.rows
-        .map((r) => ({ ...r, ...teammates[r.account_id] }))
-        .filter((r) => r.account_id !== player.account_id && r.games)
-        .sort((a, b) => b.games - a.games);
-      return cb(err, arr);
-    });
+    );
+  const arr: PeersCount[string][] = rows
+    .map((r) => ({ ...r, ...teammates[r.account_id] }))
+    .filter((r) => r.account_id !== player.account_id && r.games)
+    .sort((a, b) => b.games - a.games);
+  return arr;
 }
 
 export async function getMatchRankTier(players: { account_id?: number | null }[]) {

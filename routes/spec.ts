@@ -537,24 +537,21 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
+            async (err, cache) => {
               if (err) {
                 return cb(err);
               }
-              const teammates = countPeers(cache);
-              return getPeers(
-                db,
-                teammates,
-                {
-                  account_id: req.params.account_id,
-                },
-                (err, result) => {
-                  if (err) {
-                    return cb(err);
-                  }
-                  return sendDataWithCache(req, res, result, 'peers');
-                }
-              );
+              try {
+                const teammates = countPeers(cache);
+                const result = await getPeers(
+                  teammates,
+                  {
+                    account_id: req.params.account_id,
+                  });
+                return sendDataWithCache(req, res, result, 'peers');
+              } catch(e) {
+                return cb(e);
+              }
             }
           );
         },
@@ -591,24 +588,21 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
+            async (err, cache) => {
               if (err) {
                 return cb(err);
               }
-              const teammates = countPeers(cache);
-              return getProPeers(
-                db,
-                teammates,
-                {
-                  account_id: req.params.account_id,
-                },
-                (err, result) => {
-                  if (err) {
-                    return cb(err);
-                  }
-                  return res.json(result);
-                }
-              );
+              try {
+                const teammates = countPeers(cache);
+                const result = await getProPeers(
+                  teammates,
+                  {
+                    account_id: req.params.account_id,
+                  });
+                return res.json(result);
+              } catch(e) {
+                return cb(e);
+              }
             }
           );
         },
