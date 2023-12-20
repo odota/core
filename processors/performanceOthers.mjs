@@ -20,7 +20,7 @@ function track(e, container, meta) {
     const trackerPlayer = container.players[trackerSlot];
     const trackLvl = meta.ability_levels[bhName].bounty_hunter_track;
     const trackTalentLvl =
-      meta.ability_levels[bhName].special_bonus_unique_bounty_hunter_3;
+      meta.ability_levels[bhName].special_bonus_unique_bounty_hunter_9;
     let gold = 0;
     switch (trackLvl) {
       case 1:
@@ -37,7 +37,7 @@ function track(e, container, meta) {
     }
     // If the talent is selected add the extra bonus
     if (trackTalentLvl === 1) {
-      gold += 250;
+      gold += 45;
     }
     trackerPlayer.performance_others = {
       tracked_deaths: 0,
