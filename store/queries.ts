@@ -606,7 +606,7 @@ export async function getMatchDataFromBlobWithMetadata(
   );
   const row = result.rows[0];
   let api: ApiMatch | undefined = row?.api ? JSON.parse(row.api) : undefined;
-  let gcdata: GcMatch | undefined = row?.gcdata ? JSON.parse(row.gccdata) : undefined;
+  let gcdata: GcMatch | undefined = row?.gcdata ? JSON.parse(row.gcdata) : undefined;
   let parsed: ParsedMatch | undefined = row?.parsed ? JSON.parse(row.parsed) : undefined;
 
   let odData: {
