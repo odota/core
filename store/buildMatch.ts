@@ -3,8 +3,6 @@ import fs from 'fs';
 import config from '../config.js';
 import { computeMatchData } from '../util/compute';
 import {
-  generateJob,
-  getSteamAPIData,
   buildReplayUrl,
   isContributor,
   redisCount,
@@ -13,7 +11,6 @@ import redis from './redis';
 import db from './db';
 import {
   getMatchDataFromBlob,
-  insertMatch,
   getMatchBenchmarks,
 } from './queries';
 import { getMeta } from './getMeta';
@@ -98,7 +95,10 @@ async function doBuildMatch(matchId: string, options: { meta?: string }) {
     return null;
   }
   // Attempt to fetch match and backfill what's needed
-  let match: Partial<ParsedMatch> | null = await getMatchDataFromBlob(matchId, true);
+  let match: Partial<ParsedMatch> | null = await getMatchDataFromBlob(
+    matchId,
+    true,
+  );
   if (!match) {
     return null;
   }

@@ -1,10 +1,10 @@
+import archiveHelpers from '../store/archiveHelpers.js';
 import queries from '../store/queries.js';
 import fs from 'fs';
 const {
-  doArchivePlayerMatches,
-  getArchivedPlayerMatches,
   getPlayerMatchesPromiseWithMetadata,
 } = queries;
+const { doArchivePlayerMatches } = archiveHelpers;
 
 // Write player blob to archive
 await doArchivePlayerMatches('88367253');

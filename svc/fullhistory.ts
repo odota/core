@@ -11,7 +11,8 @@ import {
 import db from '../store/db';
 import redis from '../store/redis';
 import queue from '../store/queue';
-import { insertMatch, getPlayerMatchesPromise } from '../store/queries';
+import { getPlayerMatchesPromise } from '../store/queries';
+import { insertMatch } from '../store/insert';
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of api requests to send at once
 const parallelism = Math.min(40, apiKeys.length);

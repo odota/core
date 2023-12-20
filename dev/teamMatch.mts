@@ -1,5 +1,5 @@
 import dbImport from '../store/db.js';
-import { upsert } from '../store/queries.js';
+import { upsert } from '../store/insert.js';
 
 const db = dbImport.default;
 

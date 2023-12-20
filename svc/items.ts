@@ -1,6 +1,6 @@
 // NOT WORKING: Updates game items in the database
 import db from '../store/db';
-import { upsert } from '../store/queries';
+import { upsert } from '../store/insert';
 import {
   generateJob,
   getSteamAPIData,

@@ -1,7 +1,7 @@
 // Updates the list of pro players in the database
 import axios from 'axios';
 import db from '../store/db';
-import { upsert } from '../store/queries';
+import { upsert } from '../store/insert';
 import { invokeIntervalAsync } from '../util/utility';
 
 async function doProPlayers() {

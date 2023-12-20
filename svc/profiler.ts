@@ -1,5 +1,5 @@
 // Updates Steam profile data for players periodically
-import { upsertPlayer, bulkIndexPlayer } from '../store/queries';
+import { upsertPlayer, bulkIndexPlayer } from '../store/insert';
 import db from '../store/db';
 import {
   getSteamAPIData,

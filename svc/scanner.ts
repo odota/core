@@ -1,7 +1,7 @@
 // Fetches new matches from the Steam API using the sequential endpoint
 import config from '../config.js';
 import redis from '../store/redis';
-import { ApiMatch, insertMatch } from '../store/queries';
+import { ApiMatch, insertMatch } from '../store/insert';
 import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 
 const delay = Number(config.SCANNER_DELAY);

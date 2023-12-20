@@ -46,7 +46,7 @@ export async function buildStatus() {
       getRedisCountDay(redis, 'steam_api_call'),
     steam_api_backfill_last_day: async () =>
       getRedisCountDay(redis, 'steam_api_backfill'),
-    steam_gc_backfill_last_day: async() =>
+    steam_gc_backfill_last_day: async () =>
       getRedisCountDay(redis, 'steam_gc_backfill'),
     match_archive_read_last_day: async () =>
       getRedisCountDay(redis, 'match_archive_read'),

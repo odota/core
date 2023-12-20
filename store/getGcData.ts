@@ -1,16 +1,17 @@
 import moment from 'moment';
 import config from '../config.js';
-import { insertMatch, readGcData, upsert } from './queries';
+import { readGcData } from './queries';
 import db from './db';
 import redis from './redis';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
+import { insertMatch, upsert } from './insert';
 
 /**
  * Requests GC data from the retriever (optionally with retry) and saves it locally
- * @param job 
- * @returns 
+ * @param job
+ * @returns
  */
 export async function fillGcData(job: GcDataJob): Promise<void> {
   const matchId = job.match_id;

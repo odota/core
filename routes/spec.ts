@@ -25,7 +25,6 @@ import params from './requests/importParams';
 import responses from './responses/schemas/importResponseSchemas';
 import generateOperationId from './generateOperationId';
 import {
-  insertMatch,
   getDistributions,
   getPlayerRatings,
   getHeroBenchmarks,
@@ -41,7 +40,7 @@ import {
   getPlayerMatchesPromise,
   getItemTimings,
 } from '../store/queries';
-import { FilterType, filterDeps } from '../util/filter';
+import { filterDeps } from '../util/filter';
 const { Client } = pg;
 const parameters = Object.values(params).reduce<any>(
   (acc, category: any) => ({ ...acc, ...category }),

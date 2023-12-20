@@ -1,7 +1,7 @@
 // Alternative to scanner if seq match data endpoint isn't available
 // Works by repeatedly checking match histories for players
 import redis from '../store/redis';
-import { insertMatch } from '../store/queries';
+import { insertMatch } from '../store/insert';
 import config from '../config.js';
 import {
   generateJob,

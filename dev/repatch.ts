@@ -1,6 +1,6 @@
 import constants from 'dotaconstants';
 import db from '../store/db';
-import { upsert } from '../store/queries';
+import { upsert } from '../store/insert';
 import { getPatchIndex } from '../util/utility';
 
 async function start() {

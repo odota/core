@@ -2,7 +2,7 @@
 import crypto from 'crypto';
 import cassandra from '../store/cassandra';
 import db from '../store/db';
-import { doArchiveFromLegacy } from '../store/queries';
+import { doArchiveFromLegacy } from '../store/archiveHelpers';
 import { eachLimitPromise } from '../util/utility';
 
 function genRandomNumber(byteCount: number, radix: number): string {

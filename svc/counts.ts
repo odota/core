@@ -4,10 +4,12 @@ import redis from '../store/redis';
 import db from '../store/db';
 import {
   getMatchRankTier,
+} from '../store/queries';
+import {
   upsertPlayer,
   bulkIndexPlayer,
   upsert,
-} from '../store/queries';
+} from '../store/insert';
 import queue from '../store/queue';
 import config from '../config.js';
 import { benchmarks } from '../util/benchmarksUtil';

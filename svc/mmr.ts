@@ -2,7 +2,7 @@
 import queue from '../store/queue';
 import db from '../store/db';
 import redis from '../store/redis';
-import { insertPlayerRating, upsertPlayer } from '../store/queries';
+import { insertPlayerRating, upsertPlayer } from '../store/insert';
 import config from '../config.js';
 import {
   getRetrieverCount,

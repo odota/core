@@ -1,7 +1,7 @@
 // Updates game cosmetic items in the database
 import vdf from 'simple-vdf';
 import db from '../store/db';
-import { upsert } from '../store/queries';
+import { upsert } from '../store/insert';
 import {
   cleanItemSchema,
   eachLimitPromise,

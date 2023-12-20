@@ -1,4 +1,4 @@
-import { insertMatch } from '../store/queries.js';
+import { insertMatch } from '../store/insert.js';
 import dbImport from '../store/db.js';
 import { generateJob, getSteamAPIData } from '../util/utility.js';
 

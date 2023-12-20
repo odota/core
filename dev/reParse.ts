@@ -1,6 +1,6 @@
 // Issues reparse requests for all matches in postgres that aren't parsed
 import db from '../store/db';
-import { insertMatch } from '../store/queries';
+import { insertMatch } from '../store/insert';
 import { getSteamAPIData, generateJob } from '../util/utility';
 
 async function start() {

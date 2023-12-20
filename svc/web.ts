@@ -16,7 +16,7 @@ import { Redis } from 'ioredis';
 import { WebSocketServer, WebSocket } from 'ws';
 import keys from '../routes/keyManagement';
 import api from '../routes/api';
-import { upsertPlayer } from '../store/queries';
+import { upsertPlayer } from '../store/insert';
 import db from '../store/db';
 import redis from '../store/redis';
 import config from '../config.js';

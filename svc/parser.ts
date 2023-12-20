@@ -11,7 +11,7 @@ import express from 'express';
 import { getGcData } from '../store/getGcData';
 import config from '../config.js';
 import queue from '../store/queue';
-import { ApiMatch, getPGroup, insertMatch } from '../store/queries';
+import { ApiMatch, insertMatch } from '../store/insert';
 import { promisify } from 'util';
 import c from 'ansi-colors';
 import {
@@ -23,6 +23,7 @@ import {
 import redis from '../store/redis';
 import db from '../store/db';
 import axios from 'axios';
+import { getPGroup } from '../store/pgroup';
 
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, PARSER_HOST, PARSER_PARALLELISM } = config;
