@@ -38,7 +38,7 @@ async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
   p.is_subscriber = Boolean(subscriber?.status);
   return p;
 }
-async function prodataInfo(matchId: string): Promise<AnyDict> {
+async function prodataInfo(matchId: number): Promise<AnyDict> {
   const result = await db
     .first([
       'radiant_team_id',
@@ -86,8 +86,8 @@ async function prodataInfo(matchId: string): Promise<AnyDict> {
   return final;
 }
 
-async function doBuildMatch(matchId: string, options: { meta?: string }) {
-  if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
+async function doBuildMatch(matchId: number, options: { meta?: string }) {
+  if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     return null;
   }
   // Attempt to fetch match and backfill what's needed
@@ -185,7 +185,7 @@ async function doBuildMatch(matchId: string, options: { meta?: string }) {
   return matchResult;
 }
 
-async function buildMatch(matchId: string, options: { meta?: string }) {
+async function buildMatch(matchId: number, options: { meta?: string }) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {

@@ -13,7 +13,7 @@ type ScenariosKey = keyof typeof scenarioChecks;
 async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);
   // NOTE: Using buildMatch is unnecessarily expensive here since it also looks up player names etc.
-  const match = await buildMatch(matchID, {});
+  const match = await buildMatch(Number(matchID), {});
   if (!su.validateMatchProperties(match)) {
     console.error(
       `Skipping scenario checks for match ${matchID}. Invalid match object.`,

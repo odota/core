@@ -78,7 +78,7 @@ async function start() {
       );
 
       const funcs = parsedIds.map(
-        (id) => () => doArchiveFromLegacy(id.toString()),
+        (id) => () => doArchiveFromLegacy(id),
       );
       await eachLimitPromise(funcs, 10);
 

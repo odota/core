@@ -575,12 +575,12 @@ export async function getMetadata(req: Request) {
 }
 
 export async function getMatchDataFromBlobWithMetadata(
-  matchId: string,
+  matchId: number,
   backfill: boolean,
 ): Promise<[Partial<ParsedMatch> | null, GetMatchDataMetadata | null]> {
   const result = await cassandra.execute(
     'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
-    [Number(matchId)],
+    [matchId],
     {
       prepare: true,
       fetchSize: 1,
@@ -603,7 +603,7 @@ export async function getMatchDataFromBlobWithMetadata(
   };
 
   if (!api && backfill) {
-    api = await tryFetchApiData(Number(matchId));
+    api = await tryFetchApiData(matchId);
     if (api) {
       // Count for logging
       redisCount(redis, 'steam_api_backfill');
@@ -616,13 +616,13 @@ export async function getMatchDataFromBlobWithMetadata(
   if (!gcdata && backfill) {
     redisCount(redis, 'steam_gc_backfill');
     // TODO (howard) maybe turn this on after we get some data on how often it's called
-    // gcdata = await tryFetchGcData(Number(matchId), getPGroup(api));
+    // gcdata = await tryFetchGcData(matchId, getPGroup(api));
     if (gcdata) {
       odData.backfill_gc = true;
     }
   }
   if (!parsed && backfill) {
-    parsed = await readArchivedMatch(matchId);
+    parsed = await readArchivedMatch(matchId.toString());
     if (parsed) {
       odData.archive = true;
     }
@@ -651,11 +651,11 @@ export async function getMatchDataFromBlobWithMetadata(
 }
 
 export async function getMatchDataFromCassandra(
-  matchId: string,
+  matchId: number,
 ): Promise<Partial<ParsedMatch> | null> {
   const result = await cassandra.execute(
     'SELECT * FROM matches where match_id = ?',
-    [Number(matchId)],
+    [matchId],
     {
       prepare: true,
       fetchSize: 1,
@@ -671,11 +671,11 @@ export async function getMatchDataFromCassandra(
 }
 
 export async function getPlayerMatchData(
-  matchId: string,
+  matchId: number,
 ): Promise<ParsedPlayer[]> {
   const result = await cassandra.execute(
     'SELECT * FROM player_matches where match_id = ?',
-    [Number(matchId)],
+    [matchId],
     {
       prepare: true,
       fetchSize: 24,

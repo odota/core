@@ -54,7 +54,7 @@ export async function doArchivePlayerMatches(
  * @param matchId
  * @returns The result of the archive operation
  */
-export async function doArchiveFromLegacy(matchId: string) {
+export async function doArchiveFromLegacy(matchId: number) {
   if (!config.ENABLE_MATCH_ARCHIVE) {
     return;
   }
@@ -64,7 +64,7 @@ export async function doArchiveFromLegacy(matchId: string) {
     (
       await db.raw(
         'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-        [Number(matchId)],
+        [matchId],
       )
     ).rows[0],
   );
@@ -90,20 +90,20 @@ export async function doArchiveFromLegacy(matchId: string) {
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches }),
   );
-  const result = await matchArchive.archivePut(matchId, blob);
+  const result = await matchArchive.archivePut(matchId.toString(), blob);
   redisCount(redis, 'match_archive_write');
   if (result) {
     // Mark the match archived
     await db.raw(
       `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
-      [Number(matchId)],
+      [matchId],
     );
     await deleteFromLegacy(matchId);
   }
   return result;
 }
 
-export async function doArchiveFromBlob(matchId: string) {
+export async function doArchiveFromBlob(matchId: number) {
   if (!config.ENABLE_MATCH_ARCHIVE) {
     return;
   }
@@ -120,7 +120,7 @@ export async function doArchiveFromBlob(matchId: string) {
     // if it only contains API data, delete the entire row
     await cassandra.execute(
       'DELETE from match_blobs WHERE match_id = ?',
-      [Number(matchId)],
+      [matchId],
       {
         prepare: true,
       },
@@ -131,19 +131,19 @@ export async function doArchiveFromBlob(matchId: string) {
   if (metadata?.has_parsed) {
     // Archive the data since it's parsed. This might also contain api and gcdata
     const blob = Buffer.from(JSON.stringify(match));
-    const result = await matchArchive.archivePut(matchId, blob);
+    const result = await matchArchive.archivePut(matchId.toString(), blob);
     redisCount(redis, 'match_archive_write');
     if (result) {
       // Mark the match archived
       await db.raw(
         `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
-        [Number(matchId)],
+        [matchId],
       );
       // Delete the row (there might be gcdata, but we'll have it in the archive blob)
       // This will also also clear the gcdata cache for this match
       await cassandra.execute(
         'DELETE from match_blobs WHERE match_id = ?',
-        [Number(matchId)],
+        [matchId],
         {
           prepare: true,
         },
@@ -157,7 +157,7 @@ export async function doArchiveFromBlob(matchId: string) {
   return;
 }
 
-async function deleteFromLegacy(id: string) {
+async function deleteFromLegacy(id: number) {
   await Promise.all([
     cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
       prepare: true,

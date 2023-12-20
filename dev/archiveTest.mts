@@ -8,8 +8,8 @@ const { Archive } = archiveImport;
 
 // Read some match data
 const match = {
-  ...(await getMatchDataFromCassandra('7465883253')),
-  players: await getPlayerMatchData('7465883253'),
+  ...(await getMatchDataFromCassandra(7465883253)),
+  players: await getPlayerMatchData(7465883253),
 };
 const blob = Buffer.from(JSON.stringify(match));
 
