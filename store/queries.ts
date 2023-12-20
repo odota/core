@@ -16,7 +16,6 @@ import { benchmarks } from '../util/benchmarksUtil';
 import { Archive } from './archive';
 import type knex from 'knex';
 import type { Client } from 'cassandra-driver';
-import type { Redis } from 'ioredis';
 import type { Request } from 'express';
 import {
   getStartOfBlockMinutes,
@@ -42,7 +41,7 @@ import {
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import apiMatch from '../test/data/details_api.json';
 import apiMatchPro from '../test/data/details_api_pro.json';
-import { getGcData } from './getGcData.js';
+import { fillGcData } from './getGcData.js';
 
 const columnInfo: AnyDict = {};
 const cassandraColumnInfo: AnyDict = {};
@@ -1524,9 +1523,8 @@ async function getMatchDataFromBlobWithMetadata(
   } = {};
 
   if (!api && backfill) {
-    const success = await tryFillApiData(matchId);
-    if (success) {
-      api = await readApiData(Number(matchId));
+    api = await tryFillApiData(matchId);
+    if (api) {
       odData.od_backfill_api = true;
     }
   }
@@ -1534,9 +1532,8 @@ async function getMatchDataFromBlobWithMetadata(
     return [null, null];
   }
   if (!gcdata && backfill) {
-    const success = await tryFillGcData(matchId, getPGroup(api));
-    if (success) {
-      gcdata = await readGcData(Number(matchId));
+    gcdata = await tryFillGcData(matchId, getPGroup(api));
+    if (gcdata) {
       odData.od_backfill_gc = true;
     }
   }
@@ -1611,7 +1608,7 @@ export async function getPlayerMatchData(
   return deserializedResult;
 }
 
-async function tryFillApiData(matchId: string): Promise<boolean> {
+async function tryFillApiData(matchId: string): Promise<ApiMatch | undefined> {
   try {
     // Try backfilling from steam API
     // Could throw if not a valid ID
@@ -1626,22 +1623,24 @@ async function tryFillApiData(matchId: string): Promise<boolean> {
     });
     // Count for logging
     redisCount(redis, 'steam_api_backfill');
-    return true;
+    return readApiData(Number(matchId));
   } catch(e) {
     console.log(e);
-    return false;
+    return;
   }
 }
 
-async function tryFillGcData(matchId: string, pgroup: PGroup): Promise<boolean> {
+async function tryFillGcData(matchId: string, pgroup: PGroup): Promise<GcMatch | undefined> {
   try {
     // TODO (howard) maybe turn this on after we get some data on how often it's called
-    // await getGcData({ match_id: Number(matchId), pgroup, noRetry: true });
+    if (false) {
+      await fillGcData({ match_id: Number(matchId), pgroup, noRetry: true });
+      return readGcData(Number(matchId));
+    }
     redisCount(redis, 'steam_gc_backfill');
-    return false;
   } catch(e) {
     console.log(e);
-    return false;
+    return;
   }
 }
 

@@ -7,7 +7,12 @@ import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 
-async function fillGcData(job: GcDataJob): Promise<void> {
+/**
+ * Requests GC data from the retriever (optionally with retry) and saves it locally
+ * @param job 
+ * @returns 
+ */
+export async function fillGcData(job: GcDataJob): Promise<void> {
   const matchId = job.match_id;
   const noRetry = job.noRetry;
   let retryCount = 0;
