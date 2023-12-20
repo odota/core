@@ -188,7 +188,7 @@ keys
       return res.sendStatus(200);
     }
     // Optionally verify the account_id
-    if (req.user?.account_id && config.API_KEY_GEN_THRESHOLD) {
+    if (req.user?.account_id && Number(config.API_KEY_GEN_THRESHOLD)) {
       const threshold = await db
         .first('account_id')
         .from('players')
