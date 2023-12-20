@@ -17,8 +17,8 @@ const builder = root.loadSync('./proto/dota_match_metadata.proto', {
 });
 const Message = builder.lookupType('CDOTAMatchMetadataFile');
 
-export async function getMeta(matchId: string) {
-  const gcdata = await readGcData(Number(matchId));
+export async function getMeta(matchId: number) {
+  const gcdata = await readGcData(matchId);
   if (!gcdata) {
     return null;
   }

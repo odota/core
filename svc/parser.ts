@@ -5,26 +5,23 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
-import { exec } from 'child_process';
 import os from 'os';
 import express from 'express';
 import { getOrFetchGcData } from '../store/getGcData';
 import config from '../config.js';
 import queue from '../store/queue';
-import { ApiMatch, insertMatch } from '../store/insert';
-import { promisify } from 'util';
+import { ApiMatch } from '../store/insert';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
-import db from '../store/db';
 import axios from 'axios';
 import { getPGroup } from '../store/pgroup';
 import { getOrFetchApiData } from '../store/getApiData';
+import { maybeFetchParseData } from '../store/getParsedData';
 
 const { runReliableQueue } = queue;
-const { PORT, PARSER_PORT, PARSER_HOST, PARSER_PARALLELISM } = config;
+const { PORT, PARSER_PORT, PARSER_PARALLELISM } = config;
 const numCPUs = os.cpus().length;
-const execPromise = promisify(exec);
 const app = express();
 app.get('/healthz', (req, res) => {
   res.end('ok');
@@ -36,13 +33,13 @@ async function parseProcessor(job: ParseJob) {
   let apiTime = 0;
   let gcTime = 0;
   let parseTime = 0;
-  let insertTime = 0;
   try {
+    const matchId = job.match_id;
     // Fetch the API data
     const apiStart = Date.now();
     let apiMatch: ApiMatch;
     try {
-      apiMatch = await getOrFetchApiData(job.match_id.toString());
+      apiMatch = await getOrFetchApiData(matchId);
     } catch (e) {
       console.error(e);
       // The Match ID is probably invalid, so fail without throwing
@@ -50,35 +47,18 @@ async function parseProcessor(job: ParseJob) {
     }
     apiTime = Date.now() - apiStart;
 
-    // We need pgroup, start_time, duration, leagueid for the next jobs
+    // We need pgroup for the next jobs
     const pgroup = getPGroup(apiMatch);
-    const { start_time, duration, leagueid } = apiMatch;
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
-    const gcdata = await getOrFetchGcData({ match_id: job.match_id, pgroup });
+    const gcdata = await getOrFetchGcData(matchId, pgroup);
     gcTime = Date.now() - gcStart;
     let url = buildReplayUrl(
       gcdata.match_id,
       gcdata.cluster,
       gcdata.replay_salt,
     );
-
-    // Check if match is already parsed
-    const isParsed = Boolean(
-      (
-        await db.raw('select match_id from parsed_matches where match_id = ?', [
-          job.match_id,
-        ])
-      ).rows[0],
-    );
-    if (isParsed) {
-      redisCount(redis, 'reparse');
-      if (config.DISABLE_REPARSE) {
-        // If high load, we can disable parsing already parsed matches
-        return true;
-      }
-    }
 
     // try {
     //   // Make a HEAD request for the replay to see if it's available
@@ -94,43 +74,22 @@ async function parseProcessor(job: ParseJob) {
     // }
 
     const parseStart = Date.now();
-    console.log('[PARSER] parsing replay at:', url);
-    const { stdout } = await execPromise(
-      `curl --max-time 60 --fail -L ${url} | ${
-        url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
-      } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${
-        job.match_id
-      }`,
-      //@ts-ignore
-      { shell: true, maxBuffer: 10 * 1024 * 1024 },
-    );
-    parseTime = Date.now() - parseStart;
-
-    const insertStart = Date.now();
-    // const { getParseSchema } = await import('../processors/parseSchema.mjs');
-    // start_time and duration used for calculating dust adjustments and APM
-    const result: ParserMatch = {
-      ...JSON.parse(stdout),
-      match_id: job.match_id,
-      leagueid,
+    const { start_time, duration, leagueid } = apiMatch;
+    await maybeFetchParseData(matchId, url, {
       start_time,
       duration,
-    };
-    await insertMatch(result, {
-      type: 'parsed',
-      skipParse: true,
-      origin: job.origin,
+      leagueid,
       pgroup,
-      endedAt: start_time + duration,
+      origin: job.origin,
     });
-    insertTime = Date.now() - insertStart;
+    parseTime = Date.now() - parseStart;
 
     // Log successful parse and timing
     const end = Date.now();
     const message = c.green(
       `[${new Date().toISOString()}] [parser] [success: ${
         end - start
-      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
+      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
         job.match_id
       }`,
     );
@@ -143,7 +102,7 @@ async function parseProcessor(job: ParseJob) {
     const message = c.red(
       `[${new Date().toISOString()}] [parser] [fail: ${
         end - start
-      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [insert: ${insertTime}ms] ${
+      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
         job.match_id
       }`,
     );

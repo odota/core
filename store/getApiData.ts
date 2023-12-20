@@ -30,12 +30,12 @@ export async function readApiData(
  * @param matchId
  * @returns
  */
-async function saveApiData(matchId: string): Promise<void> {
+async function saveApiData(matchId: number): Promise<void> {
   // Try the steam API
   // Could throw if not a valid ID
   const body = await getSteamAPIData(
     generateJob('api_details', {
-      match_id: Number(matchId),
+      match_id: matchId,
     }).url,
   );
   // match details response
@@ -52,11 +52,11 @@ async function saveApiData(matchId: string): Promise<void> {
  * @returns The API data, or nothing if we failed
  */
 export async function tryFetchApiData(
-  matchId: string,
+  matchId: number,
 ): Promise<ApiMatch | undefined> {
   try {
     saveApiData(matchId);
-    return readApiData(Number(matchId));
+    return readApiData(matchId);
   } catch (e) {
     console.log(e);
     return;
@@ -70,12 +70,12 @@ export async function tryFetchApiData(
  * @param matchId
  * @returns
  */
-export async function getOrFetchApiData(matchId: string): Promise<ApiMatch> {
-  if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
+export async function getOrFetchApiData(matchId: number): Promise<ApiMatch> {
+  if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
   }
   // Check if we have apidata cached
-  const saved = await readApiData(Number(matchId));
+  const saved = await readApiData(matchId);
   if (saved) {
     redisCount(redis, 'reapi');
     if (config.DISABLE_REAPI) {
@@ -85,7 +85,7 @@ export async function getOrFetchApiData(matchId: string): Promise<ApiMatch> {
   }
   // If we got here we don't have it saved or want to refetch
   await saveApiData(matchId);
-  const result = await readApiData(Number(matchId));
+  const result = await readApiData(matchId);
   if (!result) {
     throw new Error('[APIDATA]: Could not get API data for match ' + matchId);
   }

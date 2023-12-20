@@ -603,7 +603,7 @@ export async function getMatchDataFromBlobWithMetadata(
   };
 
   if (!api && backfill) {
-    api = await tryFetchApiData(matchId);
+    api = await tryFetchApiData(Number(matchId));
     if (api) {
       // Count for logging
       redisCount(redis, 'steam_api_backfill');
@@ -616,7 +616,7 @@ export async function getMatchDataFromBlobWithMetadata(
   if (!gcdata && backfill) {
     redisCount(redis, 'steam_gc_backfill');
     // TODO (howard) maybe turn this on after we get some data on how often it's called
-    // gcdata = await tryFetchGcData(matchId, getPGroup(api));
+    // gcdata = await tryFetchGcData(Number(matchId), getPGroup(api));
     if (gcdata) {
       odData.backfill_gc = true;
     }

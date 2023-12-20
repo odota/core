@@ -38,9 +38,11 @@ export async function readGcData(
  * @param job
  * @returns
  */
-async function saveGcData(job: GcDataJob): Promise<void> {
-  const matchId = job.match_id;
-  const noRetry = job.noRetry;
+async function saveGcData(
+  matchId: number,
+  pgroup: PGroup,
+  noRetry = false,
+): Promise<void> {
   let retryCount = 0;
   const url = getRandomRetrieverUrl({ matchId });
   let body: typeof retrieverMatch | undefined = undefined;
@@ -89,7 +91,7 @@ async function saveGcData(job: GcDataJob): Promise<void> {
     }),
   );
   const matchToInsert: GcMatch = {
-    match_id: job.match_id,
+    match_id: matchId,
     players,
     series_id: body.match.series_id,
     series_type: body.match.series_type,
@@ -98,14 +100,14 @@ async function saveGcData(job: GcDataJob): Promise<void> {
     replay_salt: body.match.replay_salt,
   };
   const gcdata = {
-    match_id: Number(job.match_id),
+    match_id: matchId,
     cluster: body.match.cluster,
     replay_salt: body.match.replay_salt,
   };
   // TODO (howard) deprecate match_gcdata once we have transferGcData for pro matches
   // Persist GC data to database, we'll read it back from here for consumers
   await upsert(db, 'match_gcdata', gcdata, {
-    match_id: job.match_id,
+    match_id: matchId,
   });
   // Update series id and type for pro match
   await db.raw(
@@ -115,14 +117,14 @@ async function saveGcData(job: GcDataJob): Promise<void> {
       matchToInsert.series_type,
       matchToInsert.cluster,
       matchToInsert.replay_salt,
-      job.match_id,
+      matchId,
     ],
   );
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatch(matchToInsert, {
     type: 'gcdata',
     skipParse: true,
-    pgroup: job.pgroup,
+    pgroup,
     endedAt: body.match.starttime + body.match.duration,
   });
   return;
@@ -135,12 +137,12 @@ async function saveGcData(job: GcDataJob): Promise<void> {
  * @returns The GC data, or nothing if we failed
  */
 export async function tryFetchGcData(
-  matchId: string,
+  matchId: number,
   pgroup: PGroup,
 ): Promise<GcMatch | undefined> {
   try {
-    await saveGcData({ match_id: Number(matchId), pgroup, noRetry: true });
-    return readGcData(Number(matchId));
+    await saveGcData(matchId, pgroup, true);
+    return readGcData(matchId);
   } catch (e) {
     console.log(e);
     return;
@@ -154,9 +156,12 @@ export async function tryFetchGcData(
  * @param job
  * @returns
  */
-export async function getOrFetchGcData(job: GcDataJob): Promise<GcMatch> {
-  const matchId = job.match_id;
-  if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
+export async function getOrFetchGcData(
+  matchId: number,
+  pgroup: PGroup,
+  noRetry = false,
+): Promise<GcMatch> {
+  if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
   }
   // Check if we have gcdata cached
@@ -169,7 +174,7 @@ export async function getOrFetchGcData(job: GcDataJob): Promise<GcMatch> {
     }
   }
   // If we got here we don't have it saved or want to refetch
-  await saveGcData(job);
+  await saveGcData(matchId, pgroup, noRetry);
   const result = await readGcData(matchId);
   if (!result) {
     throw new Error('[GCDATA]: Could not get GC data for match ' + matchId);

@@ -133,7 +133,7 @@ async function doBuildMatch(matchId: string, options: { meta?: string }) {
   );
   const prodataPromise = prodataInfo(matchId);
   const metadataPromise = Boolean(options.meta)
-    ? getMeta(matchId)
+    ? getMeta(Number(matchId))
     : Promise.resolve(null);
   const [players, gcdata, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,

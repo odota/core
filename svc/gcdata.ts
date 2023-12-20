@@ -7,7 +7,7 @@ import { getRetrieverCount } from '../util/utility';
 
 async function processGcData(job: GcDataJob) {
   // We don't need the result, but we do want to respect the DISABLE_REGCDATA setting
-  await getOrFetchGcData(job);
+  await getOrFetchGcData(job.match_id, job.pgroup, job.noRetry);
 }
 
 console.log('[GCDATA] starting');
