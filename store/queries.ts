@@ -204,76 +204,56 @@ export async function getHeroItemPopularity(
       late_game_items: lateGameItems,
     };
 }
-export function getHeroBenchmarks(
-  db: knex.Knex,
-  redis: Redis,
-  options: AnyDict,
-  cb: ErrorCb
+export async function getHeroBenchmarks(
+  heroId: string,
 ) {
-  const heroId = options.hero_id;
   const ret: AnyDict = {};
-  async.each(
-    Object.keys(benchmarks),
-    (metric, cb) => {
-      const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
-      async.each(
-        arr,
-        (percentile, cb) => {
-          // Use data from previous epoch
-          let key = [
-            'benchmarks',
-            getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1),
-            metric,
-            heroId,
-          ].join(':');
-          const backupKey = [
-            'benchmarks',
-            getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
-            metric,
-            heroId,
-          ].join(':');
-          redis.exists(key, (err, exists) => {
-            if (err) {
-              return cb(err);
-            }
-            if (exists === 0) {
-              // No data, use backup key (current epoch)
-              key = backupKey;
-            }
-            return redis.zcard(key, (err, card) => {
-              if (err) {
-                return cb(err);
-              }
-              const position = Math.floor((card || 0) * percentile);
-              return redis.zrange(
-                key,
-                position,
-                position,
-                'WITHSCORES',
-                (err, result) => {
-                  const obj = {
-                    percentile,
-                    value: Number(result?.[1]),
-                  };
-                  if (!ret[metric]) {
-                    ret[metric] = [];
-                  }
-                  ret[metric].push(obj);
-                  cb(err);
-                }
-              );
-            });
-          });
-        },
-        cb
-      );
-    },
-    (err) =>
-      cb(err, {
-        hero_id: Number(heroId),
-        result: ret,
-      })
-  );
+  const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
+  const items: [metric: string, percentile: number][] = [];
+  Object.keys(benchmarks).forEach(metric => {
+    arr.forEach(percentile => {
+      items.push([metric, percentile]);
+    });
+  });
+  await Promise.all(items.map(async([metric, percentile]) => {
+    // Use data from previous epoch
+    let key = [
+      'benchmarks',
+      getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1),
+      metric,
+      heroId,
+    ].join(':');
+    const backupKey = [
+      'benchmarks',
+      getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+      metric,
+      heroId,
+    ].join(':');
+    const exists = await redis.exists(key);
+    if (exists === 0) {
+      // No data, use backup key (current epoch)
+      key = backupKey;
+    }
+    const card = await redis.zcard(key);
+    const position = Math.floor((card || 0) * percentile);
+    const result = await redis.zrange(
+          key,
+          position,
+          position,
+          'WITHSCORES');
+    const obj = {
+      percentile,
+      value: Number(result?.[1]),
+    };
+    if (!ret[metric]) {
+      ret[metric] = [];
+    }
+    ret[metric].push(obj);
+  }));
+  return {
+    hero_id: Number(heroId),
+    result: ret,
+  };
 }
 export function getPlayerMatches(
   accountId: string,
