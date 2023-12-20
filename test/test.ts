@@ -160,10 +160,25 @@ describe(c.blue('[TEST] replay parse'), async function () {
     console.log('waiting for replay parse');
     await new Promise((resolve) => setTimeout(resolve, 20000));
   });
+  it('should have api data in buildMatch', async () => {
+    // ensure api data got inserted
+    const match = await buildMatch(tests[key].match_id.toString(), {});
+    assert.ok(match.players);
+    assert.ok(match.players[0]);
+    assert.equal(match.players[0].kills, 8);
+    assert.ok(match.start_time);
+  });
+  it('should have gcdata in buildMatch', async () => {
+    // ensure gcdata got inserted
+    const match = await buildMatch(tests[key].match_id.toString(), {});
+    assert.ok(match.players);
+    assert.ok(match.players[0]);
+    assert.equal(match.players[0].party_size, 10);
+    assert.equal(match.replay_salt, 1);
+  });
   it('should have parse data in buildMatch', async () => {
     // ensure parse data got inserted
     const match = await buildMatch(tests[key].match_id.toString(), {});
-    // console.log(match.players[0]);
     assert.ok(match.players);
     assert.ok(match.players[0]);
     assert.equal(match.players[0].killed.npc_dota_creep_badguys_melee, 46);

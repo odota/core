@@ -67,10 +67,6 @@ type Match = {
 
   // Parsed match metadata from .meta file
   metadata?: any;
-
-  // Which storage backend the data came from
-  od_archive?: boolean;
-  od_backfill?: boolean;
 };
 
 interface LiveMatch extends Match {
@@ -197,19 +193,14 @@ interface ParsedPlayer extends Player {
   rank_tier?: number;
 }
 
-// Data to save from GC, can be read out
-type GcData = {
+// Data to pass to insertMatch from GC
+interface GcMatch {
   match_id: number;
   cluster: number;
   replay_salt: number;
   series_type: number;
   series_id: number;
   players: GcPlayer[];
-};
-
-// Data to pass to insertMatch from GC
-interface GcMatch extends GcData {
-  // No additional fields currently
 }
 
 interface GcPlayer {
@@ -406,6 +397,7 @@ type MetricName =
   | 'retriever'
   | 'build_match'
   | 'steam_api_backfill'
+  | 'steam_gc_backfill'
   | 'request_api_key'
   | 'request'
   | 'reparse'

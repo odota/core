@@ -1,14 +1,13 @@
 import moment from 'moment';
 import config from '../config.js';
-import { insertMatch, upsert } from './queries';
+import { insertMatch, readGcData, upsert } from './queries';
 import db from './db';
 import redis from './redis';
-import cassandra from './cassandra';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 
-async function fetchGcData(job: GcDataJob): Promise<void> {
+async function fillGcData(job: GcDataJob): Promise<void> {
   const matchId = job.match_id;
   const noRetry = job.noRetry;
   let retryCount = 0;
@@ -98,46 +97,19 @@ async function fetchGcData(job: GcDataJob): Promise<void> {
   return;
 }
 
-type GcDataRow = { match_id: number; cluster: number; replay_salt: number };
-
-/**
- * Tries to return GC data by reading it without fetching.
- * @param matchId
- * @returns
- */
-export async function tryReadGcData(
-  matchId: number,
-): Promise<GcDataRow | undefined> {
-  const result = await cassandra.execute(
-    'SELECT gcdata FROM match_blobs WHERE match_id = ?',
-    [matchId],
-    { prepare: true, fetchSize: 1, autoPage: true },
-  );
-  const row = result.rows[0];
-  const gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcData) : undefined;
-  if (!gcData) {
-    return;
-  }
-  const { match_id, cluster, replay_salt } = gcData;
-  if (!match_id || !cluster || !replay_salt) {
-    return;
-  }
-  return { match_id, cluster, replay_salt };
-}
-
 /**
  * Returns GC data, fetching and saving it if we don't have it already.
  * Throws if we can't find it
  * @param job
  * @returns
  */
-export async function getGcData(job: GcDataJob): Promise<GcDataRow> {
+export async function getGcData(job: GcDataJob): Promise<GcMatch> {
   const matchId = job.match_id;
   if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     throw new Error('invalid match_id');
   }
   // Check if we have gcdata cached
-  const saved = await tryReadGcData(matchId);
+  const saved = await readGcData(matchId);
   if (saved) {
     redisCount(redis, 'regcdata');
     if (config.DISABLE_REGCDATA) {
@@ -146,8 +118,8 @@ export async function getGcData(job: GcDataJob): Promise<GcDataRow> {
     }
   }
   // If we got here we don't have it saved or want to refetch
-  await fetchGcData(job);
-  const result = await tryReadGcData(matchId);
+  await fillGcData(job);
+  const result = await readGcData(matchId);
   if (!result) {
     throw new Error(
       '[GCDATA]: Could not get GC data for match ' + job.match_id,

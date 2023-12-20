@@ -36,10 +36,13 @@ import {
   pick,
   parallelPromise,
   PeersCount,
+  getSteamAPIData,
+  generateJob,
 } from '../util/utility';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import apiMatch from '../test/data/details_api.json';
 import apiMatchPro from '../test/data/details_api_pro.json';
+import { getGcData } from './getGcData.js';
 
 const columnInfo: AnyDict = {};
 const cassandraColumnInfo: AnyDict = {};
@@ -1351,7 +1354,7 @@ export async function doArchiveFromBlob(matchId: string) {
   if (!config.ENABLE_MATCH_ARCHIVE) {
     return;
   }
-  // Don't use the archive when determining whether to archive
+  // Don't backfill when determining whether to archive
   const [match, metadata] = await getMatchDataFromBlobWithMetadata(
     matchId,
     false,
@@ -1481,13 +1484,13 @@ export async function getMetadata(req: Request) {
 
 export async function getMatchDataFromBlob(
   matchId: string,
-  useArchive: boolean,
+  backfill: boolean,
 ): Promise<Partial<ParsedMatch> | null> {
-  return (await getMatchDataFromBlobWithMetadata(matchId, useArchive))[0];
+  return (await getMatchDataFromBlobWithMetadata(matchId, backfill))[0];
 }
 async function getMatchDataFromBlobWithMetadata(
   matchId: string,
-  useArchive: boolean,
+  backfill: boolean,
 ): Promise<
   [
     Partial<ParsedMatch> | null,
@@ -1510,34 +1513,43 @@ async function getMatchDataFromBlobWithMetadata(
   Object.keys(row).forEach((key) => {
     row[key] = row[key] ? JSON.parse(row[key]) : null;
   });
-  let api: Match | null = row.api;
-  let gcdata: GcMatch | null = row.gcdata;
-  let parsed: ParsedMatch | null = row.parsed;
+  let api: ApiMatch | undefined = row.api;
+  let gcdata: GcMatch | undefined = row.gcdata;
+  let parsed: ParsedMatch | undefined = row.parsed;
 
-  if (!api) {
-    // Return null if we don't have API data for some reason (maybe due to cleanup followed by parse?)
-    return [null, null];
-  }
-  if (!parsed && useArchive && config.ENABLE_MATCH_ARCHIVE) {
-    // Check if the parsed data is archived
-    // Most matches won't be in the archive so it's more efficient not to always try
-    const isArchived = Boolean(
-      (
-        await db.raw(
-          'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-          [matchId],
-        )
-      ).rows[0],
-    );
-    if (isArchived) {
-      parsed = await getArchivedMatch(matchId);
-      if (parsed) {
-        parsed.od_archive = true;
-      }
+  let odData: {
+    od_backfill_api?: boolean,
+    od_backfill_gc?: boolean,
+    od_archive?: boolean,
+  } = {};
+
+  if (!api && backfill) {
+    const success = await tryFillApiData(matchId);
+    if (success) {
+      api = await readApiData(Number(matchId));
+      odData.od_backfill_api = true;
     }
   }
+  if (!api) {
+    return [null, null];
+  }
+  if (!gcdata && backfill) {
+    const success = await tryFillGcData(matchId, getPGroup(api));
+    if (success) {
+      gcdata = await readGcData(Number(matchId));
+      odData.od_backfill_gc = true;
+    }
+  }
+  if (!parsed && backfill) {
+    parsed = await readArchivedMatch(matchId);
+    if (parsed) {
+      odData.od_archive = true;
+    }
+  }
+
   // Merge the results together
   const final: Partial<ParsedMatch> = {
+    ...odData,
     ...parsed,
     ...gcdata,
     ...api,
@@ -1598,10 +1610,112 @@ export async function getPlayerMatchData(
   const deserializedResult = result.rows.map((m) => deserialize(m));
   return deserializedResult;
 }
-export async function getArchivedMatch(
-  matchId: string,
-): Promise<ParsedMatch | null> {
+
+async function tryFillApiData(matchId: string): Promise<boolean> {
   try {
+    // Try backfilling from steam API
+    // Could throw if not a valid ID
+    const body = await getSteamAPIData(generateJob('api_details', {
+      match_id: Number(matchId),
+    }).url);
+    // match details response
+    const match = body.result;
+    await insertMatch(match, {
+      type: 'api',
+      skipParse: true,
+    });
+    // Count for logging
+    redisCount(redis, 'steam_api_backfill');
+    return true;
+  } catch(e) {
+    console.log(e);
+    return false;
+  }
+}
+
+async function tryFillGcData(matchId: string, pgroup: PGroup): Promise<boolean> {
+  try {
+    // TODO (howard) maybe turn this on after we get some data on how often it's called
+    // await getGcData({ match_id: Number(matchId), pgroup, noRetry: true });
+    redisCount(redis, 'steam_gc_backfill');
+    return false;
+  } catch(e) {
+    console.log(e);
+    return false;
+  }
+}
+
+/**
+ * Return API data by reading it without fetching.
+ * @param matchId
+ * @returns
+ */
+export async function readApiData(
+  matchId: number,
+): Promise<ApiMatch | undefined> {
+  const result = await cassandra.execute(
+    'SELECT api FROM match_blobs WHERE match_id = ?',
+    [matchId],
+    { prepare: true, fetchSize: 1, autoPage: true },
+  );
+  const row = result.rows[0];
+  const data = row?.api ? (JSON.parse(row.api) as ApiMatch) : undefined;
+  if (!data) {
+    return;
+  }
+  return data;
+}
+
+/**
+ * Return GC data by reading it without fetching.
+ * @param matchId
+ * @returns
+ */
+export async function readGcData(
+  matchId: number,
+): Promise<GcMatch | undefined> {
+  const result = await cassandra.execute(
+    'SELECT gcdata FROM match_blobs WHERE match_id = ?',
+    [matchId],
+    { prepare: true, fetchSize: 1, autoPage: true },
+  );
+  const row = result.rows[0];
+  const gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
+  if (!gcData) {
+    return;
+  }
+  const { match_id, cluster, replay_salt } = gcData;
+  if (!match_id || !cluster || !replay_salt) {
+    return;
+  }
+  return gcData;
+}
+
+/**
+ * Return parsed data by reading from the archive.
+ * @param matchId
+ * @returns
+ */
+export async function readArchivedMatch(
+  matchId: string,
+): Promise<ParsedMatch | undefined> {
+  try {
+    if (!config.ENABLE_MATCH_ARCHIVE) {
+      return;
+    }
+    // Check if the parsed data is archived
+    // Most matches won't be in the archive so it's more efficient not to always try
+    const isArchived = Boolean(
+      (
+        await db.raw(
+          'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
+          [matchId],
+        )
+      ).rows[0],
+    );
+    if (!isArchived) {
+      return;
+    }
     const blob = await matchArchive.archiveGet(matchId.toString());
     const result: ParsedMatch | null = blob
       ? JSON.parse(blob.toString())
@@ -1613,5 +1727,5 @@ export async function getArchivedMatch(
   } catch (e) {
     console.error(e);
   }
-  return null;
+  return;
 }

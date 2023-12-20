@@ -1,6 +1,6 @@
 import archiveImport from '../store/archive.js';
 import {
-  getArchivedMatch,
+  readArchivedMatch,
   getMatchDataFromCassandra,
   getPlayerMatchData,
 } from '../store/queries.js';
@@ -19,12 +19,12 @@ const putRes = await archive.archivePut(match.match_id?.toString() ?? '', blob);
 console.log(putRes);
 
 // Read it back
-const readBack = await getArchivedMatch(match.match_id?.toString() ?? '');
+const readBack = await readArchivedMatch(match.match_id?.toString() ?? '');
 
 console.log(JSON.stringify(match).length, JSON.stringify(readBack).length);
 
 // Verify we get back null for invalid match id
-const nullMatch = await getArchivedMatch('123');
+const nullMatch = await readArchivedMatch('123');
 console.log(nullMatch);
 
 // Confirm API returns the same data whether we used the archive or not

@@ -43,9 +43,9 @@ async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
     .from('subscriber')
     .where({ account_id: p.account_id || null });
   p.is_subscriber = Boolean(subscriber?.status);
-  return Promise.resolve(p);
+  return p;
 }
-async function prodataInfo(matchId: string) {
+async function prodataInfo(matchId: string): Promise<AnyDict> {
   const result = await db
     .first([
       'radiant_team_id',
@@ -61,7 +61,7 @@ async function prodataInfo(matchId: string) {
       match_id: matchId,
     });
   if (!result) {
-    return Promise.resolve({});
+    return {};
   }
   const leaguePromise = db.first().from('leagues').where({
     leagueid: result.leagueid,
@@ -77,47 +77,29 @@ async function prodataInfo(matchId: string) {
     radiantTeamPromise,
     direTeamPromise,
   ]);
-  return Promise.resolve({
+  const final: AnyDict = {
     league,
     radiant_team: radiantTeam,
     dire_team: direTeam,
     series_id: result.series_id,
     series_type: result.series_type,
-    cluster: result.cluster,
-    replay_salt: result.replay_salt,
-  });
+  };
+  if (result.cluster) {
+    final.cluster = result.cluster;
+  }
+  if (result.replay_salt) {
+    final.replay_salt = result.replay_salt;
+  }
+  return final;
 }
 
-async function backfill(matchId: string) {
-  const matchObj = {
-    match_id: Number(matchId),
-  };
-  const body = await getSteamAPIData(generateJob('api_details', matchObj).url);
-  // match details response
-  const match = body.result;
-  await insertMatch(match, {
-    type: 'api',
-    skipParse: true,
-  });
-  // Count for logging
-  redisCount(redis, 'steam_api_backfill');
-}
 async function doBuildMatch(matchId: string, options: { meta?: string }) {
   if (!matchId || !Number.isInteger(Number(matchId)) || Number(matchId) <= 0) {
     return null;
   }
+  // Attempt to fetch match and backfill what's needed
   let match: Partial<ParsedMatch> | null = await getMatchDataFromBlob(matchId, true);
   if (!match) {
-    // if we don't have it, try backfilling it from Steam API and then check again
-    // Once backfilled it'll be in blobstore
-    await backfill(matchId);
-    match = await getMatchDataFromBlob(matchId, true);
-    if (match) {
-      match.od_backfill = true;
-    }
-  }
-  if (!match) {
-    // Still don't have it
     return null;
   }
   redisCount(redis, 'build_match');
@@ -203,7 +185,7 @@ async function doBuildMatch(matchId: string, options: { meta?: string }) {
     ...matchResult,
     players: playersWithBenchmarks,
   };
-  return Promise.resolve(matchResult);
+  return matchResult;
 }
 
 async function buildMatch(matchId: string, options: { meta?: string }) {

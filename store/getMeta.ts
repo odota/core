@@ -5,7 +5,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import redis from './redis';
 import { buildReplayUrl, redisCount } from '../util/utility';
-import { tryReadGcData } from './getGcData';
+import { readGcData } from './queries';
 const execPromise = promisify(exec);
 
 // Get a sample meta file
@@ -19,7 +19,7 @@ const Message = builder.lookupType('CDOTAMatchMetadataFile');
 
 export async function getMeta(matchId: string) {
   // Check if we have the info to construct url
-  const gcdata = await tryReadGcData(Number(matchId));
+  const gcdata = await readGcData(Number(matchId));
   if (!gcdata) {
     return null;
   }
