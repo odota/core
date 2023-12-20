@@ -4,12 +4,10 @@ import redis from '../store/redis';
 import { ApiMatch, insertMatch } from '../store/insert';
 import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 
-const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;
 
 async function scanApi(seqNum: number) {
   let nextSeqNum = seqNum;
-  let delayNextRequest = false;
   while (true) {
     const container = generateJob('api_sequence', {
       start_at_match_seq_num: nextSeqNum,
@@ -18,7 +16,6 @@ async function scanApi(seqNum: number) {
     try {
       data = await getSteamAPIData({
         url: container.url,
-        delay,
       });
     } catch (err: any) {
       // unretryable steam error
@@ -40,13 +37,10 @@ async function scanApi(seqNum: number) {
       nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
       console.log('next_seq_num: %s', nextSeqNum);
     }
-    if (resp.length < PAGE_SIZE) {
-      delayNextRequest = true;
-    }
     await redis.set('match_seq_num', nextSeqNum);
     // If not a full page, delay the next iteration
     await new Promise((resolve) =>
-      setTimeout(resolve, delayNextRequest ? 3000 : 0),
+      setTimeout(resolve, resp.length < PAGE_SIZE ? 6000 : 1500),
     );
   }
 }

@@ -173,11 +173,9 @@ type GetDataOptions = {
 };
 function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
   let u: string;
-  let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
   if (typeof url === 'object' && url && url.url) {
     u = url.url;
-    delay = url.delay || delay;
     timeout = url.timeout || timeout;
   } else {
     u = url as string;
@@ -198,78 +196,78 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
   }
   const target = urllib.format(parse);
   console.log('%s - getData: %s', new Date(), target);
-  return setTimeout(() => {
-    request(
-      {
-        url: target,
-        json: !isRaw,
-        gzip: true,
-        timeout,
-      },
-      (err, res, body) => {
+  request(
+    {
+      url: target,
+      json: !isRaw,
+      gzip: true,
+      timeout,
+    },
+    (err, res, body) => {
+      if (
+        err ||
+        !res ||
+        res.statusCode !== 200 ||
+        !body ||
+        (steamApi &&
+          !isRaw &&
+          !body.result &&
+          !body.response &&
+          !body.player_infos &&
+          !body.teams &&
+          !body.game_list &&
+          !body.match &&
+          !body.data)
+      ) {
+        // invalid response
+        if (isNoRetry) {
+          return cb(err || 'invalid response', body);
+        }
+        console.error(
+          '[INVALID] status: %s, retrying: %s',
+          res ? res.statusCode : '',
+          target,
+        );
+        const backoff = res.statusCode === 429 ? 3000 : 1500;
+        return setTimeout(() => {
+          getSteamAPIDataCallback(url, cb);
+        }, backoff);
+      }
+      if (body.result) {
+        // steam api usually returns data with body.result, getplayersummaries has body.response
         if (
-          err ||
-          !res ||
-          res.statusCode !== 200 ||
-          !body ||
-          (steamApi &&
-            !isRaw &&
-            !body.result &&
-            !body.response &&
-            !body.player_infos &&
-            !body.teams &&
-            !body.game_list &&
-            !body.match &&
-            !body.data)
+          body.result.status === 15 ||
+          body.result.error ===
+            'Practice matches are not available via GetMatchDetails' ||
+          body.result.error === 'No Match ID specified' ||
+          body.result.error === 'Match ID not found' ||
+          (body.result.status === 2 &&
+            body.result.statusDetail === 'Error retrieving match data.' &&
+            Math.random() < 0.1)
         ) {
-          // invalid response
+          // private match history or attempting to get practice match/invalid id, don't retry
+          // non-retryable
+          return cb(body);
+        }
+        if (body.result.error || body.result.status === 2) {
+          // valid response, but invalid data, retry
           if (isNoRetry) {
-            return cb(err || 'invalid response', body);
+            return cb(err || 'invalid data', body);
           }
           console.error(
-            '[INVALID] status: %s, retrying: %s',
-            res ? res.statusCode : '',
+            'invalid data, retrying: %s, %s',
             target,
+            JSON.stringify(body),
           );
-          // var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
-          const backoff = 0;
+          const backoff = 1500;
           return setTimeout(() => {
             getSteamAPIDataCallback(url, cb);
           }, backoff);
         }
-        if (body.result) {
-          // steam api usually returns data with body.result, getplayersummaries has body.response
-          if (
-            body.result.status === 15 ||
-            body.result.error ===
-              'Practice matches are not available via GetMatchDetails' ||
-            body.result.error === 'No Match ID specified' ||
-            body.result.error === 'Match ID not found' ||
-            (body.result.status === 2 &&
-              body.result.statusDetail === 'Error retrieving match data.' &&
-              Math.random() < 0.1)
-          ) {
-            // private match history or attempting to get practice match/invalid id, don't retry
-            // non-retryable
-            return cb(body);
-          }
-          if (body.result.error || body.result.status === 2) {
-            // valid response, but invalid data, retry
-            if (isNoRetry) {
-              return cb(err || 'invalid data', body);
-            }
-            console.error(
-              'invalid data, retrying: %s, %s',
-              target,
-              JSON.stringify(body),
-            );
-            return getSteamAPIDataCallback(url, cb);
-          }
-        }
-        return cb(null, body);
-      },
-    );
-  }, delay);
+      }
+      return cb(null, body);
+    },
+  );
 }
 export const getSteamAPIData = promisify(getSteamAPIDataCallback);
 /**

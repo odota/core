@@ -20,7 +20,6 @@ async function getPage(url: string, leagueid: number) {
     const { url } = job;
     const body: any = await getSteamAPIData({
       url,
-      delay: 200,
     });
     if (body.result) {
       const match = body.result;
