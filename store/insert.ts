@@ -183,6 +183,8 @@ export async function insertPlayerCache(
         playerMatch.heroes = pgroup;
       }
       computeMatchData(playerMatch as ParsedPlayerMatch);
+      delete playerMatch.patch;
+      delete playerMatch.region;
       const cleanedMatch = await cleanRowCassandra(
         cassandra,
         'player_caches',
