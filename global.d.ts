@@ -41,7 +41,6 @@ type AnyDict = { [key: string]: any };
 type NumberDict = { [key: string]: number };
 type BooleanDict = { [key: string]: boolean };
 type ErrorCb = (err?: Error | null | undefined | string | unknown, result?: any) => void;
-type NonUnknownErrorCb = (err?: Error | null | undefined, result?: any) => void;
 
 type Match = {
   match_id: number;
