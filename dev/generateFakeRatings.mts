@@ -1,5 +1,4 @@
-import dbImport from '../store/db.js';
-const db = dbImport.default;
+const { db }  = await import('../store/db.js');
 
 function randByCentralLimitTheorem() {
   let v = 0;

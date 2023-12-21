@@ -1,8 +1,7 @@
 // Loop through matches table
 // Fill in the cluster and replay_salt columns
 
-import dbImport from '../store/db.js';
-const db = dbImport.default;
+const { db } = await import('../store/db.js');
 
 const matches = (await db.raw(`select match_id from matches`)).rows;
 for (let i = 0; i < matches.length; i++) {

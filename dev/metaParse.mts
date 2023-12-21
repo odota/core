@@ -1,6 +1,5 @@
 import fs from 'fs';
-import meta from '../store/getMeta.js';
-const { getMetaFromUrl } = meta;
+const { getMetaFromUrl } = await import('../store/getMeta.js');
 
 const message = await getMetaFromUrl(
   'http://replay117.valve.net/570/7468445438_1951738768.meta.bz2',

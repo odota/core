@@ -786,9 +786,10 @@ async function initScylla() {
 
 async function startServices() {
   console.log('starting services');
-  app = (await import('../svc/web.ts' + '')).default as unknown as Express;
-  await import('../svc/parser.ts' + '');
-  await import('../svc/mmr.ts' + '');
+  const { app: webApp } = await import('../svc/web.js');
+  app = webApp;
+  await import('../svc/parser.js');
+  await import('../svc/mmr.js');
 }
 
 async function loadMatches() {

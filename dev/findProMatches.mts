@@ -1,8 +1,6 @@
-import { insertMatch } from '../store/insert.js';
-import dbImport from '../store/db.js';
-import { generateJob, getSteamAPIData } from '../util/utility.js';
-
-const db = dbImport.default;
+const { insertMatch } = await import('../store/insert.js');
+const { db } = await import('../store/db.js');
+const { generateJob, getSteamAPIData } = await import('../util/utility.js');
 
 async function getPage(url: string, leagueid: number) {
   const data: any = await getSteamAPIData(url);

@@ -1,7 +1,5 @@
-import dbImport from '../store/db.js';
-import { upsert } from '../store/insert.js';
-
-const db = dbImport.default;
+const { db } = await import('../store/db.js');
+const { upsert } = await import('../store/insert.js');
 
 const matches = await db
   .select(['radiant_team_id', 'dire_team_id', 'match_id'])

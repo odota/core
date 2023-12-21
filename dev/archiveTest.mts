@@ -1,10 +1,9 @@
-import archiveImport from '../store/archive.js';
-import { readArchivedMatch } from '../store/archiveHelpers.js';
-import {
+const { Archive } = await import('../store/archive.js');
+const { readArchivedMatch } = await import('../store/archiveHelpers.js');
+const {
   getMatchDataFromCassandra,
   getPlayerMatchData,
-} from '../store/queries.js';
-const { Archive } = archiveImport;
+} = await import('../store/queries.js');
 
 // Read some match data
 const match = {
