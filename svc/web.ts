@@ -30,7 +30,7 @@ const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
-const app = express();
+export const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
 const sessOptions = {
@@ -482,4 +482,3 @@ process.on('uncaughtException', function (err) {
   console.error(err);
   process.exit(1);
 });
-export default app;
