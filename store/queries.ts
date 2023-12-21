@@ -1248,8 +1248,11 @@ export async function doArchiveFromLegacy(matchId: string) {
   }
   const playerMatches = await getPlayerMatchData(matchId);
   if (!playerMatches.length) {
-    // We couldn't find players for this match so just skip it
-    console.log('no players for match:', matchId);
+    // We couldn't find players for this match, some data was corrupted and we only have match level parsed data
+    console.log('no players for match, deleting:', matchId);
+    // Just delete it from postgres and cassandra
+    await db.raw('DELETE from parsed_matches WHERE match_id = ?', [Number(matchId)]);
+    await deleteFromStore(matchId);
     return;
   }
 
