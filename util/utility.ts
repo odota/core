@@ -2,7 +2,6 @@ import constants from 'dotaconstants';
 import request from 'request';
 import Long from 'long';
 import urllib from 'url';
-import uuid from 'uuid';
 import moment from 'moment';
 import crypto from 'crypto';
 import laneMappings from './laneMappings';
