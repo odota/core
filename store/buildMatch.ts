@@ -124,7 +124,7 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,
   });
-  const cosmeticsPromise = 'cosmetics' in match ? Promise.all(
+  const cosmeticsPromise = ('cosmetics' in match && match.cosmetics) ? Promise.all(
     Object.keys(match.cosmetics).map((itemId) =>
       db.first().from('cosmetics').where({
         item_id: itemId,
@@ -158,7 +158,7 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
           (c) =>
             match &&
             'cosmetics' in match &&
-            match.cosmetics[c.item_id] === p.player_slot &&
+            match.cosmetics?.[c.item_id] === p.player_slot &&
             (!c.used_by_heroes || c.used_by_heroes === hero.name),
         );
       return {

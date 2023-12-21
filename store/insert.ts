@@ -274,7 +274,7 @@ export async function insertMatch(
       );
     }
     async function upsertPicksBans() {
-      if ('picks_bans' in match) {
+      if ('picks_bans' in match && match.picks_bans) {
         await Promise.all(
           match.picks_bans.map((p) => {
             // order is a reserved keyword in postgres
@@ -292,7 +292,7 @@ export async function insertMatch(
       }
     }
     async function upsertMatchPatch() {
-      if ('start_time' in match) {
+      if ('start_time' in match && match.start_time) {
         await upsert(
           trx,
           'match_patch',
@@ -308,14 +308,14 @@ export async function insertMatch(
     }
     async function upsertTeamMatch() {
       const arr = [];
-      if ('radiant_team_id' in match) {
+      if ('radiant_team_id' in match && match.radiant_team_id) {
         arr.push({
           team_id: match.radiant_team_id,
           match_id: match.match_id,
           radiant: true,
         });
       }
-      if ('dire_team_id' in match) {
+      if ('dire_team_id' in match && match.dire_team_id) {
         arr.push({
           team_id: match.dire_team_id,
           match_id: match.match_id,
