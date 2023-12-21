@@ -10,7 +10,7 @@ import express from 'express';
 import { getOrFetchGcData } from '../store/getGcData';
 import config from '../config.js';
 import queue from '../store/queue';
-import { ApiMatch } from '../store/insert';
+import type { ApiMatch } from '../store/pgroup';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';

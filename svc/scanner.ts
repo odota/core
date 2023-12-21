@@ -1,7 +1,8 @@
 // Fetches new matches from the Steam API using the sequential endpoint
 import config from '../config.js';
 import redis from '../store/redis';
-import { ApiMatch, insertMatch } from '../store/insert';
+import { insertMatch } from '../store/insert';
+import type { ApiMatch } from '../store/pgroup';
 import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 
 const PAGE_SIZE = 100;

@@ -21,9 +21,10 @@ import {
   PeersCount,
   redisCount,
 } from '../util/utility';
-import { ApiMatch, cassandraColumnInfo, cleanRowCassandra } from './insert';
+import { cassandraColumnInfo, cleanRowCassandra } from './insert';
 import { getArchivedPlayerMatches, readArchivedMatch } from './archiveHelpers';
-import { tryFetchApiData } from './getApiData.js';
+import { tryFetchApiData } from './getApiData';
+import type { ApiMatch } from './pgroup';
 
 /**
  * Benchmarks a match against stored data in Redis

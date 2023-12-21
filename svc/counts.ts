@@ -124,7 +124,7 @@ async function updateRecords(match: Match) {
   }
 }
 async function updateLastPlayed(match: Match) {
-  const filteredPlayers = (match.players || []).filter(
+  const filteredPlayers = match.players.filter(
     (player) =>
       player.account_id && player.account_id !== getAnonymousAccountId(),
   );

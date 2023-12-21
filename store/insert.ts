@@ -22,10 +22,8 @@ import {
   getPatchIndex,
   redisCount,
 } from '../util/utility';
-import apiMatch from '../test/data/details_api.json';
-import apiMatchPro from '../test/data/details_api_pro.json';
 import { getMatchRankTier } from './queries';
-import { getPGroup } from './pgroup';
+import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 
 const columnInfo: AnyDict = {};
 export const cassandraColumnInfo: AnyDict = {};
@@ -223,11 +221,6 @@ function createMatchCopy(match: any): Match {
   return copy;
 }
 
-export type ApiMatch = (typeof apiMatch)['result'];
-type ApiMatchPro = (typeof apiMatchPro)['result'];
-type ApiPlayer = ApiMatch['players'][number] & {
-  ability_upgrades_arr?: number[];
-};
 type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;
 
 /**
@@ -243,12 +236,12 @@ export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions,
 ) {
-  async function upsertMatchPostgres(match: ApiMatchPro | ParsedMatch) {
-    // Insert the pro match data: We do this if api or parser
+  async function upsertMatchPostgres(match: InsertMatchInput) {
     if (options.type !== 'api' && options.type !== 'parsed') {
+      // Only if API or parse data
       return;
     }
-    if (options.type === 'api' && !isProMatch(match as Match)) {
+    if (options.type === 'api' && !isProMatch(match as ApiMatch)) {
       // Check whether we care about this match for pro purposes
       // We need the basic match data to run the check, so only do it if type is api
       return;
@@ -281,23 +274,25 @@ export async function insertMatch(
       );
     }
     async function upsertPicksBans() {
-      await Promise.all(
-        (match.picks_bans || []).map((p) => {
-          // order is a reserved keyword in postgres
-          return upsert(
-            trx,
-            'picks_bans',
-            { ...p, ord: p.order, match_id: match.match_id },
-            {
-              match_id: 1,
-              ord: 1,
-            },
-          );
-        }),
-      );
+      if ('picks_bans' in match) {
+        await Promise.all(
+          match.picks_bans.map((p) => {
+            // order is a reserved keyword in postgres
+            return upsert(
+              trx,
+              'picks_bans',
+              { ...p, ord: p.order, match_id: match.match_id },
+              {
+                match_id: 1,
+                ord: 1,
+              },
+            );
+          }),
+        );
+      }
     }
     async function upsertMatchPatch() {
-      if (match.start_time) {
+      if ('start_time' in match) {
         await upsert(
           trx,
           'match_patch',
@@ -313,14 +308,14 @@ export async function insertMatch(
     }
     async function upsertTeamMatch() {
       const arr = [];
-      if (match.radiant_team_id) {
+      if ('radiant_team_id' in match) {
         arr.push({
           team_id: match.radiant_team_id,
           match_id: match.match_id,
           radiant: true,
         });
       }
-      if (match.dire_team_id) {
+      if ('dire_team_id' in match) {
         arr.push({
           team_id: match.dire_team_id,
           match_id: match.match_id,
@@ -340,8 +335,8 @@ export async function insertMatch(
       if (
         options.origin === 'scanner' &&
         options.type === 'api' &&
-        match.radiant_team_id &&
-        match.dire_team_id &&
+        'radiant_team_id' in match &&
+        'dire_team_id' in match &&
         match.radiant_win !== undefined
       ) {
         const team1 = match.radiant_team_id;
@@ -506,6 +501,7 @@ export async function insertMatch(
   }
   async function telemetry(match: InsertMatchInput) {
     // Publish to log stream
+    const endedAt = options.endedAt ?? (('start_time' in match && 'duration' in match) ? (match.start_time + match.duration) : 0);
     const name = process.env.name || process.env.ROLE || process.argv[1];
     const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
@@ -533,21 +529,22 @@ export async function insertMatch(
     });
     await Promise.all(arr.map((val) => clearCache(val)));
   }
-  async function decideCounts(match: ApiMatch) {
+  async function decideCounts(match: InsertMatchInput) {
     // We only do this if fresh match
     if (options.origin === 'scanner' && options.type === 'api') {
       await queue.addJob({
         name: 'countsQueue',
-        data: match as unknown as Match,
+        data: match as ApiMatch,
       });
     }
   }
-  async function decideMmr(match: ApiMatch) {
+  async function decideMmr(match: InsertMatchInput) {
     // We only do this if fresh match and ranked
-    const arr = match.players.filter((p) => {
-      return (
+    const arr = match.players.filter<ApiPlayer>((p): p is ApiPlayer => {
+      return Boolean(
         options.origin === 'scanner' &&
         options.type === 'api' &&
+        'lobby_type' in match &&
         match.lobby_type === 7 &&
         p.account_id &&
         p.account_id !== getAnonymousAccountId() &&
@@ -560,7 +557,7 @@ export async function insertMatch(
           name: 'mmrQueue',
           data: {
             match_id: match.match_id,
-            account_id: p.account_id as number,
+            account_id: p.account_id,
           },
         }),
       ),
@@ -589,12 +586,13 @@ export async function insertMatch(
       ),
     );
   }
-  async function decideGcData(match: ApiMatch) {
+  async function decideGcData(match: InsertMatchInput) {
     // We only do this for fresh matches
     // Don't get replay URLs for event matches
     if (
       options.origin === 'scanner' &&
       options.type === 'api' &&
+      'game_mode' in match &&
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
@@ -630,11 +628,11 @@ export async function insertMatch(
       );
     }
   }
-  async function decideReplayParse(match: ApiMatch) {
+  async function decideReplayParse(match: InsertMatchInput) {
     if (options.skipParse) {
       return null;
     }
-    if (match.game_mode === 19) {
+    if ('game_mode' in match && match.game_mode === 19) {
       // don't parse event matches unless forced
       return null;
     }
@@ -655,7 +653,7 @@ export async function insertMatch(
     }
     redisCount(redis, 'auto_parse');
     let priority = undefined;
-    if (match.leagueid) {
+    if ('leagueid' in match) {
       priority = -1;
     }
     if (hasTrackedPlayer) {
@@ -701,12 +699,9 @@ export async function insertMatch(
   // Use the passed pgroup if gcdata or parsed, otherwise build it
   // Do this after removing anonymous account IDs
   const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
-  const endedAt =
-    options.endedAt ??
-    (match as ApiMatch).start_time + (match as ApiMatch).duration;
 
   let isProLeague = false;
-  if (match.leagueid) {
+  if ('leagueid' in match) {
       // Check if leagueid is premium/professional
       const result = match.leagueid
       ? await db.raw(
@@ -727,19 +722,19 @@ export async function insertMatch(
     }
   }
 
-  await upsertMatchPostgres(match as ApiMatchPro | ParsedMatch);
+  await upsertMatchPostgres(match);
   await upsertMatchCassandra(match);
   await updateCassandraPlayerCaches(match);
   await upsertMatchBlobs(match);
   await clearRedisMatch(match);
   await clearRedisPlayer(match);
   await telemetry(match);
-  await decideCounts(match as ApiMatch);
-  await decideMmr(match as ApiMatch);
+  await decideCounts(match);
+  await decideMmr(match);
   await decideProfile(match);
-  await decideGcData(match as ApiMatch);
+  await decideGcData(match);
   await decideScenarios(match);
   await postParsedMatch(match);
-  const parseJob = await decideReplayParse(match as ApiMatch);
+  const parseJob = await decideReplayParse(match);
   return parseJob;
 }

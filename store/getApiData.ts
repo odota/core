@@ -1,7 +1,8 @@
 import config from '../config';
 import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 import cassandra from './cassandra';
-import { ApiMatch, insertMatch } from './insert';
+import { insertMatch } from './insert';
+import type { ApiMatch } from './pgroup';
 import redis from './redis';
 
 /**

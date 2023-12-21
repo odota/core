@@ -68,7 +68,7 @@ type Match = {
   // Parsed match metadata from .meta file
   metadata?: any;
 
-  od_data: GetMatchDataMetadata | null;
+  od_data?: GetMatchDataMetadata | null;
 };
 
 type GetMatchDataMetadata = {
@@ -212,9 +212,6 @@ interface GcMatch {
   series_type: number;
   series_id: number;
   players: GcPlayer[];
-
-  // Not passed but we check for it in insertMatch
-  leagueid?: number;
 }
 
 interface GcPlayer {
@@ -231,6 +228,9 @@ interface ParserMatch {
   match_id: number;
   // Needed to determine whether to insert pro match data
   leagueid: number;
+  // Used for dust and apm calculation
+  start_time: number;
+  duration: number;
 
   // Parsed fields
   version: number;
@@ -290,7 +290,7 @@ type GcDataJob = {
   noRetry?: boolean;
 };
 
-type CountsJob = Match;
+type CountsJob = import('./store/pgroup').ApiMatch;
 type ScenariosJob = string;
 
 type ParseJob = {

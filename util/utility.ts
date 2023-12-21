@@ -9,6 +9,7 @@ import config from '../config.js';
 import contributors from '../CONTRIBUTORS.js';
 import { promisify } from 'util';
 import type { Redis } from 'ioredis';
+import type { ApiMatch } from '../store/pgroup';
 
 /**
  * Tokenizes an input string.
@@ -339,7 +340,7 @@ export function mode(array: number[]) {
 /**
  * Determines if a match is significant for aggregation purposes
  * */
-export function isSignificant(match: Match) {
+export function isSignificant(match: Match | ApiMatch) {
   return Boolean(
     constants.game_mode[match.game_mode] &&
       constants.game_mode[match.game_mode].balanced &&
@@ -355,7 +356,7 @@ export function isSignificant(match: Match) {
 /**
  * Determines if a match is a pro match
  * */
-export function isProMatch(match: Match) {
+export function isProMatch(match: ApiMatch) {
   return Boolean(
     isSignificant(match) &&
       match.leagueid &&
