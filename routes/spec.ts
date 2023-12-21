@@ -39,6 +39,7 @@ import {
   getTeamScenarios,
   getPlayerMatchesPromise,
   getItemTimings,
+  isSubscriber,
 } from '../store/queries';
 import { filterDeps } from '../util/filter';
 const { Client } = pg;
@@ -1501,6 +1502,17 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           if (req.query.api_key) {
             redisCount(redis, 'request_api_key');
           }
+          let priority = 1;
+          if (req.query.api_key) {
+            // Lower priority for high-volume API key requests
+            priority = 2;
+          }
+          // Give subscribers higher parse priority
+          if (req.user?.account_id) {
+            if (await isSubscriber(req.user.account_id)) {
+              priority = -3;
+            }
+          }
           const parseJob = await queue.addReliableJob(
             {
               name: 'parse',
@@ -1508,7 +1520,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             },
             {
               attempts: 1,
-              priority: req.query.api_key ? 2 : 1,
+              priority,
             },
           );
           return res.status(200).json({

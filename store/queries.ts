@@ -558,12 +558,8 @@ export async function getMetadata(req: Request) {
     banner: async () => redis.get('banner'),
     user: async () => req.user,
     isSubscriber: async () => {
-      if (req.user) {
-        const result: { rows: any[] } = await db.raw(
-          "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
-          [req.user.account_id],
-        );
-        return Boolean(result?.rows?.[0]);
+      if (req.user?.account_id) {
+        return isSubscriber(req.user.account_id);
       }
       return false;
     },
@@ -572,6 +568,14 @@ export async function getMetadata(req: Request) {
   return parallelPromise<{
     [P in keyof typeof obj]: Awaited<ReturnType<(typeof obj)[P]>>;
   }>(obj);
+}
+
+export async function isSubscriber(account_id: string) {
+  const result: { rows: any[] } = await db.raw(
+    "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
+    [account_id],
+  );
+  return Boolean(result.rows?.[0]);
 }
 
 export async function getMatchDataFromBlobWithMetadata(
