@@ -15,7 +15,7 @@ import { getPlayerMatchesPromise } from '../store/queries';
 import { insertMatch } from '../store/insert';
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of match details requests to send at once
-const parallelism = Math.min(10, apiKeys.length);
+const parallelism = Math.min(1, apiKeys.length);
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
@@ -133,4 +133,4 @@ async function processFullHistory(job: FullHistoryJob) {
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
-queue.runQueue('fhQueue', 10, processFullHistory);
+queue.runQueue('fhQueue', config.FULLHISTORY_PARALLELISM, processFullHistory);

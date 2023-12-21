@@ -6,7 +6,7 @@ require('dotenv').config();
 const defaults = {
   STEAM_API_KEY: '', // for API reqs, in worker
   STEAM_USER: '', // for getting replay salt/profile data, in retriever
-  STEAM_PASS: '',
+  STEAM_PASS: '', // for getting replay salt/profile data, in retriever
   ROLE: '', // for specifying the file that should be run when entry point is invoked
   GROUP: '', // for specifying the group of apps that should be run when entry point is invoked
   START_SEQ_NUM: '', // truthy: use sequence number stored in redis, else: use approximate value from live API
@@ -14,16 +14,15 @@ const defaults = {
   STEAM_ACCOUNT_DATA: '', // The URL to read Steam account data from
   NODE_ENV: 'development',
   PORT: '', // Default port to use by services often set by the system
-  FRONTEND_PORT: '5000',
-  RETRIEVER_PORT: '5100',
-  PARSER_PORT: '5200',
-  PROXY_PORT: '5300',
+  FRONTEND_PORT: '5000', // Port to run the webserver/API on
+  RETRIEVER_PORT: '5100', // Port to run the Steam GC retriever on
+  PARSER_PORT: '5200', // Port to run the parser service on. Note: This is the JS service that processes jobs, not the Java server that actually parses replays (PARSER_HOST)
+  PROXY_PORT: '5300', // Port to run the Steam API proxy on
   ROOT_URL: 'http://localhost:5000', // base url to redirect to after steam oauth login
   RETRIEVER_HOST: 'localhost:5100', // Comma separated list of retriever hosts (access to Dota 2 GC data)
   GCDATA_RETRIEVER_HOST: '', // Comma separated list of retriever hosts dedicated for gcdata job
-  PARSER_HOST: 'http://localhost:5600', // host of the parse server
+  PARSER_HOST: 'http://localhost:5600', // host of the Java parse server
   UI_HOST: '', // The host of the UI, target of /logout and /return
-  PROXY_URLS: '', // comma separated list of proxy urls to use
   STEAM_API_HOST: 'api.steampowered.com', // comma separated list of hosts to fetch Steam API data from
   POSTGRES_URL: 'postgresql://postgres:postgres@localhost/yasp', // connection string for PostgreSQL
   READONLY_POSTGRES_URL: 'postgresql://readonly:readonly@localhost/yasp', // readonly connection string for PostgreSQL
@@ -35,9 +34,10 @@ const defaults = {
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
   COOKIE_DOMAIN: '', // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
   UNTRACK_DAYS: 30, // The number of days a user is tracked for after every visit
-  GOAL: 5, // The cheese goal
   MMR_PARALLELISM: 1, // Number of simultaneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
+  FULLHISTORY_PARALLELISM: 1, // Number of simultaneous fullhistory (player refresh) jobs to process
+  GCDATA_PARALLELISM: 1, // Number of simultaneous GC match details requests to make (per retriever)
   BENCHMARK_RETENTION_MINUTES: 60, // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: 0, // percent of inserted matches to randomly queue for GC data
   SCANNER_PERCENT: 100, // percent of matches to insert from scanner
@@ -51,18 +51,14 @@ const defaults = {
   MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
   PLAYER_CACHE_SECONDS: 1800, // number of seconds to cache player aggregations
   SCANNER_PLAYER_PERCENT: 100, // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
-  ENABLE_RETRIEVER_ADVANCED_AUTH: '', // set to enable retriever two-factor and SteamGuard authentication,
   ENABLE_API_LIMIT: '', // if truthy, API calls after exceeding API_FREE_LIMIT are blocked
   API_FREE_LIMIT: 50000, // number of api requests per month before 429 is returned. If using an API key, calls over this are charged.
   API_BILLING_UNIT: 100, // how many calls is equivalent to a unit of calls e.g. 100 calls per $0.01.
   API_KEY_PER_MIN_LIMIT: 300, // Rate limit per minute if using an API key
   NO_API_KEY_PER_MIN_LIMIT: 60, // Rate limit per minute if not using an API key
   ADMIN_ACCOUNT_IDS: '', // Whitelisted, comma separated account IDs to access /admin* routes
-  BACKUP_RETRIEVER_PERCENT: 0, // percent of replay salts to fetch from backup data source
-  GCDATA_PARALLELISM: 1, // Number of simultaneous GC match details requests to make (per retriever)
   STRIPE_SECRET: 'rk_test_gRqwhv4xqv0a1olp8kk8fZ94', // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: 'plan_CgLthOgwrDgz2K', // plan id for stripe metering
-  ES_SEARCH_PERCENT: 0, // % of users to roll out elasticsearch to
   ENABLE_MATCH_ARCHIVE: '', // Allow reading/writing parsed match blobs to S3 storage
   MATCH_ARCHIVE_S3_KEY_ID: '', // S3-compatible key ID to archive parsed match blobs
   MATCH_ARCHIVE_S3_KEY_SECRET: '', // S3-compatible key secret to archive parsed match blobs
