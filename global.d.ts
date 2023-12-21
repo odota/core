@@ -212,6 +212,9 @@ interface GcMatch {
   series_type: number;
   series_id: number;
   players: GcPlayer[];
+
+  // Not passed but we check for it in insertMatch
+  leagueid?: number;
 }
 
 interface GcPlayer {
@@ -333,7 +336,7 @@ type ReliableQueueRow = {
   priority: number;
 };
 
-type ReliableQueueOptions = { attempts: number; priority?: number };
+type ReliableQueueOptions = { attempts?: number; priority?: number };
 
 type ProPlayer = {
   name: string;
@@ -343,17 +346,25 @@ type ProPlayer = {
 type DataType = 'api' | 'parsed' | 'gcdata' | 'meta';
 type DataOrigin = 'scanner';
 
-type InsertMatchOptions = {
-  type: DataType;
+type CommonInsertOptions = {
   origin?: DataOrigin;
-  skipCounts?: boolean;
-  forceParse?: boolean;
   skipParse?: boolean;
-  priority?: number;
-  attempts?: number;
   pgroup?: PGroup;
   endedAt?: number;
-};
+}
+
+type ApiInsertOptions = {
+  type: 'api'
+} & CommonInsertOptions;
+
+type NonApiInsertOptions = {
+  type: DataType;
+  // We can compute these if API, but otherwise required
+  pgroup: PGroup;
+  endedAt: number;
+} & CommonInsertOptions;
+
+type InsertMatchOptions = ApiInsertOptions | NonApiInsertOptions;
 
 type PathVerbSpec = {
   operationId: string;

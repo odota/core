@@ -253,16 +253,8 @@ export async function insertMatch(
       // We need the basic match data to run the check, so only do it if type is api
       return;
     }
-    // Check if leagueid is premium/professional
-    const result = match.leagueid
-      ? await db.raw(
-          `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-          [match.leagueid],
-        )
-      : null;
-    currentProMatch = result?.rows?.length > 0;
-    if (!currentProMatch) {
-      // Skip this if not a pro match
+    if (!isProLeague) {
+      // Skip if not in a pro league (premium or professional tier)
       return;
     }
     async function upsertMatch() {
@@ -543,9 +535,6 @@ export async function insertMatch(
   }
   async function decideCounts(match: ApiMatch) {
     // We only do this if fresh match
-    if (options.skipCounts) {
-      return;
-    }
     if (options.origin === 'scanner' && options.type === 'api') {
       await queue.addJob({
         name: 'countsQueue',
@@ -642,12 +631,15 @@ export async function insertMatch(
     }
   }
   async function decideReplayParse(match: ApiMatch) {
-    // Params like skipParse and forceParse determine whether we want to parse or not
-    // Otherwise this assumes a fresh match and checks to see if pro or tracked player
-    // Returns the created parse job (or null)
-    if (options.skipParse || match.game_mode === 19) {
-      // skipped or event games
-      // not parsing this match
+    if (options.skipParse) {
+      return null;
+    }
+    if (match.game_mode === 19) {
+      // don't parse event matches unless forced
+      return null;
+    }
+    // We only auto-parse if this is a fresh match from API
+    if (!(options.origin === 'scanner' && options.type === 'api')) {
       return null;
     }
     // determine if any player in the match is tracked
@@ -657,17 +649,20 @@ export async function insertMatch(
       }),
     );
     let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
-    const doParse = hasTrackedPlayer || currentProMatch || options.forceParse;
+    const doParse = hasTrackedPlayer || isProLeague;
     if (!doParse) {
       return null;
     }
-    let priority = options.priority;
+    redisCount(redis, 'auto_parse');
+    let priority = undefined;
     if (match.leagueid) {
       priority = -1;
     }
     if (hasTrackedPlayer) {
       priority = -2;
     }
+    // We might have to try several times since it might be too soon
+    let attempts = 30;
     const job = await queue.addReliableJob(
       {
         name: 'parse',
@@ -678,16 +673,11 @@ export async function insertMatch(
       },
       {
         priority,
-        attempts: options.attempts || 30,
+        attempts,
       },
     );
-    if (options.origin === 'scanner' && options.type === 'api') {
-      redisCount(redis, 'auto_parse');
-    }
     return job;
   }
-
-  let currentProMatch = false;
 
   // Make a copy of the match with some modifications
   const match: Readonly<InsertMatchInput> = {
@@ -714,6 +704,18 @@ export async function insertMatch(
   const endedAt =
     options.endedAt ??
     (match as ApiMatch).start_time + (match as ApiMatch).duration;
+
+  let isProLeague = false;
+  if (match.leagueid) {
+      // Check if leagueid is premium/professional
+      const result = match.leagueid
+      ? await db.raw(
+          `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+          [match.leagueid],
+        )
+      : null;
+    isProLeague = result?.rows?.length > 0;
+  }
 
   let average_rank: number | undefined = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate

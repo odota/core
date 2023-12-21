@@ -1,7 +1,6 @@
 // Issues reparse requests for all matches in postgres that aren't parsed
 import db from '../store/db';
-import { insertMatch } from '../store/insert';
-import { getSteamAPIData, generateJob } from '../util/utility';
+import queue from '../store/queue';
 
 async function start() {
   const matches = await db.raw(
@@ -11,17 +10,7 @@ async function start() {
   for (let i = 0; i < matches.rows.length; i++) {
     const input = matches.rows[i];
     // match id request, get data from API
-    const body: any = await getSteamAPIData(
-      generateJob('api_details', input).url,
-    );
-    // match details response
-    const match = body.result;
-    const job = await insertMatch(match, {
-      type: 'api',
-      attempts: 1,
-      priority: 1,
-      forceParse: true,
-    });
+    await queue.addReliableJob({ name: 'parse', data: { match_id: input.match_id }}, {});
   }
 }
 start();

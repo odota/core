@@ -42,7 +42,6 @@ async function saveApiData(matchId: number): Promise<void> {
   const match = body.result;
   await insertMatch(match, {
     type: 'api',
-    skipParse: true,
   });
 }
 

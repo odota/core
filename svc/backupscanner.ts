@@ -32,7 +32,6 @@ async function processMatch(matchId: number) {
   await insertMatch(match, {
     type: 'api',
     origin: 'scanner',
-    skipCounts: false,
   });
   // Set with long expiration (1 month) to avoid picking up the same matches again
   // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem

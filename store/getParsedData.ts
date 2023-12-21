@@ -72,7 +72,6 @@ async function saveParseData(
   };
   await insertMatch(result, {
     type: 'parsed',
-    skipParse: true,
     origin,
     pgroup,
     endedAt: start_time + duration,

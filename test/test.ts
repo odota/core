@@ -76,8 +76,8 @@ nock('http://api.steampowered.com')
   .reply(200, leaguesApi);
 nock(`http://${RETRIEVER_HOST}`)
   .get(/\?key=&account_id=.*/)
-  // fake mmr response up to 7 times for 7 non-anonymous players in test match
-  .times(7)
+  // fake mmr response up to 14 times for 7 non-anonymous players in test match inserted twice
+  .times(14)
   .reply(200, retrieverPlayer)
   // fake error to test handling
   .get('/?key=&match_id=1781962623')
@@ -148,13 +148,13 @@ describe(c.blue('[TEST] replay parse'), async function () {
   ];
   const matchData = tests[0];
   before(async () => {
-    // This match is not a pro match, but we set the leagueid to 5399 so we get data in postgres
+    // The test match is not a pro match, but we set the leagueid to 5399 so we get data in postgres
     // We could do this with a real pro match but we'd have to upload a new replay file
+    // This also means it should trigger auto-parse as a "pro match"
     console.log('inserting and parsing:', matchData.match_id);
     const job = await insertMatch(matchData, {
       type: 'api',
-      forceParse: true,
-      attempts: 1,
+      origin: 'scanner',
     });
     assert.ok(job);
     console.log('waiting for replay parse');
@@ -798,6 +798,7 @@ async function loadMatches() {
     const m = arr[i];
     await insertMatch(m, {
       type: 'api',
+      // Pretend to be scanner insert so we queue mmr/counts update etc.
       origin: 'scanner',
       skipParse: true,
     });

@@ -123,7 +123,6 @@ async function saveGcData(
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatch(matchToInsert, {
     type: 'gcdata',
-    skipParse: true,
     pgroup,
     endedAt: body.match.starttime + body.match.duration,
   });

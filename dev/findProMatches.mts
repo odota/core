@@ -23,7 +23,7 @@ async function getPage(url: string, leagueid: number) {
     });
     if (body.result) {
       const match = body.result;
-      await insertMatch(match, { type: 'api', skipParse: true });
+      await insertMatch(match, { type: 'api' });
     }
   }
   if (data.result.results_remaining) {

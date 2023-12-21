@@ -36,7 +36,7 @@ const defaults = {
   COOKIE_DOMAIN: '', // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
   UNTRACK_DAYS: 30, // The number of days a user is tracked for after every visit
   GOAL: 5, // The cheese goal
-  MMR_PARALLELISM: 10, // Number of simultaneous MMR requests to make (per retriever)
+  MMR_PARALLELISM: 1, // Number of simultaneous MMR requests to make (per retriever)
   PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
   BENCHMARK_RETENTION_MINUTES: 60, // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: 0, // percent of inserted matches to randomly queue for GC data
