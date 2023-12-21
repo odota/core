@@ -1,5 +1,5 @@
 // Fetches new matches from the Steam API using the sequential endpoint
-import config from '../config.js';
+import config from '../config';
 import redis from '../store/redis';
 import { insertMatch } from '../store/insert';
 import type { ApiMatch } from '../store/pgroup';

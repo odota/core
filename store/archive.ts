@@ -1,4 +1,4 @@
-import config from '../config.js';
+import config from '../config';
 import { gzipSync, gunzipSync } from 'zlib';
 import {
   S3Client,

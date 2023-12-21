@@ -3,7 +3,7 @@ import JSONbig from 'json-bigint';
 import axios from 'axios';
 import redis from '../store/redis';
 import db from '../store/db';
-import config from '../config.js';
+import config from '../config';
 import { invokeIntervalAsync } from '../util/utility';
 
 async function doLiveGames() {

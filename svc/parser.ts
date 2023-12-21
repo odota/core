@@ -8,7 +8,7 @@
 import os from 'os';
 import express from 'express';
 import { getOrFetchGcData } from '../store/getGcData';
-import config from '../config.js';
+import config from '../config';
 import queue from '../store/queue';
 import type { ApiMatch } from '../store/pgroup';
 import c from 'ansi-colors';

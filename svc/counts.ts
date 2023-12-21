@@ -5,7 +5,7 @@ import db from '../store/db';
 import { getMatchRankTier } from '../store/queries';
 import { upsertPlayer, bulkIndexPlayer, upsert } from '../store/insert';
 import queue from '../store/queue';
-import config from '../config.js';
+import config from '../config';
 import { benchmarks } from '../util/benchmarksUtil';
 import {
   isSignificant,

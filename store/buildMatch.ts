@@ -1,6 +1,6 @@
 import constants from 'dotaconstants';
 import fs from 'fs';
-import config from '../config.js';
+import config from '../config';
 import { computeMatchData } from '../util/compute';
 import { buildReplayUrl, isContributor, redisCount } from '../util/utility';
 import redis from './redis';

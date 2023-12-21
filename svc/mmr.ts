@@ -3,7 +3,7 @@ import queue from '../store/queue';
 import db from '../store/db';
 import redis from '../store/redis';
 import { insertPlayerRating, upsertPlayer } from '../store/insert';
-import config from '../config.js';
+import config from '../config';
 import {
   getRetrieverCount,
   redisCount,

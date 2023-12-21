@@ -14,7 +14,7 @@ import util from 'util';
 import url from 'url';
 import { Client } from 'cassandra-driver';
 import swaggerParser from '@apidevtools/swagger-parser';
-import config from '../config.js';
+import config from '../config';
 import detailsApi from './data/details_api.json';
 import summariesApi from './data/summaries_api.json';
 import historyApi from './data/history_api.json';
@@ -30,7 +30,7 @@ import buildMatch from '../store/buildMatch';
 import { es } from '../store/elasticsearch';
 import redis from '../store/redis';
 import db from '../store/db';
-import cassandra from '../store/cassandra.js';
+import cassandra from '../store/cassandra';
 import c from 'ansi-colors';
 
 const { Pool } = pg;

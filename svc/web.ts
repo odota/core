@@ -19,7 +19,7 @@ import api from '../routes/api';
 import { upsertPlayer } from '../store/insert';
 import db from '../store/db';
 import redis from '../store/redis';
-import config from '../config.js';
+import config from '../config';
 import {
   getEndOfMonth,
   getStartOfBlockMinutes,

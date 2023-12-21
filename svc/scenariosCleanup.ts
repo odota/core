@@ -1,6 +1,6 @@
 // Cleans up old data from the database (originally used for scenarios but now also does other cleanup)
 import db from '../store/db';
-import config from '../config.js';
+import config from '../config';
 import { epochWeek, invokeIntervalAsync } from '../util/utility';
 
 async function scenariosCleanup() {

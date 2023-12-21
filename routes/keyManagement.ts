@@ -6,7 +6,7 @@ import async from 'async';
 import stripeLib from 'stripe';
 import db from '../store/db';
 import redis from '../store/redis';
-import config from '../config.js';
+import config from '../config';
 import { redisCount } from '../util/utility';
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);

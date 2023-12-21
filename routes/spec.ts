@@ -1,7 +1,7 @@
 import constants from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
-import config from '../config.js';
+import config from '../config';
 import queue from '../store/queue';
 import { search } from '../store/search';
 import { searchES } from '../store/searchES';

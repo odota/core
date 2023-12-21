@@ -2,7 +2,7 @@ import moment from 'moment';
 import constants from 'dotaconstants';
 import util from 'util';
 import fs from 'fs';
-import config from '../config.js';
+import config from '../config';
 import queue from './queue';
 import { computeMatchData } from '../util/compute';
 import db from './db';

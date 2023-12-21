@@ -1,6 +1,6 @@
 // Syncs the list of subscribers from Stripe to the database
 import db from '../store/db';
-import config from '../config.js';
+import config from '../config';
 import stripeLib from 'stripe';
 import { invokeIntervalAsync } from '../util/utility';
 

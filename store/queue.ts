@@ -2,7 +2,7 @@ import moment from 'moment';
 import redis from './redis';
 import db from './db';
 import { Redis } from 'ioredis';
-import config from '../config.js';
+import config from '../config';
 
 async function runQueue(
   queueName: QueueName,

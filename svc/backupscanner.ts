@@ -2,7 +2,7 @@
 // Works by repeatedly checking match histories for players
 import redis from '../store/redis';
 import { insertMatch } from '../store/insert';
-import config from '../config.js';
+import config from '../config';
 import {
   generateJob,
   getSteamAPIData,

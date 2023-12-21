@@ -4,7 +4,7 @@ import moment from 'moment';
 import stripeLib from 'stripe';
 import redis from '../store/redis';
 import db from '../store/db';
-import config from '../config.js';
+import config from '../config';
 import type { knex } from 'knex';
 import { invokeInterval } from '../util/utility';
 

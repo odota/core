@@ -2,7 +2,7 @@
 // The parser will also request gcdata if needed
 import { getOrFetchGcData } from '../store/getGcData';
 import queue from '../store/queue';
-import config from '../config.js';
+import config from '../config';
 import { getRetrieverCount } from '../util/utility';
 
 async function processGcData(job: GcDataJob) {

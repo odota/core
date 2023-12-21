@@ -1,5 +1,5 @@
 import redis from './redis';
-import config from '../config.js';
+import config from '../config';
 import type { Response } from 'express';
 
 export const getKeys = () => ['wl', 'heroes', 'peers', 'counts'];

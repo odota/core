@@ -1,6 +1,6 @@
 import constants from 'dotaconstants';
 import util from 'util';
-import config from '../config.js';
+import config from '../config';
 import su from '../util/scenariosUtil';
 import { filterMatches } from '../util/filter';
 import db from './db';

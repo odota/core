@@ -1,5 +1,5 @@
 import moment from 'moment';
-import config from '../config.js';
+import config from '../config';
 import db from './db';
 import redis from './redis';
 import cassandra from './cassandra';

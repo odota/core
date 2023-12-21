@@ -1,7 +1,7 @@
 // Processes a queue of full history/refresh requests for players
 import urllib from 'url';
 import { promisify } from 'util';
-import config from '../config.js';
+import config from '../config';
 import {
   redisCount,
   getSteamAPIData,
