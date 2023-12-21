@@ -23,11 +23,11 @@ async function start() {
       //@ts-ignore
       const randomBigint = BigInt.asIntN(64, genRandomNumber(8, 10));
       const result = await cassandra.execute(
-        'select match_id, version, token(match_id) from matches where token(match_id) >= ? limit 500 ALLOW FILTERING;',
+        'select match_id, version, token(match_id) from matches where token(match_id) >= ? limit 100 ALLOW FILTERING;',
         [randomBigint.toString()],
         {
           prepare: true,
-          fetchSize: 500,
+          fetchSize: 100,
           autoPage: true,
         }
       );
