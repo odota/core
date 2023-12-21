@@ -11,7 +11,7 @@ import {
 } from './queries';
 import { getMeta } from './getMeta';
 
-async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
+async function extendPlayerData(player: Player | ParsedPlayer, match: Match | ParsedMatch) {
   // NOTE: This adds match specific properties into the player object, which leads to some unnecessary duplication in the output
   const p: Partial<ParsedPlayerMatch> = {
     ...player,
@@ -92,7 +92,7 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
   }
   // Attempt to fetch match and backfill what's needed
   let [match, odData]: [
-    Partial<ParsedMatch> | null,
+    Match | ParsedMatch | null,
     GetMatchDataMetadata | null,
   ] = await getMatchDataFromBlobWithMetadata(matchId, true);
   if (!match) {
@@ -100,7 +100,7 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
   }
   match.od_data = odData;
   redisCount(redis, 'build_match');
-  let playersMatchData: ParsedPlayer[] = match.players!;
+  let playersMatchData: (Player | ParsedPlayer)[] = match.players;
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(
     playersMatchData.map((r) =>
@@ -124,13 +124,13 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,
   });
-  const cosmeticsPromise = Promise.all(
-    Object.keys(match.cosmetics || {}).map((itemId) =>
+  const cosmeticsPromise = 'cosmetics' in match ? Promise.all(
+    Object.keys(match.cosmetics).map((itemId) =>
       db.first().from('cosmetics').where({
         item_id: itemId,
       }),
     ),
-  );
+  ) : Promise.resolve(null);
   const prodataPromise = prodataInfo(matchId);
   const metadataPromise = Boolean(options.meta)
     ? getMeta(Number(matchId))
@@ -156,7 +156,9 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
         .filter(Boolean)
         .filter(
           (c) =>
-            match?.cosmetics[c.item_id] === p.player_slot &&
+            match &&
+            'cosmetics' in match &&
+            match.cosmetics[c.item_id] === p.player_slot &&
             (!c.used_by_heroes || c.used_by_heroes === hero.name),
         );
       return {

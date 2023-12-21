@@ -582,7 +582,7 @@ export async function isSubscriber(account_id: string) {
 export async function getMatchDataFromBlobWithMetadata(
   matchId: number,
   backfill: boolean,
-): Promise<[Partial<ParsedMatch> | null, GetMatchDataMetadata | null]> {
+): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
   const result = await cassandra.execute(
     'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
     [matchId],
@@ -634,7 +634,7 @@ export async function getMatchDataFromBlobWithMetadata(
   }
 
   // Merge the results together
-  const final: Partial<ParsedMatch> = {
+  const final: Match | ParsedMatch = {
     ...parsed,
     ...gcdata,
     ...api,
