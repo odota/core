@@ -1,4 +1,3 @@
-import JSONStream from 'JSONStream';
 import db from '../store/db';
 import {countWords} from '../util/compute';
 import { mergeObjects } from '../util/utility';
@@ -17,7 +16,6 @@ stream.on('end', () => {
   console.log(JSON.stringify(counts));
   process.exit(0);
 });
-stream.pipe(JSONStream.parse());
 stream.on('data', (match) => {
   mergeObjects(counts, countWords(match, null));
 });

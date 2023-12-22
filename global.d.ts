@@ -6,7 +6,6 @@ declare module 'steam';
 declare module 'dota2';
 declare module 'passport-steam';
 declare module 'uuid';
-declare module 'JSONStream';
 declare module 'ws';
 
 declare namespace Express {

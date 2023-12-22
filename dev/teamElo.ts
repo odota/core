@@ -1,7 +1,6 @@
 /**
  * Computes team Elo ratings by game
  * */
-import JSONStream from 'JSONStream';
 import db from '../store/db';
 
 // Keep each team's rating in memory and update
@@ -23,7 +22,6 @@ ORDER BY match_id ASC
 `
   )
   .stream();
-stream.pipe(JSONStream.parse());
 stream.on('data', (match) => {
   // console.log(JSON.stringify(match));
   if (!teams[match.team_id1]) {
