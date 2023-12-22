@@ -139,7 +139,7 @@ async function updateStripeUsage(cb: ErrorCb) {
         // TODO(albert): We could break this out by day for the invoice
         // but we'd have to make changes to web.js and metrics
         await stripe.subscriptionItems.createUsageRecord(sub.items.data[0].id, {
-          quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
+          quantity: Math.ceil(usageCount / Number(config.API_BILLING_UNIT)),
           action: 'set',
           timestamp: sub.current_period_end - 1,
         });
@@ -147,7 +147,7 @@ async function updateStripeUsage(cb: ErrorCb) {
           'updateStripeUsage updated',
           sub.id,
           usageCount,
-          Math.ceil(usageCount / config.API_BILLING_UNIT),
+          Math.ceil(usageCount / Number(config.API_BILLING_UNIT)),
         );
       } else {
         // console.log(`updateStripeUsage No usage for ${sub.id}`);

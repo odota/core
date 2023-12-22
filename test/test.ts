@@ -606,7 +606,7 @@ describe(c.blue('[TEST] api management'), () => {
 describe(c.blue('[TEST] api limits'), () => {
   before(async () => {
     config.ENABLE_API_LIMIT = '1';
-    config.API_FREE_LIMIT = 10;
+    config.API_FREE_LIMIT = '10';
     await redis
       .multi()
       .del('user_usage_count')
@@ -652,7 +652,7 @@ describe(c.blue('[TEST] api limits'), () => {
 
   after(() => {
     config.ENABLE_API_LIMIT = '';
-    config.API_FREE_LIMIT = 50000;
+    config.API_FREE_LIMIT = '50000';
   });
 });
 

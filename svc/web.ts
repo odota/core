@@ -192,7 +192,7 @@ app.use((req, res, cb) => {
       config.ENABLE_API_LIMIT &&
       !whitelistedPaths.includes(req.path) &&
       !res.locals.isAPIRequest &&
-      Number(prevUsage) >= config.API_FREE_LIMIT
+      Number(prevUsage) >= Number(config.API_FREE_LIMIT)
     ) {
       return res.status(429).json({
         error: 'monthly api limit exceeded',

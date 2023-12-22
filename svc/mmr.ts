@@ -41,6 +41,6 @@ async function processMmr(job: MmrJob) {
 }
 queue.runQueue(
   'mmrQueue',
-  config.MMR_PARALLELISM * getRetrieverCount(),
+  Number(config.MMR_PARALLELISM) * getRetrieverCount(),
   processMmr,
 );

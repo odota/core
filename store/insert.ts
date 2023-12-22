@@ -611,7 +611,7 @@ export async function insertMatch(
     if (
       options.origin === 'scanner' &&
       options.type === 'parsed' &&
-      match.match_id % 100 < config.SCENARIOS_SAMPLE_PERCENT
+      match.match_id % 100 < Number(config.SCENARIOS_SAMPLE_PERCENT)
     ) {
       await queue.addJob({
         name: 'scenariosQueue',

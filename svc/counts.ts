@@ -57,7 +57,7 @@ async function updateHeroRankings(match: Match) {
 async function upsertMatchSample(match: Match) {
   if (
     isSignificant(match) &&
-    match.match_id % 100 < config.PUBLIC_SAMPLE_PERCENT
+    match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)
   ) {
     const { avg, num } = await getMatchRankTier(match.players);
     if (!avg || num < 2) {
@@ -256,7 +256,7 @@ async function updateHeroCounts(match: Match) {
 }
 
 async function updateBenchmarks(match: Match) {
-  if (match.match_id % 100 < config.BENCHMARKS_SAMPLE_PERCENT) {
+  if (match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT)) {
     for (let i = 0; i < match.players.length; i += 1) {
       const p = match.players[i];
       // only do if all players have heroes
@@ -270,14 +270,14 @@ async function updateBenchmarks(match: Match) {
           ) {
             const rkey = [
               'benchmarks',
-              getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+              getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
               key,
               p.hero_id,
             ].join(':');
             redis.zadd(rkey, metric, match.match_id);
             // expire at time two epochs later (after prev/current cycle)
             const expiretime = getStartOfBlockMinutes(
-              config.BENCHMARK_RETENTION_MINUTES,
+              Number(config.BENCHMARK_RETENTION_MINUTES),
               2,
             );
             redis.expireat(rkey, expiretime);

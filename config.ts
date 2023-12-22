@@ -1,7 +1,7 @@
 /**
  * File managing configuration for the application
  * */
-require('dotenv').config();
+import 'dotenv/config';
 
 const defaults = {
   STEAM_API_KEY: '', // for API reqs, in worker
@@ -33,29 +33,29 @@ const defaults = {
   RETRIEVER_SECRET: '', // string to use as shared secret with retriever/parser
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
   COOKIE_DOMAIN: '', // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
-  UNTRACK_DAYS: 30, // The number of days a user is tracked for after every visit
-  MMR_PARALLELISM: 1, // Number of simultaneous MMR requests to make (per retriever)
-  PARSER_PARALLELISM: 1, // Number of simultaneous parse jobs to run (per parser)
-  FULLHISTORY_PARALLELISM: 1, // Number of simultaneous fullhistory (player refresh) jobs to process
-  GCDATA_PARALLELISM: 1, // Number of simultaneous GC match details requests to make (per retriever)
-  BENCHMARK_RETENTION_MINUTES: 60, // minutes in block to retain benchmark data for percentile
-  GCDATA_PERCENT: 0, // percent of inserted matches to randomly queue for GC data
-  SCANNER_PERCENT: 100, // percent of matches to insert from scanner
-  PUBLIC_SAMPLE_PERCENT: 10, // percent of public matches to sample in DB
-  SCENARIOS_SAMPLE_PERCENT: 100, // percent of parsed matches to sample for scenarios
-  BENCHMARKS_SAMPLE_PERCENT: 100, // percent of parsed matches to sample for benchmarks
+  UNTRACK_DAYS: '30', // The number of days a user is tracked for after every visit
+  MMR_PARALLELISM: '1', // Number of simultaneous MMR requests to make (per retriever)
+  PARSER_PARALLELISM: '1', // Number of simultaneous parse jobs to run (per parser)
+  FULLHISTORY_PARALLELISM: '1', // Number of simultaneous fullhistory (player refresh) jobs to process
+  GCDATA_PARALLELISM: '1', // Number of simultaneous GC match details requests to make (per retriever)
+  BENCHMARK_RETENTION_MINUTES: '60', // minutes in block to retain benchmark data for percentile
+  GCDATA_PERCENT: '0', // percent of inserted matches to randomly queue for GC data
+  SCANNER_PERCENT: '100', // percent of matches to insert from scanner
+  PUBLIC_SAMPLE_PERCENT: '10', // percent of public matches to sample in DB
+  SCENARIOS_SAMPLE_PERCENT: '100', // percent of parsed matches to sample for scenarios
+  BENCHMARKS_SAMPLE_PERCENT: '100', // percent of parsed matches to sample for benchmarks
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
   ENABLE_PLAYER_CACHE: '', // enable/disable player aggregation caching
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
-  MAXIMUM_AGE_SCENARIOS_ROWS: 4, // maximum allowed age of scenarios rows in weeks
-  MATCH_CACHE_SECONDS: 60, // number of seconds to cache matches
-  PLAYER_CACHE_SECONDS: 1800, // number of seconds to cache player aggregations
-  SCANNER_PLAYER_PERCENT: 100, // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
+  MAXIMUM_AGE_SCENARIOS_ROWS: '4', // maximum allowed age of scenarios rows in weeks
+  MATCH_CACHE_SECONDS: '60', // number of seconds to cache matches
+  PLAYER_CACHE_SECONDS: '1800', // number of seconds to cache player aggregations
+  SCANNER_PLAYER_PERCENT: '100', // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
   ENABLE_API_LIMIT: '', // if truthy, API calls after exceeding API_FREE_LIMIT are blocked
-  API_FREE_LIMIT: 50000, // number of api requests per month before 429 is returned. If using an API key, calls over this are charged.
-  API_BILLING_UNIT: 100, // how many calls is equivalent to a unit of calls e.g. 100 calls per $0.01.
-  API_KEY_PER_MIN_LIMIT: 300, // Rate limit per minute if using an API key
-  NO_API_KEY_PER_MIN_LIMIT: 60, // Rate limit per minute if not using an API key
+  API_FREE_LIMIT: '50000', // number of api requests per month before 429 is returned. If using an API key, calls over this are charged.
+  API_BILLING_UNIT: '100', // how many calls is equivalent to a unit of calls e.g. 100 calls per $0.01.
+  API_KEY_PER_MIN_LIMIT: '300', // Rate limit per minute if using an API key
+  NO_API_KEY_PER_MIN_LIMIT: '60', // Rate limit per minute if not using an API key
   ADMIN_ACCOUNT_IDS: '', // Whitelisted, comma separated account IDs to access /admin* routes
   STRIPE_SECRET: 'rk_test_gRqwhv4xqv0a1olp8kk8fZ94', // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: 'plan_CgLthOgwrDgz2K', // plan id for stripe metering
@@ -72,12 +72,8 @@ const defaults = {
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
   DISABLE_REAPI: '', // Disable refetching new API data on every request
-  API_KEY_GEN_THRESHOLD: 0, // Account ID requirement (delta from max) for generating API keys
+  API_KEY_GEN_THRESHOLD: '0', // Account ID requirement (delta from max) for generating API keys
 };
-// ensure that process.env has all values in defaults, but prefer the process.env value
-Object.keys(defaults).forEach((key) => {
-  process.env[key] = key in process.env ? process.env[key] : defaults[key];
-});
 if (process.env.NODE_ENV === 'development') {
   // force PORT to null in development so we can run multiple web services without conflict
   process.env.PORT = '';
@@ -87,15 +83,15 @@ if (process.env.NODE_ENV === 'test') {
   process.env.POSTGRES_URL = process.env.POSTGRES_URL + '_test';
   process.env.CASSANDRA_URL = process.env.CASSANDRA_URL + '_test';
   process.env.SCYLLA_URL = process.env.SCYLLA_URL + '_test';
-  process.env.REDIS_URL = process.env.REDIS_URL.slice(0, -1) + '1';
+  process.env.REDIS_URL = process.env.REDIS_URL?.slice(0, -1) + '1';
   process.env.SESSION_SECRET = 'testsecretvalue';
-  process.env.ENABLE_MATCH_CACHE = 1;
-  process.env.FRONTEND_PORT = 5001;
-  process.env.PARSER_PORT = 5201;
+  process.env.FRONTEND_PORT = '5001';
+  process.env.PARSER_PORT = '5201';
 }
 
 // Export the combined values
-module.exports = {
+export const config = {
   ...defaults,
   ...process.env,
 };
+export default config;

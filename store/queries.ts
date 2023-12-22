@@ -39,13 +39,13 @@ export async function getMatchBenchmarks(m: Match) {
         // Use data from previous epoch
         let key = [
           'benchmarks',
-          getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1),
+          getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), -1),
           metric,
           p.hero_id,
         ].join(':');
         const backupKey = [
           'benchmarks',
-          getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+          getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
           metric,
           p.hero_id,
         ].join(':');
@@ -160,13 +160,13 @@ export async function getHeroBenchmarks(heroId: string) {
       // Use data from previous epoch
       let key = [
         'benchmarks',
-        getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, -1),
+        getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), -1),
         metric,
         heroId,
       ].join(':');
       const backupKey = [
         'benchmarks',
-        getStartOfBlockMinutes(config.BENCHMARK_RETENTION_MINUTES, 0),
+        getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
         metric,
         heroId,
       ].join(':');
