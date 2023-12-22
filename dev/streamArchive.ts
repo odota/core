@@ -3,9 +3,12 @@ import db from '../store/db';
 import { doArchiveFromLegacy } from '../store/queries';
 
 const stream = db.raw('SELECT match_id from parsed_matches WHERE is_archived IS NULL').stream();
-stream.on('data', async (row) => {
-  await doArchiveFromLegacy(row.match_id.toString());
-  // console.log(row);
+stream.on('readable', async () => {
+  let row;
+  while(row = stream.read()) {
+    // console.log(row);
+    await doArchiveFromLegacy(row.match_id.toString());
+  }
 });
 
 let i = 0;
