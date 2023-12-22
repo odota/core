@@ -7,7 +7,7 @@ import type { Express } from 'express';
 import nock from 'nock';
 import assert from 'assert';
 import supertest from 'supertest';
-import stripeLib from 'stripe';
+import { Stripe } from 'stripe';
 import pg from 'pg';
 import { readFileSync } from 'fs';
 import util from 'util';
@@ -551,16 +551,15 @@ describe(c.blue('[TEST] api management'), () => {
       .delete('/keys?loggedin=1')
       .then(async (res) => {
         assert.equal(res.statusCode, 200);
-        //@ts-ignore
-        const stripe = stripeLib(STRIPE_SECRET);
-
-        await stripe.invoiceItems.create({
-          customer: this.previousCustomer,
-          price: 'price_1Lm1siCHN72mG1oKkk3Jh1JT', // test $123 one time
-        });
+        const stripe = new Stripe(STRIPE_SECRET);
 
         const invoice = await stripe.invoices.create({
           customer: this.previousCustomer,
+        });
+        await stripe.invoiceItems.create({
+          customer: this.previousCustomer,
+          price: 'price_1Lm1siCHN72mG1oKkk3Jh1JT', // test $123 one time
+          invoice: invoice.id,
         });
 
         await stripe.invoices.finalizeInvoice(invoice.id);

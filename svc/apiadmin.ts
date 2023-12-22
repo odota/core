@@ -1,15 +1,14 @@
 // Runs background processes related to API keys and billing/usage
 import async from 'async';
 import moment from 'moment';
-import stripeLib from 'stripe';
+import { Stripe } from 'stripe';
 import redis from '../store/redis';
 import db from '../store/db';
 import config from '../config';
 import type { knex } from 'knex';
 import { invokeInterval } from '../util/utility';
 
-//@ts-ignore
-const stripe = stripeLib(config.STRIPE_SECRET);
+const stripe = new Stripe(config.STRIPE_SECRET);
 function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
@@ -89,7 +88,7 @@ async function updateStripeUsage(cb: ErrorCb) {
     // From the docs:
     // By default, returns a list of subscriptions that have not been canceled.
     // In order to list canceled subscriptions, specify status=canceled. Use all for completeness.
-    status: 'all',
+    status: 'all' as Stripe.Subscription.Status,
   };
   let num = 0;
   try {
@@ -107,6 +106,18 @@ async function updateStripeUsage(cb: ErrorCb) {
           [sub.id],
         );
         continue;
+      }
+      // Deactivate any keys belonging to an invalid card
+      const BANNED_CARDS: string[] = [];
+      const sourceId = sub.default_source;
+      if (sourceId) {
+        const source = await stripe.sources.retrieve(sourceId as string);
+        if (source.card?.fingerprint && BANNED_CARDS.includes(source.card?.fingerprint)) {
+          await db.raw(
+            `UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?`,
+            [sub.id]
+          );
+        }
       }
       const startTime = moment
         .unix(sub.current_period_end - 1)

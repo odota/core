@@ -3,13 +3,12 @@ import uuid from 'uuid';
 import bodyParser from 'body-parser';
 import moment from 'moment';
 import async from 'async';
-import stripeLib from 'stripe';
+import { Stripe } from 'stripe';
 import db from '../store/db';
 import redis from '../store/redis';
 import config from '../config';
-import { redisCount } from '../util/utility';
-//@ts-ignore
-const stripe = stripeLib(config.STRIPE_SECRET);
+
+const stripe = new Stripe(config.STRIPE_SECRET);
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
 keys.use(bodyParser.json());
@@ -26,7 +25,7 @@ keys.use((req, res, next) => {
   }
   return next();
 });
-// @param rows - query result from api_keys table
+// @param rows - query resut from api_keys table
 function getActiveKey(rows: any[]) {
   const notCanceled = rows.filter((row) => row.is_canceled != true);
   return notCanceled.length > 0 ? notCanceled[0] : null;
@@ -75,14 +74,14 @@ keys
             api_key,
           };
           stripe.customers
-            .retrieve(customer_id)
-            .then((customer: any) => {
-              const source = customer.sources.data[0];
+            .retrieve(customer_id, {expand: ['default_source']})
+            .then((customer) => {
+              const source = (customer as Stripe.Customer).default_source as Stripe.Card;
               toReturn.credit_brand = source?.brand;
               toReturn.credit_last4 = source?.last4;
               return stripe.subscriptions.retrieve(subscription_id);
             })
-            .then((sub: any) => {
+            .then((sub) => {
               toReturn.current_period_end = sub.current_period_end;
             })
             .then(() => cb(null, toReturn))
@@ -94,7 +93,7 @@ keys
           }
           const customer_id = allKeyRecords[0].customer_id;
           getOpenInvoices(customer_id).then((invoices) => {
-            const processed = invoices.map((i: any) => ({
+            const processed = invoices.map((i) => ({
               id: i.id,
               amountDue: i.amount_due,
               paymentLink: i.hosted_invoice_url,
@@ -155,7 +154,7 @@ keys
     }
     const { api_key, subscription_id } = keyRecord;
     // Immediately bill the customer for any unpaid usage
-    await stripe.subscriptions.del(subscription_id, { invoice_now: true });
+    await stripe.subscriptions.cancel(subscription_id, { invoice_now: true });
     await db
       .from('api_keys')
       .where({
@@ -231,7 +230,7 @@ keys
           source: token.id,
           email: token.email,
           metadata: {
-            account_id: req.user?.account_id,
+            account_id: req.user?.account_id ?? '',
           },
         });
         customer_id = customer.id;
@@ -240,6 +239,7 @@ keys
         return res.status(402).json(err);
       }
     }
+
     const apiKey = uuid.v4();
     const sub = await stripe.subscriptions.create({
       customer: customer_id,
@@ -291,8 +291,6 @@ keys
     } = req.body;
     await stripe.customers.update(customer_id, {
       email,
-    });
-    await stripe.subscriptions.update(subscription_id, {
       source: id,
     });
     res.sendStatus(200);
