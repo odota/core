@@ -176,7 +176,7 @@ async function deleteFromLegacy(id: number) {
   ]);
 }
 
-export async function getArchivedPlayerMatches(
+export async function readArchivedPlayerMatches(
   accountId: string,
 ): Promise<ParsedPlayerMatch[]> {
   console.time('archive');
@@ -191,7 +191,7 @@ export async function getArchivedPlayerMatches(
  * @param matchId
  * @returns
  */
-export async function readArchivedMatch(
+export async function tryReadArchivedMatch(
   matchId: string,
 ): Promise<ParsedMatch | undefined> {
   try {

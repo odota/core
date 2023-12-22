@@ -1,6 +1,6 @@
 import cassandra from '../store/cassandra';
 import db from '../store/db';
-import { doArchiveFromLegacy } from '../store/archiveHelpers';
+import { doArchiveFromLegacy } from '../store/getArchivedData';
 
 const stream = db.raw('SELECT match_id from parsed_matches WHERE is_archived IS NULL').stream();
 stream.on('readable', async () => {

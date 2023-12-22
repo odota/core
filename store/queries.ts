@@ -22,7 +22,7 @@ import {
   redisCount,
 } from '../util/utility';
 import { cassandraColumnInfo, cleanRowCassandra } from './insert';
-import { getArchivedPlayerMatches, readArchivedMatch } from './archiveHelpers';
+import { readArchivedPlayerMatches, tryReadArchivedMatch } from './getArchivedData';
 import { tryFetchApiData } from './getApiData';
 import type { ApiMatch } from './pgroup';
 
@@ -263,7 +263,7 @@ export async function getPlayerMatchesPromiseWithMetadata(
     }),
     // for dbLimit (recentMatches), skip the archive and just return 20 most recent
     config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
-      ? getArchivedPlayerMatches(accountId)
+      ? readArchivedPlayerMatches(accountId)
       : Promise.resolve([]),
   ]);
   const localLength = localMatches.length;
@@ -627,7 +627,7 @@ export async function getMatchDataFromBlobWithMetadata(
     }
   }
   if (!parsed && backfill) {
-    parsed = await readArchivedMatch(matchId.toString());
+    parsed = await tryReadArchivedMatch(matchId.toString());
     if (parsed) {
       odData.archive = true;
     }

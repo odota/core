@@ -1,8 +1,6 @@
-import archiveHelpers from '../store/archiveHelpers.js';
-import queries from '../store/queries.js';
 import fs from 'fs';
-const { getPlayerMatchesPromiseWithMetadata } = queries;
-const { doArchivePlayerMatches } = archiveHelpers;
+const { getPlayerMatchesPromiseWithMetadata } = await import('../store/queries.js');
+const { doArchivePlayerMatches } = await import('../store/getArchivedData.js');
 
 // Write player blob to archive
 await doArchivePlayerMatches('88367253');
