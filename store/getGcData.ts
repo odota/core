@@ -41,30 +41,13 @@ export async function readGcData(
 async function saveGcData(
   matchId: number,
   pgroup: PGroup,
-  noRetry = false,
 ): Promise<void> {
-  let retryCount = 0;
   const url = getRandomRetrieverUrl({ matchId });
   let body: typeof retrieverMatch | undefined = undefined;
-  do {
-    try {
-      retryCount += 1;
-      console.log(url, 'attempt:', retryCount);
-      const { data } = await axios.get(url, { timeout: 5000 });
-      body = data;
-    } catch (e) {
-      if (axios.isAxiosError(e)) {
-        console.error(url, e.message);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } else {
-        throw e;
-      }
-    }
-  } while (!body || noRetry);
+  const { data } = await axios.get(url, { timeout: 5000 });
+  body = data;
   if (!body || !body.match || !body.match.replay_salt || !body.match.players) {
     // non-retryable error
-    // redis.lpush('nonRetryable', JSON.stringify({ matchId: match.match_id, body }));
-    // redis.ltrim('nonRetryable', 0, 10000);
     throw new Error('invalid body');
   }
   // Count retriever calls
@@ -140,7 +123,7 @@ export async function tryFetchGcData(
   pgroup: PGroup,
 ): Promise<GcMatch | undefined> {
   try {
-    await saveGcData(matchId, pgroup, true);
+    await saveGcData(matchId, pgroup);
     return readGcData(matchId);
   } catch (e) {
     console.log(e);
@@ -158,7 +141,6 @@ export async function tryFetchGcData(
 export async function getOrFetchGcData(
   matchId: number,
   pgroup: PGroup,
-  noRetry = false,
 ): Promise<GcMatch> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
@@ -173,10 +155,33 @@ export async function getOrFetchGcData(
     }
   }
   // If we got here we don't have it saved or want to refetch
-  await saveGcData(matchId, pgroup, noRetry);
+  await saveGcData(matchId, pgroup);
   const result = await readGcData(matchId);
   if (!result) {
     throw new Error('[GCDATA]: Could not get GC data for match ' + matchId);
+  }
+  return result;
+}
+
+export async function getOrFetchGcDataWithRetry(
+  matchId: number,
+  pgroup: PGroup,
+): Promise<GcMatch> {
+  let result: GcMatch | undefined = undefined;
+  let tryCount = 1;
+  while(!result) {
+    try {
+      result = await getOrFetchGcData(matchId, pgroup);
+    } catch(e) {
+      if (axios.isAxiosError(e)) {
+        console.log(e.request.url, e.message);
+      } else {
+        console.error(e);
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      tryCount += 1;
+      console.log('retrying %s, attempt %s', matchId, tryCount);
+    }
   }
   return result;
 }

@@ -287,7 +287,6 @@ type MmrJob = {
 type GcDataJob = {
   match_id: number;
   pgroup: PGroup;
-  noRetry?: boolean;
 };
 
 type CountsJob = import('./store/pgroup').ApiMatch;

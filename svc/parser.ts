@@ -7,7 +7,7 @@
  * */
 import os from 'os';
 import express from 'express';
-import { getOrFetchGcData } from '../store/getGcData';
+import { getOrFetchGcDataWithRetry } from '../store/getGcData';
 import config from '../config';
 import queue from '../store/queue';
 import type { ApiMatch } from '../store/pgroup';
@@ -52,7 +52,7 @@ async function parseProcessor(job: ParseJob) {
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
-    const gcdata = await getOrFetchGcData(matchId, pgroup);
+    const gcdata = await getOrFetchGcDataWithRetry(matchId, pgroup);
     gcTime = Date.now() - gcStart;
     let url = buildReplayUrl(
       gcdata.match_id,
