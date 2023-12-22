@@ -28,14 +28,8 @@ import {
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;
-<<<<<<< HEAD
-//@ts-ignore
-const stripe = stripeLib(config.STRIPE_SECRET);
-export const app = express();
-=======
 const stripe = new Stripe(config.STRIPE_SECRET);
-const app = express();
->>>>>>> upgrade stripe
+export const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
 const sessOptions = {

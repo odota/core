@@ -1,12 +1,7 @@
 // Syncs the list of subscribers from Stripe to the database
 import db from '../store/db';
-<<<<<<< HEAD
 import config from '../config';
-import stripeLib from 'stripe';
-=======
-import config from '../config.js';
 import { Stripe } from 'stripe';
->>>>>>> upgrade stripe
 import { invokeIntervalAsync } from '../util/utility';
 
 const stripe = new Stripe(config.STRIPE_SECRET);

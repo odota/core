@@ -6,15 +6,9 @@ import async from 'async';
 import { Stripe } from 'stripe';
 import db from '../store/db';
 import redis from '../store/redis';
-<<<<<<< HEAD
 import config from '../config';
-import { redisCount } from '../util/utility';
-//@ts-ignore
-const stripe = stripeLib(config.STRIPE_SECRET);
-=======
-import config from '../config.js';
+
 const stripe = new Stripe(config.STRIPE_SECRET);
->>>>>>> upgrade stripe
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
 keys.use(bodyParser.json());
