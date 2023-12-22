@@ -3,6 +3,7 @@ import redis from './redis';
 import db from './db';
 import { Redis } from 'ioredis';
 import config from '../config';
+import { Client } from 'pg';
 
 async function runQueue(
   queueName: QueueName,
@@ -48,15 +49,17 @@ async function runReliableQueue(
   processor: (job: any) => Promise<boolean>,
 ) {
   const executor = async () => {
+    const pg = new Client(config.POSTGRES_URL);
+    await pg.connect();
     while (true) {
-      const trx = await db.transaction();
-      const result = await trx.raw(
+      await pg.query('BEGIN TRANSACTION');
+      const result = await pg.query(
         `
-      UPDATE queue SET attempts = attempts - 1, next_attempt_time = ?
+      UPDATE queue SET attempts = attempts - 1, next_attempt_time = $1
       WHERE id = (
       SELECT id
       FROM queue
-      WHERE type = ?
+      WHERE type = $2
       AND (next_attempt_time IS NULL OR next_attempt_time < now())
       ORDER BY priority ASC NULLS LAST, id ASC
       FOR UPDATE SKIP LOCKED
@@ -64,7 +67,6 @@ async function runReliableQueue(
       )
       RETURNING *
       `,
-        //@ts-ignore
         [moment().add(5, 'minute'), queueName],
       );
       const job = result && result.rows && result.rows[0];
@@ -79,11 +81,11 @@ async function runReliableQueue(
         }
         if (success || job.attempts <= 0) {
           // remove the job from the queue if successful or out of attempts
-          await trx.raw('DELETE FROM queue WHERE id = ?', [job.id]);
+          await pg.query('DELETE FROM queue WHERE id = $1', [job.id]);
         }
-        await trx.commit();
+        await pg.query('COMMIT');
       } else {
-        await trx.commit();
+        await pg.query('COMMIT');
         // console.log('no job available, waiting');
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }
