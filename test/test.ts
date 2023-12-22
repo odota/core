@@ -24,7 +24,7 @@ import retrieverPlayer from './data/retriever_player.json';
 import detailsApiPro from './data/details_api_pro.json';
 import retrieverMatch from './data/retriever_match.json';
 import spec from '../routes/spec';
-import { getPlayerMatchesPromise } from '../store/queries';
+import { getPlayerMatches } from '../store/queries';
 import { insertMatch, upsertPlayer } from '../store/insert';
 import buildMatch from '../store/buildMatch';
 import { es } from '../store/elasticsearch';
@@ -115,7 +115,7 @@ describe(c.blue('[TEST] player_caches'), async () => {
   // Test fetching matches for first player
   let data = null;
   before(async () => {
-    data = await getPlayerMatchesPromise('120269134', {
+    data = await getPlayerMatches('120269134', {
       project: ['match_id'],
     });
   });

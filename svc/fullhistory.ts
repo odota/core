@@ -11,7 +11,7 @@ import {
 import db from '../store/db';
 import redis from '../store/redis';
 import queue from '../store/queue';
-import { getPlayerMatchesPromise } from '../store/queries';
+import { getPlayerMatches } from '../store/queries';
 import { insertMatch } from '../store/insert';
 const apiKeys = config.STEAM_API_KEY.split(',');
 // number of match details requests to send at once
@@ -110,7 +110,7 @@ async function processFullHistory(job: FullHistoryJob) {
   player.fh_unavailable = false;
   // check what matches the player is already associated with
   const docs =
-    (await getPlayerMatchesPromise(player.account_id?.toString(), {
+    (await getPlayerMatches(player.account_id?.toString(), {
       project: ['match_id'],
     })) ?? [];
   console.log(

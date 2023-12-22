@@ -1,5 +1,5 @@
 import fs from 'fs';
-const { getPlayerMatchesPromiseWithMetadata } = await import(
+const { getPlayerMatchesWithMetadata } = await import(
   '../store/queries.js'
 );
 const { doArchivePlayerMatches } = await import('../store/getArchivedData.js');
@@ -11,7 +11,7 @@ await doArchivePlayerMatches('88367253');
 // await getArchivedPlayerMatches('88367253');
 
 // Check the combined getPlayerMatches results
-const readBack = await getPlayerMatchesPromiseWithMetadata('88367253', {
+const readBack = await getPlayerMatchesWithMetadata('88367253', {
   project: [],
   projectAll: true,
 });

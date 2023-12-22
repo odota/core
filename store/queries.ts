@@ -200,11 +200,11 @@ export async function getHeroBenchmarks(heroId: string) {
   };
 }
 
-export async function getPlayerMatchesPromise(
+export async function getPlayerMatches(
   accountId: string,
   queryObj: QueryObj,
 ): Promise<ParsedPlayerMatch[]> {
-  return (await getPlayerMatchesPromiseWithMetadata(accountId, queryObj))[0];
+  return (await getPlayerMatchesWithMetadata(accountId, queryObj))[0];
 }
 
 type PlayerMatchesMetadata = {
@@ -213,7 +213,7 @@ type PlayerMatchesMetadata = {
   archivedLength: number;
   mergedLength: number;
 };
-export async function getPlayerMatchesPromiseWithMetadata(
+export async function getPlayerMatchesWithMetadata(
   accountId: string,
   queryObj: QueryObj,
 ): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
@@ -346,7 +346,7 @@ export async function getPlayerMatchesPromiseWithMetadata(
 export async function getFullPlayerMatchesWithMetadata(
   accountId: string,
 ): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
-  return getPlayerMatchesPromiseWithMetadata(accountId, {
+  return getPlayerMatchesWithMetadata(accountId, {
     project: [],
     projectAll: true,
   });
