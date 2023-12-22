@@ -1,28 +1,22 @@
 import constants from 'dotaconstants';
 import fs from 'fs';
-import config from '../config.js';
+import config from '../config';
 import { computeMatchData } from '../util/compute';
-import {
-  generateJob,
-  getDataPromise,
-  buildReplayUrl,
-  isContributor,
-  redisCount,
-  isDataComplete,
-} from '../util/utility';
+import { buildReplayUrl, isContributor, redisCount } from '../util/utility';
 import redis from './redis';
 import db from './db';
 import {
-  getMatchData,
-  insertMatchPromise,
+  getMatchDataFromBlobWithMetadata,
   getMatchBenchmarks,
-  getPlayerMatchData,
 } from './queries';
 import { getMeta } from './getMeta';
 
-async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
+async function extendPlayerData(
+  player: Player | ParsedPlayer,
+  match: Match | ParsedMatch,
+) {
   // NOTE: This adds match specific properties into the player object, which leads to some unnecessary duplication in the output
-  const p = {
+  const p: Partial<ParsedPlayerMatch> = {
     ...player,
     radiant_win: match.radiant_win,
     start_time: match.start_time,
@@ -30,9 +24,11 @@ async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
     cluster: match.cluster,
     lobby_type: match.lobby_type,
     game_mode: match.game_mode,
-    is_contributor: player.account_id && isContributor(player.account_id),
+    is_contributor: Boolean(
+      player.account_id && isContributor(player.account_id),
+    ),
   };
-  computeMatchData(p as unknown as ParsedPlayerMatch);
+  computeMatchData(p as ParsedPlayerMatch);
   const row = await db
     .first()
     .from('rank_tier')
@@ -43,9 +39,9 @@ async function extendPlayerData(player: ParsedPlayer, match: ParsedMatch) {
     .from('subscriber')
     .where({ account_id: p.account_id || null });
   p.is_subscriber = Boolean(subscriber?.status);
-  return Promise.resolve(p);
+  return p;
 }
-async function prodataInfo(matchId: string) {
+async function prodataInfo(matchId: number): Promise<AnyDict> {
   const result = await db
     .first([
       'radiant_team_id',
@@ -53,13 +49,15 @@ async function prodataInfo(matchId: string) {
       'leagueid',
       'series_id',
       'series_type',
+      'cluster',
+      'replay_salt',
     ])
     .from('matches')
     .where({
       match_id: matchId,
     });
   if (!result) {
-    return Promise.resolve({});
+    return {};
   }
   const leaguePromise = db.first().from('leagues').where({
     leagueid: result.leagueid,
@@ -75,95 +73,37 @@ async function prodataInfo(matchId: string) {
     radiantTeamPromise,
     direTeamPromise,
   ]);
-  return Promise.resolve({
+  const final: AnyDict = {
     league,
     radiant_team: radiantTeam,
     dire_team: direTeam,
     series_id: result.series_id,
     series_type: result.series_type,
-  });
+  };
+  if (result.cluster) {
+    final.cluster = result.cluster;
+  }
+  if (result.replay_salt) {
+    final.replay_salt = result.replay_salt;
+  }
+  return final;
 }
 
-async function backfill(matchId: string) {
-  const matchObj = {
-    match_id: Number(matchId),
-  };
-  const body = await getDataPromise(generateJob('api_details', matchObj).url);
-  // match details response
-  const match = body.result;
-  await insertMatchPromise(match, {
-    type: 'api',
-    skipParse: true,
-  });
-  // Count for logging
-  redisCount(redis, 'steam_api_backfill');
-}
-async function doBuildMatch(
-  matchId: string,
-  options: { source?: MatchStorage; meta?: string }
-) {
-  if (!matchId || Number.isNaN(Number(matchId)) || Number(matchId) <= 0) {
+async function doBuildMatch(matchId: number, options: { meta?: string }) {
+  if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     return null;
   }
-  // check if the match is archived
-  // the blobstore may have the match but missing gcdata/parse if it was backfilled after deletion
-  // Also most matches won't be in the archive so it's more efficient not to always try
-  const isArchived = Boolean(
-    (
-      await db.raw(
-        'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-        [matchId]
-      )
-    ).rows[0]
-  );
-  let match: ParsedMatch | null = null;
-  if (isArchived || options.source === 'archive') {
-    match = await getMatchData(matchId, 'archive');
-    // Validate the archive is good
-    if (!isDataComplete(match)) {
-      redisCount(redis, 'incomplete_archive');
-      match = null;
-    }
-    if (match) {
-      match.od_storage = 'archive';
-    }
-  }
-  if (!match || options.source === 'cassandra') {
-    // Fetch from legacy
-    match = await getMatchData(matchId, 'cassandra');
-    if (match) {
-      match.od_storage = 'cassandra';
-    }
-  }
-  if (!match || options.source === 'blob') {
-    // Fetch from blobstore
-    // TODO (howard) want to make this primary, but we have to archive old parsed matches first, otherwise we may show unparsed data even if parsed
-    match = await getMatchData(matchId, 'blob');
-    if (match) {
-      match.od_storage = 'blob';
-    }
-  }
+  // Attempt to fetch match and backfill what's needed
+  let [match, odData]: [
+    Match | ParsedMatch | null,
+    GetMatchDataMetadata | null,
+  ] = await getMatchDataFromBlobWithMetadata(matchId, true);
   if (!match) {
-    // if we still don't have it, try backfilling it from Steam API and then check again
-    // Once backfilled it'll be in blobstore
-    await backfill(matchId);
-    match = await getMatchData(matchId, 'blob');
-    if (match) {
-      match.od_storage = 'backfill_blob';
-    }
-  }
-  if (!match) {
-    // Still don't have it
     return null;
   }
+  match.od_data = odData;
   redisCount(redis, 'build_match');
-  let playersMatchData: ParsedPlayer[] = [];
-  // TODO (howard) remove this backfill once matches/player_matches deleted
-  playersMatchData = match.players || (await getPlayerMatchData(matchId));
-  if (playersMatchData.length === 0) {
-    await backfill(matchId);
-    playersMatchData = await getPlayerMatchData(matchId);
-  }
+  let playersMatchData: (Player | ParsedPlayer)[] = match.players;
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(
     playersMatchData.map((r) =>
@@ -176,27 +116,30 @@ async function doBuildMatch(
         ON players.account_id = notable_players.account_id
         WHERE players.account_id = ?
       `,
-          [r.account_id ?? null]
+          [r.account_id ?? null],
         )
-        .then((names) => ({ ...r, ...names.rows[0] }))
-    )
+        .then((names) => ({ ...r, ...names.rows[0] })),
+    ),
   );
   const playersPromise = Promise.all(
-    playersMatchData.map((p) => extendPlayerData(p, match as ParsedMatch))
+    playersMatchData.map((p) => extendPlayerData(p, match as ParsedMatch)),
   );
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,
   });
-  const cosmeticsPromise = Promise.all(
-    Object.keys(match.cosmetics || {}).map((itemId) =>
-      db.first().from('cosmetics').where({
-        item_id: itemId,
-      })
-    )
-  );
+  const cosmeticsPromise =
+    'cosmetics' in match && match.cosmetics
+      ? Promise.all(
+          Object.keys(match.cosmetics).map((itemId) =>
+            db.first().from('cosmetics').where({
+              item_id: itemId,
+            }),
+          ),
+        )
+      : Promise.resolve(null);
   const prodataPromise = prodataInfo(matchId);
   const metadataPromise = Boolean(options.meta)
-    ? getMeta(matchId)
+    ? getMeta(Number(matchId))
     : Promise.resolve(null);
   const [players, gcdata, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,
@@ -219,8 +162,10 @@ async function doBuildMatch(
         .filter(Boolean)
         .filter(
           (c) =>
-            match?.cosmetics[c.item_id] === p.player_slot &&
-            (!c.used_by_heroes || c.used_by_heroes === hero.name)
+            match &&
+            'cosmetics' in match &&
+            match.cosmetics?.[c.item_id] === p.player_slot &&
+            (!c.used_by_heroes || c.used_by_heroes === hero.name),
         );
       return {
         ...p,
@@ -237,7 +182,7 @@ async function doBuildMatch(
     matchResult.replay_url = buildReplayUrl(
       matchResult.match_id,
       matchResult.cluster,
-      matchResult.replay_salt
+      matchResult.replay_salt,
     );
   }
   const playersWithBenchmarks = await getMatchBenchmarks(matchResult);
@@ -245,13 +190,10 @@ async function doBuildMatch(
     ...matchResult,
     players: playersWithBenchmarks,
   };
-  return Promise.resolve(matchResult);
+  return matchResult;
 }
 
-async function buildMatch(
-  matchId: string,
-  options: { source?: MatchStorage; meta?: string }
-) {
+async function buildMatch(matchId: number, options: { meta?: string }) {
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {

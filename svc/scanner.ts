@@ -1,24 +1,22 @@
 // Fetches new matches from the Steam API using the sequential endpoint
-import config from '../config.js';
+import config from '../config';
 import redis from '../store/redis';
-import { insertMatchPromise } from '../store/queries';
-import { generateJob, getDataPromise, redisCount } from '../util/utility';
+import { insertMatch } from '../store/insert';
+import type { ApiMatch } from '../store/pgroup';
+import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 
-const delay = Number(config.SCANNER_DELAY);
 const PAGE_SIZE = 100;
 
 async function scanApi(seqNum: number) {
   let nextSeqNum = seqNum;
-  let delayNextRequest = false;
   while (true) {
     const container = generateJob('api_sequence', {
       start_at_match_seq_num: nextSeqNum,
     });
     let data = null;
     try {
-      data = await getDataPromise({
+      data = await getSteamAPIData({
         url: container.url,
-        delay,
       });
     } catch (err: any) {
       // unretryable steam error
@@ -34,24 +32,21 @@ async function scanApi(seqNum: number) {
     const resp =
       data && data.result && data.result.matches ? data.result.matches : [];
     console.log('[API] match_seq_num:%s, matches:%s', nextSeqNum, resp.length);
-    await Promise.all(resp.map((match: Match) => processMatch(match)));
+    await Promise.all(resp.map((match: ApiMatch) => processMatch(match)));
     // Completed inserting matches on this page so update redis
     if (resp.length) {
       nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
       console.log('next_seq_num: %s', nextSeqNum);
     }
-    if (resp.length < PAGE_SIZE) {
-      delayNextRequest = true;
-    }
     await redis.set('match_seq_num', nextSeqNum);
     // If not a full page, delay the next iteration
     await new Promise((resolve) =>
-      setTimeout(resolve, delayNextRequest ? 3000 : 0)
+      setTimeout(resolve, resp.length < PAGE_SIZE ? 6000 : 1500),
     );
   }
 }
 
-async function processMatch(match: Match) {
+async function processMatch(match: ApiMatch) {
   // Optionally throttle inserts to prevent overload
   if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
     return;
@@ -62,7 +57,7 @@ async function processMatch(match: Match) {
   if (result) {
     return;
   }
-  await insertMatchPromise(match, {
+  await insertMatch(match, {
     type: 'api',
     origin: 'scanner',
   });
@@ -77,7 +72,8 @@ async function start() {
   } else if (config.NODE_ENV !== 'production') {
     // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
     const container = generateJob('api_history', {});
-    const data = await getDataPromise(container.url);
+    // Just get the approximate current seq num
+    const data = await getSteamAPIData(container.url);
     await scanApi(data.result.matches[0].match_seq_num);
   } else {
     throw new Error('failed to initialize sequence number');

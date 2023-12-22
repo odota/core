@@ -1,49 +1,44 @@
 // Cleans up old data from the database (originally used for scenarios but now also does other cleanup)
-import async from 'async';
 import db from '../store/db';
-import config from '../config.js';
+import config from '../config';
 import { epochWeek, invokeIntervalAsync } from '../util/utility';
 
 async function scenariosCleanup() {
   const currentWeek = epochWeek();
-  const cleanupResult = await async.parallel({
-    teamScenarios: (cb) => {
-      db('team_scenarios')
-        .whereNull('epoch_week')
-        .orWhere(
-          'epoch_week',
-          '<=',
-          currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS
-        )
-        .del()
-        .asCallback(cb);
-    },
-    scenarios: (cb) => {
-      db('scenarios')
-        .whereNull('epoch_week')
-        .orWhere(
-          'epoch_week',
-          '<=',
-          currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS
-        )
-        .del()
-        .asCallback(cb);
-    },
-    publicMatches: (cb) => {
-      db.raw(
-        "DELETE from public_matches where start_time < extract(epoch from now() - interval '6 month')::int"
-      ).asCallback(cb);
-    },
-    // gcData: (cb) => {
-    // db.raw('delete from match_gcdata where match_id not in (select match_id from matches) and match_id < (select max(match_id) - 50000000 from match_gcdata)').asCallback(cb);
-    // },
-    heroSearch: (cb) => {
-      db.raw(
-        'delete from hero_search where match_id < (select max(match_id) - 150000000 from hero_search)'
-      ).asCallback(cb);
-    },
-  });
-  console.log('[CLEANUP]', cleanupResult);
+  console.log(
+    'teamScenarios',
+    await db('team_scenarios')
+      .whereNull('epoch_week')
+      .orWhere(
+        'epoch_week',
+        '<=',
+        currentWeek - Number(config.MAXIMUM_AGE_SCENARIOS_ROWS),
+      )
+      .del(),
+  );
+  console.log(
+    'scenarios',
+    await db('scenarios')
+      .whereNull('epoch_week')
+      .orWhere(
+        'epoch_week',
+        '<=',
+        currentWeek - Number(config.MAXIMUM_AGE_SCENARIOS_ROWS),
+      )
+      .del(),
+  );
+  console.log(
+    'publicMatches',
+    await db.raw(
+      "DELETE from public_matches where start_time < extract(epoch from now() - interval '6 month')::int",
+    ),
+  );
+  console.log(
+    'heroSearch',
+    await db.raw(
+      'delete from hero_search where match_id < (select max(match_id) - 150000000 from hero_search)',
+    ),
+  );
   return;
 }
 invokeIntervalAsync(scenariosCleanup, 1000 * 60 * 60 * 6);

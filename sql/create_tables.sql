@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS matches (
   version integer,
   cosmetics json,
   series_id integer,
-  series_type integer
+  series_type integer,
+  replay_salt integer
 );
 CREATE INDEX IF NOT EXISTS matches_leagueid_idx on matches(leagueid) WHERE leagueid > 0;
 CREATE INDEX IF NOT EXISTS matches_start_time_idx on matches(start_time);

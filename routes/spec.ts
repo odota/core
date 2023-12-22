@@ -1,25 +1,22 @@
-import async from 'async';
 import constants from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
-import config from '../config.js';
+import config from '../config';
 import queue from '../store/queue';
-import search from '../store/search';
-import searchES from '../store/searchES';
+import { search } from '../store/search';
+import { searchES } from '../store/searchES';
 import buildMatch from '../store/buildMatch';
 import { buildStatus } from '../store/buildStatus';
 import {
   checkIfInExperiment,
   countPeers,
-  generateJob,
-  getDataPromise,
-  isContributor,
+  getPatchIndex,
   isRadiant,
   matchupToString,
   mergeObjects,
   redisCount,
 } from '../util/utility';
-import playerFields from './playerFields';
+import { subkeys } from './playerFields';
 import db from '../store/db';
 import redis from '../store/redis';
 import packageJson from '../package.json';
@@ -28,7 +25,6 @@ import params from './requests/importParams';
 import responses from './responses/schemas/importResponseSchemas';
 import generateOperationId from './generateOperationId';
 import {
-  insertMatchPromise,
   getDistributions,
   getPlayerRatings,
   getHeroBenchmarks,
@@ -43,12 +39,13 @@ import {
   getTeamScenarios,
   getPlayerMatches,
   getItemTimings,
+  isSubscriber,
 } from '../store/queries';
+import { filterDeps } from '../util/filter';
 const { Client } = pg;
-const { subkeys, countCats } = playerFields;
 const parameters = Object.values(params).reduce<any>(
   (acc, category: any) => ({ ...acc, ...category }),
-  {}
+  {},
 );
 const playerParamNames = [
   'accountIdParam',
@@ -76,7 +73,7 @@ const playerParams = playerParamNames.map((paramName) => ({
 }));
 const schemas = Object.values(responses).reduce<any>(
   (acc, category: any) => ({ ...acc, ...category }),
-  {}
+  {},
 );
 const securitySchemes = {
   api_key: {
@@ -137,8 +134,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         route: () => '/matches/:match_id',
         func: async (req, res, cb) => {
           try {
-            const match = await buildMatch(req.params.match_id, {
-              source: req.query.source,
+            const match = await buildMatch(Number(req.params.match_id), {
               meta: req.query.meta,
             });
             if (!match) {
@@ -176,7 +172,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/playersByRank',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           db.raw(
             `
           SELECT account_id, rating, fh_unavailable
@@ -186,7 +182,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           ORDER BY rating DESC
           LIMIT 100
           `,
-            []
+            [],
           ).asCallback((err: Error | null, result: any) => {
             if (err) {
               return cb(err);
@@ -216,69 +212,26 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const accountId = Number(req.params.account_id);
-          async.parallel(
-            {
-              profile(cb) {
-                getPlayer(db, accountId, (err, playerData) => {
-                  if (playerData !== null && playerData !== undefined) {
-                    playerData.is_contributor = isContributor(
-                      accountId.toString()
-                    );
-                    playerData.is_subscriber = Boolean(playerData?.status);
-                  }
-                  cb(err as any, playerData);
-                });
-              },
-              solo_competitive_rank(cb) {
-                db.first()
-                  .from('solo_competitive_rank')
-                  .where({ account_id: accountId })
-                  .asCallback(
-                    (err: Error | null, row: { rating: string } | null) => {
-                      cb(err, row ? row.rating : null);
-                    }
-                  );
-              },
-              competitive_rank(cb) {
-                db.first()
-                  .from('competitive_rank')
-                  .where({ account_id: accountId })
-                  .asCallback(
-                    (err: Error | null, row: { rating: string } | null) => {
-                      cb(err, row ? row.rating : null);
-                    }
-                  );
-              },
-              rank_tier(cb) {
-                db.first()
-                  .from('rank_tier')
-                  .where({ account_id: accountId })
-                  .asCallback(
-                    (err: Error | null, row: { rating: string } | null) => {
-                      cb(err, row ? row.rating : null);
-                    }
-                  );
-              },
-              leaderboard_rank(cb) {
-                db.first()
-                  .from('leaderboard_rank')
-                  .where({ account_id: accountId })
-                  .asCallback(
-                    (err: Error | null, row: { rating: string } | null) => {
-                      cb(err, row ? row.rating : null);
-                    }
-                  );
-              },
-            },
-            (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            }
-          );
+          const playerData = await getPlayer(db, accountId);
+          if (!playerData) {
+            // 404 error
+            return cb();
+          }
+          const [rt, lr] = await Promise.all([
+            db.first().from('rank_tier').where({ account_id: accountId }),
+            db
+              .first()
+              .from('leaderboard_rank')
+              .where({ account_id: accountId }),
+          ]);
+          const result = {
+            profile: playerData,
+            rank_tier: rt?.rating ?? null,
+            leaderboard_rank: lr?.rating ?? null,
+          };
+          return res.json(result);
         },
       },
     },
@@ -302,32 +255,23 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/wl',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const result = {
             win: 0,
             lose: 0,
           };
-          req.queryObj.project = req.queryObj.project.concat(
-            'player_slot',
-            'radiant_win'
-          );
-          getPlayerMatches(
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              cache.forEach((m) => {
-                if (isRadiant(m) === m.radiant_win) {
-                  result.win += 1;
-                } else {
-                  result.lose += 1;
-                }
-              });
-              return sendDataWithCache(req, res, result, 'wl');
-            }
           );
+          cache.forEach((m) => {
+            if (isRadiant(m) === m.radiant_win) {
+              result.win += 1;
+            } else {
+              result.lose += 1;
+            }
+          });
+          return sendDataWithCache(req, res, result, 'wl');
         },
       },
     },
@@ -335,7 +279,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
       get: {
         operationId: generateOperationId(
           'get',
-          '/players/{account_id}/recentMatches'
+          '/players/{account_id}/recentMatches',
         ),
         summary: 'GET /players/{account_id}/recentMatches',
         description: 'Recent matches played',
@@ -360,45 +304,35 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/recentMatches',
-        func: (req, res, cb) => {
-          getPlayerMatches(
-            req.params.account_id,
-            {
-              project: req.queryObj.project.concat([
-                'hero_id',
-                'start_time',
-                'duration',
-                'player_slot',
-                'radiant_win',
-                'game_mode',
-                'lobby_type',
-                'version',
-                'kills',
-                'deaths',
-                'assists',
-                'average_rank',
-                'xp_per_min',
-                'gold_per_min',
-                'hero_damage',
-                'tower_damage',
-                'hero_healing',
-                'last_hits',
-                'lane',
-                'lane_role',
-                'is_roaming',
-                'cluster',
-                'leaver_status',
-                'party_size',
-              ]),
-              dbLimit: 20,
-            },
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(cache?.filter((match) => match.duration));
-            }
-          );
+        func: async (req, res, cb) => {
+          const cache = await getPlayerMatches(req.params.account_id, {
+            project: req.queryObj.project.concat([
+              'hero_id',
+              'start_time',
+              'duration',
+              'game_mode',
+              'lobby_type',
+              'version',
+              'kills',
+              'deaths',
+              'assists',
+              'average_rank',
+              'xp_per_min',
+              'gold_per_min',
+              'hero_damage',
+              'tower_damage',
+              'hero_healing',
+              'last_hits',
+              'lane',
+              'lane_role',
+              'is_roaming',
+              'cluster',
+              'leaver_status',
+              'party_size',
+            ]),
+            dbLimit: 20,
+          });
+          return res.json(cache?.filter((match) => match.duration));
         },
       },
     },
@@ -406,7 +340,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
       get: {
         operationId: generateOperationId(
           'get',
-          '/players/{account_id}/matches'
+          '/players/{account_id}/matches',
         ),
         summary: 'GET /players/{account_id}/matches',
         description: 'Matches played',
@@ -433,14 +367,12 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/matches',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           // Use passed fields as additional fields, if available
           const additionalFields = req.query.project || [
             'hero_id',
             'start_time',
             'duration',
-            'player_slot',
-            'radiant_win',
             'game_mode',
             'lobby_type',
             'version',
@@ -453,16 +385,11 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'party_size',
           ];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
-          getPlayerMatches(
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(cache);
-            }
           );
+          return res.json(cache);
         },
       },
     },
@@ -489,7 +416,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/heroes',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const heroes: AnyDict = {};
           // prefill heroes with every hero
           Object.keys(constants.heroes).forEach((heroId) => {
@@ -510,53 +437,46 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'heroes',
             'account_id',
             'start_time',
-            'player_slot',
-            'radiant_win'
           );
-          getPlayerMatches(
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              cache.forEach((m) => {
-                const playerWin = isRadiant(m) === m.radiant_win;
-                const group = m.heroes || {};
-                Object.keys(group).forEach((key) => {
-                  const tm = group[key];
-                  const tmHero = tm.hero_id;
-                  // don't count invalid heroes
-                  if (tmHero in heroes) {
-                    if (isRadiant(tm) === isRadiant(m)) {
-                      if (tm.account_id === m.account_id) {
-                        heroes[tmHero].games += 1;
-                        heroes[tmHero].win += playerWin ? 1 : 0;
-                        if (m.start_time > heroes[tmHero].last_played) {
-                          heroes[tmHero].last_played = m.start_time;
-                        }
-                      } else {
-                        heroes[tmHero].with_games += 1;
-                        heroes[tmHero].with_win += playerWin ? 1 : 0;
-                      }
-                    } else {
-                      heroes[tmHero].against_games += 1;
-                      heroes[tmHero].against_win += playerWin ? 1 : 0;
-                    }
-                  }
-                });
-              });
-              const result = Object.keys(heroes)
-                .map((k) => heroes[k])
-                .filter(
-                  (hero) =>
-                    !req.queryObj.having ||
-                    hero.games >= Number(req.queryObj.having)
-                )
-                .sort((a, b) => b.games - a.games);
-              return sendDataWithCache(req, res, result, 'heroes');
-            }
           );
+          cache.forEach((m) => {
+            const playerWin = isRadiant(m) === m.radiant_win;
+            const group: PGroup = m.heroes || {};
+            Object.keys(group).forEach((key) => {
+              const tm = group[key];
+              const tmHero = tm.hero_id;
+              // don't count invalid heroes
+              if (tmHero in heroes) {
+                if (isRadiant({ player_slot: Number(key) }) === isRadiant(m)) {
+                  if (tm.account_id === m.account_id) {
+                    heroes[tmHero].games += 1;
+                    heroes[tmHero].win += playerWin ? 1 : 0;
+                    if (m.start_time > heroes[tmHero].last_played) {
+                      heroes[tmHero].last_played = m.start_time;
+                    }
+                  } else {
+                    heroes[tmHero].with_games += 1;
+                    heroes[tmHero].with_win += playerWin ? 1 : 0;
+                  }
+                } else {
+                  heroes[tmHero].against_games += 1;
+                  heroes[tmHero].against_win += playerWin ? 1 : 0;
+                }
+              }
+            });
+          });
+          const result = Object.keys(heroes)
+            .map((k) => heroes[k])
+            .filter(
+              (hero) =>
+                !req.queryObj.having ||
+                hero.games >= Number(req.queryObj.having),
+            )
+            .sort((a, b) => b.games - a.games);
+          return sendDataWithCache(req, res, result, 'heroes');
         },
       },
     },
@@ -583,38 +503,22 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/peers',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           req.queryObj.project = req.queryObj.project.concat(
             'heroes',
             'start_time',
-            'player_slot',
-            'radiant_win',
             'gold_per_min',
-            'xp_per_min'
+            'xp_per_min',
           );
-          getPlayerMatches(
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              const teammates = countPeers(cache);
-              return getPeers(
-                db,
-                teammates,
-                {
-                  account_id: req.params.account_id,
-                },
-                (err, result) => {
-                  if (err) {
-                    return cb(err);
-                  }
-                  return sendDataWithCache(req, res, result, 'peers');
-                }
-              );
-            }
           );
+          const teammates = countPeers(cache);
+          const result = await getPeers(teammates, {
+            account_id: req.params.account_id,
+          });
+          return sendDataWithCache(req, res, result, 'peers');
         },
       },
     },
@@ -641,36 +545,20 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/pros',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           req.queryObj.project = req.queryObj.project.concat(
             'heroes',
             'start_time',
-            'player_slot',
-            'radiant_win'
           );
-          getPlayerMatches(
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              const teammates = countPeers(cache);
-              return getProPeers(
-                db,
-                teammates,
-                {
-                  account_id: req.params.account_id,
-                },
-                (err, result) => {
-                  if (err) {
-                    return cb(err);
-                  }
-                  return res.json(result);
-                }
-              );
-            }
           );
+          const teammates = countPeers(cache);
+          const result = await getProPeers(teammates, {
+            account_id: req.params.account_id,
+          });
+          return res.json(result);
         },
       },
     },
@@ -697,41 +585,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/totals',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const result: AnyDict = {};
-          Object.keys(subkeys).forEach((key) => {
+          subkeys.forEach((key) => {
             result[key] = {
               field: key,
               n: 0,
               sum: 0,
             };
           });
-          req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(subkeys) as (keyof ParsedPlayerMatch)[]
-          );
-          getPlayerMatches(
+          req.queryObj.project = req.queryObj.project.concat(subkeys);
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              cache.forEach((m) => {
-                Object.keys(subkeys).forEach((key) => {
-                  if (
-                    m[key as keyof ParsedPlayerMatch] !== null &&
-                    m[key as keyof ParsedPlayerMatch] !== undefined
-                  ) {
-                    result[key].n += 1;
-                    result[key].sum += Number(
-                      m[key as keyof ParsedPlayerMatch]
-                    );
-                  }
-                });
-              });
-              return res.json(Object.keys(result).map((key) => result[key]));
-            }
           );
+          cache.forEach((m) => {
+            subkeys.forEach((key) => {
+              if (m[key] !== null && m[key] !== undefined) {
+                result[key].n += 1;
+                result[key].sum += Number(m[key]);
+              }
+            });
+          });
+          return res.json(Object.keys(result).map((key) => result[key]));
         },
       },
     },
@@ -755,45 +631,53 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/counts',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const result: AnyDict = {};
-          Object.keys(countCats).forEach((key) => {
+          const countCats = [
+            'leaver_status',
+            'game_mode',
+            'lobby_type',
+            'lane_role',
+            'region',
+            'patch',
+            'is_radiant',
+          ] as const;
+          countCats.forEach((key) => {
             result[key] = {};
           });
-          req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(countCats) as (keyof ParsedPlayerMatch)[]
-          );
-          getPlayerMatches(
+          const deps = countCats.map((name) => filterDeps[name]).flat();
+          req.queryObj.project = req.queryObj.project.concat(deps);
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              cache.forEach((m) => {
-                m.is_radiant = isRadiant(m);
-                Object.keys(countCats).forEach((key) => {
-                  if (
-                    !result[key][Math.floor(m[key as keyof ParsedPlayerMatch])]
-                  ) {
-                    result[key][Math.floor(m[key as keyof ParsedPlayerMatch])] =
-                      {
-                        games: 0,
-                        win: 0,
-                      };
-                  }
-                  result[key][
-                    Math.floor(m[key as keyof ParsedPlayerMatch])
-                  ].games += 1;
-                  const won = Number(m.radiant_win === isRadiant(m));
-                  result[key][
-                    Math.floor(m[key as keyof ParsedPlayerMatch])
-                  ].win += won;
-                });
-              });
-              return res.json(result);
-            }
           );
+          cache.forEach((m) => {
+            // Compute the needed fields
+            const record: Record<
+              (typeof countCats)[number],
+              number | boolean | null
+            > = {
+              is_radiant: isRadiant(m),
+              patch: getPatchIndex(m.start_time),
+              region: constants.cluster[m.cluster],
+              leaver_status: m.leaver_status,
+              game_mode: m.game_mode,
+              lobby_type: m.lobby_type,
+              lane_role: m.lane_role,
+            };
+            countCats.forEach((key) => {
+              if (!result[key][Math.floor(Number(record[key]))]) {
+                result[key][Math.floor(Number(record[key]))] = {
+                  games: 0,
+                  win: 0,
+                };
+              }
+              result[key][Math.floor(Number(record[key]))].games += 1;
+              const won = Number(m.radiant_win === isRadiant(m));
+              result[key][Math.floor(Number(record[key]))].win += won;
+            });
+          });
+          return res.json(result);
         },
       },
     },
@@ -801,7 +685,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
       get: {
         operationId: generateOperationId(
           'get',
-          '/players/{account_id}/histograms/{field}'
+          '/players/{account_id}/histograms/{field}',
         ),
         summary: 'GET /players/{account_id}/histograms',
         description: 'Distribution of matches in a single stat',
@@ -829,46 +713,43 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/histograms/:field',
-        func: (req, res, cb) => {
-          const field = req.params.field as keyof ParsedPlayerMatch;
-          req.queryObj.project = req.queryObj.project
-            .concat('radiant_win', 'player_slot')
-            .concat([field].filter((f) => subkeys[f]));
-          getPlayerMatches(
+        func: async (req, res, cb) => {
+          const field = subkeys.find((key) => key === req.params.field);
+          if (field) {
+            req.queryObj.project = req.queryObj.project.concat(field);
+          } else {
+            return res.json([]);
+          }
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              const buckets = 40;
-              // Find the maximum value to determine how large each bucket should be
-              const max = Math.max(...cache.map((m) => m[field]));
-              // Round the bucket size up to the nearest integer
-              const bucketSize = Math.ceil((max + 1) / buckets);
-              const bucketArray = Array.from(
-                {
-                  length: buckets,
-                },
-                (value, index) => ({
-                  x: bucketSize * index,
-                  games: 0,
-                  win: 0,
-                })
-              );
-              cache.forEach((m) => {
-                if (m[field] || m[field] === 0) {
-                  const index = Math.floor(m[field] / bucketSize);
-                  if (bucketArray[index]) {
-                    bucketArray[index].games += 1;
-                    bucketArray[index].win +=
-                      isRadiant(m) === m.radiant_win ? 1 : 0;
-                  }
-                }
-              });
-              return res.json(bucketArray);
-            }
           );
+          const buckets = 40;
+          // Find the maximum value to determine how large each bucket should be
+          const max = Math.max(...cache.map((m) => m[field]));
+          // Round the bucket size up to the nearest integer
+          const bucketSize = Math.ceil((max + 1) / buckets);
+          const bucketArray = Array.from(
+            {
+              length: buckets,
+            },
+            (value, index) => ({
+              x: bucketSize * index,
+              games: 0,
+              win: 0,
+            }),
+          );
+          cache.forEach((m) => {
+            if (m[field] || m[field] === 0) {
+              const index = Math.floor(m[field] / bucketSize);
+              if (bucketArray[index]) {
+                bucketArray[index].games += 1;
+                bucketArray[index].win +=
+                  isRadiant(m) === m.radiant_win ? 1 : 0;
+              }
+            }
+          });
+          return res.json(bucketArray);
         },
       },
     },
@@ -876,7 +757,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
       get: {
         operationId: generateOperationId(
           'get',
-          '/players/{account_id}/wardmap'
+          '/players/{account_id}/wardmap',
         ),
         summary: 'GET /players/{account_id}/wardmap',
         description: 'Wards placed in matches played',
@@ -895,32 +776,27 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/wardmap',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const result = {
             obs: {},
             sen: {},
           };
           req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(result) as (keyof ParsedPlayerMatch)[]
+            Object.keys(result) as (keyof ParsedPlayerMatch)[],
           );
-          getPlayerMatches(
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              cache.forEach((m) => {
-                Object.keys(result).forEach((key) => {
-                  mergeObjects(
-                    result[key as keyof typeof result],
-                    m[key as keyof ParsedPlayerMatch]
-                  );
-                });
-              });
-              return res.json(result);
-            }
           );
+          cache.forEach((m) => {
+            Object.keys(result).forEach((key) => {
+              mergeObjects(
+                result[key as keyof typeof result],
+                m[key as keyof ParsedPlayerMatch],
+              );
+            });
+          });
+          return res.json(result);
         },
       },
     },
@@ -928,7 +804,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
       get: {
         operationId: generateOperationId(
           'get',
-          '/players/{account_id}/wordcloud'
+          '/players/{account_id}/wordcloud',
         ),
         summary: 'GET /players/{account_id}/wordcloud',
         description: 'Words said/read in matches played',
@@ -947,32 +823,27 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/wordcloud',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const result = {
             my_word_counts: {},
             all_word_counts: {},
           };
           req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(result) as (keyof ParsedPlayerMatch)[]
+            Object.keys(result) as (keyof ParsedPlayerMatch)[],
           );
-          getPlayerMatches(
+          const cache = await getPlayerMatches(
             req.params.account_id,
             req.queryObj,
-            (err, cache) => {
-              if (err) {
-                return cb(err);
-              }
-              cache.forEach((m) => {
-                Object.keys(result).forEach((key) => {
-                  mergeObjects(
-                    result[key as keyof typeof result],
-                    m[key as keyof ParsedPlayerMatch]
-                  );
-                });
-              });
-              return res.json(result);
-            }
           );
+          cache.forEach((m) => {
+            Object.keys(result).forEach((key) => {
+              mergeObjects(
+                result[key as keyof typeof result],
+                m[key as keyof ParsedPlayerMatch],
+              );
+            });
+          });
+          return res.json(result);
         },
       },
     },
@@ -980,7 +851,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
       get: {
         operationId: generateOperationId(
           'get',
-          '/players/{account_id}/ratings'
+          '/players/{account_id}/ratings',
         ),
         summary: 'GET /players/{account_id}/ratings',
         description: 'Player rating history',
@@ -1003,12 +874,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/ratings',
         func: async (req, res, cb) => {
-          try {
-            const result = await getPlayerRatings(req.params.account_id);
-            return res.json(result);
-          } catch (e) {
-            return cb(e);
-          }
+          const result = await getPlayerRatings(req.params.account_id);
+          return res.json(result);
         },
       },
     },
@@ -1016,7 +883,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
       get: {
         operationId: generateOperationId(
           'get',
-          '/players/{account_id}/rankings'
+          '/players/{account_id}/rankings',
         ),
         summary: 'GET /players/{account_id}/rankings',
         description: 'Player hero rankings',
@@ -1038,13 +905,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/rankings',
-        func: (req, res, cb) => {
-          getPlayerHeroRankings(req.params.account_id, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+        func: async (req, res, cb) => {
+          return res.json(await getPlayerHeroRankings(req.params.account_id));
         },
       },
     },
@@ -1070,19 +932,15 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/refresh',
         func: async (req, res, cb) => {
-          try {
-            const length = await queue.addJob({
-              name: 'fhQueue',
-              data: {
-                account_id: Number(req.params.account_id),
-              },
-            });
-            return res.json({
-              length,
-            });
-          } catch (e) {
-            return cb(e);
-          }
+          const length = await queue.addJob({
+            name: 'fhQueue',
+            data: {
+              account_id: Number(req.params.account_id),
+            },
+          });
+          return res.json({
+            length,
+          });
         },
       },
     },
@@ -1109,21 +967,17 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/proPlayers',
-        func: (req, res, cb) => {
-          db.select()
+        func: async (req, res, cb) => {
+          const result = await db
+            .select()
             .from('players')
             .rightJoin(
               'notable_players',
               'players.account_id',
-              'notable_players.account_id'
+              'notable_players.account_id',
             )
-            .orderBy('notable_players.account_id', 'asc')
-            .asCallback((err: Error | null, result: any[]) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
+            .orderBy('notable_players.account_id', 'asc');
+          return res.json(result);
         },
       },
     },
@@ -1150,8 +1004,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/proMatches',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `
           SELECT match_id, duration, start_time,
           radiant_team_id, radiant.name as radiant_name,
@@ -1170,13 +1024,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           ORDER BY match_id DESC
           LIMIT 100
           `,
-            [req.query.less_than_match_id || Number.MAX_SAFE_INTEGER]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [req.query.less_than_match_id || Number.MAX_SAFE_INTEGER],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -1229,7 +1079,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           const maxRank = req.query.max_rank
             ? `AND avg_rank_tier <= ${req.query.max_rank}`
             : '';
-          db.raw(
+          const { rows } = await db.raw(
             `
           WITH match_ids AS (SELECT match_id FROM public_matches
           WHERE TRUE
@@ -1250,13 +1100,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           USING(match_id)
           ${order}
           `,
-            [moreThan, lessThan]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [moreThan, lessThan],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -1283,23 +1129,19 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/parsedMatches',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const lessThan =
             req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
-          db.raw(
+          const { rows } = await db.raw(
             `
           SELECT match_id FROM parsed_matches
           WHERE match_id < ?
           ORDER BY match_id DESC
           LIMIT 100
           `,
-            [lessThan]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [lessThan],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -1374,13 +1216,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/metadata',
-        func: (req, res, cb) => {
-          getMetadata(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+        func: async (req, res, cb) => {
+          return res.json(await getMetadata(req));
         },
       },
     },
@@ -1405,12 +1242,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/distributions',
         func: async (req, res, cb) => {
-          try {
-            const result = await getDistributions();
-            return res.json(result);
-          } catch (e) {
-            cb(e);
-          }
+          const result = await getDistributions();
+          return res.json(result);
         },
       },
     },
@@ -1447,27 +1280,17 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/search',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           if (!req.query.q) {
             return res.status(400).json([]);
           }
-          if (
-            req.query.es ||
-            checkIfInExperiment(res.locals.ip, config.ES_SEARCH_PERCENT)
-          ) {
-            return searchES(req.query, (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
+          let result = [];
+          if (req.query.pg) {
+            result = await search(req.query.q);
+          } else {
+            result = await searchES(req.query.q);
           }
-          return search(req.query, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+          return res.json(result);
         },
       },
     },
@@ -1501,13 +1324,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/rankings',
-        func: (req, res, cb) => {
-          getHeroRankings(db, redis, req.query.hero_id, {}, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+        func: async (req, res, cb) => {
+          return res.json(await getHeroRankings(req.query.hero_id));
         },
       },
     },
@@ -1541,20 +1359,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/benchmarks',
-        func: (req, res, cb) => {
-          getHeroBenchmarks(
-            db,
-            redis,
-            {
-              hero_id: req.query.hero_id,
-            },
-            (err, result) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            }
-          );
+        func: async (req, res, cb) => {
+          const result = await getHeroBenchmarks(req.query.hero_id);
+          return res.json(result);
         },
       },
     },
@@ -1579,12 +1386,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/status',
         func: async (req, res, cb) => {
-          try {
-            const status = await buildStatus();
-            return res.json(status);
-          } catch (e) {
-            return cb(e);
-          }
+          const status = await buildStatus();
+          return res.json(status);
         },
       },
     },
@@ -1608,7 +1411,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/health/:metric?',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           redis.hgetall('health', (err, result) => {
             if (err) {
               return cb(err);
@@ -1662,15 +1465,11 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/request/:jobId',
         func: async (req, res, cb) => {
-          try {
-            const job = await queue.getReliableJob(req.params.jobId);
-            if (job) {
-              return res.json({ ...job, jobId: job.id });
-            }
-            return res.json(null);
-          } catch (e) {
-            return cb(e);
+          const job = await queue.getReliableJob(req.params.jobId);
+          if (job) {
+            return res.json({ ...job, jobId: job.id });
           }
+          return res.json(null);
         },
       },
     },
@@ -1695,65 +1494,40 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/request/:match_id',
-        func: async (req, res) => {
+        func: async (req, res, cb) => {
+          // We validated the ID in middleware
           const matchId = req.params.match_id;
-          const input = {
-            match_id: Number(matchId),
-          };
-          try {
-            if (input && input.match_id) {
-              // match id request, get data from API
-              const body = await getDataPromise(
-                generateJob('api_details', input).url
-              );
-              // Count this request
-              redisCount(redis, 'request');
-              if (req.query.api_key) {
-                redisCount(redis, 'request_api_key');
-              }
-              // match details response
-              const match = body.result;
-              // Check if match is already parsed
-              const isParsed = Boolean(
-                (
-                  await db.raw(
-                    'select match_id from parsed_matches where match_id = ?',
-                    [match.match_id]
-                  )
-                ).rows[0]
-              );
-              if (isParsed) {
-                redisCount(redis, 'reparse');
-              }
-              const job = await insertMatchPromise(match, {
-                type: 'api',
-                attempts: 1,
-                priority: req.query.api_key ? 2 : 1,
-                forceParse: true,
-              });
-              exitWithJob(null, job);
-            } else {
-              return exitWithJob('invalid input');
-            }
-          } catch (e) {
-            return exitWithJob(e);
+          // Count this request
+          redisCount(redis, 'request');
+          if (req.query.api_key) {
+            redisCount(redis, 'request_api_key');
           }
-          function exitWithJob(
-            err: Error | string | null | unknown,
-            parseJob?: { id: number } | null
-          ) {
-            if (err) {
-              console.error(err);
-              return res.status(400).json({
-                error: err,
-              });
-            }
-            return res.status(200).json({
-              job: {
-                jobId: parseJob && parseJob.id,
-              },
-            });
+          let priority = 1;
+          if (req.query.api_key) {
+            // Lower priority for high-volume API key requests
+            priority = 2;
           }
+          // Give subscribers higher parse priority
+          if (req.user?.account_id) {
+            if (await isSubscriber(req.user.account_id)) {
+              priority = -3;
+            }
+          }
+          const parseJob = await queue.addReliableJob(
+            {
+              name: 'parse',
+              data: { match_id: Number(matchId) },
+            },
+            {
+              attempts: 1,
+              priority,
+            },
+          );
+          return res.status(200).json({
+            job: {
+              jobId: parseJob.id,
+            },
+          });
         },
       },
     },
@@ -1810,39 +1584,29 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/findMatches',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           // accept as input two arrays of up to 5
           const t0 = [].concat(req.query.teamA || []).slice(0, 5);
           const t1 = [].concat(req.query.teamB || []).slice(0, 5);
           // Construct key for redis
           const key = `combos:${matchupToString(t0, t1, true)}`;
-          redis.get(key, (err, reply) => {
-            if (err) {
-              return cb(err);
-            }
-            if (reply) {
-              return res.end(reply);
-            }
-            // Determine which comes first
-            // const rcg = groupToString(t0);
-            // const dcg = groupToString(t1);
-            // const inverted = rcg > dcg;
-            const inverted = false;
-            const teamA = inverted ? t1 : t0;
-            const teamB = inverted ? t0 : t1;
-            return db
-              .raw(
-                'select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10',
-                [teamA, teamB, teamB, teamA]
-              )
-              .asCallback((err: Error | null, result: any) => {
-                if (err) {
-                  return cb(err);
-                }
-                redis.setex(key, 60, JSON.stringify(result.rows));
-                return res.json(result.rows);
-              });
-          });
+          const reply = await redis.get(key);
+          if (reply) {
+            return res.end(reply);
+          }
+          // Determine which comes first
+          // const rcg = groupToString(t0);
+          // const dcg = groupToString(t1);
+          // const inverted = rcg > dcg;
+          const inverted = false;
+          const teamA = inverted ? t1 : t0;
+          const teamB = inverted ? t0 : t1;
+          const { rows } = await db.raw(
+            'select * from hero_search where (teamA @> ? AND teamB @> ?) OR (teamA @> ? AND teamB @> ?) order by match_id desc limit 10',
+            [teamA, teamB, teamB, teamA],
+          );
+          redis.setex(key, 60, JSON.stringify(rows));
+          return res.json(rows);
         },
       },
     },
@@ -1868,16 +1632,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/heroes',
-        func: (req, res, cb) => {
-          db.select()
-            .from('heroes')
-            .orderBy('id', 'asc')
-            .asCallback((err: Error | null, result: any) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
+        func: async (req, res, cb) => {
+          const result = await db.select().from('heroes').orderBy('id', 'asc');
+          return res.json(result);
         },
       },
     },
@@ -1905,12 +1662,71 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/heroStats',
         func: async (req, res, cb) => {
-          // fetch from cached redis value
-          try {
-            const result = await redis.get('heroStats');
-            return res.json(result ? JSON.parse(result) : null);
-          } catch (e) {
-            return cb(e);
+          const cached = await redis.get('heroStats2');
+          if (cached) {
+            return res.json(JSON.parse(cached));
+          }
+          // Assemble the result for each hero
+          const result = await Promise.all(
+            Object.values(constants.heroes).map((hero) => getHeroStat(hero)),
+          );
+          redis.setex('heroStats2', 60, JSON.stringify(result));
+          return res.json(result);
+
+          async function getHeroStat(hero: any) {
+            const final = { ...hero };
+            // Add all the count properties
+            const names = ['pick', 'win', 'ban'];
+            const tiers = [
+              '1',
+              '2',
+              '3',
+              '4',
+              '5',
+              '6',
+              '7',
+              '8',
+              'turbo',
+              'pro',
+              'pub',
+            ];
+            const tierNames: string[][] = [];
+            tiers.forEach((tier) => {
+              names.forEach((name) => {
+                if (name === 'ban' && tier !== 'pro') {
+                  // Only pro has ban counts
+                  return;
+                }
+                tierNames.push([tier, name]);
+              });
+            });
+            await Promise.all(
+              tierNames.map(async ([tier, name]) => {
+                const heroId = hero.id;
+                const keyArr = [];
+                for (let i = 6; i >= 0; i -= 1) {
+                  keyArr.push(
+                    // Redis keys are in the format `${heroId}:${tier}:${name}:${timestamp}`
+                    // Get the unix timestamps for the start of the last 7 days
+                    `${heroId}:${tier}:${name}:${moment()
+                      .startOf('day')
+                      .subtract(i, 'day')
+                      .format('X')}`,
+                  );
+                }
+                // mget the 7 keys for this hero and sum them
+                const counts = await redis.mget(...keyArr);
+                const sum = counts.reduce((a, b) => Number(a) + Number(b), 0);
+                // Object keys are in the format `${tier}_${name}`
+                // For compatibility, turbo has s on the end (picks/wins)
+                const objKey = `${tier}_${name}${tier === 'turbo' ? 's' : ''}`;
+                final[objKey] = sum;
+                if (tier === 'pub' || tier === 'turbo') {
+                  final[objKey + '_trend'] = counts.map(Number);
+                }
+              }),
+            );
+            return final;
           }
         },
       },
@@ -1938,9 +1754,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/matches',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(
+          const { rows } = await db.raw(
             `SELECT
             matches.match_id,
             matches.start_time,
@@ -1961,13 +1777,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             WHERE player_matches.hero_id = ?
             ORDER BY matches.match_id DESC
             LIMIT 100`,
-            [heroId]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [heroId],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -1994,9 +1806,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/matchups',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(
+          const { rows } = await db.raw(
             `SELECT
             pm2.hero_id,
             count(player_matches.match_id) games_played,
@@ -2008,13 +1820,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             AND matches.start_time > ?
             GROUP BY pm2.hero_id
             ORDER BY games_played DESC`,
-            [heroId, moment().subtract(1, 'year').format('X')]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [heroId, moment().subtract(1, 'year').format('X')],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2041,9 +1849,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/durations',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(
+          const { rows } = await db.raw(
             `SELECT
             (matches.duration / 300 * 300) duration_bin,
             count(match_id) games_played,
@@ -2052,13 +1860,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             JOIN player_matches using(match_id)
             WHERE player_matches.hero_id = ?
             GROUP BY (matches.duration / 300 * 300)`,
-            [heroId]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [heroId],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2088,9 +1892,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/players',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const heroId = req.params.hero_id;
-          db.raw(
+          const { rows } = await db.raw(
             `SELECT
             account_id,
             count(match_id) games_played,
@@ -2100,13 +1904,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             WHERE player_matches.hero_id = ?
             GROUP BY account_id
             ORDER BY games_played DESC`,
-            [heroId]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [heroId],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2114,7 +1914,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
       get: {
         operationId: generateOperationId(
           'get',
-          '/heroes/{hero_id}/itemPopularity'
+          '/heroes/{hero_id}/itemPopularity',
         ),
         summary: 'GET /heroes/{hero_id}/itemPopularity',
         description:
@@ -2134,14 +1934,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/itemPopularity',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const heroId = req.params.hero_id;
-          getHeroItemPopularity(db, redis, heroId, {}, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result);
-          });
+          const result = await getHeroItemPopularity(heroId);
+          return res.json(result);
         },
       },
     },
@@ -2167,15 +1963,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/leagues',
-        func: (req, res, cb) => {
-          db.select()
-            .from('leagues')
-            .asCallback((err: Error | null, result: any) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
-            });
+        func: async (req, res, cb) => {
+          const result = await db.select().from('leagues');
+          return res.json(result);
         },
       },
     },
@@ -2202,18 +1992,14 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/leagues/:league_id',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `SELECT leagues.*
             FROM leagues
             WHERE leagues.leagueid = ?`,
-            [req.params.league_id]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows[0]);
-          });
+            [req.params.league_id],
+          );
+          return res.json(rows[0]);
         },
       },
     },
@@ -2237,18 +2023,14 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/leagues/:league_id/matches',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `SELECT matches.*
             FROM matches
             WHERE matches.leagueid = ?`,
-            [req.params.league_id]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [req.params.league_id],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2272,8 +2054,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/leagues/:league_id/teams',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
             FROM matches
             LEFT JOIN team_match using(match_id)
@@ -2281,13 +2063,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             LEFT JOIN team_rating using(team_id)
             WHERE matches.leagueid = ?
             GROUP BY (teams.team_id, team_rating.team_id)`,
-            [req.params.league_id]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [req.params.league_id],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2325,21 +2103,17 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/teams',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
             FROM teams
             LEFT JOIN team_rating using(team_id)
             ORDER BY rating desc NULLS LAST
             LIMIT 1000
             OFFSET ?`,
-            [(Number(req.query.page) || 0) * 1000]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [(Number(req.query.page) || 0) * 1000],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2363,19 +2137,15 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/teams/:team_id',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
             FROM teams
             LEFT JOIN team_rating using(team_id)
             WHERE teams.team_id = ?`,
-            [req.params.team_id]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows[0]);
-          });
+            [req.params.team_id],
+          );
+          return res.json(rows[0]);
         },
       },
     },
@@ -2399,8 +2169,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/teams/:team_id/matches',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `
             SELECT team_match.match_id, radiant_win, radiant_score, dire_score, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
             FROM team_match
@@ -2411,13 +2181,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             WHERE team_match.team_id = ?
             ORDER BY match_id DESC
             `,
-            [req.params.team_id]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [req.params.team_id],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2441,8 +2207,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/teams/:team_id/players',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
             FROM matches
             JOIN team_match USING(match_id)
@@ -2452,13 +2218,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             WHERE teams.team_id = ?
             GROUP BY account_id, notable_players.name, notable_players.team_id, teams.team_id
             ORDER BY games_played DESC`,
-            [req.params.team_id]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [req.params.team_id],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2482,8 +2244,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/teams/:team_id/heroes',
-        func: (req, res, cb) => {
-          db.raw(
+        func: async (req, res, cb) => {
+          const { rows } = await db.raw(
             `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
             JOIN team_match USING(match_id)
@@ -2493,13 +2255,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             WHERE teams.team_id = ?
             GROUP BY hero_id, localized_name
             ORDER BY games_played DESC`,
-            [req.params.team_id]
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+            [req.params.team_id],
+          );
+          return res.json(rows);
         },
       },
     },
@@ -2526,12 +2284,12 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/replays',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           db.select(['match_id', 'cluster', 'replay_salt'])
             .from('match_gcdata')
             .whereIn(
               'match_id',
-              [].concat(req.query.match_id || []).slice(0, 5)
+              [].concat(req.query.match_id || []).slice(0, 5),
             )
             .asCallback((err: Error | null, result: any) => {
               if (err) {
@@ -2575,7 +2333,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/records/:field',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           redis.zrevrange(
             `records:${req.params.field}`,
             0,
@@ -2600,7 +2358,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
                 })
                 .filter((r, i) => i % 2 === 0);
               return res.json(entries);
-            }
+            },
           );
         },
       },
@@ -2630,7 +2388,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/live',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           redis.zrangebyscore('liveGames', '-inf', 'inf', (err, rows) => {
             if (err) {
               return cb(err);
@@ -2684,13 +2442,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/itemTimings',
-        func: (req, res, cb) => {
-          getItemTimings(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+        func: async (req, res, cb) => {
+          const result = await getItemTimings(req);
+          return res.json(result);
         },
       },
     },
@@ -2728,13 +2482,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/laneRoles',
-        func: (req, res, cb) => {
-          getLaneRoles(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+        func: async (req, res, cb) => {
+          const result = await getLaneRoles(req);
+          return res.json(result);
         },
       },
     },
@@ -2761,13 +2511,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/misc',
-        func: (req, res, cb) => {
-          getTeamScenarios(req, (err, result) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
+        func: async (req, res, cb) => {
+          const result = await getTeamScenarios(req);
+          return res.json(result);
         },
       },
     },
@@ -2794,18 +2540,14 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/schema',
-        func: (req, res, cb) => {
-          db.select(['table_name', 'column_name', 'data_type'])
+        func: async (req, res, cb) => {
+          const result = await db
+            .select(['table_name', 'column_name', 'data_type'])
             .from('information_schema.columns')
             .where({
               table_schema: 'public',
-            })
-            .asCallback((err: Error | null, result: any) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(result);
             });
+          return res.json(result);
         },
       },
     },
@@ -2865,7 +2607,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/constants/:resource?',
-        func: (req, res, cb) => {
+        func: async (req, res, cb) => {
           const { resource } = req.params;
           if (resource in constants) {
             return res.json(constants[resource]);
@@ -2898,7 +2640,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           },
         },
         route: () => '/constants',
-        func: (req, res) => {
+        func: async (req, res) => {
           return res.json(Object.keys(constants));
         },
       },

@@ -23,6 +23,7 @@ declare namespace Express {
 type ArrayifiedFilters = { [key: string]: number[] };
 type QueryObj = {
   project: (keyof ParsedPlayerMatch)[];
+  projectAll?: boolean;
   filter?: ArrayifiedFilters;
   sort?: keyof ParsedPlayerMatch;
   // Number of results to return after client filter/sort
@@ -39,11 +40,9 @@ type StringArrayDict = { [key: string]: string[] };
 type AnyDict = { [key: string]: any };
 type NumberDict = { [key: string]: number };
 type BooleanDict = { [key: string]: boolean };
-type ErrorCb = (err?: Error | null | undefined | unknown, result?: any) => void;
-type NonUnknownErrorCb = (err?: Error | null | undefined, result?: any) => void;
-type StringErrorCb = (
-  err?: Error | null | undefined | unknown,
-  result?: string | null | undefined
+type ErrorCb = (
+  err?: Error | null | undefined | string | unknown,
+  result?: any,
 ) => void;
 
 type Match = {
@@ -55,7 +54,7 @@ type Match = {
   radiant_win: boolean;
   lobby_type: number;
   game_mode: number;
-  cluster?: number;
+  cluster: number;
   patch?: number;
   region?: number;
   radiant_team_id?: number;
@@ -63,20 +62,23 @@ type Match = {
   picks_bans?: any[];
   human_players: number;
 
-  // Computed field
-  pgroup: any;
-  // heroes is just pgroup alias?
-  heroes: any;
-  average_rank?: number | null;
+  // Added at insert
+  average_rank?: number;
 
   // Parsed match metadata from .meta file
-  metadata: any;
+  metadata?: any;
 
-  // Which storage backend the data came from
-  od_storage?: MatchStorage;
+  od_data?: GetMatchDataMetadata | null;
 };
 
-type MatchStorage = 'archive' | 'blob' | 'cassandra' | 'backfill_blob';
+type GetMatchDataMetadata = {
+  has_api: boolean;
+  has_gcdata: boolean;
+  has_parsed: boolean;
+  backfill_api?: boolean;
+  backfill_gc?: boolean;
+  archive?: boolean;
+};
 
 interface LiveMatch extends Match {
   lobby_id: string;
@@ -89,12 +91,6 @@ interface ParsedMatch extends Match {
   cosmetics: any;
   objectives: any[];
   radiant_gold_adv: number[];
-}
-
-interface GcMatch extends Partial<Match> {
-  match_id: number;
-  pgroup: any;
-  players: GcPlayer[];
 }
 
 type Player = {
@@ -128,7 +124,7 @@ type Player = {
   kills_per_min: number;
   kda: number;
   abandons: number;
-  heroes: any;
+  heroes: PGroup;
   benchmarks: AnyDict;
 
   // In Steam API that we're manually removing
@@ -141,12 +137,14 @@ type Player = {
 
   // Added in buildMatch for display
   is_subscriber: boolean;
+
+  // For storing in player_caches
+  average_rank?: number;
 };
 
 interface ParsedPlayer extends Player {
   kills_log: any[];
   obs_log: any[];
-  purchases: any;
   purchase_log: any[];
   pings: any;
   purchase: NumberDict;
@@ -162,8 +160,7 @@ interface ParsedPlayer extends Player {
   sen: any;
   lane_role: number | null;
 
-  //Added by GC
-  party_size: number;
+  party_size?: number;
 
   // Computed
   is_roaming?: boolean | null;
@@ -207,16 +204,52 @@ interface ParsedPlayer extends Player {
   rank_tier?: number;
 }
 
-interface GcPlayer extends Player {
-  // From GC
-  party_id: { low: number; high: number };
+// Data to pass to insertMatch from GC
+interface GcMatch {
+  match_id: number;
+  cluster: number;
+  replay_salt: number;
+  series_type: number;
+  series_id: number;
+  players: GcPlayer[];
+}
+
+interface GcPlayer {
+  player_slot: number;
+  party_id: number;
+  party_size: number;
   permanent_buffs: any[];
-  net_worth: number;
+
+  // Currently not passed
+  account_id?: number;
+}
+
+interface ParserMatch {
+  match_id: number;
+  // Needed to determine whether to insert pro match data
+  leagueid: number;
+  // Used for dust and apm calculation
+  start_time: number;
+  duration: number;
+
+  // Parsed fields
+  version: number;
+  chat: any[];
+  cosmetics: any;
+  objectives: any[];
+  radiant_gold_adv: number[];
+  players: ParserPlayer[];
+}
+
+interface ParserPlayer extends Partial<Player> {
+  player_slot: number;
+  kills_log: any[];
+  // plus more parsed properties
 }
 
 type PlayerMatch = Player & Match & { players?: Player[] };
 type ParsedPlayerMatch = ParsedPlayer &
-  ParsedMatch & { players?: ParsedPlayer[] };
+  ParsedMatch & { players?: ParsedPlayer[]; is_contributor?: boolean };
 
 type User = {
   account_id: number;
@@ -253,21 +286,15 @@ type MmrJob = {
 
 type GcDataJob = {
   match_id: number;
-  pgroup: any;
-  useGcDataArr?: boolean;
-  noRetry?: boolean;
+  pgroup: PGroup;
 };
 
-type CountsJob = Match;
+type CountsJob = import('./store/pgroup').ApiMatch;
 type ScenariosJob = string;
 
 type ParseJob = {
   match_id: number;
-  pgroup: any;
-  leagueid?: number;
   origin?: DataOrigin;
-  start_time?: number;
-  duration?: number;
 };
 
 type QueueJob = QueueInput['data'];
@@ -308,7 +335,7 @@ type ReliableQueueRow = {
   priority: number;
 };
 
-type ReliableQueueOptions = { attempts: number; priority?: number };
+type ReliableQueueOptions = { attempts?: number; priority?: number };
 
 type ProPlayer = {
   name: string;
@@ -318,15 +345,25 @@ type ProPlayer = {
 type DataType = 'api' | 'parsed' | 'gcdata' | 'meta';
 type DataOrigin = 'scanner';
 
-type InsertMatchOptions = {
-  type: DataType;
+type CommonInsertOptions = {
   origin?: DataOrigin;
-  skipCounts?: boolean;
-  forceParse?: boolean;
   skipParse?: boolean;
-  priority?: number;
-  attempts?: number;
+  pgroup?: PGroup;
+  endedAt?: number;
 };
+
+type ApiInsertOptions = {
+  type: 'api';
+} & CommonInsertOptions;
+
+type NonApiInsertOptions = {
+  type: DataType;
+  // We can compute these if API, but otherwise required
+  pgroup: PGroup;
+  endedAt: number;
+} & CommonInsertOptions;
+
+type InsertMatchOptions = ApiInsertOptions | NonApiInsertOptions;
 
 type PathVerbSpec = {
   operationId: string;
@@ -341,7 +378,11 @@ type PathVerbSpec = {
     };
   };
   route: () => string;
-  func: (req: Express.ExtRequest, res: import('express').Response, cb: ErrorCb) => void;
+  func: (
+    req: Express.ExtRequest,
+    res: import('express').Response,
+    cb: ErrorCb,
+  ) => Promise<any>;
 };
 
 type HttpVerb = 'get' | 'post';
@@ -375,10 +416,23 @@ type MetricName =
   | 'parser'
   | 'meta_parse'
   | 'retriever'
-  | 'cached_gcdata'
   | 'build_match'
   | 'steam_api_backfill'
+  | 'steam_gc_backfill'
   | 'request_api_key'
   | 'request'
   | 'reparse'
-  | 'incomplete_archive';
+  | 'regcdata'
+  | 'reapi'
+  | 'parser_fail'
+  | 'incomplete_archive'
+  | 'gen_api_key_invalid';
+
+// Object to map player_slot to basic info
+type PGroup = {
+  [player_slot: string]: {
+    // Optional because some players are anonymous
+    account_id?: number;
+    hero_id: number;
+  };
+};

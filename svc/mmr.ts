@@ -2,26 +2,29 @@
 import queue from '../store/queue';
 import db from '../store/db';
 import redis from '../store/redis';
-import { insertPlayerRating, insertPlayerPromise } from '../store/queries';
-import config from '../config.js';
-import { getDataPromise, redisCount, getRetrieverArr } from '../util/utility';
-const retrieverArr = getRetrieverArr();
+import { insertPlayerRating, upsertPlayer } from '../store/insert';
+import config from '../config';
+import {
+  getRetrieverCount,
+  redisCount,
+  getRandomRetrieverUrl,
+} from '../util/utility';
+import axios from 'axios';
 
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
-  const urls = retrieverArr.map(
-    (r) => `http://${r}?key=${config.RETRIEVER_SECRET}&account_id=${accountId}`
-  );
-  const data = await getDataPromise({ url: urls });
+  const url = getRandomRetrieverUrl({ accountId });
+  console.log(url);
+  const { data } = await axios.get(url);
   redisCount(redis, 'retriever_player');
-  // NOTE: This leads to a massive number of updates on the player table
+  // NOTE: To reduce the number of updates on the player table
   // Only write it sometimes, unless we're in dev mode
   if (config.NODE_ENV === 'development' || Math.random() < 0.05) {
     const player = {
       account_id: job.account_id,
       plus: Boolean(data.is_plus_subscriber),
     };
-    await insertPlayerPromise(db, player, false);
+    await upsertPlayer(db, player, false);
   }
   if (
     data.solo_competitive_rank ||
@@ -34,9 +37,10 @@ async function processMmr(job: MmrJob) {
     data.time = new Date();
     await insertPlayerRating(data);
   }
+  await new Promise((resolve) => setTimeout(resolve, 20));
 }
 queue.runQueue(
   'mmrQueue',
-  config.MMR_PARALLELISM * retrieverArr.length,
-  processMmr
+  Number(config.MMR_PARALLELISM) * getRetrieverCount(),
+  processMmr,
 );

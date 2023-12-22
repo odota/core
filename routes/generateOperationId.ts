@@ -11,7 +11,7 @@ function generateOperationId(method: string, path: string) {
   }
   // Convert path parameters to the format "by_{parameter}"
   const segmentsWithParametersReplaced = pathSegments.map((segment) =>
-    segment.replace(/{(.*?)}/g, 'by_$1')
+    segment.replace(/{(.*?)}/g, 'by_$1'),
   );
   // If there are 3 elements in the path, prefix the last one with "select_"
   if (segmentsWithParametersReplaced.length === 3) {

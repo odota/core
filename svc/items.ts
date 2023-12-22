@@ -1,9 +1,9 @@
 // NOT WORKING: Updates game items in the database
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/insert';
 import {
   generateJob,
-  getDataPromise,
+  getSteamAPIData,
   invokeIntervalAsync,
 } from '../util/utility';
 
@@ -12,16 +12,16 @@ async function doItems() {
   const container = generateJob('api_items', {
     language: 'english',
   });
-  const body = await getDataPromise(container.url);
+  const body = await getSteamAPIData(container.url);
   if (!body || !body.result || !body.result.items) {
     throw new Error('invalid body');
   }
   await Promise.all(
     body.result.items.map((item: any) =>
-      upsertPromise(db, 'items', item, {
+      upsert(db, 'items', item, {
         id: item.id,
-      })
-    )
+      }),
+    ),
   );
 }
 invokeIntervalAsync(doItems, 60 * 60 * 1000);

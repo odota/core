@@ -2,14 +2,14 @@ import constants from 'dotaconstants';
 import request from 'request';
 import Long from 'long';
 import urllib from 'url';
-import uuid from 'uuid';
 import moment from 'moment';
 import crypto from 'crypto';
 import laneMappings from './laneMappings';
-import config from '../config.js';
-import contributors from '../CONTRIBUTORS.js';
+import config from '../config';
+import contributors from '../CONTRIBUTORS';
 import { promisify } from 'util';
 import type { Redis } from 'ioredis';
+import type { ApiMatch } from '../store/pgroup';
 
 /**
  * Tokenizes an input string.
@@ -42,14 +42,14 @@ export function convert32to64(id: string) {
   return Long.fromString(id).add('76561197960265728').toString();
 }
 /**
- * Creates a job object for enqueueing that contains details such as the Steam API endpoint to hit
+ * Helper to generate Steam API URLs
  * */
-export function generateJob(type: GenerateJobName, payload: any) {
+export function generateJob(type: SteamEndpointType, payload: any) {
   return jobs[type](type, payload);
 }
-type GenerateJobName = keyof typeof jobs;
+type SteamEndpointType = keyof typeof jobs;
 const apiUrl = 'http://api.steampowered.com';
-let apiKey: string;
+let apiKey = config.STEAM_API_KEY.split(',')[0];
 const jobs = {
   api_details(type: string, payload: { match_id: string }) {
     return {
@@ -110,25 +110,9 @@ const jobs = {
       type: 'api',
     };
   },
-  api_leagues(type: string, payload: any) {
-    return {
-      url: 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001',
-      title: [type].join(),
-      type: 'api',
-      payload,
-    };
-  },
   api_live(type: string, payload: any) {
     return {
       url: `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
-      title: [type].join(),
-      type: 'api',
-      payload,
-    };
-  },
-  api_notable(type: string, payload: any) {
-    return {
-      url: 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001',
       title: [type].join(),
       type: 'api',
       payload,
@@ -172,20 +156,6 @@ const jobs = {
       type: 'api',
     };
   },
-  parse(type: string, payload: any) {
-    return {
-      title: [type, payload.match_id].join(),
-      type,
-      url: payload.url,
-      payload,
-    };
-  },
-  steam_cdn_team_logos(type: string, payload: any) {
-    return {
-      url: `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${payload.team_id}.png`,
-      type: 'steam_cdn',
-    };
-  },
 };
 /**
  * A wrapper around HTTP requests that handles:
@@ -195,25 +165,17 @@ const jobs = {
  * Errors from Steam API
  * */
 type GetDataOptions = {
-  url: string | string[];
+  url: string;
   delay?: number;
   timeout?: number;
   raw?: boolean;
   noRetry?: boolean;
 };
-function getData(url: string | GetDataOptions, cb: ErrorCb) {
+function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
   let u: string;
-  let delay = Number(config.DEFAULT_DELAY);
   let timeout = 5000;
   if (typeof url === 'object' && url && url.url) {
-    // options object
-    if (Array.isArray(url.url)) {
-      // select a random element if array
-      u = url.url[Math.floor(Math.random() * url.url.length)];
-    } else {
-      u = url.url;
-    }
-    delay = url.delay || delay;
+    u = url.url;
     timeout = url.timeout || timeout;
   } else {
     u = url as string;
@@ -234,84 +196,84 @@ function getData(url: string | GetDataOptions, cb: ErrorCb) {
   }
   const target = urllib.format(parse);
   console.log('%s - getData: %s', new Date(), target);
-  return setTimeout(() => {
-    request(
-      {
-        url: target,
-        json: !isRaw,
-        gzip: true,
-        timeout,
-      },
-      (err, res, body) => {
+  request(
+    {
+      url: target,
+      json: !isRaw,
+      gzip: true,
+      timeout,
+    },
+    (err, res, body) => {
+      if (
+        err ||
+        !res ||
+        res.statusCode !== 200 ||
+        !body ||
+        (steamApi &&
+          !isRaw &&
+          !body.result &&
+          !body.response &&
+          !body.player_infos &&
+          !body.teams &&
+          !body.game_list &&
+          !body.match &&
+          !body.data)
+      ) {
+        // invalid response
+        if (isNoRetry) {
+          return cb(err || 'invalid response', body);
+        }
+        console.error(
+          '[INVALID] status: %s, retrying: %s',
+          res ? res.statusCode : '',
+          target,
+        );
+        const backoff = res.statusCode === 429 ? 3000 : 1500;
+        return setTimeout(() => {
+          getSteamAPIDataCallback(url, cb);
+        }, backoff);
+      }
+      if (body.result) {
+        // steam api usually returns data with body.result, getplayersummaries has body.response
         if (
-          err ||
-          !res ||
-          res.statusCode !== 200 ||
-          !body ||
-          (steamApi &&
-            !isRaw &&
-            !body.result &&
-            !body.response &&
-            !body.player_infos &&
-            !body.teams &&
-            !body.game_list &&
-            !body.match &&
-            !body.data)
+          body.result.status === 15 ||
+          body.result.error ===
+            'Practice matches are not available via GetMatchDetails' ||
+          body.result.error === 'No Match ID specified' ||
+          body.result.error === 'Match ID not found' ||
+          (body.result.status === 2 &&
+            body.result.statusDetail === 'Error retrieving match data.' &&
+            Math.random() < 0.1)
         ) {
-          // invalid response
+          // private match history or attempting to get practice match/invalid id, don't retry
+          // non-retryable
+          return cb(body);
+        }
+        if (body.result.error || body.result.status === 2) {
+          // valid response, but invalid data, retry
           if (isNoRetry) {
-            return cb(err || 'invalid response', body);
+            return cb(err || 'invalid data', body);
           }
           console.error(
-            '[INVALID] status: %s, retrying: %s',
-            res ? res.statusCode : '',
-            target
+            'invalid data, retrying: %s, %s',
+            target,
+            JSON.stringify(body),
           );
-          // var backoff = res && res.statusCode === 429 ? delay * 2 : 0;
-          const backoff = 0;
+          const backoff = 1500;
           return setTimeout(() => {
-            getData(url, cb);
+            getSteamAPIDataCallback(url, cb);
           }, backoff);
         }
-        if (body.result) {
-          // steam api usually returns data with body.result, getplayersummaries has body.response
-          if (
-            body.result.status === 15 ||
-            body.result.error ===
-              'Practice matches are not available via GetMatchDetails' ||
-            body.result.error === 'No Match ID specified' ||
-            body.result.error === 'Match ID not found' ||
-            (body.result.status === 2 &&
-              body.result.statusDetail === 'Error retrieving match data.' &&
-              Math.random() < 0.4)
-          ) {
-            // private match history or attempting to get practice match/invalid id, don't retry
-            // non-retryable
-            return cb(body);
-          }
-          if (body.result.error || body.result.status === 2) {
-            // valid response, but invalid data, retry
-            if (isNoRetry) {
-              return cb(err || 'invalid data', body);
-            }
-            console.error(
-              'invalid data, retrying: %s, %s',
-              target,
-              JSON.stringify(body)
-            );
-            return getData(url, cb);
-          }
-        }
-        return cb(null, body);
       }
-    );
-  }, delay);
+      return cb(null, body);
+    },
+  );
 }
-export const getDataPromise = promisify(getData);
+export const getSteamAPIData = promisify(getSteamAPIDataCallback);
 /**
  * Determines if a player is radiant
  * */
-export function isRadiant(player: Player) {
+export function isRadiant(player: { player_slot: number }) {
   return player.player_slot < 128;
 }
 /**
@@ -378,7 +340,7 @@ export function mode(array: number[]) {
 /**
  * Determines if a match is significant for aggregation purposes
  * */
-export function isSignificant(match: Match) {
+export function isSignificant(match: Match | ApiMatch) {
   return Boolean(
     constants.game_mode[match.game_mode] &&
       constants.game_mode[match.game_mode].balanced &&
@@ -386,13 +348,15 @@ export function isSignificant(match: Match) {
       constants.lobby_type[match.lobby_type].balanced &&
       match.radiant_win !== undefined &&
       match.duration > 360 &&
-      (match.players || []).every((player) => (player.gold_per_min || 0) < 2500)
+      (match.players || []).every(
+        (player) => (player.gold_per_min || 0) < 2500,
+      ),
   );
 }
 /**
  * Determines if a match is a pro match
  * */
-export function isProMatch(match: Match) {
+export function isProMatch(match: ApiMatch) {
   return Boolean(
     isSignificant(match) &&
       match.leagueid &&
@@ -403,7 +367,7 @@ export function isProMatch(match: Match) {
       match.players &&
       match.players.every((player) => player.level > 1) &&
       match.players.every((player) => player.xp_per_min > 0) &&
-      match.players.every((player) => player.hero_id > 0)
+      match.players.every((player) => player.hero_id > 0),
   );
 }
 /**
@@ -471,7 +435,7 @@ export function average(data: number[]) {
  * */
 export function averageMedal(values: number[]) {
   const numStars = values.map(
-    (value) => Number(String(value)[0]) * 5 + (value % 10)
+    (value) => Number(String(value)[0]) * 5 + (value % 10),
   );
   const avgStars = numStars.reduce((a, b) => a + b, 0) / numStars.length;
   return Math.floor(avgStars / 5) * 10 + Math.max(1, Math.round(avgStars % 5));
@@ -524,13 +488,18 @@ export function buildReplayUrl(
   matchId: number,
   cluster: number,
   replaySalt: number,
-  meta?: boolean
+  meta?: boolean,
 ) {
-  let suffix = config.NODE_ENV === 'test' ? '.dem' : '.dem.bz2';
+  let suffix = '.dem.bz2';
   if (meta) {
     suffix = '.meta.bz2';
   }
-  if (cluster === 236) {
+  if (config.NODE_ENV === 'test') {
+    return `https://odota.github.io/testfiles/${matchId}_${replaySalt}${suffix.replace(
+      '.bz2',
+      '',
+    )}`;
+  } else if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
   }
   return `http://replay${cluster}.valve.net/570/${matchId}_${replaySalt}${suffix}`;
@@ -546,7 +515,7 @@ export function expectedWin(rates: number[]) {
   // return 1 - rates.reduce((prev, curr) => (1 - curr) * prev, 1) / (Math.pow(50, rates.length-1));
   const adjustedRates = rates.reduce(
     (prev, curr) => (100 - curr * 100) * prev,
-    1
+    1,
   );
   const denominator = 50 ** (rates.length - 1);
   return 1 - (adjustedRates / denominator) * 100;
@@ -676,16 +645,34 @@ export function countItemPopularity(items: any[]) {
     return acc;
   }, {});
 }
+
+export type PeersCount = {
+  [key: string]: {
+    account_id: number;
+    last_played: number;
+    win: number;
+    games: number;
+    with_win: number;
+    with_games: number;
+    against_win: number;
+    against_games: number;
+    with_gpm_sum: number;
+    with_xpm_sum: number;
+  };
+};
 /**
  * Counts the peer account_ids in the input match array
  * */
 export function countPeers(matches: PlayerMatch[]) {
-  const teammates: AnyDict = {};
+  const teammates: PeersCount = {};
   matches.forEach((m) => {
     const playerWin = isRadiant(m) === m.radiant_win;
-    const group = m.heroes || {};
+    const group: PGroup = m.heroes || {};
     Object.keys(group).forEach((key) => {
       const tm = group[key];
+      if (!tm.account_id) {
+        return;
+      }
       // count teammate players
       if (!teammates[tm.account_id]) {
         teammates[tm.account_id] = {
@@ -707,7 +694,7 @@ export function countPeers(matches: PlayerMatch[]) {
       // played with
       teammates[tm.account_id].games += 1;
       teammates[tm.account_id].win += playerWin ? 1 : 0;
-      if (isRadiant(tm) === isRadiant(m)) {
+      if (isRadiant({ player_slot: Number(key) }) === isRadiant(m)) {
         // played with
         teammates[tm.account_id].with_games += 1;
         teammates[tm.account_id].with_win += playerWin ? 1 : 0;
@@ -733,7 +720,7 @@ export function getAnonymousAccountId() {
  * */
 export function getLaneFromPosData(
   lanePos: { [key: string]: NumberDict },
-  isRadiant: boolean
+  isRadiant: boolean,
 ) {
   // compute lanes
   const lanes: number[] = [];
@@ -781,59 +768,69 @@ export function getLaneFromPosData(
     is_roaming: isRoaming,
   };
 }
-/**
- * Get array of retriever endpoints from config
- * */
-export function getRetrieverArr(useGcDataArr?: boolean) {
-  const parserHosts = useGcDataArr ? config.GCDATA_RETRIEVER_HOST : '';
-  const input = parserHosts || config.RETRIEVER_HOST;
-  const output: string[] = [];
-  const arr = input.split(',');
-  arr.forEach((element) => {
-    const parsedUrl = urllib.parse(`http://${element}`, true);
-    for (let i = 0; i < (Number(parsedUrl.query.size) || 1); i += 1) {
-      output.push(parsedUrl.host as string);
-    }
-  });
-  return output;
+
+// Generate a list of hosts to use for GC data retrieval. Supports weighting using the size URL query parameter
+const input = config.RETRIEVER_HOST;
+const RETRIEVER_ARRAY: string[] = [];
+const arr = input.split(',');
+arr.forEach((element) => {
+  const parsedUrl = urllib.parse(`http://${element}`, true);
+  for (let i = 0; i < (Number(parsedUrl.query.size) || 1); i += 1) {
+    RETRIEVER_ARRAY.push(parsedUrl.host as string);
+  }
+});
+export function getRetrieverCount() {
+  return RETRIEVER_ARRAY.length;
 }
+/**
+ * Return a URL to use for GC data retrieval.
+ * @returns
+ */
+export function getRandomRetrieverUrl({
+  accountId,
+  matchId,
+}: {
+  accountId?: string | number;
+  matchId?: string | number;
+}): string {
+  const urls = RETRIEVER_ARRAY.map(
+    (r) =>
+      `http://${r}?key=${config.RETRIEVER_SECRET}${
+        accountId ? `&account_id=${accountId}` : ''
+      }${matchId ? `&match_id=${matchId}` : ''}`,
+  );
+  return urls[Math.floor(Math.random() * urls.length)];
+}
+
 export async function redisCount(redis: Redis | null, prefix: MetricName) {
-  const redisToUse =
-    redis ?? (require('../store/redis' + '').default as unknown as Redis);
-  const key = `${prefix}:${moment().startOf('hour').format('X')}`;
-  await redisToUse?.pfadd(key, uuid.v4());
+  const redisToUse = redis ?? (await import('../store/redis.js')).redis;
+  const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
+  await redisToUse?.incr(key);
   await redisToUse?.expireat(
     key,
-    moment().startOf('hour').add(1, 'day').format('X')
+    moment().startOf('hour').add(1, 'day').format('X'),
   );
 }
-export function getRedisCountDay(
-  redis: Redis,
-  prefix: MetricName,
-  cb: NonUnknownErrorCb
-) {
+export async function getRedisCountDay(redis: Redis, prefix: MetricName) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(
-      `${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`
+      `${prefix}:v2:${moment()
+        .startOf('hour')
+        .subtract(i, 'hour')
+        .format('X')}`,
     );
   }
-  redis.pfcount(...keyArr, cb);
+  const counts = await redis.mget(...keyArr);
+  return counts.reduce((a, b) => Number(a) + Number(b), 0);
 }
-export function getRedisCountHour(
-  redis: Redis,
-  prefix: MetricName,
-  cb: NonUnknownErrorCb
-) {
+export async function getRedisCountHour(redis: Redis, prefix: MetricName) {
   // Get counts for previous full hour (not current)
-  const keyArr = [];
-  for (let i = 1; i < 2; i += 1) {
-    keyArr.push(
-      `${prefix}:${moment().startOf('hour').subtract(i, 'hour').format('X')}`
-    );
-  }
-  redis.pfcount(...keyArr, cb);
+  const result = await redis.get(
+    `${prefix}:v2:${moment().startOf('hour').subtract(1, 'hour').format('X')}`,
+  );
+  return Number(result);
 }
 /**
  * invokes a function immediately, waits for callback, waits the delay, and then calls it again
@@ -863,7 +860,7 @@ export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
  */
 export async function invokeIntervalAsync(
   func: () => Promise<void>,
-  delay: number
+  delay: number,
 ) {
   process.on('unhandledRejection', (reason, p) => {
     // In production pm2 doesn't appear to auto restart unless we exit the process here
@@ -884,9 +881,9 @@ export async function invokeIntervalAsync(
  * Takes an array of functions that return promises
  * Note this doesn't work on an array of promises as that will start all of them
  */
-export async function eachLimit(
+export async function eachLimitPromise(
   funcs: Array<() => Promise<any>>,
-  limit: number
+  limit: number,
 ) {
   let rest = funcs.slice(limit);
   await Promise.all(
@@ -896,8 +893,26 @@ export async function eachLimit(
         //@ts-ignore
         await rest.shift()();
       }
-    })
+    }),
   );
+}
+
+/**
+ * Promise replacement for async.parallel
+ * @param obj An object mapping key names to functions returning promises
+ */
+export async function parallelPromise<T>(
+  obj: Record<keyof T, () => Promise<any>>,
+): Promise<T> {
+  const result = {} as T;
+  await Promise.all(
+    Object.entries<() => Promise<any>>(obj).map(async ([key, func]) => {
+      const val = await func();
+      result[key as keyof T] = val;
+      return;
+    }),
+  );
+  return result;
 }
 
 /**
@@ -914,8 +929,22 @@ export function checkIfInExperiment(ip: string, mod: number) {
     crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );
 }
-export function isDataComplete(match: ParsedMatch | null) {
+export function isDataComplete(match: Partial<ParsedMatch> | null) {
   // Check for a field from API and from parse
   // Once we are archiving from blobstore we could also check for replay_salt
   return Boolean(match && match.start_time && match.version);
+}
+
+/**
+ * Picks keys from an object and returns a copy with those keys, with nulls if the property doesn't exist
+ * @param obj An object to pick keys from
+ * @param keys An array of strings (object property names)
+ * @returns
+ */
+export function pick(obj: any, keys: string[]) {
+  const pick: any = {};
+  keys.forEach((key) => {
+    pick[key] = obj[key] || null;
+  });
+  return pick;
 }

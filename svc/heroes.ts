@@ -1,9 +1,10 @@
 // Updates the heroes in the database
+import axios from 'axios';
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/insert';
 import {
   generateJob,
-  getDataPromise,
+  getSteamAPIData,
   invokeIntervalAsync,
 } from '../util/utility';
 
@@ -11,20 +12,21 @@ async function doHeroes() {
   const container = generateJob('api_heroes', {
     language: 'english',
   });
-  const body = await getDataPromise(container.url);
+  const body = await getSteamAPIData(container.url);
   if (!body || !body.result || !body.result.heroes) {
     return;
   }
-  const heroData = await getDataPromise(
-    'https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json'
+  const heroResp = await axios.get(
+    'https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json',
   );
+  const heroData = heroResp.data;
   if (!heroData) {
     return;
   }
   for (let i = 0; i < body.result.heroes.length; i++) {
     const hero = body.result.heroes[i];
     const heroDataHero = heroData[hero.id] || {};
-    await upsertPromise(
+    await upsert(
       db,
       'heroes',
       {
@@ -36,7 +38,7 @@ async function doHeroes() {
       },
       {
         id: hero.id,
-      }
+      },
     );
   }
 }

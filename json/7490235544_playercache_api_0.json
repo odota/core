@@ -1,0 +1,86 @@
+{
+  "account_id": 124801257,
+  "player_slot": 0,
+  "hero_id": 54,
+  "item_0": 135,
+  "item_1": 208,
+  "item_2": 50,
+  "item_3": 137,
+  "item_4": 154,
+  "item_5": 112,
+  "item_neutral": 309,
+  "kills": 10,
+  "deaths": 1,
+  "assists": 10,
+  "leaver_status": 0,
+  "last_hits": 515,
+  "denies": 8,
+  "gold_per_min": 737,
+  "xp_per_min": 865,
+  "level": 26,
+  "hero_damage": 28122,
+  "tower_damage": 15270,
+  "hero_healing": 958,
+  "radiant_win": true,
+  "duration": 2846,
+  "start_time": 1702703340,
+  "match_id": 7490235544,
+  "cluster": 153,
+  "lobby_type": 1,
+  "game_mode": 2,
+  "heroes": {
+    "0": {
+      "account_id": 124801257,
+      "hero_id": 54,
+      "player_slot": 0
+    },
+    "1": {
+      "account_id": 480412663,
+      "hero_id": 17,
+      "player_slot": 1
+    },
+    "2": {
+      "account_id": 331855530,
+      "hero_id": 135,
+      "player_slot": 2
+    },
+    "3": {
+      "account_id": 317880638,
+      "hero_id": 138,
+      "player_slot": 3
+    },
+    "4": {
+      "account_id": 431770905,
+      "hero_id": 84,
+      "player_slot": 4
+    },
+    "128": {
+      "account_id": 148215639,
+      "hero_id": 109,
+      "player_slot": 128
+    },
+    "129": {
+      "account_id": 173978074,
+      "hero_id": 7,
+      "player_slot": 129
+    },
+    "130": {
+      "account_id": 138857296,
+      "hero_id": 137,
+      "player_slot": 130
+    },
+    "131": {
+      "account_id": 207829314,
+      "hero_id": 26,
+      "player_slot": 131
+    },
+    "132": {
+      "account_id": 94296097,
+      "hero_id": 110,
+      "player_slot": 132
+    }
+  },
+  "patch": 53,
+  "region": 5,
+  "kda": 10
+}

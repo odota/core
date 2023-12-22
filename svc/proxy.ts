@@ -1,7 +1,7 @@
 // Deployed in the cloud to proxy requests to the Steam API
 import httpProxy from 'http-proxy';
 import http from 'http';
-import config from '../config.js';
+import config from '../config';
 const { PORT, PROXY_PORT } = config;
 const port = PORT || PROXY_PORT;
 const proxy = httpProxy.createProxyServer({

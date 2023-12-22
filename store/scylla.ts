@@ -1,6 +1,6 @@
 import scyllaDriver from 'cassandra-driver';
 import url from 'url';
-import config from '../config.js';
+import config from '../config';
 const spl = config.SCYLLA_URL.split(',');
 const cps: string[] = spl.map((u) => url.parse(u).host) as string[];
 console.log('connecting %s', config.SCYLLA_URL);

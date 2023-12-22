@@ -216,15 +216,6 @@ module.exports = {
         description: 'Immortal wins',
         type: 'integer',
       },
-      // TODO: Should the following remain in the response?
-      null_pick: {
-        description: 'null_pick',
-        type: 'integer',
-      },
-      null_win: {
-        description: 'null_win',
-        type: 'integer',
-      },
     },
   },
 };

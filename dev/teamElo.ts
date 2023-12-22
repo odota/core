@@ -19,7 +19,7 @@ JOIN matches using(match_id)
 JOIN team_match tm2 on team_match.match_id = tm2.match_id AND team_match.team_id < tm2.team_id
 WHERE matches.radiant_team_id IS NOT NULL AND matches.dire_team_id IS NOT NULL
 ORDER BY match_id ASC
-`
+`,
   )
   .stream();
 stream.on('data', (match) => {
@@ -75,7 +75,7 @@ stream.on('end', () => {
     db.raw(
       `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
   ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses, last_match_time=EXCLUDED.last_match_time`,
-      [teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]]
+      [teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]],
     );
   });
 });

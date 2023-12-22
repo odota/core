@@ -1,7 +1,5 @@
-import dbImport from '../store/db.js';
-import { upsertPromise } from '../store/queries.js';
-
-const db = dbImport.default;
+const { db } = await import('../store/db.js');
+const { upsert } = await import('../store/insert.js');
 
 const matches = await db
   .select(['radiant_team_id', 'dire_team_id', 'match_id'])
@@ -24,7 +22,7 @@ matches.forEach((match: any) => {
     });
   }
   arr.forEach(async (tm) => {
-    await upsertPromise(db, 'team_match', tm, {
+    await upsert(db, 'team_match', tm, {
       team_id: tm.team_id,
       match_id: tm.match_id,
     });

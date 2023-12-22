@@ -3,7 +3,7 @@
   "info": {
     "title": "OpenDota API",
     "description": "# Introduction\nThe OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.\n\nYou can find data that can be used to convert hero and ability IDs and other information provided by the API from the [dotaconstants](https://github.com/odota/dotaconstants) repository.\n\nThe OpenDota API offers 50,000 free calls per month and a rate limit of 60 requests/minute. We also offer a Premium Tier with unlimited API calls and higher rate limits. Check out the [API page](https://www.opendota.com/api-keys) to learn more.\n    ",
-    "version": "21.0.2"
+    "version": "22.0.0"
   },
   "servers": [
     {
@@ -365,14 +365,6 @@
           },
           "8_win": {
             "description": "Immortal wins",
-            "type": "integer"
-          },
-          "null_pick": {
-            "description": "null_pick",
-            "type": "integer"
-          },
-          "null_win": {
-            "description": "null_win",
             "type": "integer"
           }
         }
@@ -1165,7 +1157,7 @@
                   "type": "integer"
                 },
                 "patch": {
-                  "description": "Integer representing the patch the game was played on",
+                  "description": "Patch ID, from dotaconstants",
                   "type": "integer"
                 },
                 "region": {
@@ -1371,7 +1363,7 @@
             }
           },
           "patch": {
-            "description": "Information on the patch version the game is played on",
+            "description": "Patch ID, from dotaconstants",
             "type": "integer"
           },
           "region": {
@@ -2190,7 +2182,7 @@
             "type": "object"
           },
           "patch": {
-            "description": "patch",
+            "description": "Patch ID, from dotaconstants",
             "type": "object"
           }
         }
@@ -3257,7 +3249,7 @@
       "patchParam": {
         "name": "patch",
         "in": "query",
-        "description": "Patch ID",
+        "description": "Patch ID, from dotaconstants",
         "required": false,
         "schema": {
           "type": "integer"
@@ -3392,7 +3384,7 @@
       "scenarioParam": {
         "name": "scenario",
         "in": "query",
-        "description": "pos_chat_1min,neg_chat_1min,courier_kill,first_blood",
+        "description": "Name of the scenario (see teamScenariosQueryParams)",
         "required": false,
         "schema": {
           "type": "string"
@@ -4385,6 +4377,7 @@
     },
     "/players/{account_id}/refresh": {
       "post": {
+        "operationId": "post_refresh",
         "summary": "POST /players/{account_id}/refresh",
         "description": "Refresh player match history",
         "tags": ["players"],
@@ -4414,6 +4407,7 @@
         "summary": "GET /proPlayers",
         "description": "Get list of pro players",
         "tags": ["pro players"],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -4565,6 +4559,7 @@
         "summary": "GET /metadata",
         "description": "Site metadata",
         "tags": ["metadata"],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -4585,6 +4580,7 @@
         "summary": "GET /distributions",
         "description": "Distributions of MMR data by bracket and country",
         "tags": ["distributions"],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -4771,6 +4767,7 @@
     },
     "/request/{match_id}": {
       "post": {
+        "operationId": "post_request_by_job_id",
         "summary": "POST /request/{match_id}",
         "description": "Submit a new parse request",
         "tags": ["request"],

@@ -1,6 +1,6 @@
 // Runs health checks periodically and writes result to Redis
 import axios from 'axios';
-import config from '../config.js';
+import config from '../config';
 import redis from '../store/redis';
 import db from '../store/db';
 import cassandra from '../store/cassandra';
@@ -41,7 +41,7 @@ setInterval(() => {
 async function steamApi() {
   const resp = await axios.get(
     'http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key=' +
-      apiKey
+      apiKey,
   );
   const body = resp.data;
   const fail = body.result.status !== 1;
@@ -53,7 +53,7 @@ async function steamApi() {
 async function seqNumDelay() {
   const resp = await axios.get(
     'http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key=' +
-      apiKey
+      apiKey,
   );
   const body = resp.data;
   // get match_seq_num, compare with real seqnum
@@ -68,7 +68,7 @@ async function seqNumDelay() {
 }
 async function parseDelay() {
   const result = await db.raw(
-    "select count(*) from queue where type = 'parse'"
+    "select count(*) from queue where type = 'parse'",
   );
   return {
     metric: result.rows[0].count,
@@ -91,7 +91,7 @@ async function postgresUsage() {
 }
 async function cassandraUsage() {
   const result = await cassandra.execute(
-    "select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = 'yasp'"
+    "select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = 'yasp'",
   );
   let size = 0;
   result.rows.forEach((r) => {

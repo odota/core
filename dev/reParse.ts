@@ -1,27 +1,19 @@
 // Issues reparse requests for all matches in postgres that aren't parsed
 import db from '../store/db';
-import { insertMatchPromise } from '../store/queries';
-import { getDataPromise, generateJob } from '../util/utility';
+import queue from '../store/queue';
 
 async function start() {
   const matches = await db.raw(
-    'select match_id from matches where version IS NULL'
+    'select match_id from matches where version IS NULL',
   );
   console.log(matches.rows.length);
   for (let i = 0; i < matches.rows.length; i++) {
     const input = matches.rows[i];
     // match id request, get data from API
-    const body: any = await getDataPromise(
-      generateJob('api_details', input).url
+    await queue.addReliableJob(
+      { name: 'parse', data: { match_id: input.match_id } },
+      {},
     );
-    // match details response
-    const match = body.result;
-    const job = await insertMatchPromise(match, {
-      type: 'api',
-      attempts: 1,
-      priority: 1,
-      forceParse: true,
-    });
   }
 }
 start();

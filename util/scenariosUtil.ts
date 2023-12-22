@@ -19,7 +19,7 @@ const teamScenariosQueryParams = [
 function buildTeamScenario(
   scenario: any,
   isRadiant: boolean,
-  match: ParsedMatch
+  match: ParsedMatch,
 ) {
   return [
     {
@@ -87,7 +87,7 @@ const scenarioChecks = {
       const condition =
         match.objectives &&
         match.objectives.find(
-          (x) => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180
+          (x) => x.type === 'CHAT_MESSAGE_COURIER_LOST' && x.time < 180,
         );
       if (condition) {
         const isRadiant = condition.team === 3;
@@ -110,7 +110,7 @@ const scenarioChecks = {
           }
           if (
             negativeWords.some((word) =>
-              RegExp(`\\b${word}\\b`, 'i').test(c.key)
+              RegExp(`\\b${word}\\b`, 'i').test(c.key),
             )
           ) {
             if (c.player_slot < 128) {
@@ -121,7 +121,7 @@ const scenarioChecks = {
           }
           if (
             positiveWords.some((word) =>
-              RegExp(`\\b${word}\\b`, 'i').test(c.key)
+              RegExp(`\\b${word}\\b`, 'i').test(c.key),
             )
           ) {
             if (c.player_slot < 128) {
@@ -167,7 +167,7 @@ const metadata = {
  * */
 function validateMatchProperties(match: ParsedMatch) {
   return matchProperties.every(
-    (property) => match[property] !== undefined && match[property] !== null
+    (property) => match[property] !== undefined && match[property] !== null,
   );
 }
 export default {

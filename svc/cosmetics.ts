@@ -1,22 +1,24 @@
 // Updates game cosmetic items in the database
 import vdf from 'simple-vdf';
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/insert';
 import {
   cleanItemSchema,
-  eachLimit,
-  getDataPromise,
+  eachLimitPromise,
   invokeIntervalAsync,
 } from '../util/utility';
+import axios from 'axios';
 
 async function doCosmetics() {
-  const items = await getDataPromise({
-    url: 'https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt',
-    raw: true,
-  });
-  const icons = await getDataPromise(
-    'https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json'
+  const itemsResp = await axios.get(
+    'https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt',
+    { responseType: 'text' },
   );
+  const items = itemsResp.data;
+  const iconsResp = await axios.get(
+    'https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json',
+  );
+  const icons = iconsResp.data;
   const itemData = vdf.parse(cleanItemSchema(items));
 
   async function processItem(itemId: string) {
@@ -39,14 +41,14 @@ async function doCosmetics() {
         item.image_path = icons[iconname];
       }
     }
-    await upsertPromise(db, 'cosmetics', item, {
+    await upsert(db, 'cosmetics', item, {
       item_id: item.item_id,
     });
   }
 
   const promiseFuncs = Object.keys(itemData.items_game.items).map(
-    (i) => () => processItem(i)
+    (i) => () => processItem(i),
   );
-  await eachLimit(promiseFuncs, 10);
+  await eachLimitPromise(promiseFuncs, 10);
 }
 invokeIntervalAsync(doCosmetics, 12 * 60 * 60 * 1000);

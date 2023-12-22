@@ -1,12 +1,10 @@
 import { RequestHandler, Router } from 'express';
-import playerFields from './playerFields';
-import { filterDeps } from '../util/filterDeps';
+import { FilterType, filterDeps } from '../util/filter';
 import spec from './spec';
 import { readCache } from '../store/cacheFunctions';
 
 //@ts-ignore
 const api: Router = new Router();
-const { subkeys } = playerFields;
 // Player caches middleware
 api.use('/players/:account_id/:info?', async (req, res, cb) => {
   // Check cache
@@ -33,10 +31,12 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
 });
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', (req, res, cb) => {
-  if (Number.isNaN(Number(req.params.account_id))) {
+  if (!Number.isInteger(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
-  (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(JSON.stringify(req.query));
+  (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(
+    JSON.stringify(req.query),
+  );
   // Enable significance filter by default, disable it if 0 is passed
   if (req.query.significant === '0') {
     delete req.query.significant;
@@ -50,18 +50,19 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
       .concat(req.query[key] as [])
       .map((e) => (Number.isNaN(Number(e)) ? e : Number(e))) as any;
     // build array of required projections due to filters
-    filterCols = filterCols.concat(filterDeps[key] || []);
+    filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
   });
+  const sortArr = (req.query.sort || []) as (keyof ParsedPlayerMatch)[];
   (req as unknown as Express.ExtRequest).queryObj = {
-    project: ['match_id', 'player_slot', 'radiant_win']
-      .concat(filterCols)
-      .concat(
-        ((req.query.sort as []) || []).filter(
-          (f: keyof ParsedPlayerMatch) => subkeys[f]
-        )
-      ) as (keyof ParsedPlayerMatch)[],
+    project: [
+      'match_id',
+      'player_slot',
+      'radiant_win',
+      ...filterCols,
+      ...sortArr,
+    ],
     filter: (req.query || {}) as unknown as ArrayifiedFilters,
-    sort: req.query.sort as keyof ParsedPlayerMatch,
+    sort: sortArr[0],
     limit: Number(req.query.limit),
     offset: Number(req.query.offset),
     having: Number(req.query.having),
@@ -69,14 +70,15 @@ api.use('/players/:account_id/:info?', (req, res, cb) => {
   return cb();
 });
 api.use('/teams/:team_id/:info?', (req, res, cb) => {
-  if (Number.isNaN(Number(req.params.team_id))) {
+  if (!Number.isInteger(Number(req.params.team_id))) {
     return res.status(400).json({ error: 'invalid team id' });
   }
   return cb();
 });
-api.use('/request/:jobId', (req, res, cb) => {
-  if (Number.isNaN(Number(req.params.jobId))) {
-    return res.status(400).json({ error: 'invalid job id' });
+api.use('/request/:id', (req, res, cb) => {
+  // This can be a match ID (POST) or job ID (GET), but same validation
+  if (!Number.isInteger(Number(req.params.id)) || Number(req.params.id) <= 0) {
+    return res.status(400).json({ error: 'invalid id' });
   }
   return cb();
 });
@@ -94,11 +96,18 @@ Object.keys(spec.paths).forEach((path) => {
       : path.replace(/{/g, ':').replace(/}/g, '');
     // Check if the callback function is defined before adding the route..
     if (typeof func === 'function') {
-      api[verb as HttpVerb](routePath, func as RequestHandler);
+      api[verb as HttpVerb](routePath, async (req, res, cb) => {
+        // Wrap all the route handlers in try/catch so we don't have to do it individually
+        try {
+          await func(req as Express.ExtRequest, res, cb);
+        } catch (e) {
+          cb(e);
+        }
+      });
     } else {
       // If the function is missing, log a warning message with the problematic route path and verb
       console.warn(
-        `Missing callback function for route ${routePath} using ${verb.toUpperCase()}`
+        `Missing callback function for route ${routePath} using ${verb.toUpperCase()}`,
       );
     }
   });

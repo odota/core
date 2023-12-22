@@ -1,5 +1,5 @@
 import db from '../store/db';
-import {countWords} from '../util/compute';
+import { countWords } from '../util/compute';
 import { mergeObjects } from '../util/utility';
 
 const args = process.argv.slice(2);

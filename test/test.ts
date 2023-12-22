@@ -4,7 +4,6 @@
  * */
 process.env.NODE_ENV = 'test';
 import type { Express } from 'express';
-import { eachSeries, timesSeries } from 'async';
 import nock from 'nock';
 import assert from 'assert';
 import supertest from 'supertest';
@@ -15,7 +14,7 @@ import util from 'util';
 import url from 'url';
 import { Client } from 'cassandra-driver';
 import swaggerParser from '@apidevtools/swagger-parser';
-import config from '../config.js';
+import config from '../config';
 import detailsApi from './data/details_api.json';
 import summariesApi from './data/summaries_api.json';
 import historyApi from './data/history_api.json';
@@ -23,16 +22,16 @@ import heroesApi from './data/heroes_api.json';
 import leaguesApi from './data/leagues_api.json';
 import retrieverPlayer from './data/retriever_player.json';
 import detailsApiPro from './data/details_api_pro.json';
+import retrieverMatch from './data/retriever_match.json';
 import spec from '../routes/spec';
-import {
-  getPlayerMatchesPromise,
-  insertMatchPromise,
-  insertPlayerPromise,
-} from '../store/queries';
+import { getPlayerMatches } from '../store/queries';
+import { insertMatch, upsertPlayer } from '../store/insert';
 import buildMatch from '../store/buildMatch';
 import { es } from '../store/elasticsearch';
 import redis from '../store/redis';
 import db from '../store/db';
+import cassandra from '../store/cassandra';
+import c from 'ansi-colors';
 
 const { Pool } = pg;
 const {
@@ -49,14 +48,15 @@ const initScyllaHost = url.parse(SCYLLA_URL).host as string;
 let app: Express;
 // fake api responses
 nock('http://api.steampowered.com')
-  // fake 500 error
+  // fake 500 error to test error handling
   .get('/IDOTA2Match_570/GetMatchDetails/V001/')
   .query(true)
   .reply(500, {})
   // fake match details
   .get('/IDOTA2Match_570/GetMatchDetails/V001/')
   .query(true)
-  .times(10)
+  // Once on insert call and once during parse processor
+  .times(2)
   .reply(200, detailsApi)
   // fake player summaries
   .get('/ISteamUser/GetPlayerSummaries/v0002/')
@@ -74,12 +74,21 @@ nock('http://api.steampowered.com')
   .get('/IDOTA2Match_570/GetLeagueListing/v0001/')
   .query(true)
   .reply(200, leaguesApi);
-// fake mmr response
 nock(`http://${RETRIEVER_HOST}`)
-  .get('/?account_id=88367253')
-  .reply(200, retrieverPlayer);
+  .get(/\?key=&account_id=.*/)
+  // fake mmr response up to 14 times for 7 non-anonymous players in test match inserted twice
+  .times(14)
+  .reply(200, retrieverPlayer)
+  // fake error to test handling
+  .get('/?key=&match_id=1781962623')
+  .reply(500, {})
+  // fake GC match details
+  .get('/?key=&match_id=1781962623')
+  // We faked the replay salt to 1 to match the testfile name
+  .reply(200, retrieverMatch);
 before(async function setup() {
   this.timeout(60000);
+  config.ENABLE_RANDOM_MMR_UPDATE = '1';
   await initPostgres();
   await initElasticsearch();
   await initRedis();
@@ -89,7 +98,7 @@ before(async function setup() {
   await loadMatches();
   await loadPlayers();
 });
-describe('swagger schema', async function testSwaggerSchema() {
+describe(c.blue('[TEST] swagger schema'), async function testSwaggerSchema() {
   this.timeout(2000);
   it('should be valid', (cb) => {
     const validOpts = {
@@ -99,72 +108,75 @@ describe('swagger schema', async function testSwaggerSchema() {
       },
     };
     // We stringify and imediately parse the object in order to remove the route() and func() properties, which arent a part of the OpenAPI spec
-    swaggerParser.validate(
-      JSON.parse(JSON.stringify(spec)),
-      validOpts,
-      (err) => {
-        if (!err) {
-          assert(!err);
-        } else {
-          assert.fail(err.message);
-        }
-        cb();
-      }
-    );
+    swaggerParser.validate(JSON.parse(JSON.stringify(spec)), validOpts, cb);
   });
 });
-describe('player_caches', () => {
-  it('should have data in player_caches', async () => {
-    // Test fetching matches for first player
-    const data = await getPlayerMatchesPromise('120269134', {
+describe(c.blue('[TEST] player_caches'), async () => {
+  // Test fetching matches for first player
+  let data = null;
+  before(async () => {
+    data = await getPlayerMatches('120269134', {
       project: ['match_id'],
     });
-    // We should have one result
+  });
+  it('should have one row in player_caches', async () => {
     assert.equal(data.length, 1);
   });
 });
-describe('replay parse', function () {
+describe(c.blue('[TEST] players'), async () => {
+  let data: any = null;
+  before(async () => {
+    const res = await supertest(app).get('/api/players/120269134');
+    data = res.body;
+  });
+  it('should have profile data', async () => {
+    assert.equal(data.profile.account_id, 120269134);
+    assert.ok(data.profile.personaname);
+  });
+  it('should have rank_tier data', async () => {
+    assert.equal(data.rank_tier, 80);
+  });
+  it('should return 404 for nonexistent player', async () => {
+    const res = await supertest(app).get('/api/players/666');
+    assert.equal(res.statusCode, 404);
+  });
+});
+describe(c.blue('[TEST] replay parse'), async function () {
   this.timeout(120000);
-  const tests = {
-    '1781962623_1.dem': detailsApi.result,
-  };
-  const key = '1781962623_1.dem';
-  it(`should parse replay ${key}`, async () => {
-    const matchData = tests[key];
-    // Fake being a league match so we ingest into postgres
+  const tests = [detailsApi.result];
+  const matchData = tests[0];
+  before(async () => {
+    // The test match is not a pro match, but we set the leagueid to 5399 so we get data in postgres
     // We could do this with a real pro match but we'd have to upload a new replay file
-    matchData.leagueid = 5399;
-    nock(`http://${RETRIEVER_HOST}`)
-      .get('/')
-      .query(true)
-      .reply(200, {
-        match: {
-          match_id: matchData.match_id,
-          cluster: matchData.cluster,
-          replay_salt: 1,
-          series_id: 0,
-          series_type: 0,
-          players: [],
-        },
-      });
-    console.log('inserting match and requesting parse');
-    try {
-      const job = await insertMatchPromise(matchData as unknown as Match, {
-        type: 'api',
-        forceParse: true,
-        attempts: 1,
-      });
-      assert.ok(job);
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
+    // This also means it should trigger auto-parse as a "pro match"
+    console.log('inserting and parsing:', matchData.match_id);
+    const job = await insertMatch(matchData, {
+      type: 'api',
+      origin: 'scanner',
+    });
+    assert.ok(job);
     console.log('waiting for replay parse');
     await new Promise((resolve) => setTimeout(resolve, 20000));
-    console.log('checking parsed match');
+  });
+  it('should have api data in buildMatch', async () => {
+    // ensure api data got inserted
+    const match = await buildMatch(matchData.match_id, {});
+    assert.ok(match.players);
+    assert.ok(match.players[0]);
+    assert.equal(match.players[0].kills, 8);
+    assert.ok(match.start_time);
+  });
+  it('should have gcdata in buildMatch', async () => {
+    // ensure gcdata got inserted
+    const match = await buildMatch(matchData.match_id, {});
+    assert.ok(match.players);
+    assert.ok(match.players[0]);
+    assert.equal(match.players[0].party_size, 10);
+    assert.equal(match.replay_salt, 1);
+  });
+  it('should have parse data in buildMatch', async () => {
     // ensure parse data got inserted
-    const match = await buildMatch(tests[key].match_id.toString(), {});
-    // console.log(match.players[0]);
+    const match = await buildMatch(matchData.match_id, {});
     assert.ok(match.players);
     assert.ok(match.players[0]);
     assert.equal(match.players[0].killed.npc_dota_creep_badguys_melee, 46);
@@ -175,14 +187,15 @@ describe('replay parse', function () {
     assert.ok(match.draft_timings);
     assert.ok(match.radiant_gold_adv);
     assert.ok(match.radiant_gold_adv.length);
-
+  });
+  it('should have parse match data in postgres', async () => {
     // Assert that the pro data (with parsed info) is in postgres
     const proMatch = await db.raw('select * from matches where match_id = ?', [
-      tests[key].match_id,
+      matchData.match_id,
     ]);
     const proMatchPlayers = await db.raw(
       'select * from player_matches where match_id = ?',
-      [tests[key].match_id]
+      [matchData.match_id],
     );
     const picksBans = await db.raw('select * from picks_bans');
     const teamMatch = await db.raw('select * from team_match');
@@ -196,8 +209,23 @@ describe('replay parse', function () {
     assert.equal(teamMatch.rows.length, 2);
     assert.equal(teamRankings.rows.length, 2);
   });
+  it('should have parse data for non-anonymous players in player_caches', async () => {
+    const result = await cassandra.execute(
+      'SELECT * from player_caches WHERE match_id = ? ALLOW FILTERING',
+      [matchData.match_id],
+      { prepare: true },
+    );
+    // Assert that parsed data is in player_caches
+    assert.ok(result.rows[0].stuns);
+
+    // Assert that gc data is in player_caches
+    assert.ok(result.rows[0].party_size);
+
+    // There should be 7 rows in player_caches for this match since there are 3 anonymous players
+    assert.equal(result.rows.length, 7);
+  });
 });
-describe('teamRanking', () => {
+describe(c.blue('[TEST] teamRanking'), () => {
   it('should have team rankings', async () => {
     const rows = await db
       .select(['team_id', 'rating', 'wins', 'losses'])
@@ -209,65 +237,61 @@ describe('teamRanking', () => {
     assert(loser.losses === 2);
     assert(winner.wins === 2);
     assert(loser.rating < winner.rating);
-    return;
   });
 });
-// TODO also test on unparsed match to catch exceptions caused by code expecting parsed data
-describe('api', () => {
-  it('should get API spec', function testAPISpec(cb) {
-    this.timeout(5000);
-    supertest(app)
-      .get('/api')
-      .end((err, res) => {
-        if (err) {
-          return cb(err);
+describe(c.blue('[TEST] api routes'), async function () {
+  this.timeout(5000);
+  before(async () => {
+    const tests: string[][] = [];
+    console.log('getting API spec and setting up tests');
+    const res = await supertest(app).get('/api');
+    const spec = res.body;
+    Object.keys(spec.paths).forEach((path) => {
+      Object.keys(spec.paths[path]).forEach((verb) => {
+        const replacedPath = path
+          .replace(/{match_id}/, '1781962623')
+          .replace(/{account_id}/, '120269134')
+          .replace(/{team_id}/, '15')
+          .replace(/{hero_id}/, '1')
+          .replace(/{league_id}/, '1')
+          .replace(/{field}/, 'kills')
+          .replace(/{resource}/, 'heroes');
+        tests.push([path, verb, replacedPath]);
+        if (path.includes('{match_id}')) {
+          // Also test an unparsed match ID
+          tests.push([path, verb, path.replace(/{match_id}/, '3254426673')]);
         }
-        const spec = res.body;
-        return eachSeries(
-          Object.keys(spec.paths),
-          (path, cb) => {
-            const replacedPath = path
-              .replace(/{match_id}/, '1781962623')
-              .replace(/{account_id}/, '120269134')
-              .replace(/{team_id}/, '15')
-              .replace(/{hero_id}/, '1')
-              .replace(/{league_id}/, '1')
-              .replace(/{field}/, 'kills')
-              .replace(/{resource}/, 'heroes');
-            eachSeries(
-              Object.keys(spec.paths[path]),
-              (verb, cb) => {
-                if (
-                  path.indexOf('/explorer') === 0 ||
-                  path.indexOf('/request') === 0
-                ) {
-                  return cb(err);
-                }
-                return supertest(app)
-                  [verb as HttpVerb](`/api${replacedPath}?q=testsearch`)
-                  .end((err, res) => {
-                    if (err || res.statusCode !== 200) {
-                      console.error(verb, replacedPath, res.body);
-                    }
-                    if (replacedPath.startsWith('/admin')) {
-                      assert.equal(res.statusCode, 403);
-                    } else if (replacedPath.startsWith('/subscribeSuccess')) {
-                      assert.equal(res.statusCode, 400);
-                    } else {
-                      assert.equal(res.statusCode, 200);
-                    }
-                    return cb(err);
-                  });
-              },
-              cb
-            );
-          },
-          cb
-        );
       });
+    });
+    for (let i = 0; i < tests.length; i++) {
+      const test = tests[i];
+      const [path, verb, replacedPath] = test;
+      if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0) {
+        continue;
+      }
+      const newTest = it(`should visit ${replacedPath}`, async () => {
+        const res = await supertest(app)[verb as HttpVerb](
+          `/api${replacedPath}?q=testsearch`,
+        );
+        if (res.statusCode !== 200) {
+          console.error(verb, replacedPath, res.body);
+        }
+        if (replacedPath.startsWith('/admin')) {
+          assert.equal(res.statusCode, 403);
+        } else if (replacedPath.startsWith('/subscribeSuccess')) {
+          assert.equal(res.statusCode, 400);
+        } else {
+          assert.equal(res.statusCode, 200);
+        }
+      });
+      this.addTest(newTest);
+    }
+  });
+  it('placeholder', () => {
+    assert(true);
   });
 });
-describe('api management', () => {
+describe(c.blue('[TEST] api management'), () => {
   beforeEach(function getApiRecord(done) {
     db.from('api_keys')
       .where({
@@ -337,7 +361,7 @@ describe('api management', () => {
                   }
                   assert.equal(resp, 1);
                   return done();
-                }
+                },
               );
             }
           });
@@ -387,7 +411,7 @@ describe('api management', () => {
                     assert.equal(
                       res.body.customer.credit_brand,
 
-                      previousCredit
+                      previousCredit,
                     );
                     assert.equal(res.body.customer.api_key, this.previousKey);
                     return done();
@@ -579,167 +603,84 @@ describe('api management', () => {
       .catch((err) => done(err));
   });
 });
-describe('api limits', () => {
-  before((done) => {
+describe(c.blue('[TEST] api limits'), () => {
+  before(async () => {
     config.ENABLE_API_LIMIT = '1';
-    config.API_FREE_LIMIT = 10;
-    redis
+    config.API_FREE_LIMIT = '10';
+    await redis
       .multi()
       .del('user_usage_count')
       .del('usage_count')
       .sadd('api_keys', 'KEY')
-      .exec((err) => {
-        if (err) {
-          return done(err);
-        }
-
-        return done();
-      });
+      .exec();
   });
 
-  function testWhiteListedRoutes(done: ErrorCb, key: string) {
-    eachSeries(
-      [
-        `/api${key}`, // Docs
-        `/api/metadata${key}`, // Login status
-        `/keys${key}`, // API Key management
-      ],
-
-      (i, cb) => {
-        supertest(app)
-          .get(i)
-
-          .end((err, res) => {
-            if (err) {
-              return cb(err);
-            }
-
-            assert.notEqual(res.statusCode, 429);
-            return cb();
-          });
-      },
-      done
-    );
-  }
-
-  function testRateCheckedRoute(done: ErrorCb) {
-    timesSeries(
-      10,
-      (i, cb) => {
-        setTimeout(() => {
-          supertest(app)
-            .get('/api/matches/1781962623')
-            .end((err, res) => {
-              if (err) {
-                return cb(err);
-              }
-
-              assert.equal(res.statusCode, 200);
-              return cb();
-            });
-        }, i * 300);
-      },
-
-      done
-    );
-  }
-
-  it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', function testNoApiLimit(done) {
+  it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', async function testNoApiLimit() {
     this.timeout(25000);
-    testWhiteListedRoutes((err) => {
-      if (err) {
-        done(err);
-      } else {
-        testRateCheckedRoute((err) => {
-          if (err) {
-            done(err);
-          } else {
-            supertest(app)
-              .get('/api/matches/1781962623')
-              .end((err, res) => {
-                if (err) {
-                  done(err);
-                }
-                assert.equal(res.statusCode, 429);
-                assert.equal(res.body.error, 'monthly api limit exceeded');
-
-                testWhiteListedRoutes(done, '');
-              });
-          }
-        });
-      }
-    }, '');
+    await testWhiteListedRoutes('');
+    await testRateCheckedRoute();
+    const res = await supertest(app).get('/api/matches/1781962623');
+    assert.equal(res.statusCode, 429);
+    assert.equal(res.body.error, 'monthly api limit exceeded');
+    await testWhiteListedRoutes('');
   });
 
-  it('should be able to make more than 10 calls when using API KEY', function testAPIKeyLimitsAndCounting(done) {
+  it('should be able to make more than 10 calls when using API KEY', async function testAPIKeyLimitsAndCounting() {
     this.timeout(25000);
-    timesSeries(
-      25,
-      (i, cb) => {
-        supertest(app)
-          .get('/api/matches/1781962623?api_key=KEY')
-          .end((err, res) => {
-            if (err) {
-              return cb(err);
-            }
+    for (let i = 0; i < 25; i++) {
+      let regular = await supertest(app).get(
+        '/api/matches/1781962623?api_key=KEY',
+      );
+      assert.equal(regular.statusCode, 200);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+    // Try whitelisted routes. Should not increment usage.
+    await testWhiteListedRoutes('?api_key=KEY');
+    // Try a 429. Should not increment usage.
+    const tooMany = await supertest(app).get('/gen429');
+    assert.equal(tooMany.statusCode, 429);
+    // Try a 500. Should not increment usage.
+    const err = await supertest(app).get('/gen500');
+    assert.equal(err.statusCode, 500);
 
-            assert.equal(res.statusCode, 200);
-            return cb();
-          });
-      },
-      () => {
-        // Try whitelisted routes. Should not increment usage.
-        testWhiteListedRoutes((err) => {
-          if (err) {
-            done(err);
-          } else {
-            // Try a 429. Should not increment usage.
-            supertest(app)
-              .get('/gen429')
-              .end((err, res) => {
-                if (err) {
-                  done(err);
-                }
-                assert.equal(res.statusCode, 429);
-
-                // Try a 500. Should not increment usage.
-                supertest(app)
-                  .get('/gen500')
-                  .end((err, res) => {
-                    if (err) {
-                      done(err);
-                    }
-                    assert.equal(res.statusCode, 500);
-                    redis.hgetall('usage_count', (err, res) => {
-                      if (err) {
-                        done(err);
-                      } else if (!res) {
-                        done('no result from usage_count');
-                      } else {
-                        const keys = Object.keys(res);
-                        assert.equal(keys.length, 1);
-                        assert.equal(Number(res[keys[0]]), 25);
-                        done();
-                      }
-                    });
-                  });
-              });
-          }
-        }, '?api_key=KEY');
-      }
-    );
+    const res = await redis.hgetall('usage_count');
+    assert.ok(res);
+    const keys = Object.keys(res);
+    assert.equal(keys.length, 1);
+    assert.equal(Number(res[keys[0]]), 25);
   });
 
   after(() => {
     config.ENABLE_API_LIMIT = '';
-    config.API_FREE_LIMIT = 50000;
+    config.API_FREE_LIMIT = '50000';
   });
 });
+
+async function testWhiteListedRoutes(key: string) {
+  const routes = [
+    `/api${key}`, // Docs
+    `/api/metadata${key}`, // Login status
+    `/keys${key}`, // API Key management
+  ];
+  for (let i = 0; i < routes.length; i++) {
+    const route = routes[i];
+    const res = await supertest(app).get(route);
+    assert.notEqual(res.statusCode, 429);
+  }
+}
+
+async function testRateCheckedRoute() {
+  for (let i = 0; i < 10; i++) {
+    const res = await supertest(app).get('/api/matches/1781962623');
+    assert.equal(res.statusCode, 200);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+}
 
 async function initElasticsearch() {
   console.log('Create Elasticsearch Mapping');
   const mapping = JSON.parse(
-    readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' })
+    readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
   );
   const exists = await es.indices.exists({
     index: 'dota-test', // Check if index already exists, in which case, delete it
@@ -794,7 +735,7 @@ async function initPostgres() {
   console.log('insert postgres test data');
   // populate the DB with this leagueid so we insert a pro match
   await db.raw(
-    "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')"
+    "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
   );
 }
 
@@ -807,7 +748,7 @@ async function initCassandra() {
   await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
   console.log('create cassandra test keyspace');
   await init.execute(
-    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };"
+    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
   );
   console.log('create cassandra tables');
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
@@ -830,7 +771,7 @@ async function initScylla() {
   await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
   console.log('create scylla test keyspace');
   await init.execute(
-    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };"
+    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
   );
   console.log('create scylla tables');
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
@@ -845,8 +786,10 @@ async function initScylla() {
 
 async function startServices() {
   console.log('starting services');
-  app = (await import('../svc/web.ts' + '')).default as unknown as Express;
-  await import('../svc/parser.ts' + '');
+  const { app: webApp } = await import('../svc/web.js');
+  app = webApp;
+  await import('../svc/parser.js');
+  await import('../svc/mmr.js');
 }
 
 async function loadMatches() {
@@ -854,8 +797,9 @@ async function loadMatches() {
   const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
   for (let i = 0; i < arr.length; i++) {
     const m = arr[i];
-    await insertMatchPromise(m as unknown as Match, {
+    await insertMatch(m, {
       type: 'api',
+      // Pretend to be scanner insert so we queue mmr/counts update etc.
       origin: 'scanner',
       skipParse: true,
     });
@@ -865,12 +809,12 @@ async function loadMatches() {
 async function loadPlayers() {
   console.log('loading players');
   await Promise.all(
-    summariesApi.response.players.map((p) => insertPlayerPromise(db, p, true))
+    summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
   );
 }
 
 /*
-describe('generateMatchups', () => {
+describe(c.blue('[TEST] generateMatchups'), () => {
   it('should generate matchups', (done) => {
     // in this sample match
     // 1,6,52,59,105:46,73,75,100,104:1
@@ -883,54 +827,40 @@ describe('generateMatchups', () => {
       redis.hincrby('matchups', k, 1);
     });
     const funcs = [
-      function zeroVzero(cb) {
-        supertest(app).get('/api/matchups').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 1);
-          assert.equal(res.body.t1, 0);
-          cb(err);
-        });
+      async function zeroVzero() {
+        const res = await supertest(app).get('/api/matchups').expect(200);
+        assert.equal(res.body.t0, 1);
+        assert.equal(res.body.t1, 0);
       },
-      function oneVzeroRight(cb) {
-        supertest(app).get('/api/matchups?t1=1').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 1);
-          assert.equal(res.body.t1, 0);
-          cb(err);
-        });
+      async function oneVzeroRight() {
+        const res = await supertest(app).get('/api/matchups?t1=1').expect(200);
+        assert.equal(res.body.t0, 1);
+        assert.equal(res.body.t1, 0);
       },
-      function oneVzero(cb) {
-        supertest(app).get('/api/matchups?t0=1').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 0);
-          assert.equal(res.body.t1, 1);
-          cb(err);
-        });
+      async function oneVzero() {
+        const res = await supertest(app).get('/api/matchups?t0=1').expect(200);
+        assert.equal(res.body.t0, 0);
+        assert.equal(res.body.t1, 1);
       },
-      function oneVzero2(cb) {
-        supertest(app).get('/api/matchups?t0=6').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 0);
-          assert.equal(res.body.t1, 1);
-          cb(err);
-        });
+      async function oneVzero2() {
+        const res = await supertest(app).get('/api/matchups?t0=6').expect(200);
+        assert.equal(res.body.t0, 0);
+        assert.equal(res.body.t1, 1);
       },
-      function oneVzero3(cb) {
-        supertest(app).get('/api/matchups?t0=46').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 1);
-          assert.equal(res.body.t1, 0);
-          cb(err);
-        });
+      async function oneVzero3() {
+        const res = await supertest(app).get('/api/matchups?t0=46').expect(200);
+        assert.equal(res.body.t0, 1);
+        assert.equal(res.body.t1, 0);
       },
-      function oneVone(cb) {
-        supertest(app).get('/api/matchups?t0=1&t1=46').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 0);
-          assert.equal(res.body.t1, 1);
-          cb(err);
-        });
+      async function oneVone() {
+        const res = await supertest(app).get('/api/matchups?t0=1&t1=46').expect(200);
+        assert.equal(res.body.t0, 0);
+        assert.equal(res.body.t1, 1);
       },
-      function oneVoneInvert(cb) {
-        supertest(app).get('/api/matchups?t0=46&t1=1').expect(200).end((err, res) => {
-          assert.equal(res.body.t0, 1);
-          assert.equal(res.body.t1, 0);
-          cb(err);
-        });
+      async function oneVoneInvert() {
+        const res = await supertest(app).get('/api/matchups?t0=46&t1=1').expect(200);
+        assert.equal(res.body.t0, 1);
+        assert.equal(res.body.t1, 0);
       },
     ];
     done();

@@ -4,7 +4,7 @@ import moment from 'moment';
 import stripeLib from 'stripe';
 import redis from '../store/redis';
 import db from '../store/db';
-import config from '../config.js';
+import config from '../config';
 import type { knex } from 'knex';
 import { invokeInterval } from '../util/utility';
 
@@ -52,7 +52,7 @@ function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
                       '',
                       values?.[Number(i) + 1],
                       values?.[Number(i) + 1],
-                    ]
+                    ],
                   );
                 }
                 throw Error('No record found.');
@@ -77,7 +77,7 @@ function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
             return storeUsageCounts(cursor, cb);
           }
           return cb();
-        }
+        },
       );
     }
   });
@@ -104,7 +104,7 @@ async function updateStripeUsage(cb: ErrorCb) {
           `
                   UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?
                 `,
-          [sub.id]
+          [sub.id],
         );
         continue;
       }
@@ -130,7 +130,7 @@ async function updateStripeUsage(cb: ErrorCb) {
                   GROUP BY api_key_usage.api_key, api_key_usage.ip
                 ) as t1
               `,
-        [startTime.format('YYYY-MM-DD'), endTime.format('YYYY-MM-DD'), sub.id]
+        [startTime.format('YYYY-MM-DD'), endTime.format('YYYY-MM-DD'), sub.id],
       );
       if (res.rows.length > 0 && res.rows[0].usage_count) {
         const usageCount = res.rows[0].usage_count;
@@ -139,7 +139,7 @@ async function updateStripeUsage(cb: ErrorCb) {
         // TODO(albert): We could break this out by day for the invoice
         // but we'd have to make changes to web.js and metrics
         await stripe.subscriptionItems.createUsageRecord(sub.items.data[0].id, {
-          quantity: Math.ceil(usageCount / config.API_BILLING_UNIT),
+          quantity: Math.ceil(usageCount / Number(config.API_BILLING_UNIT)),
           action: 'set',
           timestamp: sub.current_period_end - 1,
         });
@@ -147,7 +147,7 @@ async function updateStripeUsage(cb: ErrorCb) {
           'updateStripeUsage updated',
           sub.id,
           usageCount,
-          Math.ceil(usageCount / config.API_BILLING_UNIT)
+          Math.ceil(usageCount / Number(config.API_BILLING_UNIT)),
         );
       } else {
         // console.log(`updateStripeUsage No usage for ${sub.id}`);
@@ -164,7 +164,7 @@ function getAPIKeys(db: knex.Knex, cb: ErrorCb) {
   db.raw(
     `
     SELECT api_key FROM api_keys WHERE api_key IS NOT NULL AND is_canceled IS NOT TRUE
-    `
+    `,
   ).asCallback((err: any, result: any) => {
     if (err) {
       return cb(err);
@@ -196,12 +196,12 @@ invokeInterval(
       }
     });
   },
-  5 * 60 * 1000
+  5 * 60 * 1000,
 ); // Update every 5 min
 invokeInterval(
   (cb: ErrorCb) => {
     storeUsageCounts(0, cb);
   },
-  10 * 60 * 1000
+  10 * 60 * 1000,
 ); // Every 10 minutes
 invokeInterval(updateStripeUsage, 5 * 60 * 1000); // Every 5 minutes

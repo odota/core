@@ -3,7 +3,7 @@ import JSONbig from 'json-bigint';
 import axios from 'axios';
 import redis from '../store/redis';
 import db from '../store/db';
-import config from '../config.js';
+import config from '../config';
 import { invokeIntervalAsync } from '../util/utility';
 
 async function doLiveGames() {
@@ -24,7 +24,7 @@ async function doLiveGames() {
       match.players.forEach((player, i) => {
         const proPlayer = proPlayers.find(
           (proPlayer) =>
-            proPlayer.account_id.toString() === player.account_id?.toString()
+            proPlayer.account_id.toString() === player.account_id?.toString(),
         );
         if (proPlayer) {
           match.players[i] = { ...player, ...proPlayer };
@@ -37,7 +37,7 @@ async function doLiveGames() {
       await redis.setex(
         `liveGame:${match.lobby_id}`,
         28800,
-        JSON.stringify(match)
+        JSON.stringify(match),
       );
       // Keep only the 100 highest values
       await redis.zremrangebyrank('liveGames', '0', '-101');

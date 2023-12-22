@@ -1,5 +1,4 @@
 // Processes a queue of jobs to collect stats on specific scenario data
-import async from 'async';
 import util from 'util';
 import queue from '../store/queue';
 import buildMatch from '../store/buildMatch';
@@ -14,18 +13,19 @@ type ScenariosKey = keyof typeof scenarioChecks;
 async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);
   // NOTE: Using buildMatch is unnecessarily expensive here since it also looks up player names etc.
-  const match = await buildMatch(matchID, {});
+  const match = await buildMatch(Number(matchID), {});
   if (!su.validateMatchProperties(match)) {
     console.error(
-      `Skipping scenario checks for match ${matchID}. Invalid match object.`
+      `Skipping scenario checks for match ${matchID}. Invalid match object.`,
     );
     return;
   }
   const currentWeek = epochWeek();
   Object.keys(su.scenarioChecks).forEach((table) => {
-    su.scenarioChecks[table as ScenariosKey].forEach((scenarioCheck) => {
+    su.scenarioChecks[table as ScenariosKey].forEach(async (scenarioCheck) => {
       const rows = scenarioCheck(match);
-      async.eachSeries(rows, (row, cb) => {
+      for (let i = 0; i < rows.length; i++) {
+        let row = rows[i];
         row = Object.assign(row, {
           epoch_week: currentWeek,
           wins: row.wins ? '1' : '0',
@@ -40,13 +40,13 @@ async function processScenarios(matchID: string) {
             .filter((column) => column !== 'wins')
             .join(','),
           table,
-          table
+          table,
         );
-        db.raw(
+        await db.raw(
           query,
-          Object.keys(row).map((key) => row[key])
-        ).asCallback(cb);
-      });
+          Object.keys(row).map((key) => row[key]),
+        );
+      }
     });
   });
 }

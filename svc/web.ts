@@ -2,7 +2,6 @@
  * Provides the OpenDota API and serves web requests
  * Also supports login through Steam
  * */
-import async from 'async';
 import request from 'request';
 import compression from 'compression';
 import session from 'cookie-session';
@@ -17,10 +16,10 @@ import { Redis } from 'ioredis';
 import { WebSocketServer, WebSocket } from 'ws';
 import keys from '../routes/keyManagement';
 import api from '../routes/api';
-import { insertPlayerPromise } from '../store/queries';
+import { upsertPlayer } from '../store/insert';
 import db from '../store/db';
 import redis from '../store/redis';
-import config from '../config.js';
+import config from '../config';
 import {
   getEndOfMonth,
   getStartOfBlockMinutes,
@@ -31,7 +30,7 @@ const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
-const app = express();
+export const app = express();
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
 const sessOptions = {
@@ -73,13 +72,13 @@ passport.use(
       const player = profile._json;
       player.last_login = new Date();
       try {
-        await insertPlayerPromise(db, player, true);
+        await upsertPlayer(db, player, true);
         cb(null, player);
       } catch (e) {
         cb(e);
       }
-    }
-  )
+    },
+  ),
 );
 // Compression middleware
 app.use(compression());
@@ -181,7 +180,7 @@ app.use((req, res, cb) => {
     if (!res.locals.isAPIRequest) {
       res.set(
         'X-Rate-Limit-Remaining-Month',
-        (config.API_FREE_LIMIT - Number(prevUsage)).toString()
+        (Number(config.API_FREE_LIMIT) - Number(prevUsage)).toString(),
       );
     }
     if (Number(incrValue) > Number(rateLimit) && config.NODE_ENV !== 'test') {
@@ -193,7 +192,7 @@ app.use((req, res, cb) => {
       config.ENABLE_API_LIMIT &&
       !whitelistedPaths.includes(req.path) &&
       !res.locals.isAPIRequest &&
-      Number(prevUsage) >= config.API_FREE_LIMIT
+      Number(prevUsage) >= Number(config.API_FREE_LIMIT)
     ) {
       return res.status(429).json({
         error: 'monthly api limit exceeded',
@@ -216,7 +215,7 @@ app.use((req, res, cb) => {
       res.statusCode !== 500 &&
       res.statusCode !== 429 &&
       !whitelistedPaths.includes(
-        req.baseUrl + (req.path === '/' ? '' : req.path)
+        req.baseUrl + (req.path === '/' ? '' : req.path),
       ) &&
       elapsed < 10000
     ) {
@@ -241,14 +240,14 @@ app.use((req, res, cb) => {
       if (req.headers.origin === 'https://www.opendota.com') {
         redisCount(redis, 'api_hits_ui');
       }
-      redis.zincrby(
-        'api_paths',
-        1,
-        req.method + ' ' + req.path.replace(/\d+/g, ':id')
-      );
+      const normPath = req.path
+        .replace(/\d+/g, ':id')
+        .toLowerCase()
+        .replace(/\/+$/, '');
+      redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
       redis.expireat(
         'api_paths',
-        moment().startOf('hour').add(1, 'hour').format('X')
+        moment().startOf('hour').add(1, 'hour').format('X'),
       );
     }
     if (req.user && req.user.account_id) {
@@ -279,13 +278,13 @@ app.use(
   cors({
     origin: true,
     credentials: true,
-  })
+  }),
 );
 app.use(bodyParser.json());
 app.route('/login').get(
   passport.authenticate('steam', {
     failureRedirect: '/api',
-  })
+  }),
 );
 app.route('/return').get(
   passport.authenticate('steam', {
@@ -293,10 +292,14 @@ app.route('/return').get(
   }),
   (req, res) => {
     if (config.UI_HOST) {
-      return res.redirect(req.user ? `${config.UI_HOST}/players/${req.user.account_id}` : config.UI_HOST);
+      return res.redirect(
+        req.user
+          ? `${config.UI_HOST}/players/${req.user.account_id}`
+          : config.UI_HOST,
+      );
     }
     return res.redirect('/api');
-  }
+  },
 );
 app.route('/logout').get((req, res) => {
   req.logout(() => {});
@@ -320,7 +323,7 @@ app.route('/subscribeSuccess').get(async (req, res) => {
   // associate the customer id with the steam account ID (req.user.account_id)
   await db.raw(
     'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
-    [accountId, customer.id, 'active']
+    [accountId, customer.id, 'active'],
   );
   // Send the user back to the subscribe page
   return res.redirect(`${config.UI_HOST}/subscribe`);
@@ -331,7 +334,7 @@ app.route('/manageSub').post(async (req, res) => {
   }
   const result = await db.raw(
     "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
-    [req.user.account_id]
+    [req.user.account_id],
   );
   const customer = result?.rows?.[0];
   if (!customer) {
@@ -352,97 +355,85 @@ api.use('/admin*', (req, res, cb) => {
     error: 'Access Denied',
   });
 });
-api.get('/admin/apiMetrics', (req, res) => {
-  const startTime = moment().startOf('month').format('YYYY-MM-DD');
-  const endTime = moment().endOf('month').format('YYYY-MM-DD');
-  async.parallel(
-    {
-      topAPI: (cb) => {
+api.get('/admin/apiMetrics', async (req, res, cb) => {
+  try {
+    const startTime = moment().startOf('month').format('YYYY-MM-DD');
+    const endTime = moment().endOf('month').format('YYYY-MM-DD');
+    const [topAPI, topAPIIP, numAPIUsers, topUsersIP, numUsersIP] =
+      await Promise.all([
         db.raw(
           `
+    SELECT
+        account_id,
+        ARRAY_AGG(DISTINCT api_key) as api_keys,
+        SUM(usage) as usage_count
+    FROM (
         SELECT
-            account_id,
-            ARRAY_AGG(DISTINCT api_key) as api_keys,
-            SUM(usage) as usage_count
-        FROM (
-            SELECT
-            account_id,
-            api_key,
-            ip,
-            MAX(usage_count) as usage
-            FROM api_key_usage
-            WHERE
-            timestamp >= ?
-            AND timestamp <= ?
-            GROUP BY account_id, api_key, ip
-        ) as t1
-        GROUP BY account_id
-        ORDER BY usage_count DESC
-        LIMIT 10
-        `,
-          [startTime, endTime]
-        ).asCallback((err: Error | null, res: any) =>
-          cb(err, err ? null : res.rows)
-        );
-      },
-      topAPIIP: (cb) => {
-        db.raw(
-          `
-        SELECT
-            ip,
-            ARRAY_AGG(DISTINCT account_id) as account_ids,
-            ARRAY_AGG(DISTINCT api_key) as api_keys,
-            SUM(usage) as usage_count
-        FROM (
-            SELECT
-            account_id,
-            api_key,
-            ip,
-            MAX(usage_count) as usage
-            FROM api_key_usage
-            WHERE
-            timestamp >= ?
-            AND timestamp <= ?
-            GROUP BY account_id, api_key, ip
-        ) as t1
-        GROUP BY ip
-        ORDER BY usage_count DESC
-        LIMIT 10
-        `,
-          [startTime, endTime]
-        ).asCallback((err: Error | null, res: any) =>
-          cb(err, err ? null : res.rows)
-        );
-      },
-      numAPIUsers: (cb) => {
-        db.raw(
-          `
-        SELECT
-            COUNT(DISTINCT account_id)
+        account_id,
+        api_key,
+        ip,
+        MAX(usage_count) as usage
         FROM api_key_usage
         WHERE
-            timestamp >= ?
-            AND timestamp <= ?
-        `,
-          [startTime, endTime]
-        ).asCallback((err: Error | null, res: any) =>
-          cb(err, err ? null : res.rows)
-        );
-      },
-      topUsersIP: (cb) => {
-        redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES', cb);
-      },
-      numUsersIP: (cb) => {
-        redis.zcard('user_usage_count', cb);
-      },
-    },
-    (err, result) => {
-      if (err) {
-        return res.status(500).send(err.message);
-      }
-      return res.json(result);
-    }
-  );
+        timestamp >= ?
+        AND timestamp <= ?
+        GROUP BY account_id, api_key, ip
+    ) as t1
+    GROUP BY account_id
+    ORDER BY usage_count DESC
+    LIMIT 10
+    `,
+          [startTime, endTime],
+        ),
+        db.raw(
+          `
+    SELECT
+        ip,
+        ARRAY_AGG(DISTINCT account_id) as account_ids,
+        ARRAY_AGG(DISTINCT api_key) as api_keys,
+        SUM(usage) as usage_count
+    FROM (
+        SELECT
+        account_id,
+        api_key,
+        ip,
+        MAX(usage_count) as usage
+        FROM api_key_usage
+        WHERE
+        timestamp >= ?
+        AND timestamp <= ?
+        GROUP BY account_id, api_key, ip
+    ) as t1
+    GROUP BY ip
+    ORDER BY usage_count DESC
+    LIMIT 10
+    `,
+          [startTime, endTime],
+        ),
+        db.raw(
+          `
+    SELECT
+        COUNT(DISTINCT account_id)
+    FROM api_key_usage
+    WHERE
+        timestamp >= ?
+        AND timestamp <= ?
+    `,
+          [startTime, endTime],
+        ),
+        redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES'),
+        redis.zcard('user_usage_count'),
+      ]);
+    return res.json({
+      topAPI: topAPI.rows,
+      topAPIIP: topAPIIP.rows,
+      numAPIUsers: numAPIUsers.rows,
+      topUsersIP,
+      numUsersIP,
+    });
+  } catch (e) {
+    return cb(e);
+  }
 });
 app.use('/api', api);
 // CORS Preflight for API keys
@@ -453,7 +444,7 @@ app.use('/keys', keys);
 app.use((req, res) =>
   res.status(404).json({
     error: 'Not Found',
-  })
+  }),
 );
 // 500 route
 app.use(
@@ -462,12 +453,12 @@ app.use(
     redisCount(redis, '500_error');
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       // default express handler
-      return cb(JSON.stringify(err));
+      return cb(err?.message || JSON.stringify(err));
     }
     return res.status(500).json({
       error: 'Internal Server Error',
     });
-  }
+  },
 );
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
@@ -491,4 +482,3 @@ process.on('uncaughtException', function (err) {
   console.error(err);
   process.exit(1);
 });
-export default app;

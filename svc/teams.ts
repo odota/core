@@ -1,15 +1,16 @@
 // Updates the list of teams in the database
+import axios from 'axios';
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/insert';
 import {
   generateJob,
-  getDataPromise,
+  getSteamAPIData,
   invokeIntervalAsync,
 } from '../util/utility';
 
 async function doTeams() {
   const result = await db.raw(
-    'select distinct team_id from team_match order by team_id desc'
+    'select distinct team_id from team_match order by team_id desc',
   );
   for (let i = 0; i < result.rows.length; i++) {
     const m = result.rows[i];
@@ -26,7 +27,7 @@ async function doTeams() {
     const container = generateJob('api_team_info_by_team_id', {
       start_at_team_id: m.team_id,
     });
-    let body = await getDataPromise({
+    let body = await getSteamAPIData({
       url: container.url,
       raw: true,
     });
@@ -45,29 +46,23 @@ async function doTeams() {
     const ugcJob = generateJob('api_get_ugc_file_details', {
       ugcid: logoUgc,
     });
-    const cdnJob = generateJob('steam_cdn_team_logos', {
-      team_id: m.team_id,
-    });
     // Steam's CDN sometimes has better versions of team logos available
     try {
-      const cdnBody = await getDataPromise({
-        url: cdnJob.url,
-        noRetry: true,
+      const cdnUrl = `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${m.team_id}.png`;
+      // Check if it exists
+      await axios.head(cdnUrl);
+      t.team_id = m.team_id;
+      t.logo_url = cdnUrl;
+      // console.log('[TEAMS] cdn: ', t);
+      await upsert(db, 'teams', t, {
+        team_id: m.team_id,
       });
-      if (cdnBody) {
-        t.team_id = m.team_id;
-        t.logo_url = cdnJob.url;
-        // console.log('[TEAMS] cdn: ', t);
-        await upsertPromise(db, 'teams', t, {
-          team_id: m.team_id,
-        });
-        continue;
-      }
+      continue;
     } catch {
       // This is fine, we failed to get CDN image info
       // Try getting image from ugc
       try {
-        const ugcBody = await getDataPromise({
+        const ugcBody = await getSteamAPIData({
           url: ugcJob.url,
           noRetry: true,
         });
@@ -76,7 +71,7 @@ async function doTeams() {
           t.logo_url = ugcBody.data.url;
         }
         // console.log('[TEAMS] ugc: ', t);
-        await upsertPromise(db, 'teams', t, {
+        await upsert(db, 'teams', t, {
           team_id: m.team_id,
         });
       } catch (e) {

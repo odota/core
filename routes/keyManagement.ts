@@ -6,7 +6,8 @@ import async from 'async';
 import stripeLib from 'stripe';
 import db from '../store/db';
 import redis from '../store/redis';
-import config from '../config.js';
+import config from '../config';
+import { redisCount } from '../util/utility';
 //@ts-ignore
 const stripe = stripeLib(config.STRIPE_SECRET);
 const stripeAPIPlan = config.STRIPE_API_PLAN;
@@ -15,7 +16,7 @@ keys.use(bodyParser.json());
 keys.use(
   bodyParser.urlencoded({
     extended: true,
-  })
+  }),
 );
 keys.use((req, res, next) => {
   if (!req.user) {
@@ -131,9 +132,9 @@ keys
               moment().subtract(5, 'month').startOf('month'),
               moment().endOf('month'),
               req.user?.account_id,
-            ]
+            ],
           ).asCallback((err: Error | null, results: { rows: any[] }) =>
-            cb(err, err ? null : results.rows)
+            cb(err, err ? null : results.rows),
           );
         },
       },
@@ -143,7 +144,7 @@ keys
         } else {
           res.json(results);
         }
-      }
+      },
     );
   })
   .delete(async (req, res) => {
@@ -186,6 +187,20 @@ keys
       console.log('Active key exists for', req.user?.account_id);
       return res.sendStatus(200);
     }
+    // Optionally verify the account_id
+    if (req.user?.account_id && Number(config.API_KEY_GEN_THRESHOLD)) {
+      const threshold = await db
+        .first('account_id')
+        .from('players')
+        .orderBy('account_id', 'desc');
+      const fail =
+        Number(req.user?.account_id) >
+        threshold.account_id - Number(config.API_KEY_GEN_THRESHOLD);
+      if (fail) {
+        redisCount(redis, 'gen_api_key_invalid');
+        return res.sendStatus(400).json({ error: 'Failed validation' });
+      }
+    }
     // returning customer
     if (allKeyRecords.length > 0) {
       customer_id = allKeyRecords[0].customer_id;
@@ -195,7 +210,7 @@ keys
           'Open invoices exist for',
           req.user?.account_id,
           'customer',
-          customer_id
+          customer_id,
         );
         return res.status(402).json({ error: 'Open invoice' });
       }
@@ -249,7 +264,7 @@ keys
         apiKey,
         sub.customer,
         sub.id,
-      ]
+      ],
     );
     // Add the key to Redis so that it works immediately
     redis.sadd('api_keys', apiKey, (err) => {

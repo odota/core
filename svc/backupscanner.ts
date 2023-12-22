@@ -1,13 +1,13 @@
 // Alternative to scanner if seq match data endpoint isn't available
 // Works by repeatedly checking match histories for players
 import redis from '../store/redis';
-import { insertMatchPromise } from '../store/queries';
-import config from '../config.js';
+import { insertMatch } from '../store/insert';
+import config from '../config';
 import {
   generateJob,
-  getDataPromise,
+  getSteamAPIData,
   invokeIntervalAsync,
-  eachLimit,
+  eachLimitPromise,
 } from '../util/utility';
 const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
@@ -21,7 +21,7 @@ async function processMatch(matchId: number) {
     match_id: matchId,
   });
   const { url } = job;
-  const body = await getDataPromise({
+  const body = await getSteamAPIData({
     url,
     delay,
   });
@@ -29,10 +29,9 @@ async function processMatch(matchId: number) {
     return;
   }
   const match = body.result;
-  await insertMatchPromise(match, {
+  await insertMatch(match, {
     type: 'api',
     origin: 'scanner',
-    skipCounts: false,
   });
   // Set with long expiration (1 month) to avoid picking up the same matches again
   // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
@@ -42,7 +41,7 @@ async function processPlayer(accountId: string) {
   const ajob = generateJob('api_history', {
     account_id: accountId,
   });
-  const body = await getDataPromise({
+  const body = await getSteamAPIData({
     url: ajob.url,
     delay,
   });
@@ -62,6 +61,6 @@ async function processPlayer(accountId: string) {
 async function doBackupScanner() {
   const ids = await redis.zrange('tracked', 0, -1);
   const promises = ids.map((id) => () => processPlayer(id));
-  await eachLimit(promises, parallelism);
+  await eachLimitPromise(promises, parallelism);
 }
 invokeIntervalAsync(doBackupScanner, 1000);

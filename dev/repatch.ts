@@ -1,7 +1,6 @@
-//NOT ENABLED: Updates the patch assigned to each pro match based on start_time
 import constants from 'dotaconstants';
 import db from '../store/db';
-import { upsertPromise } from '../store/queries';
+import { upsert } from '../store/insert';
 import { getPatchIndex } from '../util/utility';
 
 async function start() {
@@ -10,7 +9,7 @@ async function start() {
   // This could be a lot of matches so go one at a time
   for (let i = 0; i < matches.length; i++) {
     const match = matches[i];
-    await upsertPromise(
+    await upsert(
       db,
       'match_patch',
       {
@@ -19,7 +18,7 @@ async function start() {
       },
       {
         match_id: match.match_id,
-      }
+      },
     );
   }
 }

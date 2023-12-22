@@ -1,17 +1,13 @@
-import { insertMatchPromise } from '../store/queries.js';
-import dbImport from '../store/db.js';
-import { generateJob, getDataPromise } from '../util/utility.js';
-
-const db = dbImport.default;
-
-// const leagueUrl = generateJob('api_leagues', {}).url;
+const { insertMatch } = await import('../store/insert.js');
+const { db } = await import('../store/db.js');
+const { generateJob, getSteamAPIData } = await import('../util/utility.js');
 
 async function getPage(url: string, leagueid: number) {
-  const data: any = await getDataPromise(url);
+  const data: any = await getSteamAPIData(url);
   console.log(
     leagueid,
     data.result.total_results,
-    data.result.results_remaining
+    data.result.results_remaining,
   );
   for (let i = 0; i < data.result.matches.length; i++) {
     const match = data.results.matches[i];
@@ -20,13 +16,12 @@ async function getPage(url: string, leagueid: number) {
       match_id: match.match_id,
     });
     const { url } = job;
-    const body: any = await getDataPromise({
+    const body: any = await getSteamAPIData({
       url,
-      delay: 200,
     });
     if (body.result) {
       const match = body.result;
-      await insertMatchPromise(match, { type: 'api', skipParse: true });
+      await insertMatch(match, { type: 'api' });
     }
   }
   if (data.result.results_remaining) {
@@ -51,7 +46,7 @@ leagueIds.forEach(async (leagueid: number) => {
   const { url } = generateJob('api_history', {
     leagueid,
   });
-  return await getPage(url, leagueid);
+  return getPage(url, leagueid);
 });
 process.exit(0);
 // From API

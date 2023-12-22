@@ -1,20 +1,21 @@
 // Processes a queue of full history/refresh requests for players
 import urllib from 'url';
 import { promisify } from 'util';
-import config from '../config.js';
+import config from '../config';
 import {
   redisCount,
-  getDataPromise,
+  getSteamAPIData,
   generateJob,
-  eachLimit,
+  eachLimitPromise,
 } from '../util/utility';
 import db from '../store/db';
 import redis from '../store/redis';
 import queue from '../store/queue';
-import { insertMatchPromise, getPlayerMatchesPromise } from '../store/queries';
+import { getPlayerMatches } from '../store/queries';
+import { insertMatch } from '../store/insert';
 const apiKeys = config.STEAM_API_KEY.split(',');
-// number of api requests to send at once
-const parallelism = Math.min(40, apiKeys.length);
+// number of match details requests to send at once
+const parallelism = Math.min(1, apiKeys.length);
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
@@ -34,17 +35,19 @@ async function processMatch(matchId: string) {
   const container = generateJob('api_details', {
     match_id: Number(matchId),
   });
-  const body = await getDataPromise(container.url);
+  const body = await getSteamAPIData(container.url);
   const match = body.result;
-  await insertMatchPromise(match, {
+  await insertMatch(match, {
     type: 'api',
-    skipParse: true,
   });
 }
 
 async function processFullHistory(job: FullHistoryJob) {
   const player = job;
-  if (Number(player.account_id) === 0 || Number.isNaN(Number(player.account_id))) {
+  if (
+    Number(player.account_id) === 0 ||
+    Number.isNaN(Number(player.account_id))
+  ) {
     return;
   }
   console.time('doFullHistory: ' + player.account_id.toString());
@@ -63,9 +66,9 @@ async function processFullHistory(job: FullHistoryJob) {
   });
   const getApiMatchPage = async (
     player: FullHistoryJob,
-    url: string
+    url: string,
   ): Promise<void> => {
-    const body = await getDataPromise(url);
+    const body = await getSteamAPIData(url);
     // if !body.result, retry
     if (!body.result) {
       return getApiMatchPage(player, url);
@@ -107,14 +110,14 @@ async function processFullHistory(job: FullHistoryJob) {
   player.fh_unavailable = false;
   // check what matches the player is already associated with
   const docs =
-    (await getPlayerMatchesPromise(player.account_id?.toString(), {
+    (await getPlayerMatches(player.account_id?.toString(), {
       project: ['match_id'],
     })) ?? [];
   console.log(
     '%s matches found, %s already in db, %s to add',
     Object.keys(match_ids).length,
     docs.length,
-    Object.keys(match_ids).length - docs.length
+    Object.keys(match_ids).length - docs.length,
   );
   // iterate through db results, delete match_id key if this player has this match already
   // will re-request and update matches where this player was previously anonymous
@@ -124,10 +127,14 @@ async function processFullHistory(job: FullHistoryJob) {
   }
   // make api_details requests for matches
   const promiseFuncs = Object.keys(match_ids).map(
-    (matchId) => () => processMatch(matchId)
+    (matchId) => () => processMatch(matchId),
   );
-  await eachLimit(promiseFuncs, parallelism);
+  await eachLimitPromise(promiseFuncs, parallelism);
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
-queue.runQueue('fhQueue', 20, processFullHistory);
+queue.runQueue(
+  'fhQueue',
+  Number(config.FULLHISTORY_PARALLELISM),
+  processFullHistory,
+);

@@ -4,22 +4,33 @@
 version: '2'
 services:
   postgres:
-    build:
-      context: .
-      dockerfile: docker/postgres.dockerfile
-    image: odota/postgres
+    image: postgres:9.5
     container_name: odota-postgres
     environment:
-      POSTGRES_DB: yasp
       POSTGRES_PASSWORD: postgres
+  postgresinit:
+    image: postgres
+    depends_on:
+      - postgres
+    volumes:
+      - .:/usr/src
+    container_name: odota-postgresinit
+    entrypoint:
+      [
+        'bash',
+        '-c',
+        'sleep 30 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
+      ]
   cassandra:
     image: cassandra:4
     container_name: odota-cassandra
+    environment:
+      MAX_HEAP_SIZE: 128M
+      HEAP_NEWSIZE: 24M
   cassandrainit:
     image: cassandra
     depends_on:
       - cassandra
-    # restart: "no"
     volumes:
       - .:/usr/src
     container_name: odota-cassandrainit
@@ -27,7 +38,7 @@ services:
       [
         'bash',
         '-c',
-        'sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+        'sleep 90 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
       ]
   scylla:
     image: scylladb/scylla:5.4
@@ -36,7 +47,6 @@ services:
     image: scylladb/scylla
     depends_on:
       - scylla
-    # restart: "no"
     volumes:
       - .:/usr/src
     container_name: odota-scyllainit
@@ -44,10 +54,10 @@ services:
       [
         'bash',
         '-c',
-        'sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
+        'sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
       ]
   redis:
-    image: redis:5
+    image: redis:6
     container_name: odota-redis
   elasticsearch:
     image: elasticsearch:6.8.23

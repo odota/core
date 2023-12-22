@@ -1,6 +1,6 @@
 import cassandra from '../store/cassandra';
 import db from '../store/db';
-import { doArchiveFromLegacy } from '../store/queries';
+import { doArchiveFromLegacy } from '../store/getArchivedData';
 
 const stream = db.raw('SELECT match_id from parsed_matches WHERE is_archived IS NULL').stream();
 stream.on('readable', async () => {
@@ -40,7 +40,7 @@ stream.on('end', function () {
   // emitted when all rows have been retrieved and read
   console.log('finished');
   // process.exit(0);
-})
+});
 stream.on('error', function (e) {
   console.error(e);
   // process.exit(1);
