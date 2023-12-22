@@ -8,8 +8,8 @@ const db = knex({
   client: 'pg',
   connection: config.POSTGRES_URL,
   pool: {
-    // min: 2,
-    // max: 20,
+    min: 0,
+    max: 20,
     // afterCreate: (conn, done) => {
     //   // Set the minimum similarity for pg_trgm
     //   conn.query('SELECT set_limit(0.6);', (err) => {
