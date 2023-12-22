@@ -1,7 +1,8 @@
 import fs from 'fs';
 import Steam from 'steam';
+import { EOL } from 'os';
 const accountData = fs.readFileSync('./STEAM_ACCOUNT_DATA_BAD.txt', 'utf8');
-const accountArray = accountData.split(require('os').EOL);
+const accountArray = accountData.split(EOL);
 
 let index = Number(process.argv[2]) || -1;
 index += 1;

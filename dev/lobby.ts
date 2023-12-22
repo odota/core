@@ -1,11 +1,4 @@
 /*
-const config = require('./config');
-const Steam = require('steam');
-const Dota2 = require('dota2');
-const utility = require('./utility');
-const async = require('async');
-const convert64To32 = utility.convert64to32;
-const express = require('express');
 const app = express();
 const users = config.STEAM_USER.split(',');
 const passes = config.STEAM_PASS.split(',');

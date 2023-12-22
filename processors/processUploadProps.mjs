@@ -17,7 +17,7 @@ function processUploadProps(entries) {
         container.radiant_win = dota.gameWinner_ === 2;
         // NOTE: following needs some extraction/transformation
         // container.picks_bans = dota.picksBans_;
-        // require('fs').writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
+        // fs.writeFileSync('./outputEpilogue.json', JSON.stringify(JSON.parse(e.key)));
         break;
       case 'interval':
         if (!container.player_map[e.player_slot]) {

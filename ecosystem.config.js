@@ -1,4 +1,7 @@
-const config = require('./config');
+/**
+ * PM2 configuration file
+ */
+require('dotenv').config();
 
 let arr = [
   {
@@ -112,13 +115,13 @@ let arr = [
 ];
 
 // If GROUP is set filter to only the matching group
-arr = arr.filter((app) => !config.GROUP || app.group === config.GROUP);
+arr = arr.filter((app) => !process.env.GROUP || app.group === process.env.GROUP);
 
 const apps = arr.map((app) => {
-  const dev = config.NODE_ENV === 'development';
+  const dev = process.env.NODE_ENV === 'development';
   // In production, we can use the built files directly
   // This makes the pm2 memory metrics work
-  const prod = config.NODE_ENV === 'production';
+  const prod = process.env.NODE_ENV === 'production';
   const prodScript = `build/svc/${app.name}.js`;
   const devScript = `svc/${app.name}.ts`;
   const script = prod ? prodScript : devScript;

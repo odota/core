@@ -61,7 +61,6 @@ async function saveParseData(
     { shell: true, maxBuffer: 10 * 1024 * 1024 },
   );
 
-  // const { getParseSchema } = await import('../processors/parseSchema.mjs');
   const result: ParserMatch = {
     ...JSON.parse(stdout),
     match_id: matchId,
