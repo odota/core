@@ -11,7 +11,10 @@ import {
 } from './queries';
 import { getMeta } from './getMeta';
 
-async function extendPlayerData(player: Player | ParsedPlayer, match: Match | ParsedMatch) {
+async function extendPlayerData(
+  player: Player | ParsedPlayer,
+  match: Match | ParsedMatch,
+) {
   // NOTE: This adds match specific properties into the player object, which leads to some unnecessary duplication in the output
   const p: Partial<ParsedPlayerMatch> = {
     ...player,
@@ -124,13 +127,16 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
   const gcdataPromise = db.first().from('match_gcdata').where({
     match_id: matchId,
   });
-  const cosmeticsPromise = ('cosmetics' in match && match.cosmetics) ? Promise.all(
-    Object.keys(match.cosmetics).map((itemId) =>
-      db.first().from('cosmetics').where({
-        item_id: itemId,
-      }),
-    ),
-  ) : Promise.resolve(null);
+  const cosmeticsPromise =
+    'cosmetics' in match && match.cosmetics
+      ? Promise.all(
+          Object.keys(match.cosmetics).map((itemId) =>
+            db.first().from('cosmetics').where({
+              item_id: itemId,
+            }),
+          ),
+        )
+      : Promise.resolve(null);
   const prodataPromise = prodataInfo(matchId);
   const metadataPromise = Boolean(options.meta)
     ? getMeta(Number(matchId))

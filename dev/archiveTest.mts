@@ -1,9 +1,8 @@
 const { Archive } = await import('../store/archive.js');
 const { tryReadArchivedMatch } = await import('../store/getArchivedData.js');
-const {
-  getMatchDataFromCassandra,
-  getPlayerMatchData,
-} = await import('../store/queries.js');
+const { getMatchDataFromCassandra, getPlayerMatchData } = await import(
+  '../store/queries.js'
+);
 
 // Read some match data
 const match = {

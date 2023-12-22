@@ -115,7 +115,9 @@ let arr = [
 ];
 
 // If GROUP is set filter to only the matching group
-arr = arr.filter((app) => !process.env.GROUP || app.group === process.env.GROUP);
+arr = arr.filter(
+  (app) => !process.env.GROUP || app.group === process.env.GROUP,
+);
 
 const apps = arr.map((app) => {
   const dev = process.env.NODE_ENV === 'development';

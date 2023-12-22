@@ -1,4 +1,4 @@
-const { db }  = await import('../store/db.js');
+const { db } = await import('../store/db.js');
 
 function randByCentralLimitTheorem() {
   let v = 0;

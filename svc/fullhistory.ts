@@ -133,4 +133,8 @@ async function processFullHistory(job: FullHistoryJob) {
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
-queue.runQueue('fhQueue', Number(config.FULLHISTORY_PARALLELISM), processFullHistory);
+queue.runQueue(
+  'fhQueue',
+  Number(config.FULLHISTORY_PARALLELISM),
+  processFullHistory,
+);

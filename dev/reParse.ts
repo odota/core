@@ -10,7 +10,10 @@ async function start() {
   for (let i = 0; i < matches.rows.length; i++) {
     const input = matches.rows[i];
     // match id request, get data from API
-    await queue.addReliableJob({ name: 'parse', data: { match_id: input.match_id }}, {});
+    await queue.addReliableJob(
+      { name: 'parse', data: { match_id: input.match_id } },
+      {},
+    );
   }
 }
 start();

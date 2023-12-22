@@ -40,7 +40,7 @@ stream.on('end', function () {
   // emitted when all rows have been retrieved and read
   console.log('finished');
   // process.exit(0);
-})
+});
 stream.on('error', function (e) {
   console.error(e);
   // process.exit(1);

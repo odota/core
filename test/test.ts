@@ -143,9 +143,7 @@ describe(c.blue('[TEST] players'), async () => {
 });
 describe(c.blue('[TEST] replay parse'), async function () {
   this.timeout(120000);
-  const tests = [
-    detailsApi.result
-  ];
+  const tests = [detailsApi.result];
   const matchData = tests[0];
   before(async () => {
     // The test match is not a pro match, but we set the leagueid to 5399 so we get data in postgres
@@ -213,7 +211,9 @@ describe(c.blue('[TEST] replay parse'), async function () {
   });
   it('should have parse data for non-anonymous players in player_caches', async () => {
     const result = await cassandra.execute(
-      'SELECT * from player_caches WHERE match_id = ? ALLOW FILTERING', [matchData.match_id], {prepare: true}
+      'SELECT * from player_caches WHERE match_id = ? ALLOW FILTERING',
+      [matchData.match_id],
+      { prepare: true },
     );
     // Assert that parsed data is in player_caches
     assert.ok(result.rows[0].stuns);

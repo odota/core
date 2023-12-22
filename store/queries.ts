@@ -22,7 +22,10 @@ import {
   redisCount,
 } from '../util/utility';
 import { cassandraColumnInfo, cleanRowCassandra } from './insert';
-import { readArchivedPlayerMatches, tryReadArchivedMatch } from './getArchivedData';
+import {
+  readArchivedPlayerMatches,
+  tryReadArchivedMatch,
+} from './getArchivedData';
 import { tryFetchApiData } from './getApiData';
 import type { ApiMatch } from './pgroup';
 
@@ -39,7 +42,10 @@ export async function getMatchBenchmarks(m: Match) {
         // Use data from previous epoch
         let key = [
           'benchmarks',
-          getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), -1),
+          getStartOfBlockMinutes(
+            Number(config.BENCHMARK_RETENTION_MINUTES),
+            -1,
+          ),
           metric,
           p.hero_id,
         ].join(':');

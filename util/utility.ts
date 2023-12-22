@@ -803,8 +803,7 @@ export function getRandomRetrieverUrl({
 }
 
 export async function redisCount(redis: Redis | null, prefix: MetricName) {
-  const redisToUse =
-    redis ?? (await import('../store/redis.js')).redis
+  const redisToUse = redis ?? (await import('../store/redis.js')).redis;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redisToUse?.incr(key);
   await redisToUse?.expireat(

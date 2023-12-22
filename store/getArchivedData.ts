@@ -89,7 +89,9 @@ export async function doArchiveFromLegacy(matchId: number) {
     console.log('no players for match, deleting:', matchId);
     if (Number(matchId) < 7000000000) {
       // Just delete it from postgres and cassandra
-      await db.raw('DELETE from parsed_matches WHERE match_id = ?', [Number(matchId)]);
+      await db.raw('DELETE from parsed_matches WHERE match_id = ?', [
+        Number(matchId),
+      ]);
       await deleteFromLegacy(matchId);
     }
     return;

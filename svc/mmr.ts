@@ -37,7 +37,7 @@ async function processMmr(job: MmrJob) {
     data.time = new Date();
     await insertPlayerRating(data);
   }
-  await new Promise(resolve => setTimeout(resolve, 20));
+  await new Promise((resolve) => setTimeout(resolve, 20));
 }
 queue.runQueue(
   'mmrQueue',

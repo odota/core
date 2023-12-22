@@ -38,10 +38,7 @@ export async function readGcData(
  * @param job
  * @returns
  */
-async function saveGcData(
-  matchId: number,
-  pgroup: PGroup,
-): Promise<void> {
+async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
   const url = getRandomRetrieverUrl({ matchId });
   let body: typeof retrieverMatch | undefined = undefined;
   const { data } = await axios.get(url, { timeout: 5000 });
@@ -169,16 +166,16 @@ export async function getOrFetchGcDataWithRetry(
 ): Promise<GcMatch> {
   let result: GcMatch | undefined = undefined;
   let tryCount = 1;
-  while(!result) {
+  while (!result) {
     try {
       result = await getOrFetchGcData(matchId, pgroup);
-    } catch(e) {
+    } catch (e) {
       if (axios.isAxiosError(e)) {
         console.log(matchId, e.request?.response?.responseUrl, e.message);
       } else {
         console.error(e);
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       tryCount += 1;
       console.log('retrying %s, attempt %s', matchId, tryCount);
     }

@@ -77,9 +77,7 @@ async function start() {
         ),
       );
 
-      const funcs = parsedIds.map(
-        (id) => () => doArchiveFromLegacy(id),
-      );
+      const funcs = parsedIds.map((id) => () => doArchiveFromLegacy(id));
       await eachLimitPromise(funcs, 10);
 
       // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones

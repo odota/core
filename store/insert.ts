@@ -501,7 +501,11 @@ export async function insertMatch(
   }
   async function telemetry(match: InsertMatchInput) {
     // Publish to log stream
-    const endedAt = options.endedAt ?? (('start_time' in match && 'duration' in match) ? (match.start_time + match.duration) : 0);
+    const endedAt =
+      options.endedAt ??
+      ('start_time' in match && 'duration' in match
+        ? match.start_time + match.duration
+        : 0);
     const name = process.env.name || process.env.ROLE || process.argv[1];
     const message = `[${new Date().toISOString()}] [${name}] insert [${
       options.type
@@ -543,12 +547,12 @@ export async function insertMatch(
     const arr = match.players.filter<ApiPlayer>((p): p is ApiPlayer => {
       return Boolean(
         options.origin === 'scanner' &&
-        options.type === 'api' &&
-        'lobby_type' in match &&
-        match.lobby_type === 7 &&
-        p.account_id &&
-        p.account_id !== getAnonymousAccountId() &&
-        config.ENABLE_RANDOM_MMR_UPDATE
+          options.type === 'api' &&
+          'lobby_type' in match &&
+          match.lobby_type === 7 &&
+          p.account_id &&
+          p.account_id !== getAnonymousAccountId() &&
+          config.ENABLE_RANDOM_MMR_UPDATE,
       );
     });
     await Promise.all(
@@ -702,8 +706,8 @@ export async function insertMatch(
 
   let isProLeague = false;
   if ('leagueid' in match) {
-      // Check if leagueid is premium/professional
-      const result = match.leagueid
+    // Check if leagueid is premium/professional
+    const result = match.leagueid
       ? await db.raw(
           `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
           [match.leagueid],

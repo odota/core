@@ -270,7 +270,10 @@ async function updateBenchmarks(match: Match) {
           ) {
             const rkey = [
               'benchmarks',
-              getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
+              getStartOfBlockMinutes(
+                Number(config.BENCHMARK_RETENTION_MINUTES),
+                0,
+              ),
               key,
               p.hero_id,
             ].join(':');
