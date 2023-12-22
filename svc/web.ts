@@ -180,7 +180,7 @@ app.use((req, res, cb) => {
     if (!res.locals.isAPIRequest) {
       res.set(
         'X-Rate-Limit-Remaining-Month',
-        (config.API_FREE_LIMIT - Number(prevUsage)).toString(),
+        (Number(config.API_FREE_LIMIT) - Number(prevUsage)).toString(),
       );
     }
     if (Number(incrValue) > Number(rateLimit) && config.NODE_ENV !== 'test') {

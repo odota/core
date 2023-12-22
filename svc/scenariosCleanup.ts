@@ -12,7 +12,7 @@ async function scenariosCleanup() {
       .orWhere(
         'epoch_week',
         '<=',
-        currentWeek - config.MAXIMUM_AGE_SCENARIOS_ROWS,
+        currentWeek - Number(config.MAXIMUM_AGE_SCENARIOS_ROWS),
       )
       .del(),
   );
