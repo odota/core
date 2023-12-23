@@ -3,7 +3,7 @@
 
 const { db } = await import('../store/db.js');
 
-const matches = (await db.raw(`select match_id from matches`)).rows;
+const matches = (await db.raw(`select match_id from matches where (cluster is null OR replay_salt is null)`)).rows;
 for (let i = 0; i < matches.length; i++) {
   const gcdata = (
     await db.raw(
@@ -12,8 +12,10 @@ for (let i = 0; i < matches.length; i++) {
     )
   ).rows[0];
   console.log(gcdata);
-  await db.raw(
-    'update matches set cluster = ?, replay_salt = ? where match_id = ?',
-    [gcdata.cluster, gcdata.replay_salt, gcdata.match_id],
-  );
+  if (gcdata) {
+    await db.raw(
+      'update matches set cluster = ?, replay_salt = ? where match_id = ?',
+      [gcdata.cluster, gcdata.replay_salt, gcdata.match_id],
+    );
+  }
 }
