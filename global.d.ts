@@ -435,6 +435,8 @@ type MetricName =
   | 'regcdata'
   | 'reapi'
   | 'parser_fail'
+  | 'parser_crash'
+  | 'parser_skip'
   | 'incomplete_archive'
   | 'gen_api_key_invalid'
   | 'parser_job'

@@ -85,7 +85,6 @@ async function parseProcessor(job: ParseJob) {
     return true;
   } catch (e: any) {
     log('crash', e?.message);
-    redisCount(redis, 'parser_fail');
     // Rethrow the exception
     throw e;
   }
@@ -107,6 +106,13 @@ async function parseProcessor(job: ParseJob) {
     );
     redis.publish('parsed', message);
     console.log(message);
+    if (type === 'fail') {
+      redisCount(redis, 'parser_fail');
+    } else if (type === 'crash') {
+      redisCount(redis, 'parser_crash');
+    } else if (type === 'skip') {
+      redisCount(redis, 'parser_skip');
+    }
   }
 }
 runReliableQueue(
