@@ -482,3 +482,8 @@ process.on('uncaughtException', function (err) {
   console.error(err);
   process.exit(1);
 });
+process.on('unhandledRejection', (reason, p) => {
+  // In production pm2 doesn't appear to auto restart unless we exit the process here
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  process.exit(1);
+});

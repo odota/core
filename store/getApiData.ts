@@ -55,7 +55,7 @@ export async function tryFetchApiData(
   matchId: number,
 ): Promise<ApiMatch | undefined> {
   try {
-    saveApiData(matchId);
+    await saveApiData(matchId);
     return readApiData(matchId);
   } catch (e) {
     console.log(e);
