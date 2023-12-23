@@ -51,7 +51,7 @@ type SteamEndpointType = keyof typeof jobs;
 const apiUrl = 'http://api.steampowered.com';
 let apiKey = config.STEAM_API_KEY.split(',')[0];
 const jobs = {
-  api_details(type: string, payload: { match_id: string }) {
+  api_details(type: string, payload: { match_id: string | number }) {
     return {
       url: `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
       title: [type, payload.match_id].join(),

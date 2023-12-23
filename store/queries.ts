@@ -580,7 +580,7 @@ export async function getMetadata(req: Request) {
 export async function isSubscriber(account_id: string) {
   const result: { rows: any[] } = await db.raw(
     "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
-    [account_id],
+    [Number(account_id)],
   );
   return Boolean(result.rows?.[0]);
 }

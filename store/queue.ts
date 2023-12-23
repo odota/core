@@ -129,7 +129,7 @@ async function addReliableJob(
   return result.rows[0];
 }
 async function getReliableJob(jobId: string) {
-  const result = await db.raw('SELECT * FROM queue WHERE id = ?', [jobId]);
+  const result = await db.raw('SELECT * FROM queue WHERE id = ?', [Number(jobId)]);
   return result.rows[0];
 }
 
