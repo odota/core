@@ -30,9 +30,9 @@ import { tryFetchApiData } from './getApiData';
 import type { ApiMatch } from './pgroup';
 
 /**
- * Benchmarks a match against stored data in Redis
+ * Adds benchmark data to the players in a match
  * */
-export async function getMatchBenchmarks(m: Match) {
+export async function addPlayerBenchmarks(m: Match) {
   return Promise.all(
     m.players.map(async (p) => {
       p.benchmarks = {};

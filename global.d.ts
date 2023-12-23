@@ -62,6 +62,11 @@ type Match = {
   picks_bans?: any[];
   human_players: number;
 
+  // Computed if we have data
+  replay_url?: string;
+  replay_salt?: number;
+
+
   // Added at insert
   average_rank?: number;
 
@@ -91,6 +96,8 @@ interface ParsedMatch extends Match {
   cosmetics: any;
   objectives: any[];
   radiant_gold_adv: number[];
+  teamfights: any[];
+  draft_timings: any[];
 }
 
 type Player = {

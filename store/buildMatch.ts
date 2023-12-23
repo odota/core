@@ -7,14 +7,14 @@ import redis from './redis';
 import db from './db';
 import {
   getMatchDataFromBlobWithMetadata,
-  getMatchBenchmarks,
+  addPlayerBenchmarks,
 } from './queries';
 import { getMeta } from './getMeta';
 
 async function extendPlayerData(
   player: Player | ParsedPlayer,
   match: Match | ParsedMatch,
-) {
+): Promise<Player | ParsedPlayer> {
   // NOTE: This adds match specific properties into the player object, which leads to some unnecessary duplication in the output
   const p: Partial<ParsedPlayerMatch> = {
     ...player,
@@ -39,7 +39,8 @@ async function extendPlayerData(
     .from('subscriber')
     .where({ account_id: p.account_id || null });
   p.is_subscriber = Boolean(subscriber?.status);
-  return p;
+  // Note: Type is bad here, we're adding properties that shouldn't be there but changing will affect external API
+  return p as (Player | ParsedPlayer);
 }
 async function prodataInfo(matchId: number): Promise<AnyDict> {
   const result = await db
@@ -89,10 +90,17 @@ async function prodataInfo(matchId: number): Promise<AnyDict> {
   return final;
 }
 
-async function doBuildMatch(matchId: number, options: { meta?: string }) {
+async function buildMatch(matchId: number, options: { meta?: string }): Promise<Match | ParsedMatch | null> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     return null;
   }
+  // Check for cache
+  const key = `match:${matchId}`;
+  const reply = await redis.get(key);
+  if (reply) {
+    return JSON.parse(reply);
+  }
+
   // Attempt to fetch match and backfill what's needed
   let [match, odData]: [
     Match | ParsedMatch | null,
@@ -122,7 +130,7 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
     ),
   );
   const playersPromise = Promise.all(
-    playersMatchData.map((p) => extendPlayerData(p, match as ParsedMatch)),
+    playersMatchData.map((p) => extendPlayerData(p, match!)),
   );
   const cosmeticsPromise =
     'cosmetics' in match && match.cosmetics
@@ -144,14 +152,14 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
     cosmeticsPromise,
     metadataPromise,
   ]);
-  let matchResult = {
+  let matchResult: Match | ParsedMatch = {
     ...match,
     ...prodata,
     metadata,
     players,
   };
   if (cosmetics) {
-    const playersWithCosmetics = matchResult.players.map((p: ParsedPlayer) => {
+    const playersWithCosmetics = matchResult.players.map((p) => {
       const hero = constants.heroes[p.hero_id] || {};
       const playerCosmetics = cosmetics
         .filter(Boolean)
@@ -172,7 +180,7 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
       players: playersWithCosmetics,
     };
   }
-  computeMatchData(matchResult);
+  computeMatchData(matchResult as ParsedPlayerMatch);
   if (matchResult.replay_salt) {
     matchResult.replay_url = buildReplayUrl(
       matchResult.match_id,
@@ -180,24 +188,12 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
       matchResult.replay_salt,
     );
   }
-  const playersWithBenchmarks = await getMatchBenchmarks(matchResult);
-  matchResult = {
-    ...matchResult,
-    players: playersWithBenchmarks,
-  };
-  return matchResult;
-}
+  await addPlayerBenchmarks(matchResult);
 
-async function buildMatch(matchId: number, options: { meta?: string }) {
-  const key = `match:${matchId}`;
-  const reply = await redis.get(key);
-  if (reply) {
-    return JSON.parse(reply);
+  // Save in cache
+  if (matchResult && 'version' in matchResult && matchResult.version && config.ENABLE_MATCH_CACHE) {
+    await redis.setex(key, config.MATCH_CACHE_SECONDS, JSON.stringify(matchResult));
   }
-  const match = await doBuildMatch(matchId, options);
-  if (match && match.version && config.ENABLE_MATCH_CACHE) {
-    await redis.setex(key, config.MATCH_CACHE_SECONDS, JSON.stringify(match));
-  }
-  return match;
+  return matchResult;
 }
 export default buildMatch;
