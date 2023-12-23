@@ -36,8 +36,7 @@ async function parseProcessor(job: ParseJob) {
     const apiStart = Date.now();
     let { data: apiMatch, error: apiError } = await getOrFetchApiData(matchId);
     if (apiError || !apiMatch) {
-      console.log('[PARSER] %s: %s', matchId, apiError);
-      log('fail');
+      log('fail', apiError);
       return false;
     }
     apiTime = Date.now() - apiStart;
@@ -76,7 +75,7 @@ async function parseProcessor(job: ParseJob) {
     });
     if (parseError) {
       console.log('[PARSER] %s: %s', matchId, parseError);
-      log('fail');
+      log('fail', parseError);
       return false;
     }
     parseTime = Date.now() - parseStart;
@@ -92,7 +91,7 @@ async function parseProcessor(job: ParseJob) {
     throw e;
   }
 
-  function log(type: 'fail' | 'crash' | 'success' | 'skip') {
+  function log(type: 'fail' | 'crash' | 'success' | 'skip', error?: string | null) {
     const end = Date.now();
     const colors: Record<typeof type, 'yellow' | 'red' | 'green' | 'gray'> = {
       'fail': 'yellow',
@@ -105,7 +104,7 @@ async function parseProcessor(job: ParseJob) {
         end - start
       }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
         job.match_id
-      }`,
+      }: ${error ?? ''}`,
     );
     redis.publish('parsed', message);
     console.log(message);
