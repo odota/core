@@ -225,10 +225,10 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
         }
         console.error(
           '[INVALID] status: %s, retrying: %s',
-          res ? res.statusCode : '',
+          res?.statusCode,
           target,
         );
-        const backoff = res.statusCode === 429 ? 3000 : 1500;
+        const backoff = res?.statusCode === 429 ? 3000 : 1500;
         return setTimeout(() => {
           getSteamAPIDataCallback(url, cb);
         }, backoff);
