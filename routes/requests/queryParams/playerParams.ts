@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   accountIdParam: {
     name: 'account_id',
     in: 'path',

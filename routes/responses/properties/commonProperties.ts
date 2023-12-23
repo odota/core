@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   hero_id: {
     description: 'The ID value of the hero played',
     type: 'integer',

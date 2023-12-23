@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   matchIdParam: {
     name: 'match_id',
     in: 'path',

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   heroIdPathParam: {
     name: 'hero_id',
     in: 'path',

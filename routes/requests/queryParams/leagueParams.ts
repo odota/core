@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   leagueIdPathParam: {
     name: 'league_id',
     in: 'path',

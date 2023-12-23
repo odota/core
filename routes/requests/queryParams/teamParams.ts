@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   teamIdPathParam: {
     name: 'team_id',
     in: 'path',

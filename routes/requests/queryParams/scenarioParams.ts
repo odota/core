@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   scenarioParam: {
     name: 'scenario',
     in: 'query',
