@@ -5,7 +5,6 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
-import os from 'os';
 import express from 'express';
 import { getOrFetchGcDataWithRetry } from '../store/getGcData';
 import config from '../config';
@@ -19,7 +18,6 @@ import { getOrFetchParseData } from '../store/getParsedData';
 
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, PARSER_PARALLELISM } = config;
-const numCPUs = os.cpus().length;
 const app = express();
 app.get('/healthz', (req, res) => {
   res.end('ok');
@@ -27,8 +25,6 @@ app.get('/healthz', (req, res) => {
 app.listen(PORT || PARSER_PORT);
 
 async function parseProcessor(job: ParseJob) {
-  // NOTE: We don't currently distinguish between infra failures (e.g. db down) and expected failure (e.g. bad match ID or replay not found)
-  // In the first case, we probably don't want to consume an attempt and in the second we do
   const start = Date.now();
   let apiTime = 0;
   let gcTime = 0;
@@ -41,9 +37,21 @@ async function parseProcessor(job: ParseJob) {
     let { data: apiMatch, error: apiError } = await getOrFetchApiData(matchId);
     if (apiError || !apiMatch) {
       console.log('[PARSER] %s: %s', matchId, apiError);
+      log('fail');
       return false;
     }
     apiTime = Date.now() - apiStart;
+
+    const { leagueid, duration, start_time } = apiMatch;
+    if (!leagueid && (Date.now() / 1000 - start_time) > 30 * 24 * 60 * 60) {
+      redisCount(redis, 'oldparse');
+      if (config.DISABLE_OLD_PARSE) {
+        // Valve doesn't keep non-league replays for more than a few weeks.
+        // Skip even attempting the parse if it's too old
+        log('skip');
+        return true;
+      }
+    }
 
     // We need pgroup for the next jobs
     const pgroup = getPGroup(apiMatch);
@@ -59,7 +67,6 @@ async function parseProcessor(job: ParseJob) {
     );
 
     const parseStart = Date.now();
-    const { start_time, duration, leagueid } = apiMatch;
     let { error: parseError, skipParse } = await getOrFetchParseData(matchId, url, {
       start_time,
       duration,
@@ -69,42 +76,43 @@ async function parseProcessor(job: ParseJob) {
     });
     if (parseError) {
       console.log('[PARSER] %s: %s', matchId, parseError);
+      log('fail');
       return false;
     }
     parseTime = Date.now() - parseStart;
 
     // Log successful/skipped parse and timing
-    const end = Date.now();
-    const color = skipParse ? 'gray' : 'green';
-    const message = c[color](
-      `[${new Date().toISOString()}] [parser] [${skipParse ? 'skip' : 'success'}: ${
-        end - start
-      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
-        job.match_id
-      }`,
-    );
-    redis.publish('parsed', message);
-    console.log(message);
+    log(skipParse ? 'skip' : 'success');
     return true;
   } catch (e) {
-    const end = Date.now();
     // Log failed parse and timing
-    const message = c.red(
-      `[${new Date().toISOString()}] [parser] [fail: ${
-        end - start
-      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
-        job.match_id
-      }`,
-    );
-    redis.publish('parsed', message);
-    console.log(message);
+    log('crash');
     redisCount(redis, 'parser_fail');
     // Rethrow the exception
     throw e;
   }
+
+  function log(type: 'fail' | 'crash' | 'success' | 'skip') {
+    const end = Date.now();
+    const colors: Record<typeof type, 'yellow' | 'red' | 'green' | 'gray'> = {
+      'fail': 'yellow',
+      'crash': 'red',
+      'success': 'green',
+      'skip': 'gray',
+    };
+    const message = c[colors[type]](
+      `[${new Date().toISOString()}] [parser] [${type}: ${
+        end - start
+      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
+        job.match_id
+      }`,
+    );
+    redis.publish('parsed', message);
+    console.log(message);
+  }
 }
 runReliableQueue(
   'parse',
-  Number(PARSER_PARALLELISM) || numCPUs,
+  Number(PARSER_PARALLELISM),
   parseProcessor,
 );

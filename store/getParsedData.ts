@@ -95,15 +95,6 @@ export async function getOrFetchParseData(
   extraData: ExtraData,
 ): Promise<{data: ParserMatch | undefined, skipParse: boolean, error: string | null }> {
   let skipParse = false;
-  const { leagueid, start_time } = extraData;
-  if (!leagueid && (Date.now() / 1000 - start_time) > 30 * 24 * 60 * 60) {
-    redisCount(redis, 'oldparse');
-    if (config.DISABLE_OLD_PARSE) {
-      // Valve doesn't keep non-league replays for more than a few weeks.
-      // Skip even attempting the parse if it's too old
-      skipParse = true;
-    }
-  }
   // Check if match is already parsed
   const isParsed = Boolean(
     (

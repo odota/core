@@ -49,11 +49,11 @@ async function runReliableQueue(
   processor: (job: any) => Promise<boolean>,
 ) {
   const executor = async () => {
-    const pg = new Client(config.POSTGRES_URL);
-    await pg.connect();
+    const consumer = new Client(config.POSTGRES_URL);
+    await consumer.connect();
     while (true) {
-      await pg.query('BEGIN TRANSACTION');
-      const result = await pg.query(
+      await consumer.query('BEGIN TRANSACTION');
+      const result = await consumer.query(
         `
       UPDATE queue SET attempts = attempts - 1, next_attempt_time = $1
       WHERE id = (
@@ -75,18 +75,18 @@ async function runReliableQueue(
           const success = await processor(job.data);
           // If the processor returns true, it's successful and we should delete the job and then commit
           if (success || job.attempts <= 0) {
-            await pg.query('DELETE FROM queue WHERE id = $1', [job.id]);
-            await pg.query('COMMIT');
+            await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
+            await consumer.query('COMMIT');
           } else {
             // If the processor returns false, it's an expected failure and we should commit the transaction to consume an attempt
-            await pg.query('COMMIT');
+            await consumer.query('COMMIT');
           }
         } catch (e) {
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
-          await pg.query('ROLLBACK');
+          await consumer.query('ROLLBACK');
         }
       } else {
-        await pg.query('COMMIT');
+        await consumer.query('COMMIT');
         // console.log('no job available, waiting');
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }
