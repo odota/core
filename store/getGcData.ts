@@ -171,7 +171,7 @@ export async function getOrFetchGcDataWithRetry(
       result = await getOrFetchGcData(matchId, pgroup);
     } catch (e) {
       if (axios.isAxiosError(e)) {
-        console.log(matchId, e.request?.url, e.message);
+        console.log(matchId, e.response?.config?.url, e.message);
       } else {
         console.error(e);
       }
