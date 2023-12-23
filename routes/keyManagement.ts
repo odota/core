@@ -3,13 +3,12 @@ import uuid from 'uuid';
 import bodyParser from 'body-parser';
 import moment from 'moment';
 import async from 'async';
-import stripeLib from 'stripe';
+import stripe from '../store/stripe';
 import db from '../store/db';
 import redis from '../store/redis';
 import config from '../config';
 import { redisCount } from '../util/utility';
-//@ts-ignore
-const stripe = stripeLib(config.STRIPE_SECRET);
+
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
 keys.use(bodyParser.json());
@@ -231,7 +230,7 @@ keys
           source: token.id,
           email: token.email,
           metadata: {
-            account_id: req.user?.account_id,
+            account_id: req.user?.account_id ?? '',
           },
         });
         customer_id = customer.id;
@@ -293,6 +292,7 @@ keys
       email,
     });
     await stripe.subscriptions.update(subscription_id, {
+      //@ts-ignore
       source: id,
     });
     res.sendStatus(200);
