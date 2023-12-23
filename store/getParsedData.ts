@@ -65,7 +65,7 @@ export async function saveParseData(
   }
   
   const { stdout } = await execPromise(
-    `curl --max-time 60 --fail -L ${url} | ${
+    `curl --max-time 90 --fail -L ${url} | ${
       url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
     } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${matchId}`,
     //@ts-ignore
