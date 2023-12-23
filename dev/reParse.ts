@@ -4,7 +4,7 @@ import queue from '../store/queue';
 
 async function start() {
   const matches = await db.raw(
-    'select match_id from matches where version IS NULL',
+    'select match_id from matches where replay_salt IS NULL',
   );
   console.log(matches.rows.length);
   for (let i = 0; i < matches.rows.length; i++) {
@@ -12,7 +12,7 @@ async function start() {
     // match id request, get data from API
     await queue.addReliableJob(
       { name: 'parse', data: { match_id: input.match_id } },
-      {},
+      { priority: -3 },
     );
   }
 }
