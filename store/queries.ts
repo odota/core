@@ -244,7 +244,7 @@ export async function getPlayerMatchesWithMetadata(
   );
   const [localMatches, archivedMatches] = await Promise.all([
     new Promise<ParsedPlayerMatch[]>((resolve, reject) => {
-      console.time('cassandra');
+      console.time('cassandra:' + accountId);
       let localMatches: ParsedPlayerMatch[] = [];
       cassandra.eachRow(
         query,
@@ -259,7 +259,7 @@ export async function getPlayerMatchesWithMetadata(
           localMatches.push(m);
         },
         (err) => {
-          console.timeEnd('cassandra');
+          console.timeEnd('cassandra:' + accountId);
           if (err) {
             return reject(err);
           }
@@ -277,7 +277,7 @@ export async function getPlayerMatchesWithMetadata(
 
   let matches = localMatches;
   if (archivedMatches.length) {
-    console.time('merge');
+    console.time('merge:' + accountId);
     const keys = queryObj.projectAll
       ? (Object.keys(
           cassandraColumnInfo.player_caches,
@@ -317,10 +317,10 @@ export async function getPlayerMatchesWithMetadata(
         }
       }
     }
-    console.timeEnd('merge');
+    console.timeEnd('merge:' + accountId);
   }
 
-  console.time('process');
+  console.time('process:' + accountId);
   const filtered = filterMatches(matches, queryObj.filter);
   const sort = queryObj.sort;
   if (sort) {
@@ -331,7 +331,7 @@ export async function getPlayerMatchesWithMetadata(
   }
   const offset = filtered.slice(queryObj.offset || 0);
   const final = offset.slice(0, queryObj.limit || offset.length);
-  console.timeEnd('process');
+  console.timeEnd('process:' + accountId);
   return [
     final,
     {

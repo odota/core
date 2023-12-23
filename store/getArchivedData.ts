@@ -181,10 +181,10 @@ async function deleteFromLegacy(id: number) {
 export async function readArchivedPlayerMatches(
   accountId: string,
 ): Promise<ParsedPlayerMatch[]> {
-  console.time('archive');
+  console.time('archive:' + accountId);
   const blob = await playerArchive.archiveGet(accountId);
   const arr = blob ? JSON.parse(blob.toString()) : [];
-  console.timeEnd('archive');
+  console.timeEnd('archive' + accountId);
   return arr;
 }
 
