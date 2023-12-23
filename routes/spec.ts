@@ -21,7 +21,6 @@ import db from '../store/db';
 import redis from '../store/redis';
 import packageJson from '../package.json';
 import { sendDataWithCache } from '../store/cacheFunctions';
-import params from './requests/importParams';
 import responses from './responses/schemas/importResponseSchemas';
 import generateOperationId from './generateOperationId';
 import {
@@ -43,10 +42,21 @@ import {
 } from '../store/queries';
 import { filterDeps } from '../util/filter';
 const { Client } = pg;
-const parameters = Object.values(params).reduce<any>(
-  (acc, category: any) => ({ ...acc, ...category }),
-  {},
-);
+import heroParams from './requests/heroParams';
+import leagueParams from './requests/leagueParams';
+import matchParams from './requests/matchParams';
+import playerParams from './requests/playerParams';
+import scenarioParams from './requests/scenarioParams';
+import teamParams from './requests/teamParams';
+
+const parameters = {
+  ...heroParams,
+  ...leagueParams,
+  ...matchParams,
+  ...playerParams,
+  ...scenarioParams,
+  ...teamParams,
+};
 const playerParamNames = [
   'accountIdParam',
   'limitParam',
@@ -68,7 +78,7 @@ const playerParamNames = [
   'havingParam',
   'sortParam',
 ];
-const playerParams = playerParamNames.map((paramName) => ({
+const playerParamsList = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
 }));
 const schemas = Object.values(responses).reduce<any>(
@@ -201,7 +211,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         summary: 'GET /players/{account_id}/wl',
         description: 'Win/Loss count',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: playerParamsList,
         responses: {
           200: {
             description: 'Success',
@@ -306,7 +316,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         description: 'Matches played',
         tags: ['players'],
         parameters: [
-          ...playerParams,
+          ...playerParamsList,
           {
             $ref: '#/components/parameters/projectParam',
           },
@@ -359,7 +369,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         summary: 'GET /players/{account_id}/heroes',
         description: 'Heroes played',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: playerParamsList,
         responses: {
           200: {
             description: 'Success',
@@ -446,7 +456,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         summary: 'GET /players/{account_id}/peers',
         description: 'Players played with',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: playerParamsList,
         responses: {
           200: {
             description: 'Success',
@@ -488,7 +498,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         summary: 'GET /players/{account_id}/pros',
         description: 'Pro players played with',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: playerParamsList,
         responses: {
           200: {
             description: 'Success',
@@ -528,7 +538,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         summary: 'GET /players/{account_id}/totals',
         description: 'Totals in stats',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: playerParamsList,
         responses: {
           200: {
             description: 'Success',
@@ -577,7 +587,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         summary: 'GET /players/{account_id}/counts',
         description: 'Counts in categories',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: playerParamsList,
         responses: {
           200: {
             description: 'Success',
@@ -651,7 +661,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         description: 'Distribution of matches in a single stat',
         tags: ['players'],
         parameters: [
-          ...playerParams,
+          ...playerParamsList,
           {
             $ref: '#/components/parameters/fieldParam',
           },
@@ -722,7 +732,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         summary: 'GET /players/{account_id}/wardmap',
         description: 'Wards placed in matches played',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: playerParamsList,
         responses: {
           200: {
             description: 'Success',
@@ -769,7 +779,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         summary: 'GET /players/{account_id}/wordcloud',
         description: 'Words said/read in matches played',
         tags: ['players'],
-        parameters: playerParams,
+        parameters: playerParamsList,
         responses: {
           200: {
             description: 'Success',
