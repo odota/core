@@ -225,6 +225,7 @@ export async function getPlayerMatchesWithMetadata(
   ) {
     return [[], null];
   }
+  redisCount(redis, 'player_matches');
   // call clean method to ensure we have column info cached
   await cleanRowCassandra(cassandra, 'player_caches', {});
   // console.log(queryObj.project, cassandraColumnInfo.player_caches);

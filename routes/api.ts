@@ -1,7 +1,9 @@
-import { RequestHandler, Router } from 'express';
+import { Router } from 'express';
 import { FilterType, filterDeps } from '../util/filter';
 import spec from './spec';
 import { readCache } from '../store/cacheFunctions';
+import { redisCount } from '../util/utility';
+import redis from '../store/redis';
 
 //@ts-ignore
 const api: Router = new Router();
@@ -15,17 +17,17 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
         account_id: req.params.account_id,
       });
       if (result) {
-        // console.log('[READCACHEHIT] %s', req.originalUrl);
+        redisCount(redis, 'player_cache_hit');
         return res.json(JSON.parse(result));
       }
-      // console.log('[READCACHEMISS] %s', req.originalUrl);
+      // missed the cache
       return cb();
     }
-    // console.log('[READCACHESKIP] %s', req.originalUrl);
+    // not eligible for cache (query params)
     return cb();
   } catch (e) {
     console.error(e);
-    // Something weird with the cache but we can continue to the regular handler
+    // Exception from cache but we can continue to the regular handler
     return cb();
   }
 });

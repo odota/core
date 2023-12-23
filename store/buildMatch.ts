@@ -98,6 +98,7 @@ async function buildMatch(matchId: number, options: { meta?: string }): Promise<
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {
+    redisCount(redis, 'match_cache_hit');
     return JSON.parse(reply);
   }
 
