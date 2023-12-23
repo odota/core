@@ -152,46 +152,6 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
       },
     },
-    '/playersByRank': {
-      get: {
-        operationId: generateOperationId('get', '/playersByRank'),
-        summary: 'GET /playersByRank',
-        description: 'Players ordered by rank/medal tier',
-        tags: ['playersByRank'],
-        parameters: [],
-        responses: {
-          200: {
-            description: 'Success',
-            content: {
-              'application/json; charset=utf-8': {
-                schema: {
-                  $ref: '#/components/schemas/PlayersByRankResponse',
-                },
-              },
-            },
-          },
-        },
-        route: () => '/playersByRank',
-        func: async (req, res, cb) => {
-          db.raw(
-            `
-          SELECT account_id, rating, fh_unavailable
-          FROM players
-          JOIN rank_tier
-          USING (account_id)
-          ORDER BY rating DESC
-          LIMIT 100
-          `,
-            [],
-          ).asCallback((err: Error | null, result: any) => {
-            if (err) {
-              return cb(err);
-            }
-            return res.json(result.rows);
-          });
-        },
-      },
-    },
     '/players/{account_id}': {
       get: {
         operationId: generateOperationId('get', '/players/{account_id}'),
