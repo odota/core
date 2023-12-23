@@ -41,6 +41,7 @@ const sessOptions = {
 const whitelistedPaths = [
   '/api',
   '/api/metadata',
+  '/api/status',
   '/login',
   '/logout',
   '/return',
