@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:20-bullseye
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
