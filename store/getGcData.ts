@@ -79,16 +79,6 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
     cluster: body.match.cluster,
     replay_salt: body.match.replay_salt,
   };
-  const gcdata = {
-    match_id: matchId,
-    cluster: body.match.cluster,
-    replay_salt: body.match.replay_salt,
-  };
-  // TODO (howard) deprecate match_gcdata once we have transferGcData for pro matches
-  // Persist GC data to database, we'll read it back from here for consumers
-  await upsert(db, 'match_gcdata', gcdata, {
-    match_id: matchId,
-  });
   // Update series id and type for pro match
   await db.raw(
     'UPDATE matches SET series_id = ?, series_type = ?, cluster = ?, replay_salt = ? WHERE match_id = ?',

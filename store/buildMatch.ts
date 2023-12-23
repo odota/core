@@ -124,9 +124,6 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
   const playersPromise = Promise.all(
     playersMatchData.map((p) => extendPlayerData(p, match as ParsedMatch)),
   );
-  const gcdataPromise = db.first().from('match_gcdata').where({
-    match_id: matchId,
-  });
   const cosmeticsPromise =
     'cosmetics' in match && match.cosmetics
       ? Promise.all(
@@ -143,7 +140,6 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
     : Promise.resolve(null);
   const [players, gcdata, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,
-    gcdataPromise,
     prodataPromise,
     cosmeticsPromise,
     metadataPromise,
