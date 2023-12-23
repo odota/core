@@ -635,7 +635,7 @@ describe(c.blue('[TEST] api limits'), () => {
         '/api/matches/1781962623?api_key=KEY',
       );
       assert.equal(regular.statusCode, 200);
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
     // Try whitelisted routes. Should not increment usage.
     await testWhiteListedRoutes('?api_key=KEY');
@@ -676,7 +676,7 @@ async function testRateCheckedRoute() {
   for (let i = 0; i < 10; i++) {
     const res = await supertest(app).get('/api/matches/1781962623');
     assert.equal(res.statusCode, 200);
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }
 
