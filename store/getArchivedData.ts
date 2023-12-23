@@ -184,7 +184,7 @@ export async function readArchivedPlayerMatches(
   console.time('archive:' + accountId);
   const blob = await playerArchive.archiveGet(accountId.toString());
   const arr = blob ? JSON.parse(blob.toString()) : [];
-  console.timeEnd('archive' + accountId);
+  console.timeEnd('archive:' + accountId);
   return arr;
 }
 
