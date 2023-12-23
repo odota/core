@@ -5,13 +5,13 @@ const { getPlayerMatchesWithMetadata } = await import(
 const { doArchivePlayerMatches } = await import('../store/getArchivedData.js');
 
 // Write player blob to archive
-await doArchivePlayerMatches('88367253');
+await doArchivePlayerMatches(88367253);
 
 // Read it back
 // await getArchivedPlayerMatches('88367253');
 
 // Check the combined getPlayerMatches results
-const readBack = await getPlayerMatchesWithMetadata('88367253', {
+const readBack = await getPlayerMatchesWithMetadata(88367253, {
   project: [],
   projectAll: true,
 });

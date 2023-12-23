@@ -201,7 +201,7 @@ export async function getHeroBenchmarks(heroId: string) {
 }
 
 export async function getPlayerMatches(
-  accountId: string,
+  accountId: number,
   queryObj: QueryObj,
 ): Promise<ParsedPlayerMatch[]> {
   return (await getPlayerMatchesWithMetadata(accountId, queryObj))[0];
@@ -214,14 +214,14 @@ type PlayerMatchesMetadata = {
   mergedLength: number;
 };
 export async function getPlayerMatchesWithMetadata(
-  accountId: string,
+  accountId: number,
   queryObj: QueryObj,
 ): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
   // Validate accountId
   if (
     !accountId ||
-    !Number.isInteger(Number(accountId)) ||
-    Number(accountId) <= 0
+    !Number.isInteger(accountId) ||
+    accountId <= 0
   ) {
     return [[], null];
   }
@@ -344,7 +344,7 @@ export async function getPlayerMatchesWithMetadata(
 }
 
 export async function getFullPlayerMatchesWithMetadata(
-  accountId: string,
+  accountId: number,
 ): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
   return getPlayerMatchesWithMetadata(accountId, {
     project: [],
@@ -416,7 +416,7 @@ export async function getPlayer(
 }
 export async function getPeers(
   input: PeersCount,
-  player: { account_id: string },
+  player: { account_id: number },
 ) {
   let teammatesArr: PeersCount[string][] = [];
   const teammates = input;
@@ -426,7 +426,7 @@ export async function getPeers(
     // don't include if anonymous, self or if few games together
     if (
       numId &&
-      numId !== Number(player.account_id) &&
+      numId !== player.account_id &&
       numId !== getAnonymousAccountId() &&
       tm.games >= 5
     ) {
@@ -476,7 +476,7 @@ export async function getPeers(
 }
 export async function getProPeers(
   input: PeersCount,
-  player: { account_id: string },
+  player: { account_id: number },
 ) {
   const teammates = input;
   const { rows }: { rows: any[] } = await db.raw(
@@ -488,7 +488,7 @@ export async function getProPeers(
   );
   const arr: PeersCount[string][] = rows
     .map((r) => ({ ...r, ...teammates[r.account_id] }))
-    .filter((r) => r.account_id !== player.account_id && r.games)
+    .filter((r) => Number(r.account_id) !== player.account_id && r.games)
     .sort((a, b) => b.games - a.games);
   return arr;
 }
@@ -633,7 +633,7 @@ export async function getMatchDataFromBlobWithMetadata(
     }
   }
   if (!parsed && backfill) {
-    parsed = await tryReadArchivedMatch(matchId.toString());
+    parsed = await tryReadArchivedMatch(matchId);
     if (parsed) {
       odData.archive = true;
     }

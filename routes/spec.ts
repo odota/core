@@ -221,7 +221,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             lose: 0,
           };
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           cache.forEach((m) => {
@@ -265,7 +265,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/recentMatches',
         func: async (req, res, cb) => {
-          const cache = await getPlayerMatches(req.params.account_id, {
+          const cache = await getPlayerMatches(Number(req.params.account_id), {
             project: req.queryObj.project.concat([
               'hero_id',
               'start_time',
@@ -346,7 +346,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           ];
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           return res.json(cache);
@@ -399,7 +399,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'start_time',
           );
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           cache.forEach((m) => {
@@ -471,12 +471,12 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'xp_per_min',
           );
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           const teammates = countPeers(cache);
           const result = await getPeers(teammates, {
-            account_id: req.params.account_id,
+            account_id: Number(req.params.account_id),
           });
           return sendDataWithCache(req, res, result, 'peers');
         },
@@ -511,12 +511,12 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             'start_time',
           );
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           const teammates = countPeers(cache);
           const result = await getProPeers(teammates, {
-            account_id: req.params.account_id,
+            account_id: Number(req.params.account_id),
           });
           return res.json(result);
         },
@@ -556,7 +556,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           });
           req.queryObj.project = req.queryObj.project.concat(subkeys);
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           cache.forEach((m) => {
@@ -608,7 +608,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           const deps = countCats.map((name) => filterDeps[name]).flat();
           req.queryObj.project = req.queryObj.project.concat(deps);
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           cache.forEach((m) => {
@@ -681,7 +681,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             return res.json([]);
           }
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           const buckets = 40;
@@ -745,7 +745,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             Object.keys(result) as (keyof ParsedPlayerMatch)[],
           );
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           cache.forEach((m) => {
@@ -792,7 +792,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             Object.keys(result) as (keyof ParsedPlayerMatch)[],
           );
           const cache = await getPlayerMatches(
-            req.params.account_id,
+            Number(req.params.account_id),
             req.queryObj,
           );
           cache.forEach((m) => {

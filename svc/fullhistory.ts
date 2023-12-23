@@ -110,7 +110,7 @@ async function processFullHistory(job: FullHistoryJob) {
   player.fh_unavailable = false;
   // check what matches the player is already associated with
   const docs =
-    (await getPlayerMatches(player.account_id?.toString(), {
+    (await getPlayerMatches(player.account_id, {
       project: ['match_id'],
     })) ?? [];
   console.log(

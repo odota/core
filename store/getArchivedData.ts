@@ -16,7 +16,7 @@ const matchArchive = new Archive('match');
 const playerArchive = new Archive('player');
 
 export async function doArchivePlayerMatches(
-  accountId: string,
+  accountId: number,
 ): Promise<PutObjectCommandOutput | null> {
   if (!config.ENABLE_PLAYER_ARCHIVE) {
     return null;
@@ -40,7 +40,7 @@ export async function doArchivePlayerMatches(
   }
   // Put the blob
   return playerArchive.archivePut(
-    accountId,
+    accountId.toString(),
     Buffer.from(JSON.stringify(toArchive)),
   );
   // TODO (howard) delete the archived values from player_caches
@@ -179,10 +179,10 @@ async function deleteFromLegacy(id: number) {
 }
 
 export async function readArchivedPlayerMatches(
-  accountId: string,
+  accountId: number,
 ): Promise<ParsedPlayerMatch[]> {
   console.time('archive:' + accountId);
-  const blob = await playerArchive.archiveGet(accountId);
+  const blob = await playerArchive.archiveGet(accountId.toString());
   const arr = blob ? JSON.parse(blob.toString()) : [];
   console.timeEnd('archive' + accountId);
   return arr;
@@ -194,7 +194,7 @@ export async function readArchivedPlayerMatches(
  * @returns
  */
 export async function tryReadArchivedMatch(
-  matchId: string,
+  matchId: number,
 ): Promise<ParsedMatch | undefined> {
   try {
     if (!config.ENABLE_MATCH_ARCHIVE) {

@@ -115,7 +115,7 @@ describe(c.blue('[TEST] player_caches'), async () => {
   // Test fetching matches for first player
   let data = null;
   before(async () => {
-    data = await getPlayerMatches('120269134', {
+    data = await getPlayerMatches(120269134, {
       project: ['match_id'],
     });
   });
