@@ -72,6 +72,7 @@ const defaults = {
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
   DISABLE_REAPI: '', // Disable refetching new API data on every request
+  DISABLE_OLD_PARSE: '', // Disable parsing for old non-league matches unlikely to have replays
   API_KEY_GEN_THRESHOLD: '0', // Account ID requirement (delta from max) for generating API keys
 };
 if (process.env.NODE_ENV === 'development') {

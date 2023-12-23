@@ -90,6 +90,14 @@ export async function maybeFetchParseData(
   url: string,
   extraData: ExtraData,
 ): Promise<boolean> {
+  if (config.DISABLE_OLD_PARSE) {
+    // Valve doesn't keep non-league replays for more than a few weeks.
+    // Skip even attempting the parse if it's too old
+    if (!extraData.leagueid && (Date.now() / 1000 - extraData.start_time) > 30 * 24 * 60 * 60) {
+      return false;
+    }
+  }
+
   // Check if match is already parsed
   const isParsed = Boolean(
     (

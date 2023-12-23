@@ -66,7 +66,7 @@ export async function tryFetchApiData(
 /**
  * Returns API data, reading the saved version.
  * If not present, fills it and then reads it back.
- * Throws if we can't find it
+ * Throws if we can't find it or not a valid match ID
  * @param matchId
  * @returns
  */

@@ -10,11 +10,9 @@ import express from 'express';
 import { getOrFetchGcDataWithRetry } from '../store/getGcData';
 import config from '../config';
 import queue from '../store/queue';
-import type { ApiMatch } from '../store/pgroup';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
-import axios from 'axios';
 import { getPGroup } from '../store/pgroup';
 import { getOrFetchApiData } from '../store/getApiData';
 import { maybeFetchParseData } from '../store/getParsedData';
@@ -29,22 +27,19 @@ app.get('/healthz', (req, res) => {
 app.listen(PORT || PARSER_PORT);
 
 async function parseProcessor(job: ParseJob) {
+  // NOTE: We don't currently distinguish between infra failures (e.g. db down) and expected failure (e.g. bad match ID or replay not found)
+  // In the first case, we probably don't want to consume an attempt and in the second we do
   const start = Date.now();
   let apiTime = 0;
   let gcTime = 0;
   let parseTime = 0;
   try {
+    redisCount(redis, 'parser_job');
     const matchId = job.match_id;
     // Fetch the API data
     const apiStart = Date.now();
-    let apiMatch: ApiMatch;
-    try {
-      apiMatch = await getOrFetchApiData(matchId);
-    } catch (e) {
-      console.error(e);
-      // The Match ID is probably invalid, so fail without throwing
-      return false;
-    }
+    // Expected exception to fail Steam API due to invalid id. Return null to distinguish?
+    const apiMatch = await getOrFetchApiData(matchId);
     apiTime = Date.now() - apiStart;
 
     // We need pgroup for the next jobs
@@ -64,18 +59,12 @@ async function parseProcessor(job: ParseJob) {
     //   // Make a HEAD request for the replay to see if it's available
     //   await axios.head(url);
     // } catch(e: any) {
-    //   // If 404 the replay can't be found, too soon or it's expired
-    //   // return false to fail the job without throwing exception
-    //   if (e.response.status === 404) {
-    //     return false;
-    //   } else {
-    //     throw e;
-    //   }
+    // Expected exception to not find a replay because it might not be available
     // }
 
     const parseStart = Date.now();
     const { start_time, duration, leagueid } = apiMatch;
-    await maybeFetchParseData(matchId, url, {
+    const didParse = await maybeFetchParseData(matchId, url, {
       start_time,
       duration,
       leagueid,
@@ -84,10 +73,11 @@ async function parseProcessor(job: ParseJob) {
     });
     parseTime = Date.now() - parseStart;
 
-    // Log successful parse and timing
+    // Log successful/skipped parse and timing
     const end = Date.now();
-    const message = c.green(
-      `[${new Date().toISOString()}] [parser] [success: ${
+    const color = didParse ? 'green' : 'gray';
+    const message = c[color](
+      `[${new Date().toISOString()}] [parser] [${didParse ? 'success' : 'skip'}: ${
         end - start
       }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
         job.match_id
@@ -108,7 +98,6 @@ async function parseProcessor(job: ParseJob) {
     );
     redis.publish('parsed', message);
     console.log(message);
-    redisCount(redis, 'parser_fail');
     // Rethrow the exception
     throw e;
   }
