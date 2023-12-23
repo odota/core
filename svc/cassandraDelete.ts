@@ -20,8 +20,7 @@ async function start() {
     // We can backfill these from Steam API on demand
     try {
       // Convert to signed bigint
-      //@ts-ignore
-      const randomBigint = BigInt.asIntN(64, genRandomNumber(8, 10));
+      const randomBigint = BigInt.asIntN(64, BigInt(genRandomNumber(8, 10)));
       const result = await cassandra.execute(
         'select match_id, version, token(match_id) from matches where token(match_id) >= ? limit 100 ALLOW FILTERING;',
         [randomBigint.toString()],

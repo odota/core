@@ -890,8 +890,7 @@ export async function eachLimitPromise(
     funcs.slice(0, limit).map(async (func) => {
       await func();
       while (rest.length) {
-        //@ts-ignore
-        await rest.shift()();
+        await rest.shift()?.();
       }
     }),
   );
