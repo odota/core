@@ -34,10 +34,10 @@ async function start() {
       // Put the ones that don't have parsed data into an array
       const unparsedIds: number[] = result.rows
         .filter((result) => result.version == null)
-        .map((result) => result.match_id);
+        .map((result) => Number(result.match_id));
       const parsedIds: number[] = result.rows
         .filter((result) => result.version != null)
-        .map((result) => result.match_id);
+        .map((result) => Number(result.match_id));
       console.log(
         '%s unparsed to delete, %s parsed to archive, %s total, del ID: %s',
         unparsedIds.length,
