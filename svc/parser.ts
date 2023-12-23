@@ -83,9 +83,8 @@ async function parseProcessor(job: ParseJob) {
     // Log successful/skipped parse and timing
     log(skipParse ? 'skip' : 'success');
     return true;
-  } catch (e) {
-    // Log failed parse and timing
-    log('crash');
+  } catch (e: any) {
+    log('crash', e?.message);
     redisCount(redis, 'parser_fail');
     // Rethrow the exception
     throw e;
