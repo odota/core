@@ -6,6 +6,7 @@ import { insertMatch } from './insert';
 import redis from './redis';
 import { promisify } from 'util';
 import { exec } from 'child_process';
+import axios from 'axios';
 
 const { PARSER_HOST } = config;
 const execPromise = promisify(exec);
@@ -47,12 +48,22 @@ type ExtraData = {
  * @param url
  * @returns
  */
-async function saveParseData(
+export async function saveParseData(
   matchId: number,
   url: string,
   { leagueid, start_time, duration, origin, pgroup }: ExtraData,
-): Promise<void> {
+): Promise<string | null> {
   console.log('[PARSER] parsing replay at:', url);
+  try {
+    // Make a HEAD request for the replay to see if it's available
+    await axios.head(url, { timeout: 5000 });
+  } catch(e) {
+    if (axios.isAxiosError(e)) {
+      console.log(e.message);
+    }
+    return 'Replay not found';
+  }
+  
   const { stdout } = await execPromise(
     `curl --max-time 60 --fail -L ${url} | ${
       url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
@@ -75,29 +86,24 @@ async function saveParseData(
     pgroup,
     endedAt: start_time + duration,
   });
+  return null;
 }
 
-/**
- * Checks to see a match has been parsed.
- * Does the parse if not.
- * @param matchId
- * @param url
- * @param extraData
- * @returns Whether the parse was actually done
- */
-export async function maybeFetchParseData(
+export async function getOrFetchParseData(
   matchId: number,
   url: string,
   extraData: ExtraData,
-): Promise<boolean> {
-  if (config.DISABLE_OLD_PARSE) {
-    // Valve doesn't keep non-league replays for more than a few weeks.
-    // Skip even attempting the parse if it's too old
-    if (!extraData.leagueid && (Date.now() / 1000 - extraData.start_time) > 30 * 24 * 60 * 60) {
-      return false;
+): Promise<{data: ParserMatch | undefined, skipParse: boolean, error: string | null }> {
+  let skipParse = false;
+  const { leagueid, start_time } = extraData;
+  if (!leagueid && (Date.now() / 1000 - start_time) > 30 * 24 * 60 * 60) {
+    redisCount(redis, 'oldparse');
+    if (config.DISABLE_OLD_PARSE) {
+      // Valve doesn't keep non-league replays for more than a few weeks.
+      // Skip even attempting the parse if it's too old
+      skipParse = true;
     }
   }
-
   // Check if match is already parsed
   const isParsed = Boolean(
     (
@@ -110,10 +116,13 @@ export async function maybeFetchParseData(
     redisCount(redis, 'reparse');
     if (config.DISABLE_REPARSE) {
       // If high load, we can disable parsing already parsed matches
-      return false;
+      skipParse = true;
     }
   }
-  // If we got here we don't have it saved or want to refetch
-  await saveParseData(matchId, url, extraData);
-  return true;
+  let error = null;
+  if (!skipParse) {
+    error = await saveParseData(matchId, url, extraData);
+  }
+  // We don't currently need the data so don't read it
+  return { data: undefined, skipParse, error };
 }

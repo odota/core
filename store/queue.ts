@@ -71,19 +71,20 @@ async function runReliableQueue(
       );
       const job = result && result.rows && result.rows[0];
       if (job) {
-        // Handle possible exception here since we still need to commit the transaction to update attempts
-        let success = false;
         try {
-          success = await processor(job.data);
+          const success = await processor(job.data);
+          // If the processor returns true, it's successful and we should delete the job and then commit
+          if (success || job.attempts <= 0) {
+            await pg.query('DELETE FROM queue WHERE id = $1', [job.id]);
+            await pg.query('COMMIT');
+          } else {
+            // If the processor returns false, it's an expected failure and we should commit the transaction to consume an attempt
+            await pg.query('COMMIT');
+          }
         } catch (e) {
-          // Don't crash the process as we expect some processing failures
-          console.error(e);
+          // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
+          await pg.query('ROLLBACK');
         }
-        if (success || job.attempts <= 0) {
-          // remove the job from the queue if successful or out of attempts
-          await pg.query('DELETE FROM queue WHERE id = $1', [job.id]);
-        }
-        await pg.query('COMMIT');
       } else {
         await pg.query('COMMIT');
         // console.log('no job available, waiting');

@@ -15,7 +15,7 @@ import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
 import { getPGroup } from '../store/pgroup';
 import { getOrFetchApiData } from '../store/getApiData';
-import { maybeFetchParseData } from '../store/getParsedData';
+import { getOrFetchParseData } from '../store/getParsedData';
 
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, PARSER_PARALLELISM } = config;
@@ -38,8 +38,11 @@ async function parseProcessor(job: ParseJob) {
     const matchId = job.match_id;
     // Fetch the API data
     const apiStart = Date.now();
-    // Expected exception to fail Steam API due to invalid id. Return null to distinguish?
-    const apiMatch = await getOrFetchApiData(matchId);
+    let { data: apiMatch, error: apiError } = await getOrFetchApiData(matchId);
+    if (apiError || !apiMatch) {
+      console.log('[PARSER] %s: %s', matchId, apiError);
+      return false;
+    }
     apiTime = Date.now() - apiStart;
 
     // We need pgroup for the next jobs
@@ -55,29 +58,26 @@ async function parseProcessor(job: ParseJob) {
       gcdata.replay_salt,
     );
 
-    // try {
-    //   // Make a HEAD request for the replay to see if it's available
-    //   await axios.head(url);
-    // } catch(e: any) {
-    // Expected exception to not find a replay because it might not be available
-    // }
-
     const parseStart = Date.now();
     const { start_time, duration, leagueid } = apiMatch;
-    const didParse = await maybeFetchParseData(matchId, url, {
+    let { error: parseError, skipParse } = await getOrFetchParseData(matchId, url, {
       start_time,
       duration,
       leagueid,
       pgroup,
       origin: job.origin,
     });
+    if (parseError) {
+      console.log('[PARSER] %s: %s', matchId, parseError);
+      return false;
+    }
     parseTime = Date.now() - parseStart;
 
     // Log successful/skipped parse and timing
     const end = Date.now();
-    const color = didParse ? 'green' : 'gray';
+    const color = skipParse ? 'gray' : 'green';
     const message = c[color](
-      `[${new Date().toISOString()}] [parser] [${didParse ? 'success' : 'skip'}: ${
+      `[${new Date().toISOString()}] [parser] [${skipParse ? 'skip' : 'success'}: ${
         end - start
       }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
         job.match_id
@@ -98,6 +98,7 @@ async function parseProcessor(job: ParseJob) {
     );
     redis.publish('parsed', message);
     console.log(message);
+    redisCount(redis, 'parser_fail');
     // Rethrow the exception
     throw e;
   }

@@ -29,21 +29,28 @@ export async function readApiData(
 /**
  * Requests API data and saves it locally
  * @param matchId
- * @returns
+ * @returns Error message string
  */
-async function saveApiData(matchId: number): Promise<void> {
-  // Try the steam API
-  // Could throw if not a valid ID
-  const body = await getSteamAPIData(
-    generateJob('api_details', {
-      match_id: matchId,
-    }).url,
-  );
+async function saveApiData(matchId: number): Promise<string | null> {
+  let body;
+  try {
+    // Try the steam API
+    body = await getSteamAPIData(
+      generateJob('api_details', {
+        match_id: matchId,
+      }).url,
+    );
+  } catch(e) {
+    console.log(e);
+    // Expected exception here if invalid match ID
+    return 'Invalid Match ID';
+  }
   // match details response
   const match = body.result;
   await insertMatch(match, {
     type: 'api',
   });
+  return null;
 }
 
 /**
@@ -66,11 +73,11 @@ export async function tryFetchApiData(
 /**
  * Returns API data, reading the saved version.
  * If not present, fills it and then reads it back.
- * Throws if we can't find it or not a valid match ID
+ * Throws if we can't find it
  * @param matchId
  * @returns
  */
-export async function getOrFetchApiData(matchId: number): Promise<ApiMatch> {
+export async function getOrFetchApiData(matchId: number): Promise<{data: ApiMatch | undefined, error: string | null}> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
   }
@@ -80,14 +87,18 @@ export async function getOrFetchApiData(matchId: number): Promise<ApiMatch> {
     redisCount(redis, 'reapi');
     if (config.DISABLE_REAPI) {
       // If high load, we can disable refetching
-      return saved;
+      return {data: saved, error: null};
     }
   }
   // If we got here we don't have it saved or want to refetch
-  await saveApiData(matchId);
+  const error = await saveApiData(matchId);
+  if (error) {
+    // We caught an exception from Steam API due to invalid ID
+    return { data: undefined, error };
+  }
   const result = await readApiData(matchId);
   if (!result) {
     throw new Error('[APIDATA]: Could not get API data for match ' + matchId);
   }
-  return result;
+  return { data: result, error: null };
 }
