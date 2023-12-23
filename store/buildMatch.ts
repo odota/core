@@ -138,7 +138,7 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
   const metadataPromise = Boolean(options.meta)
     ? getMeta(Number(matchId))
     : Promise.resolve(null);
-  const [players, gcdata, prodata, cosmetics, metadata] = await Promise.all([
+  const [players, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,
     prodataPromise,
     cosmeticsPromise,
@@ -146,7 +146,6 @@ async function doBuildMatch(matchId: number, options: { meta?: string }) {
   ]);
   let matchResult = {
     ...match,
-    ...gcdata,
     ...prodata,
     metadata,
     players,
