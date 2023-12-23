@@ -1,6 +1,6 @@
-const commonProperties = require('../../properties/commonProperties');
+import commonProperties from '../../properties/commonProperties';
 
-module.exports = {
+export default {
   PlayerCountsResponse: {
     title: 'PlayerCountsResponse',
     type: 'object',

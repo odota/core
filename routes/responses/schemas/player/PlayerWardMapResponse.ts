@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   PlayerWardMapResponse: {
     title: 'PlayerWardMapResponse',
     type: 'object',

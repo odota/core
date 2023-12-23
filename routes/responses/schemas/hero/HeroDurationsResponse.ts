@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   HeroDurationsResponse: {
     title: 'HeroDurationsResponse',
     type: 'object',

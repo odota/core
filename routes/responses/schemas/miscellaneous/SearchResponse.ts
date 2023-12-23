@@ -1,6 +1,6 @@
-const commonProperties = require('../../properties/commonProperties');
+import commonProperties from '../../properties/commonProperties';
 
-module.exports = {
+export default {
   SearchResponse: {
     title: 'SearchResponse',
     type: 'object',

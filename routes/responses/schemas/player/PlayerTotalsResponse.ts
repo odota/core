@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   PlayerTotalsResponse: {
     title: 'PlayerTotalsResponse',
     type: 'object',

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   DistributionsResponse: {
     title: 'DistributionsResponse',
     type: 'object',

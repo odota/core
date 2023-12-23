@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   MetadataResponse: {
     title: 'MetadataResponse',
     type: 'object',

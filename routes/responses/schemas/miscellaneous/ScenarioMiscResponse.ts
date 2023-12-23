@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   ScenarioMiscResponse: {
     title: 'ScenarioMiscResponse',
     type: 'object',

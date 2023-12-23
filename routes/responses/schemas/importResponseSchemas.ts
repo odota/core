@@ -15,7 +15,7 @@ function importAll(directory: string) {
     } else if (path.extname(item) === '.ts' && itemPath !== __filename) {
       // If the item is a JS file and not the current file, import it
       const fileName = path.basename(item, '.ts');
-      files[fileName] = require(itemPath);
+      files[fileName] = require(itemPath).default;
     }
   });
 

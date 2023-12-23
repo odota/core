@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   PlayerWordCloudResponse: {
     title: 'PlayerWordCloudResponse',
     type: 'object',

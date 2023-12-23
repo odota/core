@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   HeroItemPopularityResponse: {
     title: 'HeroItemPopularityResponse',
     type: 'object',
