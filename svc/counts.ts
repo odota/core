@@ -73,16 +73,6 @@ async function upsertMatchSample(match: Match) {
       await upsert(trx, 'public_matches', newMatch, {
         match_id: newMatch.match_id,
       });
-      // TODO (howard) deprecate public_player_matches
-      await Promise.all(
-        (match.players || []).map((pm) => {
-          pm.match_id = match.match_id;
-          return upsert(trx, 'public_player_matches', pm, {
-            match_id: pm.match_id,
-            player_slot: pm.player_slot,
-          });
-        }),
-      );
     } catch (e) {
       await trx.rollback();
       throw e;

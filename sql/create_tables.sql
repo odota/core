@@ -331,15 +331,6 @@ CREATE INDEX IF NOT EXISTS public_matches_start_time_idx on public_matches(start
 CREATE INDEX IF NOT EXISTS public_matches_avg_mmr_idx on public_matches(avg_mmr);
 CREATE INDEX IF NOT EXISTS public_matches_avg_rank_tier_idx on public_matches(avg_rank_tier) WHERE avg_rank_tier IS NOT NULL;
 
-CREATE TABLE IF NOT EXISTS public_player_matches (
-  PRIMARY KEY(match_id, player_slot),
-  match_id bigint REFERENCES public_matches(match_id) ON DELETE CASCADE,
-  player_slot integer,
-  hero_id integer
-);
-CREATE INDEX IF NOT EXISTS public_player_matches_hero_id_idx on public_player_matches(hero_id);
-CREATE INDEX IF NOT EXISTS public_player_matches_match_id_idx on public_player_matches(match_id);
-
 CREATE TABLE IF NOT EXISTS team_rating (
   PRIMARY KEY(team_id),
   team_id bigint,
@@ -455,7 +446,6 @@ BEGIN
         GRANT SELECT ON picks_bans TO readonly;
         GRANT SELECT ON notable_players TO readonly;
         GRANT SELECT ON public_matches TO readonly;
-        GRANT SELECT ON public_player_matches TO readonly;
         GRANT SELECT ON players TO readonly;
         GRANT SELECT ON team_rating TO readonly;
     END IF;
