@@ -18,7 +18,9 @@ async function getCurrentMaxArchiveID() {
   return limit;
 }
 async function start() {
+  // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
   while (true) {
+    try {
       // Convert to signed bigint
       const randomBigint = BigInt.asIntN(64, BigInt(genRandomNumber(8, 10)));
       const result = await cassandra.execute(
@@ -26,7 +28,7 @@ async function start() {
         [randomBigint.toString()],
         {
           prepare: true,
-          fetchSize: 100,
+          fetchSize: 10,
           autoPage: true,
         },
       );
@@ -78,8 +80,10 @@ async function start() {
 
       const funcs = parsedIds.map((id) => () => doArchiveFromLegacy(id));
       await eachLimitPromise(funcs, 10);
-
-      // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
+    } catch(e) {
+      // Just log and try again
+      console.error(e);
+    }
   }
 }
 start();
