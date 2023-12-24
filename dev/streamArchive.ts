@@ -18,7 +18,7 @@ const stream = cassandra
   .stream('select match_id, version from matches', [], {
     prepare: true,
     autoPage: true,
-    fetchSize: 5,
+    fetchSize: 1,
   }).on('readable', async function () {
     let row;
     //@ts-ignore
@@ -39,10 +39,10 @@ const stream = cassandra
 stream.on('end', function () {
   // emitted when all rows have been retrieved and read
   console.log('finished');
-  // process.exit(0);
+  process.exit(0);
 });
 stream.on('error', function (e) {
   console.error(e);
-  // process.exit(1);
+  process.exit(1);
 });
 
