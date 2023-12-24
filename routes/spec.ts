@@ -21,7 +21,6 @@ import db from '../store/db';
 import redis from '../store/redis';
 import packageJson from '../package.json';
 import { sendDataWithCache } from '../store/cacheFunctions';
-import responses from './responses/schemas/importResponseSchemas';
 import generateOperationId from './generateOperationId';
 import {
   getDistributions,
@@ -48,6 +47,44 @@ import matchParams from './requests/matchParams';
 import playerParams from './requests/playerParams';
 import scenarioParams from './requests/scenarioParams';
 import teamParams from './requests/teamParams';
+import BenchmarksResponse from './responses/BenchmarksResponse';
+import DistributionsResponse from './responses/DistributionsResponse';
+import HeroDurationsResponse from './responses/HeroDurationsResponse';
+import HeroItemPopularityResponse from './responses/HeroItemPopularityResponse';
+import HeroMatchupsResponse from './responses/HeroMatchupsResponse';
+import HeroObjectResponse from './responses/HeroObjectResponse';
+import HeroStatsResponse from './responses/HeroStatsResponse';
+import LeagueObjectResponse from './responses/LeagueObjectResponse';
+import MatchObjectResponse from './responses/MatchObjectResponse';
+import MatchResponse from './responses/MatchResponse';
+import MetadataResponse from './responses/MetadataResponse';
+import ParsedMatchesResponse from './responses/ParsedMatchesResponse';
+import PlayerCountsResponse from './responses/PlayerCountsResponse';
+import PlayerHeroesResponse from './responses/PlayerHeroesResponse';
+import PlayerMatchesResponse from './responses/PlayerMatchesResponse';
+import PlayerObjectResponse from './responses/PlayerObjectResponse';
+import PlayerPeersResponse from './responses/PlayerPeersResponse';
+import PlayerProsResponse from './responses/PlayerProsResponse';
+import PlayerRankingsResponse from './responses/PlayerRankingsResponse';
+import PlayerRatingsResponse from './responses/PlayerRatingsResponse';
+import PlayerRecentMatchesResponse from './responses/PlayerRecentMatchesResponse';
+import PlayersResponse from './responses/PlayersResponse';
+import PlayerTotalsResponse from './responses/PlayerTotalsResponse';
+import PlayerWardMapResponse from './responses/PlayerWardMapResponse';
+import PlayerWinLossResponse from './responses/PlayerWinLossResponse';
+import PlayerWordCloudResponse from './responses/PlayerWordCloudResponse';
+import PublicMatchesResponse from './responses/PublicMatchesResponse';
+import RankingsResponse from './responses/RankingsResponse';
+import RecordsResponse from './responses/RecordsResponse';
+import ScenarioItemTimingsResponse from './responses/ScenarioItemTimingsResponse';
+import ScenarioLaneRolesResponse from './responses/ScenarioLaneRolesResponse';
+import ScenarioMiscResponse from './responses/ScenarioMiscResponse';
+import SchemaResponse from './responses/SchemaResponse';
+import SearchResponse from './responses/SearchResponse';
+import TeamHeroesResponse from './responses/TeamHeroesResponse';
+import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse';
+import TeamObjectResponse from './responses/TeamObjectResponse';
+import TeamPlayersResponse from './responses/TeamPlayersResponse';
 
 const parameters = {
   ...heroParams,
@@ -57,6 +94,48 @@ const parameters = {
   ...scenarioParams,
   ...teamParams,
 };
+
+const schemas = {
+...BenchmarksResponse,
+...DistributionsResponse,
+...HeroDurationsResponse,
+...HeroItemPopularityResponse,
+...HeroMatchupsResponse,
+...HeroObjectResponse,
+...HeroStatsResponse,
+...LeagueObjectResponse,
+...MatchObjectResponse,
+...MatchResponse,
+...MetadataResponse,
+...ParsedMatchesResponse,
+...PlayerCountsResponse,
+...PlayerHeroesResponse,
+...PlayerMatchesResponse,
+...PlayerObjectResponse,
+...PlayerPeersResponse,
+...PlayerProsResponse,
+...PlayerRankingsResponse,
+...PlayerRatingsResponse,
+...PlayerRecentMatchesResponse,
+...PlayersResponse,
+...PlayerTotalsResponse,
+...PlayerWardMapResponse,
+...PlayerWinLossResponse,
+...PlayerWordCloudResponse,
+...PublicMatchesResponse,
+...RankingsResponse,
+...RecordsResponse,
+...ScenarioItemTimingsResponse,
+...ScenarioLaneRolesResponse,
+...ScenarioMiscResponse,
+...SchemaResponse,
+...SearchResponse,
+...TeamHeroesResponse,
+...TeamMatchObjectResponse,
+...TeamObjectResponse,
+...TeamPlayersResponse,
+};
+
 const playerParamNames = [
   'accountIdParam',
   'limitParam',
@@ -81,10 +160,7 @@ const playerParamNames = [
 const playerParamsList = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
 }));
-const schemas = Object.values(responses).reduce<any>(
-  (acc, category: any) => ({ ...acc, ...category }),
-  {},
-);
+
 const securitySchemes = {
   api_key: {
     type: 'apiKey',
