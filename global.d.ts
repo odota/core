@@ -66,7 +66,6 @@ type Match = {
   replay_url?: string;
   replay_salt?: number;
 
-
   // Added at insert
   average_rank?: number;
 

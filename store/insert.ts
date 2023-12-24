@@ -472,9 +472,6 @@ export async function insertMatch(
     // in buildMatch we can assemble the data from all these pieces
     // After some retention period we stick the assembled blob in match archive and delete it
     const copy = createMatchCopy(match);
-    if (average_rank) {
-      copy.average_rank = average_rank;
-    }
     copy.players.forEach((p) => {
       // There are a bunch of fields in the API response we also don't use, e.g. "scaled_hero_damage"
       delete p.scaled_hero_damage;
@@ -718,12 +715,16 @@ export async function insertMatch(
 
   let average_rank: number | undefined = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
-  // We currently only store this in the player_caches table, not in the match itself
   if (options.origin === 'scanner' && options.type === 'api') {
     const { avg } = await getMatchRankTier(match.players);
     if (avg) {
       average_rank = avg;
     }
+    // Note: average_rank should be stored in a new blob column since it's not part of API data
+    // Currently, requesting a parse will overwrite it if DISABLE_REAPI is off.
+    // We don't rely on this field yet so it might be OK
+    // We could also store the ranks of the players in the game instead of looking it up at view time
+    // That's probably better anyway since it's more accurate to show their rank at the time of the match
   }
 
   await upsertMatchPostgres(match);
