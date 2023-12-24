@@ -18,7 +18,7 @@ const stream = cassandra
   .stream('select match_id, version from matches', [], {
     prepare: true,
     autoPage: true,
-    fetchSize: 10,
+    fetchSize: 5,
   }).on('readable', async function () {
     let row;
     //@ts-ignore
