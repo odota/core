@@ -24,7 +24,7 @@ async function start() {
       // Convert to signed bigint
       const randomBigint = BigInt.asIntN(64, BigInt(genRandomNumber(8, 10)));
       const result = await cassandra.execute(
-        'select match_id, version, token(match_id) from matches where token(match_id) >= ? limit 100 ALLOW FILTERING;',
+        'select match_id, version, token(match_id) from matches where token(match_id) >= ? limit 10 ALLOW FILTERING;',
         [randomBigint.toString()],
         {
           prepare: true,
