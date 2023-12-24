@@ -28,11 +28,11 @@ const stream = cassandra
       if (row.version) {
         await db.raw(
           'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
-          [row.match_id]
+          [Number(row.match_id)]
         );
-        await doArchiveFromLegacy(row.match_id);
+        await doArchiveFromLegacy(Number(row.match_id));
       } else {
-        await deleteFromLegacy(row.match_id);
+        await deleteFromLegacy(Number(row.match_id));
       }
     }
   });
