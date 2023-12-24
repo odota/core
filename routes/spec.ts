@@ -85,6 +85,7 @@ import TeamHeroesResponse from './responses/TeamHeroesResponse';
 import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse';
 import TeamObjectResponse from './responses/TeamObjectResponse';
 import TeamPlayersResponse from './responses/TeamPlayersResponse';
+import { checkIsParsed } from '../store/getParsedData';
 
 const parameters = {
   ...heroParams,
@@ -1542,17 +1543,18 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           if (req.query.api_key) {
             redisCount(redis, 'request_api_key');
           }
+          // By default, auto-parsed matches have priority 10
           let priority = 1;
-          if (req.query.api_key) {
-            // Lower priority for high-volume API key requests
+          if (req.user?.account_id && await isSubscriber(req.user.account_id)) {
+            // Give subscribers higher parse priority
+            priority = -3;
+          } else if (req.query.api_key) {
+            // Lower priority for high-volume API key requests since they're non-interactive
             priority = 2;
-          }
-          // Give subscribers higher parse priority
-          if (req.user?.account_id) {
-            if (await isSubscriber(req.user.account_id)) {
-              priority = -3;
-            }
-          }
+          } else if (await checkIsParsed(Number(matchId))) {
+            // Deprioritize reparsing already parsed matches
+            priority = 3;
+          } 
           const parseJob = await queue.addReliableJob(
             {
               name: 'parse',
