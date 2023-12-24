@@ -24,7 +24,7 @@ const stream = cassandra
     //@ts-ignore
     while ((row = this.read())) {
       i += 1;
-      console.log(i, row.match_id);
+      console.log(i, Number(row.match_id));
       if (row.version) {
         await db.raw(
           'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
