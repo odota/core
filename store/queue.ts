@@ -124,7 +124,7 @@ async function addReliableJob(
       options.attempts || 1,
       JSON.stringify(data),
       new Date(),
-      options.priority || 10,
+      options.priority ?? 0,
     ],
   );
   return result.rows[0];

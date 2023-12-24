@@ -10,15 +10,15 @@ function genRandomNumber(byteCount: number, radix: number): string {
     radix,
   );
 }
-async function start() {
+async function getCurrentMaxArchiveID() {
   // Get the current max_match_id from postgres, subtract 200000000
-  // const max = (await db.raw('select max(match_id) from public_matches'))
-  //   ?.rows?.[0]?.max;
-  // const limit = max - 200000000;
+  const max = (await db.raw('select max(match_id) from public_matches'))
+    ?.rows?.[0]?.max;
+  const limit = max - 200000000;
+  return limit;
+}
+async function start() {
   while (true) {
-    // delete older unparsed match/player_match rows
-    // We can backfill these from Steam API on demand
-    try {
       // Convert to signed bigint
       const randomBigint = BigInt.asIntN(64, BigInt(genRandomNumber(8, 10)));
       const result = await cassandra.execute(
@@ -80,9 +80,6 @@ async function start() {
       await eachLimitPromise(funcs, 10);
 
       // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
-    } catch (e) {
-      console.log(e);
-    }
   }
 }
 start();

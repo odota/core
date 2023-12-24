@@ -236,7 +236,7 @@ app.use((req, res, cb) => {
     }
     if (req.originalUrl.indexOf('/api') === 0) {
       redisCount(redis, 'api_hits');
-      if (req.headers.origin === 'https://www.opendota.com') {
+      if (req.headers.origin === config.UI_HOST) {
         redisCount(redis, 'api_hits_ui');
       }
       const normPath = req.path

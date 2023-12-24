@@ -27,7 +27,8 @@ import {
   tryReadArchivedMatch,
 } from './getArchivedData';
 import { tryFetchApiData } from './getApiData';
-import type { ApiMatch } from './pgroup';
+import { getPGroup, type ApiMatch } from './pgroup';
+import { tryFetchGcData } from './getGcData';
 
 /**
  * Adds benchmark data to the players in a match
@@ -625,11 +626,11 @@ export async function getMatchDataFromBlobWithMetadata(
   if (!api) {
     return [null, null];
   }
-  if (!gcdata && backfill) {
-    redisCount(redis, 'steam_gc_backfill');
-    // TODO (howard) maybe turn this on after we get some data on how often it's called
-    // gcdata = await tryFetchGcData(matchId, getPGroup(api));
+  // Currently disabled due to high load on gcdata
+  if (false && !gcdata && backfill) {
+    gcdata = await tryFetchGcData(matchId, getPGroup(api!));
     if (gcdata) {
+      redisCount(redis, 'steam_gc_backfill');
       odData.backfill_gc = true;
     }
   }
@@ -662,7 +663,7 @@ export async function getMatchDataFromBlobWithMetadata(
   return [final, odData];
 }
 
-export async function getMatchDataFromCassandra(
+export async function getMatchDataFromLegacy(
   matchId: number,
 ): Promise<Partial<ParsedMatch> | null> {
   const result = await cassandra.execute(
@@ -682,7 +683,7 @@ export async function getMatchDataFromCassandra(
   return final;
 }
 
-export async function getPlayerMatchData(
+export async function getPlayerMatchDataFromLegacy(
   matchId: number,
 ): Promise<ParsedPlayer[]> {
   const result = await cassandra.execute(

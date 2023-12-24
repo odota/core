@@ -1,13 +1,13 @@
 const { Archive } = await import('../store/archive.js');
 const { tryReadArchivedMatch } = await import('../store/getArchivedData.js');
-const { getMatchDataFromCassandra, getPlayerMatchData } = await import(
+const { getMatchDataFromLegacy, getPlayerMatchDataFromLegacy } = await import(
   '../store/queries.js'
 );
 
 // Read some match data
 const match = {
-  ...(await getMatchDataFromCassandra(7465883253)),
-  players: await getPlayerMatchData(7465883253),
+  ...(await getMatchDataFromLegacy(7465883253)),
+  players: await getPlayerMatchDataFromLegacy(7465883253),
 };
 const blob = Buffer.from(JSON.stringify(match));
 

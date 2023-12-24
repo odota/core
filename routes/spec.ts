@@ -1543,7 +1543,8 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           if (req.query.api_key) {
             redisCount(redis, 'request_api_key');
           }
-          // By default, auto-parsed matches have priority 10
+          // By default, auto-parsed matches have priority 0
+          // Requests have priority 1
           let priority = 1;
           if (req.user?.account_id && await isSubscriber(req.user.account_id)) {
             // Give subscribers higher parse priority
@@ -1554,6 +1555,9 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           } else if (await checkIsParsed(Number(matchId))) {
             // Deprioritize reparsing already parsed matches
             priority = 3;
+          } else if (req.headers.origin === config.UI_HOST) {
+            // Give UI requests priority
+            priority = 0;
           } 
           const parseJob = await queue.addReliableJob(
             {

@@ -3,8 +3,8 @@ import { Archive } from './archive';
 import {
   getFullPlayerMatchesWithMetadata,
   getMatchDataFromBlobWithMetadata,
-  getMatchDataFromCassandra,
-  getPlayerMatchData,
+  getMatchDataFromLegacy,
+  getPlayerMatchDataFromLegacy,
 } from './queries';
 import db from './db';
 import redis from './redis';
@@ -72,7 +72,7 @@ export async function doArchiveFromLegacy(matchId: number) {
     await deleteFromLegacy(matchId);
     return;
   }
-  const match = await getMatchDataFromCassandra(matchId);
+  const match = await getMatchDataFromLegacy(matchId);
   if (!isDataComplete(match)) {
     // We can probably just delete it, but throw an error now for investigation
     console.log('data incomplete for match: ' + matchId);
@@ -83,7 +83,7 @@ export async function doArchiveFromLegacy(matchId: number) {
     console.log('could not find match:', matchId);
     return;
   }
-  const playerMatches = await getPlayerMatchData(matchId);
+  const playerMatches = await getPlayerMatchDataFromLegacy(matchId);
   if (!playerMatches.length) {
     // We couldn't find players for this match, some data was corrupted and we only have match level parsed data
     console.log('no players for match, deleting:', matchId);
