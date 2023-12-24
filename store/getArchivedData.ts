@@ -11,6 +11,7 @@ import redis from './redis';
 import cassandra from './cassandra';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { isDataComplete, redisCount } from '../util/utility';
+import { tryFetchApiData } from './getApiData';
 
 const matchArchive = new Archive('match');
 const playerArchive = new Archive('player');
@@ -73,14 +74,15 @@ export async function doArchiveFromLegacy(matchId: number) {
     return;
   }
   const match = await getMatchDataFromLegacy(matchId);
-  if (!isDataComplete(match)) {
-    // We can probably just delete it, but throw an error now for investigation
-    console.log('data incomplete for match: ' + matchId);
-    return;
-  }
   if (!match) {
     // We couldn't find this match so just skip it
     console.log('could not find match:', matchId);
+    return;
+  }
+  if (!isDataComplete(match)) {
+    console.log('data incomplete for match: ' + matchId);
+    // Try to fill it from API
+    await tryFetchApiData(match.match_id!);
     return;
   }
   const playerMatches = await getPlayerMatchDataFromLegacy(matchId);
