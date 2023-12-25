@@ -34,47 +34,51 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
 });
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', async (req, res, cb) => {
-  if (!Number.isInteger(Number(req.params.account_id))) {
-    return res.status(400).json({ error: 'invalid account id' });
+  try {
+    if (!Number.isInteger(Number(req.params.account_id))) {
+      return res.status(400).json({ error: 'invalid account id' });
+    }
+    (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(
+      JSON.stringify(req.query),
+    );
+    // Enable significance filter by default, disable it if 0 is passed
+    if (req.query.significant === '0') {
+      delete req.query.significant;
+    } else {
+      req.query.significant = '1';
+    }
+    let filterCols: (keyof ParsedPlayerMatch)[] = [];
+    Object.keys(req.query).forEach((key) => {
+      // numberify and arrayify everything in query
+      req.query[key] = []
+        .concat(req.query[key] as [])
+        .map((e) => (Number.isNaN(Number(e)) ? e : Number(e))) as any;
+      // build array of required projections due to filters
+      filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
+    });
+    const sortArr = (req.query.sort || []) as (keyof ParsedPlayerMatch)[];
+    const privacy = await db.raw('SELECT fh_unavailable FROM players WHERE account_id = ?', [req.params.account_id]);
+    // User can view their own stats
+    const isPrivate = Boolean(privacy.rows[0]?.fh_unavailable) && req.user?.account_id !== req.params.account_id;
+    (req as unknown as Express.ExtRequest).queryObj = {
+      project: [
+        'match_id',
+        'player_slot',
+        'radiant_win',
+        ...filterCols,
+        ...sortArr,
+      ],
+      filter: (req.query || {}) as unknown as ArrayifiedFilters,
+      sort: sortArr[0],
+      limit: Number(req.query.limit),
+      offset: Number(req.query.offset),
+      having: Number(req.query.having),
+      isPrivate,
+    };
+    return cb();
+  } catch (e) {
+    return cb(e);
   }
-  (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(
-    JSON.stringify(req.query),
-  );
-  // Enable significance filter by default, disable it if 0 is passed
-  if (req.query.significant === '0') {
-    delete req.query.significant;
-  } else {
-    req.query.significant = '1';
-  }
-  let filterCols: (keyof ParsedPlayerMatch)[] = [];
-  Object.keys(req.query).forEach((key) => {
-    // numberify and arrayify everything in query
-    req.query[key] = []
-      .concat(req.query[key] as [])
-      .map((e) => (Number.isNaN(Number(e)) ? e : Number(e))) as any;
-    // build array of required projections due to filters
-    filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
-  });
-  const sortArr = (req.query.sort || []) as (keyof ParsedPlayerMatch)[];
-  const privacy = await db.raw('SELECT fh_unavailable FROM players WHERE account_id = ?', [req.params.account_id]);
-  // User can view their own stats
-  const isPrivate = Boolean(privacy.rows[0]?.fh_unavailable) && req.user?.account_id !== req.params.account_id;
-  (req as unknown as Express.ExtRequest).queryObj = {
-    project: [
-      'match_id',
-      'player_slot',
-      'radiant_win',
-      ...filterCols,
-      ...sortArr,
-    ],
-    filter: (req.query || {}) as unknown as ArrayifiedFilters,
-    sort: sortArr[0],
-    limit: Number(req.query.limit),
-    offset: Number(req.query.offset),
-    having: Number(req.query.having),
-    isPrivate,
-  };
-  return cb();
 });
 api.use('/teams/:team_id/:info?', (req, res, cb) => {
   if (!Number.isInteger(Number(req.params.team_id))) {
