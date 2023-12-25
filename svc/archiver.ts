@@ -34,7 +34,7 @@ async function getRandomPage(size: number) {
 }
 
 function randomNumber(min: number, max: number) {
-  return Math.random() * (max - min) + min;
+  return Math.floor(Math.random() * (max - min) + min);
 }
 
 async function start() {
