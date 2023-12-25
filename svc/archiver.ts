@@ -47,7 +47,7 @@ async function start() {
         page.push(rand + i);
       }
       console.log(page[0]);
-      await Promise.all(page.map(i => doArchiveFromLegacy(i)));
+      await Promise.allSettled(page.map(i => doArchiveFromLegacy(i)));
     } catch (e) {
       console.error(e);
     }
