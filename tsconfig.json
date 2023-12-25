@@ -6,8 +6,7 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "./build",
-    "resolveJsonModule": true,
-    "noEmit": true
+    "resolveJsonModule": true
   },
   "include": [
     "index.ts",
