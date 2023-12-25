@@ -11,8 +11,9 @@ const stream = db
 stream.on('readable', async () => {
   let row;
   while ((row = stream.read())) {
-    // console.log(row);
+    stream.pause();
     await doArchiveFromLegacy(row.match_id.toString());
+    stream.resume();
   }
 });
 
