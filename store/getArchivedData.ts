@@ -67,13 +67,8 @@ export async function doArchiveFromLegacy(matchId: number) {
   }
   if (!isDataComplete(match)) {
     console.log('data incomplete for match: ' + matchId);
-    // Try to fix it from API
-    await saveApiData(match.match_id!, true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    match = await getMatchDataFromLegacy(matchId);
-    if (!match) {
-      return;
-    }
+    await deleteFromLegacy(matchId);
+    return;
   }
   // Right now we avoid re-archiving a match by setting a flag in db
   // This flag also lets us know to look for the match in archive on read
@@ -109,6 +104,11 @@ export async function doArchiveFromLegacy(matchId: number) {
   const result = await matchArchive.archivePut(matchId.toString(), blob);
   redisCount(redis, 'match_archive_write');
   if (result) {
+    // Add to parsed_matches if not present
+    await db.raw(
+      'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
+      [matchId],
+    );
     // Mark the match archived
     await db.raw(
       `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
