@@ -32,7 +32,7 @@ const accountsToUse = Math.min(5, users.length);
 // maybe can do 1000 per IP now?
 const matchRequestLimit = 600;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 1000;
+const matchRequestDelay = 500;
 const matchRequestDelayStep = 1;
 const noneReady = () => Object.keys(steamObj).length === 0;
 let matchRequestDelayIncr = 0;
