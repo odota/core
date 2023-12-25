@@ -19,7 +19,11 @@ async function start() {
     while ((row = stream.read())) {
       i += 1;
       console.log(i);
+      try {
       await doArchiveFromLegacy(row.match_id.toString());
+      } catch (e) {
+        console.error(e);
+      }
     }
   });
 }
