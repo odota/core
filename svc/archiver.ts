@@ -42,7 +42,7 @@ async function start() {
   while (true) {
     const rand = randomNumber(1, 7500000000);
     const page = [];
-    for (let i = rand; i < 500; i++) {
+    for (let i = 0; i < 500; i++) {
       page.push(rand + i);
     }
     console.log(page[0]);
