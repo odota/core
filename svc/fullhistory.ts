@@ -1,6 +1,5 @@
 // Processes a queue of full history/refresh requests for players
 import urllib from 'url';
-import { promisify } from 'util';
 import config from '../config';
 import {
   redisCount,
@@ -35,7 +34,7 @@ async function processMatch(matchId: string) {
   const container = generateJob('api_details', {
     match_id: Number(matchId),
   });
-  const body = await getSteamAPIData(container.url);
+  const body = await getSteamAPIData({url: container.url, proxy: true});
   const match = body.result;
   await insertMatch(match, {
     type: 'api',
@@ -68,7 +67,7 @@ async function processFullHistory(job: FullHistoryJob) {
     player: FullHistoryJob,
     url: string,
   ): Promise<void> => {
-    const body = await getSteamAPIData(url);
+    const body = await getSteamAPIData({url, proxy: true});
     // if !body.result, retry
     if (!body.result) {
       return getApiMatchPage(player, url);

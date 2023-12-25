@@ -170,7 +170,7 @@ type GetDataOptions = {
   timeout?: number;
   raw?: boolean;
   noRetry?: boolean;
-  noProxy?: boolean;
+  proxy?: boolean;
 };
 function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
   let u: string;
@@ -190,12 +190,14 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
     const apiKeys = config.STEAM_API_KEY.split(',');
     parse.query.key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
     parse.search = null;
-    // choose a steam api host
-    const apiHosts = config.STEAM_API_HOST.split(',');
-    if (typeof url !== 'object' || !url.noProxy) {
+    if (typeof url === 'object' && url.proxy) {
+      // choose a steam api host
+      const apiHosts = config.STEAM_API_HOST.split(',');
       parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
+      redisCount(null, 'steam_proxy_call');
+    } else {
+      redisCount(null, 'steam_api_call');
     }
-    redisCount(null, 'steam_api_call');
   }
   const target = urllib.format(parse);
   console.log('%s - getData: %s', new Date(), target);
@@ -231,7 +233,7 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
           res?.statusCode,
           target,
         );
-        const backoff = res?.statusCode === 429 ? 3000 : 1500;
+        const backoff = res?.statusCode === 429 ? 2000 : 1000;
         return setTimeout(() => {
           getSteamAPIDataCallback(url, cb);
         }, backoff);
@@ -262,7 +264,7 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
             target,
             JSON.stringify(body),
           );
-          const backoff = 1500;
+          const backoff = 1000;
           return setTimeout(() => {
             getSteamAPIDataCallback(url, cb);
           }, backoff);

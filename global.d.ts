@@ -407,6 +407,7 @@ type OpenAPISpec = {
 type MetricName =
   | 'parsed'
   | 'steam_api_call'
+  | 'steam_proxy_call'
   | 'web_crash'
   | '500_error'
   | 'api_hits_ui'
