@@ -38,19 +38,4 @@ async function start2() {
   }
 }
 
-function randomNumber(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min) + min);
-}
-
-async function start3() {
-  while (true) {
-    const rand = randomNumber(1, 7500000000);
-    const page = [];
-    for (let i = 0; i < 500; i++) {
-      page.push(rand + i);
-    }
-    console.log(page[0]);
-    // await Promise.all(page.map(i => doArchiveFromLegacy(i)));
-  }
-}
-start3();
+start2();

@@ -62,7 +62,7 @@ export async function doArchiveFromLegacy(matchId: number) {
   let match = await getMatchDataFromLegacy(matchId);
   if (!match) {
     // We couldn't find this match so just skip it
-    console.log('could not find match:', matchId);
+    // console.log('could not find match:', matchId);
     return;
   }
   if (!isDataComplete(match)) {
