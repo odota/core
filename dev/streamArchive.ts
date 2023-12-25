@@ -9,7 +9,7 @@ import {
 } from '../store/getArchivedData';
 
 async function start() {
-  const query = new QueryStream('SELECT match_id from parsed_matches WHERE is_archived IS NULL and match_id < 7400000000 ORDER BY match_id asc', []);
+  const query = new QueryStream('SELECT match_id from parsed_matches WHERE is_archived IS NULL and match_id < 7500000000 ORDER BY match_id asc', []);
   const pg = new Client(config.POSTGRES_URL);
   await pg.connect();
   const stream = pg.query(query);
