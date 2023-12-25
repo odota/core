@@ -1,21 +1,30 @@
+import QueryStream from 'pg-query-stream';
 import cassandra from '../store/cassandra';
+import { Client } from 'pg';
 import db from '../store/db';
+import config from '../config';
 import {
   deleteFromLegacy,
   doArchiveFromLegacy,
 } from '../store/getArchivedData';
 
-const stream = db
-  .raw('SELECT match_id from parsed_matches WHERE is_archived IS NULL')
-  .stream({ batchSize: 1 });
-stream.on('readable', async () => {
-  let row;
-  while ((row = stream.read())) {
-    await doArchiveFromLegacy(row.match_id.toString());
-  }
-});
+async function start() {
+  const query = new QueryStream('SELECT match_id from parsed_matches WHERE is_archived IS NULL', []);
+  const pg = new Client(config.POSTGRES_URL);
+  await pg.connect();
+  const stream = pg.query(query);
+  let i = 0;
+  stream.on('readable', async () => {
+    let row;
+    while ((row = stream.read())) {
+      i += 1;
+      console.log(i);
+      await doArchiveFromLegacy(row.match_id.toString());
+    }
+  });
+}
+start();
 
-let i = 0;
 // const stream = cassandra
 //   .stream('select match_id, version from matches', [], {
 //     prepare: true,
@@ -38,12 +47,12 @@ let i = 0;
 //       }
 //     }
 //   });
-stream.on('end', function () {
-  // emitted when all rows have been retrieved and read
-  console.log('finished');
-  process.exit(0);
-});
-stream.on('error', function (e) {
-  console.error(e);
-  process.exit(1);
-});
+// stream.on('end', function () {
+//   // emitted when all rows have been retrieved and read
+//   console.log('finished');
+//   process.exit(0);
+// });
+// stream.on('error', function (e) {
+//   console.error(e);
+//   process.exit(1);
+// });
