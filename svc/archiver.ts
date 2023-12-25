@@ -2,8 +2,9 @@
 import crypto from 'crypto';
 import cassandra from '../store/cassandra';
 import db from '../store/db';
+import { doArchiveFromLegacy } from '../store/getArchivedData';
 
-function genRandomNumber(byteCount: number, radix: number): string {
+function randomBigInt(byteCount: number, radix: number): string {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`).toString(
     radix,
   );
@@ -19,10 +20,10 @@ async function getCurrentMaxArchiveID() {
 
 async function getRandomPage(size: number) {
   // Convert to signed bigint
-  const randomBigint = BigInt.asIntN(64, BigInt(genRandomNumber(8, 10)));
+  const signedBigInt = BigInt.asIntN(64, BigInt(randomBigInt(8, 10)));
   const result = await cassandra.execute(
     'select match_id, token(match_id) from matches where token(match_id) >= ? limit ? ALLOW FILTERING;',
-    [randomBigint.toString(), size],
+    [signedBigInt.toString(), size],
     {
       prepare: true,
       fetchSize: size,
@@ -31,7 +32,21 @@ async function getRandomPage(size: number) {
   );
   return result.rows.map(row => row.match_id);
 }
+
+function randomNumber(min: number, max: number) {
+  return Math.random() * (max - min) + min;
+}
+
 async function start() {
   // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
+  while (true) {
+    const rand = randomNumber(1, 7500000000);
+    const page = [];
+    for (let i = rand; i < 500; i++) {
+      page.push(rand + i);
+    }
+    console.log(page[0]);
+    await Promise.all(page.map(i => doArchiveFromLegacy(i)));
+  }
 }
 start();
