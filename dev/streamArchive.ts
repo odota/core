@@ -27,7 +27,20 @@ async function start() {
     }
   });
 }
-start();
+
+async function start2() {
+  const start = Number(process.argv[2]) || 0;
+  for (let i = start; i < 7500000000; i++) {
+    console.log(i);
+    try {
+      await doArchiveFromLegacy(i);
+    }
+    catch (e) {
+      console.error(e);
+    }
+  }
+}
+start2();
 
 // const stream = cassandra
 //   .stream('select match_id, version from matches', [], {

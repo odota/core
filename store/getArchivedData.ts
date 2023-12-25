@@ -59,6 +59,22 @@ export async function doArchiveFromLegacy(matchId: number) {
   if (!config.ENABLE_MATCH_ARCHIVE) {
     return;
   }
+  let match = await getMatchDataFromLegacy(matchId);
+  if (!match) {
+    // We couldn't find this match so just skip it
+    console.log('could not find match:', matchId);
+    return;
+  }
+  if (!isDataComplete(match)) {
+    console.log('data incomplete for match: ' + matchId);
+    // Try to fix it from API
+    await saveApiData(match.match_id!, true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    match = await getMatchDataFromLegacy(matchId);
+    if (!match) {
+      return;
+    }
+  }
   // Right now we avoid re-archiving a match by setting a flag in db
   // This flag also lets us know to look for the match in archive on read
   const isArchived = Boolean(
@@ -73,24 +89,11 @@ export async function doArchiveFromLegacy(matchId: number) {
     await deleteFromLegacy(matchId);
     return;
   }
-  const match = await getMatchDataFromLegacy(matchId);
-  if (!match) {
-    // We couldn't find this match so just skip it
-    console.log('could not find match:', matchId);
-    return;
-  }
-  if (!isDataComplete(match)) {
-    console.log('data incomplete for match: ' + matchId);
-    // Try to fix it from API
-    await saveApiData(match.match_id!, true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return;
-  }
   const playerMatches = await getPlayerMatchDataFromLegacy(matchId);
   if (!playerMatches.length) {
     // We couldn't find players for this match, some data was corrupted and we only have match level parsed data
     console.log('no players for match, deleting:', matchId);
-    if (Number(matchId) < 7500000000) {
+    if (Number(matchId) < 7000000000) {
       // Just delete it from postgres and cassandra
       await db.raw('DELETE from parsed_matches WHERE match_id = ?', [
         Number(matchId),
