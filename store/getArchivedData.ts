@@ -83,6 +83,7 @@ export async function doArchiveFromLegacy(matchId: number) {
     console.log('data incomplete for match: ' + matchId);
     // Try to fix it from API
     await saveApiData(match.match_id!, true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     return;
   }
   const playerMatches = await getPlayerMatchDataFromLegacy(matchId);
