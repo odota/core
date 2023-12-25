@@ -40,13 +40,17 @@ function randomNumber(min: number, max: number) {
 async function start() {
   // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
   while (true) {
-    const rand = randomNumber(1, 7500000000);
-    const page = [];
-    for (let i = 0; i < 500; i++) {
-      page.push(rand + i);
+    try {
+      const rand = randomNumber(1, 7500000000);
+      const page = [];
+      for (let i = 0; i < 500; i++) {
+        page.push(rand + i);
+      }
+      console.log(page[0]);
+      await Promise.all(page.map(i => doArchiveFromLegacy(i)));
+    } catch (e) {
+      console.error(e);
     }
-    console.log(page[0]);
-    await Promise.all(page.map(i => doArchiveFromLegacy(i)));
   }
 }
 start();
