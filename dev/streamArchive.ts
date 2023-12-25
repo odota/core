@@ -7,7 +7,7 @@ import {
 
 const stream = db
   .raw('SELECT match_id from parsed_matches WHERE is_archived IS NULL')
-  .stream();
+  .stream({ batchSize: 1 });
 stream.on('readable', async () => {
   let row;
   while ((row = stream.read())) {
