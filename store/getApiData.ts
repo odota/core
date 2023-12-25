@@ -31,7 +31,7 @@ export async function readApiData(
  * @param matchId
  * @returns Error message string
  */
-async function saveApiData(matchId: number): Promise<string | null> {
+export async function saveApiData(matchId: number, forceLegacy = false): Promise<string | null> {
   let body;
   try {
     // Try the steam API
@@ -43,12 +43,13 @@ async function saveApiData(matchId: number): Promise<string | null> {
   } catch(e) {
     console.log(e);
     // Expected exception here if invalid match ID
-    return 'Invalid Match ID';
+    return 'Failed to get data from Steam API';
   }
   // match details response
   const match = body.result;
   await insertMatch(match, {
     type: 'api',
+    forceLegacy,
   });
   return null;
 }

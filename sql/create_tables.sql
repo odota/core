@@ -424,6 +424,7 @@ CREATE TABLE IF NOT EXISTS parsed_matches (
   match_id bigint,
   is_archived boolean
 );
+CREATE INDEX IF NOT EXISTS parsed_matches_is_archived_idx ON parsed_matches(is_archived);
 
 CREATE TABLE IF NOT EXISTS subscriber (
   PRIMARY KEY (account_id),
