@@ -936,7 +936,7 @@ export function checkIfInExperiment(ip: string, mod: number) {
 export function isDataComplete(match: Partial<ParsedMatch> | null) {
   // Check for a field from API and from parse
   // Once we are archiving from blobstore we could also check for replay_salt
-  return Boolean(match && match.start_time && match.version);
+  return Boolean(match && match.start_time && match.version && match.chat);
 }
 
 /**
