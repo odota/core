@@ -170,6 +170,7 @@ type GetDataOptions = {
   timeout?: number;
   raw?: boolean;
   noRetry?: boolean;
+  noProxy?: boolean;
 };
 function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
   let u: string;
@@ -191,7 +192,9 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
     parse.search = null;
     // choose a steam api host
     const apiHosts = config.STEAM_API_HOST.split(',');
-    parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
+    if (typeof url !== 'object' || !url.noProxy) {
+      parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
+    }
     redisCount(null, 'steam_api_call');
   }
   const target = urllib.format(parse);

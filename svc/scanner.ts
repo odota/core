@@ -17,6 +17,7 @@ async function scanApi(seqNum: number) {
     try {
       data = await getSteamAPIData({
         url: container.url,
+        noProxy: true,
       });
     } catch (err: any) {
       // unretryable steam error
