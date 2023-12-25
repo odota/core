@@ -109,7 +109,7 @@ let arr = [
     group: 'backend',
   },
   {
-    name: 'cassandraDelete',
+    name: 'archiver',
     group: 'backend',
   },
 ];
